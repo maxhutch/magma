@@ -1,0 +1,68 @@
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 1.4.0) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      August 2013
+#//////////////////////////////////////////////////////////////////////////////
+
+# GPU_TARGET specifies for which GPU you want to compile MAGMA:
+#     "Tesla"  (NVIDIA compute capability 1.x cards)
+#     "Fermi"  (NVIDIA compute capability 2.x cards)
+#     "Kepler" (NVIDIA compute capability 3.x cards)
+# See http://developer.nvidia.com/cuda-gpus
+
+GPU_TARGET ?= Fermi
+
+CC        = gcc
+NVCC      = nvcc
+FORT      = gfortran
+
+ARCH      = ar
+ARCHFLAGS = cr
+RANLIB    = ranlib
+
+OPTS      = -O3 -DADD_ -Wall -fno-strict-aliasing -fopenmp -DMAGMA_WITH_MKL -DMAGMA_SETAFFINITY
+F77OPTS   = -O3 -DADD_ -Wall
+FOPTS     = -O3 -DADD_ -Wall -x f95-cpp-input
+NVOPTS    = -O3 -DADD_ -Xcompiler -fno-strict-aliasing
+LDOPTS    = -fopenmp
+
+# see MKL Link Advisor at http://software.intel.com/sites/products/mkl/
+# gcc with MKL 10.3, sequential version
+#LIB       = -lmkl_gf_lp64 -lmkl_sequential -lmkl_core -lcublas -lcudart -lstdc++ -lm -lgfortran
+
+# gcc with MKL 10.3, GNU threads
+#LIB       = -lmkl_gf_lp64 -lmkl_gnu_thread -lmkl_core -lpthread -lcublas -lcudart -lstdc++ -lm -lgfortran
+
+# gcc with MKL 10.3, Intel threads
+LIB       = -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lpthread -lcublas -lcudart -lstdc++ -lm -liomp5 -lgfortran
+
+# define library directories here or in your environment
+# for MKL run, e.g.: source /opt/intel/composerxe/mkl/bin/mklvars.sh intel64
+#MKLROOT   = /opt/intel/composerxe/mkl
+#CUDADIR   = /usr/local/cuda
+
+# check for directories and give user hint how to set them
+ifeq ($(MKLROOT),)
+    vars_sh  := $(shell which icc 2>/dev/null | perl -pe 's|/bin.*/icc|/mkl/bin/mklvars.sh|')
+    vars_csh := $(shell which icc 2>/dev/null | perl -pe 's|/bin.*/icc|/mkl/bin/mklvars.csh|')
+    ifeq ($(vars_sh),)
+        vars_sh  := /opt/intel/composerxe/mkl/bin/mklvars.sh
+        vars_csh := /opt/intel/composerxe/mkl/bin/mklvars.csh
+    endif
+$(error Define $$MKLROOT, preferably in your environment, e.g., run "source $(vars_sh) intel64" in ~/.bashrc, or "source $(vars_csh) intel64" in ~/.cshrc)
+endif
+
+ifeq ($(CUDADIR),)
+    cuda := $(shell which nvcc | perl -pe 's|/bin/nvcc||')
+    ifeq ($(cuda),)
+        cuda := /usr/local/cuda
+    endif
+$(error Define $$CUDADIR, preferably in your environment, e.g., run "export CUDADIR=$(cuda)" in ~/.bashrc, or "setenv CUDADIR $(cuda)" in ~/.cshrc)
+endif
+
+LIBDIR    = -L$(MKLROOT)/lib/intel64 \
+            -L$(CUDADIR)/lib64
+
+INC       = -I$(CUDADIR)/include -I$(MKLROOT)/include

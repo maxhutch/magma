@@ -1,0 +1,17 @@
+CHDR = \
+
+
+DHDR = \
+
+
+SHDR = \
+
+
+CSRC = \
+blas_c.cpp cset_get.cpp
+
+DSRC = \
+blas_d.cpp dset_get.cpp
+
+SSRC = \
+blas_s.cpp sset_get.cpp

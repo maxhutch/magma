@@ -1,0 +1,53 @@
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 1.4.0) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      August 2013
+#
+#      Contributed by: Massimiliano Fatica (NVIDIA)
+#//////////////////////////////////////////////////////////////////////////////
+
+# GPU_TARGET specifies for which GPU you want to compile MAGMA:
+#     "Tesla"  (NVIDIA compute capability 1.x cards)
+#     "Fermi"  (NVIDIA compute capability 2.x cards)
+#     "Kepler" (NVIDIA compute capability 3.x cards)
+# See http://developer.nvidia.com/cuda-gpus
+
+GPU_TARGET ?= Tesla
+
+CC        = gcc
+NVCC      = nvcc
+FORT      = gfortran
+
+ARCH      = ar
+ARCHFLAGS = cr
+RANLIB    = ranlib
+
+# use -m32 to compile with 32-bit long & pointers.
+# use -m64 to compile with 64-bit long & pointers (lp64). int is still 32-bit.
+# currently, there are RUNTIME ERRORS with 64-bit on MacOS!
+# add -DNDEBUG to disable asserts and certain error checks.
+OPTS      = -Wall -m32 -O3 -DADD_
+F77OPTS   = -Wall -m32 -O3 -DADD_
+FOPTS     = -Wall -m32 -O3 -DADD_ -x f95-cpp-input
+NVOPTS    =       -m32 -O3 -DADD_ -Xcompiler -fno-strict-aliasing
+LDOPTS    = -Wall -m32
+
+LIB       = -framework Accelerate -lcublas -lcudart -lstdc++ -lm
+
+# define library directories here or in your environment
+#CUDADIR   = /usr/local/cuda
+
+# check for directories and give user hint how to set them
+ifeq ($(CUDADIR),)
+    cuda := $(shell which nvcc | perl -pe 's|/bin/nvcc||')
+    ifeq ($(cuda),)
+        cuda := /usr/local/cuda
+    endif
+$(error Define $$CUDADIR, preferably in your environment, e.g., run "export CUDADIR=$(cuda)" in ~/.bashrc, or "setenv CUDADIR $(cuda)" in ~/.cshrc)
+endif
+
+LIBDIR    = -L$(CUDADIR)/lib
+
+INC       = -I$(CUDADIR)/include

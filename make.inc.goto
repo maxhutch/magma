@@ -1,0 +1,40 @@
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 1.4.0) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      August 2013
+#
+#      Contributed by: Allan Menezes (Ontario, Canada)
+#      Note that GOTO BLAS is no longer maintained.
+#      We provide this file as an example only.
+#//////////////////////////////////////////////////////////////////////////////
+
+# GPU_TARGET specifies for which GPU you want to compile MAGMA:
+#     "Tesla" (NVIDIA compute capability 1.x cards)
+#     "Fermi" (NVIDIA compute capability 2.x cards)
+#     "Kepler" (NVIDIA compute capability 3.x cards)
+# See http://developer.nvidia.com/cuda-gpus
+
+GPU_TARGET = Fermi
+
+CC        = gcc
+NVCC      = nvcc
+FORT      = gfortran
+
+ARCH      = ar
+ARCHFLAGS = cr
+RANLIB    = ranlib
+
+OPTS      = -O3 -DADD_
+F77OPTS   = -O3 -DADD_
+FOPTS     = -O3 -DADD_ -x f95-cpp-input
+NVOPTS    = -O3 -DADD_ --compiler-options -fno-strict-aliasing -DUNIX
+LDOPTS    = -fPIC -Xlinker -zmuldefs
+
+LIB       = -lgoto  -lpthread -lcublas -lcudart -llapack -lm 
+
+CUDADIR   = /usr/local/cuda
+
+LIBDIR    = -L/bummer/GotoBLAS -L/usr/local/cuda/lib64 -L/usr/lib64
+INC       = -I$(CUDADIR)/include

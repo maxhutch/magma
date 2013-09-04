@@ -1,0 +1,59 @@
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 1.4.0) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      August 2013
+#//////////////////////////////////////////////////////////////////////////////
+
+# GPU_TARGET specifies for which GPU you want to compile MAGMA:
+#     "Tesla"  (NVIDIA compute capability 1.x cards)
+#     "Fermi"  (NVIDIA compute capability 2.x cards)
+#     "Kepler" (NVIDIA compute capability 3.x cards)
+# See http://developer.nvidia.com/cuda-gpus
+
+GPU_TARGET ?= Fermi
+
+CC        = gcc
+NVCC      = nvcc
+FORT      = gfortran
+
+ARCH      = ar
+ARCHFLAGS = cr
+RANLIB    = ranlib
+
+OPTS      = -O3 -DADD_ -fopenmp -DMAGMA_SETAFFINITY
+F77OPTS   = -O3 -DADD_
+FOPTS     = -O3 -DADD_ -x f95-cpp-input
+NVOPTS    = -O3 -DADD_ -Xcompiler -fno-strict-aliasing
+LDOPTS    = -fopenmp
+
+LIB       = -lacml_mp -lacml_mv -lcblas -lcublas -lcudart -lstdc++ -lm
+
+# define library directories here or in your environment
+#ACMLDIR   = /opt/acml/gfortran_mp
+#CBLASDIR  = /opt/CBLAS
+#CUDADIR   = /usr/local/cuda
+
+# check for directories and give user hint how to set them
+ifeq ($(ACMLDIR),)
+$(error Define $$ACMLDIR, preferably in your environment, e.g., run "export ACMLDIR=/opt/acml/gfortran_mp" in ~/.bashrc, or "setenv ACMLDIR /opt/acml/gfortran_mp" in ~/.cshrc)
+endif
+
+ifeq ($(CBLASDIR),)
+$(error Define $$CBLASDIR, preferably in your environment, e.g., run "export CBLASDIR=/opt/CBLAS/lib" in ~/.bashrc, or "setenv CBLASDIR /opt/CBLAS/lib" in ~/.cshrc)
+endif
+
+ifeq ($(CUDADIR),)
+    cuda := $(shell which nvcc | perl -pe 's|/bin/nvcc||')
+    ifeq ($(cuda),)
+        cuda := /usr/local/cuda
+    endif
+$(error Define $$CUDADIR, preferably in your environment, e.g., run "export CUDADIR=$(cuda)" in ~/.bashrc, or "setenv CUDADIR $(cuda)" in ~/.cshrc)
+endif
+
+LIBDIR    = -L$(ACMLDIR)/lib \
+            -L$(CBLASDIR)/lib \
+            -L$(CUDADIR)/lib64
+
+INC       = -I$(CUDADIR)/include

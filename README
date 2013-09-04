@@ -1,0 +1,90 @@
+==================
+MAGMA README FILE
+==================
+
+* To INSTALL MAGMA, modify the make.inc file to indicate where 
+  CUDA, CPU BLAS, and LAPACK are installed on your system. Examples
+  are given in make.inc.mkl-*, make.inc.acml, and make.inc.atlas,
+  showing how to link to MKL, ACML, or ATLAS BLAS, respectively.
+  
+  The make.inc files assume $CUDADIR is set in your environment.
+  For bash (sh), put in ~/.bashrc (with your system's path):
+      export CUDADIR=/usr/loca/cuda
+  For csh/tcsh, put in ~/.cshrc:
+      setenv CUDADIR /usr/local/cuda
+  
+  The MKL make.inc files assume $MKLROOT is set in your environment.
+  For bash (sh), put in ~/.bashrc (with your system's path):
+      source /opt/intel/composerxe/mkl/bin/mklvars.sh intel64
+  For csh/tcsh, put in ~/.cshrc:
+      source /opt/intel/composerxe/mkl/bin/mklvars.csh intel64
+  
+  The ACML make.inc file assumes $ACMLDIR and $CBLASDIR are set in your environment.
+  If not installed, install CBLAS from http://www.netlib.org/blas/
+  For bash (sh), put in ~/.bashrc (with your system's path):
+      export ACMLDIR=/opt/acml-4.4.0/gfortran64_mp
+      export CBLASDIR=/opt/CBLAS
+  For csh/tcsh, put in ~/.cshrc:
+      setenv ACMLDIR  /opt/acml-4.4.0/gfortran64_mp
+      setenv CBLASDIR /opt/CBLAS
+  
+  The ATLAS make.inc file assumes $ATLASDIR and $LAPACKDIR are set in your environment.
+  If not installed, install LAPACK from http://www.netlib.org/lapack/
+  For bash (sh), put in ~/.bashrc (with your system's path):
+      export ATLASDIR=/opt/atlas
+      export LAPACKDIR=/opt/LAPACK
+  For csh/tcsh, put in ~/.cshrc:
+      setenv ATLASDIR  /opt/atlas
+      setenv LAPACKDIR /opt/LAPACK
+  
+  After proper modification of the make.inc file, running:
+  
+      make
+  
+  will create libmagma.a in 'lib' and testing drivers in 'testing'.
+  To create a shared library, libmagma.so, copy make.inc.mkl-shared to make.inc,
+  modify as needed, and run:
+  
+      make shared
+  
+  To install libraries and include files in a given prefix, run:
+  
+      make install prefix=/usr/local/magma
+  
+  The default prefix is /usr/local/magma. You can also set prefix in make.inc.
+  
+  For multi-GPU functions, set $MAGMA_NUM_GPUS to set the number of GPUs to use.
+  For multi-core BLAS libraries, set $OMP_NUM_THREADS or $MKL_NUM_THREADS or
+  $VECLIB_MAXIMUM_THREADS to set the number of CPU threads, depending on your
+  BLAS library.
+
+* To TEST MAGMA, go to directory 'testing'. Provided are a number of
+  drivers testing different routines. These drivers are also useful
+  as examples on how to use MAGMA, as well as to benchmark the performance.
+
+* To TUNE MAGMA, you can modify the blocking factors for the algorithms of
+  interest in file 'control/get_nb.cpp'. The default values are tuned for
+  general Tesla (1.x), Fermi (2.x), and Kepler (3.x) GPUs. If you have 
+  a Fermi (C2050), you can also compare your performance to what we get, 
+  given in file 'testing/results_fermi.txt', as an easy check for your 
+  installation.
+
+* To RUN EXPERIMENTAL MAGMA, go to directory 'exp' and type 'make'.  Then 
+  type 'export MKL_NUM_THREADS=1'.  Next go to directory 'testing'.  
+  Provided are drivers testing multi-core Choleskey, QR, and LU; and 
+  single GPU all, available CPU cores QR.  Typing a given driver name will 
+  result in clear instructions on what to provide on the command line.  
+
+  Note that on some systems the experimental code must be linked against 
+  sequential MKL.  If you notice excessively poor performance, change 
+  make.inc to link against sequential MKL.
+
+For more INFORMATION, please refer to the MAGMA homepage and user forum:
+  
+  http://icl.cs.utk.edu/magma/
+  http://icl.cs.utk.edu/magma/forum/
+
+The MAGMA project supports the package in the sense that reports of 
+errors or poor performance will gain immediate attention from the 
+developers. Such reports, descriptions of interesting applications, 
+and other comments should be posted on the MAGMA user forum.
