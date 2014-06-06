@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:44:49 2013
+       @generated s Tue Dec 17 13:18:36 2013
        @author Stan Tomov
        @author Mark Gates
 */
@@ -21,6 +21,12 @@
  */
 #define VERSION3
 
+/*
+ * TREVC version 1 - LAPACK
+ * TREVC version 2 - new blocked LAPACK
+ */
+#define TREVC_VERSION 2
+
 extern "C" magma_int_t
 magma_sgeev(
     char jobvl, char jobvr, magma_int_t n,
@@ -31,11 +37,11 @@ magma_sgeev(
     float *work, magma_int_t lwork,
     magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -65,22 +71,22 @@ magma_sgeev(
     N       (input) INTEGER
             The order of the matrix A. N >= 0.
 
-    A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+    A       (input/output) REAL array, dimension (LDA,N)
             On entry, the N-by-N matrix A.
             On exit, A has been overwritten.
 
     LDA     (input) INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    WR      (output) DOUBLE PRECISION array, dimension (N)
-    WI      (output) DOUBLE PRECISION array, dimension (N)
+    WR      (output) REAL array, dimension (N)
+    WI      (output) REAL array, dimension (N)
             WR and WI contain the real and imaginary parts,
             respectively, of the computed eigenvalues.  Complex
             conjugate pairs of eigenvalues appear consecutively
             with the eigenvalue having the positive imaginary part
             first.
 
-    VL      (output) DOUBLE PRECISION array, dimension (LDVL,N)
+    VL      (output) REAL array, dimension (LDVL,N)
             If JOBVL = 'V', the left eigenvectors u(j) are stored one
             after another in the columns of VL, in the same order
             as their eigenvalues.
@@ -91,7 +97,7 @@ magma_sgeev(
             The leading dimension of the array VL.  LDVL >= 1; if
             JOBVL = 'V', LDVL >= N.
 
-    VR      (output) DOUBLE PRECISION array, dimension (LDVR,N)
+    VR      (output) REAL array, dimension (LDVR,N)
             If JOBVR = 'V', the right eigenvectors v(j) are stored one
             after another in the columns of VR, in the same order
             as their eigenvalues.
@@ -102,11 +108,12 @@ magma_sgeev(
             The leading dimension of the array VR.  LDVR >= 1; if
             JOBVR = 'V', LDVR >= N.
 
-    WORK    (workspace/output) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
+    WORK    (workspace/output) REAL array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
     LWORK   (input) INTEGER
-            The dimension of the array WORK.  LWORK >= (1+nb)*N.
+            The dimension of the array WORK.  LWORK >= (2+nb)*N.
+            For optimal performance, LWORK >= (2+2*nb)*N.
 
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -232,7 +239,7 @@ magma_sgeev(
         magma_sgehrd2( n, ilo, ihi, A, lda,
                        &work[itau], &work[iwrk], liwrk, &ierr );
     #elif defined(VERSION3)
-        // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored,
+        // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored,
         magma_sgehrd( n, ilo, ihi, A, lda,
                       &work[itau], &work[iwrk], liwrk, dT, &ierr );
     #endif
@@ -251,7 +258,7 @@ magma_sgeev(
             lapackf77_sorghr( &n, &ilo, &ihi, vl, &ldvl, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
-            // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored
+            // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_sorghr( n, ilo, ihi, vl, ldvl, &work[itau], dT, nb, &ierr );
         #endif
 
@@ -282,7 +289,7 @@ magma_sgeev(
             lapackf77_sorghr( &n, &ilo, &ihi, vr, &ldvr, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
-            // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored
+            // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_sorghr( n, ilo, ihi, vr, ldvr, &work[itau], dT, nb, &ierr );
         #endif
 
@@ -310,8 +317,14 @@ magma_sgeev(
     if (wantvl || wantvr) {
         /* Compute left and/or right eigenvectors
          * (Workspace: need 4*N) */
+        liwrk = lwork - iwrk;
+        #if TREVC_VERSION == 1
         lapackf77_strevc( side, "B", select, &n, A, &lda, vl, &ldvl,
                           vr, &ldvr, &n, &nout, &work[iwrk], &ierr );
+        #elif TREVC_VERSION == 2
+        lapackf77_strevc3( side, "B", select, &n, A, &lda, vl, &ldvl,
+                           vr, &ldvr, &n, &nout, &work[iwrk], &liwrk, &ierr );
+        #endif
     }
 
     if (wantvl) {

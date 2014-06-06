@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -15,11 +15,11 @@ extern "C" magma_int_t
 magma_zpotrf_mgpu(magma_int_t num_gpus, char uplo, magma_int_t n,
                   magmaDoubleComplex **d_lA, magma_int_t ldda, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
  
        @author Mathieu Faverge
  
@@ -33,8 +33,19 @@
     #include <io.h>
 
     // functions where Microsoft fails to provide C99 standard
-    #define copysign(x,y) _copysign(x,y)
-    double log2( double x );  // defined in auxiliary.cpp
+    // (only with Microsoft, not with nvcc on Windows)
+    // in both common_magma.h and testings.h
+    #ifndef __NVCC__
+    
+        #include <float.h>
+        #define copysign(x,y) _copysign(x,y)
+        #define isnan(x)      _isnan(x)
+        #define isinf(x)      ( ! _finite(x) && ! _isnan(x) )
+        #define isfinite(x)   _finite(x)
+        // note _snprintf has slightly different semantics than snprintf
+        #define snprintf _snprintf
+    
+    #endif
 
 #else
 
@@ -44,9 +55,8 @@
 
 #endif
 
-#if defined(__APPLE__)
-    #include "pthread_barrier.h"
-#endif
+// provide our own support for pthread_barrier on MacOS and Windows
+#include "pthread_barrier.h"
 
 #include "magma.h"
 #include "magma_lapack.h"
@@ -55,28 +65,17 @@
 #include "magma_threadsetting.h"
 
 /** ****************************************************************************
- * C99 standard defines __func__. Some older compilers use __FUNCTION__.
- * Note __func__ is not a macro, so ifndef __func__ doesn't work.
- */
-#if __STDC_VERSION__ < 199901L
-# if __GNUC__ >= 2 || _MSC_VER >= 1300
-#  define __func__ __FUNCTION__
-# else
-#  define __func__ "<unknown>"
-# endif
-#endif
-
-/** ****************************************************************************
- *  Determine if weak symbols are allowed 
+ *  Determine if weak symbols are allowed
  */
 #if defined(linux) || defined(__linux) || defined(__linux__)
-#if defined(__GNUC_EXCL__) || defined(__GNUC__) 
+#if defined(__GNUC_EXCL__) || defined(__GNUC__)
 #define MAGMA_HAVE_WEAK    1
 #endif
 #endif
 
 /***************************************************************************//**
  *  Global utilities
+ *  in both common_magma.h and testings.h
  **/
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -90,8 +89,13 @@
 #define roundup(a, b) (b <= 0) ? (a) : (((a) + (b)-1) & ~((b)-1))
 #endif
 
+#ifndef ceildiv
+#define ceildiv(a, b) ((a - 1)/b + 1)
+#endif
+
+
 /** ****************************************************************************
- *  Define magma_[sd]sqrt functions 
+ *  Define magma_[sd]sqrt functions
  *    - sqrt alone cannot be caught by the generation script because of tsqrt
  */
 

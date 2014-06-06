@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Wed Aug 14 12:18:01 2013
+       @generated c Tue Dec 17 13:18:56 2013
 */
 
 #include <stdlib.h>
@@ -34,42 +34,8 @@
 #define validate
 
 
-#if (GPUSHMEM >= 200)
-
-extern "C"
-magma_int_t
-magmablas_chemv2_mgpu_offset( char uplo, magma_int_t n,
-                      magmaFloatComplex alpha,
-                      magmaFloatComplex **A, magma_int_t lda,
-                      magmaFloatComplex **X, magma_int_t incx,
-                      magmaFloatComplex beta,
-                      magmaFloatComplex **Y, magma_int_t incy,
-                      magmaFloatComplex **work, magma_int_t lwork,
-              magma_int_t num_gpus, 
-              magma_int_t nb,
-              magma_int_t offset);
-
-
-extern "C"
-magma_int_t
-magmablas_chemv2_mgpu_32_offset( char uplo, magma_int_t n,
-                      magmaFloatComplex alpha,
-                      magmaFloatComplex **A, magma_int_t lda,
-                      magmaFloatComplex **X, magma_int_t incx,
-                      magmaFloatComplex beta,
-                      magmaFloatComplex **Y, magma_int_t incy,
-                      magmaFloatComplex **work, magma_int_t lwork,
-              magma_int_t num_gpus, 
-              magma_int_t nb,
-              magma_int_t offset);
-
-
-
-#endif
-
 int main(int argc, char **argv)
 {        
-#if (GPUSHMEM >= 200)
     TESTING_INIT();
     magma_setdevice(0);
 
@@ -99,7 +65,7 @@ int main(int argc, char **argv)
 
     int max_num_gpus;
     magma_int_t num_gpus = 1, nb;
-    magma_int_t blocks, workspace;
+    magma_int_t blocks, lwork;
     magma_int_t offset = 0;
 
     M = 0;
@@ -149,7 +115,7 @@ int main(int argc, char **argv)
     }
          
 
-///////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
     cudaGetDeviceCount(&max_num_gpus);
     if (num_gpus > max_num_gpus){
       printf("More GPUs requested than available. Have to change it.\n");
@@ -170,68 +136,58 @@ int main(int argc, char **argv)
 
     printf("block size = %d\n", (int) nb);
    
-    TESTING_MALLOC( A, magmaFloatComplex, matsize );
-    TESTING_MALLOC( X, magmaFloatComplex, vecsize );
-    TESTING_MALLOC( Ycublas, magmaFloatComplex, vecsize );
-    TESTING_MALLOC( Ymagma,  magmaFloatComplex, vecsize );
+    TESTING_MALLOC_CPU( A,       magmaFloatComplex, matsize );
+    TESTING_MALLOC_CPU( X,       magmaFloatComplex, vecsize );
+    TESTING_MALLOC_CPU( Ycublas, magmaFloatComplex, vecsize );
+    TESTING_MALLOC_CPU( Ymagma,  magmaFloatComplex, vecsize );
     for(i=0; i<num_gpus; i++)
     {     
-    TESTING_MALLOC( Y[i], magmaFloatComplex, vecsize );
+        TESTING_MALLOC_CPU( Y[i], magmaFloatComplex, vecsize );
     }
 
     magma_setdevice(0);
-    TESTING_DEVALLOC( dA, magmaFloatComplex, matsize );
-    TESTING_DEVALLOC( dYcublas, magmaFloatComplex, vecsize );
+    TESTING_MALLOC_DEV( dA,       magmaFloatComplex, matsize );
+    TESTING_MALLOC_DEV( dYcublas, magmaFloatComplex, vecsize );
 
     for(i=0; i<num_gpus; i++)
     {      
-      n_local[i] = ((N/nb)/num_gpus)*nb;
-      if (i < (N/nb)%num_gpus)
-        n_local[i] += nb;
-      else if (i == (N/nb)%num_gpus)
-        n_local[i] += N%nb;
-
-      magma_setdevice(i);
-
-      TESTING_DEVALLOC( d_lA[i], magmaFloatComplex, LDA*n_local[i] );// potentially bugged 
-      TESTING_DEVALLOC( dX[i], magmaFloatComplex, vecsize );
-      TESTING_DEVALLOC( dY[i], magmaFloatComplex, vecsize );
-      
-      printf("device %2d n_local = %4d\n", (int) i, (int) n_local[i]); 
-
+        n_local[i] = ((N/nb)/num_gpus)*nb;
+        if (i < (N/nb)%num_gpus)
+            n_local[i] += nb;
+        else if (i == (N/nb)%num_gpus)
+            n_local[i] += N%nb;
+        
+        magma_setdevice(i);
+        
+        TESTING_MALLOC_DEV( d_lA[i], magmaFloatComplex, LDA*n_local[i] );// potentially bugged 
+        TESTING_MALLOC_DEV( dX[i],   magmaFloatComplex, vecsize );
+        TESTING_MALLOC_DEV( dY[i],   magmaFloatComplex, vecsize );
+        
+        printf("device %2d n_local = %4d\n", (int) i, (int) n_local[i]); 
     }
     magma_setdevice(0);
 
       
 
-///////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
     /* Initialize the matrix */
     lapackf77_clarnv( &ione, ISEED, &matsize, A );
-    /* Make A hermitian */
-    { 
-        magma_int_t i, j;
-        for(i=0; i<N; i++) {
-            A[i*LDA+i] = MAGMA_C_MAKE( MAGMA_C_REAL(A[i*LDA+i]), 0. );
-            for(j=0; j<i; j++)
-                A[i*LDA+j] = cuConjf(A[j*LDA+i]);
-        }
-    }
-        
+    magma_cmake_hermitian( N, A, LDA );
 
-      blocks    = N / nb + (N % nb != 0);
-      workspace = LDA * (blocks + 1);
-      TESTING_MALLOC(    C_work, magmaFloatComplex, workspace );
-      for(i=0; i<num_gpus; i++){
-             magma_setdevice(i);  
-             TESTING_DEVALLOC( dC_work[i], magmaFloatComplex, workspace );
-             //fillZero(dC_work[i], workspace);
-      }
+    blocks = N / nb + (N % nb != 0);
+    lwork = LDA * (blocks + 1);
+    TESTING_MALLOC_CPU( C_work, magmaFloatComplex, lwork );
+    for(i=0; i<num_gpus; i++){
+           magma_setdevice(i);  
+           TESTING_MALLOC_DEV( dC_work[i], magmaFloatComplex, lwork );
+           //fillZero(dC_work[i], lwork);
+    }
       
      magma_setdevice(0);
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
    
     fp = fopen ("results_chemv_mgpu.csv", "w") ;
     if( fp == NULL ){ printf("Couldn't open output file\n"); exit(1);}
@@ -308,14 +264,14 @@ int main(int argc, char **argv)
        { 
 
         magmablas_chemv2_mgpu_32_offset( uplo, m, alpha, d_lA, lda, dX, incx, beta, dY, incx, 
-                dC_work, workspace, num_gpus, nb, offset);
+                dC_work, lwork, num_gpus, nb, offset);
  
         }
         else // nb = 64
        { 
 
         magmablas_chemv2_mgpu_offset( uplo, m, alpha, d_lA, lda, dX, incx, beta, dY, incx, 
-                dC_work, workspace, num_gpus, nb, offset);
+                dC_work, lwork, num_gpus, nb, offset);
  
         }
     
@@ -421,27 +377,25 @@ int main(int argc, char **argv)
     fclose( fp ) ; 
 
     /* Free Memory */
-    TESTING_FREE( A );
-    TESTING_FREE( X );
-    TESTING_FREE( Ycublas );
-    TESTING_FREE( Ymagma );
-    TESTING_FREE( C_work );
+    TESTING_FREE_CPU( A );
+    TESTING_FREE_CPU( X );
+    TESTING_FREE_CPU( Ycublas );
+    TESTING_FREE_CPU( Ymagma  );
+    TESTING_FREE_CPU( C_work  );
 
-    TESTING_DEVFREE( dA );
-    TESTING_DEVFREE( dYcublas );
+    magma_setdevice(0);
+    TESTING_FREE_DEV( dA );
+    TESTING_FREE_DEV( dYcublas );
     
     for(i=0; i<num_gpus; i++)
     { 
-        TESTING_FREE( Y[i] );
+        TESTING_FREE_CPU( Y[i] );
         magma_setdevice(i);
 
-        TESTING_DEVFREE( d_lA[i] );
-        TESTING_DEVFREE( dX[i] );
-        TESTING_DEVFREE( dY[i] );
-
-
-        TESTING_DEVFREE( dC_work[i] );
-
+        TESTING_FREE_DEV( d_lA[i]    );
+        TESTING_FREE_DEV( dX[i]      );
+        TESTING_FREE_DEV( dY[i]      );
+        TESTING_FREE_DEV( dC_work[i] );
     }
 
     magma_setdevice(0);
@@ -450,6 +404,5 @@ int main(int argc, char **argv)
 
     /* Free device */
     TESTING_FINALIZE();
-#endif
     return 0;
 }        

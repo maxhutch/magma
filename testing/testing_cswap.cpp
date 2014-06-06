@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:45:53 2013
+       @generated c Tue Dec 17 13:18:56 2013
        @author Mark Gates
 */
 // includes, system
@@ -98,16 +98,17 @@ int main( int argc, char** argv)
             // for each swap, does 2N loads and 2N stores
             gbytes = sizeof(magmaFloatComplex) * 4.*N*nb / 1e9;
             
-            TESTING_HOSTALLOC( h_A1, magmaFloatComplex, lda*N );
-            TESTING_HOSTALLOC( h_A2, magmaFloatComplex, lda*N );
-            TESTING_HOSTALLOC( h_R1, magmaFloatComplex, lda*N );
-            TESTING_HOSTALLOC( h_R2, magmaFloatComplex, lda*N );
+            TESTING_MALLOC_PIN( h_A1, magmaFloatComplex, lda*N );
+            TESTING_MALLOC_PIN( h_A2, magmaFloatComplex, lda*N );
+            TESTING_MALLOC_PIN( h_R1, magmaFloatComplex, lda*N );
+            TESTING_MALLOC_PIN( h_R2, magmaFloatComplex, lda*N );
             
-            TESTING_MALLOC( ipiv,  magma_int_t, nb );
-            TESTING_MALLOC( ipiv2, magma_int_t, nb );
-            TESTING_DEVALLOC( d_ipiv, magma_int_t, nb );
-            TESTING_DEVALLOC( d_A1, magmaFloatComplex, ldda*N );
-            TESTING_DEVALLOC( d_A2, magmaFloatComplex, ldda*N );
+            TESTING_MALLOC_CPU( ipiv,  magma_int_t, nb );
+            TESTING_MALLOC_CPU( ipiv2, magma_int_t, nb );
+            
+            TESTING_MALLOC_DEV( d_ipiv, magma_int_t, nb );
+            TESTING_MALLOC_DEV( d_A1, magmaFloatComplex, ldda*N );
+            TESTING_MALLOC_DEV( d_A2, magmaFloatComplex, ldda*N );
             
             for( j=0; j < nb; j++ ) {
                 ipiv[j] = (magma_int_t) ((rand()*1.*N) / (RAND_MAX * 1.)) + 1;
@@ -414,15 +415,17 @@ int main( int argc, char** argv)
                    cpu_perf,
                    (check == 0 ? "ok" : "* failures") );
             
-            TESTING_HOSTFREE( h_A1 );
-            TESTING_HOSTFREE( h_A2 );
-            TESTING_HOSTFREE( h_R1 );
-            TESTING_HOSTFREE( h_R2 );
-            TESTING_DEVFREE(  d_A1 );
-            TESTING_DEVFREE(  d_A2 );
-            TESTING_FREE( ipiv  );
-            TESTING_FREE( ipiv2 );
-            TESTING_DEVFREE( d_ipiv );
+            TESTING_FREE_PIN( h_A1 );
+            TESTING_FREE_PIN( h_A2 );
+            TESTING_FREE_PIN( h_R1 );
+            TESTING_FREE_PIN( h_R2 );
+            
+            TESTING_FREE_CPU( ipiv  );
+            TESTING_FREE_CPU( ipiv2 );
+            
+            TESTING_FREE_DEV( d_ipiv );
+            TESTING_FREE_DEV( d_A1 );
+            TESTING_FREE_DEV( d_A2 );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

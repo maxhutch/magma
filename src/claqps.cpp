@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:44:29 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 
@@ -24,11 +24,11 @@ magma_claqps(magma_int_t m, magma_int_t n, magma_int_t offset,
              magmaFloatComplex *F,  magma_int_t ldf,
              magmaFloatComplex *dF, magma_int_t lddf)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -79,10 +79,10 @@ magma_claqps(magma_int_t m, magma_int_t n, magma_int_t offset,
     TAU     (output) COMPLEX array, dimension (KB)
             The scalar factors of the elementary reflectors.
 
-    VN1     (input/output) DOUBLE PRECISION array, dimension (N)
+    VN1     (input/output) REAL array, dimension (N)
             The vector with the partial column norms.
 
-    VN2     (input/output) DOUBLE PRECISION array, dimension (N)
+    VN2     (input/output) REAL array, dimension (N)
             The vector with the exact column norms.
 
     AUXV    (input/output) COMPLEX array, dimension (NB)

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated d Wed Aug 14 12:18:10 2013
+    @generated d Tue Dec 17 13:18:57 2013
 
 */
 
@@ -39,9 +39,9 @@ int main( int argc, char** argv)
     TESTING_INIT_MGPU();
 
     double *h_A, *h_Ainit, *h_B, *h_Binit, *h_work;
-#if defined(PRECISION_z) || defined(PRECISION_c)
+    #if defined(PRECISION_z) || defined(PRECISION_c)
     double *rwork;
-#endif
+    #endif
     double *w1, *w2, result;
     magma_int_t *iwork;
     double mgpu_time, gpu_time, cpu_time;
@@ -86,7 +86,7 @@ int main( int argc, char** argv)
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[i];
             n2     = N*N;
-#if defined(PRECISION_z) || defined(PRECISION_c)
+            #if defined(PRECISION_z) || defined(PRECISION_c)
             magma_int_t lwork = 2*N + N*N;
             magma_int_t lrwork = 1 + 5*N +2*N*N;
             // MKL's dsygvd has a bug for small N - it looks like what is returned by a 
@@ -95,20 +95,21 @@ int main( int argc, char** argv)
             // to pass this check.  
             if (N<32)
                 lwork = 34*32;
-#else
+            #else
             magma_int_t lwork  = 1 + 6*N + 2*N*N;
-#endif
+            #endif
             magma_int_t liwork = 3 + 5*N;
 
-            TESTING_HOSTALLOC(h_A, double, n2);
-            TESTING_HOSTALLOC(h_B, double, n2);
-            TESTING_MALLOC(   w1,  double         ,  N);
-            TESTING_MALLOC(   w2,  double         ,  N);
-            TESTING_HOSTALLOC(h_work, double,  lwork);
-#if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_HOSTALLOC( rwork,          double, lrwork);
-#endif
-            TESTING_MALLOC(    iwork,     magma_int_t, liwork);
+            TESTING_MALLOC_PIN( h_A,    double, n2    );
+            TESTING_MALLOC_PIN( h_B,    double, n2    );
+            TESTING_MALLOC_PIN( h_work, double, lwork );
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+            TESTING_MALLOC_PIN( rwork, double, lrwork );
+            #endif
+
+            TESTING_MALLOC_CPU( w1,    double, N );
+            TESTING_MALLOC_CPU( w2,    double, N );
+            TESTING_MALLOC_CPU( iwork, magma_int_t, liwork );
 
             printf("  N     CPU Time(s)    GPU Time(s)   MGPU Time(s) \n");
             printf("==================================================\n");
@@ -116,17 +117,12 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
             lapackf77_dlarnv( &ione, ISEED, &n2, h_B );
-            /* increase the diagonal */
-            {
-                for(magma_int_t i=0; i<N; i++) {
-                    MAGMA_D_SET2REAL( h_B[i*N+i], ( MAGMA_D_REAL(h_B[i*N+i]) + 1.*N ) );
-                    MAGMA_D_SET2REAL( h_A[i*N+i], MAGMA_D_REAL(h_A[i*N+i]) );
-                }
-            }
+            magma_dmake_hpd( N, h_B, N );
+            magma_dmake_symmetric( N, h_A, N );
 
             if((opts.warmup)||( checkres )){
-                TESTING_MALLOC(h_Ainit, double, n2);
-                TESTING_MALLOC(h_Binit, double, n2);
+                TESTING_MALLOC_CPU( h_Ainit, double, n2 );
+                TESTING_MALLOC_CPU( h_Binit, double, n2 );
                 lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_Ainit, &N );
                 lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_Binit, &N );
             }
@@ -136,14 +132,14 @@ int main( int argc, char** argv)
                 // ==================================================================
                 // Warmup using MAGMA.
                 // ==================================================================
-                magma_dsygvd_m(opts.ngpu, itype, jobz, uplo,
-                               N, h_A, N, h_B, N, w1,
-                               h_work, lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                               rwork, lrwork,
-#endif
-                               iwork, liwork,
-                               &info);
+                magma_dsygvd_m( opts.ngpu, itype, jobz, uplo,
+                                N, h_A, N, h_B, N, w1,
+                                h_work, lwork,
+                                #if defined(PRECISION_z) || defined(PRECISION_c)
+                                rwork, lrwork,
+                                #endif
+                                iwork, liwork,
+                                &info);
                 lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_Ainit, &N, h_A, &N );
                 lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_Binit, &N, h_B, &N );
             }
@@ -153,14 +149,14 @@ int main( int argc, char** argv)
             // ===================================================================
 
             start = get_current_time();
-            magma_dsygvd_m(opts.ngpu, itype, jobz, uplo,
-                           N, h_A, N, h_B, N, w1,
-                           h_work, lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                           rwork, lrwork,
-#endif
-                           iwork, liwork,
-                           &info);
+            magma_dsygvd_m( opts.ngpu, itype, jobz, uplo,
+                            N, h_A, N, h_B, N, w1,
+                            h_work, lwork,
+                            #if defined(PRECISION_z) || defined(PRECISION_c)
+                            rwork, lrwork,
+                            #endif
+                            iwork, liwork,
+                            &info);
             end = get_current_time();
 
             if(info != 0)
@@ -179,9 +175,9 @@ int main( int argc, char** argv)
                  | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
                  =================================================================== */
 
-#if defined(PRECISION_d) || defined(PRECISION_s)
+                #if defined(PRECISION_d) || defined(PRECISION_s)
                 double *rwork = h_work + N*N;
-#endif
+                #endif
 
                 result = 1.;
                 result /= lapackf77_dlansy("1",&uplo, &N, h_Ainit, &N, rwork);
@@ -219,9 +215,9 @@ int main( int argc, char** argv)
                 magma_dsygvd(itype, jobz, uplo,
                              N, h_A, N, h_B, N, w2,
                              h_work, lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                             #if defined(PRECISION_z) || defined(PRECISION_c)
                              rwork, lrwork,
-#endif
+                             #endif
                              iwork, liwork,
                              &info);
                 end = get_current_time();
@@ -239,9 +235,9 @@ int main( int argc, char** argv)
                 lapackf77_dsygvd(&itype, &jobz, &uplo,
                                  &N, h_Ainit, &N, h_Binit, &N, w2,
                                  h_work, &lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                                 #if defined(PRECISION_z) || defined(PRECISION_c)
                                  rwork, &lrwork,
-#endif
+                                 #endif
                                  iwork, &liwork,
                                  &info);
                 end = get_current_time();
@@ -281,19 +277,20 @@ int main( int argc, char** argv)
             }
 
             /* Memory clean up */
-            TESTING_HOSTFREE(   h_A);
-            TESTING_HOSTFREE(   h_B);
-            TESTING_FREE(        w1);
-            TESTING_FREE(        w2);
-            TESTING_FREE(     iwork);
-            TESTING_HOSTFREE(h_work);
-#if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_HOSTFREE( rwork);
-#endif
+            TESTING_FREE_PIN( h_A    );
+            TESTING_FREE_PIN( h_B    );
+            TESTING_FREE_PIN( h_work );
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+            TESTING_FREE_PIN( rwork  );
+            #endif
+            
+            TESTING_FREE_CPU( w1    );
+            TESTING_FREE_CPU( w2    );
+            TESTING_FREE_CPU( iwork );
 
             if((opts.warmup)||( checkres )){
-                TESTING_FREE(   h_Ainit);
-                TESTING_FREE(   h_Binit);
+                TESTING_FREE_CPU( h_Ainit );
+                TESTING_FREE_CPU( h_Binit );
             }
         }
         if ( opts.niter > 1 ) {

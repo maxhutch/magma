@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c
        @author Stan Tomov
@@ -33,11 +33,11 @@ magma_zgeev_m(
     magmaDoubleComplex *work, magma_int_t lwork,
     double *rwork, magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -164,7 +164,7 @@ magma_zgeev_m(
     nb = magma_get_zgehrd_nb( n );
     if (*info == 0) {
         minwrk = (1+nb)*n;
-        work[0] = MAGMA_Z_MAKE( (double) minwrk, 0. );
+        work[0] = MAGMA_Z_MAKE( minwrk, 0 );
 
         if (lwork < minwrk && ! lquery) {
             *info = -12;
@@ -367,7 +367,7 @@ magma_zgeev_m(
             tmp = z__1;
             cblas_zscal( n, CBLAS_SADDR(tmp), vl(0,i), 1 );
             d__1 = MAGMA_Z_REAL( *vl(k,i) );
-            MAGMA_Z_SET2REAL( z__1, d__1 );
+            z__1 = MAGMA_Z_MAKE( d__1, 0 );
             *vl(k,i) = z__1;
         }
     }
@@ -396,7 +396,7 @@ magma_zgeev_m(
             tmp = z__1;
             cblas_zscal( n, CBLAS_SADDR(tmp), vr(0,i), 1 );
             d__1 = MAGMA_Z_REAL( *vr(k,i) );
-            MAGMA_Z_SET2REAL( z__1, d__1 );
+            z__1 = MAGMA_Z_MAKE( d__1, 0 );
             *vr(k,i) = z__1;
         }
     }

@@ -1,0 +1,16 @@
+# check for ATLAS + LAPACK directories and give user hint how to set them
+ifeq ($(LAPACKDIR),)
+$(error Set $$LAPACKDIR, preferably in your environment, e.g., run "export LAPACKDIR=/opt/lapack" in ~/.bashrc, or "setenv LAPACKDIR /opt/lapack" in ~/.cshrc)
+endif
+
+ifeq ($(ATLASDIR),)
+$(error Set $$ATLASDIR, preferably in your environment, e.g., run "export ATLASDIR=/opt/atlas" in ~/.bashrc, or "setenv ATLASDIR /opt/atlas" in ~/.cshrc)
+endif
+
+ifeq ($(wildcard $(LAPACKDIR)),)
+$(error $$LAPACKDIR=$(LAPACKDIR) does not exist. Please set $$LAPACKDIR to where ACML is installed.)
+endif
+
+ifeq ($(wildcard $(ATLASDIR)),)
+$(error $$ATLASDIR=$(ATLASDIR) does not exist. Please set $$ATLASDIR to where CBLAS is installed.)
+endif

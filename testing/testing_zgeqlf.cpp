@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -58,14 +58,15 @@ int main( int argc, char** argv)
             
             // query for workspace size
             lwork = -1;
-            lapackf77_zgeqlf(&M, &N, h_A, &M, tau, tmp, &lwork, &info);
+            lapackf77_zgeqlf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
             lwork = (magma_int_t)MAGMA_Z_REAL( tmp[0] );
             lwork = max( lwork, N*nb );
             
-            TESTING_MALLOC(    tau, magmaDoubleComplex, min_mn );
-            TESTING_MALLOC(    h_A, magmaDoubleComplex, n2     );
-            TESTING_HOSTALLOC( h_R, magmaDoubleComplex, n2     );
-            TESTING_MALLOC( h_work, magmaDoubleComplex, lwork );
+            TESTING_MALLOC_CPU( tau,    magmaDoubleComplex, min_mn );
+            TESTING_MALLOC_CPU( h_A,    magmaDoubleComplex, n2     );
+            TESTING_MALLOC_CPU( h_work, magmaDoubleComplex, lwork  );
+            
+            TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, n2     );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
@@ -103,10 +104,11 @@ int main( int argc, char** argv)
             printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
                    (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
             
-            TESTING_FREE( tau );
-            TESTING_FREE( h_A );
-            TESTING_HOSTFREE( h_R );
-            TESTING_FREE( h_work );
+            TESTING_FREE_CPU( tau    );
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( h_work );
+            
+            TESTING_FREE_PIN( h_R    );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

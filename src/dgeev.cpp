@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal d -> s
        @author Stan Tomov
@@ -21,6 +21,12 @@
  */
 #define VERSION3
 
+/*
+ * TREVC version 1 - LAPACK
+ * TREVC version 2 - new blocked LAPACK
+ */
+#define TREVC_VERSION 2
+
 extern "C" magma_int_t
 magma_dgeev(
     char jobvl, char jobvr, magma_int_t n,
@@ -31,11 +37,11 @@ magma_dgeev(
     double *work, magma_int_t lwork,
     magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -106,7 +112,8 @@ magma_dgeev(
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
     LWORK   (input) INTEGER
-            The dimension of the array WORK.  LWORK >= (1+nb)*N.
+            The dimension of the array WORK.  LWORK >= (2+nb)*N.
+            For optimal performance, LWORK >= (2+2*nb)*N.
 
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -232,7 +239,7 @@ magma_dgeev(
         magma_dgehrd2( n, ilo, ihi, A, lda,
                        &work[itau], &work[iwrk], liwrk, &ierr );
     #elif defined(VERSION3)
-        // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored,
+        // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored,
         magma_dgehrd( n, ilo, ihi, A, lda,
                       &work[itau], &work[iwrk], liwrk, dT, &ierr );
     #endif
@@ -251,7 +258,7 @@ magma_dgeev(
             lapackf77_dorghr( &n, &ilo, &ihi, vl, &ldvl, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
-            // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored
+            // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_dorghr( n, ilo, ihi, vl, ldvl, &work[itau], dT, nb, &ierr );
         #endif
 
@@ -282,7 +289,7 @@ magma_dgeev(
             lapackf77_dorghr( &n, &ilo, &ihi, vr, &ldvr, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
-            // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored
+            // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_dorghr( n, ilo, ihi, vr, ldvr, &work[itau], dT, nb, &ierr );
         #endif
 
@@ -310,8 +317,14 @@ magma_dgeev(
     if (wantvl || wantvr) {
         /* Compute left and/or right eigenvectors
          * (Workspace: need 4*N) */
+        liwrk = lwork - iwrk;
+        #if TREVC_VERSION == 1
         lapackf77_dtrevc( side, "B", select, &n, A, &lda, vl, &ldvl,
                           vr, &ldvr, &n, &nout, &work[iwrk], &ierr );
+        #elif TREVC_VERSION == 2
+        lapackf77_dtrevc3( side, "B", select, &n, A, &lda, vl, &ldvl,
+                           vr, &ldvr, &n, &nout, &work[iwrk], &liwrk, &ierr );
+        #endif
     }
 
     if (wantvl) {

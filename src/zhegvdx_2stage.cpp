@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -27,11 +27,11 @@ magma_zhegvdx_2stage(magma_int_t itype, char jobz, char range, char uplo, magma_
                      magma_int_t *iwork, magma_int_t liwork, 
                      magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

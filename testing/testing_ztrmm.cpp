@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -75,12 +75,12 @@ int main( int argc, char** argv)
             sizeA = lda*Ak;
             sizeB = ldb*N;
             
-            TESTING_MALLOC( h_A,  magmaDoubleComplex, lda*Ak );
-            TESTING_MALLOC( h_B,  magmaDoubleComplex, ldb*N  );
-            TESTING_MALLOC( h_Bcublas, magmaDoubleComplex, ldb*N  );
+            TESTING_MALLOC_CPU( h_A,       magmaDoubleComplex, lda*Ak );
+            TESTING_MALLOC_CPU( h_B,       magmaDoubleComplex, ldb*N  );
+            TESTING_MALLOC_CPU( h_Bcublas, magmaDoubleComplex, ldb*N  );
             
-            TESTING_DEVALLOC( d_A, magmaDoubleComplex, ldda*Ak );
-            TESTING_DEVALLOC( d_B, magmaDoubleComplex, lddb*N  );
+            TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*Ak );
+            TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*N  );
             
             /* Initialize the matrices */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, h_A );
@@ -138,12 +138,12 @@ int main( int argc, char** argv)
                        cublas_perf, 1000.*cublas_time);
             }
             
-            TESTING_FREE( h_A  );
-            TESTING_FREE( h_B  );
-            TESTING_FREE( h_Bcublas );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_CPU( h_Bcublas );
             
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

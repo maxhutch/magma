@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Raffaele Solca
        
-       @generated s Wed Aug 14 12:16:15 2013
+       @generated s Tue Dec 17 13:18:36 2013
 */
 #include "common_magma.h"
 
@@ -32,20 +32,20 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
                char range, float vl, float vu,
                magma_int_t il, magma_int_t iu, magma_int_t* info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        .. Scalar Arguments ..
       CHARACTER          RANGE
       INTEGER            IL, IU, CUTPNT, INFO, LDQ, N
-      DOUBLE PRECISION   RHO, VL, VU
+      REAL   RHO, VL, VU
        ..
        .. Array Arguments ..
       INTEGER            INDXQ( * ), iwork[* )
-      DOUBLE PRECISION   D( * ), Q( LDQ, * ), WORK( * ), DWORK( * )
+      REAL   D( * ), Q( LDQ, * ), WORK( * ), DWORK( * )
        ..
 
     Purpose
@@ -74,7 +74,7 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
     problem.
     
     The final stage consists of computing the updated eigenvectors
-    sirectly using the updated eigenvalues.  The eigenvectors for
+    directly using the updated eigenvalues.  The eigenvectors for
     the current problem are multiplied with the eigenvectors from
     the overall problem.
 
@@ -83,11 +83,11 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
     N       (input) INTEGER
             The dimension of the symmetric tridiagonal matrix.  N >= 0.
             
-    D       (input/output) DOUBLE PRECISION array, dimension (N)
+    D       (input/output) REAL array, dimension (N)
             On entry, the eigenvalues of the rank-1-perturbed matrix.
             On exit, the eigenvalues of the repaired matrix.
             
-    Q       (input/output) DOUBLE PRECISION array, dimension (LDQ,N)
+    Q       (input/output) REAL array, dimension (LDQ,N)
             On entry, the eigenvectors of the rank-1-perturbed matrix.
             On exit, the eigenvectors of the repaired tridiagonal matrix.
             
@@ -101,18 +101,18 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
             subproblems back into sorted order,
             i.e. D( INDXQ( I = 1, N ) ) will be in ascending order.
             
-    RHO     (input) DOUBLE PRECISION
+    RHO     (input) REAL
             The subdiagonal entry used to create the rank-1 modification.
             
     CUTPNT  (input) INTEGER
             The location of the last eigenvalue in the leading sub-matrix.
             min(1,N) <= CUTPNT <= N/2.
             
-    WORK    (workspace) DOUBLE PRECISION array, dimension (4*N + N**2)
+    WORK    (workspace) REAL array, dimension (4*N + N**2)
             
     IWORK   (workspace) INTEGER array, dimension (4*N)
             
-    DWORK   (devices workspaces) DOUBLE PRECISION array of arrays,
+    DWORK   (devices workspaces) REAL array of arrays,
             dimension NRGPU.
             if NRGPU = 1 the dimension of the first workspace
             should be (3*N*N/2+3*N)
@@ -129,8 +129,8 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
                    will be found.
             = 'I': the IL-th through IU-th eigenvalues will be found.
 
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
+    VL      (input) REAL
+    VU      (input) REAL
             if RANGE='V', the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = 'A' or 'I'.

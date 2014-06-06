@@ -1,34 +1,45 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.0) --
+#   -- MAGMA (version 1.4.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      August 2013
+#      December 2013
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = .
 include ./Makefile.internal
 -include Makefile.local
 
-.PHONY: all lib libmagma libmagmablas test clean cleanall install shared
 
+# print CUDA architectures being compiled
+# (if this goes in Makefile.internal, it gets printed for each sub-dir)
+ifneq ($(findstring Tesla, $(GPU_TARGET)),)
+    $(info compile for CUDA arch 1.x (Tesla))
+endif
+ifneq ($(findstring Fermi, $(GPU_TARGET)),)
+    $(info compile for CUDA arch 2.x (Fermi))
+endif
+ifneq ($(findstring Kepler, $(GPU_TARGET)),)
+    $(info compile for CUDA arch 3.x (Kepler))
+endif
+
+
+.PHONY: all lib libmagma test clean cleanall install shared
+
+.DEFAULT_GOAL := all
 all: lib test
 
-lib: libmagma libmagmablas
+lib: libmagma
 
-# libmagmablas is not a true dependency, but adding it forces parallel make
-# to do one directory at a time, making output less confusing.
-libmagma: libmagmablas
+libmagma:
+	@echo ======================================== magmablas
+	( cd magmablas      && $(MAKE) )
 	@echo ======================================== src
 	( cd src            && $(MAKE) )
 	@echo ======================================== control
 	( cd control        && $(MAKE) )
 	@echo ======================================== interface
 	( cd interface_cuda && $(MAKE) )
-
-libmagmablas:
-	@echo ======================================== magmablas
-	( cd magmablas      && $(MAKE) )
 
 libquark:
 	@echo ======================================== quark
@@ -89,8 +100,8 @@ install: lib dir
 #       pkgconfig
 	cat $(MAGMA_DIR)/lib/pkgconfig/magma.pc.in | \
 	    sed -e s:@INSTALL_PREFIX@:"$(prefix)": | \
-	    sed -e s:@INCLUDES@:"$(INC)":     | \
-	    sed -e s:@LIBEXT@:"$(LIBEXT)":               | \
+	    sed -e s:@INCLUDES@:"$(INC)":          | \
+	    sed -e s:@LIBEXT@:"$(LIBEXT)":         | \
 	    sed -e s:@MAGMA_REQUIRED@::              \
 	    > $(prefix)/lib/pkgconfig/magma.pc
 

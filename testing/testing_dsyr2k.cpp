@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:45:48 2013
+       @generated d Tue Dec 17 13:18:56 2013
        @author Chongxiao Cao
 */
 // includes, system
@@ -81,14 +81,14 @@ int main( int argc, char** argv)
             sizeB = ldb*Ak;
             sizeC = ldc*N;
             
-            TESTING_MALLOC( h_A,  double, lda*Ak );
-            TESTING_MALLOC( h_B,  double, ldb*Bk );
-            TESTING_MALLOC( h_C,  double, ldc*N  );
-            TESTING_MALLOC( h_Ccublas, double, ldc*N  );
+            TESTING_MALLOC_CPU( h_A,       double, lda*Ak );
+            TESTING_MALLOC_CPU( h_B,       double, ldb*Bk );
+            TESTING_MALLOC_CPU( h_C,       double, ldc*N  );
+            TESTING_MALLOC_CPU( h_Ccublas, double, ldc*N  );
             
-            TESTING_DEVALLOC( d_A, double, ldda*Ak );
-            TESTING_DEVALLOC( d_B, double, lddb*Bk );
-            TESTING_DEVALLOC( d_C, double, lddc*N  );
+            TESTING_MALLOC_DEV( d_A, double, ldda*Ak );
+            TESTING_MALLOC_DEV( d_B, double, lddb*Bk );
+            TESTING_MALLOC_DEV( d_C, double, lddc*N  );
             
             /* Initialize the matrices */
             lapackf77_dlarnv( &ione, ISEED, &sizeA, h_A );
@@ -148,14 +148,14 @@ int main( int argc, char** argv)
                        cublas_perf, 1000.*cublas_time);
             }
             
-            TESTING_FREE( h_A  );
-            TESTING_FREE( h_B  );
-            TESTING_FREE( h_C  );
-            TESTING_FREE( h_Ccublas );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_CPU( h_C );
+            TESTING_FREE_CPU( h_Ccublas );
             
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
-            TESTING_DEVFREE( d_C );
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
+            TESTING_FREE_DEV( d_C );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

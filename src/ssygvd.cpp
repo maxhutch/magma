@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated s Tue Aug 13 16:44:46 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -20,11 +20,11 @@ magma_ssygvd(magma_int_t itype, char jobz, char uplo, magma_int_t n,
              float *w, float *work, magma_int_t lwork,
              magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -93,7 +93,7 @@ magma_ssygvd(magma_int_t itype, char jobz, char uplo, magma_int_t n,
     LDB     (input) INTEGER
             The leading dimension of the array B.  LDB >= max(1,N).
 
-    W       (output) DOUBLE PRECISION array, dimension (N)
+    W       (output) REAL array, dimension (N)
             If INFO = 0, the eigenvalues in ascending order.
 
     WORK    (workspace/output) COMPLEX*16 array, dimension (MAX(1,LWORK))

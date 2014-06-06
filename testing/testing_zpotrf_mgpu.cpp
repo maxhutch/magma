@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
 */
@@ -63,8 +63,8 @@ int main( int argc, char** argv )
             }
             
             // Allocate host memory for the matrix
-            TESTING_MALLOC(    h_A, magmaDoubleComplex, n2 );
-            TESTING_HOSTALLOC( h_R, magmaDoubleComplex, n2 );
+            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, n2 );
+            TESTING_MALLOC_PIN( h_R, magmaDoubleComplex, n2 );
             
             // Allocate device memory
             // matrix is distributed by block-rows or block-columns
@@ -73,7 +73,7 @@ int main( int argc, char** argv )
             max_size = nb*(1+N/(nb*ngpu)) * nb*((N+nb-1)/nb);
             for( int dev=0; dev < ngpu; dev++ ) {
                 magma_setdevice( dev );
-                TESTING_DEVALLOC( d_lA[dev], magmaDoubleComplex, max_size );
+                TESTING_MALLOC_DEV( d_lA[dev], magmaDoubleComplex, max_size );
             }
             
             /* Initialize the matrix */
@@ -137,11 +137,11 @@ int main( int argc, char** argv )
                        (int) N, gpu_perf, gpu_time );
             }
             
-            TESTING_FREE( h_A );
-            TESTING_HOSTFREE( h_R );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_PIN( h_R );
             for( int dev=0; dev < ngpu; dev++ ){
                 magma_setdevice( dev );
-                TESTING_DEVFREE( d_lA[dev] );
+                TESTING_FREE_DEV( d_lA[dev] );
             }
         }
         if ( opts.niter > 1 ) {

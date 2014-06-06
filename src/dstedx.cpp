@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Raffaele Solca
        
@@ -20,11 +20,11 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
              double* work, magma_int_t lwork, magma_int_t* iwork, magma_int_t liwork,
              double* dwork, magma_int_t* info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        .. Scalar Arguments ..
       CHARACTER          RANGE

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:45:25 2013
+       @generated d Tue Dec 17 13:18:45 2013
        @author Mark Gates
        @author Azzam Haidar 
 */
@@ -67,10 +67,10 @@
              TRANS = 'C' or 'c', K specifies the number of rows of the
              matrices A and B. K must be at least zero.
 
-    ALPHA    (input) COMPLEX*16.
+    ALPHA    (input) DOUBLE PRECISION.
              On entry, ALPHA specifies the scalar alpha.
 
-    dA       (input) COMPLEX*16 array of DIMENSION ( LDA, ka ), where ka is
+    dA       (input) DOUBLE PRECISION array of DIMENSION ( LDA, ka ), where ka is
              k when TRANS = 'N' or 'n', and is n otherwise.
              Before entry with TRANS = 'N' or 'n', the leading n by k
              part of the array A must contain the matrix A, otherwise
@@ -89,7 +89,7 @@
              Row offset to start sub-matrix of dA. Uses dA(aoffset:aoffset+n, :).
              0 <= aoffset < lda.
 
-    dB       (input) COMPLEX*16 array of DIMENSION ( LDB, kb ), where kb is
+    dB       (input) DOUBLE PRECISION array of DIMENSION ( LDB, kb ), where kb is
              k when TRANS = 'N' or 'n', and is n otherwise.
              Before entry with TRANS = 'N' or 'n', the leading n by k
              part of the array B must contain the matrix B, otherwise
@@ -111,7 +111,7 @@
     BETA     (input) DOUBLE PRECISION.
              On entry, BETA specifies the scalar beta.
 
-    dC       (input/output) COMPLEX*16 array of DIMENSION ( LDC, n ).
+    dC       (input/output) DOUBLE PRECISION array of DIMENSION ( LDC, n ).
              Before entry with UPLO = 'U' or 'u', the leading n by n
              upper triangular part of the array C must contain the upper
              triangular part of the symmetric matrix and the strictly

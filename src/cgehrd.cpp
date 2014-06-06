@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:44:50 2013
+       @generated c Tue Dec 17 13:18:36 2013
        @author Stan Tomov
        @author Mark Gates
 */
@@ -21,11 +21,11 @@ magma_cgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
              magmaFloatComplex *dT,
              magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -144,7 +144,7 @@ magma_cgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
 
     *info = 0;
     iws = n*nb;
-    MAGMA_C_SET2REAL( work[0], (float) iws );
+    work[0] = MAGMA_C_MAKE( iws, 0 );
 
     lquery = lwork == -1;
     if (n < 0) {
@@ -264,7 +264,7 @@ magma_cgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     // add 1 to i for 1-based index
     i += 1;
     lapackf77_cgehd2(&n, &i, &ihi, A, &lda, tau, work, &iinfo);
-    MAGMA_C_SET2REAL( work[0], (float) iws );
+    work[0] = MAGMA_C_MAKE( iws, 0 );
     
     magma_free( dwork );
     magma_free_cpu( T );

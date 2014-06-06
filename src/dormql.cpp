@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
 
-       @generated d Tue Aug 13 16:44:28 2013
+       @generated d Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -21,11 +21,11 @@ magma_dormql(const char side, const char trans,
              double *work, magma_int_t lwork,
              magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -111,29 +111,11 @@ magma_dormql(const char side, const char trans,
     char side_[2] = {side, 0};
     char trans_[2] = {trans, 0};
 
-    /* Allocate work space on the GPU */
-    double *dwork, *dc;
-    magma_dmalloc( &dc, (m)*(n) );
-    magma_dmalloc( &dwork, 2*(m + 64)*64 );
-
-    /* Copy matrix C from the CPU to the GPU */
-    magma_dsetmatrix( m, n, c, ldc, dc, m );
-    dc -= (1 + m);
-
-    magma_int_t a_offset, c_dim1, c_offset, i__4;
-    
-    magma_int_t i__;
-    double t[2*4160]        /* was [65][64] */;
+    magma_int_t i__4, i__;
+    double *T;
     magma_int_t i1, i2, i3, ib, nb, mi, ni, nq, nw;
     magma_int_t iinfo, ldwork, lwkopt=0;
     int lquery, left, notran;
-
-    a_offset = 1 + lda;
-    a -= a_offset;
-    --tau;
-    c_dim1 = ldc;
-    c_offset = 1 + c_dim1;
-    c -= c_offset;
 
     *info  = 0;
     left   = lapackf77_lsame(side_, "L");
@@ -173,7 +155,7 @@ magma_dormql(const char side, const char trans,
             nb = 64;
             lwkopt = nw * nb;
         }
-        MAGMA_D_SET2REAL( work[0], lwkopt );
+        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
         
         if (lwork < nw && ! lquery) {
             *info = -12;
@@ -193,12 +175,27 @@ magma_dormql(const char side, const char trans,
         return *info;
     }
 
+    /* Allocate work space on the GPU */
+    double *dwork, *dc;
+    magma_dmalloc( &dc, (m)*(n) );
+    magma_dmalloc( &dwork, 2*(m + 64)*64 );
+
+    /* Copy matrix C from the CPU to the GPU */
+    magma_dsetmatrix( m, n, c, ldc, dc, m );
+
+    /* work space on CPU */
+    if (  MAGMA_SUCCESS != magma_dmalloc_pinned( &T, 2*nb*nb ) ) {
+        magma_free( dc );
+        magma_free( dwork );
+        *info = MAGMA_ERR_HOST_ALLOC;
+        return *info;
+    }
     ldwork = nw;
 
     if ( nb >= k ) {
         /* Use CPU code */
-        lapackf77_dormql(side_, trans_, &m, &n, &k, &a[a_offset], &lda, &tau[1],
-                         &c[c_offset], &ldc, work, &lwork, &iinfo);
+        lapackf77_dormql(side_, trans_, &m, &n, &k, a, &lda, tau,
+                         c, &ldc, work, &lwork, &iinfo);
     }
     else {
         /* Use hybrid CPU-GPU code */
@@ -229,14 +226,14 @@ magma_dormql(const char side, const char trans,
                H = H(i+ib-1) . . . H(i+1) H(i) */
             i__4 = nq - k + i__ + ib - 1;
             lapackf77_dlarft("Backward", "Columnwise", &i__4, &ib,
-                             &a[i__ * lda + 1], &lda, &tau[i__], t, &ib);
+                             &a[(i__-1) * lda], &lda, &tau[i__-1], T, &ib);
             
             /* 1) Put 0s in the lower triangular part of A;
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
-            dpanel_to_q('L', ib, &a[i__ + i__ * lda], lda, t+ib*ib);
-            magma_dsetmatrix( i__4, ib, &a[1 + i__ * lda], lda, dwork, i__4 );
-            dq_to_panel('L', ib, &a[i__ + i__ * lda], lda, t+ib*ib);
+            dpanel_to_q('L', ib, &a[i__-1 + (i__-1) * lda], lda, T+ib*ib);
+            magma_dsetmatrix( i__4, ib, &a[(i__-1) * lda], lda, dwork, i__4 );
+            dq_to_panel('L', ib, &a[i__-1 + (i__-1) * lda], lda, T+ib*ib);
             
             if (left) {
                 /* H or H' is applied to C(1:m-k+i+ib-1,1:n) */
@@ -248,21 +245,22 @@ magma_dormql(const char side, const char trans,
             }
             
             /* Apply H or H'; First copy T to the GPU */
-            magma_dsetmatrix( ib, ib, t, ib, dwork+i__4*ib, ib );
+            magma_dsetmatrix( ib, ib, T, ib, dwork+i__4*ib, ib );
             magma_dlarfb_gpu(side, trans, MagmaBackward, MagmaColumnwise,
                              mi, ni, ib,
                              dwork, i__4, dwork+i__4*ib, ib,
-                             &dc[1+m], m,
+                             dc, m,
                              dwork+i__4*ib + ib*ib, ldwork);
         }
 
-        magma_dgetmatrix( m, n, &dc[1+m], m, &c[c_offset], ldc );
+        magma_dgetmatrix( m, n, dc, m, c, ldc );
     }
-    MAGMA_D_SET2REAL( work[0], lwkopt );
+    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
 
-    dc += (1 + m);
     magma_free( dc );
     magma_free( dwork );
+
+    magma_free_pinned( T);  
 
     return *info;
 } /* magma_dormql */

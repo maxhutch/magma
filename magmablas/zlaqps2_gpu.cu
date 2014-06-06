@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -15,11 +15,11 @@
 #define PRECISION_z
 
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
    #define BLOCK_SIZE 512
-#else
-   #define BLOCK_SIZE 768
-#endif
+//#else
+//   #define BLOCK_SIZE 768
+//#endif
 
 __global__ void magma_zgemv_kernel3(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
                                     magmaDoubleComplex *c, magmaDoubleComplex *dwork,
@@ -37,11 +37,11 @@ magma_zlaqps2_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
              magmaDoubleComplex *F,  magma_int_t ldf)
 {
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -228,10 +228,10 @@ magma_zlaqps2_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             i__2 = k + 1;
             /* left-looking update of rows,                     *
              * since F=A'v with original A, so no right-looking */
-            magmablas_zgemm( MagmaNoTrans, MagmaConjTrans, ione, i__1, i__2,
-                             c_neg_one, A(rk, 0  ), lda,
-                                        F(k+1,0  ), ldf,
-                             c_one,     A(rk, k+1), lda ); 
+            magma_zgemm( MagmaNoTrans, MagmaConjTrans, ione, i__1, i__2,
+                         c_neg_one, A(rk, 0  ), lda,
+                                    F(k+1,0  ), ldf,
+                         c_one,     A(rk, k+1), lda ); 
         }
         
         /* Update partial column norms. */

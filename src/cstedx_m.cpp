@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
 
-       @generated c Wed Aug 14 12:16:16 2013
+       @generated c Tue Dec 17 13:18:36 2013
 */
 #include "common_magma.h"
 
@@ -19,11 +19,11 @@ magma_cstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
                magma_int_t* iwork, magma_int_t liwork,
                magma_int_t* info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -48,8 +48,8 @@ magma_cstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
     N       (input) INTEGER
             The dimension of the symmetric tridiagonal matrix.  N >= 0.
 
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
+    VL      (input) REAL
+    VU      (input) REAL
             If RANGE='V', the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = 'A' or 'I'.
@@ -61,11 +61,11 @@ magma_cstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
             Not referenced if RANGE = 'A' or 'V'.
 
-    D       (input/output) DOUBLE PRECISION array, dimension (N)
+    D       (input/output) REAL array, dimension (N)
             On entry, the diagonal elements of the tridiagonal matrix.
             On exit, if INFO = 0, the eigenvalues in ascending order.
 
-    E       (input/output) DOUBLE PRECISION array, dimension (N-1)
+    E       (input/output) REAL array, dimension (N-1)
             On entry, the subdiagonal elements of the tridiagonal matrix.
             On exit, E has been destroyed.
 
@@ -76,7 +76,7 @@ magma_cstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
     LDZ     (input) INTEGER
             The leading dimension of the array Z. LDZ >= max(1,N).
 
-    RWORK   (workspace/output) DOUBLE PRECISION array,
+    RWORK   (workspace/output) REAL array,
                                            dimension (LRWORK)
             On exit, if INFO = 0, RWORK(1) returns the optimal LRWORK.
 
@@ -191,7 +191,7 @@ magma_cstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
     if(n==0)
         return *info;
     if(n==1){
-        MAGMA_C_SET2REAL(*z,1.);
+        *z = MAGMA_C_MAKE( 1, 0 );
         return *info;
     }
 
@@ -210,7 +210,7 @@ magma_cstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
 
         for(j=0; j<n; ++j)
             for(i=0; i<n; ++i){
-                MAGMA_C_SET2REAL(*(z+i+ldz*j), *(rwork+i+n*j));
+                *(z+i+ldz*j) = MAGMA_C_MAKE( *(rwork+i+n*j), 0 );
             }
     }
 

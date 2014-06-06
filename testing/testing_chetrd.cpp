@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
 
-       @generated c Wed Aug 14 12:18:09 2013
+       @generated c Tue Dec 17 13:18:56 2013
 
 */
 
@@ -66,21 +66,22 @@ int main( int argc, char** argv)
             lda    = N;
             n2     = N*lda;
             nb     = magma_get_chetrd_nb(N);
-            lwork  = N*nb; /* We suppose the magma nb is bigger than lapack nb */
+            lwork  = N*nb;  /* We suppose the magma nb is bigger than lapack nb */
             gflops = FLOPS_CHETRD( N ) / 1e9;
             
-            TESTING_MALLOC(    h_A,     magmaFloatComplex, lda*N );
-            TESTING_HOSTALLOC( h_R,     magmaFloatComplex, lda*N );
-            TESTING_HOSTALLOC( h_work,  magmaFloatComplex, lwork );
-            TESTING_MALLOC(    tau,     magmaFloatComplex, N     );
-            TESTING_MALLOC(    diag,    float, N   );
-            TESTING_MALLOC(    offdiag, float, N-1 );
+            TESTING_MALLOC_PIN( h_R,     magmaFloatComplex, lda*N );
+            TESTING_MALLOC_PIN( h_work,  magmaFloatComplex, lwork );
+            
+            TESTING_MALLOC_CPU( h_A,     magmaFloatComplex, lda*N );
+            TESTING_MALLOC_CPU( tau,     magmaFloatComplex, N     );
+            TESTING_MALLOC_CPU( diag,    float, N   );
+            TESTING_MALLOC_CPU( offdiag, float, N-1 );
             
             if ( opts.check ) {
-                TESTING_MALLOC( h_Q,  magmaFloatComplex, lda*N );
-                TESTING_MALLOC( work, magmaFloatComplex, 2*N*N );
+                TESTING_MALLOC_CPU( h_Q,  magmaFloatComplex, lda*N );
+                TESTING_MALLOC_CPU( work, magmaFloatComplex, 2*N*N );
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_MALLOC( rwork, float, N );
+                TESTING_MALLOC_CPU( rwork, float, N );
                 #endif
             }
             
@@ -162,23 +163,23 @@ int main( int argc, char** argv)
                         ( ( (result[0]*eps < tol) && (result[1]*eps < tol) ) ? "" : "  failed")  );
                 status |= ! (result[0]*eps < tol);
                 status |= ! (result[1]*eps < tol);
-
             } else {
                 printf("     ---             ---\n");
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( tau );
-            TESTING_FREE( diag );
-            TESTING_FREE( offdiag );
-            TESTING_HOSTFREE( h_R );
-            TESTING_HOSTFREE( h_work );
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_work );
+            
+            TESTING_FREE_CPU( h_A     );
+            TESTING_FREE_CPU( tau     );
+            TESTING_FREE_CPU( diag    );
+            TESTING_FREE_CPU( offdiag );
             
             if ( opts.check ) {
-                TESTING_FREE( h_Q );
-                TESTING_FREE( work );
+                TESTING_FREE_CPU( h_Q  );
+                TESTING_FREE_CPU( work );
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_FREE( rwork );
+                TESTING_FREE_CPU( rwork );
                 #endif
             }
         }

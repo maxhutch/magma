@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Wed Aug 14 12:16:44 2013
+       @generated s Tue Dec 17 13:18:45 2013
 
 */
 #include "common_magma.h"
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
    #define BLOCK_SIZE 512
-#else
-   #define BLOCK_SIZE 768
-#endif
+//#else
+//   #define BLOCK_SIZE 768
+//#endif
 
 __global__ void 
 magma_strmv_kernel2(const float *T, int ldt,
@@ -47,11 +47,11 @@ magma_sgeqr2x4_gpu(magma_int_t *m, magma_int_t *n, float *dA,
                    float *dT, float *ddA,
                    float *dwork, magma_int_t *info, magma_queue_t stream)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose   
     =======   

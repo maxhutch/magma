@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated d Wed Aug 14 12:18:09 2013
+    @generated d Tue Dec 17 13:18:57 2013
 
 */
 
@@ -47,10 +47,10 @@ int main( int argc, char** argv)
 
     double *h_A, *h_R, *h_work;
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+    #if defined(PRECISION_z) || defined(PRECISION_c)
     double *rwork;
     magma_int_t lrwork;
-#endif
+    #endif
 
     /* Matrix size */
     double *w1, *w2;
@@ -94,33 +94,29 @@ int main( int argc, char** argv)
         for( magma_int_t iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[i];
             n2     = N*N;
-#if defined(PRECISION_z) || defined(PRECISION_c)
+            #if defined(PRECISION_z) || defined(PRECISION_c)
             lwork  = magma_dbulge_get_lq2(N, threads) + 2*N + N*N;
             lrwork = 1 + 5*N +2*N*N;
-#else
+            #else
             lwork  = magma_dbulge_get_lq2(N, threads) + 1 + 6*N + 2*N*N;
-#endif
+            #endif
             liwork = 3 + 5*N;
 
             /* Allocate host memory for the matrix */
-            TESTING_MALLOC(   h_A, double, n2);
-            TESTING_MALLOC(    w1, double         ,  N);
-            TESTING_MALLOC(    w2, double         ,  N);
-            TESTING_HOSTALLOC(h_R, double, n2);
-            TESTING_HOSTALLOC(h_work, double,  lwork);
-#if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_HOSTALLOC( rwork,          double, lrwork);
-#endif
-            TESTING_MALLOC(    iwork,     magma_int_t, liwork);
-
+            TESTING_MALLOC_CPU( h_A,   double, n2 );
+            TESTING_MALLOC_CPU( w1,    double, N );
+            TESTING_MALLOC_CPU( w2,    double, N );
+            TESTING_MALLOC_CPU( iwork, magma_int_t, liwork );
+            
+            TESTING_MALLOC_PIN( h_R,    double, n2    );
+            TESTING_MALLOC_PIN( h_work, double, lwork );
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+            TESTING_MALLOC_PIN( rwork, double, lrwork );
+            #endif
 
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
-            /* Make diagonal real */
-            for(int i=0; i<N; i++) {
-                MAGMA_D_SET2REAL( h_A[i*N+i], MAGMA_D_REAL(h_A[i*N+i]) );
-            }
-
+            magma_dmake_symmetric( N, h_A, N );
 
             magma_int_t m1 = 0;
             double vl = 0;
@@ -144,9 +140,9 @@ int main( int argc, char** argv)
                                     vl, vu, il, iu, 
                                     &m1, w1, 
                                     h_work, lwork, 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                                    #if defined(PRECISION_z) || defined(PRECISION_c)
                                     rwork, lrwork, 
-#endif         
+                                    #endif
                                     iwork, liwork, 
                                     &info);
                
@@ -157,9 +153,9 @@ int main( int argc, char** argv)
                                     vl, vu, il, iu, 
                                     &m1, w1, 
                                     h_work, lwork, 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                                    #if defined(PRECISION_z) || defined(PRECISION_c)
                                     rwork, lrwork, 
-#endif         
+                                    #endif
                                     iwork, liwork, 
                                     &info);
                 }
@@ -178,9 +174,9 @@ int main( int argc, char** argv)
                                 vl, vu, il, iu, 
                                 &m1, w1, 
                                 h_work, lwork, 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                                #if defined(PRECISION_z) || defined(PRECISION_c)
                                 rwork, lrwork, 
-#endif     
+                                #endif
                                 iwork, liwork, 
                                 &info);
            
@@ -191,9 +187,9 @@ int main( int argc, char** argv)
                                 vl, vu, il, iu, 
                                 &m1, w1, 
                                 h_work, lwork, 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                                #if defined(PRECISION_z) || defined(PRECISION_c)
                                 rwork, lrwork, 
-#endif     
+                                #endif
                                 iwork, liwork, 
                                 &info);
             }
@@ -220,9 +216,9 @@ int main( int argc, char** argv)
                 lapackf77_dsyevd("N", "L", &N, 
                                 h_A, &N, w2, 
                                 h_work, &lwork, 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                                #if defined(PRECISION_z) || defined(PRECISION_c)
                                 rwork, &lrwork, 
-#endif     
+                                #endif
                                 iwork, &liwork, 
                                 &info);
                 info_solution = check_solution(N, w2, w1, eps);
@@ -246,15 +242,16 @@ int main( int argc, char** argv)
             printf("%5d %5d     %6.2f\n",
                    (int) N, (int) m1, gpu_time);
 
-            TESTING_FREE(       h_A);
-            TESTING_FREE(        w1);
-            TESTING_FREE(        w2);
-#if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_HOSTFREE( rwork);
-#endif
-            TESTING_FREE(     iwork);
-            TESTING_HOSTFREE(h_work);
-            TESTING_HOSTFREE(   h_R);
+            TESTING_FREE_CPU( h_A   );
+            TESTING_FREE_CPU( w1    );
+            TESTING_FREE_CPU( w2    );
+            TESTING_FREE_CPU( iwork );
+            
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_work );
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+            TESTING_FREE_PIN( rwork  );
+            #endif
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
-       @generated c Tue Aug 13 16:44:18 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -17,11 +17,11 @@ magma_cgeqrf2_gpu( magma_int_t m, magma_int_t n,
                    magmaFloatComplex *tau,
                    magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -180,6 +180,7 @@ magma_cgeqrf2_gpu( magma_int_t m, magma_int_t n,
             magma_csetmatrix_async( rows, ib, work_ref(i), ldwork, dA(i,i), ldda, stream[0] );
 
             /* download the T matrix */
+            magma_queue_sync( stream[1] );
             magma_csetmatrix_async( ib, ib, hwork, ib, dwork, lddwork, stream[0] );
             magma_queue_sync( stream[0] );
 

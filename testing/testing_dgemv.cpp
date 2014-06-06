@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:45:47 2013
+       @generated d Tue Dec 17 13:18:55 2013
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -62,15 +62,15 @@ int main(int argc, char **argv)
             sizeX = incx*Xm;
             sizeY = incy*Ym;
             
-            TESTING_MALLOC( A, double, sizeA );
-            TESTING_MALLOC( X, double, sizeX );
-            TESTING_MALLOC( Y, double, sizeY );
-            TESTING_MALLOC( Ycublas, double, sizeY );
-            TESTING_MALLOC( Ymagma,  double, sizeY );
+            TESTING_MALLOC_CPU( A,       double, sizeA );
+            TESTING_MALLOC_CPU( X,       double, sizeX );
+            TESTING_MALLOC_CPU( Y,       double, sizeY );
+            TESTING_MALLOC_CPU( Ycublas, double, sizeY );
+            TESTING_MALLOC_CPU( Ymagma,  double, sizeY );
             
-            TESTING_DEVALLOC( dA, double, sizeA );
-            TESTING_DEVALLOC( dX, double, sizeX );
-            TESTING_DEVALLOC( dY, double, sizeY );
+            TESTING_MALLOC_DEV( dA, double, sizeA );
+            TESTING_MALLOC_DEV( dX, double, sizeX );
+            TESTING_MALLOC_DEV( dY, double, sizeY );
             
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &sizeA, A );
@@ -130,15 +130,15 @@ int main(int argc, char **argv)
                    cpu_perf,    1000.*cpu_time,
                    magma_error, cublas_error );
             
-            TESTING_FREE( A );
-            TESTING_FREE( X );
-            TESTING_FREE( Y );
-            TESTING_FREE( Ycublas );
-            TESTING_FREE( Ymagma );
+            TESTING_FREE_CPU( A );
+            TESTING_FREE_CPU( X );
+            TESTING_FREE_CPU( Y );
+            TESTING_FREE_CPU( Ycublas );
+            TESTING_FREE_CPU( Ymagma  );
             
-            TESTING_DEVFREE( dA );
-            TESTING_DEVFREE( dX );
-            TESTING_DEVFREE( dY );
+            TESTING_FREE_DEV( dA );
+            TESTING_FREE_DEV( dX );
+            TESTING_FREE_DEV( dY );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

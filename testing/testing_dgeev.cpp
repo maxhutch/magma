@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal d -> s
 
@@ -115,17 +115,18 @@ int main( int argc, char** argv)
             // generous workspace - required by dget22
             lwork = max( lwork, N*(5 + 2*N) );
             
-            TESTING_MALLOC( w1copy, magmaDoubleComplex, N );
-            TESTING_MALLOC( w2copy, magmaDoubleComplex, N );
-            TESTING_MALLOC( w1,  double, N );
-            TESTING_MALLOC( w2,  double, N );
-            TESTING_MALLOC( w1i, double, N );
-            TESTING_MALLOC( w2i, double, N );
-            TESTING_MALLOC( h_A, double, n2 );
-            TESTING_HOSTALLOC( h_R, double, n2 );
-            TESTING_HOSTALLOC( VL,  double, n2 );
-            TESTING_HOSTALLOC( VR,  double, n2 );
-            TESTING_HOSTALLOC( h_work, double, lwork );
+            TESTING_MALLOC_CPU( w1copy, magmaDoubleComplex, N );
+            TESTING_MALLOC_CPU( w2copy, magmaDoubleComplex, N );
+            TESTING_MALLOC_CPU( w1,  double, N  );
+            TESTING_MALLOC_CPU( w2,  double, N  );
+            TESTING_MALLOC_CPU( w1i, double, N  );
+            TESTING_MALLOC_CPU( w2i, double, N  );
+            TESTING_MALLOC_CPU( h_A, double, n2 );
+            
+            TESTING_MALLOC_PIN( h_R, double, n2 );
+            TESTING_MALLOC_PIN( VL,  double, n2 );
+            TESTING_MALLOC_PIN( VR,  double, n2 );
+            TESTING_MALLOC_PIN( h_work, double, lwork );
             
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
@@ -218,7 +219,7 @@ int main( int argc, char** argv)
                             tnrm = magma_dlapy2( cblas_dnrm2(N, &VR[j    *lda], ione),
                                                  cblas_dnrm2(N, &VR[(j+1)*lda], ione) );
                         
-                        result[1] = fmax(result[1], fmin(ulpinv, MAGMA_D_ABS(tnrm-1.)/ulp));
+                        result[1] = max( result[1], min( ulpinv, MAGMA_D_ABS(tnrm-1.)/ulp ));
                         
                         if (w1i[j] > 0.) {
                             vmx  = vrmx = 0.;
@@ -258,7 +259,7 @@ int main( int argc, char** argv)
                             tnrm = magma_dlapy2( cblas_dnrm2(N, &VL[j    *lda], ione),
                                                  cblas_dnrm2(N, &VL[(j+1)*lda], ione) );
                         
-                        result[3] = fmax(result[3], fmin(ulpinv, MAGMA_D_ABS(tnrm-1.)/ulp));
+                        result[3] = max( result[3], min( ulpinv, MAGMA_D_ABS(tnrm-1.)/ulp ));
                         
                         if (w1i[j] > 0.) {
                             vmx  = vrmx = 0.;
@@ -284,7 +285,7 @@ int main( int argc, char** argv)
                 // more extensive tests
                 // this is really slow because it calls magma_zgeev multiple times
                 double *LRE, DUM;
-                TESTING_HOSTALLOC( LRE, double, n2 );
+                TESTING_MALLOC_PIN( LRE, double, n2 );
                 
                 lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
                 lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
@@ -365,7 +366,7 @@ int main( int argc, char** argv)
                         if ( ! MAGMA_D_EQUAL( VL[j+jj*lda], LRE[j+jj*lda] ))
                             result[8] = 0;
                 
-                TESTING_HOSTFREE( LRE );
+                TESTING_FREE_PIN( LRE );
             }
             
             /* =====================================================================
@@ -427,38 +428,39 @@ int main( int argc, char** argv)
                 if ( result[1] != -1 ) { printf("        |  |VR(i)| - 1    |             = %8.2e %s\n", result[1], (result[1] < tol ? "  ok" : "  failed")); }
                 if ( result[2] != -1 ) { printf("        | A'* VL - VL * W'| / ( n |A| ) = %8.2e %s\n", result[2], (result[2] < tol ? "  ok" : "  failed")); }
                 if ( result[3] != -1 ) { printf("        |  |VL(i)| - 1    |             = %8.2e %s\n", result[3], (result[3] < tol ? "  ok" : "  failed")); }
-                if ( result[4] != -1 ) { printf("        W  (full) == W  (partial, W only)          %s\n", (result[4] == 1. ? "  ok" : "  failed"));         }
-                if ( result[5] != -1 ) { printf("        W  (full) == W  (partial, W and VR)        %s\n", (result[5] == 1. ? "  ok" : "  failed"));         }
-                if ( result[6] != -1 ) { printf("        W  (full) == W  (partial, W and VL)        %s\n", (result[6] == 1. ? "  ok" : "  failed"));         }
-                if ( result[7] != -1 ) { printf("        VR (full) == VR (partial, W and VR)        %s\n", (result[7] == 1. ? "  ok" : "  failed"));         }
-                if ( result[8] != -1 ) { printf("        VL (full) == VL (partial, W and VL)        %s\n", (result[8] == 1. ? "  ok" : "  failed"));         }
+                if ( result[4] != -1 ) { printf("        W  (full) == W  (partial, W only)          %s\n",         (result[4] == 1. ? "  ok" : "  failed")); }
+                if ( result[5] != -1 ) { printf("        W  (full) == W  (partial, W and VR)        %s\n",         (result[5] == 1. ? "  ok" : "  failed")); }
+                if ( result[6] != -1 ) { printf("        W  (full) == W  (partial, W and VL)        %s\n",         (result[6] == 1. ? "  ok" : "  failed")); }
+                if ( result[7] != -1 ) { printf("        VR (full) == VR (partial, W and VR)        %s\n",         (result[7] == 1. ? "  ok" : "  failed")); }
+                if ( result[8] != -1 ) { printf("        VL (full) == VL (partial, W and VL)        %s\n",         (result[8] == 1. ? "  ok" : "  failed")); }
                 
                 int newline = 0;
                 if ( result[0] != -1 ) { status |= ! (result[0] < tol);  newline = 1; }
                 if ( result[1] != -1 ) { status |= ! (result[1] < tol);  newline = 1; }
                 if ( result[2] != -1 ) { status |= ! (result[2] < tol);  newline = 1; }
                 if ( result[3] != -1 ) { status |= ! (result[3] < tol);  newline = 1; }
-                if ( result[4] != -1 ) { status |=   (result[4] != 1.);  newline = 1; }
-                if ( result[5] != -1 ) { status |=   (result[5] != 1.);  newline = 1; }
-                if ( result[6] != -1 ) { status |=   (result[6] != 1.);  newline = 1; }
-                if ( result[7] != -1 ) { status |=   (result[7] != 1.);  newline = 1; }
-                if ( result[8] != -1 ) { status |=   (result[8] != 1.);  newline = 1; }
+                if ( result[4] != -1 ) { status |= ! (result[4] == 1.);  newline = 1; }
+                if ( result[5] != -1 ) { status |= ! (result[5] == 1.);  newline = 1; }
+                if ( result[6] != -1 ) { status |= ! (result[6] == 1.);  newline = 1; }
+                if ( result[7] != -1 ) { status |= ! (result[7] == 1.);  newline = 1; }
+                if ( result[8] != -1 ) { status |= ! (result[8] == 1.);  newline = 1; }
                 if ( newline ) {
                     printf( "\n" );
                 }
             }
             
-            TESTING_FREE( w1copy );
-            TESTING_FREE( w2copy );
-            TESTING_FREE( w1  );
-            TESTING_FREE( w2  );
-            TESTING_FREE( w1i );
-            TESTING_FREE( w2i );
-            TESTING_FREE( h_A );
-            TESTING_HOSTFREE( h_R );
-            TESTING_HOSTFREE( VL  );
-            TESTING_HOSTFREE( VR  );
-            TESTING_HOSTFREE( h_work );
+            TESTING_FREE_CPU( w1copy );
+            TESTING_FREE_CPU( w2copy );
+            TESTING_FREE_CPU( w1  );
+            TESTING_FREE_CPU( w2  );
+            TESTING_FREE_CPU( w1i );
+            TESTING_FREE_CPU( w2i );
+            TESTING_FREE_CPU( h_A );
+            
+            TESTING_FREE_PIN( h_R );
+            TESTING_FREE_PIN( VL  );
+            TESTING_FREE_PIN( VR  );
+            TESTING_FREE_PIN( h_work );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

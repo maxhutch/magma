@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -23,11 +23,11 @@ magma_zheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
                  magmaDoubleComplex *work, magma_int_t lwork,
                  double *rwork, magma_int_t *iwork, magma_int_t *ifail, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -242,7 +242,7 @@ magma_zheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
     
     lopt = n * (nb + 1);
     
-    MAGMA_Z_SET2REAL(work[0],(double)lopt);
+    work[0] = MAGMA_Z_MAKE( lopt, 0 );
     
     if (lwork < lopt && ! lquery) {
         *info = -21;
@@ -436,7 +436,7 @@ magma_zheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
     }
     
     /* Set WORK(1) to optimal complex workspace size. */
-    work[1] = MAGMA_Z_MAKE((double) lopt, 0.);
+    work[1] = MAGMA_Z_MAKE( lopt, 0 );
     
     return *info;
     

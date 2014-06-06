@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Raffaele Solca
-       @generated s Tue Aug 13 16:44:38 2013
+       @generated s Tue Dec 17 13:18:36 2013
 */
 
 #ifdef _OPENMP
@@ -77,11 +77,11 @@ magma_slaex3_m(magma_int_t nrgpu,
             The location of the last eigenvalue in the leading submatrix.
             min(1,N) <= N1 <= N/2.
 
-    D       (output) DOUBLE PRECISION array, dimension (N)
+    D       (output) REAL array, dimension (N)
             D(I) contains the updated eigenvalues for
             1 <= I <= K.
 
-    Q       (output) DOUBLE PRECISION array, dimension (LDQ,N)
+    Q       (output) REAL array, dimension (LDQ,N)
             Initially the first K columns are used as workspace.
             On output the columns ??? to ??? contain
             the updated eigenvectors.
@@ -89,18 +89,18 @@ magma_slaex3_m(magma_int_t nrgpu,
     LDQ     (input) INTEGER
             The leading dimension of the array Q.  LDQ >= max(1,N).
 
-    RHO     (input) DOUBLE PRECISION
+    RHO     (input) REAL
             The value of the parameter in the rank one update equation.
             RHO >= 0 required.
 
-    DLAMDA  (input/output) DOUBLE PRECISION array, dimension (K)
+    DLAMDA  (input/output) REAL array, dimension (K)
             The first K elements of this array contain the old roots
             of the deflated updating problem.  These are the poles
             of the secular equation. May be changed on output by
             having lowest order bit set to zero on Cray X-MP, Cray Y-MP,
             Cray-2, or Cray C-90, as described above.
 
-    Q2      (input) DOUBLE PRECISION array, dimension (LDQ2, N)
+    Q2      (input) REAL array, dimension (LDQ2, N)
             The first K columns of this matrix contain the non-deflated
             eigenvectors for the split problem.
 
@@ -115,12 +115,12 @@ magma_slaex3_m(magma_int_t nrgpu,
             in Q, as described in INDX.  The fourth column type is any
             column which has been deflated.
 
-    W       (input/output) DOUBLE PRECISION array, dimension (K)
+    W       (input/output) REAL array, dimension (K)
             The first K elements of this array contain the components
             of the deflation-adjusted updating vector. Destroyed on
             output.
 
-    S       (workspace) DOUBLE PRECISION array, dimension (N1 + 1)*K
+    S       (workspace) REAL array, dimension (N1 + 1)*K
             Will contain the eigenvectors of the repaired matrix which
             will be multiplied by the previously accumulated eigenvectors
             to update the system.
@@ -130,7 +130,7 @@ magma_slaex3_m(magma_int_t nrgpu,
             subproblems back into sorted order,
             i.e. D( INDXQ( I = 1, N ) ) will be in ascending order.
 
-    DWORK   (devices workspaces) DOUBLE PRECISION array of arrays,
+    DWORK   (devices workspaces) REAL array of arrays,
             dimension NRGPU.
             if NRGPU = 1 the dimension of the first workspace
             should be (3*N*N/2+3*N)

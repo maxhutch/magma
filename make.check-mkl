@@ -1,0 +1,14 @@
+# check for MKL directory and give user hint how to set it
+ifeq ($(MKLROOT),)
+    vars_sh  := $(shell which icc 2>/dev/null | perl -pe 's|/bin.*/icc|/mkl/bin/mklvars.sh|')
+    vars_csh := $(shell which icc 2>/dev/null | perl -pe 's|/bin.*/icc|/mkl/bin/mklvars.csh|')
+    ifeq ($(vars_sh),)
+        vars_sh  := /opt/intel/composerxe/mkl/bin/mklvars.sh
+        vars_csh := /opt/intel/composerxe/mkl/bin/mklvars.csh
+    endif
+$(error Set $$MKLROOT, preferably in your environment, e.g., run "source $(vars_sh) intel64" in ~/.bashrc, or "source $(vars_csh) intel64" in ~/.cshrc)
+endif
+
+ifeq ($(wildcard $(MKLROOT)),)
+$(error $$MKLROOT=$(MKLROOT) does not exist. Please set $$MKLROOT to where CUDA is installed.)
+endif

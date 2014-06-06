@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
        @author Mark Gates
@@ -19,9 +19,9 @@ magma_zlarfb_gpu( char side, char trans, char direct, char storev,
                   magmaDoubleComplex *dC,          magma_int_t ldc,
                   magmaDoubleComplex *dwork,       magma_int_t ldwork )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Univ. of California Berkeley
-       August 2013
+       December 2013
 
     Purpose
     =======

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated c Wed Aug 14 12:16:18 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -27,11 +27,11 @@ magma_chegvdx_2stage(magma_int_t itype, char jobz, char range, char uplo, magma_
                      magma_int_t *iwork, magma_int_t liwork, 
                      magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -107,8 +107,8 @@ magma_chegvdx_2stage(magma_int_t itype, char jobz, char range, char uplo, magma_
     LDB     (input) INTEGER
             The leading dimension of the array B.  LDB >= max(1,N).
 
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
+    VL      (input) REAL
+    VU      (input) REAL
             If RANGE='V', the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = 'A' or 'I'.
@@ -124,7 +124,7 @@ magma_chegvdx_2stage(magma_int_t itype, char jobz, char range, char uplo, magma_
             The total number of eigenvalues found.  0 <= M <= N.
             If RANGE = 'A', M = N, and if RANGE = 'I', M = IU-IL+1.
 
-    W       (output) DOUBLE PRECISION array, dimension (N)
+    W       (output) REAL array, dimension (N)
             If INFO = 0, the eigenvalues in ascending order.
 
     WORK    (workspace/output) COMPLEX array, dimension (MAX(1,LWORK))
@@ -145,7 +145,7 @@ magma_chegvdx_2stage(magma_int_t itype, char jobz, char range, char uplo, magma_
             the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
-    RWORK   (workspace/output) DOUBLE PRECISION array, dimension (MAX(1,LRWORK))
+    RWORK   (workspace/output) REAL array, dimension (MAX(1,LRWORK))
             On exit, if INFO = 0, RWORK(1) returns the optimal LRWORK.
 
     LRWORK  (input) INTEGER

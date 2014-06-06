@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
  
        @author Mark Gates
        @precisions normal z -> s d c
@@ -24,7 +24,7 @@
 // copying vectors
 extern "C"
 void magma_setvector_internal(
-    magma_int_t n, size_t elemSize,
+    magma_int_t n, magma_int_t elemSize,
     void const* hx_src, magma_int_t incx,
     void*       dy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
@@ -40,7 +40,7 @@ void magma_setvector_internal(
 // --------------------
 extern "C"
 void magma_getvector_internal(
-    magma_int_t n, size_t elemSize,
+    magma_int_t n, magma_int_t elemSize,
     void const* dx_src, magma_int_t incx,
     void*       hy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
@@ -56,7 +56,7 @@ void magma_getvector_internal(
 // --------------------
 extern "C"
 void magma_setvector_async_internal(
-    magma_int_t n, size_t elemSize,
+    magma_int_t n, magma_int_t elemSize,
     void const* hx_src, magma_int_t incx,
     void*       dy_dst, magma_int_t incy,
     cudaStream_t stream,
@@ -73,7 +73,7 @@ void magma_setvector_async_internal(
 // --------------------
 extern "C"
 void magma_getvector_async_internal(
-    magma_int_t n, size_t elemSize,
+    magma_int_t n, magma_int_t elemSize,
     void const* dx_src, magma_int_t incx,
     void*       hy_dst, magma_int_t incy,
     cudaStream_t stream,
@@ -92,7 +92,7 @@ void magma_getvector_async_internal(
 // copying sub-matrices (contiguous columns)
 extern "C"
 void magma_setmatrix_internal(
-    magma_int_t m, magma_int_t n, size_t elemSize,
+    magma_int_t m, magma_int_t n, magma_int_t elemSize,
     void const* hA_src, magma_int_t lda,
     void*       dB_dst, magma_int_t ldb,
     const char* func, const char* file, int line )
@@ -108,7 +108,7 @@ void magma_setmatrix_internal(
 // --------------------
 extern "C"
 void magma_getmatrix_internal(
-    magma_int_t m, magma_int_t n, size_t elemSize,
+    magma_int_t m, magma_int_t n, magma_int_t elemSize,
     void const* dA_src, magma_int_t lda,
     void*       hB_dst, magma_int_t ldb,
     const char* func, const char* file, int line )
@@ -124,7 +124,7 @@ void magma_getmatrix_internal(
 // --------------------
 extern "C"
 void magma_setmatrix_async_internal(
-    magma_int_t m, magma_int_t n, size_t elemSize,
+    magma_int_t m, magma_int_t n, magma_int_t elemSize,
     void const* hA_src, magma_int_t lda,
     void*       dB_dst, magma_int_t ldb,
     cudaStream_t stream,
@@ -141,7 +141,7 @@ void magma_setmatrix_async_internal(
 // --------------------
 extern "C"
 void magma_getmatrix_async_internal(
-    magma_int_t m, magma_int_t n, size_t elemSize,
+    magma_int_t m, magma_int_t n, magma_int_t elemSize,
     void const* dA_src, magma_int_t lda,
     void*       hB_dst, magma_int_t ldb,
     cudaStream_t stream,
@@ -158,7 +158,7 @@ void magma_getmatrix_async_internal(
 // --------------------
 extern "C"
 void magma_copymatrix_internal(
-    magma_int_t m, magma_int_t n, size_t elemSize,
+    magma_int_t m, magma_int_t n, magma_int_t elemSize,
     void const* dA_src, magma_int_t lda,
     void*       dB_dst, magma_int_t ldb,
     const char* func, const char* file, int line )
@@ -174,7 +174,7 @@ void magma_copymatrix_internal(
 // --------------------
 extern "C"
 void magma_copymatrix_async_internal(
-    magma_int_t m, magma_int_t n, size_t elemSize,
+    magma_int_t m, magma_int_t n, magma_int_t elemSize,
     void const* dA_src, magma_int_t lda,
     void*       dB_dst, magma_int_t ldb,
     cudaStream_t stream,

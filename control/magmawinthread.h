@@ -18,15 +18,14 @@
 #ifndef MAGMAWINTHREAD_H
 #define MAGMAWINTHREAD_H
 
+#if defined( _WIN32 ) || defined( _WIN64 )
+
 #include <windows.h>
 
-/*
-typedef struct pthread_s {
-  HANDLE Hth;
-  unsigned IDth;
-  void *(*Fth) (void *);
-} pthread_t;
-*/
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct pthread_s {
   HANDLE hThread;
   unsigned int uThId;
@@ -74,4 +73,10 @@ MAGMA_DLLPORT int MAGMA_CDECL pthread_setconcurrency (int);
 
 MAGMA_DLLPORT unsigned int MAGMA_CDECL pthread_self_id(void);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* defined( _WIN32 ) || defined( _WIN64 ) */
+
+#endif /* MAGMAWINTHREAD_H */

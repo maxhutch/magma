@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
 
-       @generated s Wed Aug 14 12:16:20 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -20,11 +20,11 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, char jobz, char uplo, magma
                float *w, float *work, magma_int_t lwork,
                magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -93,7 +93,7 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, char jobz, char uplo, magma
     LDB     (input) INTEGER
             The leading dimension of the array B.  LDB >= max(1,N).
 
-    W       (output) DOUBLE PRECISION array, dimension (N)
+    W       (output) REAL array, dimension (N)
             If INFO = 0, the eigenvalues in ascending order.
 
     WORK    (workspace/output) COMPLEX*16 array, dimension (MAX(1,LWORK))
@@ -111,7 +111,7 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, char jobz, char uplo, magma
             the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
-    RWORK   (workspace/output) DOUBLE PRECISION array, dimension (MAX(1,LRWORK))
+    RWORK   (workspace/output) REAL array, dimension (MAX(1,LRWORK))
             On exit, if INFO = 0, RWORK(1) returns the optimal LRWORK.
 
     LRWORK  (input) INTEGER

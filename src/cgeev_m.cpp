@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:44:52 2013
+       @generated c Tue Dec 17 13:18:36 2013
        @author Stan Tomov
        @author Mark Gates
 */
@@ -33,11 +33,11 @@ magma_cgeev_m(
     magmaFloatComplex *work, magma_int_t lwork,
     float *rwork, magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -67,17 +67,17 @@ magma_cgeev_m(
     N       (input) INTEGER
             The order of the matrix A. N >= 0.
 
-    A       (input/output) COMPLEX*16 array, dimension (LDA,N)
+    A       (input/output) COMPLEX array, dimension (LDA,N)
             On entry, the N-by-N matrix A.
             On exit, A has been overwritten.
 
     LDA     (input) INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    W       (output) COMPLEX*16 array, dimension (N)
+    W       (output) COMPLEX array, dimension (N)
             W contains the computed eigenvalues.
 
-    VL      (output) COMPLEX*16 array, dimension (LDVL,N)
+    VL      (output) COMPLEX array, dimension (LDVL,N)
             If JOBVL = 'V', the left eigenvectors u(j) are stored one
             after another in the columns of VL, in the same order
             as their eigenvalues.
@@ -88,7 +88,7 @@ magma_cgeev_m(
             The leading dimension of the array VL.  LDVL >= 1; if
             JOBVL = 'V', LDVL >= N.
 
-    VR      (output) COMPLEX*16 array, dimension (LDVR,N)
+    VR      (output) COMPLEX array, dimension (LDVR,N)
             If JOBVR = 'V', the right eigenvectors v(j) are stored one
             after another in the columns of VR, in the same order
             as their eigenvalues.
@@ -99,7 +99,7 @@ magma_cgeev_m(
             The leading dimension of the array VR.  LDVR >= 1; if
             JOBVR = 'V', LDVR >= N.
 
-    WORK    (workspace/output) COMPLEX*16 array, dimension (MAX(1,LWORK))
+    WORK    (workspace/output) COMPLEX array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
     LWORK   (input) INTEGER
@@ -110,7 +110,7 @@ magma_cgeev_m(
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    RWORK   (workspace) DOUBLE PRECISION array, dimension (2*N)
+    RWORK   (workspace) REAL array, dimension (2*N)
 
     INFO    (output) INTEGER
             = 0:  successful exit
@@ -164,7 +164,7 @@ magma_cgeev_m(
     nb = magma_get_cgehrd_nb( n );
     if (*info == 0) {
         minwrk = (1+nb)*n;
-        work[0] = MAGMA_C_MAKE( (float) minwrk, 0. );
+        work[0] = MAGMA_C_MAKE( minwrk, 0 );
 
         if (lwork < minwrk && ! lquery) {
             *info = -12;
@@ -367,7 +367,7 @@ magma_cgeev_m(
             tmp = z__1;
             cblas_cscal( n, CBLAS_SADDR(tmp), vl(0,i), 1 );
             d__1 = MAGMA_C_REAL( *vl(k,i) );
-            MAGMA_C_SET2REAL( z__1, d__1 );
+            z__1 = MAGMA_C_MAKE( d__1, 0 );
             *vl(k,i) = z__1;
         }
     }
@@ -396,7 +396,7 @@ magma_cgeev_m(
             tmp = z__1;
             cblas_cscal( n, CBLAS_SADDR(tmp), vr(0,i), 1 );
             d__1 = MAGMA_C_REAL( *vr(k,i) );
-            MAGMA_C_SET2REAL( z__1, d__1 );
+            z__1 = MAGMA_C_MAKE( d__1, 0 );
             *vr(k,i) = z__1;
         }
     }

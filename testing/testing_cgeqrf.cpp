@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:46:07 2013
+       @generated c Tue Dec 17 13:18:57 2013
 */
 // includes, system
 #include <stdlib.h>
@@ -63,15 +63,17 @@ int main( int argc, char** argv)
             nb     = magma_get_cgeqrf_nb(M);
             gflops = FLOPS_CGEQRF( M, N ) / 1e9;
             
+            // query for workspace size
             lwork = -1;
-            lapackf77_cgeqrf(&M, &N, h_A, &M, tau, tmp, &lwork, &info);
+            lapackf77_cgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
             lwork = (magma_int_t)MAGMA_C_REAL( tmp[0] );
             lwork = max( lwork, max( N*nb, 2*nb*nb ));
             
-            TESTING_MALLOC(    tau, magmaFloatComplex, min_mn );
-            TESTING_MALLOC(    h_A, magmaFloatComplex, n2     );
-            TESTING_HOSTALLOC( h_R, magmaFloatComplex, n2     );
-            TESTING_MALLOC( h_work, magmaFloatComplex, lwork );
+            TESTING_MALLOC_CPU( tau,    magmaFloatComplex, min_mn );
+            TESTING_MALLOC_CPU( h_A,    magmaFloatComplex, n2     );
+            TESTING_MALLOC_CPU( h_work, magmaFloatComplex, lwork  );
+            
+            TESTING_MALLOC_PIN( h_R,    magmaFloatComplex, n2     );
             
             /* Initialize the matrix */
             for ( int j=0; j<4; j++ ) ISEED2[j] = ISEED[j]; // saving seeds
@@ -94,7 +96,7 @@ int main( int argc, char** argv)
                    Performs operation using LAPACK
                    =================================================================== */
                 magmaFloatComplex *tau;
-                TESTING_MALLOC( tau, magmaFloatComplex, min_mn );
+                TESTING_MALLOC_CPU( tau, magmaFloatComplex, min_mn );
                 cpu_time = magma_wtime();
                 lapackf77_cgeqrf(&M, &N, h_A, &lda, tau, h_work, &lwork, &info);
                 cpu_time = magma_wtime() - cpu_time;
@@ -102,7 +104,7 @@ int main( int argc, char** argv)
                 if (info != 0)
                     printf("lapackf77_cgeqrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                TESTING_FREE( tau );
+                TESTING_FREE_CPU( tau );
             }
 
             if ( opts.check == 1 ) {
@@ -113,10 +115,10 @@ int main( int argc, char** argv)
                 magmaFloatComplex *h_W1, *h_W2, *h_W3;
                 float *h_RW, results[2];
 
-                TESTING_MALLOC( h_W1, magmaFloatComplex, n2 ); // Q
-                TESTING_MALLOC( h_W2, magmaFloatComplex, n2 ); // R
-                TESTING_MALLOC( h_W3, magmaFloatComplex, lwork ); // WORK
-                TESTING_MALLOC( h_RW, float, M );  // RWORK
+                TESTING_MALLOC_CPU( h_W1, magmaFloatComplex, n2    ); // Q
+                TESTING_MALLOC_CPU( h_W2, magmaFloatComplex, n2    ); // R
+                TESTING_MALLOC_CPU( h_W3, magmaFloatComplex, lwork ); // WORK
+                TESTING_MALLOC_CPU( h_RW, float, M );  // RWORK
                 lapackf77_clarnv( &ione, ISEED2, &n2, h_A );
                 lapackf77_cqrt02( &M, &N, &min_mn, h_A, h_R, h_W1, h_W2, &lda, tau, h_W3, &lwork,
                                   h_RW, results );
@@ -134,11 +136,12 @@ int main( int argc, char** argv)
                 }
                 status |= ! (results[0] < tol);
 
-                TESTING_FREE( h_W1 );
-                TESTING_FREE( h_W2 );
-                TESTING_FREE( h_W3 );
-                TESTING_FREE( h_RW );
-            } else if ( opts.check == 2 ) {
+                TESTING_FREE_CPU( h_W1 );
+                TESTING_FREE_CPU( h_W2 );
+                TESTING_FREE_CPU( h_W3 );
+                TESTING_FREE_CPU( h_RW );
+            }
+            else if ( opts.check == 2 ) {
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
@@ -166,10 +169,11 @@ int main( int argc, char** argv)
                 }
             }
             
-            TESTING_FREE( tau );
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_work );
-            TESTING_HOSTFREE( h_R );
+            TESTING_FREE_CPU( tau    );
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( h_work );
+            
+            TESTING_FREE_PIN( h_R    );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

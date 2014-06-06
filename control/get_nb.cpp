@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Stan Tomov
        @author Mark Gates
@@ -22,6 +22,10 @@ extern "C" {
 // Optimal block sizes vary with GPU and, to lesser extent, CPU.
 // Kepler tuning was on K20c   705 MHz with SandyBridge 2.6 GHz host (bunsen).
 // Fermi  tuning was on S2050 1147 MHz with AMD Opteron 2.4 GHz host (romulus).
+
+// Unused arguments are commented out, like /*m*/, to silence compiler warnings,
+// especially on Windows.
+// Unreachable code should also be removed or commented out.
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for potrf based on m
@@ -94,22 +98,22 @@ magma_int_t magma_get_zpotrf_nb( magma_int_t m )
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for geqp3 based on m
 */
-magma_int_t magma_get_sgeqp3_nb( magma_int_t m )
+magma_int_t magma_get_sgeqp3_nb( magma_int_t /*m*/ )
 {
     return 32;
 }
 
-magma_int_t magma_get_dgeqp3_nb( magma_int_t m )
+magma_int_t magma_get_dgeqp3_nb( magma_int_t /*m*/ )
 {
     return 32;
 }
 
-magma_int_t magma_get_cgeqp3_nb( magma_int_t m )
+magma_int_t magma_get_cgeqp3_nb( magma_int_t /*m*/ )
 {
     return 32;
 }
 
-magma_int_t magma_get_zgeqp3_nb( magma_int_t m )
+magma_int_t magma_get_zgeqp3_nb( magma_int_t /*m*/ )
 {
     return 32;
 }
@@ -373,7 +377,7 @@ magma_int_t magma_get_zgehrd_nb( magma_int_t m )
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for sytrd based on m
 */
-magma_int_t magma_get_ssytrd_nb( magma_int_t m )
+magma_int_t magma_get_ssytrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -388,7 +392,7 @@ magma_int_t magma_get_ssytrd_nb( magma_int_t m )
     }
 }
 
-magma_int_t magma_get_dsytrd_nb( magma_int_t m )
+magma_int_t magma_get_dsytrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -405,7 +409,7 @@ magma_int_t magma_get_dsytrd_nb( magma_int_t m )
     }
 }
 
-magma_int_t magma_get_chetrd_nb( magma_int_t m )
+magma_int_t magma_get_chetrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -420,7 +424,7 @@ magma_int_t magma_get_chetrd_nb( magma_int_t m )
     }
 }
 
-magma_int_t magma_get_zhetrd_nb( magma_int_t m )
+magma_int_t magma_get_zhetrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -440,7 +444,7 @@ magma_int_t magma_get_zhetrd_nb( magma_int_t m )
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for gebrd based on m
 */
-magma_int_t magma_get_sgebrd_nb( magma_int_t m )
+magma_int_t magma_get_sgebrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -455,7 +459,7 @@ magma_int_t magma_get_sgebrd_nb( magma_int_t m )
     }
 }
 
-magma_int_t magma_get_dgebrd_nb( magma_int_t m )
+magma_int_t magma_get_dgebrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -470,7 +474,7 @@ magma_int_t magma_get_dgebrd_nb( magma_int_t m )
     }
 }
 
-magma_int_t magma_get_cgebrd_nb( magma_int_t m )
+magma_int_t magma_get_cgebrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -485,7 +489,7 @@ magma_int_t magma_get_cgebrd_nb( magma_int_t m )
     }
 }
 
-magma_int_t magma_get_zgebrd_nb( magma_int_t m )
+magma_int_t magma_get_zgebrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
@@ -549,7 +553,7 @@ magma_int_t magma_get_chegst_nb( magma_int_t m )
     }
 }
 
-magma_int_t magma_get_zhegst_nb( magma_int_t m )
+magma_int_t magma_get_zhegst_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler
@@ -566,22 +570,22 @@ magma_int_t magma_get_zhegst_nb( magma_int_t m )
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for getri based on m
 */
-magma_int_t magma_get_sgetri_nb( magma_int_t m )
+magma_int_t magma_get_sgetri_nb( magma_int_t /*m*/ )
 {
     return 64;
 }
 
-magma_int_t magma_get_dgetri_nb( magma_int_t m )
+magma_int_t magma_get_dgetri_nb( magma_int_t /*m*/ )
 {
     return 64;
 }
 
-magma_int_t magma_get_cgetri_nb( magma_int_t m )
+magma_int_t magma_get_cgetri_nb( magma_int_t /*m*/ )
 {
     return 64;
 }
 
-magma_int_t magma_get_zgetri_nb( magma_int_t m )
+magma_int_t magma_get_zgetri_nb( magma_int_t /*m*/ )
 {
     return 64;
 }
@@ -609,21 +613,14 @@ magma_int_t magma_get_zgesvd_nb( magma_int_t m )
     return magma_get_zgebrd_nb( m );
 }
 
-
-
-
-
-
-
-
-
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for sygst based on m
 */
-magma_int_t magma_get_ssygst_nb_m( magma_int_t m )
+magma_int_t magma_get_ssygst_nb_m( magma_int_t /*m*/ )
 {
     return 256; //to be updated
 
+    /*
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler
         if      (m <  4096) return 768;
@@ -636,12 +633,14 @@ magma_int_t magma_get_ssygst_nb_m( magma_int_t m )
     else {                     // 1.x
         return 64;
     }
+    */
 }
 
-magma_int_t magma_get_dsygst_nb_m( magma_int_t m )
+magma_int_t magma_get_dsygst_nb_m( magma_int_t /*m*/ )
 {
     return 256; //to be updated
 
+    /*
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler
         if      (m <  2048) return 384;
@@ -653,12 +652,14 @@ magma_int_t magma_get_dsygst_nb_m( magma_int_t m )
     else {                     // 1.x
         return 64;
     }
+    */
 }
 
-magma_int_t magma_get_chegst_nb_m( magma_int_t m )
+magma_int_t magma_get_chegst_nb_m( magma_int_t /*m*/ )
 {
     return 256; //to be updated
 
+    /*
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler
         if      (m <  2048) return 384;
@@ -670,12 +671,14 @@ magma_int_t magma_get_chegst_nb_m( magma_int_t m )
     else {                     // 1.x
         return 64;
     }
+    */
 }
 
-magma_int_t magma_get_zhegst_nb_m( magma_int_t m )
+magma_int_t magma_get_zhegst_nb_m( magma_int_t /*m*/ )
 {
     return 256; //to be updated
 
+    /*
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler
         return 384;
@@ -686,13 +689,8 @@ magma_int_t magma_get_zhegst_nb_m( magma_int_t m )
     else {                     // 1.x
         return 64;
     }
+    */
 }
-
-
-
-
-
-
 
 
     /////////////////////////////////////////
@@ -717,7 +715,7 @@ magma_int_t magma_get_sbulge_gcperf( )
         return 10000;
     }
 }
-//////////////////////////////////////////////////
+
 magma_int_t magma_get_dbulge_gcperf( )
 {
     magma_int_t arch = magma_getdevice_arch();
@@ -731,7 +729,7 @@ magma_int_t magma_get_dbulge_gcperf( )
         return 10000;
     }
 }
-//////////////////////////////////////////////////
+
 magma_int_t magma_get_cbulge_gcperf( )
 {
     magma_int_t arch = magma_getdevice_arch();
@@ -745,7 +743,7 @@ magma_int_t magma_get_cbulge_gcperf( )
         return 10000;
     }
 }
-//////////////////////////////////////////////////
+
 magma_int_t magma_get_zbulge_gcperf( )
 {
     magma_int_t arch = magma_getdevice_arch();
@@ -759,23 +757,22 @@ magma_int_t magma_get_zbulge_gcperf( )
         return 10000;
     }
 }
-//////////////////////////////////////////////////
 
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return smlsiz for the divide and conquewr routine dlaex0 dstedx zstedx
 */
 magma_int_t magma_get_smlsize_divideconquer()
-    {
-        return 128;
-    }
+{
+    return 128;
+}
 
 
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for  2 stage TRD
 */
-magma_int_t magma_get_sbulge_nb( magma_int_t m, magma_int_t nbthreads  )
+magma_int_t magma_get_sbulge_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -788,8 +785,8 @@ magma_int_t magma_get_sbulge_nb( magma_int_t m, magma_int_t nbthreads  )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-magma_int_t magma_get_dbulge_nb( magma_int_t m, magma_int_t nbthreads  )
+
+magma_int_t magma_get_dbulge_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -802,12 +799,12 @@ magma_int_t magma_get_dbulge_nb( magma_int_t m, magma_int_t nbthreads  )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-magma_int_t magma_get_cbulge_nb( magma_int_t m, magma_int_t nbthreads  )
+
+magma_int_t magma_get_cbulge_nb( magma_int_t /*m*/, magma_int_t nbthreads  )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
-        if(nbthreads>14)
+        if ( nbthreads > 14 )
             return 128;
         else
             return 64;
@@ -819,12 +816,12 @@ magma_int_t magma_get_cbulge_nb( magma_int_t m, magma_int_t nbthreads  )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-magma_int_t magma_get_zbulge_nb( magma_int_t m, magma_int_t nbthreads )
+
+magma_int_t magma_get_zbulge_nb( magma_int_t /*m*/, magma_int_t nbthreads )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
-        if(nbthreads>14)
+        if ( nbthreads > 14 )
             return 128;
         else
             return 64;
@@ -836,68 +833,66 @@ magma_int_t magma_get_zbulge_nb( magma_int_t m, magma_int_t nbthreads )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-//
+
+
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return Vblksiz for  2 stage TRD
 */
-magma_int_t magma_sbulge_get_Vblksiz( magma_int_t m, magma_int_t nb, magma_int_t nbthreads  )
+magma_int_t magma_sbulge_get_Vblksiz( magma_int_t /*m*/, magma_int_t nb, magma_int_t /*nbthreads*/  )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
-        return min(nb,128);
+        return min(nb, 128);
     }
     else {                     // 2.x Fermi or 1.x
-        return min(nb,64);
+        return min(nb, 64);
     }
 }
-//////////////////////////////////////////////////
-magma_int_t magma_dbulge_get_Vblksiz( magma_int_t m, magma_int_t nb, magma_int_t nbthreads  )
-{
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch >= 300 ) {       // 3.x Kepler + SB
-        return min(nb,64);
-    }
-    else {                     // 2.x Fermi or 1.x
-        return min(nb,64);
-    }
-}
-//////////////////////////////////////////////////
-magma_int_t magma_cbulge_get_Vblksiz( magma_int_t m, magma_int_t nb, magma_int_t nbthreads )
-{
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch >= 300 ) {       // 3.x Kepler + SB
-        if(nbthreads>14)
-            return min(nb,64);
-        else
-            return min(nb,32);
-    }
-    else {                     // 2.x Fermi or 1.x
-        return min(nb,48);
-    }
-}
-//////////////////////////////////////////////////
-magma_int_t magma_zbulge_get_Vblksiz( magma_int_t m, magma_int_t nb, magma_int_t nbthreads )
-{
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch >= 300 ) {       // 3.x Kepler + SB
-        if(nbthreads>14)
-            return min(nb,64);
-        else
-            return min(nb,32);
-    }
-    else {                     // 2.x Fermi or 1.x
-        return min(nb,48);
-    }
-}
-//////////////////////////////////////////////////
 
+magma_int_t magma_dbulge_get_Vblksiz( magma_int_t /*m*/, magma_int_t nb, magma_int_t /*nbthreads*/  )
+{
+    magma_int_t arch = magma_getdevice_arch();
+    if ( arch >= 300 ) {       // 3.x Kepler + SB
+        return min(nb, 64);
+    }
+    else {                     // 2.x Fermi or 1.x
+        return min(nb, 64);
+    }
+}
+
+magma_int_t magma_cbulge_get_Vblksiz( magma_int_t /*m*/, magma_int_t nb, magma_int_t nbthreads )
+{
+    magma_int_t arch = magma_getdevice_arch();
+    if ( arch >= 300 ) {       // 3.x Kepler + SB
+        if ( nbthreads > 14 )
+            return min(nb, 64);
+        else
+            return min(nb, 32);
+    }
+    else {                     // 2.x Fermi or 1.x
+        return min(nb, 48);
+    }
+}
+
+magma_int_t magma_zbulge_get_Vblksiz( magma_int_t /*m*/, magma_int_t nb, magma_int_t nbthreads )
+{
+    magma_int_t arch = magma_getdevice_arch();
+    if ( arch >= 300 ) {       // 3.x Kepler + SB
+        if ( nbthreads > 14 )
+            return min(nb, 64);
+        else
+            return min(nb, 32);
+    }
+    else {                     // 2.x Fermi or 1.x
+        return min(nb, 48);
+    }
+}
 
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for  2 stage TRD_MGPU
 */
-magma_int_t magma_get_sbulge_nb_mgpu( magma_int_t m )
+magma_int_t magma_get_sbulge_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -910,8 +905,8 @@ magma_int_t magma_get_sbulge_nb_mgpu( magma_int_t m )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-magma_int_t magma_get_dbulge_nb_mgpu( magma_int_t m )
+
+magma_int_t magma_get_dbulge_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -924,8 +919,8 @@ magma_int_t magma_get_dbulge_nb_mgpu( magma_int_t m )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-magma_int_t magma_get_cbulge_nb_mgpu( magma_int_t m )
+
+magma_int_t magma_get_cbulge_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -938,8 +933,8 @@ magma_int_t magma_get_cbulge_nb_mgpu( magma_int_t m )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-magma_int_t magma_get_zbulge_nb_mgpu( magma_int_t m )
+
+magma_int_t magma_get_zbulge_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -952,11 +947,6 @@ magma_int_t magma_get_zbulge_nb_mgpu( magma_int_t m )
         return 64;
     }
 }
-//////////////////////////////////////////////////
-
-
-
-
 
 #ifdef __cplusplus
 } // extern "C"

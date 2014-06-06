@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated s Tue Aug 13 16:44:41 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -113,11 +113,11 @@ extern "C" magma_int_t magma_ssytrd_sb2st(magma_int_t threads, char uplo, magma_
                                           float *A, magma_int_t lda, float *D, float *E,
                                           float *V, magma_int_t ldv, float *TAU, magma_int_t compT, float *T, magma_int_t ldt)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -243,7 +243,7 @@ extern "C" magma_int_t magma_ssytrd_sb2st(magma_int_t threads, char uplo, magma_
     // timing
     #ifdef ENABLE_TIMER
     timeblg = magma_wtime()-timeblg;
-    printf("  time BULGE+T = %f \n" ,timeblg);
+    printf("  time BULGE+T = %f\n", timeblg);
     #endif
 
     magma_free_cpu(thread_id);
@@ -387,7 +387,7 @@ static void *magma_ssytrd_sb2st_parallel_section(void *arg)
 
             #ifdef ENABLE_TIMER
             timeB = magma_wtime()-timeB;
-            printf("  Finish BULGE   timing= %f \n" ,timeB);
+            printf("  Finish BULGE   timing= %f\n", timeB);
             #endif
             //=========================
             // compute the T's to be used when applying Q2
@@ -400,7 +400,7 @@ static void *magma_ssytrd_sb2st_parallel_section(void *arg)
 
             #ifdef ENABLE_TIMER
             timeT = magma_wtime()-timeT;
-            printf("  Finish T's     timing= %f \n" ,timeT);
+            printf("  Finish T's     timing= %f\n", timeT);
             #endif
 
         }else{ // allcore_num > 1
@@ -423,7 +423,7 @@ static void *magma_ssytrd_sb2st_parallel_section(void *arg)
                 #ifdef ENABLE_TIMER
                 if(id == 0){
                     timeB = magma_wtime()-timeB;
-                    printf("  Finish BULGE   timing= %f \n" ,timeB);
+                    printf("  Finish BULGE   timing= %f\n", timeB);
                 }
                 #endif
 
@@ -441,7 +441,7 @@ static void *magma_ssytrd_sb2st_parallel_section(void *arg)
                 #ifdef ENABLE_TIMER
                 if (id == 0){
                     timeT = magma_wtime()-timeT;
-                    printf("  Finish T's     timing= %f \n" ,timeT);
+                    printf("  Finish T's     timing= %f\n", timeT);
                 }
                 #endif
 
@@ -463,7 +463,7 @@ static void *magma_ssytrd_sb2st_parallel_section(void *arg)
         #ifdef ENABLE_TIMER
         if(my_core_id == 0){
             timeB = magma_wtime()-timeB;
-            printf("  Finish BULGE   timing= %f \n" ,timeB);
+            printf("  Finish BULGE   timing= %f\n", timeB);
         }
         #endif
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
   
        @precisions normal z -> c d s
 */
@@ -52,8 +52,8 @@ int main( int argc, char** argv)
             n2     = lda*N;
             gflops = FLOPS_ZPOTRI( N ) / 1e9;
             
-            TESTING_MALLOC(    h_A, magmaDoubleComplex, n2 );
-            TESTING_HOSTALLOC( h_R, magmaDoubleComplex, n2 );
+            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, n2 );
+            TESTING_MALLOC_PIN( h_R, magmaDoubleComplex, n2 );
             
             /* ====================================================================
                Initialize the matrix
@@ -115,8 +115,8 @@ int main( int argc, char** argv)
                        (int) N, gpu_perf, gpu_time );
             }
             
-            TESTING_FREE( h_A );
-            TESTING_HOSTFREE( h_R );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_PIN( h_R );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

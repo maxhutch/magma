@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
 
@@ -21,11 +21,11 @@ magma_zunmqr(const char side, const char trans,
              magmaDoubleComplex *work, magma_int_t lwork,
              magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -200,7 +200,7 @@ magma_zunmqr(const char side, const char trans,
     
     if (nb >= k) {
         /* Use CPU code */
-        lapackf77_zunmqr(side_, trans_, &m, &n, &k, A, &lda, &tau[1],
+        lapackf77_zunmqr(side_, trans_, &m, &n, &k, A, &lda, tau,
                          C, &ldc, work, &lwork, &iinfo);
     }
     else {

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
        @author Mark Gates
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated s Tue Aug 13 16:44:33 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -25,11 +25,11 @@ magma_ssyevdx(char jobz, char range, char uplo,
               magma_int_t *iwork, magma_int_t liwork,
               magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -80,8 +80,8 @@ magma_ssyevdx(char jobz, char range, char uplo,
     LDA     (input) INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
+    VL      (input) REAL
+    VU      (input) REAL
             If RANGE='V', the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = 'A' or 'I'.
@@ -97,7 +97,7 @@ magma_ssyevdx(char jobz, char range, char uplo,
             The total number of eigenvalues found.  0 <= M <= N.
             If RANGE = 'A', M = N, and if RANGE = 'I', M = IU-IL+1.
 
-    W       (output) DOUBLE PRECISION array, dimension (N)
+    W       (output) REAL array, dimension (N)
             If INFO = 0, the required m eigenvalues in ascending order.
 
     WORK    (workspace/output) REAL array, dimension (MAX(1,LWORK))

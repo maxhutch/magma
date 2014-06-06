@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
        @author Raffaele Solca
     
@@ -20,11 +20,11 @@ magma_zstedx(char range, magma_int_t n, double vl, double vu,
              magma_int_t* iwork, magma_int_t liwork,
              double* dwork, magma_int_t* info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -124,8 +124,7 @@ magma_zstedx(char range, magma_int_t n, double vl, double vu,
        Jeff Rutter, Computer Science Division, University of California
        at Berkeley, USA
 
-    =====================================================================
-*/
+    ===================================================================== */
     char range_[2] = {range, 0};
 
     magma_int_t alleig, indeig, valeig, lquery;
@@ -193,7 +192,7 @@ magma_zstedx(char range, magma_int_t n, double vl, double vu,
     if(n==0)
         return *info;
     if(n==1){
-        MAGMA_Z_SET2REAL(*z,1.);
+        *z = MAGMA_Z_MAKE( 1, 0 );
         return *info;
     }
 
@@ -212,7 +211,7 @@ magma_zstedx(char range, magma_int_t n, double vl, double vu,
 
         for(j=0; j<n; ++j)
             for(i=0; i<n; ++i){
-                MAGMA_Z_SET2REAL(*(z+i+ldz*j), *(rwork+i+n*j));
+                *(z+i+ldz*j) = MAGMA_Z_MAKE( *(rwork+i+n*j), 0 );
             }
     }
 

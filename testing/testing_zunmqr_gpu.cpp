@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -82,15 +82,15 @@ int main( int argc, char** argv )
                 dt_size = ( 2*min(n,k) + ((k + 31)/32)*32 )*nb;
             }
             
-            TESTING_MALLOC( C, magmaDoubleComplex, ldc*n );
-            TESTING_MALLOC( R, magmaDoubleComplex, ldc*n );
-            TESTING_MALLOC( A, magmaDoubleComplex, lda*k );
-            TESTING_MALLOC( W, magmaDoubleComplex, lwork_max );
-            TESTING_MALLOC( tau, magmaDoubleComplex, k   );
+            TESTING_MALLOC_CPU( C,   magmaDoubleComplex, ldc*n );
+            TESTING_MALLOC_CPU( R,   magmaDoubleComplex, ldc*n );
+            TESTING_MALLOC_CPU( A,   magmaDoubleComplex, lda*k );
+            TESTING_MALLOC_CPU( W,   magmaDoubleComplex, lwork_max );
+            TESTING_MALLOC_CPU( tau, magmaDoubleComplex, k );
             
-            TESTING_DEVALLOC( dC, magmaDoubleComplex, ldc*n );
-            TESTING_DEVALLOC( dA, magmaDoubleComplex, lda*k );
-            TESTING_DEVALLOC( dT, magmaDoubleComplex, dt_size );
+            TESTING_MALLOC_DEV( dC, magmaDoubleComplex, ldc*n );
+            TESTING_MALLOC_DEV( dA, magmaDoubleComplex, lda*k );
+            TESTING_MALLOC_DEV( dT, magmaDoubleComplex, dt_size );
             
             // C is full, m x n
             size = ldc*n;
@@ -126,7 +126,7 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            // query for work size
+            // query for workspace size
             lwork = -1;
             magma_zunmqr_gpu( *side[iside], *trans[itran],
                               m, n, k,
@@ -162,15 +162,15 @@ int main( int argc, char** argv )
                     (int) m, (int) n, (int) k, side[iside], trans[itran],
                     cpu_perf, cpu_time, gpu_perf, gpu_time, error );
             
-            TESTING_FREE( C );
-            TESTING_FREE( R );
-            TESTING_FREE( A );
-            TESTING_FREE( W );
-            TESTING_FREE( tau );
+            TESTING_FREE_CPU( C );
+            TESTING_FREE_CPU( R );
+            TESTING_FREE_CPU( A );
+            TESTING_FREE_CPU( W );
+            TESTING_FREE_CPU( tau );
             
-            TESTING_DEVFREE( dC );
-            TESTING_DEVFREE( dA );
-            TESTING_DEVFREE( dT );
+            TESTING_FREE_DEV( dC );
+            TESTING_FREE_DEV( dA );
+            TESTING_FREE_DEV( dT );
         }}  // end iside, itran
         printf( "\n" );
     }

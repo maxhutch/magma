@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -21,11 +21,11 @@ magma_zgehrd_m(
     magmaDoubleComplex *T,
     magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -146,7 +146,7 @@ magma_zgehrd_m(
     
     *info = 0;
     iws = n*(nb + nb*ngpu);
-    MAGMA_Z_SET2REAL( work[0], (double) iws );
+    work[0] = MAGMA_Z_MAKE( iws, 0 );
 
     lquery = lwork == -1;
     if (n < 0) {
@@ -297,7 +297,7 @@ magma_zgehrd_m(
     // add 1 to i for 1-based index
     i += 1;
     lapackf77_zgehd2(&n, &i, &ihi, A, &lda, tau, work, &iinfo);
-    MAGMA_Z_SET2REAL( work[0], (double) iws );
+    work[0] = MAGMA_Z_MAKE( iws, 0 );
     
 CLEANUP:
     for( d = 0; d < ngpu; ++d ) {

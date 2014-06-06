@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     @author Raffaele Solca
     @author Azzam Haidar
@@ -65,10 +65,10 @@ int main( int argc, char** argv)
             lda  = N;
             ldda = ((N + 31)/32)*32;
             
-            /* Query for workspace sizes */
+            // query for workspace sizes
             magma_zheevd_gpu( opts.jobz, opts.uplo,
-                              N, d_R, ldda, w1,
-                              h_R, lda,
+                              N, NULL, ldda, NULL,
+                              NULL, lda,
                               aux_work,  -1,
                               aux_rwork, -1,
                               aux_iwork, -1,
@@ -78,20 +78,21 @@ int main( int argc, char** argv)
             liwork = aux_iwork[0];
             
             /* Allocate host memory for the matrix */
-            TESTING_MALLOC(    h_A, magmaDoubleComplex, N*lda  );
-            TESTING_MALLOC(    w1,  double,          N      );
-            TESTING_MALLOC(    w2,  double,          N      );
-            TESTING_HOSTALLOC( h_R, magmaDoubleComplex, N*lda  );
-            TESTING_DEVALLOC(  d_R, magmaDoubleComplex, N*ldda );
-            TESTING_HOSTALLOC( h_work, magmaDoubleComplex, lwork  );
-            TESTING_MALLOC(    rwork,  double,          lrwork );
-            TESTING_MALLOC(    iwork,  magma_int_t,     liwork );
+            TESTING_MALLOC_CPU( h_A,    magmaDoubleComplex, N*lda  );
+            TESTING_MALLOC_CPU( w1,     double,             N      );
+            TESTING_MALLOC_CPU( w2,     double,             N      );
+            TESTING_MALLOC_CPU( rwork,  double,             lrwork );
+            TESTING_MALLOC_CPU( iwork,  magma_int_t,        liwork );
+            
+            TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, N*lda  );
+            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork  );
+            
+            TESTING_MALLOC_DEV( d_R,    magmaDoubleComplex, N*ldda );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
-            for( int j=0; j < N; j++ ) {
-                h_A[j*N+j] = MAGMA_Z_MAKE( MAGMA_Z_REAL(h_A[j*N+j]), 0. );
-            }
+            magma_zmake_hermitian( N, h_A, N );
+            
             magma_zsetmatrix( N, N, h_A, lda, d_R, ldda );
             
             /* warm up run */
@@ -199,14 +200,16 @@ int main( int argc, char** argv)
                 printf("(3)    | S(w/ U) - S(w/o U) | / |S| = %8.2e%s\n\n", result[2]    , (result[2]  < tolulp ? "" : "  failed") );
             }
 
-            TESTING_FREE(     h_A    );
-            TESTING_FREE(     w1     );
-            TESTING_FREE(     w2     );
-            TESTING_FREE(     rwork  );
-            TESTING_FREE(     iwork  );
-            TESTING_HOSTFREE( h_work );
-            TESTING_HOSTFREE( h_R    );
-            TESTING_DEVFREE(  d_R    );
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( w1     );
+            TESTING_FREE_CPU( w2     );
+            TESTING_FREE_CPU( rwork  );
+            TESTING_FREE_CPU( iwork  );
+            
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_work );
+            
+            TESTING_FREE_DEV( d_R );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

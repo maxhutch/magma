@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -221,7 +221,7 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
        A1[NB+j*LDA1+j] = c_one;
 
     timelpk = magma_wtime() - timelpk;
-    printf("  Finish CONVERT timing= %lf \n" ,timelpk); 
+    printf("  Finish CONVERT timing= %f\n", timelpk); 
 
     
 
@@ -243,7 +243,7 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
            magma_device_sync();
            //cublasGetMatrix( N, LDA1, sizeof(magmaDoubleComplex), da, LDA1, A1, LDA1);
            timeaplQ1 = magma_wtime()-timeaplQ1;
-           printf("  Finish applyQ1 timing= %lf \n" ,timeaplQ1); 
+           printf("  Finish applyQ1 timing= %f\n", timeaplQ1); 
        }
        /*            
        trace_file = fopen("AJETE/Q1", "w");
@@ -365,7 +365,7 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
         void *exitcodep;
         pthread_join(thread_id[thread], &exitcodep);
     }
-    printf("  Finish BULGE+T timing= %lf \n" ,*(core_in_all.timeblg));
+    printf("  Finish BULGE+T timing= %f\n", *(core_in_all.timeblg));
 
     /*================================================
      *  store resulting diag and lower diag D2 and E2
@@ -495,7 +495,7 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
         magma_zstedc_withZ(MagmaNoVec, N, D2, E2, Z, LDZ);
         magma_setlapack_numthreads(1);
         timelpk = magma_wtime()-timelpk;
-        printf("  Finish WANTZ %d  eigensolver 'N'    timing= %lf  threads %d \n", (int) WANTZ, timelpk, (int) i);
+        printf("  Finish WANTZ %d  eigensolver 'N'    timing= %f  threads %d\n", (int) WANTZ, timelpk, (int) i);
         /*
         for(i=0;i<10;i++)
                 printf(" voici D[%d] %e\n",i,D2[i]);*/
@@ -570,7 +570,7 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
         if(parallel==0){
            // allocate space on GPU for dV2 and dT2        
            dVsize = max(N*N,blkcnt*LDV*Vblksiz);
-           //printf("dvsize %lf \n",(16.0*(real_Double_t)dVsize)*1e-9);
+           //printf("dvsize %f\n",(16.0*(real_Double_t)dVsize)*1e-9);
            if(MAGMA_SUCCESS != magma_zmalloc( &dV2, dVsize )) { 
                printf ("!!!! magma_alloc failed for: dV2\n" );       
                exit(-1);                                                           
@@ -947,14 +947,14 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
 
        timeeigen = magma_wtime()-timeeigen;
        printf("============================================================================\n");
-       printf("  Finish WANTZ %d  computing Q2       timing= %lf \n", (int) WANTZ, timeaplQ2);
+       printf("  Finish WANTZ %d  computing Q2       timing= %f\n", (int) WANTZ, timeaplQ2);
        if(WANTZ!=5){
-           printf("  Finish WANTZ %d  making gemm        timing= %lf \n", (int) WANTZ, timegemm);
-           printf("  Finish WANTZ %d  eigensolver 'I'    timing= %lf  threads %d   N %d    NE %d\n", (int) WANTZ, timelpk, (int) mklth, (int) N, (int) NE);
+           printf("  Finish WANTZ %d  making gemm        timing= %f\n", (int) WANTZ, timegemm);
+           printf("  Finish WANTZ %d  eigensolver 'I'    timing= %f  threads %d   N %d    NE %d\n", (int) WANTZ, timelpk, (int) mklth, (int) N, (int) NE);
        }else{
-           printf("  Finish WANTZ %d  eigensolver 'V'    timing= %lf  threads %d   N %d    NE %d \n", (int) WANTZ, timelpk, (int) mklth, (int) N, (int) NE);
+           printf("  Finish WANTZ %d  eigensolver 'V'    timing= %f  threads %d   N %d    NE %d\n", (int) WANTZ, timelpk, (int) mklth, (int) N, (int) NE);
        }
-       printf("  Finish WANTZ %d  full Eigenvectros  timing= %lf  \n",(int) WANTZ, timeeigen);
+       printf("  Finish WANTZ %d  full Eigenvectros  timing= %f\n",(int) WANTZ, timeeigen);
        printf("============================================================================\n");
     }
 
@@ -1022,7 +1022,7 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
         lapackf77_zhbtrd("N", "L", &N, &NB, ALPK, &LDAINIT, D1, E1, WORK, &N, WORK, &INFO); 
         timelpk = magma_wtime() - timelpk;
         printf("\n");                
-        printf("  Time ZHBTRD-MKL-LAPACK                      :   %lf    N : %10d    NB : %10d \n\n\n",timelpk, N, NB );
+        printf("  Time ZHBTRD-MKL-LAPACK                      :   %f    N : %10d    NB : %10d\n\n\n",timelpk, N, NB );
         /* call eigensolver */
         lapackf77_dsterf(&N, D1, E1, &INFO);             
        /* ***********************************************/ 
@@ -1052,21 +1052,21 @@ extern "C" magma_int_t magma_zhetrd_bhe2trc( magma_int_t THREADS, magma_int_t WA
 
 
         printf("\n");
-        printf(" ================================================================================================================================== \n");
+        printf(" ==================================================================================================================================\n");
         printf("   ==> INFO voici  threads=%d    N=%d    NB=%d   BAND=%d WANTZ=%d\n",thread,N, NB, BAND, WANTZ);
-        printf(" ================================================================================================================================== \n");
-        printf("            ZHBTRD                : %15s \n", "STATblgv9withQ    ");
-        printf(" ================================================================================================================================== \n");
+        printf(" ==================================================================================================================================\n");
+        printf("            ZHBTRD                : %15s\n", "STATblgv9withQ    ");
+        printf(" ==================================================================================================================================\n");
         if(WANTZ==1)
-           printf(" | A - U S U' | / ( |A| n ulp )   : %15.3E   \n",        RESU[0]); 
+           printf(" | A - U S U' | / ( |A| n ulp )   : %15.3E\n",        RESU[0]); 
         if(WANTZ==1)
-           printf(" | I - U U' | / ( n ulp )         : %15.3E   \n", RESU[1]);
-        printf(" | D1 - EVEIGS | / (|D| ulp)      : %15.3E   \n",  RESU[2]);
-        printf(" max | D1 - EVEIGS |              : %15.3E   \n",  RESU[6]);
-        printf(" ================================================================================================================================== \n\n\n");
+           printf(" | I - U U' | / ( n ulp )         : %15.3E\n", RESU[1]);
+        printf(" | D1 - EVEIGS | / (|D| ulp)      : %15.3E\n",  RESU[2]);
+        printf(" max | D1 - EVEIGS |              : %15.3E\n",  RESU[6]);
+        printf(" ==================================================================================================================================\n\n\n");
 
         printf(" ***********************************************************************************************************************************\n");
-        printf(" Hello here are the norm  Infinite (max)=%e  norm one (sum)=%e   norm2(sqrt)=%e \n",nrmI, nrm1, nrm2);
+        printf(" Hello here are the norm  Infinite (max)=%e  norm one (sum)=%e   norm2(sqrt)=%e\n",nrmI, nrm1, nrm2);
         printf(" ***********************************************************************************************************************************\n\n");
 
 
@@ -1172,7 +1172,7 @@ static void *parallel_section(void *thread_id)
                  magma_device_sync();
                  //cublasGetMatrix( N, LDA1, sizeof(magmaDoubleComplex), da, LDA1, A1, LDA1);
                  timeaplQ1 = magma_wtime()-timeaplQ1;
-                 printf("  Finish applyQ1 timing= %lf \n" ,timeaplQ1); 
+                 printf("  Finish applyQ1 timing= %f\n", timeaplQ1); 
              }
            
              //=========================
@@ -1183,7 +1183,7 @@ static void *parallel_section(void *thread_id)
              barrier(my_newcore_id, locores_num);
              if(my_newcore_id == 0){
                  timeB = magma_wtime()-timeB;
-                 printf("  Finish BULGE   timing= %lf \n" ,timeB);
+                 printf("  Finish BULGE   timing= %f\n", timeB);
              }
            
              //=========================
@@ -1195,7 +1195,7 @@ static void *parallel_section(void *thread_id)
              // timing
              if (my_newcore_id == 0){
                 timeT = magma_wtime()-timeT;
-                printf("  Finish T's     timing= %lf \n" ,timeT);
+                printf("  Finish T's     timing= %f\n", timeT);
              }
          /************************************************
           *   more than one core
@@ -1229,7 +1229,7 @@ static void *parallel_section(void *thread_id)
                 magma_device_sync();
                 //cublasGetMatrix( N, LDA1, sizeof(magmaDoubleComplex), da, LDA1, A1, LDA1);
                 timeaplQ1 = magma_wtime()-timeaplQ1;
-                printf("  Finish applyQ1 timing= %lf \n" ,timeaplQ1); 
+                printf("  Finish applyQ1 timing= %f\n", timeaplQ1); 
             /* I am one of the remaining cores*/
             }else{
                 //=========================
@@ -1240,7 +1240,7 @@ static void *parallel_section(void *thread_id)
                 barrier(my_newcore_id, locores_num);
                 if(my_newcore_id == 0){
                     timeB = magma_wtime()-timeB;
-                    printf("  Finish BULGE   timing= %lf \n" ,timeB);
+                    printf("  Finish BULGE   timing= %f\n", timeB);
                 }
                
                 //=========================
@@ -1252,7 +1252,7 @@ static void *parallel_section(void *thread_id)
                 // timing
                 if (my_newcore_id == 0){
                    timeT = magma_wtime()-timeT;
-                   printf("  Finish T's     timing= %lf \n" ,timeT);
+                   printf("  Finish T's     timing= %f\n", timeT);
                 }
             } // END if my_newcore_id==allcores_num-1
        
@@ -1271,7 +1271,7 @@ static void *parallel_section(void *thread_id)
         barrier(my_newcore_id, locores_num);
         if(my_newcore_id == 0){
             timeB = magma_wtime()-timeB;
-            printf("  Finish BULGE   timing= %lf \n" ,timeB);
+            printf("  Finish BULGE   timing= %f\n", timeB);
         }
     }
     /*################################################
@@ -1378,7 +1378,7 @@ static void *applyQ_parallel_section(void *thread_id)
                  magma_zbulge_applyQ(WANTZ, 'R', NE, N, NB, Vblksiz, NOTUSED, N, V2, TAU2, T2, &INFO, dV2, dT2, dZ, 2);
                  magma_device_sync();
                  timeQgpu = magma_wtime()-timeQgpu;
-                 printf("  Finish Q2_GPU GGG timing= %lf \n" ,timeQgpu);
+                 printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
              }
          /************************************************
           *   more than one core
@@ -1405,7 +1405,7 @@ static void *applyQ_parallel_section(void *thread_id)
                  magma_zbulge_applyQ(WANTZ, 'R', N_GPU, N, NB, Vblksiz, NOTUSED, N, V2, TAU2, T2, &INFO, dV2, dT2, dZ, 2);
                  magma_device_sync();
                  timeQgpu = magma_wtime()-timeQgpu;
-                 printf("  Finish Q2_GPU GGG timing= %lf \n" ,timeQgpu);
+                 printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
             /* I am one of the remaining cores*/
             }else if(N_CPU>0){
                 //=============================================
@@ -1417,7 +1417,7 @@ static void *applyQ_parallel_section(void *thread_id)
                 barrier(my_newcore_id, locores_num);
                 if(my_newcore_id == 0){
                     timeQcpu = magma_wtime()-timeQcpu;
-                    printf("  Finish Q2_CPU CCC timing= %lf \n" ,timeQcpu);
+                    printf("  Finish Q2_CPU CCC timing= %f\n", timeQcpu);
                 }
 
             } // END if my_newcore_id==allcores_num-1
@@ -1449,7 +1449,7 @@ static void *applyQ_parallel_section(void *thread_id)
                  magma_zbulge_applyQ(WANTZ, 'L', NE, N, NB, Vblksiz, Z, LDZ, V2, TAU2, T2, &INFO, dV2, dT2, dZ, 3);
                  magma_device_sync();
                  timeQgpu = magma_wtime()-timeQgpu;
-                 printf("  Finish Q2_GPU GGG timing= %lf \n" ,timeQgpu);
+                 printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
              }
          /************************************************
           *   more than one core
@@ -1476,7 +1476,7 @@ static void *applyQ_parallel_section(void *thread_id)
                  magma_zbulge_applyQ(WANTZ, 'L', N_GPU, N, NB, Vblksiz, Z, LDZ, V2, TAU2, T2, &INFO, dV2, dT2, dZ, 3);
                  magma_device_sync();
                  timeQgpu = magma_wtime()-timeQgpu;
-                 printf("  Finish Q2_GPU GGG timing= %lf \n" ,timeQgpu);
+                 printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
             /* I am one of the remaining cores*/
             }else if(N_CPU>0){
                 //=============================================
@@ -1488,7 +1488,7 @@ static void *applyQ_parallel_section(void *thread_id)
                 barrier(my_newcore_id, locores_num);
                 if(my_newcore_id == 0){
                     timeQcpu = magma_wtime()-timeQcpu;
-                    printf("  Finish Q2_CPU CCC timing= %lf \n" ,timeQcpu);
+                    printf("  Finish Q2_CPU CCC timing= %f\n", timeQcpu);
                 }
 
             } // END if my_newcore_id==allcores_num-1
@@ -1559,7 +1559,7 @@ static void tile_bulge_parallel(int my_core_id)
         return ;
 
 
-    //printf("=================> my core id %d of %d \n",my_core_id, cores_num);
+    //printf("=================> my core id %d of %d\n",my_core_id, cores_num);
 
     if((BAND!=0) && (BAND!=6) && (BAND!=62) && (BAND!=63)){
        if(my_core_id==0)printf(" ===============================================================================\n");
@@ -1627,7 +1627,7 @@ static void tile_bulge_parallel(int my_core_id)
                          edind      = min(colpt,N);
                          blklastind = colpt;
                          if(stind>=edind){
-                             printf("ERROR---------> st>=ed  %d  %d \n\n",stind, edind);
+                             printf("ERROR---------> st>=ed  %d  %d\n\n",stind, edind);
                              exit(-10);
                          }
                     }else{
@@ -1639,7 +1639,7 @@ static void tile_bulge_parallel(int my_core_id)
                          else
                              blklastind=0;
                          if(stind>edind){
-                             printf("ERROR---------> st>=ed  %d  %d \n\n",stind, edind);
+                             printf("ERROR---------> st>=ed  %d  %d\n\n",stind, edind);
                              exit(-10);
                          }
                     }
@@ -1647,8 +1647,8 @@ static void tile_bulge_parallel(int my_core_id)
                     coreid = (stind/colpercore)%mycoresnb;
 
 
-   //printf("    current col %3d sweep %3d myid %3d  coreid %7d my_core_id %3d ---------------------- st %2d  ed %2d \n",i,sweepid, myid, coreid,my_core_id, stind, edind); 
- //printf("MYID %2d prog  %3d %3d %3d %3d %3d %3d %3d \n",my_core_id,prog[0],prog[1],prog[2],prog[3],prog[4],prog[5],prog[6]);
+   //printf("    current col %3d sweep %3d myid %3d  coreid %7d my_core_id %3d ---------------------- st %2d  ed %2d\n",i,sweepid, myid, coreid,my_core_id, stind, edind); 
+ //printf("MYID %2d prog  %3d %3d %3d %3d %3d %3d %3d\n",my_core_id,prog[0],prog[1],prog[2],prog[3],prog[4],prog[5],prog[6]);
 
                     if(my_core_id==coreid)
                     {
@@ -1788,7 +1788,7 @@ static void tile_bulge_computeT_parallel(int my_core_id)
     nbGblk  = plasma_ceildiv((N-1),Vblksiz);
 
     if(my_core_id==0) {
-        printf("  COMPUTE T parallel threads %d with  N %d   NB %d   Vblksiz %d \n",
+        printf("  COMPUTE T parallel threads %d with  N %d   NB %d   Vblksiz %d\n",
                (int) cores_num, (int) N, (int) NB, (int) Vblksiz);
     }
     
@@ -1974,7 +1974,7 @@ static void tile_bulge_applyQ_parallel(int my_core_id)
 
     //printf("  ENTERING FUNCTION APPLY Q_v115: same as 113(L) or 114(L) or 93(R)"\n);
     if(my_core_id==0) {
-        printf("  APPLY Q_v1   parallel with threads %d   nbchunk %d  colpercore %d  N %d  N_CPU %d   NB %d   Vblksiz %d SIDE %c versionL %d versionR %d WANTZ %d \n",
+        printf("  APPLY Q_v1   parallel with threads %d   nbchunk %d  colpercore %d  N %d  N_CPU %d   NB %d   Vblksiz %d SIDE %c versionL %d versionR %d WANTZ %d\n",
                (int) cores_num, (int) nbchunk, (int) colpercore, (int) N, (int) N_CPU, (int) NB, (int) Vblksiz, (int) SIDE, (int) versionL, (int) versionR,  (int) WANTZ);
     }
     
@@ -2011,7 +2011,7 @@ static void tile_bulge_applyQ_parallel(int my_core_id)
                        }        
                        colst     = (bg-1)*Vblksiz;
                        findVTpos(N,NB,Vblksiz,colst,fst, &vpos, &taupos, &tpos, &blkid);
-                       //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d \n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
+                       //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d\n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
                        
                        if(LOGQ) core_event_startblg(my_core_id);
                        if((vlen>0)&&(vnb>0)){
@@ -2026,7 +2026,7 @@ static void tile_bulge_applyQ_parallel(int my_core_id)
                            }
                        }
                        if(INFO!=0) 
-                               printf("ERROR ZUNMQR INFO %d \n", (int) INFO);
+                               printf("ERROR ZUNMQR INFO %d\n", (int) INFO);
                        if(LOGQ) {
                            core_event_endblg(my_core_id);
                            core_log_eventblg(0xff0000, my_core_id);
@@ -2059,7 +2059,7 @@ static void tile_bulge_applyQ_parallel(int my_core_id)
                        }        
                        colj     = (bg-1)*Vblksiz;
                        findVTpos(N,NB,Vblksiz,colj,fst, &vpos, &taupos, &tpos, &blkid);
-                       //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d \n",bg,m,vlen, vnb,colj,vpos,taupos);
+                       //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d\n",bg,m,vlen, vnb,colj,vpos,taupos);
                        if((vlen>0)&&(vnb>0))
                            lapackf77_zlarfb( "R", "N", "F", "C", &corelen, &vlen, &vnb, V(vpos), &LDV, T(tpos), &LDT, E(corest,fst), &LDE,  WORK, &corelen);       
                    }
@@ -2096,7 +2096,7 @@ static void tile_bulge_applyQ_parallel(int my_core_id)
                  }
             }
             }else{
-                    printf("ERROR SIDE %d \n",SIDE);
+                    printf("ERROR SIDE %d\n",SIDE);
             }
         } // END my_core_id=coreid
     } // END loop over the chunk
@@ -2238,7 +2238,7 @@ void tile_bulge_applyQ_parallel2(int my_core_id)
 
     //printf("  ENTERING FUNCTION APPLY Q_v115: same as 113(L) or 114(L) or 93(R)"\n);
     if(my_core_id==0) {
-        printf("  APPLY Q_v2   parallel with threads %d   nbchunk %d  colpercore %d  N %d   NB %d   Vblksiz %d SIDE %c versionL %d \n",
+        printf("  APPLY Q_v2   parallel with threads %d   nbchunk %d  colpercore %d  N %d   NB %d   Vblksiz %d SIDE %c versionL %d\n",
                (int) cores_num, (int) nbchunk, (int) colpercore, (int) N, (int) NB, (int) Vblksiz, (int) SIDE, (int) versionL);
     }
     
@@ -2268,7 +2268,7 @@ void tile_bulge_applyQ_parallel2(int my_core_id)
                    }        
                    colst     = (bg-1)*Vblksiz;
                    findVTpos(N,NB,Vblksiz,colst,fst, &vpos, &taupos, &tpos, &blkid);
-                   //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d \n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
+                   //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d\n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
        
                    if((vlen>0)&&(vnb>0)){
                        if(LOGQ) core_event_startblg(my_core_id);
@@ -2320,7 +2320,7 @@ void tile_bulge_applyQ_parallel2(int my_core_id)
                         vnb=vnb+1;
                     }        
                     findVTpos(N,NB,Vblksiz,colst,fst, &vpos, &taupos, &tpos, &blkid);
-                    //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d \n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
+                    //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d\n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
                     if((vlen>0)&&(vnb>0)){
                         for (chunkid = 0; chunkid<nbchunk; chunkid++)
                         {
@@ -2361,7 +2361,7 @@ void tile_bulge_applyQ_parallel2(int my_core_id)
                }        
                colj     = (bg-1)*Vblksiz;
                findVTpos(N,NB,Vblksiz,colj,fst, &vpos, &taupos, &tpos, &blkid);
-               //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d \n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
+               //printf("voici bg %d m %d  vlen %d  vnb %d fcolj %d vpos %d taupos %d\n",bg,m,vlen, vnb,colst+1,vpos+1,taupos+1);
                if((vlen>0)&&(vnb>0)){
                     for (chunkid = 0; chunkid<nbchunk; chunkid++)
                     {
@@ -2377,7 +2377,7 @@ void tile_bulge_applyQ_parallel2(int my_core_id)
            } // end for m=rowmnb
         } // end for bg
     }else{
-        printf("ERROR SIDE %d \n",SIDE);
+        printf("ERROR SIDE %d\n",SIDE);
     }
 
 

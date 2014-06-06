@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated c Tue Aug 13 16:44:16 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -22,11 +22,11 @@ magma_cssssm_gpu(char storev, magma_int_t m1, magma_int_t n1,
                  magmaFloatComplex *dL2, magma_int_t lddl2,
                  magma_int_t *IPIV, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

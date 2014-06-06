@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated c Tue Aug 13 16:46:12 2013
+    @generated c Tue Dec 17 13:18:57 2013
 
 */
 
@@ -73,15 +73,16 @@ int main( int argc, char** argv)
             lrwork = 1 + 5*N +2*N*N;
             liwork = 3 + 5*N;
 
-            TESTING_MALLOC(    h_A,    magmaFloatComplex,  n2 );
-            TESTING_MALLOC(    h_B,    magmaFloatComplex,  n2 );
-            TESTING_MALLOC(    w1,     float,           N  );
-            TESTING_MALLOC(    w2,     float,           N  );
-            TESTING_HOSTALLOC( h_R,    magmaFloatComplex,  n2 );
-            TESTING_HOSTALLOC( h_S,    magmaFloatComplex,  n2 );
-            TESTING_HOSTALLOC( h_work, magmaFloatComplex,  lwork  );
-            TESTING_MALLOC(    rwork,  float,           lrwork );
-            TESTING_MALLOC(    iwork,  magma_int_t,      liwork );
+            TESTING_MALLOC_CPU( h_A,    magmaFloatComplex,  n2     );
+            TESTING_MALLOC_CPU( h_B,    magmaFloatComplex,  n2     );
+            TESTING_MALLOC_CPU( w1,     float,              N      );
+            TESTING_MALLOC_CPU( w2,     float,              N      );
+            TESTING_MALLOC_CPU( rwork,  float,              lrwork );
+            TESTING_MALLOC_CPU( iwork,  magma_int_t,         liwork );
+            
+            TESTING_MALLOC_PIN( h_R,    magmaFloatComplex,  n2     );
+            TESTING_MALLOC_PIN( h_S,    magmaFloatComplex,  n2     );
+            TESTING_MALLOC_PIN( h_work, magmaFloatComplex,  lwork  );
             
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
@@ -251,16 +252,17 @@ int main( int argc, char** argv)
                 printf(    "(3)    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e%s\n\n", result[2], (result[2] < tolulp ? "" : "  failed") );
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_FREE( w1  );
-            TESTING_FREE( w2  );
-            TESTING_FREE( rwork );
-            TESTING_FREE( iwork );
-            TESTING_HOSTFREE( h_work );
-            TESTING_HOSTFREE( h_R );
-            TESTING_HOSTFREE( h_S );
-        }
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( h_B    );
+            TESTING_FREE_CPU( w1     );
+            TESTING_FREE_CPU( w2     );
+            TESTING_FREE_CPU( rwork  );
+            TESTING_FREE_CPU( iwork  );
+            
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_S    );
+            TESTING_FREE_PIN( h_work );
+        }                         
         if ( opts.niter > 1 ) {
             printf( "\n" );
         }

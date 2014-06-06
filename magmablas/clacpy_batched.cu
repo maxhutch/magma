@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Wed Aug 14 12:16:37 2013
+       @generated c Tue Dec 17 13:18:44 2013
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -81,7 +81,7 @@ magmablas_clacpy_batched(
             The number of columns of each matrix dAarray[i].  N >= 0.
     
     dAarray (input) array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+            with each array a COMPLEX REAL array, dimension (LDDA,N)
             The m by n matrices dAarray[i].
             If UPLO = 'U', only the upper triangle or trapezoid is accessed;
             if UPLO = 'L', only the lower triangle or trapezoid is accessed.
@@ -90,7 +90,7 @@ magmablas_clacpy_batched(
             The leading dimension of each array dAarray[i].  LDDA >= max(1,M).
     
     dBarray (output) array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+            with each array a COMPLEX REAL array, dimension (LDDB,N)
             The m by n matrices dBarray[i].
             On exit, matrix dBarray[i] = matrix dAarray[i] in the locations
             specified by UPLO.

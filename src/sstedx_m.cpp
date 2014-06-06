@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Raffaele Solca
        
-       @generated s Tue Aug 13 16:44:38 2013
+       @generated s Tue Dec 17 13:18:36 2013
 */
 #include "common_magma.h"
 
@@ -26,20 +26,20 @@ magma_sstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
                float* work, magma_int_t lwork, magma_int_t* iwork, magma_int_t liwork,
                magma_int_t* info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        .. Scalar Arguments ..
       CHARACTER          RANGE
       INTEGER            IL, IU, INFO, LDZ, LIWORK, LWORK, N
-      DOUBLE PRECISION   VL, VU
+      REAL   VL, VU
        ..
        .. Array Arguments ..
       INTEGER            IWORK( * )
-      DOUBLE PRECISION   D( * ), E( * ), WORK( * ), Z( LDZ, * ),
+      REAL   D( * ), E( * ), WORK( * ), Z( LDZ, * ),
      $                   DWORK ( * )
        ..
 
@@ -66,8 +66,8 @@ magma_sstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
     N       (input) INTEGER
             The dimension of the symmetric tridiagonal matrix.  N >= 0.
 
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
+    VL      (input) REAL
+    VU      (input) REAL
             If RANGE='V', the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = 'A' or 'I'.
@@ -79,22 +79,22 @@ magma_sstedx_m(magma_int_t nrgpu, char range, magma_int_t n, float vl, float vu,
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
             Not referenced if RANGE = 'A' or 'V'.
 
-    D       (input/output) DOUBLE PRECISION array, dimension (N)
+    D       (input/output) REAL array, dimension (N)
             On entry, the diagonal elements of the tridiagonal matrix.
             On exit, if INFO = 0, the eigenvalues in ascending order.
 
-    E       (input/output) DOUBLE PRECISION array, dimension (N-1)
+    E       (input/output) REAL array, dimension (N-1)
             On entry, the subdiagonal elements of the tridiagonal matrix.
             On exit, E has been destroyed.
 
-    Z       (input/output) DOUBLE PRECISION array, dimension (LDZ,N)
+    Z       (input/output) REAL array, dimension (LDZ,N)
             On exit, if INFO = 0, Z contains the orthonormal eigenvectors
             of the symmetric tridiagonal matrix.
 
     LDZ     (input) INTEGER
             The leading dimension of the array Z. LDZ >= max(1,N).
 
-    WORK    (workspace/output) DOUBLE PRECISION array,
+    WORK    (workspace/output) REAL array,
                                            dimension (LWORK)
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 

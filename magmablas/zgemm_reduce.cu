@@ -1,28 +1,23 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
 
-// 512 is maximum number of threads for CUDA capability 1.x
-#if (GPUSHMEM < 200)
-    #define NUM_THREADS 512
-#else
-    #define NUM_THREADS 1024
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // size of work for a thread block
 #define BLK_M 16
 #define BLK_N 16
 
-#define BLK_K (NUM_THREADS / (BLK_M * BLK_N))
+// BLK_K gets defined in magmablas_zgemm_reduce,
+// because it depends on the CUDA architecture at runtime.
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +29,7 @@
 // Having n as template parameter allows compiler to evaluate some conditions at compile time.
 
 template< int n >
-__device__ void sum_reduce2( /*int n,*/ int j, int k, int i, magmaDoubleComplex x[][ BLK_N +1][ BLK_K +1] )
+__device__ void sum_reduce2( /*int n,*/ int j, int k, int i, magmaDoubleComplex x[][ BLK_N+1 ][ n+1 ] )
 {
     __syncthreads();
 /*
@@ -57,24 +52,29 @@ __device__ void sum_reduce2( /*int n,*/ int j, int k, int i, magmaDoubleComplex 
 
 
 //==============================================================================
+// BLK_K size is templated, as it depends on CUDA architecture at runtime.
+// Hmm... how to compile for both CUDA arch 1.x and 2.x?
 
+template< int BLK_K >
 __global__
-void magmablas_zgemm_reduce_kernel(int m, int n, int k, 
-                                   magmaDoubleComplex alpha, 
-                                   const magmaDoubleComplex * __restrict__ d_A, int lda,
-                                   const magmaDoubleComplex * __restrict__ d_B, int ldb,
-                                   magmaDoubleComplex beta,
-                                   magmaDoubleComplex *d_C, int ldc)
+void zgemm_reduce_kernel(
+    int m, int n, int k,
+    magmaDoubleComplex alpha,
+    const magmaDoubleComplex* __restrict__ d_A, int lda,
+    const magmaDoubleComplex* __restrict__ d_B, int ldb,
+    magmaDoubleComplex beta,
+    magmaDoubleComplex      * __restrict__ d_C, int ldc)
 {
+#if (__CUDA_ARCH__ >= 200)
     const int i = threadIdx.x;
     
     if (blockIdx.x*BLK_M + threadIdx.y < m && blockIdx.y*BLK_N + threadIdx.z < n){
     
         const magmaDoubleComplex *dA = d_A + (blockIdx.x*BLK_M + threadIdx.y) * lda;
         const magmaDoubleComplex *dB = d_B + (blockIdx.y*BLK_N + threadIdx.z) * ldb;
-        magmaDoubleComplex *dC = d_C + blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
+        magmaDoubleComplex       *dC = d_C +  blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
         
-        __shared__ magmaDoubleComplex sum[BLK_M][BLK_N+1][ BLK_K +1];
+        __shared__ magmaDoubleComplex sum[BLK_M][BLK_N+1][BLK_K+1];
         magmaDoubleComplex lsum;
         
         /*  w := v' * C  */
@@ -91,45 +91,64 @@ void magmablas_zgemm_reduce_kernel(int m, int n, int k,
             if (MAGMA_Z_EQUAL(beta, MAGMA_Z_ZERO))
                 dC[threadIdx.y + threadIdx.z*ldc] = alpha*sum[threadIdx.y][threadIdx.z][0];
             else
-                dC[threadIdx.y + threadIdx.z*ldc] = beta* dC[threadIdx.y + threadIdx.z*ldc] + 
+                dC[threadIdx.y + threadIdx.z*ldc] = beta* dC[threadIdx.y + threadIdx.z*ldc] +
                                                     alpha*sum[threadIdx.y][threadIdx.z][0];
         }
     }
+#endif
 }
 
 //==============================================================================
 
 extern "C" void
-magmablas_zgemm_reduce(magma_int_t m, magma_int_t n, magma_int_t k,
-                       magmaDoubleComplex alpha,
-                       const magmaDoubleComplex *d_A, magma_int_t lda,
-                       const magmaDoubleComplex *d_B, magma_int_t ldb,
-                       magmaDoubleComplex beta,
-                       magmaDoubleComplex *d_C, magma_int_t ldc )
+magmablas_zgemm_reduce(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex alpha,
+    const magmaDoubleComplex *d_A, magma_int_t lda,
+    const magmaDoubleComplex *d_B, magma_int_t ldb,
+    magmaDoubleComplex beta,
+    magmaDoubleComplex *d_C, magma_int_t ldc )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
     ZGEMM_REDUCE  performs one of the matrix-matrix operations
     
-       C := alpha* A' B  + beta*C,
+        C := alpha*A^T*B + beta*C,
     
     where alpha and beta are scalars, and A, B and C are matrices, with A
-    a k-by-m matrix, B a k-by-n matrix, and C an m-by-n matrix. 
+    a k-by-m matrix, B a k-by-n matrix, and C an m-by-n matrix.
     
     This routine is tuned for m, n << k. Typically, m and n are expected
-    to be less than 128. 
+    to be less than 128.
     =====================================================================    */
 
-    dim3  blocks( (m+BLK_M-1)/BLK_M, (n+BLK_N-1)/BLK_N );
-    dim3 threads( BLK_K, BLK_M, BLK_N );
-    magmablas_zgemm_reduce_kernel<<<blocks,threads, 0, magma_stream >>>(
-        m, n, k, alpha, d_A, lda,  d_B, ldb, beta, d_C, ldc );
+    magma_int_t arch = magma_getdevice_arch();
+    if ( arch < 200  ) {
+        // --------------------
+        // call CUDA ARCH 1.x -- maximum 512 threads
+        const int NUM_THREADS = 512;
+        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N));
+        dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
+        dim3 threads( BLK_K, BLK_M, BLK_N );
+        zgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
+            ( m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+    }
+    else {
+        // --------------------
+        // call CUDA ARCH 2.x -- maximum 1024 threads
+        const int NUM_THREADS = 1024;
+        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N));
+        dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
+        dim3 threads( BLK_K, BLK_M, BLK_N );
+        zgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
+            ( m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+    }
 }
 
 //==============================================================================

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Wed Aug 14 12:18:04 2013
+       @generated c Tue Dec 17 13:18:56 2013
        @author Mark Gates
 */
 // includes, system
@@ -61,8 +61,8 @@ float get_residual(
     magmaFloatComplex *x, *b;
     
     // initialize RHS
-    TESTING_MALLOC( x, magmaFloatComplex, n );
-    TESTING_MALLOC( b, magmaFloatComplex, n );
+    TESTING_MALLOC_CPU( x, magmaFloatComplex, n );
+    TESTING_MALLOC_CPU( b, magmaFloatComplex, n );
     lapackf77_clarnv( &ione, ISEED, &n, b );
     blasf77_ccopy( &n, b, &ione, x, &ione );
     
@@ -86,8 +86,8 @@ float get_residual(
     
     //printf( "r=\n" ); magma_cprint( 1, n, b, 1 );
     
-    TESTING_FREE( x );
-    TESTING_FREE( b );
+    TESTING_FREE_CPU( x );
+    TESTING_FREE_CPU( b );
     
     //printf( "r=%.2e, A=%.2e, x=%.2e, n=%d\n", norm_r, norm_A, norm_x, n );
     return norm_r / (n * norm_A * norm_x);
@@ -111,9 +111,9 @@ float get_LU_error(magma_int_t M, magma_int_t N,
     magmaFloatComplex *A, *L, *U;
     float work[1], matnorm, residual;
     
-    TESTING_MALLOC( A, magmaFloatComplex, lda*N    );
-    TESTING_MALLOC( L, magmaFloatComplex, M*min_mn );
-    TESTING_MALLOC( U, magmaFloatComplex, min_mn*N );
+    TESTING_MALLOC_CPU( A, magmaFloatComplex, lda*N    );
+    TESTING_MALLOC_CPU( L, magmaFloatComplex, M*min_mn );
+    TESTING_MALLOC_CPU( U, magmaFloatComplex, min_mn*N );
     memset( L, 0, M*min_mn*sizeof(magmaFloatComplex) );
     memset( U, 0, min_mn*N*sizeof(magmaFloatComplex) );
 
@@ -139,9 +139,9 @@ float get_LU_error(magma_int_t M, magma_int_t N,
     }
     residual = lapackf77_clange("f", &M, &N, LU, &lda, work);
 
-    TESTING_FREE(A);
-    TESTING_FREE(L);
-    TESTING_FREE(U);
+    TESTING_FREE_CPU( A );
+    TESTING_FREE_CPU( L );
+    TESTING_FREE_CPU( U );
 
     return residual / (matnorm * N);
 }
@@ -184,9 +184,9 @@ int main( int argc, char** argv)
             ldda   = ((M+31)/32)*32;
             gflops = FLOPS_CGETRF( M, N ) / 1e9;
             
-            TESTING_MALLOC(    ipiv, magma_int_t,     min_mn );
-            TESTING_MALLOC(    h_A,  magmaFloatComplex, n2     );
-            TESTING_DEVALLOC(  d_A,  magmaFloatComplex, ldda*N );
+            TESTING_MALLOC_CPU( ipiv, magma_int_t,        min_mn );
+            TESTING_MALLOC_CPU( h_A,  magmaFloatComplex, n2     );
+            TESTING_MALLOC_DEV( d_A,  magmaFloatComplex, ldda*N );
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -244,9 +244,9 @@ int main( int argc, char** argv)
                 printf("     ---  \n");
             }
             
-            TESTING_FREE( ipiv );
-            TESTING_FREE( h_A );
-            TESTING_DEVFREE( d_A );
+            TESTING_FREE_CPU( ipiv );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_DEV( d_A );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
  
        @precisions normal z -> s d c
 */
@@ -11,17 +11,7 @@
 #ifndef MAGMA_LAPACK_H
 #define MAGMA_LAPACK_H
 
-#ifndef FORTRAN_NAME
-#if defined(ADD_)
-#define FORTRAN_NAME(lcname, UCNAME)  lcname##_
-#elif defined(NOCHANGE)
-#define FORTRAN_NAME(lcname, UCNAME)  lcname
-#elif defined(UPCASE)
-#define FORTRAN_NAME(lcname, UCNAME)  UCNAME
-#else
-#error Define one of ADD_, NOCHANGE, or UPCASE for how Fortran functions are name mangled.
-#endif
-#endif
+#include "magma_mangling.h"
 
 #include "magma_zlapack.h"
 #include "magma_clapack.h"

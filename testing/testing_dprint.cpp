@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
   
-       @generated d Tue Aug 13 16:45:52 2013
+       @generated d Tue Dec 17 13:18:56 2013
        @author Mark Gates
 */
 // includes, system
@@ -45,8 +45,8 @@ int main( int argc, char** argv)
     ldda   = ((m + 31)/32)*32;
 
     /* Allocate host memory for the matrix */
-    TESTING_MALLOC(   hA, double, lda *n );
-    TESTING_DEVALLOC( dA, double, ldda*n );
+    TESTING_MALLOC_CPU( hA, double, lda *n );
+    TESTING_MALLOC_DEV( dA, double, ldda*n );
 
     //size = lda*n;
     //lapackf77_dlarnv( &ione, ISEED, &size, hA );
@@ -68,8 +68,8 @@ int main( int argc, char** argv)
     //magma_dprint_gpu( m, n, hA, lda );
     
     /* Memory clean up */
-    TESTING_FREE( hA );
-    TESTING_DEVFREE( dA );
+    TESTING_FREE_CPU( hA );
+    TESTING_FREE_DEV( dA );
 
     /* Shutdown */
     TESTING_FINALIZE();

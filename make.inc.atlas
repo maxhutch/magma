@@ -1,18 +1,20 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.0) --
+#   -- MAGMA (version 1.4.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      August 2013
+#      December 2013
 #//////////////////////////////////////////////////////////////////////////////
 
-# GPU_TARGET specifies for which GPU you want to compile MAGMA:
-#     "Tesla"  (NVIDIA compute capability 1.x cards)
-#     "Fermi"  (NVIDIA compute capability 2.x cards)
-#     "Kepler" (NVIDIA compute capability 3.x cards)
+# GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
+# to specify for which GPUs you want to compile MAGMA:
+#     Tesla  - NVIDIA compute capability 1.x cards
+#     Fermi  - NVIDIA compute capability 2.x cards
+#     Kepler - NVIDIA compute capability 3.x cards
+# The default is all, "Tesla Fermi Kepler".
 # See http://developer.nvidia.com/cuda-gpus
-
-GPU_TARGET ?= Fermi
+#
+#GPU_TARGET ?= Tesla Fermi Kepler
 
 CC        = gcc
 NVCC      = nvcc
@@ -33,26 +35,11 @@ LDOPTS    = -fopenmp
 LIB       = -llapack -lf77blas -latlas -lcblas -lcublas -lcudart -lstdc++ -lm -lgfortran -lifcore
 
 # define library directories here or in your environment
-#LAPACKDIR = /opt/lapack
-#ATLASDIR  = /opt/atlas
-#CUDADIR   = /usr/local/cuda
-
-# check for directories and give user hint how to set them
-ifeq ($(LAPACKDIR),)
-$(error Define $$LAPACKDIR, preferably in your environment, e.g., run "export LAPACKDIR=/opt/lapack" in ~/.bashrc, or "setenv LAPACKDIR /opt/lapack" in ~/.cshrc)
-endif
-
-ifeq ($(ATLASDIR),)
-$(error Define $$ATLASDIR, preferably in your environment, e.g., run "export ATLASDIR=/opt/atlas" in ~/.bashrc, or "setenv ATLASDIR /opt/atlas" in ~/.cshrc)
-endif
-
-ifeq ($(CUDADIR),)
-    cuda := $(shell which nvcc | perl -pe 's|/bin/nvcc||')
-    ifeq ($(cuda),)
-        cuda := /usr/local/cuda
-    endif
-$(error Define $$CUDADIR, preferably in your environment, e.g., run "export CUDADIR=$(cuda)" in ~/.bashrc, or "setenv CUDADIR $(cuda)" in ~/.cshrc)
-endif
+#LAPACKDIR ?= /opt/lapack
+#ATLASDIR  ?= /opt/atlas
+#CUDADIR   ?= /usr/local/cuda
+-include make.check-atlas
+-include make.check-cuda
 
 LIBDIR    = -L$(LAPACKDIR) \
             -L$(ATLASDIR)/lib \

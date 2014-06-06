@@ -1,0 +1,86 @@
+November 2013
+
+For compiling on Windows, there are a couple options.
+
+1) Setup a unix-like environment such as cygwin or mingw,
+   and use the existing Makefiles.
+   This purportedly works, but we haven't used it ourselves.
+
+2) Use CMake to generate a Visual Studio project file,
+   and compile everything using Visual Studio.
+   Here are instructions for using CMake.
+
+Install CMake. We used version 2.8.11.2, available from
+http://www.cmake.org/files/v2.8/
+
+Unpack the MAGMA distribution. Let's say it's in directory c:\magma.
+
+Run the CMake GUI. A window will appear with two questions:
+
+   Where is the source code:
+   Enter the directory where you unpacked MAGMA, e.g., c:\magma
+
+   Where to build the binaries:
+   Enter a new directory in which to build MAGMA, e.g., c:\magma\build
+   This must be different than the previous MAGMA directory, i.e.,
+   we do not allow in-place builds.
+
+Click the Configure button.
+
+It will ask to create the build directory; enter Yes.
+
+It will ask what generator to use. We used "Visual Studio 10 Win64",
+with the default native compilers. Click Finish.
+
+It should spend a few minutes analyzing your system, then return to the
+main window with an initial configuration. Likely you will want to tweak
+the setup some.
+
+1) It seems to find CUDA fine, but you can adjust any CUDA settings there.
+   We used the defaults.
+
+2) It probably won't find LAPACK on Windows. Set the LAPACK_LIBRARIES to
+   a semi-colon separated list of libraries. For Intel MKL, we used
+   (all on one line, no spaces before or after):
+
+   c:\Program Files (x86)\Intel\Composer XE\mkl\lib\intel64\mkl_intel_lp64_dll.lib;c:\Program Files (x86)\Intel\Composer XE\mkl\lib\intel64\mkl_intel_thread_dll.lib;c:\Program Files (x86)\Intel\Composer XE\mkl\lib\intel64\mkl_core_dll.lib;c:\Program Files (x86)\Intel\Composer XE\compiler\lib\intel64\libiomp5md.lib
+   
+   For MKL, you can determine what libraries to link with using the
+   Intel MKL Link Link Advisor, at
+   http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+
+3) If using Intel MKL, also set MKLROOT. In our case, we used:
+   C:\Program Files (x86)\Intel\Composer XE\mkl
+
+4) GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
+   to specify for which GPUs you want to compile MAGMA:
+       Tesla  - NVIDIA compute capability 1.x cards
+       Fermi  - NVIDIA compute capability 2.x cards
+       Kepler - NVIDIA compute capability 3.x cards
+   The default is all, "Tesla Fermi Kepler".
+   See http://developer.nvidia.com/cuda-gpus
+
+Click Configure again.
+Click Generate.
+
+Close Cmake.
+
+Open the Visual Studio (VS) solution file, build\magma.sln
+
+In the Toolbar, select the desired Solution Configuration:
+   Debug
+   Release
+   etc.
+
+From the Build menu, run Build Solution.
+VS does not support parallel builds with nvcc, so it will take a long time
+to build -- perhaps an hour.
+
+Once built, the MAGMA library and testers should be in
+   build\lib\Debug\
+   build\testing\Debug\
+where "Debug" depends on what solution configuration you chose.
+
+CMake would not compile Fortran and C++ files in the same library, so Fortran
+files are compiled into a separate magmaf library. Currently, it is only
+required for the non-symmetric eigenvalue problem, though.

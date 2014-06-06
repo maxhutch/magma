@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:18:00 2013
+       @generated d Tue Dec 17 13:18:56 2013
        @author Mark Gates
 
 */
@@ -67,15 +67,15 @@ int main( int argc, char** argv)
             }
             gbytes = 2.*mb*nb*ntile / 1e9;
             
-            TESTING_MALLOC(   h_A, double, lda *N );
-            TESTING_MALLOC(   h_B, double, lda *N );
-            TESTING_DEVALLOC( d_A, double, ldda*N );
-            TESTING_DEVALLOC( d_B, double, ldda*N );
+            TESTING_MALLOC_CPU( h_A, double, lda *N );
+            TESTING_MALLOC_CPU( h_B, double, lda *N );
+            TESTING_MALLOC_DEV( d_A, double, ldda*N );
+            TESTING_MALLOC_DEV( d_B, double, ldda*N );
             
-            TESTING_MALLOC(   hAarray, double*, ntile );
-            TESTING_MALLOC(   hBarray, double*, ntile );
-            TESTING_DEVALLOC( dAarray, double*, ntile );
-            TESTING_DEVALLOC( dBarray, double*, ntile );
+            TESTING_MALLOC_CPU( hAarray, double*, ntile );
+            TESTING_MALLOC_CPU( hBarray, double*, ntile );
+            TESTING_MALLOC_DEV( dAarray, double*, ntile );
+            TESTING_MALLOC_DEV( dBarray, double*, ntile );
             
             lapackf77_dlarnv( &ione, ISEED, &size, h_A );
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
@@ -126,15 +126,15 @@ int main( int argc, char** argv)
                    cpu_perf, cpu_time, gpu_perf, gpu_time,
                    (error == 0. ? "ok" : "failed") );
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
             
-            TESTING_FREE( hAarray );
-            TESTING_FREE( hBarray );
-            TESTING_DEVFREE( dAarray );
-            TESTING_DEVFREE( dBarray );
+            TESTING_FREE_CPU( hAarray );
+            TESTING_FREE_CPU( hBarray );
+            TESTING_FREE_DEV( dAarray );
+            TESTING_FREE_DEV( dBarray );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

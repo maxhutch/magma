@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -56,14 +56,12 @@ int main( int argc, char** argv)
             // load entire matrix, save entire matrix
             gbytes = sizeof(magmaDoubleComplex) * 2.*M*N / 1e9;
             
-            // input is M x N
-            TESTING_MALLOC(   h_A, magmaDoubleComplex, lda*N  );
-            TESTING_DEVALLOC( d_A, magmaDoubleComplex, ldda*N );
+            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, lda*N  );  // input:  M x N
+            TESTING_MALLOC_CPU( h_B, magmaDoubleComplex, ldb*M  );  // output: N x M
+            TESTING_MALLOC_CPU( h_R, magmaDoubleComplex, ldb*M  );  // output: N x M
             
-            // output is N x M
-            TESTING_MALLOC(   h_B, magmaDoubleComplex, ldb*M  );
-            TESTING_MALLOC(   h_R, magmaDoubleComplex, ldb*M  );
-            TESTING_DEVALLOC( d_B, magmaDoubleComplex, lddb*M );
+            TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*N );  // input:  M x N
+            TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*M );  // output: N x M
             
             /* Initialize the matrix */
             for( int j = 0; j < N; ++j ) {
@@ -143,11 +141,12 @@ int main( int argc, char** argv)
                        (error  == 0. ? "ok" : "failed") );
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_FREE( h_R );
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_CPU( h_R );
+            
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

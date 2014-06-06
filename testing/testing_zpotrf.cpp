@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
 */
@@ -53,8 +53,8 @@ int main( int argc, char** argv)
             n2    = lda*N;
             gflops = FLOPS_ZPOTRF( N ) / 1e9;
             
-            TESTING_MALLOC(    h_A, magmaDoubleComplex, n2 );
-            TESTING_HOSTALLOC( h_R, magmaDoubleComplex, n2 );
+            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, n2 );
+            TESTING_MALLOC_PIN( h_R, magmaDoubleComplex, n2 );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
@@ -100,8 +100,8 @@ int main( int argc, char** argv)
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
                        (int) N, gpu_perf, gpu_time );
             }
-            TESTING_FREE(     h_A );
-            TESTING_HOSTFREE( h_R );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_PIN( h_R );
         }
     }
 

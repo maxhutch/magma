@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
-       @generated s Tue Aug 13 16:44:04 2013
+       @generated s Tue Dec 17 13:18:34 2013
 */
 #include "common_magma.h"
 
@@ -24,11 +24,11 @@ extern "C" magma_int_t
 magma_spotrf_gpu(char uplo, magma_int_t n,
                  float *dA, magma_int_t ldda, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

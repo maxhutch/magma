@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
        
@@ -34,16 +34,16 @@ int main( int argc, char** argv)
 {
     TESTING_INIT();
 
-    cuDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-    cuDoubleComplex calpha    = MAGMA_Z_MAKE( 3.456, 5.678 );
-    cuDoubleComplex cbeta     = MAGMA_Z_MAKE( 1.234, 2.456 );
+    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    magmaDoubleComplex calpha    = MAGMA_Z_MAKE( 3.456, 5.678 );
+    magmaDoubleComplex cbeta     = MAGMA_Z_MAKE( 1.234, 2.456 );
     
     real_Double_t    gflops, gpu_perf=0., cpu_perf=0., gpu_time=0., cpu_time=0.;
     real_Double_t    gpu_perf2=0., gpu_time2=0.;
     double           error=0., errorbis=0., work[1];
-    cuDoubleComplex *hA, *hX, *hB, *hR;
-    cuDoubleComplex *dA[MagmaMaxGPUs], *dX[MagmaMaxGPUs], *dB[MagmaMaxGPUs], *dwork[MagmaMaxGPUs], *hwork[MagmaMaxGPUs+1];
-    cuDoubleComplex *dA2;
+    magmaDoubleComplex *hA, *hX, *hB, *hR;
+    magmaDoubleComplex *dA[MagmaMaxGPUs], *dX[MagmaMaxGPUs], *dB[MagmaMaxGPUs], *dwork[MagmaMaxGPUs], *hwork[MagmaMaxGPUs+1];
+    magmaDoubleComplex *dA2;
     
     /* Matrix size */
     magma_int_t m, size, lda, ldda;
@@ -136,10 +136,11 @@ int main( int argc, char** argv)
         printf("\n");
     }
 
-    TESTING_MALLOC( hA, cuDoubleComplex, lda*m );
-    TESTING_MALLOC( hX, cuDoubleComplex, lda*n );
-    TESTING_MALLOC( hB, cuDoubleComplex, lda*n );
-    TESTING_HOSTALLOC( hR, cuDoubleComplex, lda*n );
+    TESTING_MALLOC_CPU( hA, magmaDoubleComplex, lda*m );
+    TESTING_MALLOC_CPU( hX, magmaDoubleComplex, lda*n );
+    TESTING_MALLOC_CPU( hB, magmaDoubleComplex, lda*n );
+    
+    TESTING_MALLOC_PIN( hR, magmaDoubleComplex, lda*n );
 
     magma_int_t  nbevents =2;
     cudaStream_t streams[MagmaMaxGPUs][20];
@@ -148,11 +149,12 @@ int main( int argc, char** argv)
     for( int d = 0; d < ngpu; ++d ) {
         magma_int_t mlocal = ((m / nb) / ngpu + 1) * nb;
         cudaSetDevice( d );
-        TESTING_DEVALLOC( dA[d], cuDoubleComplex, ldda*mlocal );
-        TESTING_DEVALLOC( dX[d], cuDoubleComplex, ldda*n      );
-        TESTING_DEVALLOC( dB[d], cuDoubleComplex, ldda*n      );
-        TESTING_DEVALLOC( dwork[d], cuDoubleComplex, ldda*n*3  );
-        TESTING_HOSTALLOC( hwork[d], cuDoubleComplex, lda*n );
+        TESTING_MALLOC_DEV( dA[d],    magmaDoubleComplex, ldda*mlocal );
+        TESTING_MALLOC_DEV( dX[d],    magmaDoubleComplex, ldda*n      );
+        TESTING_MALLOC_DEV( dB[d],    magmaDoubleComplex, ldda*n      );
+        TESTING_MALLOC_DEV( dwork[d], magmaDoubleComplex, ldda*n*3    );
+        
+        TESTING_MALLOC_PIN( hwork[d], magmaDoubleComplex, lda*n       );
         for( magma_int_t i = 0; i < nstream; ++i ) {
             cudaStreamCreate( &streams[d][i] );
         }
@@ -161,13 +163,13 @@ int main( int argc, char** argv)
             cudaEventCreateWithFlags(&redevents2[d][i], cudaEventDisableTiming);
         }
     }
-    TESTING_HOSTALLOC( hwork[ngpu], cuDoubleComplex, lda*n );
+    TESTING_MALLOC_PIN( hwork[ngpu], magmaDoubleComplex, lda*n );
 
 
 
     if ( checkres ) {
-    cudaSetDevice( 0 );
-    TESTING_DEVALLOC( dA2, cuDoubleComplex, ldda*m );
+        cudaSetDevice( 0 );
+        TESTING_MALLOC_DEV( dA2, magmaDoubleComplex, ldda*m );
     }
     
     printf( "nb %d, ngpu %d, nstream %d version %d \n", (int) nb, ngpu, nstream, ver );
@@ -192,10 +194,8 @@ int main( int argc, char** argv)
 
         size = lda*m;
         lapackf77_zlarnv( &ione, iseed, &size, hA );
-        // make diagonal real
-        for( int i = 0; i < m; ++i ) {
-            hA[i + i*lda] = MAGMA_Z_MAKE( MAGMA_Z_REAL( hA[i+i*lda] ), 0. );
-        }
+        magma_zmake_hermitian( m, hA, lda );
+        
         size = lda*n;
         lapackf77_zlarnv( &ione, iseed, &size, hX );
         lapackf77_zlarnv( &ione, iseed, &size, hB );
@@ -216,7 +216,7 @@ int main( int argc, char** argv)
 
 
 
-        //memset(hR, 0, lda*n*sizeof(cuDoubleComplex));
+        //memset(hR, 0, lda*n*sizeof(magmaDoubleComplex));
 
         //trace_init( 1, ngpu, nstream, (cudaStream_t*) streams );
 
@@ -257,11 +257,12 @@ int main( int argc, char** argv)
         gpu_time = magma_wtime() - gpu_time;
         gpu_perf = gflops / gpu_time;
             
-        
+        #ifdef TRACING
         char buf[80];
         snprintf( buf, sizeof(buf), "zhemm-m%d-n%d-nb%d-stream%d-ngpu%d-run%d.svg",
                   (int) m, (int) n, (int) nb, (int) nstream, (int) ngpu, (int) j );
-        //trace_finalize( buf, "trace.css" );
+        trace_finalize( buf, "trace.css" );
+        #endif
         
         /* ====================================================================
            Performs operation using CUBLAS
@@ -346,18 +347,34 @@ int main( int argc, char** argv)
     }}}//}
     
     /* Memory clean up */
+    TESTING_FREE_CPU( hA );
+    TESTING_FREE_CPU( hX );
+    TESTING_FREE_CPU( hB );
+    
+    TESTING_FREE_PIN( hR );
+
     for( int d = 0; d < ngpu; ++d ) {
         cudaSetDevice( d );
-        magmablasSetKernelStream(  0  );
-        TESTING_DEVFREE( dA[d] );
-        TESTING_DEVFREE( dX[d] );
-        //TESTING_DEVFREE( dB[d] );
+        TESTING_FREE_DEV( dA[d]    );
+        TESTING_FREE_DEV( dX[d]    );
+        TESTING_FREE_DEV( dB[d]    );
+        TESTING_FREE_DEV( dwork[d] );
+        
+        TESTING_FREE_PIN( hwork[d] );
+        for( magma_int_t i = 0; i < nstream; ++i ) {
+            cudaStreamDestroy( streams[d][i] );
+        }
+        for( magma_int_t i = 0; i < nbevents; ++i ) {
+            cudaEventDestroy( redevents[d][i]  );
+            cudaEventDestroy( redevents2[d][i] );
+        }
     }
-    
-    TESTING_FREE( hA );
-    TESTING_FREE( hX );
-    TESTING_FREE( hB );
-    TESTING_HOSTFREE( hR );
+    TESTING_FREE_PIN( hwork[ngpu] );
+
+    if ( checkres ) {
+        cudaSetDevice( 0 );
+        TESTING_FREE_DEV( dA2 );
+    }
     
     /* Shutdown */
     TESTING_FINALIZE();

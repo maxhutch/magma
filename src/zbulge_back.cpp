@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Azzam Haidar
        @author Stan Tomov
@@ -125,7 +125,7 @@ magma_zbulge_back(magma_int_t threads, char uplo,
 {
     magma_setlapack_numthreads(1);
 
-    double timeaplQ2=0.0;
+    real_Double_t timeaplQ2=0.0;
     double f= 1.;
     magma_int_t n_gpu = ne;
 
@@ -300,7 +300,7 @@ static void *magma_zapplyQ_parallel_section(void *arg)
 
         #ifdef ENABLE_TIMER
         timeQgpu = magma_wtime()-timeQgpu;
-        printf("  Finish Q2_GPU GGG timing= %lf \n" ,timeQgpu);
+        printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
         #endif
     }else{
         //=============================================
@@ -322,7 +322,7 @@ static void *magma_zapplyQ_parallel_section(void *arg)
         #ifdef ENABLE_TIMER
         if(my_core_id == 1){
             timeQcpu = magma_wtime()-timeQcpu;
-            printf("  Finish Q2_CPU CCC timing= %lf \n" ,timeQcpu);
+            printf("  Finish Q2_CPU CCC timing= %f\n", timeQcpu);
         }
         #endif
 

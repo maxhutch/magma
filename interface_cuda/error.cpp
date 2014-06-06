@@ -20,7 +20,7 @@ void magma_xerror( CUresult err, const char* func, const char* file, int line )
 {
     if ( err != CUDA_SUCCESS ) {
         fprintf( stderr, "CUDA driver error: %s (%d) in %s at %s:%d\n",
-                 cuGetErrorString( err ), err, func, file, line );
+                 magma_cuGetErrorString( err ), err, func, file, line );
     }
 }
 
@@ -30,7 +30,7 @@ void magma_xerror( cublasStatus_t err, const char* func, const char* file, int l
 {
     if ( err != CUBLAS_STATUS_SUCCESS ) {
         fprintf( stderr, "CUBLAS error: %s (%d) in %s at %s:%d\n",
-                 cublasGetErrorString( err ), err, func, file, line );
+                 magma_cublasGetErrorString( err ), err, func, file, line );
     }
 }
 
@@ -48,7 +48,7 @@ void magma_xerror( magma_err_t err, const char* func, const char* file, int line
 // ----------------------------------------
 // cuda provides cudaGetErrorString, but not cuGetErrorString.
 extern "C"
-const char* cuGetErrorString( CUresult error )
+const char* magma_cuGetErrorString( CUresult error )
 {
     switch( error ) {
         case CUDA_SUCCESS:
@@ -181,7 +181,7 @@ const char* cuGetErrorString( CUresult error )
             return "unknown";
         
         default:
-            return "unknown error code";
+            return "unknown CUDA error code";
     }
 }
 
@@ -189,7 +189,7 @@ const char* cuGetErrorString( CUresult error )
 // ----------------------------------------
 // cuda provides cudaGetErrorString, but not cublasGetErrorString.
 extern "C"
-const char* cublasGetErrorString( cublasStatus_t error )
+const char* magma_cublasGetErrorString( cublasStatus_t error )
 {
     switch( error ) {
         case CUBLAS_STATUS_SUCCESS:
@@ -217,7 +217,7 @@ const char* cublasGetErrorString( cublasStatus_t error )
             return "internal error";
         
         default:
-            return "unknown error code";
+            return "unknown CUBLAS error code";
     }
 }
 
@@ -287,6 +287,6 @@ const char* magma_strerror( magma_err_t error )
             return "invalid pointer";
         
         default:
-            return "unknown error code";
+            return "unknown MAGMA error code";
     }
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Wed Aug 14 12:17:57 2013
+       @generated s Tue Dec 17 13:18:56 2013
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     float alpha = MAGMA_S_MAKE(  1.5, -2.3 );
     float beta  = MAGMA_S_MAKE( -0.6,  0.8 );
     float *A, *X, *Y, *Ycublas, *Ymagma;
-    float *dA, *dX, *dY, *dC_work;
+    float *dA, *dX, *dY, *dwork;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -53,19 +53,19 @@ int main(int argc, char **argv)
             sizeY  = N*incy;
             gflops = FLOPS_SSYMV( N ) / 1e9;
             
-            TESTING_MALLOC( A,       float, sizeA );
-            TESTING_MALLOC( X,       float, sizeX );
-            TESTING_MALLOC( Y,       float, sizeY );
-            TESTING_MALLOC( Ycublas, float, sizeY );
-            TESTING_MALLOC( Ymagma,  float, sizeY );
+            TESTING_MALLOC_CPU( A,       float, sizeA );
+            TESTING_MALLOC_CPU( X,       float, sizeX );
+            TESTING_MALLOC_CPU( Y,       float, sizeY );
+            TESTING_MALLOC_CPU( Ycublas, float, sizeY );
+            TESTING_MALLOC_CPU( Ymagma,  float, sizeY );
             
-            TESTING_DEVALLOC( dA, float, sizeA );
-            TESTING_DEVALLOC( dX, float, sizeX );
-            TESTING_DEVALLOC( dY, float, sizeY );
+            TESTING_MALLOC_DEV( dA, float, sizeA );
+            TESTING_MALLOC_DEV( dX, float, sizeX );
+            TESTING_MALLOC_DEV( dY, float, sizeY );
             
             blocks = (N + nb - 1) / nb;
             ldwork = lda * (blocks + 1);
-            TESTING_DEVALLOC( dC_work, float, ldwork );
+            TESTING_MALLOC_DEV( dwork, float, ldwork );
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &sizeA, A );
@@ -93,11 +93,9 @@ int main(int argc, char **argv)
             magma_ssetvector( N, Y, incy, dY, incy );
             
             magma_time = magma_sync_wtime( 0 );
-            #if (GPUSHMEM >= 200)
-            magmablas_ssymv2( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy, dC_work, ldwork );
-            #else
-            magmablas_ssymv( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy );
-            #endif
+            magmablas_ssymv_work( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy, dwork, ldwork );
+            // TODO provide option to test non-work interface
+            //magmablas_ssymv( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy );
             magma_time = magma_sync_wtime( 0 ) - magma_time;
             magma_perf = gflops / magma_time;
             
@@ -127,16 +125,16 @@ int main(int argc, char **argv)
                    cpu_perf,    1000.*cpu_time,
                    magma_error, cublas_error );
             
-            TESTING_FREE( A );
-            TESTING_FREE( X );
-            TESTING_FREE( Y );
-            TESTING_FREE( Ycublas );
-            TESTING_FREE( Ymagma );
+            TESTING_FREE_CPU( A );
+            TESTING_FREE_CPU( X );
+            TESTING_FREE_CPU( Y );
+            TESTING_FREE_CPU( Ycublas );
+            TESTING_FREE_CPU( Ymagma  );
             
-            TESTING_DEVFREE( dA );
-            TESTING_DEVFREE( dX );
-            TESTING_DEVFREE( dY );
-            TESTING_DEVFREE( dC_work );
+            TESTING_FREE_DEV( dA );
+            TESTING_FREE_DEV( dX );
+            TESTING_FREE_DEV( dY );
+            TESTING_FREE_DEV( dwork );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

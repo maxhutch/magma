@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     @author Stan Tomov
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated s Tue Aug 13 16:46:11 2013
+    @generated s Tue Dec 17 13:18:57 2013
 
 */
 
@@ -74,14 +74,15 @@ int main( int argc, char** argv)
             lwork  = 1 + 6*N*nb + 2* N*N;
             liwork = 3 + 5*N;
 
-            TESTING_MALLOC(    h_A,    float, n2 );
-            TESTING_MALLOC(    h_B,    float, n2 );
-            TESTING_MALLOC(    w1,     float, N  );
-            TESTING_MALLOC(    w2,     float, N  );
-            TESTING_HOSTALLOC( h_R,    float, n2 );
-            TESTING_HOSTALLOC( h_S,    float, n2 );
-            TESTING_HOSTALLOC( h_work, float,      lwork  );
-            TESTING_MALLOC(    iwork,  magma_int_t, liwork );
+            TESTING_MALLOC_CPU( h_A,    float,      n2     );
+            TESTING_MALLOC_CPU( h_B,    float,      n2     );
+            TESTING_MALLOC_CPU( w1,     float,      N      );
+            TESTING_MALLOC_CPU( w2,     float,      N      );
+            TESTING_MALLOC_CPU( iwork,  magma_int_t, liwork );
+            
+            TESTING_MALLOC_PIN( h_R,    float,      n2     );
+            TESTING_MALLOC_PIN( h_S,    float,      n2     );
+            TESTING_MALLOC_PIN( h_work, float,      lwork  );
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -244,14 +245,15 @@ int main( int argc, char** argv)
                 printf(    "(3)    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e%s\n\n", result[2], (result[2] < tolulp ? "" : "  failed") );
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_FREE( w1  );
-            TESTING_FREE( w2  );
-            TESTING_FREE( iwork );
-            TESTING_HOSTFREE( h_work );
-            TESTING_HOSTFREE( h_R );
-            TESTING_HOSTFREE( h_S );
+            TESTING_FREE_CPU( h_A   );
+            TESTING_FREE_CPU( h_B   );
+            TESTING_FREE_CPU( w1    );
+            TESTING_FREE_CPU( w2    );
+            TESTING_FREE_CPU( iwork );
+            
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_S    );
+            TESTING_FREE_PIN( h_work );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

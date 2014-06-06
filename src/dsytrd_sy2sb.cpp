@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated d Tue Aug 13 16:44:41 2013
+       @generated d Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -23,11 +23,11 @@ magma_dsytrd_sy2sb( char uplo, magma_int_t n, magma_int_t nb,
                     double *dT,
                     magma_int_t threads, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -178,7 +178,7 @@ magma_dsytrd_sy2sb( char uplo, magma_int_t n, magma_int_t nb,
     /* Determine the block size. */
     lwkopt = n * nb;
     if (*info == 0) {
-        MAGMA_D_SET2REAL( work[0], lwkopt );
+        work[0] = MAGMA_D_MAKE( lwkopt, 0 );
     }
 
     if (*info != 0)
@@ -421,7 +421,7 @@ magma_dsytrd_sy2sb( char uplo, magma_int_t n, magma_int_t nb,
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
     magma_free( da );
-    MAGMA_D_SET2REAL( work[0], lwkopt );
+    work[0] = MAGMA_D_MAKE( lwkopt, 0 );
     magmablasSetKernelStream( 0 );
     
     magma_setlapack_numthreads(1);

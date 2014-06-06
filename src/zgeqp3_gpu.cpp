@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
   
        @precisions normal z -> c d s
 
@@ -23,11 +23,11 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
 #endif
                   magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -119,8 +119,8 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
     }
     
     nb = magma_get_zgeqp3_nb(min(m, n));
+    minmn = min(m,n);
     if (*info == 0) {
-        minmn = min(m,n);
         if (minmn == 0) {
             lwkopt = 1;
         } else {

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Wed Aug 14 12:16:22 2013
+       @generated s Tue Dec 17 13:18:36 2013
        @author Stan Tomov
        @author Mark Gates
 */
@@ -33,11 +33,11 @@ magma_sgeev_m(
     float *work, magma_int_t lwork,
     magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -67,22 +67,22 @@ magma_sgeev_m(
     N       (input) INTEGER
             The order of the matrix A. N >= 0.
 
-    A       (input/output) DOUBLE PRECISION array, dimension (LDA,N)
+    A       (input/output) REAL array, dimension (LDA,N)
             On entry, the N-by-N matrix A.
             On exit, A has been overwritten.
 
     LDA     (input) INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    WR      (output) DOUBLE PRECISION array, dimension (N)
-    WI      (output) DOUBLE PRECISION array, dimension (N)
+    WR      (output) REAL array, dimension (N)
+    WI      (output) REAL array, dimension (N)
             WR and WI contain the real and imaginary parts,
             respectively, of the computed eigenvalues.  Complex
             conjugate pairs of eigenvalues appear consecutively
             with the eigenvalue having the positive imaginary part
             first.
 
-    VL      (output) DOUBLE PRECISION array, dimension (LDVL,N)
+    VL      (output) REAL array, dimension (LDVL,N)
             If JOBVL = 'V', the left eigenvectors u(j) are stored one
             after another in the columns of VL, in the same order
             as their eigenvalues.
@@ -93,7 +93,7 @@ magma_sgeev_m(
             The leading dimension of the array VL.  LDVL >= 1; if
             JOBVL = 'V', LDVL >= N.
 
-    VR      (output) DOUBLE PRECISION array, dimension (LDVR,N)
+    VR      (output) REAL array, dimension (LDVR,N)
             If JOBVR = 'V', the right eigenvectors v(j) are stored one
             after another in the columns of VR, in the same order
             as their eigenvalues.
@@ -104,7 +104,7 @@ magma_sgeev_m(
             The leading dimension of the array VR.  LDVR >= 1; if
             JOBVR = 'V', LDVR >= N.
 
-    WORK    (workspace/output) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
+    WORK    (workspace/output) REAL array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
     LWORK   (input) INTEGER

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:46:14 2013
+       @generated s Tue Dec 17 13:18:57 2013
 
 */
 
@@ -62,11 +62,13 @@ int main( int argc, char** argv)
             lwork  = N*nb;
             gflops = FLOPS_SGEHRD( N ) / 1e9;
             
-            TESTING_MALLOC   ( h_A,    float, n2    );
-            TESTING_MALLOC   ( tau,    float, N     );
-            TESTING_HOSTALLOC( h_R,    float, n2    );
-            TESTING_HOSTALLOC( h_work, float, lwork );
-            TESTING_DEVALLOC ( dT,     float, nb*N  );
+            TESTING_MALLOC_CPU( h_A,    float, n2    );
+            TESTING_MALLOC_CPU( tau,    float, N     );
+            
+            TESTING_MALLOC_PIN( h_R,    float, n2    );
+            TESTING_MALLOC_PIN( h_work, float, lwork );
+            
+            TESTING_MALLOC_DEV( dT,     float, nb*N  );
             
             /* Initialize the matrices */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -88,10 +90,10 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.check ) {
                 ltwork = 2*(N*N);
-                TESTING_HOSTALLOC( h_Q,   float, lda*N  );
-                TESTING_MALLOC(    twork, float, ltwork );
+                TESTING_MALLOC_PIN( h_Q,   float, lda*N  );
+                TESTING_MALLOC_CPU( twork, float, ltwork );
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_MALLOC(    rwork, float,          N      );
+                TESTING_MALLOC_CPU( rwork, float, N );
                 #endif
                 
                 lapackf77_slacpy(MagmaUpperLowerStr, &N, &N, h_R, &lda, h_Q, &lda);
@@ -115,10 +117,10 @@ int main( int argc, char** argv)
                                  h_Q, &lda, twork, &ltwork, result);
                 #endif
                 
-                TESTING_HOSTFREE( h_Q );
-                TESTING_FREE( twork );
+                TESTING_FREE_PIN( h_Q   );
+                TESTING_FREE_CPU( twork );
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_FREE( rwork );
+                TESTING_FREE_CPU( rwork );
                 #endif
             }
             
@@ -157,11 +159,13 @@ int main( int argc, char** argv)
                 printf("     ---             ---\n");
             }
             
-            TESTING_FREE    ( h_A  );
-            TESTING_FREE    ( tau  );
-            TESTING_HOSTFREE( h_work);
-            TESTING_HOSTFREE( h_R  );
-            TESTING_DEVFREE ( dT   );
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( tau    );
+            
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_work );
+            
+            TESTING_FREE_DEV( dT     );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

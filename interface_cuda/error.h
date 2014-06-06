@@ -20,8 +20,8 @@ extern "C" {
 // cuda provides cudaGetErrorString,
 // but not cuGetErrorString or cublasGetErrorString, so provide our own.
 // In magma.h, we also provide magma_strerror.
-const char* cuGetErrorString( CUresult error );
-const char* cublasGetErrorString( cublasStatus_t error );
+const char* magma_cuGetErrorString( CUresult error );
+const char* magma_cublasGetErrorString( cublasStatus_t error );
 
 #ifdef __cplusplus
 }

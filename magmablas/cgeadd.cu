@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Wed Aug 14 12:16:36 2013
+       @generated c Tue Dec 17 13:18:44 2013
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -67,16 +67,16 @@ magmablas_cgeadd(
     N       (input) INTEGER
             The number of columns of the matrix dA.  N >= 0.
     
-    ALPHA   (input) COMPLEX DOUBLE PRECISION
+    ALPHA   (input) COMPLEX REAL
             The scalar alpha.
             
-    dA      (input) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    dA      (input) COMPLEX REAL array, dimension (LDDA,N)
             The m by n matrix dA.
     
     LDDA    (input) INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
             
-    dB      (input/output) COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+    dB      (input/output) COMPLEX REAL array, dimension (LDDB,N)
             The m by n matrix dB.
     
     LDDB    (input) INTEGER

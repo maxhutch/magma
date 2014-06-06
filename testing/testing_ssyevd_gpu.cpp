@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-    @generated s Tue Aug 13 16:46:09 2013
+    @generated s Tue Dec 17 13:18:57 2013
 
 */
 
@@ -62,10 +62,10 @@ int main( int argc, char** argv)
             lda  = N;
             ldda = ((N + 31)/32)*32;
             
-            /* Query for workspace sizes */
+            // query for workspace sizes
             magma_ssyevd_gpu( opts.jobz, opts.uplo,
-                              N, d_R, ldda, w1,
-                              h_R, lda,
+                              N, NULL, ldda, NULL,
+                              NULL, lda,
                               aux_work,  -1,
                               aux_iwork, -1,
                               &info );
@@ -73,13 +73,15 @@ int main( int argc, char** argv)
             liwork = aux_iwork[0];
             
             /* Allocate host memory for the matrix */
-            TESTING_MALLOC(    h_A, float, N*lda  );
-            TESTING_MALLOC(    w1,  float, N      );
-            TESTING_MALLOC(    w2,  float, N      );
-            TESTING_HOSTALLOC( h_R, float, N*lda  );
-            TESTING_DEVALLOC(  d_R, float, N*ldda );
-            TESTING_HOSTALLOC( h_work, float,      lwork  );
-            TESTING_MALLOC(    iwork,  magma_int_t, liwork );
+            TESTING_MALLOC_CPU( h_A,    float,      N*lda  );
+            TESTING_MALLOC_CPU( w1,     float,      N      );
+            TESTING_MALLOC_CPU( w2,     float,      N      );
+            TESTING_MALLOC_CPU( iwork,  magma_int_t, liwork );
+            
+            TESTING_MALLOC_PIN( h_R,    float,      N*lda  );
+            TESTING_MALLOC_PIN( h_work, float,      lwork  );
+            
+            TESTING_MALLOC_DEV( d_R,    float,      N*ldda );
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -186,13 +188,15 @@ int main( int argc, char** argv)
                 printf("(3)    | S(w/ U) - S(w/o U) | / |S| = %8.2e%s\n\n", result[2]    , (result[2]  < tolulp ? "" : "  failed") );
             }
             
-            TESTING_FREE(     h_A    );
-            TESTING_FREE(     w1     );
-            TESTING_FREE(     w2     );
-            TESTING_FREE(     iwork  );
-            TESTING_HOSTFREE( h_work );
-            TESTING_HOSTFREE( h_R    );
-            TESTING_DEVFREE(  d_R    );
+            TESTING_FREE_CPU( h_A   );
+            TESTING_FREE_CPU( w1    );
+            TESTING_FREE_CPU( w2    );
+            TESTING_FREE_CPU( iwork );
+            
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_work );
+            
+            TESTING_FREE_DEV( d_R );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

@@ -1,28 +1,23 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:16:37 2013
+       @generated d Tue Dec 17 13:18:44 2013
 
 */
 #include "common_magma.h"
 
-// 512 is maximum number of threads for CUDA capability 1.x
-#if (GPUSHMEM < 200)
-    #define NUM_THREADS 512
-#else
-    #define NUM_THREADS 1024
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // size of work for a thread block
 #define BLK_M 16
 #define BLK_N 16
 
-#define BLK_K (NUM_THREADS / (BLK_M * BLK_N))
+// BLK_K gets defined in magmablas_dgemm_reduce,
+// because it depends on the CUDA architecture at runtime.
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +29,7 @@
 // Having n as template parameter allows compiler to evaluate some conditions at compile time.
 
 template< int n >
-__device__ void sum_reduce2( /*int n,*/ int j, int k, int i, double x[][ BLK_N +1][ BLK_K +1] )
+__device__ void sum_reduce2( /*int n,*/ int j, int k, int i, double x[][ BLK_N+1 ][ n+1 ] )
 {
     __syncthreads();
 /*
@@ -57,24 +52,29 @@ __device__ void sum_reduce2( /*int n,*/ int j, int k, int i, double x[][ BLK_N +
 
 
 //==============================================================================
+// BLK_K size is templated, as it depends on CUDA architecture at runtime.
+// Hmm... how to compile for both CUDA arch 1.x and 2.x?
 
+template< int BLK_K >
 __global__
-void magmablas_dgemm_reduce_kernel(int m, int n, int k, 
-                                   double alpha, 
-                                   const double * __restrict__ d_A, int lda,
-                                   const double * __restrict__ d_B, int ldb,
-                                   double beta,
-                                   double *d_C, int ldc)
+void dgemm_reduce_kernel(
+    int m, int n, int k,
+    double alpha,
+    const double* __restrict__ d_A, int lda,
+    const double* __restrict__ d_B, int ldb,
+    double beta,
+    double      * __restrict__ d_C, int ldc)
 {
+#if (__CUDA_ARCH__ >= 200)
     const int i = threadIdx.x;
     
     if (blockIdx.x*BLK_M + threadIdx.y < m && blockIdx.y*BLK_N + threadIdx.z < n){
     
         const double *dA = d_A + (blockIdx.x*BLK_M + threadIdx.y) * lda;
         const double *dB = d_B + (blockIdx.y*BLK_N + threadIdx.z) * ldb;
-        double *dC = d_C + blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
+        double       *dC = d_C +  blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
         
-        __shared__ double sum[BLK_M][BLK_N+1][ BLK_K +1];
+        __shared__ double sum[BLK_M][BLK_N+1][BLK_K+1];
         double lsum;
         
         /*  w := v' * C  */
@@ -91,45 +91,64 @@ void magmablas_dgemm_reduce_kernel(int m, int n, int k,
             if (MAGMA_D_EQUAL(beta, MAGMA_D_ZERO))
                 dC[threadIdx.y + threadIdx.z*ldc] = alpha*sum[threadIdx.y][threadIdx.z][0];
             else
-                dC[threadIdx.y + threadIdx.z*ldc] = beta* dC[threadIdx.y + threadIdx.z*ldc] + 
+                dC[threadIdx.y + threadIdx.z*ldc] = beta* dC[threadIdx.y + threadIdx.z*ldc] +
                                                     alpha*sum[threadIdx.y][threadIdx.z][0];
         }
     }
+#endif
 }
 
 //==============================================================================
 
 extern "C" void
-magmablas_dgemm_reduce(magma_int_t m, magma_int_t n, magma_int_t k,
-                       double alpha,
-                       const double *d_A, magma_int_t lda,
-                       const double *d_B, magma_int_t ldb,
-                       double beta,
-                       double *d_C, magma_int_t ldc )
+magmablas_dgemm_reduce(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    double alpha,
+    const double *d_A, magma_int_t lda,
+    const double *d_B, magma_int_t ldb,
+    double beta,
+    double *d_C, magma_int_t ldc )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
     DGEMM_REDUCE  performs one of the matrix-matrix operations
     
-       C := alpha* A' B  + beta*C,
+        C := alpha*A^T*B + beta*C,
     
     where alpha and beta are scalars, and A, B and C are matrices, with A
-    a k-by-m matrix, B a k-by-n matrix, and C an m-by-n matrix. 
+    a k-by-m matrix, B a k-by-n matrix, and C an m-by-n matrix.
     
     This routine is tuned for m, n << k. Typically, m and n are expected
-    to be less than 128. 
+    to be less than 128.
     =====================================================================    */
 
-    dim3  blocks( (m+BLK_M-1)/BLK_M, (n+BLK_N-1)/BLK_N );
-    dim3 threads( BLK_K, BLK_M, BLK_N );
-    magmablas_dgemm_reduce_kernel<<<blocks,threads, 0, magma_stream >>>(
-        m, n, k, alpha, d_A, lda,  d_B, ldb, beta, d_C, ldc );
+    magma_int_t arch = magma_getdevice_arch();
+    if ( arch < 200  ) {
+        // --------------------
+        // call CUDA ARCH 1.x -- maximum 512 threads
+        const int NUM_THREADS = 512;
+        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N));
+        dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
+        dim3 threads( BLK_K, BLK_M, BLK_N );
+        dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
+            ( m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+    }
+    else {
+        // --------------------
+        // call CUDA ARCH 2.x -- maximum 1024 threads
+        const int NUM_THREADS = 1024;
+        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N));
+        dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
+        dim3 threads( BLK_K, BLK_M, BLK_N );
+        dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
+            ( m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+    }
 }
 
 //==============================================================================

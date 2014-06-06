@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:45:11 2013
+       @generated c Tue Dec 17 13:18:45 2013
 
 */
 
@@ -15,11 +15,11 @@
 #define PRECISION_c
 
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
    #define BLOCK_SIZE 512
-#else
-   #define BLOCK_SIZE 768
-#endif
+//#else
+//   #define BLOCK_SIZE 768
+//#endif
 
 __global__ void magma_cgemv_kernel3(int m, const magmaFloatComplex * __restrict__ V, int ldv,
                                     magmaFloatComplex *c, magmaFloatComplex *dwork,
@@ -37,11 +37,11 @@ magma_claqps2_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
              magmaFloatComplex *F,  magma_int_t ldf)
 {
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -74,7 +74,7 @@ magma_claqps2_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
     KB      (output) INTEGER
             The number of columns actually factorized.
 
-    A       (input/output) COMPLEX*16 array, dimension (LDA,N)
+    A       (input/output) COMPLEX array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, block A(OFFSET+1:M,1:KB) is the triangular
             factor obtained and block A(1:OFFSET,1:N) has been
@@ -89,19 +89,19 @@ magma_claqps2_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             JPVT(I) = K <==> Column K of the full matrix A has been
             permuted into position I in AP.
 
-    TAU     (output) COMPLEX*16 array, dimension (KB)
+    TAU     (output) COMPLEX array, dimension (KB)
             The scalar factors of the elementary reflectors.
 
-    VN1     (input/output) DOUBLE PRECISION array, dimension (N)
+    VN1     (input/output) REAL array, dimension (N)
             The vector with the partial column norms.
 
-    VN2     (input/output) DOUBLE PRECISION array, dimension (N)
+    VN2     (input/output) REAL array, dimension (N)
             The vector with the exact column norms.
 
-    AUXV    (input/output) COMPLEX*16 array, dimension (NB)
+    AUXV    (input/output) COMPLEX array, dimension (NB)
             Auxiliar vector.
 
-    F       (input/output) COMPLEX*16 array, dimension (LDF,NB)
+    F       (input/output) COMPLEX array, dimension (LDF,NB)
             Matrix F' = L*Y'*A.
 
     LDF     (input) INTEGER
@@ -228,10 +228,10 @@ magma_claqps2_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             i__2 = k + 1;
             /* left-looking update of rows,                     *
              * since F=A'v with original A, so no right-looking */
-            magmablas_cgemm( MagmaNoTrans, MagmaConjTrans, ione, i__1, i__2,
-                             c_neg_one, A(rk, 0  ), lda,
-                                        F(k+1,0  ), ldf,
-                             c_one,     A(rk, k+1), lda ); 
+            magma_cgemm( MagmaNoTrans, MagmaConjTrans, ione, i__1, i__2,
+                         c_neg_one, A(rk, 0  ), lda,
+                                    F(k+1,0  ), ldf,
+                         c_one,     A(rk, k+1), lda ); 
         }
         
         /* Update partial column norms. */

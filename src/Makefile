@@ -1,11 +1,12 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.0) --
+#   -- MAGMA (version 1.4.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      August 2013
+#      December 2013
 #//////////////////////////////////////////////////////////////////////////////
 
+DIR = src
 MAGMA_DIR = ..
 include ../Makefile.internal
 
@@ -17,7 +18,7 @@ include ../Makefile.internal
 
 # ----------
 # Cholesky, GPU interface
-ZSRC += \
+ZSRC := \
 	zcposv_gpu.cpp		\
 	\
 	zposv_gpu.cpp		\
@@ -78,6 +79,7 @@ ZSRC += \
 	zgelqf_gpu.cpp		\
 	zgels3_gpu.cpp		\
 	zgels_gpu.cpp		\
+	zgegqr_gpu.cpp          \
 	zgeqrf2_gpu.cpp		\
 	zgeqrf3_gpu.cpp		\
 	zgeqrf_gpu.cpp		\
@@ -219,6 +221,8 @@ ZSRC += \
 	zlahr2.cpp		\
 	zlahru.cpp		\
 	zunghr.cpp		\
+	lapack_dtrevc3.f	\
+	lapack_ztrevc3.f	\
 
 # non-symmetric eigenvalues, multi-GPU
 ZSRC += \
@@ -243,10 +247,13 @@ ZSRC += \
 -include Makefile.src
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
+
 ALLOBJ := $(ALLSRC:.cpp=.o)
+ALLOBJ := $(ALLOBJ:.f=.o)
 
 .PHONY: all clean cleanall
 
+.DEFAULT_GOAL := all
 all: $(LIBMAGMA)
 
 $(LIBMAGMA): $(ALLOBJ) stamp

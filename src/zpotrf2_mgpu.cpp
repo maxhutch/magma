@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -43,11 +43,11 @@ magma_zpotrf2_mgpu(int num_gpus, char uplo, magma_int_t m, magma_int_t n,
                    magma_queue_t stream[][3], magma_event_t event[][5],
                    magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -153,7 +153,7 @@ magma_zpotrf2_mgpu(int num_gpus, char uplo, magma_int_t m, magma_int_t n,
     magma_setdevice(0);
 
     /* == initialize the trace */
-    trace_init( 1, num_gpus, 3, stream );
+    trace_init( 1, num_gpus, 3, (magma_queue_t*)stream );
 
     /* Use blocked code. */
     if (upper) {

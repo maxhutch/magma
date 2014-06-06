@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:18:02 2013
+       @generated d Tue Dec 17 13:18:56 2013
 */
 // includes, system
 #include <stdio.h>
@@ -54,13 +54,13 @@ int main( int argc, char** argv)
             lddb = ldda;
             gflops = ( FLOPS_DPOTRF( N ) + FLOPS_DPOTRS( N, opts.nrhs ) ) / 1e9;
             
-            TESTING_MALLOC( h_A, double, lda*N         );
-            TESTING_MALLOC( h_B, double, ldb*opts.nrhs );
-            TESTING_MALLOC( h_X, double, ldb*opts.nrhs );
-            TESTING_MALLOC( work, double,         N             );
+            TESTING_MALLOC_CPU( h_A, double, lda*N         );
+            TESTING_MALLOC_CPU( h_B, double, ldb*opts.nrhs );
+            TESTING_MALLOC_CPU( h_X, double, ldb*opts.nrhs );
+            TESTING_MALLOC_CPU( work, double, N );
             
-            TESTING_DEVALLOC( d_A, double, ldda*N         );
-            TESTING_DEVALLOC( d_B, double, lddb*opts.nrhs );
+            TESTING_MALLOC_DEV( d_A, double, ldda*N         );
+            TESTING_MALLOC_DEV( d_B, double, lddb*opts.nrhs );
             
             /* ====================================================================
                Initialize the matrix
@@ -124,12 +124,13 @@ int main( int argc, char** argv)
                         error, (error < tol ? "" : "  failed"));
             }
             
-            TESTING_FREE(    h_A  );
-            TESTING_FREE(    h_B  );
-            TESTING_FREE(    h_X  );
-            TESTING_FREE(    work );
-            TESTING_DEVFREE( d_A  );
-            TESTING_DEVFREE( d_B  );
+            TESTING_FREE_CPU( h_A  );
+            TESTING_FREE_CPU( h_B  );
+            TESTING_FREE_CPU( h_X  );
+            TESTING_FREE_CPU( work );
+            
+            TESTING_FREE_DEV( d_A  );
+            TESTING_FREE_DEV( d_B  );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

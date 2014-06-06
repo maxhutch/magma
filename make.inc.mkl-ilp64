@@ -1,18 +1,20 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.0) --
+#   -- MAGMA (version 1.4.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      August 2013
+#      December 2013
 #//////////////////////////////////////////////////////////////////////////////
 
-# GPU_TARGET specifies for which GPU you want to compile MAGMA:
-#     "Tesla"  (NVIDIA compute capability 1.x cards)
-#     "Fermi"  (NVIDIA compute capability 2.x cards)
-#     "Kepler" (NVIDIA compute capability 3.x cards)
+# GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
+# to specify for which GPUs you want to compile MAGMA:
+#     Tesla  - NVIDIA compute capability 1.x cards
+#     Fermi  - NVIDIA compute capability 2.x cards
+#     Kepler - NVIDIA compute capability 3.x cards
+# The default is all, "Tesla Fermi Kepler".
 # See http://developer.nvidia.com/cuda-gpus
-
-GPU_TARGET ?= Fermi
+#
+#GPU_TARGET ?= Tesla Fermi Kepler
 
 CC        = gcc
 NVCC      = nvcc
@@ -22,14 +24,14 @@ ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
 
-# Defining MAGMA_ILP64 changes magma_int_t to int64_t in include/magma_types.h
+# Defining MAGMA_ILP64 or MKL_ILP64 changes magma_int_t to int64_t in include/magma_types.h
 # Compiling with -std=c++98 -pedantic finds non-standard things like variable length arrays
-OPTS      = -O3 -DADD_ -Wall -fno-strict-aliasing -fopenmp -DMAGMA_WITH_MKL -DMAGMA_SETAFFINITY -DMAGMA_ILP64 -DMKL_ILP64
+OPTS      = -O3 -DADD_ -Wall -fno-strict-aliasing -fopenmp -DMAGMA_WITH_MKL -DMAGMA_SETAFFINITY -DMKL_ILP64
 OPTS     += -std=c++98 -pedantic -Wno-long-long
 #OPTS     += -Werror  # uncomment to ensure all warnings are dealt with
 F77OPTS   = -O3 -DADD_ -Wall -fdefault-integer-8
 FOPTS     = -O3 -DADD_ -Wall -fdefault-integer-8 -x f95-cpp-input
-NVOPTS    = -O3 -DADD_ -Xcompiler -fno-strict-aliasing -DMAGMA_ILP64 -DMKL_ILP64
+NVOPTS    = -O3 -DADD_ -Xcompiler -fno-strict-aliasing -DMKL_ILP64
 LDOPTS    = -fopenmp
 
 # IMPORTANT: this link line is for 64-bit int !!!!
@@ -37,32 +39,15 @@ LDOPTS    = -fopenmp
 # use the lp64 library, not the ilp64 library. See make.inc.mkl-gcc or make.inc.mkl-icc.
 # see MKL Link Advisor at http://software.intel.com/sites/products/mkl/
 # gcc with MKL 10.3, GNU threads, 64-bit int
-# note -DMAGMA_ILP64 -DMKL_ILP64 and -fdefault-integer-8 in OPTS above
+# note -DMAGMA_ILP64 or -DMKL_ILP64, and -fdefault-integer-8 in OPTS above
 LIB       = -lmkl_gf_ilp64 -lmkl_gnu_thread -lmkl_core -lpthread -lcublas -lcudart -lstdc++ -lm -lgfortran
 
-# define library directories here or in your environment
+# define library directories preferably in your environment, or here.
 # for MKL run, e.g.: source /opt/intel/composerxe/mkl/bin/mklvars.sh intel64
-#MKLROOT   = /opt/intel/composerxe/mkl
-#CUDADIR   = /usr/local/cuda
-
-# check for directories and give user hint how to set them
-ifeq ($(MKLROOT),)
-    vars_sh  := $(shell which icc 2>/dev/null | perl -pe 's|/bin.*/icc|/mkl/bin/mklvars.sh|')
-    vars_csh := $(shell which icc 2>/dev/null | perl -pe 's|/bin.*/icc|/mkl/bin/mklvars.csh|')
-    ifeq ($(vars_sh),)
-        vars_sh  := /opt/intel/composerxe/mkl/bin/mklvars.sh
-        vars_csh := /opt/intel/composerxe/mkl/bin/mklvars.csh
-    endif
-$(error Define $$MKLROOT, preferably in your environment, e.g., run "source $(vars_sh) intel64" in ~/.bashrc, or "source $(vars_csh) intel64" in ~/.cshrc)
-endif
-
-ifeq ($(CUDADIR),)
-    cuda := $(shell which nvcc | perl -pe 's|/bin/nvcc||')
-    ifeq ($(cuda),)
-        cuda := /usr/local/cuda
-    endif
-$(error Define $$CUDADIR, preferably in your environment, e.g., run "export CUDADIR=$(cuda)" in ~/.bashrc, or "setenv CUDADIR $(cuda)" in ~/.cshrc)
-endif
+#MKLROOT ?= /opt/intel/composerxe/mkl
+#CUDADIR ?= /usr/local/cuda
+-include make.check-mkl
+-include make.check-cuda
 
 LIBDIR    = -L$(MKLROOT)/lib/intel64 \
             -L$(CUDADIR)/lib64

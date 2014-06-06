@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions mixed zc -> ds
 
@@ -77,29 +77,29 @@ int main( int argc, char** argv)
             nb     = max( magma_get_zgeqrf_nb( M ), magma_get_cgeqrf_nb( M ) );
             gflops = (FLOPS_ZGEQRF( M, N ) + FLOPS_ZGEQRS( M, N, nrhs )) / 1e9;
             
-            // query for workspace size
             lworkgpu = (M - N + nb)*(nrhs + nb) + nrhs*nb;
             
+            // query for workspace size
             lhwork = -1;
             lapackf77_zgels( MagmaNoTransStr, &M, &N, &nrhs,
-                             h_A, &lda, h_X, &ldb, tmp, &lhwork, &info );
+                             NULL, &lda, NULL, &ldb, tmp, &lhwork, &info );
             lhwork = (magma_int_t) MAGMA_Z_REAL( tmp[0] );
             lhwork = max( lhwork, lworkgpu );
             
-            TESTING_MALLOC( tau,     magmaDoubleComplex, min_mn   );
-            TESTING_MALLOC( h_A,     magmaDoubleComplex, lda*N    );
-            TESTING_MALLOC( h_A2,    magmaDoubleComplex, lda*N    );
-            TESTING_MALLOC( h_B,     magmaDoubleComplex, ldb*nrhs );
-            TESTING_MALLOC( h_X,     magmaDoubleComplex, ldb*nrhs );
-            TESTING_MALLOC( h_R,     magmaDoubleComplex, ldb*nrhs );
-            TESTING_MALLOC( h_workd, magmaDoubleComplex, lhwork   );
+            TESTING_MALLOC_CPU( tau,     magmaDoubleComplex, min_mn   );
+            TESTING_MALLOC_CPU( h_A,     magmaDoubleComplex, lda*N    );
+            TESTING_MALLOC_CPU( h_A2,    magmaDoubleComplex, lda*N    );
+            TESTING_MALLOC_CPU( h_B,     magmaDoubleComplex, ldb*nrhs );
+            TESTING_MALLOC_CPU( h_X,     magmaDoubleComplex, ldb*nrhs );
+            TESTING_MALLOC_CPU( h_R,     magmaDoubleComplex, ldb*nrhs );
+            TESTING_MALLOC_CPU( h_workd, magmaDoubleComplex, lhwork   );
             tau_s   = (magmaFloatComplex*)tau;
             h_works = (magmaFloatComplex*)h_workd;
             
-            TESTING_DEVALLOC( d_A, magmaDoubleComplex, ldda*N      );
-            TESTING_DEVALLOC( d_B, magmaDoubleComplex, lddb*nrhs   );
-            TESTING_DEVALLOC( d_X, magmaDoubleComplex, lddx*nrhs   );
-            TESTING_DEVALLOC( d_T, magmaDoubleComplex, ( 2*min_mn + (N+31)/32*32 )*nb );
+            TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*N      );
+            TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*nrhs   );
+            TESTING_MALLOC_DEV( d_X, magmaDoubleComplex, lddx*nrhs   );
+            TESTING_MALLOC_DEV( d_T, magmaDoubleComplex, ( 2*min_mn + (N+31)/32*32 )*nb );
             d_ST = (magmaFloatComplex*)d_T;
             
             /* Initialize the matrices */
@@ -156,8 +156,8 @@ int main( int argc, char** argv)
             
             /* The allocation of d_SA and d_SB is done here to avoid
              * to double the memory used on GPU with zcgeqrsv */
-            TESTING_DEVALLOC( d_SA, magmaFloatComplex, ldda*N    );
-            TESTING_DEVALLOC( d_SB, magmaFloatComplex, lddb*nrhs );
+            TESTING_MALLOC_DEV( d_SA, magmaFloatComplex, ldda*N    );
+            TESTING_MALLOC_DEV( d_SB, magmaFloatComplex, lddb*nrhs );
             magmablas_zlag2c( M, N,    d_A, ldda, d_SA, ldda, &info );
             magmablas_zlag2c( N, nrhs, d_B, lddb, d_SB, lddb, &info );
             
@@ -166,8 +166,8 @@ int main( int argc, char** argv)
                              d_SB, lddb, h_works, lhwork, &info);
             gpu_time = magma_wtime() - gpu_time;
             gpu_perfs = gflops / gpu_time;
-            TESTING_DEVFREE( d_SA );
-            TESTING_DEVFREE( d_SB );
+            TESTING_FREE_DEV( d_SA );
+            TESTING_FREE_DEV( d_SB );
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -196,17 +196,18 @@ int main( int argc, char** argv)
                    cpu_perf, gpu_perfd, gpu_perfs, gpu_perf, cpu_error, gpu_error,
                    (int) qrsv_iters );
             
-            TESTING_FREE( tau  );
-            TESTING_FREE( h_A  );
-            TESTING_FREE( h_A2 );
-            TESTING_FREE( h_B  );
-            TESTING_FREE( h_X  );
-            TESTING_FREE( h_R  );
-            TESTING_FREE( h_workd );
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
-            TESTING_DEVFREE( d_X );
-            TESTING_DEVFREE( d_T );
+            TESTING_FREE_CPU( tau  );
+            TESTING_FREE_CPU( h_A  );
+            TESTING_FREE_CPU( h_A2 );
+            TESTING_FREE_CPU( h_B  );
+            TESTING_FREE_CPU( h_X  );
+            TESTING_FREE_CPU( h_R  );
+            TESTING_FREE_CPU( h_workd );
+            
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
+            TESTING_FREE_DEV( d_X );
+            TESTING_FREE_DEV( d_T );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

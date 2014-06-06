@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c
        @author Stan Tomov
@@ -21,6 +21,12 @@
  */
 #define VERSION3
 
+/*
+ * TREVC version 1 - LAPACK
+ * TREVC version 2 - new blocked LAPACK
+ */
+#define TREVC_VERSION 2
+
 extern "C" magma_int_t
 magma_zgeev(
     char jobvl, char jobvr, magma_int_t n,
@@ -31,11 +37,11 @@ magma_zgeev(
     magmaDoubleComplex *work, magma_int_t lwork,
     double *rwork, magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -162,7 +168,7 @@ magma_zgeev(
     nb = magma_get_zgehrd_nb( n );
     if (*info == 0) {
         minwrk = (1+nb)*n;
-        work[0] = MAGMA_Z_MAKE( (double) minwrk, 0. );
+        work[0] = MAGMA_Z_MAKE( minwrk, 0 );
 
         if (lwork < minwrk && ! lquery) {
             *info = -12;
@@ -234,7 +240,7 @@ magma_zgeev(
         magma_zgehrd2( n, ilo, ihi, A, lda,
                        &work[itau], &work[iwrk], liwrk, &ierr );
     #elif defined(VERSION3)
-        // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored,
+        // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored,
         magma_zgehrd( n, ilo, ihi, A, lda,
                       &work[itau], &work[iwrk], liwrk, dT, &ierr );
     #endif
@@ -253,7 +259,7 @@ magma_zgeev(
             lapackf77_zunghr( &n, &ilo, &ihi, vl, &ldvl, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
-            // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored
+            // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_zunghr( n, ilo, ihi, vl, ldvl, &work[itau], dT, nb, &ierr );
         #endif
 
@@ -286,7 +292,7 @@ magma_zgeev(
             lapackf77_zunghr( &n, &ilo, &ihi, vr, &ldvr, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
-            // Version 3 - LAPACK consistent MAGMA HRD + matrices T stored
+            // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_zunghr( n, ilo, ihi, vr, ldvr, &work[itau], dT, nb, &ierr );
         #endif
 
@@ -318,8 +324,14 @@ magma_zgeev(
          * (CWorkspace: need 2*N)
          * (RWorkspace: need 2*N) */
         irwork = ibal + n;
+        #if TREVC_VERSION == 1
         lapackf77_ztrevc( side, "B", select, &n, A, &lda, vl, &ldvl,
                           vr, &ldvr, &n, &nout, &work[iwrk], &rwork[irwork], &ierr );
+        #elif TREVC_VERSION == 2
+        liwrk = lwork - iwrk;
+        lapackf77_ztrevc3( side, "B", select, &n, A, &lda, vl, &ldvl,
+                           vr, &ldvr, &n, &nout, &work[iwrk], &liwrk, &rwork[irwork], &ierr );
+        #endif
     }
 
     if (wantvl) {
@@ -346,7 +358,7 @@ magma_zgeev(
             tmp = z__1;
             cblas_zscal( n, CBLAS_SADDR(tmp), vl(0,i), 1 );
             d__1 = MAGMA_Z_REAL( *vl(k,i) );
-            MAGMA_Z_SET2REAL( z__1, d__1 );
+            z__1 = MAGMA_Z_MAKE( d__1, 0 );
             *vl(k,i) = z__1;
         }
     }
@@ -375,7 +387,7 @@ magma_zgeev(
             tmp = z__1;
             cblas_zscal( n, CBLAS_SADDR(tmp), vr(0,i), 1 );
             d__1 = MAGMA_Z_REAL( *vr(k,i) );
-            MAGMA_Z_SET2REAL( z__1, d__1 );
+            z__1 = MAGMA_Z_MAKE( d__1, 0 );
             *vr(k,i) = z__1;
         }
     }

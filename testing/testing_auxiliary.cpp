@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Mark Gates
 */
@@ -27,6 +27,8 @@ void test_num_gpus()
     
     printf( "$MAGMA_NUM_GPUS  ngpu\n" );
     printf( "=====================\n" );
+    
+#ifndef _MSC_VER // not Windows
     
     unsetenv("MAGMA_NUM_GPUS");
     ngpu = magma_num_gpus();
@@ -77,6 +79,8 @@ void test_num_gpus()
     ngpu = magma_num_gpus();
     printf( "%-15s  %d\n\n", getenv("MAGMA_NUM_GPUS"), ngpu );
     assert( ngpu == min( 32, maxgpu ) );
+    
+#endif // not Windows
 }
 
 int main( int argc, char** argv )

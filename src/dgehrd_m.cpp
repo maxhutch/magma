@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:16:22 2013
+       @generated d Tue Dec 17 13:18:36 2013
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -21,11 +21,11 @@ magma_dgehrd_m(
     double *T,
     magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -146,7 +146,7 @@ magma_dgehrd_m(
     
     *info = 0;
     iws = n*(nb + nb*ngpu);
-    MAGMA_D_SET2REAL( work[0], (double) iws );
+    work[0] = MAGMA_D_MAKE( iws, 0 );
 
     lquery = lwork == -1;
     if (n < 0) {
@@ -297,7 +297,7 @@ magma_dgehrd_m(
     // add 1 to i for 1-based index
     i += 1;
     lapackf77_dgehd2(&n, &i, &ihi, A, &lda, tau, work, &iinfo);
-    MAGMA_D_SET2REAL( work[0], (double) iws );
+    work[0] = MAGMA_D_MAKE( iws, 0 );
     
 CLEANUP:
     for( d = 0; d < ngpu; ++d ) {

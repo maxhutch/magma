@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 */
 
 #include <stdio.h>
@@ -27,11 +27,11 @@ extern "C" magma_context *
 magma_init( void *params, void* (*func)(void *a), magma_int_t nthread, magma_int_t ncpu, magma_int_t ngpu,
         magma_int_t argc, char **argv)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -126,11 +126,11 @@ magma_init( void *params, void* (*func)(void *a), magma_int_t nthread, magma_int
 extern "C" void
 magma_finalize( magma_context *cntxt)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

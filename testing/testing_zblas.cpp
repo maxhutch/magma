@@ -1,12 +1,17 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
        @author Mark Gates
+       
+       These tests ensure that the MAGMA wrappers around CUBLAS calls are
+       correct, for example,
+       magma_ztrmm(...) and cublasZtrmm(...) produce /exactly/ the same results.
+       It tests all combinations of options (trans, uplo, ...) for each size.
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -64,7 +69,7 @@ int main( int argc, char** argv )
         n = opts.nsize[i];
         k = opts.ksize[i];
         printf("=========================================================================\n");
-        printf( "M %d, N %d, K %d\n", (int) m, (int) n, (int) k );
+        printf( "m=%d, n=%d, k=%d\n", (int) m, (int) n, (int) k );
         
         // allocate matrices
         // over-allocate so they can be any combination of {m,n,k} x {m,n,k}.
@@ -91,19 +96,23 @@ int main( int argc, char** argv )
         printf( "========== Level 1 BLAS ==========\n" );
         
         // ----- test ZSWAP
-        // swap 2nd and 3rd columns of dA, then copy to C2 and compare with A
-        assert( n >= 4 );
-        magma_zsetmatrix( m, n, A, ld, dA, ld );
-        magma_zsetmatrix( m, n, A, ld, dB, ld );
-        magma_zswap( m, dA(0,1), 1, dA(0,2), 1 );
-        magma_zswap( m, dB(0,1), 1, dB(0,2), 1 );
-        
-        // check results, storing diff between magma and cuda calls in C2
-        cublasZaxpy( ld*n, c_neg_one, dA, 1, dB, 1 );
-        magma_zgetmatrix( m, n, dB, ld, C2, ld );
-        error = lapackf77_zlange( "F", &m, &k, C2, &ld, work );
-        total_error += error;
-        printf( "zswap             diff %.2g\n", error );
+        // swap columns 2 and 3 of dA, then copy to C2 and compare with A
+        if ( n >= 3 ) {
+            magma_zsetmatrix( m, n, A, ld, dA, ld );
+            magma_zsetmatrix( m, n, A, ld, dB, ld );
+            magma_zswap( m, dA(0,1), 1, dA(0,2), 1 );
+            magma_zswap( m, dB(0,1), 1, dB(0,2), 1 );
+            
+            // check results, storing diff between magma and cuda calls in C2
+            cublasZaxpy( ld*n, c_neg_one, dA, 1, dB, 1 );
+            magma_zgetmatrix( m, n, dB, ld, C2, ld );
+            error = lapackf77_zlange( "F", &m, &k, C2, &ld, work );
+            total_error += error;
+            printf( "zswap             diff %.2g\n", error );
+        }
+        else {
+            printf( "zswap skipped for n < 3\n" );
+        }
         
         // ----- test IZAMAX
         // get argmax of column of A

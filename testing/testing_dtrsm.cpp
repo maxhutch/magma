@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 19:14:53 2013
+       @generated d Tue Dec 17 13:18:56 2013
        @author Chongxiao Cao
 */
 // make sure that asserts are enabled
@@ -87,18 +87,18 @@ int main( int argc, char** argv)
             sizeA = lda*Ak;
             sizeB = ldb*N;
             
-            TESTING_MALLOC( h_A,  double, lda*Ak );
-            TESTING_MALLOC( LU,      double, lda*Ak );
-            TESTING_MALLOC( LUT,  double, lda*Ak );
-            TESTING_MALLOC( h_B,  double, ldb*N  );
-            TESTING_MALLOC( h_B1,  double, ldb*N );
-            TESTING_MALLOC( h_X1,  double, ldb*N );
-            TESTING_MALLOC( h_X2,  double, ldb*N );
-            TESTING_MALLOC( h_Bcublas, double, ldb*N  );
-            TESTING_MALLOC( h_Bmagma, double, ldb*N  );
+            TESTING_MALLOC_CPU( h_A,       double, lda*Ak  );
+            TESTING_MALLOC_CPU( LU,        double, lda*Ak  );
+            TESTING_MALLOC_CPU( LUT,       double, lda*Ak  );
+            TESTING_MALLOC_CPU( h_B,       double, ldb*N   );
+            TESTING_MALLOC_CPU( h_B1,      double, ldb*N   );
+            TESTING_MALLOC_CPU( h_X1,      double, ldb*N   );
+            TESTING_MALLOC_CPU( h_X2,      double, ldb*N   );
+            TESTING_MALLOC_CPU( h_Bcublas, double, ldb*N   );
+            TESTING_MALLOC_CPU( h_Bmagma,  double, ldb*N   );
             
-            TESTING_DEVALLOC( d_A, double, ldda*Ak );
-            TESTING_DEVALLOC( d_B, double, lddb*N  );
+            TESTING_MALLOC_DEV( d_A,       double, ldda*Ak );
+            TESTING_MALLOC_DEV( d_B,       double, lddb*N  );
             
             /* Initialize the matrices */
             lapackf77_dlarnv( &ione, ISEED, &sizeA, LU );
@@ -215,18 +215,18 @@ int main( int argc, char** argv)
                         magma_error, cublas_error );
             }
             
-            TESTING_FREE( h_A  );
-            TESTING_FREE( LU  );
-            TESTING_FREE( LUT );
-            TESTING_FREE( h_B  );
-            TESTING_FREE( h_Bcublas );
-            TESTING_FREE( h_Bmagma );
-            TESTING_FREE( h_B1  );
-            TESTING_FREE( h_X1 );
-            TESTING_FREE( h_X2 );
+            TESTING_FREE_CPU( h_A  );
+            TESTING_FREE_CPU( LU   );
+            TESTING_FREE_CPU( LUT  );
+            TESTING_FREE_CPU( h_B  );
+            TESTING_FREE_CPU( h_B1 );
+            TESTING_FREE_CPU( h_X1 );
+            TESTING_FREE_CPU( h_X2 );
+            TESTING_FREE_CPU( h_Bcublas );
+            TESTING_FREE_CPU( h_Bmagma  );
             
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

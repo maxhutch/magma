@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:44:08 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -38,11 +38,11 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, char uplo, magma_int_t m, magma_int_t n
                    magma_queue_t stream[][3], magma_event_t event[][5],
                    magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -704,14 +704,14 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, char uplo, magma_int_t m, magma_int_t n
 #define dA(d, i, j) (dwork[(d)]+(j)*ldda + (i))
 
 extern "C" magma_int_t
-magma_chtodpo(magma_int_t num_gpus, char *uplo, magma_int_t m, magma_int_t n,
+magma_chtodpo(magma_int_t num_gpus, char uplo, magma_int_t m, magma_int_t n,
               magma_int_t off_i, magma_int_t off_j, magma_int_t nb,
               magmaFloatComplex *a,       magma_int_t lda,
               magmaFloatComplex *dwork[], magma_int_t ldda,
               magma_queue_t stream[][3], magma_int_t *info)
 {
     magma_int_t k;
-    if( lapackf77_lsame(uplo, "U") ) {
+    if( lapackf77_lsame(&uplo, "U") ) {
         magma_int_t j, jj, jb, mj;
         
         /* go through each column */
@@ -763,14 +763,14 @@ magma_chtodpo(magma_int_t num_gpus, char *uplo, magma_int_t m, magma_int_t n,
 }
 
 extern "C" magma_int_t
-magma_cdtohpo(magma_int_t num_gpus, char *uplo, magma_int_t m, magma_int_t n,
+magma_cdtohpo(magma_int_t num_gpus, char uplo, magma_int_t m, magma_int_t n,
               magma_int_t off_i, magma_int_t off_j, magma_int_t nb, magma_int_t NB,
               magmaFloatComplex *a,       magma_int_t lda,
               magmaFloatComplex *dwork[], magma_int_t ldda,
               magma_queue_t stream[][3], magma_int_t *info)
 {
     magma_int_t k;
-    if( lapackf77_lsame(uplo, "U") ) {
+    if( lapackf77_lsame(&uplo, "U") ) {
         magma_int_t j, jj, jb, mj;
         
         /* go through each column */

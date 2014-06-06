@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
        @author Raffaele Solca
     
@@ -21,11 +21,11 @@ magma_zhegvr(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
              double *rwork, magma_int_t lrwork, magma_int_t *iwork,
              magma_int_t liwork, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
     Purpose
     =======
@@ -317,7 +317,7 @@ magma_zhegvr(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
     lrwmin = 24 * n;
     liwmin = 10 * n;
     
-    MAGMA_Z_SET2REAL(work[0],(double)lwmin);
+    work[0] = MAGMA_Z_MAKE( lwmin, 0 );
     rwork[0] = lrwmin;
     iwork[0] = liwmin;
     

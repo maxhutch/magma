@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:45:26 2013
+       @generated s Tue Dec 17 13:18:45 2013
 
 */
 #include "common_magma.h"
@@ -18,11 +18,11 @@ magma_sgeqr2_gpu(
     float *dtau, float *dwork,
     magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -37,7 +37,7 @@ magma_sgeqr2_gpu(
     N       (input) INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) COMPLEX*16 array, dimension (LDA,N)
+    A       (input/output) REAL array, dimension (LDA,N)
             On entry, the m by n matrix A.
             On exit, the elements on and above the diagonal of the array
             contain the min(m,n) by n upper trapezoidal matrix R (R is
@@ -48,7 +48,7 @@ magma_sgeqr2_gpu(
     LDA     (input) INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
 
-    TAU     (output) COMPLEX*16 array, dimension (min(M,N))
+    TAU     (output) REAL array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 

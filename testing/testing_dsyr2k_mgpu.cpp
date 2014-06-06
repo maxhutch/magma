@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:18:01 2013
+       @generated d Tue Dec 17 13:18:56 2013
        
        @author Mark Gates
 */
@@ -77,17 +77,17 @@ int main( int argc, char** argv)
                 ldda   = ((n + 31)/32)*32;
                 gflops = FLOPS_DSYR2K( k, n-offset ) / 1e9;
                 
-                TESTING_MALLOC( hA,  double, lda*n );
-                TESTING_MALLOC( hR,  double, lda*n );
-                TESTING_MALLOC( hR2, double, lda*n );
-                TESTING_MALLOC( hV,  double, lda*k*2 );
-                //TESTING_MALLOC( hW,  double, lda*k );
+                TESTING_MALLOC_CPU( hA,  double, lda*n   );
+                TESTING_MALLOC_CPU( hR,  double, lda*n   );
+                TESTING_MALLOC_CPU( hR2, double, lda*n   );
+                TESTING_MALLOC_CPU( hV,  double, lda*k*2 );
+                //TESTING_MALLOC_CPU( hW,  double, lda*k   );
                 for( int d = 0; d < ngpu; ++d ) {
                     magma_int_t nlocal = ((n / nb) / ngpu + 1) * nb;
                     magma_setdevice( d );
-                    TESTING_DEVALLOC( dA[d], double, ldda*nlocal );
-                    TESTING_DEVALLOC( dV[d], double, ldda*k*2      );
-                    //TESTING_DEVALLOC( dW[d], double, ldda*k      );
+                    TESTING_MALLOC_DEV( dA[d], double, ldda*nlocal );
+                    TESTING_MALLOC_DEV( dV[d], double, ldda*k*2    );
+                    //TESTING_MALLOC_DEV( dW[d], double, ldda*k      );
                     for( int i = 0; i < nstream; ++i ) {
                         magma_queue_create( &streams[d][i] );
                     }
@@ -182,16 +182,19 @@ int main( int argc, char** argv)
                             gpu_perf, gpu_time );
                 }
                 
-                TESTING_FREE( hA );
-                TESTING_FREE( hR );
-                TESTING_FREE( hR2 );
-                TESTING_FREE( hV );
-                //TESTING_FREE( hW );
+                TESTING_FREE_CPU( hA  );
+                TESTING_FREE_CPU( hR  );
+                TESTING_FREE_CPU( hR2 );
+                TESTING_FREE_CPU( hV  );
+                //TESTING_FREE_CPU( hW );
                 for( int d = 0; d < ngpu; ++d ) {
                     magma_setdevice( d );
-                    TESTING_DEVFREE( dA[d] );
-                    TESTING_DEVFREE( dV[d] );
-                    //TESTING_DEVFREE( dW[d] );
+                    TESTING_FREE_DEV( dA[d] );
+                    TESTING_FREE_DEV( dV[d] );
+                    //TESTING_FREE_DEV( dW[d] );
+                    for( int i = 0; i < nstream; ++i ) {
+                        magma_queue_destroy( streams[d][i] );
+                    }
                 }
             }
         } // offset

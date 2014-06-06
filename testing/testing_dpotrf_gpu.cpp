@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:45:56 2013
+       @generated d Tue Dec 17 13:18:56 2013
 */
 // includes, system
 #include <stdlib.h>
@@ -54,9 +54,9 @@ int main( int argc, char** argv)
             ldda = ((N+31)/32)*32;
             gflops = FLOPS_DPOTRF( N ) / 1e9;
             
-            TESTING_MALLOC(    h_A, double, n2     );
-            TESTING_HOSTALLOC( h_R, double, n2     );
-            TESTING_DEVALLOC(  d_A, double, ldda*N );
+            TESTING_MALLOC_CPU( h_A, double, n2     );
+            TESTING_MALLOC_PIN( h_R, double, n2     );
+            TESTING_MALLOC_DEV( d_A, double, ldda*N );
             
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
@@ -104,9 +104,9 @@ int main( int argc, char** argv)
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
                        (int) N, gpu_perf, gpu_time );
             }
-            TESTING_FREE(     h_A );
-            TESTING_HOSTFREE( h_R );
-            TESTING_DEVFREE(  d_A );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_PIN( h_R );
+            TESTING_FREE_DEV( d_A );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

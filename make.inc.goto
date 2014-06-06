@@ -1,22 +1,24 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.0) --
+#   -- MAGMA (version 1.4.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      August 2013
+#      December 2013
 #
 #      Contributed by: Allan Menezes (Ontario, Canada)
 #      Note that GOTO BLAS is no longer maintained.
 #      We provide this file as an example only.
 #//////////////////////////////////////////////////////////////////////////////
 
-# GPU_TARGET specifies for which GPU you want to compile MAGMA:
-#     "Tesla" (NVIDIA compute capability 1.x cards)
-#     "Fermi" (NVIDIA compute capability 2.x cards)
-#     "Kepler" (NVIDIA compute capability 3.x cards)
+# GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
+# to specify for which GPUs you want to compile MAGMA:
+#     Tesla  - NVIDIA compute capability 1.x cards
+#     Fermi  - NVIDIA compute capability 2.x cards
+#     Kepler - NVIDIA compute capability 3.x cards
+# The default is all, "Tesla Fermi Kepler".
 # See http://developer.nvidia.com/cuda-gpus
-
-GPU_TARGET = Fermi
+#
+#GPU_TARGET ?= Tesla Fermi Kepler
 
 CC        = gcc
 NVCC      = nvcc

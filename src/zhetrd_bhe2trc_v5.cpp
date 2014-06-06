@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -272,7 +272,7 @@ magma_int_t magma_zhetrd_bhe2trc_v5(magma_int_t threads, magma_int_t wantz, char
     magmaDoubleComplex *A2;
     magma_zmalloc_cpu(&A2, n*lda2);
 
-    memset(A2 , 0, n*lda2*sizeof(magmaDoubleComplex));
+    memset(A2, 0, n*lda2*sizeof(magmaDoubleComplex));
 
     for (magma_int_t j = 0; j < n-nb; j++)
     {
@@ -290,7 +290,7 @@ magma_int_t magma_zhetrd_bhe2trc_v5(magma_int_t threads, magma_int_t wantz, char
        magma_zsetmatrix( n, n, A, lda, dQ1, lddq1 );
 
     timelpk = magma_wtime() - timelpk;
-    printf("  Finish CONVERT timing= %lf \n" ,timelpk);
+    printf("  Finish CONVERT timing= %f\n", timelpk);
 
     magmaDoubleComplex *T;
     magmaDoubleComplex *TAU;
@@ -356,7 +356,7 @@ magma_int_t magma_zhetrd_bhe2trc_v5(magma_int_t threads, magma_int_t wantz, char
     magma_free_cpu(arg);
     magma_free_cpu(prog);
 
-    printf("  Finish BULGE+T timing= %lf \n" ,timeblg);
+    printf("  Finish BULGE+T timing= %f\n", timeblg);
 
     /*================================================
      *  store resulting diag and lower diag D and E
@@ -430,7 +430,7 @@ magma_int_t magma_zhetrd_bhe2trc_v5(magma_int_t threads, magma_int_t wantz, char
         //magma_zstedc_withZ(MagmaNoVec, n, D, E, Z, ldz);
 
         timelpk = magma_wtime()-timelpk;
-        printf("  Finish WANTZ %d  eigensolver 'N'    timing= %lf  threads %d \n" ,wantz, timelpk, mklth);
+        printf("  Finish WANTZ %d  eigensolver 'N'    timing=%f  threads %d\n", wantz, timelpk, mklth);
 
     }
     else {
@@ -715,12 +715,12 @@ fin:
     //magma_free_pinned(T);
 
     printf("============================================================================\n");
-    printf("  Finish WANTZ %d  computing Q2       timing= %lf \n" ,wantz, timeaplQ2);
+    printf("  Finish WANTZ %d  computing Q2       timing= %f\n", wantz, timeaplQ2);
 
-    printf("  Finish WANTZ %d  gemm Q1 / apply Q1 timing= %lf \n" ,wantz, timegemm);
-    printf("  Finish WANTZ %d  eigensolver 'I'    timing= %lf  threads %d   N %d    NE %d\n" ,wantz, timelpk, mklth, n, ne);
+    printf("  Finish WANTZ %d  gemm Q1 / apply Q1 timing= %f\n", wantz, timegemm);
+    printf("  Finish WANTZ %d  eigensolver 'I'    timing= %f  threads %d   N %d    NE %d\n", wantz, timelpk, mklth, n, ne);
 
-    printf("  Finish WANTZ %d  full Eigenvectros  timing= %lf  \n",wantz, timeeigen);
+    printf("  Finish WANTZ %d  full Eigenvectros  timing= %f\n", wantz, timeeigen);
     printf("============================================================================\n");
 
 
@@ -798,7 +798,7 @@ static void *parallel_section(void *arg)
                 magma_device_sync();
 
                 timeaplQ1 = magma_wtime()-timeaplQ1;
-                printf("  Finish applyQ1 timing= %lf \n" ,timeaplQ1);
+                printf("  Finish applyQ1 timing= %f\n", timeaplQ1);
             }
 
             //=========================
@@ -809,7 +809,7 @@ static void *parallel_section(void *arg)
             tile_bulge_parallel(0, 1, A, lda, V, ldv, TAU, n, nb, nbtiles, band, grsiz, Vblksiz, prog);
 
             timeB = magma_wtime()-timeB;
-            printf("  Finish BULGE   timing= %lf \n" ,timeB);
+            printf("  Finish BULGE   timing= %f\n", timeB);
 
 
             //=========================
@@ -819,7 +819,7 @@ static void *parallel_section(void *arg)
             tile_bulge_computeT_parallel(0, 1, V, ldv, TAU, T, ldt, n, nb, Vblksiz);
 
             timeT = magma_wtime()-timeT;
-            printf("  Finish T's     timing= %lf \n" ,timeT);
+            printf("  Finish T's     timing= %f\n", timeT);
 
         }else{ // allcore_num > 1
 
@@ -847,7 +847,7 @@ static void *parallel_section(void *arg)
                 magma_device_sync();
 
                 timeaplQ1 = magma_wtime()-timeaplQ1;
-                printf("  Finish applyQ1 timing= %lf \n" ,timeaplQ1);
+                printf("  Finish applyQ1 timing= %f\n", timeaplQ1);
 
             }else{
                 //=========================
@@ -860,7 +860,7 @@ static void *parallel_section(void *arg)
 
                 if(id == 0){
                     timeB = magma_wtime()-timeB;
-                    printf("  Finish BULGE   timing= %lf \n" ,timeB);
+                    printf("  Finish BULGE   timing= %f\n", timeB);
                 }
 
                 //=========================
@@ -873,7 +873,7 @@ static void *parallel_section(void *arg)
 
                 if (id == 0){
                     timeT = magma_wtime()-timeT;
-                    printf("  Finish T's     timing= %lf \n" ,timeT);
+                    printf("  Finish T's     timing= %f\n", timeT);
                 }
             }
 
@@ -893,7 +893,7 @@ static void *parallel_section(void *arg)
 
         if(my_core_id == 0){
             timeB = magma_wtime()-timeB;
-            printf("  Finish BULGE   timing= %lf \n" ,timeB);
+            printf("  Finish BULGE   timing= %f\n", timeB);
         }
     } // WANTZ > 0
 
@@ -1099,7 +1099,7 @@ static void tile_bulge_computeT_parallel(magma_int_t my_core_id, magma_int_t cor
         firstcolj = (bg-1)*Vblksiz + 1;
         rownbm    = magma_ceildiv(n-(firstcolj+1), nb);
         if(bg==nbGblk)
-            rownbm    = magma_ceildiv(n-firstcolj ,nb);  // last blk has size=1 used for complex to handle A(N,N-1)
+            rownbm    = magma_ceildiv(n-firstcolj, nb);  // last blk has size=1 used for complex to handle A(N,N-1)
 
         for (magma_int_t m = rownbm; m>0; m--)
         {
@@ -1196,7 +1196,7 @@ static void *applyQ_parallel_section(void *arg)
             magma_zbulge_applyQ_v2('R', n, n, nb, Vblksiz, dE, ldde, V, ldv, T, ldt, &info);
             magma_device_sync();
             timeQgpu = magma_wtime()-timeQgpu;
-            printf("  Finish Q2_GPU GGG timing= %lf \n" ,timeQgpu);
+            printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
             /* I am one of the remaining cores*/
         }else{
             //=============================================
@@ -1213,7 +1213,7 @@ static void *applyQ_parallel_section(void *arg)
             pthread_barrier_wait(barrier);
             if(my_core_id == 1){
                 timeQcpu = magma_wtime()-timeQcpu;
-                printf("  Finish Q2_CPU CCC timing= %lf \n" ,timeQcpu);
+                printf("  Finish Q2_CPU CCC timing= %f\n", timeQcpu);
             }
 
         } // END if my_core_id
@@ -1238,7 +1238,7 @@ static void *applyQ_parallel_section(void *arg)
                 magma_zbulge_applyQ_v2('L', n_gpu, n, nb, Vblksiz, dE, ldde, V, ldv, T, ldt, &info);
                 magma_device_sync();
                 timeQgpu = magma_wtime()-timeQgpu;
-                printf("  Finish Q2_GPU GGG timing= %lf \n" ,timeQgpu);
+                printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
                 /* I am one of the remaining cores*/
             }else{
                 //=============================================
@@ -1256,7 +1256,7 @@ static void *applyQ_parallel_section(void *arg)
                 pthread_barrier_wait(barrier);
                 if(my_core_id == 1){
                     timeQcpu = magma_wtime()-timeQcpu;
-                    printf("  Finish Q2_CPU CCC timing= %lf \n" ,timeQcpu);
+                    printf("  Finish Q2_CPU CCC timing= %f\n", timeQcpu);
                 }
 
             } // END if my_core_id

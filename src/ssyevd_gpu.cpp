@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated s Wed Aug 14 12:16:13 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -25,11 +25,11 @@ magma_ssyevd_gpu(char jobz, char uplo,
                  magma_int_t *iwork, magma_int_t liwork,
                  magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -73,10 +73,10 @@ magma_ssyevd_gpu(char jobz, char uplo,
     LDDA    (input) INTEGER
             The leading dimension of the array DA.  LDDA >= max(1,N).
 
-    W       (output) DOUBLE PRECISION array, dimension (N)
+    W       (output) REAL array, dimension (N)
             If INFO = 0, the eigenvalues in ascending order.
 
-    WA      (workspace) DOUBLE PRECISION array, dimension (LDWA, N)
+    WA      (workspace) REAL array, dimension (LDWA, N)
 
     LDWA    (input) INTEGER
             The leading dimension of the array WA.  LDWA >= max(1,N).

@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.0) --
+#   -- MAGMA (version 1.4.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      August 2013
+#      December 2013
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
@@ -11,9 +11,9 @@ include $(MAGMA_DIR)/make.inc
 #
 # Set default values if they are not set in make.inc
 #
-PGIFORTRAN   ?= 0
-GPU_TARGET   ?= Fermi
-LIBMAGMA     ?= $(MAGMA_DIR)/lib/libmagma.a
+PGIFORTRAN      ?= 0
+GPU_TARGET      ?= Tesla Fermi Kepler
+LIBMAGMA        ?= $(MAGMA_DIR)/lib/libmagma.a
 LIBMAGMA_SPARSE ?= $(MAGMA_DIR)/lib/libmagma_sparse.a
 
 prefix ?= /usr/local/magma
@@ -28,37 +28,48 @@ prefix ?= /usr/local/magma
 #
 # NVCC options for the different cards
 # sm_xx is binary, compute_xx is PTX for forward compatability
+# MIN_ARCH is lowest requested version 
+# NV_SM    accumulates sm_xx for all requested versions
+# NV_COMP  is compute_xx for highest requested version
 #
-ifeq (${GPU_TARGET}, Tesla)
-	NVOPTS += -DGPUSHMEM=130 -DHAVE_CUBLAS \
-	          -gencode arch=compute_13,code=sm_13 \
-	          -gencode arch=compute_13,code=compute_13 \
-	          -gencode arch=compute_10,code=compute_10
-	OPTS   += -DGPUSHMEM=130 -DHAVE_CUBLAS
-else ifeq (${GPU_TARGET}, Fermi)
-	NVOPTS += -DGPUSHMEM=200 -DHAVE_CUBLAS \
-	          -gencode arch=compute_20,code=sm_20 \
-	          -gencode arch=compute_20,code=compute_20
-	OPTS  += -DGPUSHMEM=200 -DHAVE_CUBLAS
-else ifeq (${GPU_TARGET}, Kepler)
-	NVOPTS += -DGPUSHMEM=300 -DHAVE_CUBLAS \
-	          -gencode arch=compute_30,code=sm_30 \
-	          -gencode arch=compute_35,code=sm_35 \
-	          -gencode arch=compute_35,code=compute_35
-	OPTS   += -DGPUSHMEM=300 -DHAVE_CUBLAS
-else
-$(error GPU_TARGET, currently ${GPU_TARGET}, must be one of Tesla, Fermi, or Kepler. Please edit your make.inc file)
+NV_SM    :=
+NV_COMP  :=
+ifneq ($(findstring Tesla, $(GPU_TARGET)),)
+    MIN_ARCH ?= 100
+    NV_SM    += -gencode arch=compute_13,code=sm_13 \
+                -gencode arch=compute_10,code=compute_10
+    NV_COMP  := -gencode arch=compute_13,code=compute_13
+    #$(info compile for CUDA arch 1.x (Tesla))
 endif
+ifneq ($(findstring Fermi, $(GPU_TARGET)),)
+    MIN_ARCH ?= 200
+    NV_SM    += -gencode arch=compute_20,code=sm_20
+    NV_COMP  := -gencode arch=compute_20,code=compute_20
+    #$(info compile for CUDA arch 2.x (Fermi))
+endif
+ifneq ($(findstring Kepler, $(GPU_TARGET)),)
+    MIN_ARCH ?= 300
+    NV_SM    += -gencode arch=compute_30,code=sm_30 \
+                -gencode arch=compute_35,code=sm_35
+    NV_COMP  := -gencode arch=compute_35,code=compute_35
+    #$(info compile for CUDA arch 3.x (Kepler))
+endif
+ifeq ($(NV_COMP),)
+    $(error GPU_TARGET, currently $(GPU_TARGET), must contain one or more of Tesla, Fermi, or Kepler. Please edit your make.inc file)
+endif
+NVOPTS += -DHAVE_CUBLAS $(NV_SM) $(NV_COMP)
+OPTS   += -DHAVE_CUBLAS -DMIN_CUDA_ARCH=$(MIN_ARCH)
+
 
 LIBEXT = $(LIBDIR) $(LIB)
 
 # Use Plasma to compile zgetfl and ztstrf
 PLASMA = $(shell pkg-config --libs plasma 2> /dev/null )
 ifeq (1, $(words $(findstring plasma, $(PLASMA))))
-	OPTS    := $(OPTS) -DMAGMA_WITH_PLASMA
-	INC     := $(INC) $(shell pkg-config --cflags-only-I plasma)
-	LIBEXT  := $(LIBEXT) $(shell pkg-config --libs plasma)
-	require := plasma
+    OPTS    := $(OPTS) -DMAGMA_WITH_PLASMA
+    INC     := $(INC) $(shell pkg-config --cflags-only-I plasma)
+    LIBEXT  := $(LIBEXT) $(shell pkg-config --libs plasma)
+    require := plasma
 endif
 
 # INC is all external include directories (CUDA, MKL, etc.)
@@ -81,6 +92,16 @@ FOPTS += $(PTROPT)
 # Rules to compile object files
 #
 .SUFFIXES:
+
+%.i: %.cpp
+	$(CC) $(OPTS) $(INC_MAGMA) -E $< -o $@
+
+%.i: %.c
+	$(CC) $(OPTS) $(INC_MAGMA) -E $< -o $@
+
+# force headers to pre-process as C++
+%.i: %.h
+	$(CXX) $(OPTS) $(INC_MAGMA) -E $< -o $@
 
 %.o: %.cpp
 	$(CC) $(OPTS) $(INC_MAGMA) -c $< -o $@

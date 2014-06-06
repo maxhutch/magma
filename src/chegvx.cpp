@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
        @author Raffaele Solca
     
-       @generated c Wed Aug 14 12:16:19 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -20,11 +20,11 @@ magma_chegvx(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
              magmaFloatComplex *work, magma_int_t lwork, float *rwork,
              magma_int_t *iwork, magma_int_t *ifail, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -88,8 +88,8 @@ magma_chegvx(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
     LDB     (input) INTEGER
             The leading dimension of the array B.  LDB >= max(1,N).
     
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
+    VL      (input) REAL
+    VU      (input) REAL
             If RANGE='V', the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = 'A' or 'I'.
@@ -101,7 +101,7 @@ magma_chegvx(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
             Not referenced if RANGE = 'A' or 'V'.
     
-    ABSTOL  (input) DOUBLE PRECISION
+    ABSTOL  (input) REAL
             The absolute error tolerance for the eigenvalues.
             An approximate eigenvalue is accepted as converged
             when it is determined to lie in an interval [a,b]
@@ -124,7 +124,7 @@ magma_chegvx(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
             The total number of eigenvalues found.  0 <= M <= N.
             If RANGE = 'A', M = N, and if RANGE = 'I', M = IU-IL+1.
     
-    W       (output) DOUBLE PRECISION array, dimension (N)
+    W       (output) REAL array, dimension (N)
             The first M elements contain the selected
             eigenvalues in ascending order.
     
@@ -162,7 +162,7 @@ magma_chegvx(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
     
-    RWORK   (workspace) DOUBLE PRECISION array, dimension (7*N)
+    RWORK   (workspace) REAL array, dimension (7*N)
     
     IWORK   (workspace) INTEGER array, dimension (5*N)
     
@@ -256,7 +256,7 @@ magma_chegvx(magma_int_t itype, char jobz, char range, char uplo, magma_int_t n,
     
     lwmin = n * (nb + 1);
     
-    MAGMA_C_SET2REAL(work[0],(float)lwmin);
+    work[0] = MAGMA_C_MAKE( lwmin, 0 );
     
     
     if (lwork < lwmin && ! lquery) {

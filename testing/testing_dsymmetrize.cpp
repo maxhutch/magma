@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:45:53 2013
+       @generated d Tue Dec 17 13:18:56 2013
        @author Mark Gates
 
 */
@@ -53,9 +53,10 @@ int main( int argc, char** argv)
             // load strictly lower triangle, save strictly upper triangle
             gbytes = sizeof(double) * 1.*N*(N-1) / 1e9;
     
-            TESTING_MALLOC(   h_A, double, size   );
-            TESTING_MALLOC(   h_R, double, size   );
-            TESTING_DEVALLOC( d_A, double, ldda*N );
+            TESTING_MALLOC_CPU( h_A, double, size   );
+            TESTING_MALLOC_CPU( h_R, double, size   );
+            
+            TESTING_MALLOC_DEV( d_A, double, ldda*N );
             
             /* Initialize the matrix */
             for( int j = 0; j < N; ++j ) {
@@ -107,9 +108,10 @@ int main( int argc, char** argv)
                    (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
                    (error == 0. ? "ok" : "failed") );
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_R );
-            TESTING_DEVFREE( d_A );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_R );
+            
+            TESTING_FREE_DEV( d_A );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

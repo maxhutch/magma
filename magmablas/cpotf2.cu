@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
-       @generated c Wed Aug 14 12:16:44 2013
+       @generated c Tue Dec 17 13:18:45 2013
 */
 
 #include <stdio.h>
@@ -14,11 +14,11 @@
 
 #define PRECISION_c
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
 #define cdotc_max_bs 512  // 512 is max threads for 1.x cards
-#else
-#define cdotc_max_bs 1024
-#endif
+//#else
+//#define cdotc_max_bs 1024
+//#endif
 
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
@@ -35,11 +35,11 @@ magma_cpotf2_gpu(
     magmaFloatComplex *A, magma_int_t lda,
     magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -200,7 +200,7 @@ __global__ void kernel_cdotc(int n, magmaFloatComplex *x, int incx, int threadSi
 
     if (tx == 0) {
         float xreal = MAGMA_C_REAL(x[n*incx]);
-        MAGMA_C_SET2REAL( x[n*incx], sqrt(xreal - sdata[0]));
+        x[n*incx] = MAGMA_C_MAKE( sqrt(xreal - sdata[0]), 0 );
     }
 }
 
@@ -247,6 +247,8 @@ __global__ void kernel_csscal(int n, magmaFloatComplex *x, int incx)
         factor = MAGMA_C_MAKE(1.0/MAGMA_C_REAL(x[0]), 0.0);
     }
 
+    __syncthreads();
+
     if ( id < n && id >0) {
         x[id*incx] = x[id*incx] * factor;
     }
@@ -292,7 +294,7 @@ void clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
     N       (input) INTEGER
             The length of the vector X.  N >= 0.
 
-    X       (input/output) COMPLEX*16 array, dimension
+    X       (input/output) COMPLEX array, dimension
                            (1+(N-1)*abs(INCX))
             On entry, the vector of length N to be conjugated.
             On exit, X is overwritten with conjg(X).

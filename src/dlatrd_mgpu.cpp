@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated d Wed Aug 14 12:16:15 2013
+       @generated d Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -18,16 +18,14 @@
 
 #define PRECISION_d
 
-#if (GPUSHMEM >= 200)
-
 #define MAGMABLAS_DSYMV_MGPU
 
 #define A(i, j) (a+(j)*lda + (i))
 #define W(i, j) (w+(j)*ldw + (i))
 
-#define dA(id, i, j) (da[(id)]+((j)+loffset)*ldda + (i)+offset)
-#define dW(id, i, j)  (dw[(id)]+  (j)      *lddw + (i))
-#define dW1(id, i, j) (dw[(id)]+ ((j)+nb) *lddw + (i))
+#define dA(id, i, j)  (da[(id)] + ((j)+loffset)*ldda + (i) + offset)
+#define dW(id, i, j)  (dw[(id)] + (j)          *lddw + (i))
+#define dW1(id, i, j) (dw[(id)] + ((j)+nb)     *lddw + (i))
 
 extern "C" double
 magma_dlatrd_mgpu(magma_int_t num_gpus, char uplo,
@@ -44,11 +42,11 @@ magma_dlatrd_mgpu(magma_int_t num_gpus, char uplo,
                   magma_queue_t stream[][10],
                   double *times)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -235,7 +233,7 @@ magma_dlatrd_mgpu(magma_int_t num_gpus, char uplo,
                 lapackf77_dlarfg(&i, &alpha, A(0, i), &ione, &tau[i - 1]);
 
                 e[i-1] = MAGMA_D_REAL( alpha );
-                MAGMA_D_SET2REAL(*A(i-1, i), 1.);
+                *A(i-1,i) = MAGMA_D_MAKE( 1, 0 );
                 for( id=0; id<num_gpus; id++ ) {
                     magma_setdevice(id);
                     dx2[id] = dW1(id, 0, iw);
@@ -347,7 +345,7 @@ magma_dlatrd_mgpu(magma_int_t num_gpus, char uplo,
                 times[0] += GetTimerValue(cpu_start,cpu_end)/1000.0;
 #endif
                 e[i] = MAGMA_D_REAL( alpha );
-                MAGMA_D_SET2REAL(*A(i+1, i), 1.);
+                *A(i+1,i) = MAGMA_D_MAKE( 1, 0 );
                 trace_cpu_end( 0 );
 
                 /* Compute W(i+1:n,i) */
@@ -701,5 +699,3 @@ magmablas_dsymv_sync( magma_int_t num_gpus, magma_int_t k,
 
     return 0;
 }
-
-#endif /* GPUSHMEM >= 200 */

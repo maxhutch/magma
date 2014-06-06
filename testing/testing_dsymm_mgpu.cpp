@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:45:55 2013
+       @generated d Tue Dec 17 13:18:56 2013
        
        @author Mark Gates
 */
@@ -136,10 +136,11 @@ int main( int argc, char** argv)
         printf("\n");
     }
 
-    TESTING_MALLOC( hA, double, lda*m );
-    TESTING_MALLOC( hX, double, lda*n );
-    TESTING_MALLOC( hB, double, lda*n );
-    TESTING_HOSTALLOC( hR, double, lda*n );
+    TESTING_MALLOC_CPU( hA, double, lda*m );
+    TESTING_MALLOC_CPU( hX, double, lda*n );
+    TESTING_MALLOC_CPU( hB, double, lda*n );
+    
+    TESTING_MALLOC_PIN( hR, double, lda*n );
 
     magma_int_t  nbevents =2;
     cudaStream_t streams[MagmaMaxGPUs][20];
@@ -148,11 +149,12 @@ int main( int argc, char** argv)
     for( int d = 0; d < ngpu; ++d ) {
         magma_int_t mlocal = ((m / nb) / ngpu + 1) * nb;
         cudaSetDevice( d );
-        TESTING_DEVALLOC( dA[d], double, ldda*mlocal );
-        TESTING_DEVALLOC( dX[d], double, ldda*n      );
-        TESTING_DEVALLOC( dB[d], double, ldda*n      );
-        TESTING_DEVALLOC( dwork[d], double, ldda*n*3  );
-        TESTING_HOSTALLOC( hwork[d], double, lda*n );
+        TESTING_MALLOC_DEV( dA[d],    double, ldda*mlocal );
+        TESTING_MALLOC_DEV( dX[d],    double, ldda*n      );
+        TESTING_MALLOC_DEV( dB[d],    double, ldda*n      );
+        TESTING_MALLOC_DEV( dwork[d], double, ldda*n*3    );
+        
+        TESTING_MALLOC_PIN( hwork[d], double, lda*n       );
         for( magma_int_t i = 0; i < nstream; ++i ) {
             cudaStreamCreate( &streams[d][i] );
         }
@@ -161,13 +163,13 @@ int main( int argc, char** argv)
             cudaEventCreateWithFlags(&redevents2[d][i], cudaEventDisableTiming);
         }
     }
-    TESTING_HOSTALLOC( hwork[ngpu], double, lda*n );
+    TESTING_MALLOC_PIN( hwork[ngpu], double, lda*n );
 
 
 
     if ( checkres ) {
-    cudaSetDevice( 0 );
-    TESTING_DEVALLOC( dA2, double, ldda*m );
+        cudaSetDevice( 0 );
+        TESTING_MALLOC_DEV( dA2, double, ldda*m );
     }
     
     printf( "nb %d, ngpu %d, nstream %d version %d \n", (int) nb, ngpu, nstream, ver );
@@ -192,10 +194,8 @@ int main( int argc, char** argv)
 
         size = lda*m;
         lapackf77_dlarnv( &ione, iseed, &size, hA );
-        // make diagonal real
-        for( int i = 0; i < m; ++i ) {
-            hA[i + i*lda] = MAGMA_D_MAKE( MAGMA_D_REAL( hA[i+i*lda] ), 0. );
-        }
+        magma_dmake_symmetric( m, hA, lda );
+        
         size = lda*n;
         lapackf77_dlarnv( &ione, iseed, &size, hX );
         lapackf77_dlarnv( &ione, iseed, &size, hB );
@@ -257,11 +257,12 @@ int main( int argc, char** argv)
         gpu_time = magma_wtime() - gpu_time;
         gpu_perf = gflops / gpu_time;
             
-        
+        #ifdef TRACING
         char buf[80];
         snprintf( buf, sizeof(buf), "dsymm-m%d-n%d-nb%d-stream%d-ngpu%d-run%d.svg",
                   (int) m, (int) n, (int) nb, (int) nstream, (int) ngpu, (int) j );
-        //trace_finalize( buf, "trace.css" );
+        trace_finalize( buf, "trace.css" );
+        #endif
         
         /* ====================================================================
            Performs operation using CUBLAS
@@ -346,18 +347,34 @@ int main( int argc, char** argv)
     }}}//}
     
     /* Memory clean up */
+    TESTING_FREE_CPU( hA );
+    TESTING_FREE_CPU( hX );
+    TESTING_FREE_CPU( hB );
+    
+    TESTING_FREE_PIN( hR );
+
     for( int d = 0; d < ngpu; ++d ) {
         cudaSetDevice( d );
-        magmablasSetKernelStream(  0  );
-        TESTING_DEVFREE( dA[d] );
-        TESTING_DEVFREE( dX[d] );
-        //TESTING_DEVFREE( dB[d] );
+        TESTING_FREE_DEV( dA[d]    );
+        TESTING_FREE_DEV( dX[d]    );
+        TESTING_FREE_DEV( dB[d]    );
+        TESTING_FREE_DEV( dwork[d] );
+        
+        TESTING_FREE_PIN( hwork[d] );
+        for( magma_int_t i = 0; i < nstream; ++i ) {
+            cudaStreamDestroy( streams[d][i] );
+        }
+        for( magma_int_t i = 0; i < nbevents; ++i ) {
+            cudaEventDestroy( redevents[d][i]  );
+            cudaEventDestroy( redevents2[d][i] );
+        }
     }
-    
-    TESTING_FREE( hA );
-    TESTING_FREE( hX );
-    TESTING_FREE( hB );
-    TESTING_HOSTFREE( hR );
+    TESTING_FREE_PIN( hwork[ngpu] );
+
+    if ( checkres ) {
+        cudaSetDevice( 0 );
+        TESTING_FREE_DEV( dA2 );
+    }
     
     /* Shutdown */
     TESTING_FINALIZE();

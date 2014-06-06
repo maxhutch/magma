@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @author Raffaele Solca
        
-       @generated s Tue Aug 13 16:44:38 2013
+       @generated s Tue Dec 17 13:18:36 2013
 */
 #include "common_magma.h"
 
@@ -31,20 +31,20 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* q, m
                char range, float vl, float vu,
                magma_int_t il, magma_int_t iu, magma_int_t* info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        .. Scalar Arguments ..
       CHARACTER          RANGE
       INTEGER            IL, IU, INFO, LDQ, N
-      DOUBLE PRECISION   VL, VU
+      REAL   VL, VU
        ..
        .. Array Arguments ..
       INTEGER            IWORK( * )
-      DOUBLE PRECISION   D( * ), E( * ), Q( LDQ, * ),
+      REAL   D( * ), E( * ), Q( LDQ, * ),
      $                   WORK( * )
        ..
 
@@ -58,15 +58,15 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* q, m
     N       (input) INTEGER
             The dimension of the symmetric tridiagonal matrix.  N >= 0.
             
-    D       (input/output) DOUBLE PRECISION array, dimension (N)
+    D       (input/output) REAL array, dimension (N)
             On entry, the main diagonal of the tridiagonal matrix.
             On exit, its eigenvalues.
             
-    E       (input) DOUBLE PRECISION array, dimension (N-1)
+    E       (input) REAL array, dimension (N-1)
             The off-diagonal elements of the tridiagonal matrix.
             On exit, E has been destroyed.
             
-    Q       (input/output) DOUBLE PRECISION array, dimension (LDQ, N)
+    Q       (input/output) REAL array, dimension (LDQ, N)
             On entry, Q will be the identity matrix.
             On exit, Q contains the eigenvectors of the
             tridiagonal matrix.
@@ -75,7 +75,7 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* q, m
             The leading dimension of the array Q.  If eigenvectors are
             desired, then  LDQ >= max(1,N).  In any case,  LDQ >= 1.
             
-    WORK    (workspace) DOUBLE PRECISION array,
+    WORK    (workspace) REAL array,
             the dimension of WORK >= 4*N + N**2.
             
     IWORK   (workspace) INTEGER array,
@@ -87,8 +87,8 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* q, m
                    will be found.
             = 'I': the IL-th through IU-th eigenvalues will be found.
             
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
+    VL      (input) REAL
+    VU      (input) REAL
             If RANGE='V', the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = 'A' or 'I'.

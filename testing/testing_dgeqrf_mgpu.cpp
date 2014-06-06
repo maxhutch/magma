@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:18:07 2013
+       @generated d Tue Dec 17 13:18:56 2013
 */
 // includes, system
 #include <stdlib.h>
@@ -76,14 +76,15 @@ int main( int argc, char** argv )
             
             // query for workspace size
             lhwork = -1;
-            lapackf77_dgeqrf( &M, &N, h_A, &M, tau, tmp, &lhwork, &info );
+            lapackf77_dgeqrf( &M, &N, NULL, &M, NULL, tmp, &lhwork, &info );
             lhwork = (magma_int_t) MAGMA_D_REAL( tmp[0] );
             
             // Allocate host memory for the matrix
-            TESTING_MALLOC(    tau,    double, min_mn );
-            TESTING_MALLOC(    h_A,    double, n2     );
-            TESTING_HOSTALLOC( h_R,    double, n2     );
-            TESTING_MALLOC(    h_work, double, lhwork );
+            TESTING_MALLOC_CPU( tau,    double, min_mn );
+            TESTING_MALLOC_CPU( h_A,    double, n2     );
+            TESTING_MALLOC_CPU( h_work, double, lhwork );
+            
+            TESTING_MALLOC_PIN( h_R,    double, n2     );
             
             // Allocate device memory
             for( int dev = 0; dev < ngpu; dev++ ) {
@@ -93,7 +94,7 @@ int main( int argc, char** argv )
                 else if (dev == (N/nb) % ngpu)
                     n_local += N % nb;
                 magma_setdevice( dev );
-                TESTING_DEVALLOC(  d_lA[dev], double, ldda*n_local );
+                TESTING_MALLOC_DEV( d_lA[dev], double, ldda*n_local );
             }
             
             /* Initialize the matrix */
@@ -105,16 +106,16 @@ int main( int argc, char** argv )
                Performs operation using LAPACK
                =================================================================== */
             if ( opts.lapack ) {
-                double *tau;
-                TESTING_MALLOC( tau, double, min_mn );
+                double *tau2;
+                TESTING_MALLOC_CPU( tau2, double, min_mn );
                 cpu_time = magma_wtime();
-                lapackf77_dgeqrf( &M, &N, h_A, &M, tau, h_work, &lhwork, &info );
+                lapackf77_dgeqrf( &M, &N, h_A, &M, tau2, h_work, &lhwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
                     printf("lapack_dgeqrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                TESTING_FREE( tau );
+                TESTING_FREE_CPU( tau2 );
             }
             
             /* ====================================================================
@@ -141,10 +142,10 @@ int main( int argc, char** argv )
                 double *h_W1, *h_W2, *h_W3;
                 double *h_RW, results[2];
     
-                TESTING_MALLOC( h_W1, double, n2 ); // Q
-                TESTING_MALLOC( h_W2, double, n2 ); // R
-                TESTING_MALLOC( h_W3, double, lwork ); // WORK
-                TESTING_MALLOC( h_RW, double, M );  // RWORK
+                TESTING_MALLOC_CPU( h_W1, double, n2    ); // Q
+                TESTING_MALLOC_CPU( h_W2, double, n2    ); // R
+                TESTING_MALLOC_CPU( h_W3, double, lwork ); // WORK
+                TESTING_MALLOC_CPU( h_RW, double, M );  // RWORK
                 lapackf77_dlarnv( &ione, ISEED2, &n2, h_A );
                 lapackf77_dqrt02( &M, &N, &min_mn, h_A, h_R, h_W1, h_W2, &lda, tau, h_W3, &lwork,
                                   h_RW, results );
@@ -162,11 +163,12 @@ int main( int argc, char** argv )
                 }
                 status |= ! (results[0] < tol);
 
-                TESTING_FREE( h_W1 );
-                TESTING_FREE( h_W2 );
-                TESTING_FREE( h_W3 );
-                TESTING_FREE( h_RW );
-            } else if ( opts.check == 2 ) {
+                TESTING_FREE_CPU( h_W1 );
+                TESTING_FREE_CPU( h_W2 );
+                TESTING_FREE_CPU( h_W3 );
+                TESTING_FREE_CPU( h_RW );
+            }
+            else if ( opts.check == 2 ) {
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
@@ -190,13 +192,15 @@ int main( int argc, char** argv )
 
             }
             
-            TESTING_FREE( tau );
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_work );
-            TESTING_HOSTFREE( h_R );
+            TESTING_FREE_CPU( tau    );
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( h_work );
+            
+            TESTING_FREE_PIN( h_R    );
+            
             for( int dev=0; dev < ngpu; dev++ ){
                 magma_setdevice( dev );
-                TESTING_DEVFREE( d_lA[dev] );
+                TESTING_FREE_DEV( d_lA[dev] );
             }
         }
         if ( opts.niter > 1 ) {

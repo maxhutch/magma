@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:45:25 2013
+       @generated s Tue Dec 17 13:18:45 2013
 */
 
 #include <stdio.h>
@@ -18,11 +18,11 @@
 
 #define sswap_bs 64
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
 #define sger_bs 512  // 512 is max threads for 1.x cards
-#else
-#define sger_bs 1024
-#endif
+//#else
+//#define sger_bs 1024
+//#endif
 
 void magma_sswap(
     magma_int_t n, float *x, magma_int_t i, magma_int_t j, magma_int_t incx);
@@ -38,11 +38,11 @@ magma_sgetf2_gpu(
     magma_int_t *ipiv,
     magma_int_t* info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     SGETF2 computes an LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.

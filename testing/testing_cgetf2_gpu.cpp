@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Wed Aug 14 12:18:04 2013
+       @generated c Tue Dec 17 13:18:57 2013
 */
 // includes, system
 #include <stdlib.h>
@@ -34,8 +34,8 @@ float get_LU_error(magma_int_t M, magma_int_t N,
     magmaFloatComplex *L, *U;
     float work[1], matnorm, residual;
     
-    TESTING_MALLOC( L, magmaFloatComplex, M*min_mn);
-    TESTING_MALLOC( U, magmaFloatComplex, min_mn*N);
+    TESTING_MALLOC_CPU( L, magmaFloatComplex, M*min_mn);
+    TESTING_MALLOC_CPU( U, magmaFloatComplex, min_mn*N);
     memset( L, 0, M*min_mn*sizeof(magmaFloatComplex) );
     memset( U, 0, min_mn*N*sizeof(magmaFloatComplex) );
 
@@ -58,8 +58,8 @@ float get_LU_error(magma_int_t M, magma_int_t N,
     }
     residual = lapackf77_clange("f", &M, &N, LU, &lda, work);
 
-    TESTING_FREE(L);
-    TESTING_FREE(U);
+    TESTING_FREE_CPU( L );
+    TESTING_FREE_CPU( U );
 
     return residual / (matnorm * N);
 }
@@ -95,10 +95,15 @@ int main( int argc, char** argv)
             ldda   = ((M+31)/32)*32;
             gflops = FLOPS_CGETRF( M, N ) / 1e9;
             
-            TESTING_MALLOC(    ipiv, magma_int_t,     min_mn );
-            TESTING_MALLOC(    h_A,  magmaFloatComplex, n2     );
-            TESTING_HOSTALLOC( h_R,  magmaFloatComplex, n2     );
-            TESTING_DEVALLOC(  d_A,  magmaFloatComplex, ldda*N );
+            if ( N > 512 ) {
+                fprintf( stderr, "cgetf2 does not support N > 512; skipping N=%d.\n", (int) N );
+                continue;
+            }
+            
+            TESTING_MALLOC_CPU( ipiv, magma_int_t,        min_mn );
+            TESTING_MALLOC_CPU( h_A,  magmaFloatComplex, n2     );
+            TESTING_MALLOC_PIN( h_R,  magmaFloatComplex, n2     );
+            TESTING_MALLOC_DEV( d_A,  magmaFloatComplex, ldda*N );
             
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
@@ -149,10 +154,10 @@ int main( int argc, char** argv)
                 printf("     ---  \n");
             }
             
-            TESTING_FREE( ipiv );
-            TESTING_FREE( h_A );
-            TESTING_HOSTFREE( h_R );
-            TESTING_DEVFREE( d_A );
+            TESTING_FREE_CPU( ipiv );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_PIN( h_R );
+            TESTING_FREE_DEV( d_A );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

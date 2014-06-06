@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:17:59 2013
+       @generated d Tue Dec 17 13:18:56 2013
        @author Mark Gates
 */
 // includes, system
@@ -60,10 +60,11 @@ int main( int argc, char** argv)
             size   = lda*N;
             gflops = 2.*M*N / 1e9;
             
-            TESTING_MALLOC(   h_A, double, lda *N );
-            TESTING_MALLOC(   h_B, double, lda *N );
-            TESTING_DEVALLOC( d_A, double, ldda*N );
-            TESTING_DEVALLOC( d_B, double, ldda*N );
+            TESTING_MALLOC_CPU( h_A, double, lda *N );
+            TESTING_MALLOC_CPU( h_B, double, lda *N );
+            
+            TESTING_MALLOC_DEV( d_A, double, ldda*N );
+            TESTING_MALLOC_DEV( d_B, double, ldda*N );
             
             lapackf77_dlarnv( &ione, ISEED, &size, h_A );
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
@@ -101,10 +102,11 @@ int main( int argc, char** argv)
             printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
                    (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_DEVFREE(  d_A );
-            TESTING_DEVFREE(  d_B );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

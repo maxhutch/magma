@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
   
-       @generated s Tue Aug 13 19:14:59 2013
+       @generated s Tue Dec 17 13:18:56 2013
 */
 // includes, system
 #include <stdlib.h>
@@ -52,8 +52,8 @@ int main( int argc, char** argv)
             n2     = lda*N;
             gflops = FLOPS_SPOTRI( N ) / 1e9;
             
-            TESTING_MALLOC(    h_A, float, n2 );
-            TESTING_HOSTALLOC( h_R, float, n2 );
+            TESTING_MALLOC_CPU( h_A, float, n2 );
+            TESTING_MALLOC_PIN( h_R, float, n2 );
             
             /* ====================================================================
                Initialize the matrix
@@ -115,8 +115,8 @@ int main( int argc, char** argv)
                        (int) N, gpu_perf, gpu_time );
             }
             
-            TESTING_FREE( h_A );
-            TESTING_HOSTFREE( h_R );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_PIN( h_R );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

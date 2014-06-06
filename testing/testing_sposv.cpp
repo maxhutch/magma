@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:45:58 2013
+       @generated s Tue Dec 17 13:18:56 2013
 */
 // includes, system
 #include <stdio.h>
@@ -52,11 +52,11 @@ int main( int argc, char** argv)
             lda = ldb = N;
             gflops = ( FLOPS_SPOTRF( N ) + FLOPS_SPOTRS( N, opts.nrhs ) ) / 1e9;
             
-            TESTING_MALLOC( h_A, float, lda*N         );
-            TESTING_MALLOC( h_R, float, lda*N         );
-            TESTING_MALLOC( h_B, float, ldb*opts.nrhs );
-            TESTING_MALLOC( h_X, float, ldb*opts.nrhs );
-            TESTING_MALLOC( work, float,         N             );
+            TESTING_MALLOC_CPU( h_A, float, lda*N         );
+            TESTING_MALLOC_CPU( h_R, float, lda*N         );
+            TESTING_MALLOC_CPU( h_B, float, ldb*opts.nrhs );
+            TESTING_MALLOC_CPU( h_X, float, ldb*opts.nrhs );
+            TESTING_MALLOC_CPU( work, float, N );
             
             /* ====================================================================
                Initialize the matrix
@@ -119,11 +119,11 @@ int main( int argc, char** argv)
                         error, (error < tol ? "" : "  failed"));
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_R );
-            TESTING_FREE( h_B );
-            TESTING_FREE( h_X );
-            TESTING_FREE( work );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_R );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_CPU( h_X );
+            TESTING_FREE_CPU( work );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

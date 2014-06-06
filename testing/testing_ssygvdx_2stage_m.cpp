@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated s Tue Aug 13 16:46:13 2013
+    @generated s Tue Dec 17 13:18:56 2013
 
 */
 
@@ -45,7 +45,7 @@ int main( int argc, char** argv)
     magma_int_t lrwork;
 #endif
 
-    float *w1, result;
+    float *w1, result=0;
     magma_int_t *iwork;
     magma_int_t N, n2, info, lwork, liwork;
     float c_zero    = MAGMA_S_ZERO;
@@ -61,7 +61,6 @@ int main( int argc, char** argv)
     float tol = opts.tolerance * lapackf77_slamch("E");
 
     char jobz = opts.jobz;
-    int checkres = opts.check;
 
     char range = 'A';
     char uplo = opts.uplo;
@@ -72,13 +71,13 @@ int main( int argc, char** argv)
     if (f != 1)
         range='I';
 
-    if ( checkres && jobz == MagmaNoVec ) {
+    if ( opts.check && jobz == MagmaNoVec ) {
         fprintf( stderr, "checking results requires vectors; setting jobz=V (option -JV)\n" );
         jobz = MagmaVec;
     }
 
-    printf("using: nrgpu = %d, itype = %d, jobz = %c, range = %c, uplo = %c, checkres = %d, fraction = %6.4f\n",
-           (int) opts.ngpu, (int) itype, jobz, range, uplo, (int) checkres, f);
+    printf("using: nrgpu = %d, itype = %d, jobz = %c, range = %c, uplo = %c, opts.check = %d, fraction = %6.4f\n",
+           (int) opts.ngpu, (int) itype, jobz, range, uplo, (int) opts.check, f);
     
     printf("  N     M   nr GPU     MGPU Time(s) \n");
     printf("====================================\n");
@@ -100,29 +99,25 @@ int main( int argc, char** argv)
             //magma_int_t sizvblg = magma_sbulge_get_lq2(N, threads);        
             //magma_int_t siz = max(sizvblg,n2)+2*(N*NB+N)+24*N; 
             /* Allocate host memory for the matrix */
-            TESTING_HOSTALLOC(   h_A, float, n2);
-            TESTING_HOSTALLOC(   h_B, float, n2);
-            TESTING_MALLOC(    w1, float         ,  N);
-            TESTING_HOSTALLOC(h_work, float,  lwork);
+            TESTING_MALLOC_PIN( h_A,    float, n2 );
+            TESTING_MALLOC_PIN( h_B,    float, n2 );
+            TESTING_MALLOC_PIN( h_work, float, lwork );
 #if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_HOSTALLOC( rwork,          float, lrwork);
+            TESTING_MALLOC_PIN( rwork,  float, lrwork);
 #endif
-            TESTING_MALLOC(    iwork,     magma_int_t, liwork);
 
+            TESTING_MALLOC_CPU( w1,     float, N );
+            TESTING_MALLOC_CPU( iwork,  magma_int_t, liwork);
+            
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
             lapackf77_slarnv( &ione, ISEED, &n2, h_B );
-            /* increase the diagonal */
-            {
-                for(int i=0; i<N; i++) {
-                    MAGMA_S_SET2REAL( h_B[i*N+i], ( MAGMA_S_REAL(h_B[i*N+i]) + 1.*N ) );
-                    MAGMA_S_SET2REAL( h_A[i*N+i], MAGMA_S_REAL(h_A[i*N+i]) );
-                }
-            }
+            magma_smake_hpd( N, h_B, N );
+            magma_smake_symmetric( N, h_A, N );
 
-            if((opts.warmup)||( checkres )){
-                TESTING_MALLOC(h_Ainit, float, n2);
-                TESTING_MALLOC(h_Binit, float, n2);
+            if( opts.warmup || opts.check ) {
+                TESTING_MALLOC_CPU( h_Ainit, float, n2 );
+                TESTING_MALLOC_CPU( h_Binit, float, n2 );
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_Ainit, &N );
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_Binit, &N );
             }
@@ -140,7 +135,7 @@ int main( int argc, char** argv)
                 iu = (int) (f*N);
             }
 
-            if(opts.warmup){
+            if( opts.warmup ){
 
                 // ==================================================================
                 // Warmup using MAGMA. I prefer to use smalltest to warmup A-
@@ -174,7 +169,7 @@ int main( int argc, char** argv)
 
             mgpu_time = GetTimerValue(start,end)/1000.;
 
-            if ( checkres ) {
+            if ( opts.check ) {
                 // ===================================================================
                 // Check the results following the LAPACK's [zc]hegvdx routine.
                 // A x = lambda B x is solved
@@ -218,7 +213,7 @@ int main( int argc, char** argv)
             // ===================================================================
             printf("%5d %5d %2d    %6.2f\n",
                    (int) N, (int) m1, (int) opts.ngpu, mgpu_time);
-            if ( checkres ){
+            if ( opts.check ){
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
                 if(itype==1)
                     printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
@@ -228,17 +223,18 @@ int main( int argc, char** argv)
                     printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
             }
 
-            TESTING_HOSTFREE(       h_A);
-            TESTING_HOSTFREE(       h_B);
-            TESTING_FREE(        w1);
+            TESTING_FREE_PIN( h_A    );
+            TESTING_FREE_PIN( h_B    );
+            TESTING_FREE_PIN( h_work );
 #if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_HOSTFREE( rwork);
+            TESTING_FREE_PIN( rwork  );
 #endif
-            TESTING_FREE(     iwork);
-            TESTING_HOSTFREE(h_work);
-            if((opts.warmup)||( checkres )){
-                TESTING_FREE(   h_Ainit);
-                TESTING_FREE(   h_Binit);
+
+            TESTING_FREE_CPU( w1    );
+            TESTING_FREE_CPU( iwork );
+            if ( opts.warmup || opts.check ) {
+                TESTING_FREE_CPU( h_Ainit );
+                TESTING_FREE_CPU( h_Binit );
             }
         }
         if ( opts.niter > 1 ) {

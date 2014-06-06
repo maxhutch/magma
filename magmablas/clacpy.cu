@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:45:10 2013
+       @generated c Tue Dec 17 13:18:45 2013
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -74,7 +74,7 @@ magmablas_clacpy(
     N       (input) INTEGER
             The number of columns of the matrix dA.  N >= 0.
     
-    dA      (input) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    dA      (input) COMPLEX REAL array, dimension (LDDA,N)
             The m by n matrix dA.
             If UPLO = 'U', only the upper triangle or trapezoid is accessed;
             if UPLO = 'L', only the lower triangle or trapezoid is accessed.
@@ -82,7 +82,7 @@ magmablas_clacpy(
     LDDA    (input) INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
-    dB      (output) COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+    dB      (output) COMPLEX REAL array, dimension (LDDB,N)
             The m by n matrix dB.
             On exit, dB = dA in the locations specified by UPLO.
     

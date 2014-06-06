@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -84,7 +84,7 @@ int main( int argc, char** argv )
     magma_zgetmatrix( n, n, dC, ldda, A, lda );
     blasf77_zaxpy( &size, &c_neg_one, C, &ione, A, &ione );
     error = lapackf77_zlange( "F", &n, &n, A, &lda, work );
-    printf( "n %d, error %8.2e\n", n, error );
+    printf( "n %d, error %8.2e\n", (int) n, error );
     
     magma_free( dA );
     magma_free( dB );

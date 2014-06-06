@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Mark Gates
-       @generated d Wed Aug 14 12:18:07 2013
+       @generated d Tue Dec 17 13:18:57 2013
 */
 // includes, system
 #include <stdlib.h>
@@ -70,13 +70,14 @@ int main( int argc, char** argv )
                 continue;
             }
             
-            lwork_max = max( m*nb, n*nb );
+            // need at least 2*nb*nb for geqrf
+            lwork_max = max( max( m*nb, n*nb ), 2*nb*nb );
             
-            TESTING_MALLOC( C, double, ldc*n );
-            TESTING_MALLOC( R, double, ldc*n );
-            TESTING_MALLOC( A, double, lda*k );
-            TESTING_MALLOC( W, double, lwork_max );
-            TESTING_MALLOC( tau, double, k );
+            TESTING_MALLOC_CPU( C,   double, ldc*n );
+            TESTING_MALLOC_CPU( R,   double, ldc*n );
+            TESTING_MALLOC_CPU( A,   double, lda*k );
+            TESTING_MALLOC_CPU( W,   double, lwork_max );
+            TESTING_MALLOC_CPU( tau, double, k );
             
             // C is full, m x n
             size = ldc*n;
@@ -111,7 +112,7 @@ int main( int argc, char** argv )
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            // query for work size
+            // query for workspace size
             lwork = -1;
             magma_dormqr( *side[iside], *trans[itran],
                           m, n, k,
@@ -147,11 +148,11 @@ int main( int argc, char** argv )
                     (int) m, (int) n, (int) k, side[iside], trans[itran],
                     cpu_perf, cpu_time, gpu_perf, gpu_time, error );
             
-            TESTING_FREE( C );
-            TESTING_FREE( R );
-            TESTING_FREE( A );
-            TESTING_FREE( W );
-            TESTING_FREE( tau );
+            TESTING_FREE_CPU( C );
+            TESTING_FREE_CPU( R );
+            TESTING_FREE_CPU( A );
+            TESTING_FREE_CPU( W );
+            TESTING_FREE_CPU( tau );
         }}  // end iside, itran
         printf( "\n" );
     }

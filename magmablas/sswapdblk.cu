@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:45:17 2013
+       @generated s Tue Dec 17 13:18:45 2013
 
 */
 #include "common_magma.h"
@@ -44,11 +44,11 @@ magmablas_sswapdblk(magma_int_t n, magma_int_t nb,
                     float *dA1, magma_int_t ldda1, magma_int_t inca1,
                     float *dA2, magma_int_t ldda2, magma_int_t inca2 )
 {
-/* -- MAGMA (version 1.4.0) --
+/* -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

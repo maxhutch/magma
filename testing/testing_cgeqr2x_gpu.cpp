@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:46:03 2013
+       @generated c Tue Dec 17 13:18:57 2013
 
 */
 
@@ -105,25 +105,25 @@ int main( int argc, char** argv)
     min_mn = min(M, N);
 
     /* Allocate memory for the matrix */
-    TESTING_MALLOC(    tau, magmaFloatComplex, min_mn );
-    TESTING_MALLOC(    h_A, magmaFloatComplex, n2     );
-    TESTING_MALLOC(    h_T, magmaFloatComplex,    N*N );
+    TESTING_MALLOC_CPU( tau,   magmaFloatComplex, min_mn );
+    TESTING_MALLOC_CPU( h_A,   magmaFloatComplex, n2     );
+    TESTING_MALLOC_CPU( h_T,   magmaFloatComplex, N*N    );
 
-    TESTING_HOSTALLOC( h_R, magmaFloatComplex, n2     );
+    TESTING_MALLOC_PIN( h_R,   magmaFloatComplex, n2     );
 
-    TESTING_DEVALLOC(  d_A, magmaFloatComplex, ldda*N );
-    TESTING_DEVALLOC(  d_T, magmaFloatComplex,    N*N );
-    TESTING_DEVALLOC(  ddA, magmaFloatComplex,    N*N );
-    TESTING_DEVALLOC( dtau, magmaFloatComplex, min_mn );
+    TESTING_MALLOC_DEV( d_A,   magmaFloatComplex, ldda*N );
+    TESTING_MALLOC_DEV( d_T,   magmaFloatComplex, N*N    );
+    TESTING_MALLOC_DEV( ddA,   magmaFloatComplex, N*N    );
+    TESTING_MALLOC_DEV( dtau,  magmaFloatComplex, min_mn );
 
-    TESTING_DEVALLOC( d_A2, magmaFloatComplex, ldda*N );
-    TESTING_DEVALLOC( d_T2, magmaFloatComplex,    N*N );
-    TESTING_DEVALLOC( ddA2, magmaFloatComplex,    N*N );
-    TESTING_DEVALLOC(dtau2, magmaFloatComplex, min_mn );
+    TESTING_MALLOC_DEV( d_A2,  magmaFloatComplex, ldda*N );
+    TESTING_MALLOC_DEV( d_T2,  magmaFloatComplex, N*N    );
+    TESTING_MALLOC_DEV( ddA2,  magmaFloatComplex, N*N    );
+    TESTING_MALLOC_DEV( dtau2, magmaFloatComplex, min_mn );
 
 #define BLOCK_SIZE 64
-    TESTING_DEVALLOC( dwork, float, max(5*min_mn, (BLOCK_SIZE*2+2)*min_mn) );
-    TESTING_DEVALLOC(dwork2, float, max(5*min_mn, (BLOCK_SIZE*2+2)*min_mn) );
+    TESTING_MALLOC_DEV( dwork,  float, max(5*min_mn, (BLOCK_SIZE*2+2)*min_mn) );
+    TESTING_MALLOC_DEV( dwork2, float, max(5*min_mn, (BLOCK_SIZE*2+2)*min_mn) );
 
     cudaMemset(ddA, 0, N*N*sizeof(magmaFloatComplex));
     cudaMemset(d_T, 0, N*N*sizeof(magmaFloatComplex));
@@ -132,11 +132,11 @@ int main( int argc, char** argv)
     cudaMemset(d_T2, 0, N*N*sizeof(magmaFloatComplex));
 
     lwork = -1;
-    lapackf77_cgeqrf(&M, &N, h_A, &M, tau, tmp, &lwork, &info);
+    lapackf77_cgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
     lwork = (magma_int_t)MAGMA_C_REAL( tmp[0] );
     lwork = max(lwork, N*N);
 
-    TESTING_MALLOC( h_work, magmaFloatComplex, lwork );
+    TESTING_MALLOC_CPU( h_work, magmaFloatComplex, lwork );
 
     cudaStream_t stream[2];
     magma_queue_create( &stream[0] );
@@ -199,9 +199,9 @@ int main( int argc, char** argv)
             int tm=1000,tn=1000,tsiz=tm*tn;
             magmaFloatComplex *myA, *mytau, *mywork;
 
-            TESTING_MALLOC(    myA, magmaFloatComplex, tsiz     );
-            TESTING_MALLOC(    mywork, magmaFloatComplex, tsiz     );
-            TESTING_MALLOC(    mytau, magmaFloatComplex, tn     );
+            TESTING_MALLOC_CPU( myA,    magmaFloatComplex, tsiz );
+            TESTING_MALLOC_CPU( mywork, magmaFloatComplex, tsiz );
+            TESTING_MALLOC_CPU( mytau,  magmaFloatComplex, tn   );
             lapackf77_clarnv( &ione, ISEED, &tsiz, myA );
             lapackf77_cgeqrf(&tm, &tn, myA, &tm, mytau, mywork, &tsiz, &info);
             lapackf77_clarft( MagmaForwardStr, MagmaColumnwiseStr,
@@ -262,23 +262,24 @@ int main( int argc, char** argv)
     magma_queue_destroy( stream[1] );
 
     /* Memory clean up */
-    TESTING_FREE( tau );
-    TESTING_FREE( h_A );
-    TESTING_FREE( h_T );
-    TESTING_FREE( h_work );
-    TESTING_HOSTFREE( h_R );
+    TESTING_FREE_CPU( tau    );
+    TESTING_FREE_CPU( h_A    );
+    TESTING_FREE_CPU( h_T    );
+    TESTING_FREE_CPU( h_work );
+    
+    TESTING_FREE_PIN( h_R    );
 
-    TESTING_DEVFREE( d_A  );
-    TESTING_DEVFREE( d_T  );
-    TESTING_DEVFREE( ddA  );
-    TESTING_DEVFREE( dtau );
-    TESTING_DEVFREE( dwork );
+    TESTING_FREE_DEV( d_A   );
+    TESTING_FREE_DEV( d_T   );
+    TESTING_FREE_DEV( ddA   );
+    TESTING_FREE_DEV( dtau  );
+    TESTING_FREE_DEV( dwork );
 
-    TESTING_DEVFREE( d_A2 );
-    TESTING_DEVFREE( d_T2 );
-    TESTING_DEVFREE( ddA2 );
-    TESTING_DEVFREE( dtau2);
-    TESTING_DEVFREE(dwork2);
+    TESTING_FREE_DEV( d_A2   );
+    TESTING_FREE_DEV( d_T2   );
+    TESTING_FREE_DEV( ddA2   );
+    TESTING_FREE_DEV( dtau2  );
+    TESTING_FREE_DEV( dwork2 );
 
     TESTING_FINALIZE();
 

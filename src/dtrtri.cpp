@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Wed Aug 14 12:16:03 2013
+       @generated d Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -14,11 +14,11 @@ extern "C" magma_int_t
 magma_dtrtri(char uplo, char diag, magma_int_t n,
               double *A, magma_int_t lda, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

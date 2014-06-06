@@ -12,7 +12,6 @@
 
 #include "common_magma.h"
 #include "magma_bulge.h"
-#include <sys/time.h>
 
 #define applyQver 113
 

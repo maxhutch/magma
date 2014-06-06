@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:46:08 2013
+       @generated s Tue Dec 17 13:18:56 2013
 
        @author Stan Tomov
        @author Mathieu Faverge
@@ -68,13 +68,15 @@ int main( int argc, char** argv )
             lwork  = (m + 2*n+nb)*nb;
             gflops = FLOPS_SORGQR( m, n, k ) / 1e9;
             
-            TESTING_HOSTALLOC( hA,     float, lda*n  );
-            TESTING_HOSTALLOC( h_work, float, lwork  );
-            TESTING_MALLOC(    hR,     float, lda*n  );
-            TESTING_MALLOC(    hT,     float, min_mn*nb );
-            TESTING_MALLOC(    tau,    float, min_mn );
-            TESTING_DEVALLOC(  dA,     float, ldda*n );
-            TESTING_DEVALLOC(  dT,     float, ( 2*min_mn + ((n + 31)/32)*32 )*nb );
+            TESTING_MALLOC_PIN( hA,     float, lda*n     );
+            TESTING_MALLOC_PIN( h_work, float, lwork     );
+            
+            TESTING_MALLOC_CPU( hR,     float, lda*n     );
+            TESTING_MALLOC_CPU( hT,     float, min_mn*nb );
+            TESTING_MALLOC_CPU( tau,    float, min_mn    );
+                                        
+            TESTING_MALLOC_DEV( dA,     float, ldda*n    );
+            TESTING_MALLOC_DEV( dT,     float, ( 2*min_mn + ((n + 31)/32)*32 )*nb );
             
             lapackf77_slarnv( &ione, ISEED, &n2, hA );
             lapackf77_slacpy( MagmaUpperLowerStr, &m, &n, hA, &lda, hR, &lda );
@@ -132,13 +134,15 @@ int main( int argc, char** argv )
                        gpu_perf, gpu_time );
             }
             
-            TESTING_HOSTFREE( hA     );
-            TESTING_HOSTFREE( h_work );
-            TESTING_FREE(     hR     );
-            TESTING_FREE(     hT     );
-            TESTING_FREE(     tau    );
-            TESTING_DEVFREE(  dA     );
-            TESTING_DEVFREE(  dT     );
+            TESTING_FREE_PIN( hA     );
+            TESTING_FREE_PIN( h_work );
+            
+            TESTING_FREE_CPU( hR  );
+            TESTING_FREE_CPU( hT  );
+            TESTING_FREE_CPU( tau );
+            
+            TESTING_FREE_DEV( dA  );
+            TESTING_FREE_DEV( dT  );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

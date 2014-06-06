@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -7,7 +7,7 @@
 
        @author Azzam Haidar
 
-       @generated s Wed Aug 14 12:18:09 2013
+       @generated s Tue Dec 17 13:18:56 2013
 
 */
 
@@ -140,14 +140,16 @@ int main( int argc, char** argv)
     lwork0 = N*NB;
 
     /* Allocate host memory for the matrix */
-    TESTING_MALLOC(    h_A,    float, lda*N );
-    TESTING_HOSTALLOC( h_R,    float, lda*N );
-    TESTING_HOSTALLOC( h_work, float, lwork0 );
-    TESTING_MALLOC(    tau,    float, N-1   );
-    TESTING_HOSTALLOC( D,    float, N );
-    TESTING_HOSTALLOC( E,    float, N );
-    //TESTING_DEVALLOC( dT1,  float, (2*min(N,N)+(N+31)/32*32)*NB );
-    TESTING_DEVALLOC( dT1,  float, (N*NB) );
+    TESTING_MALLOC_CPU( h_A,    float, lda*N  );
+    TESTING_MALLOC_CPU( tau,    float, N-1    );
+    
+    TESTING_MALLOC_PIN( h_R,    float, lda*N  );
+    TESTING_MALLOC_PIN( h_work, float, lwork0 );
+    TESTING_MALLOC_PIN( D, float, N );
+    TESTING_MALLOC_PIN( E, float, N );
+    
+    //TESTING_MALLOC_DEV( dT1, float, (2*min(N,N)+(N+31)/32*32)*NB );
+    TESTING_MALLOC_DEV( dT1, float, (N*NB) );
 
     printf("  N    GPU GFlop/s   \n");
     printf("=====================\n");
@@ -165,16 +167,8 @@ int main( int argc, char** argv)
            Initialize the matrix
            =================================================================== */
         lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-
-        // Make the matrix symmetric
-        {
-            magma_int_t i, j;
-            for(i=0; i<N; i++) {
-                MAGMA_S_SET2REAL( h_A[i*lda+i], ( MAGMA_S_REAL(h_A[i*lda+i]) ) );
-                for(j=0; j<i; j++)
-                    h_A[i*lda+j] = (h_A[j*lda+i]);
-            }
-        }
+        magma_smake_symmetric( N, h_A, lda );
+        
         lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
 
 
@@ -185,19 +179,19 @@ int main( int argc, char** argv)
         magma_getdevice( &cdev );
 
         start = get_current_time();
-/*
+        /*
         magma_ssytrd_sy2sb(uplo[0], N, NB, h_R, lda, tau, h_work, lwork0, dT1, THREADS, &info);
         tband = get_current_time();
-        printf("  Finish BAND  N %d  NB %d  ngpu %d timing= %f \n", N, NB, ngpu, GetTimerValue(start, tband) / 1000.);
+        printf("  Finish BAND  N %d  NB %d  ngpu %d timing= %f\n", N, NB, ngpu, GetTimerValue(start, tband) / 1000.);
         magma_ssytrd_bsy2trc_v5(THREADS, WANTZ, uplo[0], NE, N, NB, h_R, lda, D, E, dT1, ldt);
-*/
+        */
 
-/*
+        /*
         magma_ssytrd_sy2sb(uplo[0], N, NB, h_R, lda, tau, h_work, lwork, dT1, THREADS, &info);
         tband = get_current_time();
-        printf("  Finish BAND  N %d  NB %d  ngpu %d timing= %f \n", N, NB, ngpu, GetTimerValue(start, tband) / 1000.);
+        printf("  Finish BAND  N %d  NB %d  ngpu %d timing= %f\n", N, NB, ngpu, GetTimerValue(start, tband) / 1000.);
         magma_ssytrd_bsy2trc(THREADS, WANTZ, uplo[0], NE, N, NB, h_R, lda, D, E, dT1, ldt);
-*/
+        */
 
         char *jobz = (char*)MagmaVecStr;
         char range = 'A';
@@ -223,14 +217,14 @@ int main( int argc, char** argv)
         magma_int_t lrwork;
         lwork  = magma_sbulge_get_lq2(N, threads) + 2*N + N*N;
         lrwork = 1 + 5*N +2*N*N;
-        TESTING_HOSTALLOC( rwork,          float, lrwork);
+        TESTING_MALLOC_PIN( rwork, float, lrwork );
 #else
         lwork  = magma_sbulge_get_lq2(N, threads) + 1 + 6*N + 2*N*N;
 #endif
         liwork = 3 + 5*N;
         nb = magma_get_ssytrd_nb(N);
-        TESTING_HOSTALLOC(hh_work, float,  lwork);
-        TESTING_MALLOC(    iwork,     magma_int_t, liwork);
+        TESTING_MALLOC_PIN( hh_work, float, lwork  );
+        TESTING_MALLOC_CPU( iwork,   magma_int_t,        liwork );
 
         if(ngpu==1){
             printf("calling ssyevdx_2stage 1 GPU\n");
@@ -350,7 +344,7 @@ int main( int argc, char** argv)
             ////ssterf_( &N, D, E, &info);
             ////
             end = get_current_time();
-            printf("  Finish CHECK - EIGEN   timing= %f  threads %d \n", GetTimerValue(start, end) / 1000., i);
+            printf("  Finish CHECK - EIGEN   timing= %f  threads %d\n", GetTimerValue(start, end) / 1000., i);
 
             /*
             for(i=0;i<10;i++)
@@ -381,7 +375,7 @@ int main( int argc, char** argv)
             // check results
             scheck_eig_(&JOBZ, &MATYPE, &N, &NB, AINIT, &lda, &NOTHING, &NOTHING, D2, D, h_R, &lda, WORKAJETER, RWORKAJETER, RESU );
             end = get_current_time();
-            printf("  Finish CHECK - results timing= %f \n", GetTimerValue(start, end) / 1000.);
+            printf("  Finish CHECK - results timing= %f\n", GetTimerValue(start, end) / 1000.);
             #if defined(USEMKL)
             mkl_set_num_threads( 1 );
             #endif
@@ -418,11 +412,18 @@ int main( int argc, char** argv)
     }
 
     /* Memory clean up */
-    TESTING_FREE( h_A );
-    TESTING_FREE( tau );
-    TESTING_HOSTFREE( h_R );
-    TESTING_HOSTFREE( h_work );
+    TESTING_FREE_CPU( h_A );
+    TESTING_FREE_CPU( tau );
+    
+    TESTING_FREE_PIN( h_R    );
+    TESTING_FREE_PIN( h_work );
+    TESTING_FREE_PIN( D      );
+    TESTING_FREE_PIN( E      );
+    
+    TESTING_FREE_DEV( dT1 );
 
+    /* TODO - not all memory has been freed inside loop */
+    
     /* Shutdown */
     TESTING_FINALIZE_MGPU();
     return EXIT_SUCCESS;

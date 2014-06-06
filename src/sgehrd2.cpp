@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:44:50 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -16,11 +16,11 @@ magma_sgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
               float *tau, float *work,
               magma_int_t lwork, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -129,7 +129,7 @@ magma_sgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     --tau;
 
     *info = 0;
-    MAGMA_S_SET2REAL( work[0], (float) n * nb );
+    work[0] = MAGMA_S_MAKE( n * nb, 0 );
 
     lquery = lwork == -1;
     if (n < 0) {
@@ -257,7 +257,7 @@ magma_sgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
                           a  + (i__-1)*(lda),  lda );
     }
     lapackf77_sgehd2(&n, &i__, &ihi, a, &lda, &tau[1], work, &iinfo);
-    MAGMA_S_SET2REAL( work[0], (float) iws );
+    work[0] = MAGMA_S_MAKE( iws, 0 );
     
     magma_free( da );
     magma_free_cpu(t);

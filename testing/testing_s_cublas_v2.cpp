@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 19:14:52 2013
+       @generated s Tue Dec 17 13:18:55 2013
        @author Mark Gates
        
        This demonstrates how to use cublas_v2 with magma.
@@ -84,7 +84,7 @@ int main( int argc, char** argv )
     magma_sgetmatrix( n, n, dC, ldda, A, lda );
     blasf77_saxpy( &size, &c_neg_one, C, &ione, A, &ione );
     error = lapackf77_slange( "F", &n, &n, A, &lda, work );
-    printf( "n %d, error %8.2e\n", n, error );
+    printf( "n %d, error %8.2e\n", (int) n, error );
     
     magma_free( dA );
     magma_free( dB );

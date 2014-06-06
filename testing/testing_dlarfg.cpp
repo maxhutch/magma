@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal d -> s
        @author Mark Gates
@@ -51,13 +51,13 @@ int main( int argc, char** argv)
             N = opts.nsize[i];
             gflops = FLOPS_DLARFG( N ) / 1e9 * nb;
     
-            TESTING_MALLOC( h_x,   double, N*nb );
-            TESTING_MALLOC( h_x1,  double, N*nb );
-            TESTING_MALLOC( h_x2,  double, N*nb );
-            TESTING_MALLOC( h_tau, double, nb   );
+            TESTING_MALLOC_CPU( h_x,   double, N*nb );
+            TESTING_MALLOC_CPU( h_x1,  double, N*nb );
+            TESTING_MALLOC_CPU( h_x2,  double, N*nb );
+            TESTING_MALLOC_CPU( h_tau, double, nb   );
         
-            TESTING_DEVALLOC( d_x,   double, N*nb );
-            TESTING_DEVALLOC( d_tau, double,   nb );
+            TESTING_MALLOC_DEV( d_x,   double, N*nb );
+            TESTING_MALLOC_DEV( d_tau, double, nb   );
             
             /* Initialize the vector */
             size = N*nb;
@@ -96,13 +96,13 @@ int main( int argc, char** argv)
             printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2g\n",
                    (int) N, (int) nb, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time, error );
             
-            TESTING_FREE( h_x   );
-            TESTING_FREE( h_x1  );
-            TESTING_FREE( h_x2  );
-            TESTING_FREE( h_tau );
+            TESTING_FREE_CPU( h_x   );
+            TESTING_FREE_CPU( h_x1  );
+            TESTING_FREE_CPU( h_x2  );
+            TESTING_FREE_CPU( h_tau );
         
-            TESTING_DEVFREE( d_x   );
-            TESTING_DEVFREE( d_tau );
+            TESTING_FREE_DEV( d_x   );
+            TESTING_FREE_DEV( d_tau );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

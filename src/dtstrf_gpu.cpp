@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated d Tue Aug 13 16:44:16 2013
+       @generated d Tue Dec 17 13:18:36 2013
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -27,11 +27,11 @@ magma_dtstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
                   double *hwork, magma_int_t ldhwork, double *dwork, magma_int_t lddwork,
                   magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

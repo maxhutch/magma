@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -15,11 +15,11 @@ magma_zgeqlf(magma_int_t m, magma_int_t n,
              magmaDoubleComplex *a,    magma_int_t lda, magmaDoubleComplex *tau,
              magmaDoubleComplex *work, magma_int_t lwork, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -116,8 +116,8 @@ magma_zgeqlf(magma_int_t m, magma_int_t n,
         *info = -4;
     }
 
+    k = min(m,n);
     if (*info == 0) {
-        k = min(m,n);
         if (k == 0)
             work[0] = c_one;
         else {

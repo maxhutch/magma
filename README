@@ -3,9 +3,9 @@ MAGMA README FILE
 ==================
 
 * To INSTALL MAGMA, modify the make.inc file to indicate where 
-  CUDA, CPU BLAS, and LAPACK are installed on your system. Examples
-  are given in make.inc.mkl-*, make.inc.acml, and make.inc.atlas,
-  showing how to link to MKL, ACML, or ATLAS BLAS, respectively.
+  CUDA, CPU BLAS, and LAPACK are installed on your system. Examples are given
+  in make.inc.mkl-*, make.inc.acml, make.inc.atlas, and make.inc.macos
+  showing how to link to MKL, ACML, ATLAS, and MacOS veclib BLAS, respectively.
   
   The make.inc files assume $CUDADIR is set in your environment.
   For bash (sh), put in ~/.bashrc (with your system's path):
@@ -37,15 +37,20 @@ MAGMA README FILE
       setenv ATLASDIR  /opt/atlas
       setenv LAPACKDIR /opt/LAPACK
   
+  Creating a shared library requires adding the -fPIC option. This is
+  demonstrated in make.inc.mkl-shared.
+  
   After proper modification of the make.inc file, running:
   
       make
   
   will create libmagma.a in 'lib' and testing drivers in 'testing'.
-  To create a shared library, libmagma.so, copy make.inc.mkl-shared to make.inc,
-  modify as needed, and run:
+  With the appropriate -fPIC options in make.inc, running:
   
       make shared
+      make testing
+  
+  will create both libmagma.a and libmagma.so, and the testers.
   
   To install libraries and include files in a given prefix, run:
   

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated ds Tue Aug 13 16:44:03 2013
+       @generated ds Tue Dec 17 13:18:33 2013
 
 */
 #include "common_magma.h"
@@ -21,17 +21,17 @@ magma_dsposv_gpu(char uplo, magma_int_t n, magma_int_t nrhs,
                  double *dworkd, float *dworks,
                  magma_int_t *iter, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
     DSPOSV computes the solution to a real system of linear equations
        A * X = B,
-    where A is an N-by-N Hermitian positive definite matrix and X and B
+    where A is an N-by-N symmetric positive definite matrix and X and B
     are N-by-NRHS matrices.
 
     DSPOSV first attempts to factorize the matrix in real SINGLE PRECISION
@@ -75,7 +75,7 @@ magma_dsposv_gpu(char uplo, magma_int_t n, magma_int_t nrhs,
             of the matrix B.  NRHS >= 0.
 
     dA      (input or input/output) DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
-            On entry, the Hermitian matrix A.  If UPLO = 'U', the leading
+            On entry, the symmetric matrix A.  If UPLO = 'U', the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
             triangular part of A is not referenced.  If UPLO = 'L', the

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
 */
@@ -62,15 +62,15 @@ int main(int argc, char **argv)
             sizeX = incx*Xm;
             sizeY = incy*Ym;
             
-            TESTING_MALLOC( A, magmaDoubleComplex, sizeA );
-            TESTING_MALLOC( X, magmaDoubleComplex, sizeX );
-            TESTING_MALLOC( Y, magmaDoubleComplex, sizeY );
-            TESTING_MALLOC( Ycublas, magmaDoubleComplex, sizeY );
-            TESTING_MALLOC( Ymagma,  magmaDoubleComplex, sizeY );
+            TESTING_MALLOC_CPU( A,       magmaDoubleComplex, sizeA );
+            TESTING_MALLOC_CPU( X,       magmaDoubleComplex, sizeX );
+            TESTING_MALLOC_CPU( Y,       magmaDoubleComplex, sizeY );
+            TESTING_MALLOC_CPU( Ycublas, magmaDoubleComplex, sizeY );
+            TESTING_MALLOC_CPU( Ymagma,  magmaDoubleComplex, sizeY );
             
-            TESTING_DEVALLOC( dA, magmaDoubleComplex, sizeA );
-            TESTING_DEVALLOC( dX, magmaDoubleComplex, sizeX );
-            TESTING_DEVALLOC( dY, magmaDoubleComplex, sizeY );
+            TESTING_MALLOC_DEV( dA, magmaDoubleComplex, sizeA );
+            TESTING_MALLOC_DEV( dX, magmaDoubleComplex, sizeX );
+            TESTING_MALLOC_DEV( dY, magmaDoubleComplex, sizeY );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, A );
@@ -130,15 +130,15 @@ int main(int argc, char **argv)
                    cpu_perf,    1000.*cpu_time,
                    magma_error, cublas_error );
             
-            TESTING_FREE( A );
-            TESTING_FREE( X );
-            TESTING_FREE( Y );
-            TESTING_FREE( Ycublas );
-            TESTING_FREE( Ymagma );
+            TESTING_FREE_CPU( A );
+            TESTING_FREE_CPU( X );
+            TESTING_FREE_CPU( Y );
+            TESTING_FREE_CPU( Ycublas );
+            TESTING_FREE_CPU( Ymagma  );
             
-            TESTING_DEVFREE( dA );
-            TESTING_DEVFREE( dX );
-            TESTING_DEVFREE( dY );
+            TESTING_FREE_DEV( dA );
+            TESTING_FREE_DEV( dX );
+            TESTING_FREE_DEV( dY );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

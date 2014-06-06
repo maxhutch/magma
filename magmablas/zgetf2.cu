@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 */
@@ -18,11 +18,11 @@
 
 #define zswap_bs 64
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
 #define zgeru_bs 512  // 512 is max threads for 1.x cards
-#else
-#define zgeru_bs 1024
-#endif
+//#else
+//#define zgeru_bs 1024
+//#endif
 
 void magma_zswap(
     magma_int_t n, magmaDoubleComplex *x, magma_int_t i, magma_int_t j, magma_int_t incx);
@@ -38,11 +38,11 @@ magma_zgetf2_gpu(
     magma_int_t *ipiv,
     magma_int_t* info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     ZGETF2 computes an LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.

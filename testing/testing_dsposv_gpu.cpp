@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated ds Wed Aug 14 12:18:02 2013
+       @generated ds Tue Dec 17 13:18:56 2013
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,25 +58,21 @@ int main(int argc, char **argv)
             gflopsF = FLOPS_DPOTRF( N ) / 1e9;
             gflopsS = gflopsF + FLOPS_DPOTRS( N, nrhs ) / 1e9;
             
-            TESTING_MALLOC( h_A, double, lda*N    );
-            TESTING_MALLOC( h_B, double, ldb*nrhs );
-            TESTING_MALLOC( h_X, double, ldx*nrhs );
-            TESTING_MALLOC( h_workd, double, N );
+            TESTING_MALLOC_CPU( h_A,     double, lda*N    );
+            TESTING_MALLOC_CPU( h_B,     double, ldb*nrhs );
+            TESTING_MALLOC_CPU( h_X,     double, ldx*nrhs );
+            TESTING_MALLOC_CPU( h_workd, double,             N        );
             
-            TESTING_DEVALLOC( d_A,     double, lda*N       );
-            TESTING_DEVALLOC( d_B,     double, ldb*nrhs    );
-            TESTING_DEVALLOC( d_X,     double, ldx*nrhs    );
-            TESTING_DEVALLOC( d_works, float,  lda*(N+nrhs));
-            TESTING_DEVALLOC( d_workd, double, N*nrhs      );
+            TESTING_MALLOC_DEV( d_A,     double, lda*N        );
+            TESTING_MALLOC_DEV( d_B,     double, ldb*nrhs     );
+            TESTING_MALLOC_DEV( d_X,     double, ldx*nrhs     );
+            TESTING_MALLOC_DEV( d_works, float,  lda*(N+nrhs) );
+            TESTING_MALLOC_DEV( d_workd, double, N*nrhs       );
             
             /* Initialize the matrix */
             size = lda * N ;
             lapackf77_dlarnv( &ione, ISEED, &size, h_A );
-            /* Increase the diagonal (We don't set the matrix as
-               hermitian since we use only a triangular part) */
-            for( int i=0; i<N; i++ ) {
-                MAGMA_D_SET2REAL( h_A[i*lda+i], ( MAGMA_D_REAL(h_A[i*lda+i]) + 1.*N ) );
-            }
+            magma_dmake_hpd( N, h_A, lda );
             
             size = ldb * nrhs ;
             lapackf77_dlarnv( &ione, ISEED, &size, h_B );
@@ -174,16 +170,16 @@ int main(int argc, char **argv)
                    gpu_perfdf, gpu_perfds, gpu_perfsf, gpu_perfss, gpu_perf,
                    Rnorm/Anorm, (int) posv_iter );
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_FREE( h_X );
-            TESTING_FREE( h_workd );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_CPU( h_X );
+            TESTING_FREE_CPU( h_workd );
             
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
-            TESTING_DEVFREE( d_X );
-            TESTING_DEVFREE( d_works );
-            TESTING_DEVFREE( d_workd );
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
+            TESTING_FREE_DEV( d_X );
+            TESTING_FREE_DEV( d_works );
+            TESTING_FREE_DEV( d_workd );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

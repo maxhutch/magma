@@ -1,57 +1,109 @@
-///////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+    -- MAGMA (version 1.4.1) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       December 2013
+       
+       @author Jakub Kurzak
+       @author Stan Tomov
+       @author Mark Gates
 
-// size of work for a thread
-#define THR_M ( BLK_M / DIM_X )
-#define THR_N ( BLK_N / DIM_Y )
- 
+       [zcds]gemm_fermi.cu          defines the CPU driver.
+       [zcds]gemm_fermi_kernels.h   defines the block sizes for each precision.
+       gemm_stencil_defs.h          defines types and functions for precision-independent code.
+       gemm_stencil.cu              defines the GPU kernel. It gets included
+                                    multiple times, once for each transpose version.
+*/
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #if   (version == trans_nn)
-  #define kernel_name fermi_gemm_kernel_nn
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_nn
+  #define BLK_M BLK_M_nn
+  #define BLK_N BLK_N_nn
+
 #elif (version == trans_nt)
   #define TRANS_B
-  #define kernel_name fermi_gemm_kernel_nt
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_nt
+  #define BLK_M BLK_M_nt
+  #define BLK_N BLK_N_nt
+
 #elif (version == trans_nc)
-  #define TRANS_B 
+  #define TRANS_B
   #define CONJ_B
-  #define kernel_name fermi_gemm_kernel_nc
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_nc
+  #define BLK_M BLK_M_nc
+  #define BLK_N BLK_N_nc
+
 #elif (version == trans_tn)
   #define TRANS_A
-  #define kernel_name fermi_gemm_kernel_tn
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_tn
+  #define BLK_M BLK_M_tn
+  #define BLK_N BLK_N_tn
+
 #elif (version == trans_tt)
   #define TRANS_A
-  #define TRANS_B 
-  #define kernel_name fermi_gemm_kernel_tt
+  #define TRANS_B
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_tt
+  #define BLK_M BLK_M_tt
+  #define BLK_N BLK_N_tt
+
 #elif (version == trans_tc)
   #define TRANS_A
   #define TRANS_B
   #define CONJ_B
-  #define kernel_name fermi_gemm_kernel_tc
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_tc
+  #define BLK_M BLK_M_tc
+  #define BLK_N BLK_N_tc
+
 #elif (version == trans_cn)
   #define TRANS_A
   #define CONJ_A
-  #define kernel_name fermi_gemm_kernel_cn
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_cn
+  #define BLK_M BLK_M_cn
+  #define BLK_N BLK_N_cn
+
 #elif (version == trans_ct)
   #define TRANS_A
   #define CONJ_A
   #define TRANS_B
-  #define kernel_name fermi_gemm_kernel_ct
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_ct
+  #define BLK_M BLK_M_ct
+  #define BLK_N BLK_N_ct
+
 #elif (version == trans_cc)
   #define TRANS_A
   #define CONJ_A
   #define TRANS_B
   #define CONJ_B
-  #define kernel_name fermi_gemm_kernel_cc
+  #define kernel_name_(p)  p ## gemm_kernel_fermi_cc
+  #define BLK_M BLK_M_cc
+  #define BLK_N BLK_N_cc
+
 #endif
+
+// need a second macro in order to expand precision;
+// see http://gcc.gnu.org/onlinedocs/cpp/Argument-Prescan.html
+#define kernel_name(p) kernel_name_(p)
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// size of work for a thread
+#define THR_M ( BLK_M / DIM_X )
+#define THR_N ( BLK_N / DIM_Y )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C" __global__
-void     kernel_name (int M, int N, int K,
-                      const FloatingPoint_t *A, int LDA, const FloatingPoint_t *B, int LDB, 
-                      FloatingPoint_t *C, int LDC,
-                      FloatingPoint_t alpha, FloatingPoint_t beta,
-                      int offsetA, int offsetB)
+void kernel_name(precision) (
+    int M, int N, int K,
+    const FloatingPoint_t* __restrict__ A, int LDA,
+    const FloatingPoint_t* __restrict__ B, int LDB,
+    FloatingPoint_t*       __restrict__ C, int LDC,
+    FloatingPoint_t alpha, FloatingPoint_t beta,
+    int offsetA, int offsetB )
 {
+#if (__CUDA_ARCH__ >= 200)
     int idx = threadIdx.x;  // thread's m dimension
     int idy = threadIdx.y;  // thread's n dimension
 
@@ -327,6 +379,7 @@ void     kernel_name (int M, int N, int K,
             }
         }
     }
+#endif /* (__CUDA_ARCH__ >= 200) */
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -335,16 +388,18 @@ void     kernel_name (int M, int N, int K,
 #undef TRANS_B
 #undef CONJ_A
 #undef CONJ_B
-/*
+
 #undef BLK_M
 #undef BLK_N
+
+/*
 #undef BLK_K
 
 #undef DIM_X
 #undef DIM_Y
 
 #undef DIM_XA
-#undef DIM_YA 
+#undef DIM_YA
 
 #undef DIM_XB
 #undef DIM_YB
@@ -355,4 +410,5 @@ void     kernel_name (int M, int N, int K,
 #undef THR_M
 #undef THR_N
 
+#undef kernel_name_
 #undef kernel_name

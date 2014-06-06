@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
    #define BLOCK_SIZE 512
-#else
-   #define BLOCK_SIZE 768
-#endif
+//#else
+//   #define BLOCK_SIZE 768
+//#endif
 
 __global__ void 
 magma_ztrmv_kernel2(const magmaDoubleComplex *T, int ldt,
@@ -47,11 +47,11 @@ magma_zgeqr2x4_gpu(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *dA,
                    magmaDoubleComplex *dT, magmaDoubleComplex *ddA,
                    double *dwork, magma_int_t *info, magma_queue_t stream)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose   
     =======   

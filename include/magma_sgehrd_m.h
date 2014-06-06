@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:43:29 2013
+       @generated s Tue Dec 17 13:18:17 2013
        @author Mark Gates
 */
 
 #ifndef MAGMA_SGEHRD_H
 #define MAGMA_SGEHRD_H
 
-#include "magma.h"
+#include "magma_types.h"
 
 #ifdef __cplusplus
 extern "C" {

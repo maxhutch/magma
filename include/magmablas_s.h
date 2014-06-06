@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Tue Aug 13 16:43:27 2013
+       @generated s Tue Dec 17 13:18:17 2013
 */
 
 #ifndef MAGMABLAS_S_H
@@ -126,14 +126,14 @@ void magma_ssetmatrix_1D_row_bcyclic(
 
 // in src/ssytrd_mgpu.cpp
 magma_int_t magma_shtodhe(
-    magma_int_t num_gpus, char *uplo, magma_int_t n, magma_int_t nb,
+    magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     float *a, magma_int_t lda,
     float **dwork, magma_int_t ldda,
     magma_queue_t stream[][10], magma_int_t *info );
 
 // in src/spotrf3_mgpu.cpp
 magma_int_t magma_shtodpo(
-    magma_int_t num_gpus, char *uplo, magma_int_t m, magma_int_t n,
+    magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magma_int_t off_i, magma_int_t off_j, magma_int_t nb,
     float  *h_A,   magma_int_t lda,
     float *d_lA[], magma_int_t ldda,
@@ -141,14 +141,14 @@ magma_int_t magma_shtodpo(
 
 // in src/spotrf3_mgpu.cpp
 magma_int_t magma_sdtohpo(
-    magma_int_t num_gpus, char *uplo, magma_int_t m, magma_int_t n,
+    magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magma_int_t off_i, magma_int_t off_j, magma_int_t nb, magma_int_t NB,
     float  *a,     magma_int_t lda,
     float *work[], magma_int_t ldda,
     magma_queue_t stream[][3], magma_int_t *info );
 
 magma_int_t magmablas_ssymv_mgpu_offset(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     float alpha,
     float **A, magma_int_t lda,
     float **X, magma_int_t incx,
@@ -161,7 +161,7 @@ magma_int_t magmablas_ssymv_mgpu_offset(
     magma_queue_t stream[][10] );
 
 magma_int_t magmablas_ssymv_mgpu_32_offset(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     float alpha,
     float **A, magma_int_t lda,
     float **X, magma_int_t incx,
@@ -173,8 +173,32 @@ magma_int_t magmablas_ssymv_mgpu_32_offset(
     magma_int_t offset,
     magma_queue_t stream[][10] );
 
+magma_int_t magmablas_ssymv2_mgpu_offset(
+    magma_uplo_t uplo, magma_int_t n,
+    float alpha,
+    float **A, magma_int_t lda,
+    float **x, magma_int_t incx,
+    float beta,
+    float **y, magma_int_t incy,
+    float **work, magma_int_t lwork,
+    magma_int_t num_gpus,
+    magma_int_t nb,
+    magma_int_t offset);
+
+magma_int_t magmablas_ssymv2_mgpu_32_offset(
+    magma_uplo_t uplo, magma_int_t n,
+    float alpha,
+    float **A, magma_int_t lda,
+    float **x, magma_int_t incx,
+    float beta,
+    float **y, magma_int_t incy,
+    float **work, magma_int_t lwork,
+    magma_int_t num_gpus,
+    magma_int_t nb,
+    magma_int_t offset);
+
 magma_int_t magmablas_ssymv_mgpu(
-    magma_int_t num_gpus, magma_int_t k, char uplo,
+    magma_int_t num_gpus, magma_int_t k, magma_uplo_t uplo,
     magma_int_t n, magma_int_t nb,
     float alpha,
     float **da, magma_int_t ldda, magma_int_t offset,
@@ -274,7 +298,7 @@ void magmablas_ssymm_mgpu_spec33(
 
 // Ichi's version, in src/ssytrd_mgpu.cpp
 void magma_ssyr2k_mgpu(
-    magma_int_t num_gpus, char uplo, char trans, magma_int_t nb, magma_int_t n, magma_int_t k,
+    magma_int_t num_gpus, magma_uplo_t uplo, magma_trans_t trans, magma_int_t nb, magma_int_t n, magma_int_t k,
     float alpha,
     float **db, magma_int_t lddb, magma_int_t boffset,
     float beta,
@@ -373,7 +397,7 @@ float magmablas_slansy(
     magmaFloat_ptr dwork );
 
 void magmablas_slascl(
-    char type, magma_int_t kl, magma_int_t ku,
+    magma_type_t type, magma_int_t kl, magma_int_t ku,
     float cfrom, float cto,
     magma_int_t m, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *info );
@@ -484,7 +508,6 @@ void magmablas_sgemv(
     float beta,
     magmaFloat_ptr       dy, magma_int_t incy );
 
-#ifdef COMPLEX
 magma_int_t magmablas_ssymv(
     magma_uplo_t uplo, magma_int_t n,
     float alpha,
@@ -492,9 +515,8 @@ magma_int_t magmablas_ssymv(
     magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
     magmaFloat_ptr       dy, magma_int_t incy );
-#endif
 
-magma_int_t magmablas_ssymv2(
+magma_int_t magmablas_ssymv_work(
     magma_uplo_t uplo, magma_int_t n,
     float alpha,
     magmaFloat_const_ptr dA, magma_int_t ldda,
@@ -510,6 +532,15 @@ magma_int_t magmablas_ssymv(
     magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
     magmaFloat_ptr       dy, magma_int_t incy );
+
+magma_int_t magmablas_ssymv_work(
+    magma_uplo_t uplo, magma_int_t n,
+    float alpha,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    float beta,
+    magmaFloat_ptr       dy, magma_int_t incy,
+    magmaFloat_ptr       dwork, magma_int_t lwork );
 
   /*
    * Level 3 BLAS
@@ -530,24 +561,6 @@ void magmablas_sgemm_reduce(
     const float *dB, magma_int_t ldb,
     float beta,
     float *dC, magma_int_t ldc );
-
-void magmablas_sgemm_fermi80(
-    magma_trans_t transA, magma_trans_t transB,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    float alpha,
-    magmaFloat_const_ptr dA, magma_int_t ldda,
-    magmaFloat_const_ptr dB, magma_int_t lddb,
-    float beta,
-    magmaFloat_ptr       dC, magma_int_t lddc );
-
-void magmablas_sgemm_fermi64(
-    magma_trans_t transA, magma_trans_t transB,
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    float alpha,
-    magmaFloat_const_ptr dA, magma_int_t ldda,
-    magmaFloat_const_ptr dB, magma_int_t lddb,
-    float beta,
-    magmaFloat_ptr       dC, magma_int_t lddc );
 
 void magmablas_ssymm(
     magma_side_t side, magma_uplo_t uplo,
@@ -601,7 +614,8 @@ void magmablas_ssyr2k(
     float  beta,
     magmaFloat_ptr       dC, magma_int_t lddc );
 
-#ifndef COMPLEX
+#ifdef REAL
+// only real [sd] precisions available
 void magmablas_strsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
@@ -794,13 +808,11 @@ magma_sdot(
     magmaFloat_const_ptr dy, magma_int_t incy );
 
 // in cublas_v2, result returned through output argument
-#ifdef COMPLEX
 float
 magma_sdotu(
     magma_int_t n,
     magmaFloat_const_ptr dx, magma_int_t incx,
     magmaFloat_const_ptr dy, magma_int_t incy );
-#endif
 
 // in cublas_v2, result returned through output argument
 float magma_snrm2(
@@ -813,13 +825,11 @@ void magma_srot(
     magmaFloat_ptr dy, magma_int_t incy,
     float dc, float ds );
 
-#ifdef COMPLEX
 void magma_srot(
     magma_int_t n,
     magmaFloat_ptr dx, magma_int_t incx,
     magmaFloat_ptr dy, magma_int_t incy,
     float dc, float ds );
-#endif
 
 #ifdef REAL
 void magma_srotm(
@@ -868,14 +878,12 @@ void magma_sger(
     magmaFloat_const_ptr dy, magma_int_t incy,
     magmaFloat_ptr       dA, magma_int_t ldda );
 
-#ifdef COMPLEX
 void magma_sger(
     magma_int_t m, magma_int_t n,
     float alpha,
     magmaFloat_const_ptr dx, magma_int_t incx,
     magmaFloat_const_ptr dy, magma_int_t incy,
     magmaFloat_ptr       dA, magma_int_t ldda );
-#endif
 
 void magma_ssymv(
     magma_uplo_t uplo,
@@ -951,7 +959,6 @@ void magma_ssyr2k(
     float beta,
     magmaFloat_ptr       dC, magma_int_t lddc );
 
-#ifdef COMPLEX
 void magma_ssymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
@@ -977,7 +984,6 @@ void magma_ssyr2k(
     magmaFloat_const_ptr dB, magma_int_t lddb,
     float beta,
     magmaFloat_ptr       dC, magma_int_t lddc );
-#endif
 
 void magma_strmm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -22,11 +22,11 @@ extern "C" magma_int_t
 magma_zpotrf_m(magma_int_t num_gpus0, char uplo, magma_int_t n,
                magmaDoubleComplex *a, magma_int_t lda, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -192,7 +192,7 @@ magma_zpotrf_m(magma_int_t num_gpus0, char uplo, magma_int_t n,
             }
             
             /* load the new big-panel by block-rows */
-            magma_zhtodpo( num_gpus, &uplo, JB, n, J, J, nb, a, lda, dwork, NB, stream, &iinfo);
+            magma_zhtodpo( num_gpus, uplo, JB, n, J, J, nb, a, lda, dwork, NB, stream, &iinfo);
             
             #ifdef ROW_MAJOR_PROFILE
             start = get_current_time();
@@ -304,8 +304,8 @@ magma_zpotrf_m(magma_int_t num_gpus0, char uplo, magma_int_t n,
             #endif      
             
             /* upload the off-diagonal (and diagonal!!!) big panel */
-            magma_zdtohpo(num_gpus, &uplo, JB, n, J, J, nb, NB, a, lda, dwork, NB, stream, &iinfo);
-            //magma_zdtohpo(num_gpus, &uplo, JB, n, J, J, nb, 0, a, lda, dwork, NB, stream, &iinfo);
+            magma_zdtohpo(num_gpus, uplo, JB, n, J, J, nb, NB, a, lda, dwork, NB, stream, &iinfo);
+            //magma_zdtohpo(num_gpus, uplo, JB, n, J, J, nb, 0, a, lda, dwork, NB, stream, &iinfo);
         }
     } else {
         /* ========================================================= *
@@ -322,7 +322,7 @@ magma_zpotrf_m(magma_int_t num_gpus0, char uplo, magma_int_t n,
             }
             
             /* load the new big-panel by block-columns */
-            magma_zhtodpo( num_gpus, &uplo, n, JB, J, J, nb, a, lda, dwork, lddla, stream, &iinfo);
+            magma_zhtodpo( num_gpus, uplo, n, JB, J, J, nb, a, lda, dwork, lddla, stream, &iinfo);
             
             /* update with the previous big-panels */
             #ifdef ROW_MAJOR_PROFILE
@@ -431,7 +431,7 @@ magma_zpotrf_m(magma_int_t num_gpus0, char uplo, magma_int_t n,
             chol_time += GetTimerValue(start, end);
             #endif      
             /* upload the off-diagonal big panel */
-            magma_zdtohpo( num_gpus, &uplo, n, JB, J, J, nb, JB, a, lda, dwork, lddla, stream, &iinfo);
+            magma_zdtohpo( num_gpus, uplo, n, JB, J, J, nb, JB, a, lda, dwork, lddla, stream, &iinfo);
         
         } /* end of for J */
     } /* if upper */

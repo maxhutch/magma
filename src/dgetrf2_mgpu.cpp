@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:44:12 2013
+       @generated d Tue Dec 17 13:18:36 2013
 
 */
 #include <math.h>
@@ -20,11 +20,11 @@ magma_dgetrf2_mgpu(magma_int_t num_gpus,
          double *d_lAP[], double *w, magma_int_t ldw,
          magma_queue_t streaml[][2], magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

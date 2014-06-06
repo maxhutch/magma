@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -34,11 +34,11 @@ magma_zlatrd2(char uplo, magma_int_t n, magma_int_t nb,
               magmaDoubleComplex *dw, magma_int_t lddw,
               magmaDoubleComplex *dwork, magma_int_t ldwork)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -219,20 +219,20 @@ magma_zlatrd2(char uplo, magma_int_t n, magma_int_t nb,
                 lapackf77_zlarfg(&i, &alpha, A(0, i), &ione, &tau[i - 1]);
                 
                 e[i-1] = MAGMA_Z_REAL( alpha );
-                MAGMA_Z_SET2REAL(*A(i-1, i), 1.);
+                *A(i-1,i) = MAGMA_Z_MAKE( 1, 0 );
                 
                 /* Compute W(1:i-1,i) */
                 // 1. Send the block reflector  A(0:n-i-1,i) to the GPU
                 magma_zsetvector( i, A(0, i), 1, dA(0, i), 1 );
                 
-                #if (GPUSHMEM < 200)
-                magma_zhemv(MagmaUpper, i, c_one, dA(0, 0), ldda,
-                            dA(0, i), ione, c_zero, dW(0, iw), ione);
-                #else
-                magmablas_zhemv2(MagmaUpper, i, c_one, dA(0, 0), ldda,
+                //#if (GPUSHMEM < 200)
+                //magma_zhemv(MagmaUpper, i, c_one, dA(0, 0), ldda,
+                //            dA(0, i), ione, c_zero, dW(0, iw), ione);
+                //#else
+                magmablas_zhemv_work(MagmaUpper, i, c_one, dA(0, 0), ldda,
                                      dA(0, i), ione, c_zero, dW(0, iw), ione,
                                      dwork, ldwork);
-                #endif
+                //#endif
                 
                 // 2. Start putting the result back (asynchronously)
                 magma_zgetmatrix_async( i, 1,
@@ -298,20 +298,20 @@ magma_zlatrd2(char uplo, magma_int_t n, magma_int_t nb,
                 alpha = *A(i+1, i);
                 lapackf77_zlarfg(&i_n, &alpha, A(min(i+2,n-1), i), &ione, &tau[i]);
                 e[i] = MAGMA_Z_REAL( alpha );
-                MAGMA_Z_SET2REAL(*A(i+1, i), 1.);
+                *A(i+1,i) = MAGMA_Z_MAKE( 1, 0 );
         
                 /* Compute W(i+1:n,i) */
                 // 1. Send the block reflector  A(i+1:n,i) to the GPU
                 magma_zsetvector( i_n, A(i+1, i), 1, dA(i+1, i), 1 );
             
-                #if (GPUSHMEM < 200)
-                magma_zhemv(MagmaLower, i_n, c_one, dA(i+1, i+1), ldda, dA(i+1, i), ione, c_zero,
-                            dW(i+1, i), ione);
-                #else
-                magmablas_zhemv2('L', i_n, c_one, dA(i+1, i+1), ldda, dA(i+1, i), ione, c_zero,
+                //#if (GPUSHMEM < 200)
+                //magma_zhemv(MagmaLower, i_n, c_one, dA(i+1, i+1), ldda, dA(i+1, i), ione, c_zero,
+                //            dW(i+1, i), ione);
+                //#else
+                magmablas_zhemv_work('L', i_n, c_one, dA(i+1, i+1), ldda, dA(i+1, i), ione, c_zero,
                                      dW(i+1, i), ione,
                                      dwork, ldwork);
-                #endif
+                //#endif
         
                 // 2. Start putting the result back (asynchronously)
                 magma_zgetmatrix_async( i_n, 1,

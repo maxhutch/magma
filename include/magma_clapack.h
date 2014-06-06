@@ -1,17 +1,20 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:43:28 2013
+       @generated c Tue Dec 17 13:18:17 2013
 */
 
 #ifndef MAGMA_CLAPACK_H
 #define MAGMA_CLAPACK_H
 
-#define PRECISION_c
+#include "magma_types.h"
+#include "magma_mangling.h"
+
+#define COMPLEX
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,6 +71,7 @@ extern "C" {
 #define lapackf77_cgetrf   FORTRAN_NAME( cgetrf, CGETRF )
 #define lapackf77_cgetri   FORTRAN_NAME( cgetri, CGETRI )
 #define lapackf77_cgetrs   FORTRAN_NAME( cgetrs, CGETRS )
+#define lapackf77_chetrs   FORTRAN_NAME( chetrs, CHETRS )
 #define lapackf77_chbtrd   FORTRAN_NAME( chbtrd, CHBTRD )
 #define lapackf77_cheev    FORTRAN_NAME( cheev,  CHEEV  )
 #define lapackf77_cheevd   FORTRAN_NAME( cheevd, CHEEVD )
@@ -113,6 +117,7 @@ extern "C" {
 #define lapackf77_csteqr   FORTRAN_NAME( csteqr, CSTEQR )
 #define lapackf77_csymv    FORTRAN_NAME( csymv,  CSYMV  )
 #define lapackf77_ctrevc   FORTRAN_NAME( ctrevc, CTREVC )
+#define lapackf77_ctrevc3  FORTRAN_NAME( ctrevc3, CTREVC3 )
 #define lapackf77_ctrtri   FORTRAN_NAME( ctrtri, CTRTRI )
 #define lapackf77_cung2r   FORTRAN_NAME( cung2r, CUNG2R )
 #define lapackf77_cungbr   FORTRAN_NAME( cungbr, CUNGBR )
@@ -140,17 +145,6 @@ extern "C" {
 #define lapackf77_cqrt02   FORTRAN_NAME( cqrt02, CQRT02 )
 #define lapackf77_cstt21   FORTRAN_NAME( cstt21, CSTT21 )
 #define lapackf77_cunt01   FORTRAN_NAME( cunt01, CUNT01 )
-
-// macros to handle differences in arguments between complex and real versions of routines.
-#if defined(PRECISION_z) || defined(PRECISION_c)
-#define DWORKFORZ        float *rwork,
-#define DWORKFORZ_AND_LD float *rwork, const magma_int_t *ldrwork,
-#define WSPLIT           magmaFloatComplex *w
-#else
-#define DWORKFORZ
-#define DWORKFORZ_AND_LD
-#define WSPLIT           float *wr, float *wi
-#endif
 
 /*
  * BLAS functions (alphabetical order)
@@ -190,13 +184,11 @@ void blasf77_cgerc(  const magma_int_t *m, const magma_int_t *n,
                      const magmaFloatComplex *y, const magma_int_t *incy,
                            magmaFloatComplex *A, const magma_int_t *lda );
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
 void blasf77_cgeru(  const magma_int_t *m, const magma_int_t *n,
                      const magmaFloatComplex *alpha,
                      const magmaFloatComplex *x, const magma_int_t *incx,
                      const magmaFloatComplex *y, const magma_int_t *incy,
                            magmaFloatComplex *A, const magma_int_t *lda );
-#endif
 
 void blasf77_chemm(  const char *side, const char *uplo,
                      const magma_int_t *m, const magma_int_t *n,
@@ -240,17 +232,14 @@ void blasf77_cscal(  const magma_int_t *n,
                      const magmaFloatComplex *alpha,
                            magmaFloatComplex *x, const magma_int_t *incx );
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
 void blasf77_csscal( const magma_int_t *n,
                      const float *alpha,
                            magmaFloatComplex *x, const magma_int_t *incx );
-#endif
 
 void blasf77_cswap(  const magma_int_t *n,
                      magmaFloatComplex *x, const magma_int_t *incx,
                      magmaFloatComplex *y, const magma_int_t *incy );
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
 /* complex-symmetric (non-Hermitian) routines */
 void blasf77_csymm(  const char *side, const char *uplo,
                      const magma_int_t *m, const magma_int_t *n,
@@ -274,7 +263,6 @@ void blasf77_csyrk(  const char *uplo, const char *trans,
                      const magmaFloatComplex *A, const magma_int_t *lda,
                      const magmaFloatComplex *beta,
                            magmaFloatComplex *C, const magma_int_t *ldc );
-#endif
 
 void blasf77_ctrmm(  const char *side, const char *uplo, const char *transa, const char *diag,
                      const magma_int_t *m, const magma_int_t *n,
@@ -343,11 +331,17 @@ void   lapackf77_cgebrd( const magma_int_t *m, const magma_int_t *n,
 void   lapackf77_cgeev(  const char *jobvl, const char *jobvr,
                          const magma_int_t *n,
                          magmaFloatComplex *A,    const magma_int_t *lda,
-                         WSPLIT,
+                         #ifdef COMPLEX
+                         magmaFloatComplex *w,
+                         #else
+                         float *wr, float *wi,
+                         #endif
                          magmaFloatComplex *Vl,   const magma_int_t *ldvl,
                          magmaFloatComplex *Vr,   const magma_int_t *ldvr,
                          magmaFloatComplex *work, const magma_int_t *lwork,
-                         DWORKFORZ
+                         #ifdef COMPLEX
+                         float *rwork,
+                         #endif
                          magma_int_t *info );
 
 void   lapackf77_cgehd2( const magma_int_t *n,
@@ -388,7 +382,9 @@ void   lapackf77_cgeqp3( const magma_int_t *m, const magma_int_t *n,
                          magma_int_t *jpvt,
                          magmaFloatComplex *tau,
                          magmaFloatComplex *work, const magma_int_t *lwork,
-                         DWORKFORZ
+                         #ifdef COMPLEX
+                         float *rwork,
+                         #endif
                          magma_int_t *info );
 
 void   lapackf77_cgeqrf( const magma_int_t *m, const magma_int_t *n,
@@ -410,7 +406,9 @@ void   lapackf77_cgesvd( const char *jobu, const char *jobvt,
                          magmaFloatComplex *U,  const magma_int_t *ldu,
                          magmaFloatComplex *Vt, const magma_int_t *ldvt,
                          magmaFloatComplex *work, const magma_int_t *lwork,
-                         DWORKFORZ
+                         #ifdef COMPLEX
+                         float *rwork,
+                         #endif
                          magma_int_t *info );
 
 void   lapackf77_cgetrf( const magma_int_t *m, const magma_int_t *n,
@@ -431,6 +429,13 @@ void   lapackf77_cgetrs( const char* trans,
                          magmaFloatComplex *B, const magma_int_t *ldb,
                          magma_int_t *info );
 
+void   lapackf77_chetrs( const char* uplo,
+                         const magma_int_t *n, const magma_int_t *nrhs,
+                         const magmaFloatComplex *A, const magma_int_t *lda,
+                         const magma_int_t *ipiv,
+                         magmaFloatComplex *B, const magma_int_t *ldb,
+                         magma_int_t *info );
+
 void   lapackf77_chbtrd( const char *vect, const char *uplo,
                          const magma_int_t *n, const magma_int_t *kd,
                          magmaFloatComplex *Ab, const magma_int_t *ldab,
@@ -444,7 +449,9 @@ void   lapackf77_cheev(  const char *jobz, const char *uplo,
                          magmaFloatComplex *A, const magma_int_t *lda,
                          float *w,
                          magmaFloatComplex *work, const magma_int_t *lwork,
-                         DWORKFORZ
+                         #ifdef COMPLEX
+                         float *rwork,
+                         #endif
                          magma_int_t *info );
 
 void   lapackf77_cheevd( const char *jobz, const char *uplo,
@@ -452,7 +459,9 @@ void   lapackf77_cheevd( const char *jobz, const char *uplo,
                          magmaFloatComplex *A, const magma_int_t *lda,
                          float *w,
                          magmaFloatComplex *work, const magma_int_t *lwork,
-                         DWORKFORZ_AND_LD
+                         #ifdef COMPLEX
+                         float *rwork, const magma_int_t *lrwork,
+                         #endif
                          magma_int_t *iwork, const magma_int_t *liwork,
                          magma_int_t *info );
 
@@ -494,7 +503,9 @@ void   lapackf77_chegvd( const magma_int_t *itype, const char *jobz, const char 
                          magmaFloatComplex *B, const magma_int_t *ldb,
                          float *w,
                          magmaFloatComplex *work, const magma_int_t *lwork,
-                         DWORKFORZ_AND_LD
+                         #ifdef COMPLEX
+                         float *rwork, const magma_int_t *lrwork,
+                         #endif
                          magma_int_t *iwork, const magma_int_t *liwork,
                          magma_int_t *info );
 
@@ -524,7 +535,11 @@ void   lapackf77_chseqr( const char *job, const char *compz,
                          const magma_int_t *n,
                          const magma_int_t *ilo, const magma_int_t *ihi,
                          magmaFloatComplex *H, const magma_int_t *ldh,
-                         WSPLIT,
+                         #ifdef COMPLEX
+                         magmaFloatComplex *w,
+                         #else
+                         float *wr, float *wi,
+                         #endif
                          magmaFloatComplex *Z, const magma_int_t *ldz,
                          magmaFloatComplex *work, const magma_int_t *lwork,
                          magma_int_t *info );
@@ -680,7 +695,9 @@ void   lapackf77_cstedc( const char *compz,
                          float *d, float *e,
                          magmaFloatComplex *Z, const magma_int_t *ldz,
                          magmaFloatComplex *work, const magma_int_t *lwork,
-                         DWORKFORZ_AND_LD
+                         #ifdef COMPLEX
+                         float *rwork, const magma_int_t *lrwork,
+                         #endif
                          magma_int_t *iwork, const magma_int_t *liwork,
                          magma_int_t *info );
 
@@ -714,7 +731,7 @@ void   lapackf77_csteqr( const char *compz,
                          float *work,
                          magma_int_t *info );
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+#ifdef COMPLEX
 void   lapackf77_csymv(  const char *uplo,
                          const magma_int_t *n,
                          const magmaFloatComplex *alpha,
@@ -731,8 +748,23 @@ void   lapackf77_ctrevc( const char *side, const char *howmny,
                          magmaFloatComplex *Vr, const magma_int_t *ldvr,
                          const magma_int_t *mm, magma_int_t *m,
                          magmaFloatComplex *work,
-                         DWORKFORZ
+                         #ifdef COMPLEX
+                         float *rwork,
+                         #endif
                          magma_int_t *info );
+
+void   lapackf77_ctrevc3( const char* side, const char* howmny,
+                          magma_int_t* select, const magma_int_t* n,
+                          magmaFloatComplex* T,  const magma_int_t* ldt,
+                          magmaFloatComplex* VL, const magma_int_t* ldvl, 
+                          magmaFloatComplex* VR, const magma_int_t* ldvr,
+                          const magma_int_t* mm,
+                          const magma_int_t* mout,
+                          magmaFloatComplex* work, const magma_int_t* lwork,
+                          #ifdef COMPLEX
+                          float *rwork,
+                          #endif
+                          magma_int_t* info );
 
 void   lapackf77_ctrtri( const char *uplo, const char *diag,
                          const magma_int_t *n,
@@ -875,7 +907,7 @@ void lapackf77_slasrt(const char *id, const magma_int_t *n, float *d, magma_int_
 /*
  * Testing functions
  */
-#if defined(PRECISION_z) || defined(PRECISION_c)
+#ifdef COMPLEX
 void   lapackf77_cbdt01( const magma_int_t *m, const magma_int_t *n, const magma_int_t *kd,
                          magmaFloatComplex *A, const magma_int_t *lda,
                          magmaFloatComplex *Q, const magma_int_t *ldq,
@@ -1013,9 +1045,6 @@ void lapackf77_clatms( magma_int_t *m, magma_int_t *n,
 }
 #endif
 
-#undef DWORKFORZ
-#undef DWORKFORZ_AND_LD
-#undef WSPLIT
-#undef PRECISION_c
+#undef COMPLEX
 
 #endif /* MAGMA_CLAPACK_H */

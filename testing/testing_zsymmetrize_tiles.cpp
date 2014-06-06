@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -63,9 +63,10 @@ int main( int argc, char** argv)
             // load each tile, save each tile
             gbytes = sizeof(magmaDoubleComplex) * 2.*nb*nb*ntile / 1e9;
             
-            TESTING_MALLOC(   h_A, magmaDoubleComplex, size   );
-            TESTING_MALLOC(   h_R, magmaDoubleComplex, size   );
-            TESTING_DEVALLOC( d_A, magmaDoubleComplex, ldda*N );
+            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, size   );
+            TESTING_MALLOC_CPU( h_R, magmaDoubleComplex, size   );
+            
+            TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*N );
             
             /* Initialize the matrix */
             for( int j = 0; j < N; ++j ) {
@@ -118,9 +119,10 @@ int main( int argc, char** argv)
                    cpu_perf, cpu_time, gpu_perf, gpu_time,
                    (error == 0. ? "ok" : "failed") );
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_R );
-            TESTING_DEVFREE( d_A );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_R );
+            
+            TESTING_FREE_DEV( d_A );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

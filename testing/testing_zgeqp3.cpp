@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
 
@@ -63,13 +63,14 @@ int main( int argc, char** argv)
             
             #if defined(PRECISION_z) || defined(PRECISION_c)
             double *rwork;
-            TESTING_MALLOC(    rwork,  double,          2*N    );
+            TESTING_MALLOC_CPU( rwork,  double, 2*N );
             #endif
-            TESTING_MALLOC(    jpvt,   magma_int_t,     N      );
-            TESTING_MALLOC(    tau,    magmaDoubleComplex, min_mn );
-            TESTING_MALLOC(    h_A,    magmaDoubleComplex, n2     );
-            TESTING_HOSTALLOC( h_R,    magmaDoubleComplex, n2     );
-            TESTING_HOSTALLOC( h_work, magmaDoubleComplex, lwork  );
+            TESTING_MALLOC_CPU( jpvt,   magma_int_t,        N      );
+            TESTING_MALLOC_CPU( tau,    magmaDoubleComplex, min_mn );
+            TESTING_MALLOC_CPU( h_A,    magmaDoubleComplex, n2     );
+            
+            TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, n2     );
+            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork  );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
@@ -127,15 +128,12 @@ int main( int argc, char** argv)
             }
             if ( opts.check ) {
                 double error, ulp;
-                
-                magma_int_t minmn = min(M, N);
                 ulp = lapackf77_dlamch( "P" );
                 
                 // Compute norm( A*P - Q*R )
-                error = lapackf77_zqpt01( &M, &N, &minmn, h_A, h_R, &lda,
+                error = lapackf77_zqpt01( &M, &N, &min_mn, h_A, h_R, &lda,
                                           tau, jpvt, h_work, &lwork );
                 error *= ulp;
-                
                 printf("   %8.2e\n", error );
             }
             else {
@@ -143,16 +141,17 @@ int main( int argc, char** argv)
             }
             
             #if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_FREE( rwork );
+            TESTING_FREE_CPU( rwork );
             #endif
-            TESTING_FREE( jpvt );
-            TESTING_FREE( tau );
-            TESTING_FREE( h_A );
-            TESTING_HOSTFREE( h_R );
-            TESTING_HOSTFREE( h_work );
+            TESTING_FREE_CPU( jpvt );
+            TESTING_FREE_CPU( tau  );
+            TESTING_FREE_CPU( h_A  );
+            
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_work );
         }
     }
-
+    
     TESTING_FINALIZE();
     return 0;
 }

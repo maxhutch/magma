@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
-       @generated c Tue Aug 13 16:44:07 2013
+       @generated c Tue Dec 17 13:18:36 2013
 */
 #include "common_magma.h"
 
@@ -25,11 +25,11 @@ extern "C" magma_int_t
 magma_cpotrf(char uplo, magma_int_t n,
              magmaFloatComplex *a, magma_int_t lda, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -134,11 +134,11 @@ magma_cpotrf(char uplo, magma_int_t n,
     magma_queue_create( &stream[2] );
 
     if (current_stream == NULL) {
-      magma_queue_create( &stream[1] );
-      magmablasSetKernelStream(stream[1]);
+        magma_queue_create( &stream[1] );
+        magmablasSetKernelStream(stream[1]);
     }
     else
-      stream[1] = current_stream;
+        stream[1] = current_stream;
 
     nb = magma_get_cpotrf_nb(n);
 

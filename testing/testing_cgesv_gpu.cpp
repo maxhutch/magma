@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:45:59 2013
+       @generated c Tue Dec 17 13:18:57 2013
        @author Mark Gates
 */
 // includes, system
@@ -59,14 +59,14 @@ int main(int argc, char **argv)
             lddb   = ldda;
             gflops = ( FLOPS_CGETRF( N, N ) + FLOPS_CGETRS( N, nrhs ) ) / 1e9;
             
-            TESTING_MALLOC( h_A, magmaFloatComplex, lda*N    );
-            TESTING_MALLOC( h_B, magmaFloatComplex, ldb*nrhs );
-            TESTING_MALLOC( h_X, magmaFloatComplex, ldb*nrhs );
-            TESTING_MALLOC( work, float,         N        );
-            TESTING_MALLOC( ipiv, magma_int_t,    N        );
+            TESTING_MALLOC_CPU( h_A, magmaFloatComplex, lda*N    );
+            TESTING_MALLOC_CPU( h_B, magmaFloatComplex, ldb*nrhs );
+            TESTING_MALLOC_CPU( h_X, magmaFloatComplex, ldb*nrhs );
+            TESTING_MALLOC_CPU( work, float,      N );
+            TESTING_MALLOC_CPU( ipiv, magma_int_t, N );
             
-            TESTING_DEVALLOC( d_A, magmaFloatComplex, ldda*N    );
-            TESTING_DEVALLOC( d_B, magmaFloatComplex, lddb*nrhs );
+            TESTING_MALLOC_DEV( d_A, magmaFloatComplex, ldda*N    );
+            TESTING_MALLOC_DEV( d_B, magmaFloatComplex, lddb*nrhs );
             
             /* Initialize the matrices */
             sizeA = lda*N;
@@ -127,14 +127,14 @@ int main(int argc, char **argv)
                         error, (error < tol ? "" : "  failed"));
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_FREE( h_X );
-            TESTING_FREE( work );
-            TESTING_FREE( ipiv );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_CPU( h_X );
+            TESTING_FREE_CPU( work );
+            TESTING_FREE_CPU( ipiv );
             
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

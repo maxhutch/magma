@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated s Wed Aug 14 12:17:59 2013
+       @generated s Tue Dec 17 13:18:56 2013
        @author Mark Gates
 */
 
@@ -62,11 +62,12 @@ int main( int argc, char** argv)
                 gbytes = sizeof(float) * 2.*M*N / 1e9;
             //}
     
-            TESTING_MALLOC(   h_A, float, size   );
-            TESTING_MALLOC(   h_B, float, size   );
-            TESTING_MALLOC(   h_R, float, size   );
-            TESTING_DEVALLOC( d_A, float, ldda*N );
-            TESTING_DEVALLOC( d_B, float, ldda*N );
+            TESTING_MALLOC_CPU( h_A, float, size   );
+            TESTING_MALLOC_CPU( h_B, float, size   );
+            TESTING_MALLOC_CPU( h_R, float, size   );
+            
+            TESTING_MALLOC_DEV( d_A, float, ldda*N );
+            TESTING_MALLOC_DEV( d_B, float, ldda*N );
             
             /* Initialize the matrix */
             for( int j = 0; j < N; ++j ) {
@@ -111,11 +112,12 @@ int main( int argc, char** argv)
                    (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
                    (error == 0. ? "ok" : "failed") );
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_B );
-            TESTING_FREE( h_R );
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_B );
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( h_B );
+            TESTING_FREE_CPU( h_R );
+            
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_B );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

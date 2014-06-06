@@ -1,748 +1,294 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @precisions normal d
+       @generated d Tue Dec 17 13:18:45 2013
 
-*/
+       @author Jakub Kurzak
+       @author Stan Tomov
+       @author Mark Gates
 
-/*
-    blk_M=64 blk_N=64 blk_K=16 nthd_x=64 nthd_y=4
+       [zcds]gemm_fermi.cu          defines the CPU driver.
+       [zcds]gemm_fermi_kernels.h   defines the block sizes for each precision.
+       gemm_stencil_defs.h          defines types and functions for precision-independent code.
+       gemm_stencil.cu              defines the GPU kernel. It gets included
+                                    multiple times, once for each transpose version.
 */
 #include "common_magma.h"
 #include "commonblas_d.h"
+#include <assert.h>
 
-#define magmablas_dgemm_fermi magmablas_dgemm
+#define PRECISION_d
 
-texture<int2,1>  tex_x_double_A;
-texture<int2,1>  tex_x_double_B;
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
-static __inline__ __device__ double fetch_x_A(const int& i)
-{
-  register int2  v = tex1Dfetch(tex_x_double_A, i);
-  return __hiloint2double(v.y, v.x);
-}
+#include "dgemm_fermi_kernels.h"
 
-static __inline__ __device__ double fetch_x_B(const int& i)
-{
-  register int2  v = tex1Dfetch(tex_x_double_B, i);
-  return __hiloint2double(v.y, v.x);
-}
-
-extern "C" __global__ void 
-fermiDgemm_v2_kernel_NN(double *C, const double *A, const double *B,  
-                        int m, int n, int k, int lda, int ldb,  
-                        int ldc, double alpha, double beta,
-                        int offsetA, int offsetB) 
-{
-        const  int tx = threadIdx.x;
-        const  int ty = threadIdx.y;
-
-        const int iby = blockIdx.y * 64;
-        const int ibx = blockIdx.x * 64;
-        const int idt = ty * 64 + tx;
-
-        const int tx2 = idt%16;
-        const int ty2 = idt/16;
-
-        __shared__ double Abs[64][17];
-        __shared__ double  Bb[16][65];
-
-        int tll = ty2;
-        double xxA[4];
-        double xxB[4];
-
-        int trackA = offsetA + ibx +__mul24( ty2, lda) + tx2 ;
-        A += trackA; 
-
-        int trackB = offsetB + tx2+ __mul24(iby + ty2 * 4, ldb );
-        B += trackB;
-
-        #pragma unroll
-        for(int y=0; y<4; y++)
-                Abs[tx2+ y*16][ty2] = /* (tll<k)* */ fetch_x_A(trackA + y*16) ;
-
-        #pragma unroll
-        for(int y=0; y<4; y++)
-                Bb[tx2][ty2*4+y] = fetch_x_B( trackB + y * ldb) ;
-
-        __syncthreads();
-
-        double Axs[4];
-        double Bxp[4];
-
-        double Cb[16] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-
-        int k1;
-        for(k1=0; k1<(k-16); k1+=16)
-        {
-                tll+=16;
-                A += lda *16  ;
-                B += 16;
-                trackA += 16*lda ; 
-                trackB += 16;
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxA[y] = /* (tll<k)* */ fetch_x_A(trackA + y*16);
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxB[y] = fetch_x_B( trackB + y*ldb);
-
-                #pragma unroll 
-                for( int j1=0;j1<16;j1++)
-                {
-                        #pragma unroll
-                        for( int y=0; y<4; y++)
-                                Axs[y] =  Abs[tx2+y*16][j1] ;
-
-                        #pragma unroll
-                        for( int y=0; y<4; y++)
-                                Bxp[y]= Bb[j1][ty2+y*16];
-
-
-                        #pragma unroll 
-                        for( int x=0; x<4; x++)
-                        {
-                                #pragma unroll 
-                                for( int y=0; y<4; y++)
-                                {
-                                        Cb[x*4+y]  += Axs[x]*Bxp[y];
-                                }
-                        }
-                }
-
-                __syncthreads();
-                
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        Abs[tx2+y*16][ty2] = xxA[y]; 
-
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        Bb[tx2][ty2*4 + y] = xxB[y];
-
-                __syncthreads();
-        }
-
-        C += tx2 + ibx  + __mul24 (ty2 +  iby ,ldc);
-
-        #pragma unroll 
-        for(int j1=0;j1<16;j1++)
-        {
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Axs[y] =  Abs[tx2 + y*16][j1] ;
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Bxp[y]= Bb[j1][ty2 + y*16];
-
-                #pragma unroll 
-                for( int x=0; x<4; x++)
-                {
-                        #pragma unroll 
-                        for( int y=0;y<4; y++)
-                        {
-                                Cb[x*4 + y]  += Axs[x]*Bxp[y];
-                        }
-                }
-        }
-
-        int gy = iby + ty2;
-        #pragma unroll
-        for( int y=0;y<4;y++, gy+=16)
-        {
-                int gx = ibx + tx2; 
-                #pragma unroll
-                for(int x=0;x<4;x++, gx+=16)
-                {
-                        if (gx < m && gy < n)
-                                C[x*16] = alpha*Cb[y+x*4] + beta * C[x*16];
-                }
-
-                C += ldc*16;
-        }
-}
-
-extern "C" __global__ void 
-fermiDgemm_v2_kernel_TN(double *C, const double *A, const double *B,
-                        int m, int n,  int k,  int lda,  int ldb,  
-                        int ldc, double alpha, double beta,
-                        int offsetA, int offsetB) 
-{
-    const  int tx = threadIdx.x;
-    const  int ty = threadIdx.y;
-
-    const int iby = blockIdx.y * 64;
-    const int ibx = blockIdx.x * 64;
-    const int idt = ty * 64 + tx;
-
-    const int tx2 = idt%16;
-    const int ty2 = idt/16;
-
-    __shared__ double Bb[16][65];
-    __shared__ double Abs[64][17];
-
-    double xxA[4];
-    double xxB[4];
-
-    int trackA = offsetA + tx2 + __mul24( ibx + ty2*4, lda ); 
-    int trackB = offsetB + tx2 + __mul24( iby + ty2*4, ldb ); 
-
-    A+= trackA; 
-    B+= trackB; 
-
-        int tll = tx2;
-
-    #pragma unroll
-    for(int y=0; y<4; y++)
-                Abs[ty2*4+y][tx2] =  (tll<k)*  fetch_x_A(trackA + y*lda);
-
-    #pragma unroll
-    for(int y=0; y<4; y++)
-                Bb[tx2][ty2*4+y] = /* (tll<k)* */ fetch_x_B( trackB + y*ldb );
-
-    __syncthreads();
-   
-    double Axs[4];
-    double Bxp[4];
-
-    double Cb[16] = {0,0,0,0,    0,0,0,0, 0,0,0,0, 0,0,0,0};
-
-    int k1;
-    for(k1=0; k1<(k-16); k1+=16)
-    {
-                tll +=16;
-                B += 16;
-                A += 16  ;
-                trackA+=16 ; 
-                trackB+=16;
-
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        xxA[y] =  (tll<k)*  fetch_x_A(trackA + y*lda);
-
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        xxB[y] = /* (tll<k)* */ fetch_x_B(trackB + y*ldb);
-
-                #pragma unroll 
-                for(int j1=0;j1<16;j1++)
-                {
-                        #pragma unroll
-                        for(int y=0; y<4; y++)
-                                Axs[y] =  Abs[tx2+y*16][j1];
-
-                        #pragma unroll
-                        for(int y=0; y<4; y++)
-                                Bxp[y]= Bb[j1][ty2+y*16];
-
-                        #pragma unroll 
-                        for(int x=0; x<4; x++)
-                        {
-                                #pragma unroll 
-                                for(int y=0; y<4; y++)
-                                {
-                                        Cb[x*4+y]  += Axs[x]*Bxp[y];
-                                }
-                        }
-                }
-                __syncthreads();
-
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        Abs[ty2*4+y][tx2] = xxA[y];
-
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        Bb[tx2][ty2*4+y] =xxB[y];
-                __syncthreads();
-        }
-
-        C += tx2 + ibx  + __mul24 (ty2 + iby ,ldc);
-
-        #pragma unroll 
-        for(int j1=0; j1<16; j1++)
-        {
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        Axs[y] = Abs[tx2+y*16][j1];
-
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        Bxp[y]= Bb[j1][ty2+y*16];
-
-                #pragma unroll 
-                for(int x=0; x<4; x++)
-                {
-                        #pragma unroll 
-                        for(int y=0; y<4; y++)
-                        {
-                                Cb[x*4+y] += Axs[x]*Bxp[y];
-                        }
-                }
-        }
-
-        int gy = iby+ty2;
-        #pragma unroll
-        for(int y=0;y<4;y++, gy+=16)
-        {
-                int gx = ibx+tx2;
-                #pragma unroll
-                for(int x=0;x<4;x++, gx+=16)
-                {
-                        if (gx < m && gy < n)
-                        C[x*16] =alpha*Cb[y+x*4] + beta * C[x*16];
-                }
-                C+=ldc*16;
-        }
-}
-
-extern "C" __global__ void 
-fermiDgemm_v2_kernel_TT(double *C, const double *A, const double *B, 
-                        int m, int n,  int k,  int lda,  int ldb, 
-                        int ldc, double alpha, double beta,
-                        int offsetA, int offsetB) 
-{
-        const  int tx = threadIdx.x;
-        const  int ty = threadIdx.y;
-
-        const int iby = blockIdx.y * 64;
-        const int ibx = blockIdx.x * 64;
-        const int idt = ty * 64 + tx;
-
-        const int tx2 = idt%16;
-        const int ty2 = idt/16;
-
-        __shared__ double Bb[16][65];
-        __shared__ double Abs[64][17];
-
-        double xxA[4];
-        double xxB[4];
-
-        int trackA = offsetA + __mul24( ibx + ty2, lda) + tx2;
-        int trackB = offsetB + iby+ tx2 + __mul24(ty2, ldb);
-
-        A += trackA; 
-        B += trackB; 
-
-        int tll = tx2; 
-
-        #pragma unroll
-        for(int y=0; y<4; y++)
-                Abs[ty2+16*y][tx2] = /* (tll<k)* */ fetch_x_A(trackA +  lda*16*y);
-
-        #pragma unroll
-        for(int y=0; y<4; y++)
-                Bb[ty2][tx2+16*y] = fetch_x_B(trackB+16*y);
-
-        __syncthreads();
-
-        double Axs[4];
-        double Bxp[4];
-
-        double Cb[16] = {0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0};
-        
-        int k1;
-        for(k1=0; k1<(k-16); k1+=16)
-        {
-                tll+=16;
-                A += 16;
-                B += 16*ldb;
-                trackA+=16; 
-                trackB+=16*ldb;
-                
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxA[y] = /* (tll<k)* */ fetch_x_A(trackA + lda*y*16);
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxB[y] = fetch_x_B(trackB + 16*y);
-
-                #pragma unroll 
-                for( int j1=0;j1<16;j1++)
-                {
-                        #pragma unroll
-                        for( int y=0; y<4; y++)
-                                Axs[y] =  Abs[tx2 + y*16][j1];
-
-                        #pragma unroll
-                        for( int y=0; y<4; y++)
-                                Bxp[y]= Bb[j1][ty2 + y*16];
-
-                        #pragma unroll 
-                        for( int x=0; x<4; x++)
-                                #pragma unroll 
-                                for( int y=0;y<4;y++)
-                                        Cb[x*4+y] += Axs[x]*Bxp[y];
-                }
-                __syncthreads();
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Abs[ty2 + 16*y][tx2] = xxA[y];
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Bb[ty2][tx2+y*16] = xxB[y];
-
-                __syncthreads();
-        } 
-
-        C += tx2 + ibx  + __mul24 (ty2 +  iby ,ldc);
-
-        #pragma unroll 
-        for( int j1=0; j1<16; j1++)
-        {
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Axs[y] =  Abs[tx2 + y*16][j1];
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Bxp[y]= Bb[j1][ty2 + y*16];
-
-                #pragma unroll 
-                for( int x=0; x<4; x++)
-                        #pragma unroll 
-                        for( int y=0; y<4; y++)
-                                Cb[x*4+y]  += Axs[x]*Bxp[y];
-        }
-
-        int gy = iby + ty2;
-        #pragma unroll
-        for( int y=0; y<4; y++, gy+=16)
-        {
-                int gx = ibx + tx2; 
-                #pragma unroll
-                for(int x=0; x<4; x++, gx+=16)
-                {
-                        if (gx < m && gy < n)
-                                C[x*16] = alpha*Cb[y+x*4] + beta * C[x*16];
-                }
-
-                C+=ldc*16;
-        }
-}
-
-        
-extern "C" __global__ void 
-fermiDgemm_v2_kernel_NT(double *C, const double *A, const double *B,  
-                        int m, int n,  int k,  int lda,  int ldb,  
-                        int ldc, double alpha, double beta,
-                        int offsetA, int offsetB) 
-{
-        const  int tx = threadIdx.x;
-        const  int ty = threadIdx.y;
-
-        const int iby = blockIdx.y * 64;
-        const int ibx = blockIdx.x * 64;
-        const int idt = ty * 64 + tx;
-
-        const int tx2= idt%16;
-        const int ty2= idt/16;
-
-        __shared__ double Bb[16][65];
-        __shared__ double Abs[64][17];
-
-        double xxA[4];
-        double xxB[4];
-
-        int trackA = offsetA + ibx +__mul24(ty2, lda) + tx2 ;
-        int trackB = offsetB + iby + tx2 + __mul24(ty2, ldb);        
-        
-        A+= trackA; 
-        B += trackB; 
-
-        int tll = ty2;
-
-        #pragma unroll
-        for(int y=0; y<4; y++)
-                Abs[tx2+ y*16][ty2] = /* (tll<k)* */ fetch_x_A(trackA + y*16);
-
-        #pragma unroll
-        for(int y=0; y<4; y++)
-                Bb[ty2][tx2+16*y] = /* (tll<k)* */ fetch_x_B(trackB+16*y);
-
-        __syncthreads();
-
-        double Axs[4];
-        double Bxp[4];
-
-        double Cb[16] = {0,0,0,0, 0,0,0,0,  0,0,0,0, 0,0,0,0};
-        
-        int k1;
-        for(k1=0; k1<(k-16); k1+=16)
-        {
-                tll += 16;
-                A += lda *16  ;
-                B += 16*ldb;
-                trackA+=16*lda ; 
-                trackB+=16*ldb;
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxA[y] = /* (tll<k)* */ fetch_x_A(trackA + y*16);
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxB[y] = /* (tll<k)* */ fetch_x_B( trackB + 16*y);
-
-                #pragma unroll 
-                for( int j1=0;j1<16;j1++)
-                {
-                        #pragma unroll
-                        for( int y=0; y<4; y++)
-                                Bxp[y]= Bb[j1][ty2 + y*16];
-                        #pragma unroll
-                        for( int y=0; y<4; y++)
-                                Axs[y] =  Abs[tx2 + y*16][j1] ;
-
-                        #pragma unroll 
-                        for( int x=0; x<4; x++)
-                                #pragma unroll 
-                                for( int y=0; y<4; y++)
-                                        Cb[x*4+y] += Axs[x]*Bxp[y];
-                }
-                __syncthreads();
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Abs[tx2 + y*16][ty2] = xxA[y]; 
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Bb[ty2][tx2+y*16] = xxB[y];
-
-                __syncthreads();
-        } 
-
-        C += tx2 + ibx + __mul24(ty2 + iby ,ldc);
-
-        #pragma unroll 
-        for(int j1=0; j1<16; j1++)
-        {
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Bxp[y] = Bb[j1][ty2 + y*16];
-
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Axs[y] =  Abs[tx2 + y*16][j1] ;
-
-                #pragma unroll 
-                for( int x=0; x<4; x++)
-                        #pragma unroll 
-                        for( int y=0;y<4;y++)
-                                Cb[x*4+y]  += Axs[x]*Bxp[y];
-        }
-
-        int gy = iby + ty2;
-        #pragma unroll
-        for( int y=0; y<4; y++, gy+=16)
-        {
-                int gx = ibx + tx2; 
-                #pragma unroll
-                for(int x=0; x<4; x++, gx+=16)
-                {
-                        if (gx < m && gy < n)
-                                C[x*16] = alpha*Cb[y + x*4] + beta * C[x*16];
-                }
-
-                C+=ldc*16;
-        }
-}
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C" void
-magmablas_dgemm_fermi( char TRANSA, char TRANSB, magma_int_t m , magma_int_t n , magma_int_t k , 
-                       double alpha, const double *A, magma_int_t lda, 
-                                     const double *B, magma_int_t ldb, 
-                       double beta,        double *C, magma_int_t ldc ) 
+magmablas_dgemm(
+    char TRANSA, char TRANSB, magma_int_t m, magma_int_t n, magma_int_t k,
+    double alpha,
+    const double *d_A, magma_int_t lda,
+    const double *d_B, magma_int_t ldb,
+    double beta,
+    double *d_C, magma_int_t ldc )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-   Purpose
-   =======
-
-   DGEMM  performs one of the matrix-matrix operations
-
-      C := alpha*op( A )*op( B ) + beta*C,
-
-   where  op( X ) is one of
-
-      op( X ) = X   or   op( X ) = X',
-
-   alpha and beta are scalars, and A, B and C are matrices, with op( A )
-   an m by k matrix,  op( B )  a  k by n matrix and  C an m by n matrix.
-
-   Parameters
-   ==========
-   TRANSA - CHARACTER*1.
+    Purpose
+    =======
+    DGEMM performs one of the matrix-matrix operations
+    
+        C = alpha*op( A )*op( B ) + beta*C,
+    
+    where op( X ) is one of
+    
+        op( X ) = X   or   op( X ) = X**T   or   op( X ) = X**T,
+    
+    alpha and beta are scalars, and A, B and C are matrices, with
+    op( A ) an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
+    
+    Parameters
+    ==========
+    TRANSA  CHARACTER*1.
             On entry, TRANSA specifies the form of op( A ) to be used in
             the matrix multiplication as follows:
-               TRANSA = 'N' or 'n',  op( A ) = A.
-               TRANSA = 'T' or 't',  op( A ) = A'.
-               TRANSA = 'C' or 'c',  op( A ) = A'.
+                TRANSA = 'N' or 'n',  op( A ) = A.
+                TRANSA = 'T' or 't',  op( A ) = A**T.
+                TRANSA = 'C' or 'c',  op( A ) = A**T.
             Unchanged on exit.
-
-   TRANSB - CHARACTER*1.
+    
+    TRANSB  CHARACTER*1.
             On entry, TRANSB specifies the form of op( B ) to be used in
             the matrix multiplication as follows:
-               TRANSB = 'N' or 'n',  op( B ) = B.
-               TRANSB = 'T' or 't',  op( B ) = B'.
-               TRANSB = 'C' or 'c',  op( B ) = B'.
+                TRANSB = 'N' or 'n',  op( B ) = B.
+                TRANSB = 'T' or 't',  op( B ) = B**T.
+                TRANSB = 'C' or 'c',  op( B ) = B**T.
             Unchanged on exit.
-
-   M      - INTEGER.
+    
+    M       INTEGER.
             On entry,  M  specifies  the number  of rows  of the  matrix
-            op( A )  and of the  matrix  C.  M  must  be at least  zero.
+            op( d_A )  and of the  matrix d_C.  M  must  be at least  zero.
             Unchanged on exit.
-
-   N      - INTEGER.
+    
+    N       INTEGER.
             On entry,  N  specifies the number  of columns of the matrix
-            op( B ) and the number of columns of the matrix C. N must be
+            op( d_B ) and the number of columns of the matrix d_C. N must be
             at least zero.
             Unchanged on exit.
-
-   K      - INTEGER.
+    
+    K       INTEGER.
             On entry,  K  specifies  the number of columns of the matrix
-            op( A ) and the number of rows of the matrix op( B ). K must
+            op( d_A ) and the number of rows of the matrix op( d_B ). K must
             be at least  zero.
             Unchanged on exit.
-
-   ALPHA  - DOUBLE PRECISION.
+    
+    ALPHA   DOUBLE_PRECISION
             On entry, ALPHA specifies the scalar alpha.
             Unchanged on exit.
-
-   A      - DOUBLE PRECISION array of DIMENSION ( LDA, ka ), where ka is
+    
+    d_A     DOUBLE_PRECISION array of DIMENSION ( LDA, ka ), where ka is
             k  when  TRANSA = 'N' or 'n',  and is  m  otherwise.
             Before entry with  TRANSA = 'N' or 'n',  the leading  m by k
-            part of the array  A  must contain the matrix  A,  otherwise
-            the leading  k by m  part of the array  A  must contain  the
-            matrix A.
+            part of the array d_A must contain the matrix d_A, otherwise
+            the leading  k by m  part of the array d_A must contain  the
+            matrix d_A.
             Unchanged on exit.
-
-   LDA    - INTEGER.
+    
+    LDA     INTEGER.
             On entry, LDA specifies the first dimension of A as declared
             in the calling (sub) program. When  TRANSA = 'N' or 'n' then
             LDA must be at least  max( 1, m ), otherwise  LDA must be at
             least  max( 1, k ).
             Unchanged on exit.
-
-   B      - DOUBLE PRECISION array of DIMENSION ( LDB, kb ), where kb is
+    
+    d_B     DOUBLE_PRECISION array of DIMENSION ( LDB, kb ), where kb is
             n  when  TRANSB = 'N' or 'n',  and is  k  otherwise.
             Before entry with  TRANSB = 'N' or 'n',  the leading  k by n
-            part of the array  B  must contain the matrix  B,  otherwise
-            the leading  n by k  part of the array  B  must contain  the
-            matrix B.
+            part of the array d_B must contain the matrix d_B, otherwise
+            the leading  n by k  part of the array d_B must contain  the
+            matrix d_B.
             Unchanged on exit.
-
-   LDB    - INTEGER.
-            On entry, LDB specifies the first dimension of B as declared
+    
+    LDB     INTEGER.
+            On entry, LDB specifies the first dimension of d_B as declared
             in the calling (sub) program. When  TRANSB = 'N' or 'n' then
             LDB must be at least  max( 1, k ), otherwise  LDB must be at
             least  max( 1, n ).
             Unchanged on exit.
-
-   BETA   - DOUBLE PRECISION.
+    
+    BETA    DOUBLE_PRECISION.
             On entry,  BETA  specifies the scalar  beta.  When  BETA  is
-            supplied as zero then C need not be set on input.
+            supplied as zero then d_C need not be set on input.
             Unchanged on exit.
-
-   C      - DOUBLE PRECISION array of DIMENSION ( LDC, n ).
-            Before entry, the leading  m by n  part of the array  C must
-            contain the matrix  C,  except when  beta  is zero, in which
-            case C need not be set on entry.
-            On exit, the array  C  is overwritten by the  m by n  matrix
-            ( alpha*op( A )*op( B ) + beta*C ).
-
-   LDC    - INTEGER.
-            On entry, LDC specifies the first dimension of C as declared
+    
+    d_C     DOUBLE_PRECISION array of DIMENSION ( LDC, n ).
+            Before entry, the leading  m by n  part of the array  d_C must
+            contain the matrix  d_C,  except when  beta  is zero, in which
+            case d_C need not be set on entry.
+            On exit, the array  d_C  is overwritten by the  m by n  matrix
+            ( alpha*op( d_A )*op( d_B ) + beta*d_C ).
+    
+    LDC     INTEGER.
+            On entry, LDC specifies the first dimension of d_C as declared
             in  the  calling  (sub)  program.   LDC  must  be  at  least
             max( 1, m ).
             Unchanged on exit.
-   =====================================================================    */
+    =====================================================================    */
+    
+    magma_int_t arch = magma_getdevice_arch();
+    if ( arch < 200  ) {
+        // --------------------
+        // call CUDA ARCH 1.x version
+        // magmablas for [sd] precisions, cublas for [zc] precisions.
+        #if defined(PRECISION_z) || defined(PRECISION_c)
+        cublasDgemm(
+            TRANSA, TRANSB, m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+        #else
+        magmablas_dgemm_tesla(
+            TRANSA, TRANSB, m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+        #endif
+        return;
+    }
+    
+    // --------------------
+    // CUDA ARCH 2.x (Fermi) version
+    if ( m <= 0 || n <= 0 || k <= 0 )
+        return;
+    
+    size_t offsetA = 0;
+    size_t offsetB = 0;
 
-        if (m<=0 || n<=0 || k<=0)
-           return;
+    int TransA = 2, TransB = 2;
+    if      ( TRANSA == 'T' || TRANSA == 't' )
+        TransA = 1;
+    else if ( TRANSA == 'N' || TRANSA == 'n' )
+        TransA = 0;
+                    
+    if      ( TRANSB == 'T' || TRANSB == 't' )
+        TransB = 1;
+    else if ( TRANSB == 'N' || TRANSB == 'n' )
+        TransB = 0;
 
-        size_t offsetA = 0;
-        size_t offsetB = 0;
+    size_t sizeA = (size_t) lda * (size_t) (!TransA ? k : m);
+    size_t sizeB = (size_t) ldb * (size_t) (!TransB ? n : k);
 
-        int TransA = 1, TransB = 1;
-        if (TRANSA == 'N' ||  TRANSA == 'n')
-           TransA = 0;
-        if (TRANSB == 'N' ||  TRANSB == 'n')
-           TransB = 0;
+    size_t CUBLAS_MAX_1DBUF_SIZE = ((1 << 27) - 512);
+    if ( sizeA >= CUBLAS_MAX_1DBUF_SIZE ||
+         sizeB >= CUBLAS_MAX_1DBUF_SIZE )
+    {
+        cublasDgemm( TRANSA, TRANSB, m, n, k, alpha,
+                     d_A, lda, d_B, ldb,
+                     beta, d_C, ldc );
+        return;
+    }
 
-        size_t sizeA = (size_t) lda * (size_t) (!TransA ? k : m);
-        size_t sizeB = (size_t) ldb * (size_t) (!TransB ? n : k);
-         
-        // size_t CUBLAS_MAX_1DBUF_SIZE = ((1 << 27) - 512) / 2;
-        size_t CUBLAS_MAX_1DBUF_SIZE = ((1 << 27) - 512);
-        if (sizeA>=CUBLAS_MAX_1DBUF_SIZE ||
-                        sizeB>=CUBLAS_MAX_1DBUF_SIZE )
-        {
-        //        printf("Exceeding texuture limit (CUBLAS_MAX_1DBUF_SIZE=%ld), using cublasSgemm\n", CUBLAS_MAX_1DBUF_SIZE);
-                cublasDgemm(TRANSA, TRANSB, m, n, k, alpha,
-                                A, lda, B, ldb,
-                                beta, C, ldc);
-                return;
+    #ifdef TEXTURE_1D
+        // Set textures parameters
+        tex_ref_A.normalized = false;
+        tex_ref_A.filterMode = cudaFilterModePoint;
+        tex_ref_A.addressMode[0] = cudaAddressModeClamp;
+
+        tex_ref_B.normalized = false;
+        tex_ref_B.filterMode = cudaFilterModePoint;
+        tex_ref_B.addressMode[0] = cudaAddressModeClamp;
+
+        // Bind A and B to texture references
+        cudaError_t err;
+        err = cudaBindTexture(&offsetA, tex_ref_A, d_A, sizeA*sizeof(double));
+        if ( err != cudaSuccess ) {
+            fprintf( stderr, "cannot bind A to texture: %s (%d)\n", cudaGetErrorString(err), err );
+            return;
         }
-
-        cudaError_t  errt;
-        errt = cudaBindTexture(&offsetA, tex_x_double_A, (int2 *)A,
-                               sizeA * sizeof(A[0]));
-        if( errt != cudaSuccess) 
-        {
-                printf("cannot bind to texture\n");
-                return;
+        err = cudaBindTexture(&offsetB, tex_ref_B, d_B, sizeB*sizeof(double));
+        if ( err != cudaSuccess ) {
+            fprintf( stderr, "cannot bind B to texture: %s (%d)\n", cudaGetErrorString(err), err );
+            cudaUnbindTexture( tex_ref_A );
+            return;
         }
+    #endif
 
-        errt = cudaBindTexture(&offsetB, tex_x_double_B, (int2 *)B,
-                               sizeB * sizeof(B[0]));
-        if( errt != cudaSuccess)
-        {
-                printf("cannot bind to texture\n");
-                return;
-        }
+    // Set up grids
+    dim3 dimBlock(DIM_X, DIM_Y);
 
-        dim3 threads( 64, 4 );
-        dim3 grid(m/(64)+(m%(64)!=0),n/(64)+(n%(64)!=0));
+    offsetA = offsetA/sizeof(d_A[0]);
+    offsetB = offsetB/sizeof(d_B[0]);
+ 
+    if ( TransA == 0 && TransB == 0 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_nn + 1,
+                      (n - 1)/BLK_N_nn + 1 );
+        dgemm_kernel_fermi_nn<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 0 && TransB == 1 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_nt + 1,
+                      (n - 1)/BLK_N_nt + 1 );
+        dgemm_kernel_fermi_nt<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 0 && TransB == 2 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_nc + 1,
+                      (n - 1)/BLK_N_nc + 1 );
+        dgemm_kernel_fermi_nc<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 1 && TransB == 0 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_tn + 1,
+                      (n - 1)/BLK_N_tn + 1 );
+        dgemm_kernel_fermi_tn<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 1 && TransB == 1 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_tt + 1,
+                      (n - 1)/BLK_N_tt + 1 );
+        dgemm_kernel_fermi_tt<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 1 && TransB == 2 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_tc + 1,
+                      (n - 1)/BLK_N_tc + 1 );
+        dgemm_kernel_fermi_tc<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 2 && TransB == 0 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_cn + 1,
+                      (n - 1)/BLK_N_cn + 1 );
+        dgemm_kernel_fermi_cn<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 2 && TransB == 1 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_ct + 1,
+                      (n - 1)/BLK_N_ct + 1 );
+        dgemm_kernel_fermi_ct<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
+    else if ( TransA == 2 && TransB == 2 ) {
+        dim3 dimGrid( (m - 1)/BLK_M_cc + 1,
+                      (n - 1)/BLK_N_cc + 1 );
+        dgemm_kernel_fermi_cc<<< dimGrid, dimBlock, 0, magma_stream >>>(
+            m, n, k, d_A, lda, d_B, ldb, d_C, ldc, alpha, beta,
+            (int)offsetA, (int)offsetB );
+    }
 
-        offsetA = offsetA/sizeof(A[0]);
-        offsetB = offsetB/sizeof(B[0]);
-
-        if ( TransB ) 
-           if ( !TransA ) 
-                fermiDgemm_v2_kernel_NT<<< grid, threads, 0, magma_stream >>>(C, A, B, m, n, k, lda, ldb, 
-                                                            ldc, alpha, beta,
-                                                            (int)offsetA, (int)offsetB);
-           else
-                fermiDgemm_v2_kernel_TT<<< grid, threads, 0, magma_stream >>>(C, A, B, m, n, k, lda, ldb, 
-                                                            ldc, alpha, beta,
-                                                            (int)offsetA, (int)offsetB);
-        else
-           if ( !TransA ) 
-                fermiDgemm_v2_kernel_NN<<< grid, threads, 0, magma_stream >>>(C, A, B, m, n, k, lda, ldb, 
-                                                            ldc, alpha, beta,
-                                                            (int)offsetA, (int)offsetB);
-           else
-                fermiDgemm_v2_kernel_TN<<< grid, threads, 0, magma_stream >>>(C, A, B, m, n, k, lda, ldb, 
-                                                            ldc, alpha, beta,
-                                                            (int)offsetA, (int)offsetB);
-
-        cudaUnbindTexture ( tex_x_double_A ) ;
-        cudaUnbindTexture ( tex_x_double_B ) ;
+    cudaUnbindTexture( tex_ref_A );
+    cudaUnbindTexture( tex_ref_B );
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////

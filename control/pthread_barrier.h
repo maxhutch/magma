@@ -1,9 +1,15 @@
 #ifndef PTHREAD_BARRIER_H
 #define PTHREAD_BARRIER_H
 
-#ifdef __APPLE__
+// MacOS doesn't provide pthread_barrier
+// magmawinthread.c doesn't provide pthread_barrier
+#if defined( _WIN32 ) || defined( _WIN64 ) || defined( __APPLE__ )
 
-#include <pthread.h>
+#if defined( _WIN32 ) || defined( _WIN64 )
+    #include "magmawinthread.h"
+#else
+    #include <pthread.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +39,6 @@ int pthread_barrier_wait( pthread_barrier_t *barrier );
 }
 #endif
 
-#endif        // __APPLE__
+#endif        // _WIN32 || _WIN64 || __APPLE__
 
 #endif        //  #ifndef PTHREAD_BARRIER_H

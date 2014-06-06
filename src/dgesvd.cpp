@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
        @author Stan Tomov
        @precisions normal d -> s
@@ -21,11 +21,11 @@ magma_dgesvd(char jobu, char jobvt, magma_int_t m, magma_int_t n,
              double *work, magma_int_t lwork,
              magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
     Purpose
     =======
@@ -1427,7 +1427,7 @@ magma_dgesvd(char jobu, char jobvt, magma_int_t m, magma_int_t n,
                         // Compute A=Q*R, copying result to U
                         // (Workspace: need N*N + 2*N, prefer N*N + N + N*NB)
                         i__2 = lwork - iwork + 1;
-                        double t1;
+                        real_Double_t t1;
 
                         t1 = magma_wtime();
                         lapackf77_dgeqrf(&m, &n, A, &lda, &work[itau],
@@ -1597,7 +1597,7 @@ magma_dgesvd(char jobu, char jobvt, magma_int_t m, magma_int_t n,
             i__2 = lwork - iwork + 1;
             //printf("path 10\n");
 
-            double t1 = magma_wtime();
+            real_Double_t t1 = magma_wtime();
             magma_dgebrd(m, n, A, lda, s, &work[ie],
                          &work[itauq], &work[itaup], &work[iwork], i__2, &ierr);
             // printf("DGEBRD time %10.6f\n", magma_wtime() - t1);

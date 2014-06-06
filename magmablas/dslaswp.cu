@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated ds Tue Aug 13 16:45:09 2013
+       @generated ds Tue Dec 17 13:18:44 2013
 
 */
 #include "common_magma.h"
@@ -60,11 +60,11 @@ magmablas_dslaswp( magma_int_t n, double *a, magma_int_t lda,
                    float *sa, magma_int_t m,
                    const magma_int_t *ipiv, magma_int_t incx )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======

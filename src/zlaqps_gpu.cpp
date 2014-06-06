@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> s d c
 
@@ -22,11 +22,11 @@ magma_zlaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
              magmaDoubleComplex *auxv,
              magmaDoubleComplex *F,  magma_int_t ldf)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -110,7 +110,7 @@ magma_zlaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
     magma_int_t k, rk;
     //magmaDoubleComplex Akk;
     magmaDoubleComplex *Aks;
-    magmaDoubleComplex tauk;
+    magmaDoubleComplex tauk = MAGMA_Z_ZERO;
     magma_int_t pvt;
     //double temp, temp2;
     double tol3z;

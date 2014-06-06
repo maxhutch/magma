@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
  
        @author Mark Gates
 */
@@ -70,8 +70,8 @@ void magma_print_devices()
 {
     int major, minor, micro;
     magma_version( &major, &minor, &micro );
-    printf( "MAGMA %d.%d.%d %s, capability %.1f\n",
-            major, minor, micro, MAGMA_VERSION_STAGE, GPUSHMEM/100. );
+    printf( "MAGMA %d.%d.%d %s, compiled for CUDA capability >= %.1f\n",
+            major, minor, micro, MAGMA_VERSION_STAGE, MIN_CUDA_ARCH/100. );
     
     int ndevices;
     cudaGetDeviceCount( &ndevices );
@@ -85,8 +85,14 @@ void magma_print_devices()
                 prop.totalGlobalMem / (1024.*1024.),
                 prop.major,
                 prop.minor );
-        if ( prop.major*100 + prop.minor*10 < GPUSHMEM ) {
-            printf( "Warning: MAGMA compiled for higher capability; some routines will not run correctly!\n" );
+        
+        if ( prop.major*100 + prop.minor*10 < MIN_CUDA_ARCH ) {
+            printf("\n"
+                   "==============================================================================\n"
+                   "WARNING: MAGMA was compiled only for higher CUDA capability %.1f and higher;\n"
+                   "some routines will not run correctly!\n"
+                   "==============================================================================\n\n",
+                   MIN_CUDA_ARCH/100. );
         }
     }
 }

@@ -1,31 +1,19 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 */
 
 #include "common_magma.h"
 #include <assert.h>
 
 
-#if defined( _WIN32 ) || defined( _WIN64 )
-
-// -------------------------
-// Return log base 2 of x, per C99 standard. Not provided by Microsoft.
-double log2( double x )
-{
-    const double log_2 = 0.6931471805599453;
-    return log( x ) / log_2;
-}
-
-#endif
-
-
 // -------------------------
 // Returns version of MAGMA, as defined by
 // MAGMA_VERSION_MAJOR, MAGMA_VERSION_MINOR, MAGMA_VERSION_MICRO constants.
+extern "C"
 void magma_version( int* major, int* minor, int* micro )
 {
     if ( major != NULL && minor != NULL && micro != NULL ) {
@@ -44,6 +32,7 @@ void magma_version( int* major, int* minor, int* micro )
 // On 2.0 cards with unified addressing, CUDA can tell if this is a device pointer.
 // For malloc'd host pointers, cudaPointerGetAttributes returns error.
 // @author Mark Gates
+extern "C"
 magma_int_t magma_is_devptr( const void* A )
 {
     cudaError_t err;

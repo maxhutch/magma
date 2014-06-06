@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:46:02 2013
+       @generated d Tue Dec 17 13:18:56 2013
        @author Mark Gates
 */
 // includes, system
@@ -61,8 +61,8 @@ double get_residual(
     double *x, *b;
     
     // initialize RHS
-    TESTING_MALLOC( x, double, n );
-    TESTING_MALLOC( b, double, n );
+    TESTING_MALLOC_CPU( x, double, n );
+    TESTING_MALLOC_CPU( b, double, n );
     lapackf77_dlarnv( &ione, ISEED, &n, b );
     blasf77_dcopy( &n, b, &ione, x, &ione );
     
@@ -86,8 +86,8 @@ double get_residual(
     
     //printf( "r=\n" ); magma_dprint( 1, n, b, 1 );
     
-    TESTING_FREE( x );
-    TESTING_FREE( b );
+    TESTING_FREE_CPU( x );
+    TESTING_FREE_CPU( b );
     
     //printf( "r=%.2e, A=%.2e, x=%.2e, n=%d\n", norm_r, norm_A, norm_x, n );
     return norm_r / (n * norm_A * norm_x);
@@ -111,9 +111,9 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     double *A, *L, *U;
     double work[1], matnorm, residual;
     
-    TESTING_MALLOC( A, double, lda*N    );
-    TESTING_MALLOC( L, double, M*min_mn );
-    TESTING_MALLOC( U, double, min_mn*N );
+    TESTING_MALLOC_CPU( A, double, lda*N    );
+    TESTING_MALLOC_CPU( L, double, M*min_mn );
+    TESTING_MALLOC_CPU( U, double, min_mn*N );
     memset( L, 0, M*min_mn*sizeof(double) );
     memset( U, 0, min_mn*N*sizeof(double) );
 
@@ -139,9 +139,9 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     }
     residual = lapackf77_dlange("f", &M, &N, LU, &lda, work);
 
-    TESTING_FREE(A);
-    TESTING_FREE(L);
-    TESTING_FREE(U);
+    TESTING_FREE_CPU( A );
+    TESTING_FREE_CPU( L );
+    TESTING_FREE_CPU( U );
 
     return residual / (matnorm * N);
 }
@@ -184,8 +184,8 @@ int main( int argc, char** argv)
             ldda   = ((M+31)/32)*32;
             gflops = FLOPS_DGETRF( M, N ) / 1e9;
             
-            TESTING_MALLOC( ipiv, magma_int_t, min_mn );
-            TESTING_HOSTALLOC( h_A,  double, n2 );
+            TESTING_MALLOC_CPU( ipiv, magma_int_t, min_mn );
+            TESTING_MALLOC_PIN( h_A,  double, n2 );
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -240,8 +240,8 @@ int main( int argc, char** argv)
                 printf("     ---   \n");
             }
             
-            TESTING_FREE( ipiv );
-            TESTING_HOSTFREE( h_A );
+            TESTING_FREE_CPU( ipiv );
+            TESTING_FREE_PIN( h_A  );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

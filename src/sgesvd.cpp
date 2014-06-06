@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
        @author Stan Tomov
-       @generated s Tue Aug 13 16:44:54 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -21,11 +21,11 @@ magma_sgesvd(char jobu, char jobvt, magma_int_t m, magma_int_t n,
              float *work, magma_int_t lwork,
              magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
     
     Purpose
     =======
@@ -1427,7 +1427,7 @@ magma_sgesvd(char jobu, char jobvt, magma_int_t m, magma_int_t n,
                         // Compute A=Q*R, copying result to U
                         // (Workspace: need N*N + 2*N, prefer N*N + N + N*NB)
                         i__2 = lwork - iwork + 1;
-                        float t1;
+                        real_Double_t t1;
 
                         t1 = magma_wtime();
                         lapackf77_sgeqrf(&m, &n, A, &lda, &work[itau],
@@ -1597,7 +1597,7 @@ magma_sgesvd(char jobu, char jobvt, magma_int_t m, magma_int_t n,
             i__2 = lwork - iwork + 1;
             //printf("path 10\n");
 
-            float t1 = magma_wtime();
+            real_Double_t t1 = magma_wtime();
             magma_sgebrd(m, n, A, lda, s, &work[ie],
                          &work[itauq], &work[itaup], &work[iwork], i__2, &ierr);
             // printf("SGEBRD time %10.6f\n", magma_wtime() - t1);

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Wed Aug 14 12:17:58 2013
+       @generated c Tue Dec 17 13:18:56 2013
        @author Chongxiao Cao
 */
 
@@ -65,14 +65,14 @@ int main( int argc, char** argv)
             ldda   = ((lda+31)/32)*32;
             sizeA  = lda*N;
             
-            TESTING_MALLOC( ipiv, magma_int_t, N );
-            TESTING_MALLOC( h_A,  magmaFloatComplex, lda*N );
-            TESTING_MALLOC( h_b,  magmaFloatComplex, N );
-            TESTING_MALLOC( h_x,  magmaFloatComplex, N );
-            TESTING_MALLOC( h_xcublas, magmaFloatComplex, N  );
+            TESTING_MALLOC_CPU( ipiv,      magma_int_t,        N     );
+            TESTING_MALLOC_CPU( h_A,       magmaFloatComplex, lda*N );
+            TESTING_MALLOC_CPU( h_b,       magmaFloatComplex, N     );
+            TESTING_MALLOC_CPU( h_x,       magmaFloatComplex, N     );
+            TESTING_MALLOC_CPU( h_xcublas, magmaFloatComplex, N     );
             
-            TESTING_DEVALLOC( d_A, magmaFloatComplex, ldda*N );
-            TESTING_DEVALLOC( d_x, magmaFloatComplex, N  );
+            TESTING_MALLOC_DEV( d_A, magmaFloatComplex, ldda*N );
+            TESTING_MALLOC_DEV( d_x, magmaFloatComplex, N      );
             
             /* Initialize the matrices */
             /* Factor A into LU to get well-conditioned triangular matrix.
@@ -148,12 +148,14 @@ int main( int argc, char** argv)
                         cublas_error );
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( h_x );
-            TESTING_FREE( h_xcublas );
+            TESTING_FREE_CPU( ipiv );
+            TESTING_FREE_CPU( h_A  );
+            TESTING_FREE_CPU( h_b  );
+            TESTING_FREE_CPU( h_x  );
+            TESTING_FREE_CPU( h_xcublas );
             
-            TESTING_DEVFREE( d_A );
-            TESTING_DEVFREE( d_x );
+            TESTING_FREE_DEV( d_A );
+            TESTING_FREE_DEV( d_x );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

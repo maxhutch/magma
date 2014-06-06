@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 */
 
 #ifndef MAGMA_TYPES_H
@@ -14,8 +14,22 @@
 
 
 // ========================================
+// C99 standard defines __func__. Some older compilers use __FUNCTION__.
+// Note __func__ in C99 is not a macro, so ifndef __func__ doesn't work.
+#if __STDC_VERSION__ < 199901L
+  #ifndef __func__
+    #if __GNUC__ >= 2 || _MSC_VER >= 1300
+      #define __func__ __FUNCTION__
+    #else
+      #define __func__ "<unknown>"
+    #endif
+  #endif
+#endif
+
+
+// ========================================
 // To use int64_t, link with mkl_intel_ilp64 or similar (instead of mkl_intel_lp64).
-#ifdef MAGMA_ILP64
+#if defined(MAGMA_ILP64) || defined(MKL_ILP64)
 typedef int64_t magma_int_t;
 typedef int64_t magma_err_t;
 #else
@@ -23,7 +37,7 @@ typedef int magma_int_t;
 typedef int magma_err_t;
 #endif
 
-// Define new type that will not be changed by the generator (matches PLASMA)
+// Define new type that the precision generator will not change (matches PLASMA)
 typedef double real_Double_t;
 
 
@@ -247,7 +261,7 @@ typedef double real_Double_t;
 // ----------------------------------------
 #define MAGMA_VERSION_MAJOR 1
 #define MAGMA_VERSION_MINOR 4
-#define MAGMA_VERSION_MICRO 0
+#define MAGMA_VERSION_MICRO 1
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
 #define MAGMA_VERSION_STAGE ""
@@ -277,6 +291,7 @@ typedef double real_Double_t;
 #define MAGMA_ERR_CUDASTREAM       -114
 #define MAGMA_ERR_INVALID_PTR      -115
 #define MAGMA_ERR_UNKNOWN          -116
+#define MAGMA_ERR_NOT_IMPLEMENTED  -117
 
 
 // ----------------------------------------
@@ -293,8 +308,9 @@ typedef double real_Double_t;
 
 #define MagmaUpper         'U'  /* 121 */
 #define MagmaLower         'L'  /* 122 */
-#define MagmaUpperLower    'F'  /* 123 */
-#define MagmaFull          'F'  /* 123 */
+#define MagmaUpperLower    'G'  /* 123 */
+#define MagmaFull          'G'  /* 123 */  // see lascl
+#define MagmaHessenberg    'H'  /* 124 */  // see lascl
 
 #define MagmaNonUnit       'N'  /* 131 */
 #define MagmaUnit          'U'  /* 132 */
@@ -329,14 +345,16 @@ typedef double real_Double_t;
 #define MagmaPackUpeprBand 297
 #define MagmaPackAll       298
 
-
-
 #define MagmaNoVec         'N'  /* 301 */  /* geev, syev, gesvd */
 #define MagmaVec           'V'  /* 302 */  /* geev, syev */
-#define MagmaIvec          'I'  /* 303 */  /* stedc */
+#define MagmaIVec          'I'  /* 303 */  /* stedc */
 #define MagmaAllVec        'A'  /* 304 */  /* gesvd */
 #define MagmaSomeVec       'S'  /* 305 */  /* gesvd */
 #define MagmaOverwriteVec  'O'  /* 306 */  /* gesvd */
+
+#define MagmaRangeAll      'A'
+#define MagmaRangeV        'V'
+#define MagmaRangeI        'I'
 
 #define MagmaForward       'F'  /* 391 */  /* larfb */
 #define MagmaBackward      'B'  /* 392 */  /* larfb */
@@ -349,6 +367,9 @@ typedef double real_Double_t;
 #define Magma_ELLPACKT     413
 #define Magma_DENSE        414  
 #define Magma_BCSR         415
+#define Magma_CSC          416
+#define Magma_HYB          417
+#define Magma_COO          418
 
 #define Magma_CPU          421
 #define Magma_DEV          422
@@ -367,21 +388,23 @@ typedef double real_Double_t;
 
 // remember to update min/max when adding constants!
 #define MagmaMinConst      101
-#define MagmaMaxConst      435
+#define MagmaMaxConst      454
 
 
-
+// ----------------------------------------
 // these could be enums, but that isn't portable in C++,
 // e.g., if -fshort-enums is used
-typedef char magma_major_t;
+typedef char magma_order_t;
 typedef char magma_trans_t;
 typedef char magma_uplo_t;
 typedef char magma_diag_t;
 typedef char magma_side_t;
+typedef char magma_type_t;
 typedef char magma_norm_t;
 typedef char magma_dist_t;
 typedef char magma_pack_t;
 typedef char magma_vec_t;
+typedef char magma_range_t;
 typedef char magma_direct_t;
 typedef char magma_storev_t;
 
@@ -392,6 +415,7 @@ typedef int magma_location_t;
 // properties of the magma_precond_parameters
 typedef int magma_precond_type;
 typedef int magma_precision;
+
 
 // ----------------------------------------
 // string constants for calling Fortran BLAS and LAPACK
@@ -413,6 +437,12 @@ typedef int magma_precision;
 
 #define MagmaLeftStr       "Left"
 #define MagmaRightStr      "Right"
+
+#define MagmaOneNormStr       "1"
+#define MagmaTwoNormStr       "2"
+#define MagmaFrobeniusNormStr "Fro"
+#define MagmaInfNormStr       "Inf"
+#define MagmaMaxNormStr       "Max"
 
 #define MagmaForwardStr    "Forward"
 #define MagmaBackwardStr   "Backward"
@@ -446,6 +476,18 @@ magma_storev_t magma_storev_const( char lapack_char );
 
 char        lapacke_const( int magma_const );
 const char* lapack_const ( int magma_const );
+
+#define lapacke_order_const(c) lapack_const(c)
+#define lapacke_trans_const(c) lapack_const(c)
+#define lapacke_side_const( c) lapack_const(c)
+#define lapacke_diag_const( c) lapack_const(c)
+#define lapacke_uplo_const( c) lapack_const(c)
+
+#define lapack_order_const(c)  lapack_const(c)
+#define lapack_trans_const(c)  lapack_const(c)
+#define lapack_side_const( c)  lapack_const(c)
+#define lapack_diag_const( c)  lapack_const(c)
+#define lapack_uplo_const( c)  lapack_const(c)
 
 #ifdef HAVE_clAmdBlas
 int                  amdblas_const      ( int           magma_const );

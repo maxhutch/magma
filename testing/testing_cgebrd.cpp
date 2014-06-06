@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:46:15 2013
+       @generated c Tue Dec 17 13:18:57 2013
 
 */
 
@@ -63,13 +63,14 @@ int main( int argc, char** argv)
             lhwork = (M + N)*nb;
             gflops = FLOPS_CGEBRD( M, N ) / 1e9;
 
-            TESTING_MALLOC( h_A,     magmaFloatComplex, lda*N );
-            TESTING_MALLOC( tauq,    magmaFloatComplex, minmn  );
-            TESTING_MALLOC( taup,    magmaFloatComplex, minmn  );
-            TESTING_MALLOC( diag,    float, minmn   );
-            TESTING_MALLOC( offdiag, float, (minmn-1) );
-            TESTING_HOSTALLOC( h_Q, magmaFloatComplex, lda*N );
-            TESTING_HOSTALLOC( h_work, magmaFloatComplex, lhwork );
+            TESTING_MALLOC_CPU( h_A,     magmaFloatComplex, lda*N );
+            TESTING_MALLOC_CPU( tauq,    magmaFloatComplex, minmn );
+            TESTING_MALLOC_CPU( taup,    magmaFloatComplex, minmn );
+            TESTING_MALLOC_CPU( diag,    float, minmn   );
+            TESTING_MALLOC_CPU( offdiag, float, minmn-1 );
+            
+            TESTING_MALLOC_PIN( h_Q,     magmaFloatComplex, lda*N  );
+            TESTING_MALLOC_PIN( h_work,  magmaFloatComplex, lhwork );
             
             /* Initialize the matrices */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
@@ -95,10 +96,10 @@ int main( int argc, char** argv)
                 lchkwork = max( minmn * nb, M+N );
                 /* For optimal performance in cunt01 */
                 lchkwork = max( lchkwork, minmn*minmn );
-                TESTING_MALLOC( h_PT,    magmaFloatComplex, lda*N   );
-                TESTING_MALLOC( chkwork, magmaFloatComplex, lchkwork );
+                TESTING_MALLOC_CPU( h_PT,    magmaFloatComplex, lda*N   );
+                TESTING_MALLOC_CPU( chkwork, magmaFloatComplex, lchkwork );
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_MALLOC( rwork, float, 5*minmn );
+                TESTING_MALLOC_CPU( rwork, float, 5*minmn );
                 #endif
 
                 lapackf77_clacpy(MagmaUpperLowerStr, &M, &N, h_Q, &lda, h_PT, &lda);
@@ -132,10 +133,10 @@ int main( int argc, char** argv)
                 lapackf77_cunt01("Rows",    &minmn, &N, h_PT, &lda, chkwork, &lchkwork, &result[2]);
                 #endif
                 
-                TESTING_FREE( h_PT );
-                TESTING_FREE( chkwork );
+                TESTING_FREE_CPU( h_PT );
+                TESTING_FREE_CPU( chkwork );
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_FREE( rwork );
+                TESTING_FREE_CPU( rwork );
                 #endif
             }
             
@@ -173,13 +174,14 @@ int main( int argc, char** argv)
                 printf("     ---            --- \n");
             }
             
-            TESTING_FREE( h_A );
-            TESTING_FREE( tauq );
-            TESTING_FREE( taup );
-            TESTING_FREE( diag );
-            TESTING_FREE( offdiag );
-            TESTING_HOSTFREE( h_Q );
-            TESTING_HOSTFREE( h_work );
+            TESTING_FREE_CPU( h_A     );
+            TESTING_FREE_CPU( tauq    );
+            TESTING_FREE_CPU( taup    );
+            TESTING_FREE_CPU( diag    );
+            TESTING_FREE_CPU( offdiag );
+            
+            TESTING_FREE_PIN( h_Q    );
+            TESTING_FREE_PIN( h_work );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

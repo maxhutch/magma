@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
   
        @precisions normal z -> c d s
        @author Mark Gates
@@ -45,8 +45,8 @@ int main( int argc, char** argv)
     ldda   = ((m + 31)/32)*32;
 
     /* Allocate host memory for the matrix */
-    TESTING_MALLOC(   hA, magmaDoubleComplex, lda *n );
-    TESTING_DEVALLOC( dA, magmaDoubleComplex, ldda*n );
+    TESTING_MALLOC_CPU( hA, magmaDoubleComplex, lda *n );
+    TESTING_MALLOC_DEV( dA, magmaDoubleComplex, ldda*n );
 
     //size = lda*n;
     //lapackf77_zlarnv( &ione, ISEED, &size, hA );
@@ -68,8 +68,8 @@ int main( int argc, char** argv)
     //magma_zprint_gpu( m, n, hA, lda );
     
     /* Memory clean up */
-    TESTING_FREE( hA );
-    TESTING_DEVFREE( dA );
+    TESTING_FREE_CPU( hA );
+    TESTING_FREE_DEV( dA );
 
     /* Shutdown */
     TESTING_FINALIZE();

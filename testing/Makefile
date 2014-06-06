@@ -1,17 +1,18 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.0) --
+#   -- MAGMA (version 1.4.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      August 2013
+#      December 2013
 #//////////////////////////////////////////////////////////////////////////////
 
+DIR = testing
 MAGMA_DIR = ..
 include ../Makefile.internal
 
 # ----------
 # BLAS and auxiliary
-ZSRC += \
+ZSRC := \
 	testing_z_cublas_v2.cpp	\
 	testing_zgemm.cpp	\
 	testing_zgemv.cpp	\
@@ -31,13 +32,14 @@ ZSRC += \
 	testing_zgeadd_batched.cpp	\
 	testing_zlacpy.cpp	\
 	testing_zlacpy_batched.cpp	\
+	testing_zlange.cpp	\
+	testing_zlanhe.cpp	\
 	testing_dlarfg.cpp	\
 	testing_zprint.cpp	\
 	testing_zsymmetrize.cpp	\
 	testing_zsymmetrize_tiles.cpp	\
 	testing_zswap.cpp	\
 	testing_ztranspose.cpp	\
-	testing_zutil.cpp	\
 	testing_zhemv_mgpu.cpp	\
 	\
 	testing_zhemm_mgpu.cpp	\
@@ -87,13 +89,14 @@ ZSRC += \
 	testing_zgeqrf_gpu.cpp	\
 	testing_zgeqr2_gpu.cpp	\
 	testing_zgeqr2x_gpu.cpp	\
-	testing_zgeqrs3_gpu.cpp	\
-	testing_zgeqrs_gpu.cpp	\
+	testing_zgels3_gpu.cpp	\
+	testing_zgels_gpu.cpp	\
 	testing_zlarfb_gpu.cpp	\
 	testing_zungqr_gpu.cpp	\
 	testing_zunmqr_gpu.cpp	\
 	\
 	testing_zgeqrf_mgpu.cpp	\
+	testing_zgegqr_gpu.cpp  \
 
 
 # QR, CPU interface
@@ -170,22 +173,38 @@ ZSRC += $(ZSRCF)
 -include Makefile.src
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
+
 ALLOBJ := $(ALLSRC:.f90=.o)
 ALLOBJ := $(ALLOBJ:.F90=.o)
 ALLOBJ := $(ALLOBJ:.cuf=.o)
 ALLOBJ := $(ALLOBJ:.cpp=.o)
+
 EXE    := $(ALLOBJ:.o=)
 
+# --------------------
 LIBTEST := libtest.a
 LIBSRC  := testing_zutil.o testing_cutil.o testing_dutil.o testing_sutil.o testing_util.o
 LIBOBJ  := $(LIBSRC:.cpp=.o)
 LIBEXE  := $(LIBOBJ:.o=)
 
-# strip out fake exe files generated from LIBSRC
-EXE := $(filter-out $(LIBEXE), $(EXE))
+# testing_zutil.cpp isn't in ZSRC (since they don't generate EXEs),
+# so add generation rules here instead of .Makefile.gen
+testing_cutil.cpp: testing_zutil.cpp
+	$(PYTHON) ../tools/codegen.py  -p c --file testing_zutil.cpp
 
+testing_dutil.cpp: testing_zutil.cpp
+	$(PYTHON) ../tools/codegen.py  -p d --file testing_zutil.cpp
+
+testing_sutil.cpp: testing_zutil.cpp
+	$(PYTHON) ../tools/codegen.py  -p s --file testing_zutil.cpp
+
+generate: testing_cutil.cpp testing_dutil.cpp testing_sutil.cpp
+
+
+# --------------------
 .PHONY: all lib clean cleanall cleanexe
 
+.DEFAULT_GOAL := all
 all: $(EXE)
 
 lib:

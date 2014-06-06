@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -72,17 +72,17 @@ int main( int argc, char** argv )
             
             // Allocate memory for matrices
             magmaDoubleComplex *C, *R, *V, *T, *W;
-            TESTING_MALLOC( C, magmaDoubleComplex, ldc*N );
-            TESTING_MALLOC( R, magmaDoubleComplex, ldc*N );
-            TESTING_MALLOC( V, magmaDoubleComplex, ldv*K );
-            TESTING_MALLOC( T, magmaDoubleComplex, ldt*K );
-            TESTING_MALLOC( W, magmaDoubleComplex, ldw*K );
+            TESTING_MALLOC_CPU( C, magmaDoubleComplex, ldc*N );
+            TESTING_MALLOC_CPU( R, magmaDoubleComplex, ldc*N );
+            TESTING_MALLOC_CPU( V, magmaDoubleComplex, ldv*K );
+            TESTING_MALLOC_CPU( T, magmaDoubleComplex, ldt*K );
+            TESTING_MALLOC_CPU( W, magmaDoubleComplex, ldw*K );
             
             magmaDoubleComplex *dC, *dV, *dT, *dW;
-            TESTING_DEVALLOC( dC, magmaDoubleComplex, ldc*N );
-            TESTING_DEVALLOC( dV, magmaDoubleComplex, ldv*K );
-            TESTING_DEVALLOC( dT, magmaDoubleComplex, ldt*K );
-            TESTING_DEVALLOC( dW, magmaDoubleComplex, ldw*K );
+            TESTING_MALLOC_DEV( dC, magmaDoubleComplex, ldc*N );
+            TESTING_MALLOC_DEV( dV, magmaDoubleComplex, ldv*K );
+            TESTING_MALLOC_DEV( dT, magmaDoubleComplex, ldt*K );
+            TESTING_MALLOC_DEV( dW, magmaDoubleComplex, ldw*K );
             
             // C is M x N.
             size = ldc*N;
@@ -153,16 +153,16 @@ int main( int argc, char** argv )
                     (int) M, (int) N, (int) K,
                     storev[istor], side[iside], direct[idir], trans[itran], error );
             
-            TESTING_FREE( C );
-            TESTING_FREE( R );
-            TESTING_FREE( V );
-            TESTING_FREE( T );
-            TESTING_FREE( W );
+            TESTING_FREE_CPU( C );
+            TESTING_FREE_CPU( R );
+            TESTING_FREE_CPU( V );
+            TESTING_FREE_CPU( T );
+            TESTING_FREE_CPU( W );
             
-            TESTING_DEVFREE( dC );
-            TESTING_DEVFREE( dV );
-            TESTING_DEVFREE( dT );
-            TESTING_DEVFREE( dW );
+            TESTING_FREE_DEV( dC );
+            TESTING_FREE_DEV( dV );
+            TESTING_FREE_DEV( dT );
+            TESTING_FREE_DEV( dW );
         }}}}
         printf( "\n" );
     }

@@ -4,7 +4,8 @@
 -----------------------------------------------------
 
 MAGMA is intended for CUDA enabled NVIDIA GPUs.  It supports
-Tesla, Fermi, and GPUs. For more details see the MAGMA 1.3 presentation.
+Tesla, Fermi, and Kepler GPUs. For more details see the MAGMA 1.4 presentation:
+http://icl.cs.utk.edu/projectsfiles/magma/pubs/MAGMA_1.4.pdf
 
 Included are routines for the following algorithms:
 
@@ -18,6 +19,15 @@ Included are routines for the following algorithms:
 
 Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
+
+ 1.4.1 - final:  December 17, 2013
+       - beta 2: December  9, 2013
+       - beta 1: November 23, 2013
+    * Improved performance of geev when computing eigenvectors by using blocked trevc.
+    * Added right-looking multi-GPU Cholesky factorization.
+    * Added new CMake installation for compiling on Windows.
+    * Updated magmablas to call appropriate version based on CUDA architecture
+      at runtime. GPU_TARGET now accepts multiple architectures together.
 
  1.4.0 - final:  Aug  14, 2013
        - beta 2: June 28, 2013

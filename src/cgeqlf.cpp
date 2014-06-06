@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Tue Aug 13 16:44:25 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -15,11 +15,11 @@ magma_cgeqlf(magma_int_t m, magma_int_t n,
              magmaFloatComplex *a,    magma_int_t lda, magmaFloatComplex *tau,
              magmaFloatComplex *work, magma_int_t lwork, magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -116,8 +116,8 @@ magma_cgeqlf(magma_int_t m, magma_int_t n,
         *info = -4;
     }
 
+    k = min(m,n);
     if (*info == 0) {
-        k = min(m,n);
         if (k == 0)
             work[0] = c_one;
         else {

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -94,16 +94,16 @@ int main( int argc, char** argv)
                 #endif
             }
             
-            TESTING_MALLOC( h_A, magmaDoubleComplex,  n2 );
-            TESTING_MALLOC(  VT, magmaDoubleComplex, N*N );
-            TESTING_MALLOC(   U, magmaDoubleComplex, M*M );
-            TESTING_MALLOC(  S1, double,       min_mn );
-            TESTING_MALLOC(  S2, double,       min_mn );
+            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, n2  );
+            TESTING_MALLOC_CPU( VT,  magmaDoubleComplex, N*N );
+            TESTING_MALLOC_CPU( U,   magmaDoubleComplex, M*M );
+            TESTING_MALLOC_CPU( S1,  double, min_mn );
+            TESTING_MALLOC_CPU( S2,  double, min_mn );
             #if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_MALLOC( rwork, double,   5*min_mn );
+            TESTING_MALLOC_CPU( rwork, double, 5*min_mn );
             #endif
-            TESTING_HOSTALLOC( h_R,    magmaDoubleComplex, n2    );
-            TESTING_HOSTALLOC( h_work, magmaDoubleComplex, lwork );
+            TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, n2    );
+            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
@@ -142,7 +142,7 @@ int main( int argc, char** argv)
                 magma_int_t izero = 0;
                 magmaDoubleComplex *h_work_err;
                 magma_int_t lwork_err = max(5*min_mn, (3*min_mn + max(M,N)))*128;
-                TESTING_MALLOC(h_work_err, magmaDoubleComplex, lwork_err);
+                TESTING_MALLOC_CPU( h_work_err, magmaDoubleComplex, lwork_err );
                 
                 // get size and location of U and V^T depending on jobu and jobvt
                 // U2=NULL and VT2=NULL if they were not computed (e.g., jobu=N)
@@ -205,7 +205,7 @@ int main( int argc, char** argv)
                 result[1] *= eps;
                 result[2] *= eps;
                 
-                TESTING_FREE( h_work_err );
+                TESTING_FREE_CPU( h_work_err );
             }
             
             /* =====================================================================
@@ -256,16 +256,16 @@ int main( int argc, char** argv)
                 printf("\n");
             }
             
-            TESTING_FREE(       h_A);
-            TESTING_FREE(        VT);
-            TESTING_FREE(        S1);
-            TESTING_FREE(        S2);
+            TESTING_FREE_CPU( h_A );
+            TESTING_FREE_CPU( VT  );
+            TESTING_FREE_CPU( U   );
+            TESTING_FREE_CPU( S1  );
+            TESTING_FREE_CPU( S2  );
             #if defined(PRECISION_z) || defined(PRECISION_c)
-            TESTING_FREE(     rwork);
+            TESTING_FREE_CPU( rwork );
             #endif
-            TESTING_FREE(         U);
-            TESTING_HOSTFREE(h_work);
-            TESTING_HOSTFREE(   h_R);
+            TESTING_FREE_PIN( h_R    );
+            TESTING_FREE_PIN( h_work );
         }}}
         if ( opts.all || opts.niter > 1 ) {
             printf("\n");

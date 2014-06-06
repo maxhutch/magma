@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated c Wed Aug 14 12:16:37 2013
+       @generated c Tue Dec 17 13:18:45 2013
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -74,18 +74,18 @@ magmablas_cgeadd_batched(
     N       (input) INTEGER
             The number of columns of each matrix dAarray[i].  N >= 0.
     
-    ALPHA   (input) COMPLEX DOUBLE PRECISION
+    ALPHA   (input) COMPLEX REAL
             The scalar alpha.
             
     dAarray (input) array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+            with each array a COMPLEX REAL array, dimension (LDDA,N)
             The m by n matrices dAarray[i].
     
     LDDA    (input) INTEGER
             The leading dimension of each array dAarray[i].  LDDA >= max(1,M).
             
     dBarray (input/output) array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+            with each array a COMPLEX REAL array, dimension (LDDB,N)
             The m by n matrices dBarray[i].
     
     LDDB    (input) INTEGER

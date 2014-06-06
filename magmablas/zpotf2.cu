@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
        
        @precisions normal z -> s d c
 */
@@ -14,11 +14,11 @@
 
 #define PRECISION_z
 
-#if (GPUSHMEM < 200)
+//#if (GPUSHMEM < 200)
 #define zdotc_max_bs 512  // 512 is max threads for 1.x cards
-#else
-#define zdotc_max_bs 1024
-#endif
+//#else
+//#define zdotc_max_bs 1024
+//#endif
 
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
@@ -35,11 +35,11 @@ magma_zpotf2_gpu(
     magmaDoubleComplex *A, magma_int_t lda,
     magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -200,7 +200,7 @@ __global__ void kernel_zdotc(int n, magmaDoubleComplex *x, int incx, int threadS
 
     if (tx == 0) {
         double xreal = MAGMA_Z_REAL(x[n*incx]);
-        MAGMA_Z_SET2REAL( x[n*incx], sqrt(xreal - sdata[0]));
+        x[n*incx] = MAGMA_Z_MAKE( sqrt(xreal - sdata[0]), 0 );
     }
 }
 
@@ -246,6 +246,8 @@ __global__ void kernel_zdscal(int n, magmaDoubleComplex *x, int incx)
     if (threadIdx.x == 0) {
         factor = MAGMA_Z_MAKE(1.0/MAGMA_Z_REAL(x[0]), 0.0);
     }
+
+    __syncthreads();
 
     if ( id < n && id >0) {
         x[id*incx] = x[id*incx] * factor;

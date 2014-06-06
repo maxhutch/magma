@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -14,24 +14,23 @@
 #include "common_magma.h"
 #include "trace.h"
 
-#if (GPUSHMEM >= 200)
-
-#define  A(i, j) ( a+(j)*lda  + (i))
-#define dA(id, i, j) (da[(id)]+(j)*ldda + (i))
-#define dW(id, i, j) (dwork[(id)]+(j)*ldda + (i))
+#define  A(i, j)     (a           + (j)*lda  + (i))
+#define dA(id, i, j) (da[(id)]    + (j)*ldda + (i))
+#define dW(id, i, j) (dwork[(id)] + (j)*ldda + (i))
 
 extern "C" magma_int_t
-magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
-             magmaDoubleComplex *a, magma_int_t lda,
-             double *d, double *e, magmaDoubleComplex *tau,
-             magmaDoubleComplex *work, magma_int_t lwork,
-             magma_int_t *info)
+magma_zhetrd_mgpu(
+    magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
+    magmaDoubleComplex *a, magma_int_t lda,
+    double *d, double *e, magmaDoubleComplex *tau,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -184,7 +183,7 @@ magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
     ldwork = lddwork = n;
     lwkopt = n * nb;
     if (*info == 0) {
-        MAGMA_Z_SET2REAL( work[0], lwkopt );
+        work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
     }
 
     if (*info != 0) {
@@ -258,7 +257,7 @@ magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
 
         /* Copy the matrix to the GPU */
         if (1<=n-nx) {
-            magma_zhtodhe(num_gpus, &uplo, n, nb, a, lda, da, ldda, stream, &iinfo );
+            magma_zhtodhe(num_gpus, uplo, n, nb, a, lda, da, ldda, stream, &iinfo );
         }
 
         /*  Reduce the upper triangle of A.
@@ -306,7 +305,9 @@ magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
             /* Copy superdiagonal elements back into A, and diagonal
                elements into D */
             for (j = i; j < i+ib; ++j) {
-                if( j > 0 ) { MAGMA_Z_SET2REAL( *A(j-1, j), e[j - 1] ); }
+                if( j > 0 ) {
+                    *A(j-1,j) = MAGMA_Z_MAKE( e[j - 1], 0 );
+                }
                 d[j] = MAGMA_Z_REAL( *A(j, j) );
             }
 
@@ -339,7 +340,7 @@ magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
         trace_init( 1, num_gpus, k, (CUstream_st**)stream );
         /* Copy the matrix to the GPU */
         if (1<=n-nx) {
-            magma_zhtodhe(num_gpus, &uplo, n, nb, a, lda, da, ldda, stream, &iinfo );
+            magma_zhtodhe(num_gpus, uplo, n, nb, a, lda, da, ldda, stream, &iinfo );
         }
 
         /* Reduce the lower triangle of A */
@@ -395,7 +396,9 @@ magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
             /* Copy subdiagonal elements back into A, and diagonal
                elements into D */
             for (j = i; j < i+ib; ++j) {
-                if( j+1 < n ) { MAGMA_Z_SET2REAL( *A(j+1, j), e[j] ); }
+                if( j+1 < n ) {
+                    *A(j+1,j) = MAGMA_Z_MAKE( e[j], 0 );
+                }
                 d[j] = MAGMA_Z_REAL( *A(j, j) );
             }
         } /* for i=... */
@@ -449,7 +452,7 @@ magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
     }
     magma_setdevice(0);
     magma_free_pinned(hwork);
-    MAGMA_Z_SET2REAL( work[0], lwkopt );
+    work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
 
 #ifdef PROFILE_SY2RK
     printf( " n=%d nb=%d\n",n,nb );
@@ -462,13 +465,13 @@ magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
 
 
 extern "C" magma_int_t
-magma_zhtodhe(magma_int_t num_gpus, char *uplo, magma_int_t n, magma_int_t nb,
+magma_zhtodhe(magma_int_t num_gpus, char uplo, magma_int_t n, magma_int_t nb,
               magmaDoubleComplex *a, magma_int_t lda,
               magmaDoubleComplex **da, magma_int_t ldda,
               magma_queue_t stream[][10], magma_int_t *info)
 {
     magma_int_t k;
-    if( lapackf77_lsame(uplo, "L") ) {
+    if( lapackf77_lsame(&uplo, "L") ) {
         /* go through each block-column */
         magma_int_t j, jj, jb, mj;
         for (j=0; j<n; j+=nb) {
@@ -626,18 +629,3 @@ magma_zher2k_mgpu(
         magmablasSetKernelStream(NULL);
     }
 }
-
-#else /* GPUSHMEM >= 200 */
-
-extern "C" magma_int_t
-magma_zhetrd_mgpu(magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
-                  magmaDoubleComplex *a, magma_int_t lda,
-                  double *d, double *e, magmaDoubleComplex *tau,
-                  magmaDoubleComplex *work, magma_int_t lwork,
-                  magma_int_t *info)
-{
-    printf("magma_zhetrd_mgpu is not supported on this GPU. Exit.\n");
-    exit(1);
-}
-
-#endif /* GPUSHMEM >= 200 */

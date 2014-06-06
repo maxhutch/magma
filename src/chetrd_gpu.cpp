@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated c Tue Aug 13 16:44:32 2013
+       @generated c Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -25,11 +25,11 @@ magma_chetrd_gpu(char uplo, magma_int_t n,
                  magmaFloatComplex *work, magma_int_t lwork,
                  magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -179,7 +179,7 @@ magma_chetrd_gpu(char uplo, magma_int_t n,
     ldw = lddw = n;
     lwkopt = n * nb;
     if (*info == 0) {
-        MAGMA_C_SET2REAL( work[0], lwkopt );
+        work[0] = MAGMA_C_MAKE( lwkopt, 0 );
     }
 
     if (*info != 0) {
@@ -236,7 +236,7 @@ magma_chetrd_gpu(char uplo, magma_int_t n,
             /* Copy superdiagonal elements back into A, and diagonal
                elements into D */
             for (j = i; j < i+nb; ++j) {
-                MAGMA_C_SET2REAL( *A(j-1, j), e[j - 1] );
+                *A(j-1,j) = MAGMA_C_MAKE( e[j - 1], 0 );
                 d[j] = MAGMA_C_REAL( *A(j, j) );
             }
         }
@@ -278,7 +278,7 @@ magma_chetrd_gpu(char uplo, magma_int_t n,
             /* Copy subdiagonal elements back into A, and diagonal
                elements into D */
             for (j = i; j < i+nb; ++j) {
-                MAGMA_C_SET2REAL( *A(j+1, j), e[j] );
+                *A(j+1,j) = MAGMA_C_MAKE( e[j], 0 );
                 d[j] = MAGMA_C_REAL( *A(j, j) );
             }
         }
@@ -294,6 +294,6 @@ magma_chetrd_gpu(char uplo, magma_int_t n,
     }
     
     magma_free( dwork );
-    MAGMA_C_SET2REAL( work[0], lwkopt );
+    work[0] = MAGMA_C_MAKE( lwkopt, 0 );
     return *info;
 } /* chetrd_gpu */

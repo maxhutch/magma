@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
-       @generated d Tue Aug 13 16:43:29 2013
+       @generated d Tue Dec 17 13:18:17 2013
 */
 
 #ifndef MAGMA_DBULGEINC_H
 #define MAGMA_DBULGEINC_H
 
-#define PRECISION_d
+#include "magma_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -135,7 +135,5 @@ extern int           log_eventsblg;
 #ifdef __cplusplus
 }
 #endif
-
-#undef PRECISION_d
 
 #endif /* MAGMA_DBULGEINC_H */

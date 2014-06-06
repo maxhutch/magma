@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.0) --
+    -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated s Wed Aug 14 12:16:14 2013
+       @generated s Tue Dec 17 13:18:36 2013
 
 */
 #include "common_magma.h"
@@ -32,11 +32,11 @@ magma_slatrd(char uplo, magma_int_t n, magma_int_t nb,
              float *da, magma_int_t ldda,
              float *dw, magma_int_t lddw)
 {
-/*  -- MAGMA (version 1.4.0) --
+/*  -- MAGMA (version 1.4.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       August 2013
+       December 2013
 
     Purpose
     =======
@@ -216,7 +216,7 @@ magma_slatrd(char uplo, magma_int_t n, magma_int_t nb,
                 lapackf77_slarfg(&i, &alpha, A(0, i), &ione, &tau[i - 1]);
                 
                 e[i-1] = MAGMA_S_REAL( alpha );
-                MAGMA_S_SET2REAL(*A(i-1, i), 1.);
+                *A(i-1,i) = MAGMA_S_MAKE( 1, 0 );
                 
                 /* Compute W(1:i-1,i) */
                 // 1. Send the block reflector  A(0:n-i-1,i) to the GPU
@@ -290,7 +290,7 @@ magma_slatrd(char uplo, magma_int_t n, magma_int_t nb,
                 alpha = *A(i+1, i);
                 lapackf77_slarfg(&i_n, &alpha, A(min(i+2,n-1), i), &ione, &tau[i]);
                 e[i] = MAGMA_S_REAL( alpha );
-                MAGMA_S_SET2REAL(*A(i+1, i), 1.);
+                *A(i+1,i) = MAGMA_S_MAKE( 1, 0 );
         
                 /* Compute W(i+1:n,i) */
                 // 1. Send the block reflector  A(i+1:n,i) to the GPU
