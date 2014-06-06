@@ -240,28 +240,28 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the input matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the input matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX*16 array, dimension (LDA,N) On entry, the M-by-N matrix A. On exit,<ul>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array, dimension (LDA,N) On entry, the M-by-N matrix A. On exit,<ul>
 <li>if JOBZ = MagmaOverwriteVec, if M &gt;= N, A is overwritten with the first N columns of U (the left singular vectors, stored columnwise); otherwise, A is overwritten with the first M rows of V**H (the right singular vectors, stored rowwise).</li>
 <li>if JOBZ != MagmaOverwriteVec, the contents of A are destroyed.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">s</td><td>DOUBLE PRECISION array, dimension (min(M,N)) The singular values of A, sorted so that S(i) &gt;= S(i+1).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">U</td><td>COMPLEX*16 array, dimension (LDU,UCOL) UCOL = M if JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &lt; N; UCOL = min(M,N) if JOBZ = MagmaSomeVec.<ul>
+    <tr><td class="paramdir">[out]</td><td class="paramname">U</td><td>COMPLEX_16 array, dimension (LDU,UCOL) UCOL = M if JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &lt; N; UCOL = min(M,N) if JOBZ = MagmaSomeVec.<ul>
 <li>If JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &lt; N, U contains the M-by-M unitary matrix U;</li>
 <li>if JOBZ = MagmaSomeVec, U contains the first min(M,N) columns of U (the left singular vectors, stored columnwise);</li>
 <li>if JOBZ = MagmaOverwriteVec and M &gt;= N, or JOBZ = MagmaNoVec, U is not referenced.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldu</td><td>INTEGER The leading dimension of the array U. LDU &gt;= 1; if JOBZ = MagmaSomeVec or MagmaAllVec or JOBZ = MagmaOverwriteVec and M &lt; N, LDU &gt;= M.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">VT</td><td>COMPLEX*16 array, dimension (LDVT,N)<ul>
+    <tr><td class="paramdir">[out]</td><td class="paramname">VT</td><td>COMPLEX_16 array, dimension (LDVT,N)<ul>
 <li>If JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &gt;= N, VT contains the N-by-N unitary matrix V**H;</li>
 <li>if JOBZ = MagmaSomeVec, VT contains the first min(M,N) rows of V**H (the right singular vectors, stored rowwise);</li>
 <li>if JOBZ = MagmaOverwriteVec and M &lt; N, or JOBZ = MagmaNoVec, VT is not referenced.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldvt</td><td>INTEGER The leading dimension of the array VT. LDVT &gt;= 1; if JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &gt;= N, LDVT &gt;= N; if JOBZ = MagmaSomeVec, LDVT &gt;= min(M,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX*16 array, dimension (MAX(1,lwork)) On exit, if INFO = 0, WORK[1] returns the optimal lwork.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX_16 array, dimension (MAX(1,lwork)) On exit, if INFO = 0, WORK[1] returns the optimal lwork.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. Let x = max(M,N) and y = min(M,N). The optimal block size nb can be obtained through magma_get_dgesvd_nb(N). The threshold for x &gt;&gt; y currently is x &gt;= int( y*17/9 ). Required size different than in LAPACK.* In most cases, these sizes should give optimal performance for both MAGMA and LAPACK.<ul>
 <li>If JOBZ = MagmaNoVec, if x &gt;&gt; y, LWORK &gt;= 2*y + (2*y)*nb; otherwise, LWORK &gt;= 2*y + (x+y)*nb.</li>
 <li>If JOBZ = MagmaOverwriteVec, if x &gt;&gt; y, LWORK &gt;= 2*y*y + 2*y + (2*y)*nb; otherwise, LWORK &gt;= 2*y + max( (x+y)*nb, y*y + x ), prefer LWORK &gt;= 2*y + max( (x+y)*nb, x*y + y*nb ).</li>
@@ -460,7 +460,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:47 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:15 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

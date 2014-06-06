@@ -368,14 +368,14 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX*16 array, dimension (LDA,N) On entry, the N-by-N matrix A. On exit, A has been overwritten.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array, dimension (LDA,N) On entry, the N-by-N matrix A. On exit, A has been overwritten.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">w</td><td>COMPLEX*16 array, dimension (N) W contains the computed eigenvalues.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">VL</td><td>COMPLEX*16 array, dimension (LDVL,N) If JOBVL = MagmaVec, the left eigenvectors u(j) are stored one after another in the columns of VL, in the same order as their eigenvalues. If JOBVL = MagmaNoVec, VL is not referenced. u(j) = VL(:,j), the j-th column of VL.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">w</td><td>COMPLEX_16 array, dimension (N) W contains the computed eigenvalues.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">VL</td><td>COMPLEX_16 array, dimension (LDVL,N) If JOBVL = MagmaVec, the left eigenvectors u(j) are stored one after another in the columns of VL, in the same order as their eigenvalues. If JOBVL = MagmaNoVec, VL is not referenced. u(j) = VL(:,j), the j-th column of VL.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldvl</td><td>INTEGER The leading dimension of the array VL. LDVL &gt;= 1; if JOBVL = MagmaVec, LDVL &gt;= N.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">VR</td><td>COMPLEX*16 array, dimension (LDVR,N) If JOBVR = MagmaVec, the right eigenvectors v(j) are stored one after another in the columns of VR, in the same order as their eigenvalues. If JOBVR = MagmaNoVec, VR is not referenced. v(j) = VR(:,j), the j-th column of VR.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">VR</td><td>COMPLEX_16 array, dimension (LDVR,N) If JOBVR = MagmaVec, the right eigenvectors v(j) are stored one after another in the columns of VR, in the same order as their eigenvalues. If JOBVR = MagmaNoVec, VR is not referenced. v(j) = VR(:,j), the j-th column of VR.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldvr</td><td>INTEGER The leading dimension of the array VR. LDVR &gt;= 1; if JOBVR = MagmaVec, LDVR &gt;= N.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX*16 array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX_16 array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= (1+nb)*N. <br/>
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">rwork</td><td>(workspace) DOUBLE PRECISION array, dimension (2*N)</td></tr>
@@ -396,7 +396,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:43 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

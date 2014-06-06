@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
  
        @author Mathieu Faverge
  
@@ -19,10 +19,9 @@
   if ( ( (m) == (n) ) && ( (m)%32 == 0) && ( (ldda)%32 == 0) ){ \
     magmablas_stranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
-    cublasStatus_t status = cublasAlloc( (m)*(n), sizeof(float), (void**)&dAT); \
-    if (status != CUBLAS_STATUS_SUCCESS)                                \
-      return -7;                                                        \
-    magmablas_stranspose2( dAT, ldda, dA, ldda, m, n );                 \
+    if (MAGMA_SUCCESS != magma_smalloc(&dAT, (m)*(n)) )		\
+      return MAGMA_ERR_DEVICE_ALLOC;                            \
+    magmablas_stranspose2( dAT, ldda, dA, ldda, m, n );         \
   }
 
 #define magmablas_sgetmo_out( dA, dAT, ldda, m, n )             \
@@ -30,7 +29,7 @@
     magmablas_stranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
     magmablas_stranspose2( dA, ldda, dAT, ldda, n, m );         \
-    cublasFree(dAT);                                            \
+    magma_free(dAT);                                            \
   }
 
 #define magmablas_dgetmo_in( dA, dAT, ldda, m, n )              \
@@ -38,10 +37,9 @@
   if ( ( (m) == (n) ) && ( (m)%32 == 0) && ( (ldda)%32 == 0) ){ \
     magmablas_dtranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
-    cublasStatus_t status = cublasAlloc( (m)*(n), sizeof(double), (void**)&dAT); \
-    if (status != CUBLAS_STATUS_SUCCESS)                                \
-      return -7;                                                        \
-    magmablas_dtranspose2( dAT, ldda, dA, ldda, m, n );                 \
+    if (MAGMA_SUCCESS != magma_dmalloc(&dAT, (m)*(n)))		\
+      return MAGMA_ERR_DEVICE_ALLOC;                            \
+    magmablas_dtranspose2( dAT, ldda, dA, ldda, m, n );         \
   }
 
 #define magmablas_dgetmo_out( dA, dAT, ldda, m, n )             \
@@ -49,7 +47,7 @@
     magmablas_dtranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
     magmablas_dtranspose2( dA, ldda, dAT, ldda, n, m );         \
-    cublasFree(dAT);                                            \
+    magma_free(dAT);                                            \
   }
 
 #define magmablas_cgetmo_in( dA, dAT, ldda, m, n )              \
@@ -57,10 +55,9 @@
   if ( ( (m) == (n) ) && ( (m)%32 == 0) && ( (ldda)%32 == 0) ){ \
     magmablas_ctranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
-    cublasStatus_t status = cublasAlloc( (m)*(n), sizeof(magmaFloatComplex), (void**)&dAT); \
-    if (status != CUBLAS_STATUS_SUCCESS)                                \
-      return -7;                                                        \
-    magmablas_ctranspose2( dAT, ldda, dA, ldda, m, n );                 \
+    if (MAGMA_SUCCESS != magma_cmalloc(&dAT, (m)*(n)))		\
+      return MAGMA_ERR_DEVICE_ALLOC;                            \
+    magmablas_ctranspose2( dAT, ldda, dA, ldda, m, n );         \
   }
 
 #define magmablas_cgetmo_out( dA, dAT, ldda, m, n )             \
@@ -68,7 +65,7 @@
     magmablas_ctranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
     magmablas_ctranspose2( dA, ldda, dAT, ldda, n, m );         \
-    cublasFree(dAT);                                            \
+    magma_free(dAT);                                            \
   }
 
 #define magmablas_zgetmo_in( dA, dAT, ldda, m, n )              \
@@ -76,10 +73,9 @@
   if ( ( (m) == (n) ) && ( (m)%32 == 0) && ( (ldda)%32 == 0) ){ \
     magmablas_ztranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
-    cublasStatus_t status = cublasAlloc( (m)*(n), sizeof(magmaDoubleComplex), (void**)&dAT); \
-    if (status != CUBLAS_STATUS_SUCCESS)                                \
-      return -7;                                                        \
-    magmablas_ztranspose2( dAT, ldda, dA, ldda, m, n );                 \
+    if (MAGMA_SUCCESS != magma_zmalloc(&dAT, (m)*(n)))		\
+      return MAGMA_ERR_DEVICE_ALLOC;                            \
+    magmablas_ztranspose2( dAT, ldda, dA, ldda, m, n );         \
   }
 
 #define magmablas_zgetmo_out( dA, dAT, ldda, m, n )             \
@@ -87,7 +83,7 @@
     magmablas_ztranspose_inplace( ldda, dAT, ldda );            \
   } else {                                                      \
     magmablas_ztranspose2( dA, ldda, dAT, ldda, n, m );         \
-    cublasFree(dAT);                                            \
+    magma_free(dAT);                                            \
   }
 
 #endif /* MAGMA_TRANSPOSE_H */

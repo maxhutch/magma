@@ -632,13 +632,13 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE PRECISION array, dimension (LDA,N) On entry, the m by n matrix A. On exit, the unitary matrix Q as a product of elementary reflectors (see Further Details). <br/>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array, dimension (LDA,N) On entry, the m by n matrix A. On exit, the unitary matrix Q as a product of elementary reflectors (see Further Details). <br/>
  the elements on and above the diagonal of the array contain the min(m,n) by n upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the unitary matrix Q as a product of elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dtau</td><td>DOUBLE PRECISION array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>DOUBLE PRECISION array, dimension N x N. Stores the triangular N x N factor T of the block reflector used in the factorization. The lower triangular part is 0.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ddA</td><td>DOUBLE PRECISION array, dimension N x N. Stores the elements of the upper N x N diagonal block of A. LAPACK stores this array in A. There are 0s below the diagonal.</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE PRECISION array, dimension (N)</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dtau</td><td>DOUBLE_PRECISION array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>DOUBLE_PRECISION array, dimension N x N. Stores the triangular N x N factor T of the block reflector used in the factorization. The lower triangular part is 0.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ddA</td><td>DOUBLE_PRECISION array, dimension N x N. Stores the elements of the upper N x N diagonal block of A. LAPACK stores this array in A. There are 0s below the diagonal.</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE_PRECISION array, dimension (N)</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
@@ -1695,8 +1695,8 @@ Functions</h2></td></tr>
 <pre class="fragment">                          SIDE = MagmaLeft   SIDE = MagmaRight
 TRANS = MagmaNoTrans:     Q * C              C * Q
 TRANS = MagmaTrans:   Q**T * C           C * Q**T
-</pre><p>where Q is a real orthogonal matrix defined as the product of k elementary reflectors </p>
-<pre class="fragment">  Q = H(1) H(2) . . . H(k)
+</pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p>
+<pre class="fragment">Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1718,8 +1718,8 @@ TRANS = MagmaTrans:   Q**T * C           C * Q**T
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (K) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by DGEQRF.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>DOUBLE_PRECISION array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**T * C or C * Q**T or C*Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldc</td><td>INTEGER The leading dimension of the array C. LDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(0) returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance LWORK &gt;= N*NB if SIDE = MagmaLeft, and LWORK &gt;= M*NB if SIDE = MagmaRight, where NB is the optimal blocksize. <br/>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance if SIDE = MagmaLeft, LWORK &gt;= N*NB; if SIDE = MagmaRight, LWORK &gt;= M*NB, where NB is the optimal blocksize. <br/>
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1826,7 +1826,7 @@ TRANS = MagmaTrans:   Q**T * C           C * Q**T
 <pre class="fragment">                        SIDE = MagmaLeft   SIDE = MagmaRight
 TRANS = MagmaNoTrans:   Q * C              C * Q
 TRANS = MagmaTrans:     Q**T * C           C * Q**T
-</pre><p>where Q is a real orthogonal matrix defined as the product of k elementary reflectors </p>
+</pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p>
 <pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -1968,7 +1968,7 @@ TRANS = MagmaTrans:     Q**T * C           C * Q**T
 <pre class="fragment">                        SIDE = MagmaLeft     SIDE = MagmaRight
 TRANS = MagmaNoTrans:   Q * C                C * Q
 TRANS = MagmaTrans:     Q**T * C             C * Q**T
-</pre><p>where Q is a real orthogonal matrix defined as the product of k elementary reflectors </p>
+</pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p>
 <pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -2108,7 +2108,7 @@ TRANS = MagmaTrans:     Q**T * C             C * Q**T
 <pre class="fragment">                SIDE = MagmaLeft     SIDE = MagmaRight
 TRANS = MagmaNoTrans:      Q * C          C * Q
 TRANS = MagmaTrans:      Q**T * C       C * Q**T
-</pre><p>where Q is a real orthogonal matrix defined as the product of k elementary reflectors </p>
+</pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p>
 <pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -2151,7 +2151,7 @@ TRANS = MagmaTrans:      Q**T * C       C * Q**T
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:42 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:08 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

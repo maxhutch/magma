@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from dgemm_tesla.cu normal d -> s, Fri Apr 25 15:05:23 2014
+       @generated from dgemm_tesla.cu normal d -> s, Fri May 30 10:40:43 2014
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -158,8 +158,7 @@ magmablas_sgemm_tesla(
                         C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
             }
             else {
-                cublasSgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_sgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
@@ -178,8 +177,7 @@ magmablas_sgemm_tesla(
                         C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
             }
             else {
-                cublasSgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_sgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
@@ -200,8 +198,7 @@ magmablas_sgemm_tesla(
                         C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
             }
             else {
-                cublasSgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_sgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
@@ -220,8 +217,7 @@ magmablas_sgemm_tesla(
                         C, B, A, n, m, k, ldb, lda, ldc, alpha, beta );
             }
             else {
-                cublasSgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_sgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }

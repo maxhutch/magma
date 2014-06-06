@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
 */
@@ -38,10 +38,14 @@ int main(int argc, char **argv)
     magmaDoubleComplex beta  = MAGMA_Z_MAKE( -0.6,  0.8 );
     magmaDoubleComplex *A, *X, *Y, *Ycublas, *Ymagma;
     magmaDoubleComplex *dA, *dX, *dY, *dwork;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+    
+    double tol = opts.tolerance * lapackf77_dlamch("E");
 
+    printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
     printf("    N   MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  CUBLAS error\n");
     printf("=============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -119,12 +123,14 @@ int main(int argc, char **argv)
             blasf77_zaxpy( &N, &c_neg_one, Y, &incy, Ycublas, &incy );
             cublas_error = lapackf77_zlange( "M", &N, &ione, Ycublas, &N, work ) / N;
             
-            printf("%5d   %7.2f (%7.2f)    %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e     %8.2e\n",
+            printf("%5d   %7.2f (%7.2f)    %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e     %8.2e   %s\n",
                    (int) N,
                    magma_perf,  1000.*magma_time,
                    cublas_perf, 1000.*cublas_time,
                    cpu_perf,    1000.*cpu_time,
-                   magma_error, cublas_error );
+                   magma_error, cublas_error,
+                   (magma_error < tol && cublas_error < tol ? "ok" : "failed"));
+            status += ! (magma_error < tol && cublas_error < tol);
             
             TESTING_FREE_CPU( A );
             TESTING_FREE_CPU( X );
@@ -144,5 +150,5 @@ int main(int argc, char **argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

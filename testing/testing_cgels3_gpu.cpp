@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgels3_gpu.cpp normal z -> c, Fri Apr 25 15:06:11 2014
+       @generated from testing_zgels3_gpu.cpp normal z -> c, Fri May 30 10:41:26 2014
 
 */
 
@@ -33,12 +33,12 @@ int main( int argc, char** argv)
     TESTING_INIT();
     
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    float           gpu_error, cpu_error, matnorm, work[1];
+    float           gpu_error, cpu_error, error, Anorm, work[1];
     magmaFloatComplex  c_one     = MAGMA_C_ONE;
     magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex *h_A, *h_A2, *h_B, *h_X, *h_R, *tau, *h_work, tmp[1];
     magmaFloatComplex *d_A, *d_B;
-    magma_int_t M, N, n2, nrhs, lda, ldb, ldda, lddb, min_mn, max_mn, nb, info;
+    magma_int_t M, N, size, nrhs, lda, ldb, ldda, lddb, min_mn, max_mn, nb, info;
     magma_int_t lworkgpu, lhwork, lhwork2;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -51,22 +51,22 @@ int main( int argc, char** argv)
 
     nrhs = opts.nrhs;
     
-    printf("                                                            ||b-Ax|| / (N||A||)\n");
-    printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU     \n");
-    printf("===============================================================================\n");
+    printf("                                                            ||b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
+    printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU                         \n");
+    printf("===================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
             if ( M < N ) {
-                printf( "skipping M=%d, N=%d because M < N is not yet supported.\n", (int) M, (int) N );
+                printf( "%5d %5d %5d   skipping because M < N is not yet supported.\n", (int) M, (int) N, (int) nrhs );
                 continue;
             }
             min_mn = min(M, N);
             max_mn = max(M, N);
             lda    = M;
             ldb    = max_mn;
-            n2     = lda*N;
+            size   = lda*N;
             ldda   = ((M+31)/32)*32;
             lddb   = ((max_mn+31)/32)*32;
             nb     = magma_get_cgeqrf_nb(M);
@@ -98,17 +98,17 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_B,    magmaFloatComplex, lddb*nrhs );
             
             /* Initialize the matrices */
-            lapackf77_clarnv( &ione, ISEED, &n2, h_A );
+            lapackf77_clarnv( &ione, ISEED, &size, h_A );
             lapackf77_clacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_A2, &lda );
             
             // make random RHS
-            n2 = M*nrhs;
-            lapackf77_clarnv( &ione, ISEED, &n2, h_B );
+            size = M*nrhs;
+            lapackf77_clarnv( &ione, ISEED, &size, h_B );
             lapackf77_clacpy( MagmaUpperLowerStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
             
             // make consistent RHS
-            //n2 = N*nrhs;
-            //lapackf77_clarnv( &ione, ISEED, &n2, h_X );
+            //size = N*nrhs;
+            //lapackf77_clarnv( &ione, ISEED, &size, h_X );
             //blasf77_cgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
             //               &c_one,  h_A, &lda,
             //                        h_X, &ldb,
@@ -138,7 +138,7 @@ int main( int argc, char** argv)
                            &c_neg_one, h_A, &lda,
                                        h_X, &ldb,
                            &c_one,     h_R, &ldb);
-            matnorm = lapackf77_clange("f", &M, &N, h_A, &lda, work);
+            Anorm = lapackf77_clange("f", &M, &N, h_A, &lda, work);
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -159,15 +159,27 @@ int main( int argc, char** argv)
                                        h_X,  &ldb,
                            &c_one,     h_B,  &ldb);
             
-            cpu_error = lapackf77_clange("f", &M, &nrhs, h_B, &ldb, work) / (min_mn*matnorm);
-            gpu_error = lapackf77_clange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*matnorm);
+            cpu_error = lapackf77_clange("f", &M, &nrhs, h_B, &ldb, work) / (min_mn*Anorm);
+            gpu_error = lapackf77_clange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*Anorm);
             
-            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e  %s\n",
+            // error relative to LAPACK
+            size = M*nrhs;
+            blasf77_caxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
+            error = lapackf77_clange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*Anorm);
+            
+            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %8.2e",
                    (int) M, (int) N, (int) nrhs,
-                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error,
-                   (gpu_error < tol ? "ok" : "failed") );
-            status |= ! (gpu_error < tol);
-            
+                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error, error );
+                        
+            if ( M == N ) {
+                printf( "   %s\n", (gpu_error < tol && error < tol ? "ok" : "failed"));
+                status += ! (gpu_error < tol && error < tol);
+            }
+            else {
+                printf( "   %s\n", (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
+            }
+
             TESTING_FREE_CPU( tau    );
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_A2   );

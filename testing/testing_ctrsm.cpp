@@ -1,19 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_ztrsm.cpp normal z -> c, Fri Apr 25 15:06:03 2014
+       @generated from testing_ztrsm.cpp normal z -> c, Fri May 30 10:41:21 2014
        @author Chongxiao Cao
 */
-// make sure that asserts are enabled
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-#include <assert.h>
-
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
@@ -28,8 +22,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_c
-
+#define h_A(i,j) (h_A + (i) + (j)*lda)
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing ctrsm
@@ -46,23 +39,21 @@ int main( int argc, char** argv)
     magma_int_t lda, ldb, ldda, lddb;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-   
-    magma_int_t *piv;
-    magma_int_t err;
+    magma_int_t *ipiv;
 
-    magmaFloatComplex *h_A, *h_B, *h_Bcublas, *h_Bmagma, *h_B1, *h_X1, *h_X2, *LU, *LUT;
+    magmaFloatComplex *h_A, *h_B, *h_Bcublas, *h_Bmagma, *h_B1, *h_X1, *h_X2;
     magmaFloatComplex *d_A, *d_B;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex c_one = MAGMA_C_ONE;
     magmaFloatComplex alpha = MAGMA_C_MAKE(  0.29, -0.86 );
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
+    float tol = opts.tolerance * lapackf77_slamch("E");
 
-    printf("If running lapack (option --lapack), MAGMA and CUBLAS error are both computed\n"
-           "relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n"
-           "side = %s, uplo = %s, transA = %s, diag = %s \n",
+    printf("side = %s, uplo = %s, transA = %s, diag = %s \n",
            lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
            lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
     printf("    M     N  MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  CUBLAS error\n");
@@ -90,40 +81,32 @@ int main( int argc, char** argv)
             sizeB = ldb*N;
             
             TESTING_MALLOC_CPU( h_A,       magmaFloatComplex, lda*Ak  );
-            TESTING_MALLOC_CPU( LU,        magmaFloatComplex, lda*Ak  );
-            TESTING_MALLOC_CPU( LUT,       magmaFloatComplex, lda*Ak  );
             TESTING_MALLOC_CPU( h_B,       magmaFloatComplex, ldb*N   );
             TESTING_MALLOC_CPU( h_B1,      magmaFloatComplex, ldb*N   );
             TESTING_MALLOC_CPU( h_X1,      magmaFloatComplex, ldb*N   );
             TESTING_MALLOC_CPU( h_X2,      magmaFloatComplex, ldb*N   );
             TESTING_MALLOC_CPU( h_Bcublas, magmaFloatComplex, ldb*N   );
             TESTING_MALLOC_CPU( h_Bmagma,  magmaFloatComplex, ldb*N   );
+            TESTING_MALLOC_CPU( ipiv,      magma_int_t,        Ak      );
             
             TESTING_MALLOC_DEV( d_A,       magmaFloatComplex, ldda*Ak );
             TESTING_MALLOC_DEV( d_B,       magmaFloatComplex, lddb*N  );
             
             /* Initialize the matrices */
-            lapackf77_clarnv( &ione, ISEED, &sizeA, LU );
-            err = magma_malloc_cpu( (void**) &piv, Ak*sizeof(magma_int_t) );  assert( err == 0 );
-            lapackf77_cgetrf( &Ak, &Ak, LU, &lda, piv, &info );
-        
-            int i, j;
-            for(i=0; i < Ak; i++) {
-                for(j=0; j < Ak; j++) {
-                    LUT[j+i*lda] = LU[i+j*lda];
+            /* Factor A into LU to get well-conditioned triangular matrix.
+             * Copy L to U, since L seems okay when used with non-unit diagonal
+             * (i.e., from U), while U fails when used with unit diagonal. */
+            lapackf77_clarnv( &ione, ISEED, &sizeA, h_A );
+            lapackf77_cgetrf( &Ak, &Ak, h_A, &lda, ipiv, &info );
+            for( int j = 0; j < Ak; ++j ) {
+                for( int i = 0; i < j; ++i ) {
+                    *h_A(i,j) = *h_A(j,i);
                 }
-            }
-
-            lapackf77_clacpy(MagmaUpperStr, &Ak, &Ak, LUT, &lda, LU, &lda);
-
-            if (opts.uplo == MagmaLower) {
-                lapackf77_clacpy(MagmaLowerStr, &Ak, &Ak, LU, &lda, h_A, &lda);
-            } else {
-                lapackf77_clacpy(MagmaUpperStr, &Ak, &Ak, LU, &lda, h_A, &lda);
             }
             
             lapackf77_clarnv( &ione, ISEED, &sizeB, h_B );
             memcpy(h_B1, h_B, sizeB*sizeof(magmaFloatComplex));
+            
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
@@ -203,24 +186,26 @@ int main( int argc, char** argv)
             cublas_error = norm1/(normx*normA);
             
             if ( opts.lapack ) {
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e     %8.2e\n",
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e     %8.2e   %s\n",
                         (int) M, (int) N,
                         magma_perf,  1000.*magma_time,
                         cublas_perf, 1000.*cublas_time,
                         cpu_perf,    1000.*cpu_time,
-                        magma_error, cublas_error );
+                        magma_error, cublas_error,
+                        (magma_error < tol && cublas_error < tol? "ok" : "failed"));
+                status += ! (magma_error < tol && cublas_error < tol);
             }
             else {
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)     ---   (  ---  )   %8.2f     %8.2e\n",
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)     ---   (  ---  )   %8.2f     %8.2e   %s\n",
                         (int) M, (int) N,
                         magma_perf,  1000.*magma_time,
                         cublas_perf, 1000.*cublas_time,
-                        magma_error, cublas_error );
+                        magma_error, cublas_error,
+                        (magma_error < tol && cublas_error < tol? "ok" : "failed"));
+                status += ! (magma_error < tol && cublas_error < tol);
             }
             
             TESTING_FREE_CPU( h_A  );
-            TESTING_FREE_CPU( LU   );
-            TESTING_FREE_CPU( LUT  );
             TESTING_FREE_CPU( h_B  );
             TESTING_FREE_CPU( h_B1 );
             TESTING_FREE_CPU( h_X1 );
@@ -238,5 +223,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

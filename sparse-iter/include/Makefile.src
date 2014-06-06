@@ -1,0 +1,17 @@
+CHDR = \
+magmasparse_c.h
+
+DHDR = \
+magmasparse_d.h magmasparse_ds.h
+
+SHDR = \
+magmasparse_s.h
+
+CSRC = \
+
+
+DSRC = \
+
+
+SSRC = \
+

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 */
@@ -133,8 +133,8 @@ int main( int argc, char** argv)
                            (int) M, (int) N, gpu_perf, gpu_time, results[0], results[1] );
                 }
                 // todo also check results[1] < tol?
-                printf("  %s\n", (results[0] < tol ? "ok" : "failed"));
-                status |= ! (results[0] < tol);
+                printf("   %s\n", (results[0] < tol ? "ok" : "failed"));
+                status += ! (results[0] < tol);
 
                 TESTING_FREE_CPU( h_W1 );
                 TESTING_FREE_CPU( h_W2 );
@@ -156,8 +156,8 @@ int main( int argc, char** argv)
                     printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)    %8.2e",
                            (int) M, (int) N, gpu_perf, gpu_time, error );
                 }
-                printf("  %s\n", (error < tol ? "ok" : "failed"));
-                status |= ! (error < tol);
+                printf("   %s\n", (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
             }
             else {
                 if ( opts.lapack ) {

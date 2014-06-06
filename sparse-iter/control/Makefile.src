@@ -1,0 +1,17 @@
+CHDR = \
+
+
+DHDR = \
+
+
+SHDR = \
+
+
+CSRC = \
+magma_c_free.cpp magma_c_init.cpp magma_c_matrixchar.cpp magma_c_mconverter.cpp magma_c_transfer.cpp magma_c_vio.cpp magma_cgeneratematrix.cpp matrix_cio.cpp magma_csolverinfo.cpp magma_ctranspose.cpp magma_c_chowutils.cpp magma_cp2p.cpp magma_ccsrsplit.cpp magma_cmscale.cpp magma_cmsort.cpp magma_cilustruct.cpp
+
+DSRC = \
+magma_d_free.cpp magma_d_init.cpp magma_d_matrixchar.cpp magma_d_mconverter.cpp magma_d_transfer.cpp magma_d_vio.cpp magma_dgeneratematrix.cpp matrix_dio.cpp magma_dsolverinfo.cpp magma_dtranspose.cpp magma_d_chowutils.cpp magma_dp2p.cpp magma_dcsrsplit.cpp magma_dmscale.cpp magma_dmsort.cpp magma_dilustruct.cpp
+
+SSRC = \
+magma_s_free.cpp magma_s_init.cpp magma_s_matrixchar.cpp magma_s_mconverter.cpp magma_s_transfer.cpp magma_s_vio.cpp magma_sgeneratematrix.cpp matrix_sio.cpp magma_ssolverinfo.cpp magma_stranspose.cpp magma_s_chowutils.cpp magma_sp2p.cpp magma_scsrsplit.cpp magma_smscale.cpp magma_smsort.cpp magma_silustruct.cpp

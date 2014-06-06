@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 
@@ -37,15 +37,18 @@ int main( int argc, char** argv)
     magmaDoubleComplex *d_A;
     magma_int_t N, nb, size, lda, ldda, mstride, nstride, ntile;
     magma_int_t ione     = 1;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+
     nb = (opts.nb == 0 ? 64 : opts.nb);
     mstride = 2*nb;
     nstride = 3*nb;
     
-    printf("nb=%d, mstride=%d, nstride=%d\n", (int) nb, (int) mstride, (int) nstride );
-    printf("    N ntile   CPU GByte/s (sec)   GPU GByte/s (sec)   check\n");
+    printf("uplo = %s, nb = %d, mstride = %d, nstride = %d\n",
+            lapack_uplo_const(opts.uplo), (int) nb, (int) mstride, (int) nstride );
+    printf("    N ntile   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
     printf("===========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -116,8 +119,9 @@ int main( int argc, char** argv)
 
             printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
                    (int) N, (int) ntile,
-                   cpu_perf, cpu_time, gpu_perf, gpu_time,
+                   cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    (error == 0. ? "ok" : "failed") );
+            status += ! (error == 0.);
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_R );
@@ -131,5 +135,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

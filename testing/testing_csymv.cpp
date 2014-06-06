@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zsymv.cpp normal z -> c, Fri Apr 25 15:06:03 2014
+       @generated from testing_zsymv.cpp normal z -> c, Fri May 30 10:41:18 2014
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,10 +37,14 @@ int main(int argc, char **argv)
     magmaFloatComplex beta  = MAGMA_C_MAKE( -0.6,  0.8 );
     magmaFloatComplex *A, *X, *Y, *Ymagma;
     magmaFloatComplex *dA, *dX, *dY;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
+    float tol = opts.tolerance * lapackf77_slamch("E");
+    
+    printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
     printf("    N   MAGMA Gflop/s (ms)  CPU Gflop/s (ms)  MAGMA error\n");
     printf("=========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -95,11 +99,12 @@ int main(int argc, char **argv)
             blasf77_caxpy( &N, &c_neg_one, Y, &incy, Ymagma, &incy);
             magma_error = lapackf77_clange( "M", &N, &ione, Ymagma, &N, work ) / N;
             
-            printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
+            printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                    (int) N,
                    magma_perf,  1000.*magma_time,
                    cpu_perf,    1000.*cpu_time,
-                   magma_error );
+                   magma_error, (magma_error < tol ? "ok" : "failed"));
+            status += ! (magma_error < tol);
             
             TESTING_FREE_CPU( A );
             TESTING_FREE_CPU( X );
@@ -117,5 +122,5 @@ int main(int argc, char **argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

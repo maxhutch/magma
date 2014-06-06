@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 */
 
 #ifndef MAGMA_TYPES_H
@@ -32,11 +32,12 @@
 // Similar to magma_int_t we declare magma_index_t used for row/column indices in sparse
 #if defined(MAGMA_ILP64) || defined(MKL_ILP64)
 typedef int64_t magma_int_t;
-typedef int64_t magma_index_t;
+typedef int magma_index_t;
 #else
 typedef int magma_int_t;
-typedef int magma_index_t;
 #endif
+
+typedef int magma_index_t;
 
 // Define new type that the precision generator will not change (matches PLASMA)
 typedef double real_Double_t;
@@ -267,7 +268,7 @@ typedef double real_Double_t;
 #define MAGMA_VERSION_MICRO 0
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
-#define MAGMA_VERSION_STAGE "beta1"
+#define MAGMA_VERSION_STAGE "beta2"
 
 #define MagmaMaxGPUs 8
 
@@ -389,6 +390,11 @@ typedef enum {
 } magma_range_t;
 
 typedef enum {
+    MagmaQ             = 322,  /* unmbr, ungbr */
+    MagmaP             = 323
+} magma_vect_t;
+
+typedef enum {
     MagmaForward       = 391,  /* larfb */
     MagmaBackward      = 392
 } magma_direct_t;
@@ -415,10 +421,9 @@ typedef enum {
     Magma_ELLD         = 422,
     Magma_ELLDD        = 423,
     Magma_CSRD         = 424,
-    Magma_CSRCSCL      = 425,
-    Magma_CSRCSCU      = 426,
     Magma_CSRL         = 427,
-    Magma_CSRU         = 428
+    Magma_CSRU         = 428,
+    Magma_CSRCOO       = 429
 } magma_storage_t;
 
 
@@ -438,15 +443,11 @@ typedef enum {
     Magma_PBICGSTAB    = 443,
     Magma_PASTIX       = 444,
     Magma_ILU          = 445,
-    Magma_ICC          = 446
+    Magma_ICC          = 446,
+    Magma_AILU         = 447,
+    Magma_AICC         = 448,
+    Magma_BAITER       = 449
 } magma_solver_type;
-
-typedef enum {
-    Magma_DCOMPLEX     = 451,
-    Magma_FCOMPLEX     = 452,
-    Magma_DOUBLE       = 453,
-    Magma_FLOAT        = 454
-} magma_precision;
 
 typedef enum {
     Magma_CGS          = 461,
@@ -471,6 +472,18 @@ typedef enum {
     Magma_VALUE        = 494
 } magma_diagorder_t;
 
+typedef enum {
+    Magma_DCOMPLEX     = 501,
+    Magma_FCOMPLEX     = 502,
+    Magma_DOUBLE       = 503,
+    Magma_FLOAT        = 504
+} magma_precision;
+
+typedef enum {
+    Magma_NOSCALE      = 511,
+    Magma_UNITROW      = 512,
+    Magma_UNITDIAG     = 513
+} magma_scale_t;
 
 
 // When adding constants, remember to do these steps as appropriate:
@@ -544,6 +557,7 @@ magma_sym_t    magma_sym_const   ( char lapack_char );
 magma_pack_t   magma_pack_const  ( char lapack_char );
 magma_vec_t    magma_vec_const   ( char lapack_char );
 magma_range_t  magma_range_const ( char lapack_char );
+magma_vect_t   magma_vect_const  ( char lapack_char );
 magma_direct_t magma_direct_const( char lapack_char );
 magma_storev_t magma_storev_const( char lapack_char );
 
@@ -565,6 +579,7 @@ const char* lapack_sym_const   ( magma_sym_t    magma_const );
 const char* lapack_pack_const  ( magma_pack_t   magma_const );
 const char* lapack_vec_const   ( magma_vec_t    magma_const );
 const char* lapack_range_const ( magma_range_t  magma_const );
+const char* lapack_vect_const  ( magma_vect_t   magma_const );
 const char* lapack_direct_const( magma_direct_t magma_const );
 const char* lapack_storev_const( magma_storev_t magma_const );
 
@@ -581,6 +596,7 @@ static inline char lapacke_sym_const   ( magma_sym_t    magma_const ) { return *
 static inline char lapacke_pack_const  ( magma_pack_t   magma_const ) { return *lapack_pack_const  ( magma_const ); }
 static inline char lapacke_vec_const   ( magma_vec_t    magma_const ) { return *lapack_vec_const   ( magma_const ); }
 static inline char lapacke_range_const ( magma_range_t  magma_const ) { return *lapack_range_const ( magma_const ); }
+static inline char lapacke_vect_const  ( magma_vect_t   magma_const ) { return *lapack_vect_const  ( magma_const ); }
 static inline char lapacke_direct_const( magma_direct_t magma_const ) { return *lapack_direct_const( magma_const ); }
 static inline char lapacke_storev_const( magma_storev_t magma_const ) { return *lapack_storev_const( magma_const ); }
 

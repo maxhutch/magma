@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Mark Gates
        @precisions normal d -> s
@@ -194,7 +194,7 @@ magma_int_t magma_dgesdd(
     double bignum;
     magma_int_t ldwrkl, ldwrkr, minwrk, ldwrku, maxwrk, ldwkvt;
     double smlnum;
-
+    
     /* Parameter adjustments */
     A  -= 1 + lda;
     --work;
@@ -537,8 +537,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite VT       by right singular vectors of R */
                 /* (Workspace: need 2*N*N + 3*N + [N], prefer 2*N*N + 2*N + N*NB + [N]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &n, &n, &n, &work[ir], &ldwrkr, &work[itauq], &work[iu], &n, &work[nwork], &lnwork, &ierr);
-                lapackf77_dormbr("P", "R", "T", &n, &n, &n, &work[ir], &ldwrkr, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &n, &n, &n, &work[ir], &ldwrkr, &work[itauq], &work[iu], &n,    &work[nwork], &lnwork, &ierr);
+                lapackf77_dormbr("P", "R", "T", &n, &n, &n, &work[ir], &ldwrkr, &work[itaup], VT,        &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, n, n, n, &work[ir], ldwrkr, &work[itauq], &work[iu], n,    &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   n, n, n, &work[ir], ldwrkr, &work[itaup], VT,        ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply Q in A by left singular vectors of R in WORK[IU], */
                 /* storing result in WORK[IR] and copying to A */
@@ -598,8 +603,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite VT by right singular vectors of R */
                 /* (Workspace: need N*N + 3*N + [N], prefer N*N + 2*N + N*NB + [N]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &n, &n, &n, &work[ir], &ldwrkr, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &n, &n, &n, &work[ir], &ldwrkr, &work[itauq], U,  &ldu,  &work[nwork], &lnwork, &ierr);
                 lapackf77_dormbr("P", "R", "T", &n, &n, &n, &work[ir], &ldwrkr, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, n, n, n, &work[ir], ldwrkr, &work[itauq], U,  ldu,  &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   n, n, n, &work[ir], ldwrkr, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply Q in A by left singular vectors of R in WORK[IR], */
                 /* storing result in U */
@@ -657,8 +667,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite VT       by right singular vectors of R */
                 /* (Workspace: need N*N + 3*N + [N], prefer N*N + 2*N + N*NB + [N]) */
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_dormbr("Q", "L", "N", &n, &n, &n, A(1,1), &lda, &work[itauq], &work[iu], &ldwrku, &work[nwork], &lnwork, &ierr);
-                lapackf77_dormbr("P", "R", "T", &n, &n, &n, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                lapackf77_dormbr("P", "R", "T", &n, &n, &n, A(1,1), &lda, &work[itaup], VT,        &ldvt,   &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, n, n, n, A(1,1), lda, &work[itauq], &work[iu], ldwrku, &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   n, n, n, A(1,1), lda, &work[itaup], VT,        ldvt,   &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply Q in U by left singular vectors of R in WORK[IU], */
                 /* storing result in A */
@@ -723,7 +738,11 @@ magma_int_t magma_dgesdd(
                 /* Overwrite VT by right singular vectors of A */
                 /* (Workspace: need N*N + 2*N + [2*N], prefer N*N + N + N*NB + [2*N]) */
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_dormbr("P", "R", "T", &n, &n, &n, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans, n, n, n, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* TODO should be m*n + 4*n + n*nb, instead of bdspac? */
                 /* Affects n = 1, ..., 9 for nb=32. */
@@ -732,7 +751,11 @@ magma_int_t magma_dgesdd(
                     /* (was:       need N*N + 2*N + [2*N], prefer N*N + N + N*NB + [2*N]) */
                     /* (Workspace: need M*N + 2*N + [2*N], prefer M*N + N + N*NB + [2*N]) */
                     lnwork = lwork - nwork + 1;
+                    #if VERSION == 1
                     lapackf77_dormbr("Q", "L", "N", &m, &n, &n, A(1,1), &lda, &work[itauq], &work[iu], &ldwrku, &work[nwork], &lnwork, &ierr);
+                    #else
+                    magma_dormbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, n, n, A(1,1), lda, &work[itauq], &work[iu], ldwrku, &work[nwork], lnwork, &ierr);
+                    #endif
                 
                     /* Copy left singular vectors of A from WORK[IU] to A */
                     lapackf77_dlacpy("F", &m, &n, &work[iu], &ldwrku, A(1,1), &lda);
@@ -767,8 +790,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite VT by right singular vectors of A */
                 /* (Workspace: need 3*N + [N], prefer 2*N + N*NB + [N]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &m, &n, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &m, &n, &n, A(1,1), &lda, &work[itauq], U,  &ldu,  &work[nwork], &lnwork, &ierr);
                 lapackf77_dormbr("P", "R", "T", &n, &n, &n, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, m, n, n, A(1,1), lda, &work[itauq], U,  ldu,  &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   n, n, n, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
             else if (wantqa) {
                 /* Path 5a (M >= N, JOBZ='A') */
@@ -790,8 +818,13 @@ magma_int_t magma_dgesdd(
                 /* (Workspace: need 2*N + M + [N], prefer 2*N + M*NB + [N]) */
                 /* (was:       need N*N + 2*N + M + [N], prefer N*N + 2*N + M*NB + [N]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U,  &ldu,  &work[nwork], &lnwork, &ierr);
                 lapackf77_dormbr("P", "R", "T", &n, &n, &m, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U,  ldu,  &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   n, n, m, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
         }
     }
@@ -896,8 +929,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite WORK[IVT] by right singular vectors of L */
                 /* (Workspace: need 2*M*M + 3*M + [M], prefer 2*M*M + 2*M + M*NB + [M]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &m, &m, &m, &work[il], &ldwrkl, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
-                lapackf77_dormbr("P", "R", "T", &m, &m, &m, &work[il], &ldwrkl, &work[itaup], &work[ivt], &m, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &m, &m, &m, &work[il], &ldwrkl, &work[itauq], U,          &ldu, &work[nwork], &lnwork, &ierr);
+                lapackf77_dormbr("P", "R", "T", &m, &m, &m, &work[il], &ldwrkl, &work[itaup], &work[ivt], &m,   &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, m, m, m, &work[il], ldwrkl, &work[itauq], U,          ldu, &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   m, m, m, &work[il], ldwrkl, &work[itaup], &work[ivt], m,   &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply right singular vectors of L in WORK[IVT] by Q in A, */
                 /* storing result in WORK[IL] and copying to A */
@@ -957,8 +995,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite VT by right singular vectors of L */
                 /* (Workspace: need M*M + 3*M + [M], prefer M*M + 2*M + M*NB + [M]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &m, &m, &m, &work[il], &ldwrkl, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &m, &m, &m, &work[il], &ldwrkl, &work[itauq], U,  &ldu,  &work[nwork], &lnwork, &ierr);
                 lapackf77_dormbr("P", "R", "T", &m, &m, &m, &work[il], &ldwrkl, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, m, m, m, &work[il], ldwrkl, &work[itauq], U,  ldu,  &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   m, m, m, &work[il], ldwrkl, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply right singular vectors of L in WORK[IL] by Q in A, */
                 /* storing result in VT */
@@ -1016,8 +1059,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite WORK[IVT] by right singular vectors of L */
                 /* (Workspace: need M*M + 3*M + [M], prefer M*M + 2*M + M*NB + [M]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &m, &m, &m, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &m, &m, &m, A(1,1), &lda, &work[itauq], U,          &ldu,    &work[nwork], &lnwork, &ierr);
                 lapackf77_dormbr("P", "R", "T", &m, &m, &m, A(1,1), &lda, &work[itaup], &work[ivt], &ldwkvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, m, m, m, A(1,1), lda, &work[itauq], U,          ldu,    &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   m, m, m, A(1,1), lda, &work[itaup], &work[ivt], ldwkvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply right singular vectors of L in WORK[IVT] by Q in VT, */
                 /* storing result in A */
@@ -1081,7 +1129,11 @@ magma_int_t magma_dgesdd(
                 /* Overwrite U by left singular vectors of A */
                 /* (Workspace: need M*M + 2*M + [2*M], prefer M*M + M + M*NB + [2*M]) */
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_dormbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* TODO should be m*n + 4*m + m*nb, instead of bdspac? */
                 /* Affects m = 1, ..., 9 for nb=32. */
@@ -1090,7 +1142,11 @@ magma_int_t magma_dgesdd(
                     /* (was:       need M*M + 2*M + [2*M], prefer M*M + M + M*NB + [2*M]) */
                     /* (Workspace: need M*N + 2*M + [2*M], prefer M*N + M + M*NB + [2*M]) */
                     lnwork = lwork - nwork + 1;
+                    #if VERSION == 1
                     lapackf77_dormbr("P", "R", "T", &m, &n, &m, A(1,1), &lda, &work[itaup], &work[ivt], &ldwkvt, &work[nwork], &lnwork, &ierr);
+                    #else
+                    magma_dormbr(MagmaP, MagmaRight, MagmaTrans, m, n, m, A(1,1), lda, &work[itaup], &work[ivt], ldwkvt, &work[nwork], lnwork, &ierr);
+                    #endif
                 
                     /* Copy right singular vectors of A from WORK[IVT] to A */
                     lapackf77_dlacpy("F", &m, &n, &work[ivt], &ldwkvt, A(1,1), &lda);
@@ -1125,8 +1181,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite VT by right singular vectors of A */
                 /* (Workspace: need 3*M + [M], prefer 2*M + M*NB + [M]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U,  &ldu,  &work[nwork], &lnwork, &ierr);
                 lapackf77_dormbr("P", "R", "T", &m, &n, &m, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U,  ldu,  &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   m, n, m, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
             else if (wantqa) {
                 /* Path 5ta (N > M, JOBZ='A') */
@@ -1147,8 +1208,13 @@ magma_int_t magma_dgesdd(
                 /* overwrite VT by right singular vectors of A */
                 /* (Workspace: need 2*M + N + [M], prefer 2*M + N*NB + [M]) */
                 lnwork = lwork - nwork + 1;
-                lapackf77_dormbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #if VERSION == 1
+                lapackf77_dormbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U,  &ldu,  &work[nwork], &lnwork, &ierr);
                 lapackf77_dormbr("P", "R", "T", &n, &n, &m, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_dormbr(MagmaQ, MagmaLeft,  MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U,  ldu,  &work[nwork], lnwork, &ierr);
+                magma_dormbr(MagmaP, MagmaRight, MagmaTrans,   n, n, m, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
         }
     }

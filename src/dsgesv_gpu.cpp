@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zcgesv_gpu.cpp mixed zc -> ds, Fri Apr 25 15:05:32 2014
+       @generated from zcgesv_gpu.cpp mixed zc -> ds, Fri May 30 10:40:51 2014
 
 */
 #include "common_magma.h"
@@ -17,7 +17,7 @@
     Purpose
     -------
     DSGESV computes the solution to a real system of linear equations
-       A * X = B or A' * X = B
+       A * X = B,  A**T * X = B,  or  A**T * X = B,
     where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
 
     DSGESV first attempts to factorize the matrix in real SINGLE PRECISION
@@ -51,9 +51,9 @@
     @param[in]
     trans   magma_trans_t
             Specifies the form of the system of equations:
-      -     = MagmaNoTrans:    A * X = B  (No transpose)
-      -     = MagmaTrans:      A'* X = B  (Transpose)
-      -     = MagmaTrans:  A'* X = B  (Conjugate transpose = Transpose)
+      -     = MagmaNoTrans:    A    * X = B  (No transpose)
+      -     = MagmaTrans:      A**T * X = B  (Transpose)
+      -     = MagmaTrans:  A**T * X = B  (Conjugate transpose)
 
     @param[in]
     n       INTEGER

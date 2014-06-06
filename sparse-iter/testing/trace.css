@@ -1,0 +1,71 @@
+    /* ----- begin trace.css SVG header ----- */
+    /* MAGMA (version 1.5.0-beta2)   */
+    /* @author Mark Gates    */
+    /* HTML uses background, CSS uses fill */
+    rect           { stroke-width: 0; stroke: #666666; }
+    line           { stroke-width: 1; stroke: black; stroke-dasharray: 5,5; }
+    
+    /* overhead (gray) */
+    .init          { background: #666666;  fill: #666666; /* gray       */ }
+    .destroy       { background: #666666;  fill: #666666; /* gray       */ }
+                                          
+    /* panels */                          
+    .getrf         { background: #cc0000;  fill: #cc0000; /* red        */ }
+    .geqrf         { background: #8B0000;  fill: #8B0000; /* red dk     */ }
+    .potrf         { background: #CD5C5C;  fill: #CD5C5C; /* red lt     */ }
+    
+    /* BLAS level 1 (purples) */
+    .axpy          { background: #4B0082;  fill: #4B0082; /* purple     */ }
+    .dot           { background: #6700B3;  fill: #6700B3; /* purple     */ }
+    .max           { background: #9300FF;  fill: #9300FF; /* purple     */ }
+    .norm          { background: #BE66FF;  fill: #BE66FF; /* purple     */ }
+    .scal          { background: #D297FC;  fill: #D297FC; /* purple     */ }
+    .sum           { background: #946BB3;  fill: #946BB3; /* purple     */ }
+    
+    /* BLAS level 2 (oranges and yellows) */
+    .gemv          { background: #FFD700;  fill: #FFD700; /* gold       */ }
+    .ger           { background: #DAA520;  fill: #DAA520; /* golden rod */ }
+    
+    .symv,  .hemv  { background: #FFC966;  fill: #FFC966; /* orange     */ }
+    .syr,   .her   { background: #FFA500;  fill: #FFA500; /* orange     */ }
+    .spmv          { background: #1F6600;  fill: #1F6600; /* green      */ }
+    
+    .trmv          { background: #FF8000;  fill: #FF8000; /* orange     */ }
+    .trsv          { background: #CC6600;  fill: #CC6600; /* orange     */ }
+    
+    /* BLAS level 3 (greens and blues) */
+    .gemm, .larfb  { background: #1F6600;  fill: #1F6600; /* green      */ }
+    .gemm2,.larfb2 { background: #2F9902;  fill: #2F9902; /* green      */ }
+    .gemm3         { background: #3ECC00;  fill: #3ECC00; /* green      */ }
+    
+    .symm,  .hemm  { background: #0040FF;  fill: #0040FF; /* blue       */ }
+    .syrk,  .herk  { background: #4169E1;  fill: #4169E1; /* blue       */ }
+    .syr2k, .her2k { background: #809FFF;  fill: #809FFF; /* blue       */ }
+    
+    .trmm          { background: #3F3F00;  fill: #3F3F00; /* olive dk2  */ }
+    .trmm2         { background: #666600;  fill: #666600; /* olive dk   */ }    
+    .trsm          { background: #7F7F00;  fill: #7F7F00; /* olive      */ }
+    .trsm2         { background: #9EA000;  fill: #9EA000; /* olive lt   */ }
+    
+    /* communication */
+    .copy          { background: #9c51ff;  fill: #9c51ff; /* purple     */ }
+    
+    .get           { background: #FC99FF;  fill: #FC99FF; /* magenta lt */ }
+    .get2          { background: #FB66FF;  fill: #FB66FF; /* magenta    */ }
+    .get3          { background: #C952CC;  fill: #C952CC; /* magenta dk */ }
+    .getsync,.sync { background: #973D99;  fill: #973D99; /* magenta dk2*/ }
+    
+    .set           { background: #66D9FF;  fill: #66D9FF; /* sky lt     */ }
+    .set2          { background: #00BFFF;  fill: #00BFFF; /* sky        */ }
+    .set3          { background: #0099CC;  fill: #0099CC; /* sky dk     */ }
+    .setsync       { background: #007399;  fill: #007399; /* sky dk2    */ }
+    
+    /* misc. */
+    .formT, .larft { background: #333333;  fill: #333333; /* gray       */ }
+    .normalize     { background: #555555;  fill: #555555; /* gray       */ }
+    .rhs           { background: #777777;  fill: #777777; /* gray       */ }
+    .symmetrize    { background: #999999;  fill: #999999; /* gray       */ }
+    .transpose     { background: #bbbbbb;  fill: #bbbbbb; /* gray       */ }
+    .permute       { background: #cccccc;  fill: #cccccc; /* gray       */ }
+    
+    /* ----- end trace.css SVG header ----- */

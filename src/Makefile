@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta1) --
+#   -- MAGMA (version 1.5.0-beta2) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date April 2014
+#      @date May 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = src
@@ -111,6 +111,7 @@ ZSRC += \
 	zgeqrf_ooc.cpp		\
 	zungqr.cpp		\
 	zungqr2.cpp		\
+	zunmlq.cpp		\
 	zunmql.cpp		\
 	zunmqr.cpp		\
 	\
@@ -252,6 +253,7 @@ ZSRC += \
 	zgesvd.cpp		\
 	zgebrd.cpp		\
 	zlabrd_gpu.cpp		\
+	zunmbr.cpp		\
 
 
 # ------------------------------------------------------------

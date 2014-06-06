@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -34,7 +34,7 @@ int main( int argc, char** argv )
     double error, work[1];
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magma_int_t ione = 1;
-    magma_int_t m, n, k, size, info;
+    magma_int_t mm, m, n, k, size, info;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t nb, ldc, lda, lwork, lwork_max;
     magmaDoubleComplex *C, *R, *A, *W, *tau;
@@ -43,6 +43,8 @@ int main( int argc, char** argv )
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
+    // need slightly looser bound (60*eps instead of 30*eps) for some tests
+    opts.tolerance = max( 60., opts.tolerance );
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     // test all combinations of input parameters
@@ -59,19 +61,21 @@ int main( int argc, char** argv )
             n = opts.nsize[itest];
             k = opts.ksize[itest];
             nb  = magma_get_zgeqrf_nb( m );
-            ldc = ((m + 31)/32)*32;
-            lda = ((max(m,n) + 31)/32)*32;
+            ldc = m;
+            // A is m x k (left) or n x k (right)
+            mm = (side[iside] == MagmaLeft ? m : n);
+            lda = mm;
             gflops = FLOPS_ZUNMQR( m, n, k, side[iside] ) / 1e9;
             
             if ( side[iside] == MagmaLeft && m < k ) {
-                printf( "%5d %5d %5d   %4c   %5c   skipping because side=left and m < k\n",
+                printf( "%5d %5d %5d   %4c   %5c   skipping because side=left  and m < k\n",
                         (int) m, (int) n, (int) k,
                         lapacke_side_const( side[iside] ),
                         lapacke_trans_const( trans[itran] ) );
                 continue;
             }
             if ( side[iside] == MagmaRight && n < k ) {
-                printf( "%5d %5d %5d  %4c   %5c   skipping because side=right and n < k\n",
+                printf( "%5d %5d %5d   %4c   %5c   skipping because side=right and n < k\n",
                         (int) m, (int) n, (int) k,
                         lapacke_side_const( side[iside] ),
                         lapacke_trans_const( trans[itran] ) );
@@ -91,15 +95,12 @@ int main( int argc, char** argv )
             size = ldc*n;
             lapackf77_zlarnv( &ione, ISEED, &size, C );
             lapackf77_zlacpy( "Full", &m, &n, C, &ldc, R, &ldc );
-            //magma_zsetmatrix( m,   n, C, ldc, dC, ldc );
             
-            // A is m x k (left) or n x k (right)
-            lda = (side[iside] == MagmaLeft ? m : n);
             size = lda*k;
             lapackf77_zlarnv( &ione, ISEED, &size, A );
             
             // compute QR factorization to get Householder vectors in A, tau
-            magma_zgeqrf( lda, k, A, lda, tau, W, lwork_max, &info );
+            magma_zgeqrf( mm, k, A, lda, tau, W, lwork_max, &info );
             if (info != 0)
                 printf("magma_zgeqrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
@@ -129,8 +130,10 @@ int main( int argc, char** argv )
                 printf("magma_zunmqr (lwork query) returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             lwork = (magma_int_t) MAGMA_Z_REAL( W[0] );
-            if ( lwork < 0 || lwork > lwork_max )
-                printf("invalid lwork %d, lwork_max %d\n", (int) lwork, (int) lwork_max );
+            if ( lwork < 0 || lwork > lwork_max ) {
+                printf("optimal lwork %d > lwork_max %d\n", (int) lwork, (int) lwork_max );
+                lwork = lwork_max;
+            }
             
             gpu_time = magma_wtime();
             magma_zunmqr( side[iside], trans[itran],
@@ -141,9 +144,7 @@ int main( int argc, char** argv )
             if (info != 0)
                 printf("magma_zunmqr returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
-            
-            //magma_zgetmatrix( m, n, dC, ldc, R, ldc );
-            
+                        
             /* =====================================================================
                compute relative error |QC_magma - QC_lapack| / |QC_lapack|
                =================================================================== */
@@ -158,7 +159,7 @@ int main( int argc, char** argv )
                     lapacke_trans_const( trans[itran] ),
                     cpu_perf, cpu_time, gpu_perf, gpu_time,
                     error, (error < tol ? "ok" : "failed") );
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( C );
             TESTING_FREE_CPU( R );

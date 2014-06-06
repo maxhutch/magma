@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from ztrsm.cu normal z -> d, Fri Apr 25 15:05:23 2014
+       @generated from ztrsm.cu normal z -> d, Fri May 30 10:40:44 2014
 
        @author Peng Du
        @author Tingxing Dong
@@ -160,9 +160,10 @@ void magmablas_dtrsm(
     if (m <= 0 || n <= 0)
         return;
     
-    char Notrans = 'N';
-    char Trans = 'T';
-    char Conjtrans = 'C';
+    magma_trans_t Notrans   = MagmaNoTrans;
+    magma_trans_t Trans     = MagmaTrans;
+    magma_trans_t Conjtrans = MagmaTrans;
+
     double neg_one = MAGMA_D_NEG_ONE;
     double one = MAGMA_D_ONE;
     double zero = MAGMA_D_ZERO;
@@ -186,7 +187,7 @@ void magmablas_dtrsm(
                 /* the lower case */
                 /* handle the first block seperately with alpha */
                 int mm = min(nb, m);
-                cublasDgemm(Notrans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
+                magma_dgemm(Notrans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
 
                 if (nb >= m) {
                     dtrsm_copy();
@@ -195,17 +196,17 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Notrans, m-nb, n, nb, neg_one, A+nb, lda, d_x, m, alpha, b+nb, ldb);
+                magma_dgemm(Notrans, Notrans, m-nb, n, nb, neg_one, A+nb, lda, d_x, m, alpha, b+nb, ldb);
 
                 /* the rest blocks */
                 for( i=nb; i < m; i += nb ) {
                     mm = min(m-i, nb);
-                    cublasDgemm(Notrans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                    magma_dgemm(Notrans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                     if (i+nb >= m)
                         break;
 
-                    cublasDgemm(Notrans, Notrans, m-i-nb, n, nb, neg_one, A+i*lda+i+nb, lda, d_x+i, m, one, b+i+nb, ldb);
+                    magma_dgemm(Notrans, Notrans, m-i-nb, n, nb, neg_one, A+i*lda+i+nb, lda, d_x+i, m, one, b+i+nb, ldb);
                 }
             }
             else {
@@ -213,7 +214,7 @@ void magmablas_dtrsm(
                 /* handle the first block seperately with alpha */
                 int mm = (m % nb == 0) ? nb : (m % nb);
                 i = m-mm;
-                cublasDgemm(Notrans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                magma_dgemm(Notrans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                 if (i-nb < 0) {
                     dtrsm_copy();
@@ -222,16 +223,16 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Notrans, i, n, mm, neg_one, A+i*lda, lda, d_x+i, m, alpha, b, ldb);
+                magma_dgemm(Notrans, Notrans, i, n, mm, neg_one, A+i*lda, lda, d_x+i, m, alpha, b, ldb);
 
                 /* the rest blocks */
                 for( i=m-mm-nb; i >= 0; i -= nb ) {
-                    cublasDgemm(Notrans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                    magma_dgemm(Notrans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                     if (i-nb < 0)
                         break;
 
-                    cublasDgemm(Notrans, Notrans, i, n, nb, neg_one, A+i*lda, lda, d_x+i, m, one, b, ldb);
+                    magma_dgemm(Notrans, Notrans, i, n, nb, neg_one, A+i*lda, lda, d_x+i, m, one, b, ldb);
                 }
             }
         }
@@ -242,7 +243,7 @@ void magmablas_dtrsm(
                 /* handle the first block seperately with alpha */
                 int mm = (m % nb == 0) ? nb : (m % nb);
                 i = m-mm;
-                cublasDgemm(Trans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                magma_dgemm(Trans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                 if (i-nb < 0) {
                     dtrsm_copy();
@@ -251,23 +252,23 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Trans, Notrans, i, n, mm, neg_one, A+i, lda, d_x+i, m, alpha, b, ldb);
+                magma_dgemm(Trans, Notrans, i, n, mm, neg_one, A+i, lda, d_x+i, m, alpha, b, ldb);
 
                 /* the rest blocks */
                 for( i=m-mm-nb; i >= 0; i -= nb ) {
-                    cublasDgemm(Trans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                    magma_dgemm(Trans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                     if (i-nb < 0)
                         break;
 
-                    cublasDgemm(Trans, Notrans, i, n, nb, neg_one, A+i, lda, d_x+i, m, one, b, ldb);
+                    magma_dgemm(Trans, Notrans, i, n, nb, neg_one, A+i, lda, d_x+i, m, one, b, ldb);
                 }
             }
             else {
                 /* the upper case */
                 /* handle the first block seperately with alpha */
                 int mm = min(nb, m);
-                cublasDgemm(Trans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
+                magma_dgemm(Trans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
 
                 if (nb >= m) {
                     dtrsm_copy();
@@ -276,17 +277,17 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Trans, Notrans, m-nb, n, nb, neg_one, A+(nb)*lda, lda, d_x, m, alpha, b+nb, ldb);
+                magma_dgemm(Trans, Notrans, m-nb, n, nb, neg_one, A+(nb)*lda, lda, d_x, m, alpha, b+nb, ldb);
 
                 /* the rest blocks */
                 for( i=nb; i < m; i += nb ) {
                     mm = min(m-i, nb);
-                    cublasDgemm(Trans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                    magma_dgemm(Trans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                     if (i+nb >= m)
                         break;
 
-                    cublasDgemm(Trans, Notrans, m-i-nb, n, nb, neg_one, A+(i+nb)*lda+i, lda, d_x+i, m, one, b+i+nb, ldb);
+                    magma_dgemm(Trans, Notrans, m-i-nb, n, nb, neg_one, A+(i+nb)*lda+i, lda, d_x+i, m, one, b+i+nb, ldb);
                 }
             }
         }
@@ -297,7 +298,7 @@ void magmablas_dtrsm(
                 /* handle the first block seperately with alpha */
                 int mm = (m % nb == 0) ? nb : (m % nb);
                 i = m-mm;
-                cublasDgemm(Conjtrans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                magma_dgemm(Conjtrans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                 if (i-nb < 0) {
                     dtrsm_copy();
@@ -306,23 +307,23 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Conjtrans, Notrans, i, n, mm, neg_one, A+i, lda, d_x+i, m, alpha, b, ldb);
+                magma_dgemm(Conjtrans, Notrans, i, n, mm, neg_one, A+i, lda, d_x+i, m, alpha, b, ldb);
 
                 /* the rest blocks */
                 for( i=m-mm-nb; i >= 0; i -= nb ) {
-                    cublasDgemm(Conjtrans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                    magma_dgemm(Conjtrans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                     if (i-nb < 0)
                         break;
 
-                    cublasDgemm(Conjtrans, Notrans, i, n, nb, neg_one, A+i, lda, d_x+i, m, one, b, ldb);
+                    magma_dgemm(Conjtrans, Notrans, i, n, nb, neg_one, A+i, lda, d_x+i, m, one, b, ldb);
                 }
             }
             else {
                 /* the upper case */
                 /* handle the first block seperately with alpha */
                 int mm = min(nb, m);
-                cublasDgemm(Conjtrans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
+                magma_dgemm(Conjtrans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
 
                 if (nb >= m) {
                     dtrsm_copy();
@@ -331,17 +332,17 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Conjtrans, Notrans, m-nb, n, nb, neg_one, A+(nb)*lda, lda, d_x, m, alpha, b+nb, ldb);
+                magma_dgemm(Conjtrans, Notrans, m-nb, n, nb, neg_one, A+(nb)*lda, lda, d_x, m, alpha, b+nb, ldb);
 
                 /* the rest blocks */
                 for( i=nb; i < m; i += nb ) {
                     mm = min(m-i, nb);
-                    cublasDgemm(Conjtrans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                    magma_dgemm(Conjtrans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
 
                     if (i+nb >= m)
                         break;
 
-                    cublasDgemm(Conjtrans, Notrans, m-i-nb, n, nb, neg_one, A+(i+nb)*lda+i, lda, d_x+i, m, one, b+i+nb, ldb);
+                    magma_dgemm(Conjtrans, Notrans, m-i-nb, n, nb, neg_one, A+(i+nb)*lda+i, lda, d_x+i, m, one, b+i+nb, ldb);
                 }
             }
         }
@@ -364,7 +365,7 @@ void magmablas_dtrsm(
                 /* handle the first block seperately with alpha */
                 int nn = (n % nb == 0) ? nb : (n % nb);
                 i = n-nn;
-                cublasDgemm(Notrans, Notrans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                magma_dgemm(Notrans, Notrans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                 if (i-nb < 0) {
                     dtrsm_copy();
@@ -373,23 +374,23 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Notrans, m, i, nn, neg_one, d_x+i*m, m, A+i, lda, alpha, b, ldb);
+                magma_dgemm(Notrans, Notrans, m, i, nn, neg_one, d_x+i*m, m, A+i, lda, alpha, b, ldb);
 
                 /* the rest blocks */
                 for( i=n-nn-nb; i >= 0; i -= nb ) {
-                    cublasDgemm(Notrans, Notrans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                    magma_dgemm(Notrans, Notrans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                     if (i-nb < 0)
                         break;
 
-                    cublasDgemm(Notrans, Notrans, m, i, nb, neg_one, d_x+i*m, m, A+i, lda, one, b, ldb);
+                    magma_dgemm(Notrans, Notrans, m, i, nb, neg_one, d_x+i*m, m, A+i, lda, one, b, ldb);
                 }
             }
             else {
                 /* the upper case */
                 /* handle the first block seperately with alpha */
                 int nn = min(nb, n);
-                cublasDgemm(Notrans, Notrans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
+                magma_dgemm(Notrans, Notrans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
 
                 if (nb >= n) {
                     dtrsm_copy();
@@ -398,17 +399,17 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Notrans, m, n-nb, nb, neg_one, d_x, m, A+nb*lda, lda, alpha, b+nb*ldb, ldb);
+                magma_dgemm(Notrans, Notrans, m, n-nb, nb, neg_one, d_x, m, A+nb*lda, lda, alpha, b+nb*ldb, ldb);
 
                 /* the rest blocks */
                 for( i=nb; i < n; i += nb ) {
                     nn = min(nb, n-i);
-                    cublasDgemm(Notrans, Notrans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                    magma_dgemm(Notrans, Notrans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                     if (i+nb >= n)
                         break;
 
-                    cublasDgemm(Notrans, Notrans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   A+(i+nb)*lda+i, lda, one, b+(i+nb)*ldb, ldb);
+                    magma_dgemm(Notrans, Notrans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   A+(i+nb)*lda+i, lda, one, b+(i+nb)*ldb, ldb);
                 }
             }
         }
@@ -418,7 +419,7 @@ void magmablas_dtrsm(
                 /* the lower case */
                 /* handle the first block seperately with alpha */
                 int nn = min(nb, n);
-                cublasDgemm(Notrans, Trans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
+                magma_dgemm(Notrans, Trans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
 
                 if (nb >= n) {
                     dtrsm_copy();
@@ -427,17 +428,17 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Trans, m, n-nb, nb, neg_one, d_x, m, A+nb, lda, alpha, b+nb*ldb, ldb);
+                magma_dgemm(Notrans, Trans, m, n-nb, nb, neg_one, d_x, m, A+nb, lda, alpha, b+nb*ldb, ldb);
 
                 /* the rest blocks */
                 for( i=nb; i < n; i += nb ) {
                     nn = min(nb, n-i);
-                    cublasDgemm(Notrans, Trans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                    magma_dgemm(Notrans, Trans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                     if (i+nb >= n)
                         break;
 
-                    cublasDgemm(Notrans, Trans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   A+i*lda+nb+i, lda, one, b+(i+nb)*ldb, ldb);
+                    magma_dgemm(Notrans, Trans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   A+i*lda+nb+i, lda, one, b+(i+nb)*ldb, ldb);
                 }
             }
             else {
@@ -445,7 +446,7 @@ void magmablas_dtrsm(
                 /* handle the first block seperately with alpha */
                 int nn = (n % nb == 0) ? nb : (n % nb);
                 i = n-nn;
-                cublasDgemm(Notrans, Trans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                magma_dgemm(Notrans, Trans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                 if (i-nb < 0) {
                     dtrsm_copy();
@@ -454,16 +455,16 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Trans, m, i, nn, neg_one, d_x+i*m, m, A+i*lda, lda, alpha, b, ldb);
+                magma_dgemm(Notrans, Trans, m, i, nn, neg_one, d_x+i*m, m, A+i*lda, lda, alpha, b, ldb);
 
                 /* the rest blocks */
                 for( i=n-nn-nb; i >= 0; i -= nb ) {
-                    cublasDgemm(Notrans, Trans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                    magma_dgemm(Notrans, Trans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                     if (i-nb < 0)
                         break;
 
-                    cublasDgemm(Notrans, Trans, m, i, nb, neg_one, d_x+i*m, m, A+i*lda, lda, one, b, ldb);
+                    magma_dgemm(Notrans, Trans, m, i, nb, neg_one, d_x+i*m, m, A+i*lda, lda, one, b, ldb);
                 }
             }
         }
@@ -473,7 +474,7 @@ void magmablas_dtrsm(
                 /* the lower case */
                 /* handle the first block seperately with alpha */
                 int nn = min(nb, n);
-                cublasDgemm(Notrans, Conjtrans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
+                magma_dgemm(Notrans, Conjtrans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
 
                 if (nb >= n) {
                     dtrsm_copy();
@@ -482,17 +483,17 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Conjtrans, m, n-nb, nb, neg_one, d_x, m, A+nb, lda, alpha, b+nb*ldb, ldb);
+                magma_dgemm(Notrans, Conjtrans, m, n-nb, nb, neg_one, d_x, m, A+nb, lda, alpha, b+nb*ldb, ldb);
 
                 /* the rest blocks */
                 for( i=nb; i < n; i += nb ) {
                     nn = min(nb, n-i);
-                    cublasDgemm(Notrans, Conjtrans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                    magma_dgemm(Notrans, Conjtrans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                     if (i+nb >= n)
                         break;
 
-                    cublasDgemm(Notrans, Conjtrans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   
+                    magma_dgemm(Notrans, Conjtrans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   
                                                 A+i*lda+nb+i, lda, one, b+(i+nb)*ldb, ldb);
                 }
             }
@@ -501,7 +502,7 @@ void magmablas_dtrsm(
                 /* handle the first block seperately with alpha */
                 int nn = (n % nb == 0) ? nb : (n % nb);
                 i = n-nn;
-                cublasDgemm(Notrans, Conjtrans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                magma_dgemm(Notrans, Conjtrans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                 if (i-nb < 0) {
                     dtrsm_copy();
@@ -510,16 +511,16 @@ void magmablas_dtrsm(
                     return;
                 }
 
-                cublasDgemm(Notrans, Conjtrans, m, i, nn, neg_one, d_x+i*m, m, A+i*lda, lda, alpha, b, ldb);
+                magma_dgemm(Notrans, Conjtrans, m, i, nn, neg_one, d_x+i*m, m, A+i*lda, lda, alpha, b, ldb);
 
                 /* the rest blocks */
                 for( i=n-nn-nb; i >= 0; i -= nb ) {
-                    cublasDgemm(Notrans, Conjtrans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                    magma_dgemm(Notrans, Conjtrans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
 
                     if (i-nb < 0)
                         break;
 
-                    cublasDgemm(Notrans, Conjtrans, m, i, nb, neg_one, d_x+i*m, m, A+i*lda, lda, one, b, ldb);
+                    magma_dgemm(Notrans, Conjtrans, m, i, nb, neg_one, d_x+i*m, m, A+i*lda, lda, one, b, ldb);
                 }
             }
         }

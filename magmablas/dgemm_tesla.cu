@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal d -> s
 */
@@ -158,8 +158,7 @@ magmablas_dgemm_tesla(
                         C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
             }
             else {
-                cublasDgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_dgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
@@ -178,8 +177,7 @@ magmablas_dgemm_tesla(
                         C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
             }
             else {
-                cublasDgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_dgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
@@ -200,8 +198,7 @@ magmablas_dgemm_tesla(
                         C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
             }
             else {
-                cublasDgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_dgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
@@ -220,8 +217,7 @@ magmablas_dgemm_tesla(
                         C, B, A, n, m, k, ldb, lda, ldc, alpha, beta );
             }
             else {
-                cublasDgemm(
-                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                magma_dgemm(transA, transB,
                     m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }

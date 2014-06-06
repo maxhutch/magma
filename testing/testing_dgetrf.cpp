@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgetrf.cpp normal z -> d, Fri Apr 25 15:06:10 2014
+       @generated from testing_zgetrf.cpp normal z -> d, Fri May 30 10:41:26 2014
        @author Mark Gates
 */
 // includes, system
@@ -228,13 +228,13 @@ int main( int argc, char** argv)
             }
             if ( opts.check == 2 ) {
                 error = get_residual( M, N, h_A, lda, ipiv );
-                printf("   %8.2e  %s\n", error, (error < tol ? "ok" : "failed"));
-                status |= ! (error < tol);
+                printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
             }
             else if ( opts.check ) {
                 error = get_LU_error( M, N, h_A, lda, ipiv );
-                printf("   %8.2e  %s\n", error, (error < tol ? "ok" : "failed"));
-                status |= ! (error < tol);
+                printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
             }
             else {
                 printf("     ---   \n");

@@ -67,6 +67,10 @@ MAGMA README FILE
   drivers testing different routines. These drivers are also useful
   as examples on how to use MAGMA, as well as to benchmark the performance.
 
+  The testers print "ok" or "failed" for whether the error passes the tolerance.
+  In some cases, the tolerance may be too strict, so a test may "fail" even
+  though it is only slightly above the tolerance.
+
 * To TUNE MAGMA, you can modify the blocking factors for the algorithms of
   interest in file 'control/get_nb.cpp'. The default values are tuned for
   general Tesla (1.x), Fermi (2.x), and Kepler (3.x) GPUs. If you have 

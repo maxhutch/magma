@@ -127,7 +127,7 @@ Functions</h2></td></tr>
  <a href="#gaa77dc49cec899e83bf48903797fd660e">More...</a><br/></td></tr>
 <tr class="separator:gaa77dc49cec899e83bf48903797fd660e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1fafc6db2511871f3bb542607da02677"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga1fafc6db2511871f3bb542607da02677">magmablas_clag2z</a> (magma_int_t m, magma_int_t n, const magmaFloatComplex *SA, magma_int_t ldsa, magmaDoubleComplex *A, magma_int_t lda, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga1fafc6db2511871f3bb542607da02677"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLAG2Z converts a SINGLE PRECISION matrix, SA, to a DOUBLE PRECISION matrix, A.  <a href="#ga1fafc6db2511871f3bb542607da02677">More...</a><br/></td></tr>
+<tr class="memdesc:ga1fafc6db2511871f3bb542607da02677"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLAG2Z converts a single-complex matrix, SA, to a double-complex matrix, A.  <a href="#ga1fafc6db2511871f3bb542607da02677">More...</a><br/></td></tr>
 <tr class="separator:ga1fafc6db2511871f3bb542607da02677"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga789b77cda1ebc1775a3e1407ae2f9b3b"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga789b77cda1ebc1775a3e1407ae2f9b3b">magmablas_clange</a> (magma_norm_t norm, magma_int_t m, magma_int_t n, const magmaFloatComplex *A, magma_int_t lda, float *dwork)</td></tr>
 <tr class="memdesc:ga789b77cda1ebc1775a3e1407ae2f9b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLANGE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a real matrix A.  <a href="#ga789b77cda1ebc1775a3e1407ae2f9b3b">More...</a><br/></td></tr>
@@ -515,7 +515,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>CLAG2Z converts a SINGLE PRECISION matrix, SA, to a DOUBLE PRECISION matrix, A. </p>
+<p>CLAG2Z converts a single-complex matrix, SA, to a double-complex matrix, A. </p>
 <p>Note that while it is possible to overflow while converting from double to single, it is not possible to overflow when converting from single to double.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -652,7 +652,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CLANHE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a complex Hermitian matrix A. </p>
-<p>CLANHE = ( max(abs(A(i,j))), NORM = 'M' or 'm' ( ( norm1(A), NORM = '1', 'O' or 'o' ** supported only for CUDA_ARCH &gt;= 200 ( ( normI(A), NORM = 'I' or 'i' ** supported only for CUDA_ARCH &gt;= 200 ( ( normF(A), NORM = 'F', 'f', 'E' or 'e' ** not yet supported</p>
+<p>CLANHE = ( max(abs(A(i,j))), NORM = 'M' or 'm' ( ( norm1(A), NORM = '1', 'O' or 'o' ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || <b>CUDA_ARCH</b> &gt;= 200) ( ( normI(A), NORM = 'I' or 'i' ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || <b>CUDA_ARCH</b> &gt;= 200) ( ( normF(A), NORM = 'F', 'f', 'E' or 'e' ** not yet supported</p>
 <p>where norm1 denotes the one norm of a matrix (maximum column sum), normI denotes the infinity norm of a matrix (maximum row sum) and normF denotes the Frobenius norm of a matrix (square root of sum of squares). Note that max(abs(A(i,j))) is not a consistent matrix norm.</p>
 <p>Returns CLANHE &lt; 0: if CLANHE = -i, the i-th argument had an illegal value.</p>
 <h2>Arguments: </h2>
@@ -667,7 +667,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0. When N = 0, CLANHE is set to zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>COMPLEX array on the GPU, dimension (LDA,N) The Hermitian matrix A. If UPLO = MagmaUpper, the leading n by n upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading n by n lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. Note that the imaginary parts of the diagonal elements need not be set and are assumed to be zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(N,1).</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) REAL array on the GPU, dimension (MAX(1,LWORK)), where LWORK &gt;= N. NOTE: this is different than LAPACK, where WORK is only required for norm1 and normI. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) REAL array on the GPU, dimension (MAX(1,LWORK)), where LWORK &gt;= N. NOTE: this is different than LAPACK, where WORK is required only for norm1 and normI. Here max-norm also requires work. </td></tr>
   </table>
   </dd>
 </dl>
@@ -873,7 +873,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:48 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:17 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

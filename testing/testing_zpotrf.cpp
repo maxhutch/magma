@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
 */
@@ -91,10 +91,10 @@ int main( int argc, char** argv)
                 blasf77_zaxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
                 error = lapackf77_zlange("f", &N, &N, h_R, &lda, work) / error;
                 
-                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
+                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
                        error, (error < tol ? "ok" : "failed") );
-                status |= ! (error < tol);
+                status += ! (error < tol);
             }
             else {
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
        
@@ -244,7 +244,7 @@ int main( int argc, char** argv)
                     
                     //printf( "R ="  ); magma_zprint( M, N, hR, lda );
                     if (firstprint == 0) {
-                        printf( "%5d %5d %5d %5d   %7.1f (%7.4f)   %7.1f (%7.4f)   %7.1f (%7.4f)   %8.2e  %s\n",
+                        printf( "%5d %5d %5d %5d   %7.1f (%7.4f)   %7.1f (%7.4f)   %7.1f (%7.4f)   %8.2e   %s\n",
                                 (int) M, (int) N, (int) opts.nb, (int) offset,
                                 cpu_perf, cpu_time,
                                 gpu_perf, gpu_time,
@@ -252,10 +252,10 @@ int main( int argc, char** argv)
                                 error, (error < tol ? "ok" : "failed") );
                     }
                     else {
-                        printf( "%89s  %8.2e  %s\n", " ",
+                        printf( "%89s  %8.2e   %s\n", " ",
                                 error, (error < tol ? "ok" : "failed") );
                     }
-                    status |= ! (error < tol);
+                    status += ! (error < tol);
                     firstprint =1;
                 }
             } else {

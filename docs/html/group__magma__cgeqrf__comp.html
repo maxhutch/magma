@@ -1695,8 +1695,8 @@ Functions</h2></td></tr>
 <pre class="fragment">                          SIDE = MagmaLeft   SIDE = MagmaRight
 TRANS = MagmaNoTrans:     Q * C              C * Q
 TRANS = MagmaConjTrans:   Q**H * C           C * Q**H
-</pre><p>where Q is a complex orthogonal matrix defined as the product of k elementary reflectors </p>
-<pre class="fragment">  Q = H(1) H(2) . . . H(k)
+</pre><p>where Q is a complex unitary matrix defined as the product of k elementary reflectors </p>
+<pre class="fragment">Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by CGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1718,8 +1718,8 @@ TRANS = MagmaConjTrans:   Q**H * C           C * Q**H
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>COMPLEX array, dimension (K) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by CGEQRF.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>COMPLEX array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldc</td><td>INTEGER The leading dimension of the array C. LDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(0) returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance LWORK &gt;= N*NB if SIDE = MagmaLeft, and LWORK &gt;= M*NB if SIDE = MagmaRight, where NB is the optimal blocksize. <br/>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance if SIDE = MagmaLeft, LWORK &gt;= N*NB; if SIDE = MagmaRight, LWORK &gt;= M*NB, where NB is the optimal blocksize. <br/>
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1826,7 +1826,7 @@ TRANS = MagmaConjTrans:   Q**H * C           C * Q**H
 <pre class="fragment">                        SIDE = MagmaLeft   SIDE = MagmaRight
 TRANS = MagmaNoTrans:   Q * C              C * Q
 TRANS = MagmaTrans:     Q**H * C           C * Q**H
-</pre><p>where Q is a complex orthogonal matrix defined as the product of k elementary reflectors </p>
+</pre><p>where Q is a complex unitary matrix defined as the product of k elementary reflectors </p>
 <pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by CGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -1968,7 +1968,7 @@ TRANS = MagmaTrans:     Q**H * C           C * Q**H
 <pre class="fragment">                        SIDE = MagmaLeft     SIDE = MagmaRight
 TRANS = MagmaNoTrans:   Q * C                C * Q
 TRANS = MagmaTrans:     Q**H * C             C * Q**H
-</pre><p>where Q is a complex orthogonal matrix defined as the product of k elementary reflectors </p>
+</pre><p>where Q is a complex unitary matrix defined as the product of k elementary reflectors </p>
 <pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by CGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -2108,7 +2108,7 @@ TRANS = MagmaTrans:     Q**H * C             C * Q**H
 <pre class="fragment">                SIDE = MagmaLeft     SIDE = MagmaRight
 TRANS = MagmaNoTrans:      Q * C          C * Q
 TRANS = MagmaTrans:      Q**H * C       C * Q**H
-</pre><p>where Q is a complex orthogonal matrix defined as the product of k elementary reflectors </p>
+</pre><p>where Q is a complex unitary matrix defined as the product of k elementary reflectors </p>
 <pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by CGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -2151,7 +2151,7 @@ TRANS = MagmaTrans:      Q**H * C       C * Q**H
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:43 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:09 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

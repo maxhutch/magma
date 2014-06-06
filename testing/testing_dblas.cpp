@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zblas.cpp normal z -> d, Fri Apr 25 15:06:07 2014
+       @generated from testing_zblas.cpp normal z -> d, Fri May 30 10:41:22 2014
        @author Mark Gates
        
        These tests ensure that the MAGMA wrappers around CUBLAS calls are
@@ -160,7 +160,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &size, &ione, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DGEMV( m, n ) / 1e9;
-            printf( "dgemv( %c )        diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dgemv( %c )        diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_trans_const(trans[ia]), error, gflops/t1, gflops/t2 );
         }
         printf( "\n" );
@@ -189,7 +189,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &m, &ione, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYMV( m ) / 1e9;
-            printf( "dsymv( %c )        diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dsymv( %c )        diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_uplo_const(uplo[iu]), error, gflops/t1, gflops/t2 );
         }
         printf( "\n" );
@@ -230,7 +230,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &m, &ione, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DTRSM( MagmaLeft, m, 1 ) / 1e9;
-            printf( "dtrsv( %c, %c, %c )  diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dtrsv( %c, %c, %c )  diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]), lapacke_diag_const(diag[id]),
                     error, gflops/t1, gflops/t2 );
         }}}
@@ -265,7 +265,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &m, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DGEMM( m, n, k ) / 1e9;
-            printf( "dgemm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dgemm( %c, %c )     diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_trans_const(trans[ia]), lapacke_trans_const(trans[ib]),
                     error, gflops/t1, gflops/t2 );
         }}
@@ -297,7 +297,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &m, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYMM( side[is], m, n ) / 1e9;
-            printf( "dsymm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dsymm( %c, %c )     diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_side_const(side[is]), lapacke_uplo_const(uplo[iu]),
                     error, gflops/t1, gflops/t2 );
         }}
@@ -328,7 +328,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYRK( k, n ) / 1e9;
-            printf( "dsyrk( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dsyrk( %c, %c )     diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
                     error, gflops/t1, gflops/t2 );
         }}
@@ -360,7 +360,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYR2K( k, n ) / 1e9;
-            printf( "dsyr2k( %c, %c )    diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dsyr2k( %c, %c )    diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
                     error, gflops/t1, gflops/t2 );
         }}
@@ -397,7 +397,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DTRMM( side[is], m, n ) / 1e9;
-            printf( "dtrmm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dtrmm( %c, %c )     diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
                     error, gflops/t1, gflops/t2 );
         }}}}
@@ -432,7 +432,7 @@ int main( int argc, char** argv )
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DTRSM( side[is], m, n ) / 1e9;
-            printf( "dtrsm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
+            printf( "dtrsm( %c, %c )     diff %.2g,  Gflop/s %7.2f, %7.2f\n",
                     lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
                     error, gflops/t1, gflops/t2 );
         }}}}
@@ -460,5 +460,7 @@ int main( int argc, char** argv )
     }
     
     TESTING_FINALIZE();
-    return 0;
+    
+    int status = (total_error != 0.);
+    return status;
 }

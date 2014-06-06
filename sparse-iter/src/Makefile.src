@@ -1,0 +1,17 @@
+CHDR = \
+
+
+DHDR = \
+
+
+SHDR = \
+
+
+CSRC = \
+ccg.cpp ccg_merge.cpp cbicgstab.cpp cbicgstab_merge.cpp cbicgstab_merge2.cpp citerref.cpp cgmres.cpp cjacobi.cpp cbaiter.cpp cpcg.cpp cpbicgstab.cpp cpgmres.cpp clobpcg.cpp cbcsrlu.cpp ccuilu.cpp cbailu.cpp cpastix.cpp magma_c_precond_wrapper.cpp cresidual.cpp
+
+DSRC = \
+dcg.cpp dcg_merge.cpp dbicgstab.cpp dbicgstab_merge.cpp dbicgstab_merge2.cpp diterref.cpp dgmres.cpp djacobi.cpp dbaiter.cpp dpcg.cpp dpbicgstab.cpp dpgmres.cpp dlobpcg.cpp dbcsrlu.cpp dcuilu.cpp dbailu.cpp dpastix.cpp magma_d_precond_wrapper.cpp dresidual.cpp
+
+SSRC = \
+scg.cpp scg_merge.cpp sbicgstab.cpp sbicgstab_merge.cpp sbicgstab_merge2.cpp siterref.cpp sgmres.cpp sjacobi.cpp sbaiter.cpp spcg.cpp spbicgstab.cpp spgmres.cpp slobpcg.cpp sbcsrlu.cpp scuilu.cpp sbailu.cpp spastix.cpp magma_s_precond_wrapper.cpp sresidual.cpp

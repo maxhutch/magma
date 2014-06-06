@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgeadd_batched.cpp normal z -> s, Fri Apr 25 15:06:06 2014
+       @generated from testing_zgeadd_batched.cpp normal z -> s, Fri May 30 10:41:22 2014
        @author Mark Gates
 
 */
@@ -41,16 +41,19 @@ int main( int argc, char** argv)
     magma_int_t M, N, mb, nb, size, lda, ldda, mstride, nstride, ntile;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+
+    float tol = opts.tolerance * lapackf77_slamch("E");
     mb = (opts.nb == 0 ? 32 : opts.nb);
     nb = (opts.nb == 0 ? 64 : opts.nb);
     mstride = 2*mb;
     nstride = 3*nb;
     
     printf("mb=%d, nb=%d, mstride=%d, nstride=%d\n", (int) mb, (int) nb, (int) mstride, (int) nstride );
-    printf("    M     N ntile   CPU GFlop/s (sec)   GPU GFlop/s (sec)   error   \n");
+    printf("    M     N ntile   CPU GFlop/s (ms)    GPU GFlop/s (ms)    error   \n");
     printf("====================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -125,9 +128,11 @@ int main( int argc, char** argv)
             blasf77_saxpy(&size, &c_neg_one, h_A, &ione, h_B, &ione);
             error = lapackf77_slange("f", &M, &N, h_B, &lda, work) / error;
 
-            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
+            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                    (int) M, (int) N, (int) ntile,
-                   cpu_perf, cpu_time, gpu_perf, gpu_time, error );
+                   cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
+                   error, (error < tol ? "ok" : "failed"));
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_B );
@@ -146,5 +151,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

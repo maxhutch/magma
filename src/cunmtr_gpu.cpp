@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmtr_gpu.cpp normal z -> c, Fri Apr 25 15:05:44 2014
+       @generated from zunmtr_gpu.cpp normal z -> c, Fri May 30 10:41:03 2014
 
 */
 #include "common_magma.h"
@@ -22,7 +22,7 @@
     TRANS = MagmaNoTrans:      Q * C          C * Q
     TRANS = MagmaTrans:      Q**H * C       C * Q**H
 
-    where Q is a complex orthogonal matrix of order nq, with nq = m if
+    where Q is a complex unitary matrix of order nq, with nq = m if
     SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
     nq-1 elementary reflectors, as returned by CHETRD:
 

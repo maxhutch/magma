@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
     @author Stan Tomov
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_dsygvd.cpp normal d -> s, Fri Apr 25 15:06:13 2014
+    @generated from testing_dsygvd.cpp normal d -> s, Fri May 30 10:41:29 2014
 
 */
 
@@ -51,6 +51,7 @@ int main( int argc, char** argv)
     //magma_int_t izero    = 0;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -63,6 +64,9 @@ int main( int argc, char** argv)
         opts.jobz = MagmaVec;
     }
     
+    printf("using: itype = %d, jobz = %s, uplo = %s\n",
+           (int) opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo));
+
     printf("    N   CPU Time (sec)   GPU Time(sec)\n");
     printf("======================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -232,17 +236,23 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.check ) {
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if ( opts.itype==1 )
-                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e%s\n", result[0], (result[0] < tol ? "" : "  failed") );
-                else if ( opts.itype==2 )
-                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result[0], (result[0] < tol ? "" : "  failed") );
-                else if ( opts.itype==3 )
-                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result[0], (result[0] < tol ? "" : "  failed") );
-                if ( opts.itype==1 || opts.itype==2 )
-                    printf("(2)    | I -   Z Z' B | /  N         = %8.2e%s\n", result[1], (result[1] < tol ? "" : "  failed") );
-                else
-                    printf("(2)    | B -  Z Z' | / (|B| N)       = %8.2e%s\n", result[1], (result[1] < tol ? "" : "  failed") );
-                printf(    "(3)    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e%s\n\n", result[2], (result[2] < tolulp ? "" : "  failed") );
+                if ( opts.itype==1 ) {
+                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed") );
+                }
+                else if ( opts.itype==2 ) {
+                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed") );
+                }
+                else if ( opts.itype==3 ) {
+                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed") );
+                }
+                if ( opts.itype==1 || opts.itype==2 ) {
+                    printf("(2)    | I -   Z Z' B | /  N         = %8.2e   %s\n",   result[1], (result[1] < tol    ? "ok" : "failed") );
+                }
+                else {
+                    printf("(2)    | B -  Z Z' | / (|B| N)       = %8.2e   %s\n",   result[1], (result[1] < tol    ? "ok" : "failed") );
+                }
+                printf(    "(3)    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e   %s\n\n", result[2], (result[2] < tolulp ? "ok" : "failed") );
+                status += ! (result[0] < tol && result[1] < tol && result[2] < tolulp);
             }
             
             TESTING_FREE_CPU( h_A   );
@@ -262,5 +272,5 @@ int main( int argc, char** argv)
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from csymv_tesla.cu normal c -> s, Fri Apr 25 15:05:24 2014
+       @generated from csymv_tesla.cu normal c -> s, Fri May 30 10:40:43 2014
 
 */
 #include "common_magma.h"
@@ -793,7 +793,7 @@ magmablas_ssymv_tesla_work(
         #if defined(PRECISION_z) || defined(PRECISION_c)
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         #else
-        cublasSsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_ssymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {
@@ -926,7 +926,7 @@ magmablas_ssymv_tesla(
         #if defined(PRECISION_z) || defined(PRECISION_c)
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         #else
-        cublasSsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_ssymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {

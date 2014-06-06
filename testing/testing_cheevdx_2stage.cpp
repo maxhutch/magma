@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_zheevdx_2stage.cpp normal z -> c, Fri Apr 25 15:06:13 2014
+    @generated from testing_zheevdx_2stage.cpp normal z -> c, Fri May 30 10:41:28 2014
 
 */
 
@@ -213,7 +213,7 @@ int main( int argc, char** argv)
                                 &info);
                 info_solution = check_solution(N, w2, w1, eps);
               
-                if ( (info_solution == 0) & (info_ortho == 0) & (info_reduction == 0) ) {
+                if ( (info_solution == 0) && (info_ortho == 0) && (info_reduction == 0) ) {
                     printf("  ok\n");
                     //printf("***************************************************\n");
                     //printf(" ---- TESTING CHEEVD ...................... PASSED !\n");
@@ -221,7 +221,7 @@ int main( int argc, char** argv)
                 }
                 else {
                     printf("  failed\n");
-                    status |= 1;
+                    status += 1;
                     //printf("************************************************\n");
                     //printf(" - TESTING CHEEVD ... FAILED !\n");
                     //printf("************************************************\n");

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zlatrd.cpp normal z -> c, Fri Apr 25 15:05:47 2014
+       @generated from zlatrd.cpp normal z -> c, Fri May 30 10:41:05 2014
 
 */
 #include "common_magma.h"

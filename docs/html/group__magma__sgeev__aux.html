@@ -627,9 +627,9 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix T. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">T</td><td>COMPLEX*16 array, dimension (LDT,N) The triangular matrix T. The leading n by n upper triangular part of the array T contains the upper triangular matrix, and the strictly lower triangular part of T is not referenced.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">T</td><td>COMPLEX_16 array, dimension (LDT,N) The triangular matrix T. The leading n by n upper triangular part of the array T contains the upper triangular matrix, and the strictly lower triangular part of T is not referenced.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldt</td><td>INTEGER The leading dimension of the array T. LDT &gt;= max (1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">x</td><td>COMPLEX*16 array, dimension (LDX,1) or (LDX,2). On exit, X is overwritten by the solution vector x. If LAMBDAI .EQ. 0, X is real and has dimension (LDX,1). If LAMBDAI .NE. 0, X is complex and has dimension (LDX,2); the real part is in X(:,0), the imaginary part in X(:,1).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">x</td><td>COMPLEX_16 array, dimension (LDX,1) or (LDX,2). On exit, X is overwritten by the solution vector x. If LAMBDAI .EQ. 0, X is real and has dimension (LDX,1). If LAMBDAI .NE. 0, X is complex and has dimension (LDX,2); the real part is in X(:,0), the imaginary part in X(:,1).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldx</td><td>INTEGER The leading dimension of the array X. LDX &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">cnorm</td><td>(input) REAL array, dimension (N) CNORM(j) contains the norm of the off-diagonal part of the j-th column of T. If TRANS = MagmaNoTrans, CNORM(j) must be greater than or equal to the infinity-norm, and if TRANS = MagmaTrans or MagmaConjTrans, CNORM(j) must be greater than or equal to the 1-norm.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -648,7 +648,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:44 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

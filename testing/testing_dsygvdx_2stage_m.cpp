@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_zhegvdx_2stage_m.cpp normal z -> d, Fri Apr 25 15:06:13 2014
+    @generated from testing_zhegvdx_2stage_m.cpp normal z -> d, Fri May 30 10:41:29 2014
 
 */
 
@@ -53,9 +53,11 @@ int main( int argc, char** argv)
     double c_neg_one = MAGMA_D_NEG_ONE;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+    
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
     magma_range_t range = MagmaRangeAll;
@@ -72,7 +74,7 @@ int main( int argc, char** argv)
            lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
            (int) opts.check, opts.fraction);
     
-    printf("  N     M   nr GPU     MGPU Time(s) \n");
+    printf("    N     M   ngpu   MGPU Time (sec)\n");
     printf("====================================\n");
     magma_int_t threads = magma_get_parallel_numthreads();
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -202,16 +204,21 @@ int main( int argc, char** argv)
             // ===================================================================
             // Print execution time
             // ===================================================================
-            printf("%5d %5d %2d    %6.2f\n",
+            printf("%5d %5d   %4d   %7.2f\n",
                    (int) N, (int) m1, (int) opts.ngpu, mgpu_time);
             if ( opts.check ) {
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if (opts.itype==1)
-                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
-                else if (opts.itype==2)
-                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
-                else if (opts.itype==3)
-                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
+                if (opts.itype==1) {
+                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
+                }
+                else if (opts.itype==2) {
+                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
+                }
+                else if (opts.itype==3) {
+                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
+                }
+                printf("\n");
+                status += ! (result < tol);
             }
 
             TESTING_FREE_PIN( h_A    );
@@ -236,6 +243,5 @@ int main( int argc, char** argv)
 
     /* Shutdown */
     TESTING_FINALIZE_MGPU();
-
-    return 0;
+    return status;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
 */
@@ -95,7 +95,7 @@ int main( int argc, char** argv)
             
             Rnorm = lapackf77_zlange("I", &N, &opts.nrhs, h_B, &ldb, work);
             error = Rnorm/(N*Anorm*Xnorm);
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             /* ====================================================================
                Performs operation using LAPACK
@@ -109,12 +109,12 @@ int main( int argc, char** argv)
                     printf("lapackf77_zposv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 
-                printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
+                printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int) N, (int) opts.nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,
                         error, (error < tol ? "ok" : "failed"));
             }
             else {
-                printf( "%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e  %s\n",
+                printf( "%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int) N, (int) opts.nrhs, gpu_perf, gpu_time,
                         error, (error < tol ? "ok" : "failed"));
             }

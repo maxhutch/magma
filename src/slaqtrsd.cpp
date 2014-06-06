@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
        @author Mark Gates
-       @generated from dlaqtrsd.cpp normal d -> s, Fri Apr 25 15:05:52 2014
+       @generated from dlaqtrsd.cpp normal d -> s, Fri May 30 10:41:09 2014
 */
 #include "common_magma.h"
 #include <cblas.h>
@@ -57,7 +57,7 @@
             The order of the matrix T.  N >= 0.
 
     @param[in]
-    T       COMPLEX*16 array, dimension (LDT,N)
+    T       COMPLEX_16 array, dimension (LDT,N)
             The triangular matrix T.  The leading n by n
             upper triangular part of the array T contains the upper
             triangular matrix, and the strictly lower triangular part of
@@ -68,7 +68,7 @@
             The leading dimension of the array T.  LDT >= max (1,N).
 
     @param[out]
-    x       COMPLEX*16 array, dimension (LDX,1) or (LDX,2).
+    x       COMPLEX_16 array, dimension (LDX,1) or (LDX,2).
             On exit, X is overwritten by the solution vector x.
             If LAMBDAI .EQ. 0, X is real    and has dimension (LDX,1).
             If LAMBDAI .NE. 0, X is complex and has dimension (LDX,2);

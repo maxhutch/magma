@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -22,6 +22,8 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
+#define PRECISION_z
+
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zlanhe
 */
@@ -39,7 +41,7 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     double      error, norm_magma, norm_lapack;
     magma_int_t status = 0;
-    bool        not_supported;
+    bool mkl_warning = false;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -49,10 +51,12 @@ int main( int argc, char** argv)
     magma_uplo_t uplo[] = { MagmaLower, MagmaUpper };
     magma_norm_t norm[] = { MagmaInfNorm, MagmaOneNorm, MagmaMaxNorm };
     
-    // inf-norm not supported on Tesla (CUDA arch 1.x)
+    // Double-Complex inf-norm not supported on Tesla (CUDA arch 1.x)
+#if defined(PRECISION_z)
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
-        printf("!!!! NOTE: %s and %s norm are not supported on CUDA architecture %d (less than 200).\n"
+        printf("!!!! NOTE: Double-Complex %s and %s norm are not supported\n"
+               "!!!! on CUDA architecture %d; requires arch >= 200.\n"
                "!!!! It should report \"parameter number 1 had an illegal value\" below.\n\n",
                MagmaInfNormStr, MagmaOneNormStr, (int) arch );
         for( int inorm = 0; inorm < 2; ++inorm ) {
@@ -68,20 +72,14 @@ int main( int argc, char** argv)
         }}
         printf( "...return values %s\n\n", (status == 0 ? "ok" : "failed") );
     }
+#endif
     
-    printf("    N   norm   uplo    CPU GByte/s (ms)    GPU GByte/s (ms)    error   \n");
+    printf("    N   norm   uplo   CPU GByte/s (ms)    GPU GByte/s (ms)    error   \n");
     printf("=======================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int inorm = 0; inorm < 3; ++inorm ) {
       for( int iuplo = 0; iuplo < 2; ++iuplo ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            not_supported = ((arch < 200) &&
-                ( norm[inorm] == MagmaInfNorm ||
-                  norm[inorm] == MagmaOneNorm    ));
-            if ( not_supported ) {
-                continue;
-            }
-            
             N   = opts.nsize[itest];
             lda = N;
             n2  = lda*N;
@@ -98,6 +96,10 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_zlarnv( &idist, ISEED, &n2, h_A );
             //magma_zmake_hermitian( N, h_A, lda );
+            // make diagonal real -- according to docs, should NOT be necesary
+            //for( int i=0; i < N; ++i ) {
+            //    h_A[i + i*lda] = MAGMA_Z_MAKE( MAGMA_Z_REAL( h_A[i + i*lda] ), 0 );
+            //}
             magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
             
             /* ====================================================================
@@ -107,6 +109,11 @@ int main( int argc, char** argv)
             norm_magma = magmablas_zlanhe( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gbytes / gpu_time;
+            if (norm_magma == -1) {
+                printf( "%5d   %4c   skipped because it isn't supported on this GPU\n",
+                        (int) N, lapacke_norm_const( norm[inorm] ));
+                continue;
+            }
             if (norm_magma < 0)
                 printf("magmablas_zlanhe returned error %f: %s.\n",
                        norm_magma, magma_strerror( (int) norm_magma ));
@@ -127,19 +134,31 @@ int main( int argc, char** argv)
             
             /* =====================================================================
                Check the result compared to LAPACK
+               Note: MKL (11.1.0) has bug for uplo=Lower with multiple threads.
+               Try with $MKL_NUM_THREADS = 1.
                =================================================================== */
-            if ( norm[inorm] == MagmaMaxNorm )
-                error = fabs( norm_magma - norm_lapack );
-            else
-                error = fabs( norm_magma - norm_lapack ) / norm_lapack;
+            error = fabs( norm_magma - norm_lapack ) / norm_lapack;
+            double tol2 = tol;
+            if ( norm[inorm] == MagmaMaxNorm ) {
+                // max-norm depends on only one element, so for Real precisions,
+                // MAGMA and LAPACK should exactly agree (tol2 = 0),
+                // while Complex precisions incur roundoff in cuCabs.
+                #if defined(PRECISION_s) || defined(PRECISION_d)
+                tol2 = 0;
+                #endif
+            }
             
-            printf("%5d   %4s   %5s   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
+            if ( error > tol2 && norm[inorm] == MagmaInfNorm && uplo[iuplo] == MagmaLower ) {
+                mkl_warning = true;
+            }
+            
+            printf("%5d   %4c   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %s\n",
                    (int) N,
-                   lapack_norm_const( norm[inorm] ),
-                   lapack_uplo_const( uplo[iuplo] ),
+                   lapacke_norm_const( norm[inorm] ),
+                   lapacke_uplo_const( uplo[iuplo] ),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
-                   error, (error < tol ? "ok" : "failed") );
-            status |= ! (error < tol);
+                   error, (error <= tol2 ? "ok" : "failed") );
+            status += ! (error <= tol2);
             
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_work );
@@ -154,7 +173,12 @@ int main( int argc, char** argv)
       }} // end iuplo, inorm, iter
       printf( "\n" );
     }
-
+    
+    if ( mkl_warning ) {
+        printf("* Some versions of MKL (e.g., 11.1.0) have a bug in zlanhe with uplo=L\n"
+               "  and multiple threads. Try again with MKL_NUM_THREADS=1.\n" );
+    }
+    
     TESTING_FINALIZE();
     return status;
 }

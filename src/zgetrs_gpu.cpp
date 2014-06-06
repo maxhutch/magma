@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 
@@ -14,7 +14,7 @@
     Purpose
     -------
     Solves a system of linear equations
-      A * X = B  or  A' * X = B
+      A * X = B,  A**T * X = B,  or  A**H * X = B
     with a general N-by-N matrix A using the LU factorization computed by ZGETRF_GPU.
 
     Arguments
@@ -22,9 +22,9 @@
     @param[in]
     trans   magma_trans_t
             Specifies the form of the system of equations:
-      -     = MagmaNoTrans:    A * X = B  (No transpose)
-      -     = MagmaTrans:      A'* X = B  (Transpose)
-      -     = MagmaConjTrans:  A'* X = B  (Conjugate transpose = Transpose)
+      -     = MagmaNoTrans:    A    * X = B  (No transpose)
+      -     = MagmaTrans:      A**T * X = B  (Transpose)
+      -     = MagmaConjTrans:  A**H * X = B  (Conjugate transpose)
 
     @param[in]
     n       INTEGER
@@ -127,7 +127,7 @@ magma_zgetrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
     } else {
         inc = -1;
 
-        /* Solve A' * X = B. */
+        /* Solve A**T * X = B  or  A**H * X = B. */
         if ( nrhs == 1) {
             magma_ztrsv(MagmaUpper, trans, MagmaNonUnit, n, dA, ldda, dB, 1 );
             magma_ztrsv(MagmaLower, trans, MagmaUnit,    n, dA, ldda, dB, 1 );

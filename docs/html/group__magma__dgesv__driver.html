@@ -119,7 +119,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga25f2174d206d5410278cb8e034d3b8a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a general N-by-N matrix and X and B are N-by-NRHS matrices.  <a href="#ga25f2174d206d5410278cb8e034d3b8a8">More...</a><br/></td></tr>
 <tr class="separator:ga25f2174d206d5410278cb8e034d3b8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8c48046572fb5ffc468abe507327c5c3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__driver.html#ga8c48046572fb5ffc468abe507327c5c3">magma_dsgesv_gpu</a> (magma_trans_t trans, magma_int_t n, magma_int_t nrhs, double *dA, magma_int_t ldda, magma_int_t *ipiv, magma_int_t *dipiv, double *dB, magma_int_t lddb, double *dX, magma_int_t lddx, double *dworkd, float *dworks, magma_int_t *iter, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga8c48046572fb5ffc468abe507327c5c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">DSGESV computes the solution to a real system of linear equations A * X = B or A' * X = B where A is an N-by-N matrix and X and B are N-by-NRHS matrices.  <a href="#ga8c48046572fb5ffc468abe507327c5c3">More...</a><br/></td></tr>
+<tr class="memdesc:ga8c48046572fb5ffc468abe507327c5c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">DSGESV computes the solution to a real system of linear equations A * X = B, A**T * X = B, or A**T * X = B, where A is an N-by-N matrix and X and B are N-by-NRHS matrices.  <a href="#ga8c48046572fb5ffc468abe507327c5c3">More...</a><br/></td></tr>
 <tr class="separator:ga8c48046572fb5ffc468abe507327c5c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -390,7 +390,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>DSGESV computes the solution to a real system of linear equations A * X = B or A' * X = B where A is an N-by-N matrix and X and B are N-by-NRHS matrices. </p>
+<p>DSGESV computes the solution to a real system of linear equations A * X = B, A**T * X = B, or A**T * X = B, where A is an N-by-N matrix and X and B are N-by-NRHS matrices. </p>
 <p>DSGESV first attempts to factorize the matrix in real SINGLE PRECISION and use this factorization within an iterative refinement procedure to produce a solution with real DOUBLE PRECISION norm-wise backward error quality (see below). If the approach fails the method switches to a real DOUBLE PRECISION factorization and solve.</p>
 <p>The iterative refinement is not going to be a winning strategy if the ratio real SINGLE PRECISION performance over real DOUBLE PRECISION performance is too small. A reasonable strategy should take the number of right-hand sides and the size of the matrix into account. This might be done with a call to ILAENV in the future. Up to now, we always try iterative refinement.</p>
 <p>The iterative refinement process is stopped if ITER &gt; ITERMAX or for all the RHS we have: RNRM &lt; SQRT(N)*XNRM*ANRM*EPS*BWDMAX where o ITER is the number of the current iteration in the iterative refinement process o RNRM is the infinity-norm of the residual o XNRM is the infinity-norm of the solution o ANRM is the infinity-operator-norm of the matrix A o EPS is the machine epsilon returned by DLAMCH('Epsilon') The value ITERMAX and BWDMAX are fixed to 30 and 1.0D+00 respectively.</p>
@@ -398,8 +398,8 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t Specifies the form of the system of equations:<ul>
 <li>= MagmaNoTrans: A * X = B (No transpose)</li>
-<li>= MagmaTrans: A'* X = B (Transpose)</li>
-<li>= MagmaTrans: A'* X = B (Conjugate transpose = Transpose)</li>
+<li>= MagmaTrans: A**T * X = B (Transpose)</li>
+<li>= MagmaTrans: A**T * X = B (Conjugate transpose)</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of linear equations, i.e., the order of the matrix A. N &gt;= 0.</td></tr>
@@ -442,7 +442,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:41 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:06 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

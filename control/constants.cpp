@@ -179,6 +179,18 @@ magma_range_t  magma_range_const ( char lapack_char )
 }
 
 extern "C"
+magma_vect_t magma_vect_const( char lapack_char )
+{
+    switch( lapack_char ) {
+        case 'Q': case 'q': return MagmaQ;
+        case 'P': case 'p': return MagmaP;
+        default:
+            fprintf( stderr, "Error in %s: unexpected value %c\n", __func__, lapack_char );
+            return MagmaQ;
+    }
+}
+
+extern "C"
 magma_direct_t magma_direct_const( char lapack_char )
 {
     switch( lapack_char ) {
@@ -287,7 +299,10 @@ const char *magma2lapack_constants[] =
     "V",                                     // 312 MagmaRangeV
     "I",                                     // 313 MagmaRangeI
     "", "", "", "", "", "", "",              // 314-320
-    "", "", "", "", "", "", "", "", "", "",  // 321-330
+    "",                                      // 321
+    "Q",                                     // 322
+    "P",                                     // 323
+    "", "", "", "", "", "", "",              // 324-330
     "", "", "", "", "", "", "", "", "", "",  // 331-340
     "", "", "", "", "", "", "", "", "", "",  // 341-350
     "", "", "", "", "", "", "", "", "", "",  // 351-360
@@ -404,6 +419,14 @@ const char* lapack_range_const ( magma_range_t  magma_const )
 {
     assert( magma_const >= MagmaRangeAll );
     assert( magma_const <= MagmaRangeI   );
+    return magma2lapack_constants[ magma_const ];
+}
+
+extern "C"
+const char* lapack_vect_const( magma_vect_t magma_const )
+{
+    assert( magma_const >= MagmaQ );
+    assert( magma_const <= MagmaP );
     return magma2lapack_constants[ magma_const ];
 }
 

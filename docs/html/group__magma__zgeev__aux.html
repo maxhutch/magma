@@ -666,10 +666,10 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>COMPLEX*16 array, dimension (LDA,N) The triangular matrix A. If UPLO = MagmaUpper, the leading n by n upper triangular part of the array A contains the upper triangular matrix, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading n by n lower triangular part of the array A contains the lower triangular matrix, and the strictly upper triangular part of A is not referenced. If DIAG = MagmaUnit, the diagonal elements of A are also not referenced and are assumed to be 1.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>COMPLEX_16 array, dimension (LDA,N) The triangular matrix A. If UPLO = MagmaUpper, the leading n by n upper triangular part of the array A contains the upper triangular matrix, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading n by n lower triangular part of the array A contains the lower triangular matrix, and the strictly upper triangular part of A is not referenced. If DIAG = MagmaUnit, the diagonal elements of A are also not referenced and are assumed to be 1.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max (1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lambda</td><td>COMPLEX*16 Eigenvalue to subtract from diagonal of A.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>COMPLEX*16 array, dimension (N) On entry, the right hand side b of the triangular system. On exit, X is overwritten by the solution vector x.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lambda</td><td>COMPLEX_16 Eigenvalue to subtract from diagonal of A.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>COMPLEX_16 array, dimension (N) On entry, the right hand side b of the triangular system. On exit, X is overwritten by the solution vector x.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">scale</td><td>DOUBLE PRECISION The scaling factor s for the triangular system A * x = s*b, A**T * x = s*b, or A**H * x = s*b. If SCALE = 0, the matrix A is singular or badly scaled, and the vector x is an exact or approximate solution to A*x = 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">cnorm</td><td>(input or output) DOUBLE PRECISION array, dimension (N)<ul>
 <li>If NORMIN = MagmaTrue, CNORM is an input argument and CNORM(j) contains the norm of the off-diagonal part of the j-th column of A. If TRANS = MagmaNoTrans, CNORM(j) must be greater than or equal to the infinity-norm, and if TRANS = MagmaTrans or MagmaConjTrans, CNORM(j) must be greater than or equal to the 1-norm.</li>
@@ -718,7 +718,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:44 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

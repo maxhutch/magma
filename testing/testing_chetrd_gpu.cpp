@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
 
-       @generated from testing_zhetrd_gpu.cpp normal z -> c, Fri Apr 25 15:06:12 2014
+       @generated from testing_zhetrd_gpu.cpp normal z -> c, Fri May 30 10:41:28 2014
 
 */
 
@@ -66,6 +66,7 @@ int main( int argc, char** argv)
     printf("1 - uses CHEMV from CUBLAS (default)\n");
     printf("2 - uses CHEMV from MAGMA BLAS that requires extra space\n\n");
 
+    printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
     printf("  N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
     printf("===========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -176,10 +177,10 @@ int main( int argc, char** argv)
                        (int) N, gpu_perf, gpu_time );
             }
             if ( opts.check ) {
-                printf("   %8.2e        %8.2e  %s\n", result[0]*eps, result[1]*eps,
+                printf("   %8.2e        %8.2e   %s\n", result[0]*eps, result[1]*eps,
                         ( ( (result[0]*eps < tol) && (result[1]*eps < tol) ) ? "ok" : "failed")  );
-                status |= ! (result[0]*eps < tol);
-                status |= ! (result[1]*eps < tol);
+                status += ! (result[0]*eps < tol);
+                status += ! (result[1]*eps < tol);
             } else {
                 printf("     ---             ---\n");
             }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c
        Note: [ds] precisions generated from zsymv_tesla.cu
@@ -1576,7 +1576,7 @@ magmablas_zhemv(
         // call CUDA ARCH 1.x version
         // magmablas for [sdc] precisions, cublas for [z] precisions.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        cublasZhemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_zhemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_zhemv_tesla( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #endif
@@ -1610,7 +1610,7 @@ magmablas_zhemv(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper ) {
-        cublasZhemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_zhemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
     }
     else {
         magma_int_t blocks = (n - 1) / hemv_bs + 1;
@@ -1645,7 +1645,7 @@ magmablas_zhemv_work(
         // magmablas for [sdc] precisions, cublas for [z] precisions.
         // TODO: make _work interface for tesla.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        cublasZhemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_zhemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_zhemv_tesla( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #endif
@@ -1679,7 +1679,7 @@ magmablas_zhemv_work(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper )
-        cublasZhemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_zhemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
     else {
         magma_int_t blocks = (n - 1) / hemv_bs + 1;
         /* TODO: was n*(blocks); why not lda*(blocks + 1), as elsewhere? */

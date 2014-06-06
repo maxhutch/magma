@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -102,11 +102,11 @@ int main( int argc, char** argv)
             else
                 error = fabs( norm_magma - norm_lapack ) / norm_lapack;
             
-            printf("%5d %5d   %4s   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
-                   (int) M, (int) N, lapack_norm_const(norm[inorm]),
+            printf("%5d %5d   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                   (int) M, (int) N, lapacke_norm_const(norm[inorm]),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    error, (error < tol ? "ok" : "failed") );
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_work );

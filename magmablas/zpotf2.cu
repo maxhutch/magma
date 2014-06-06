@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
        
        @precisions normal z -> s d c
 */
@@ -122,7 +122,7 @@ magma_zpotf2_gpu(
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 zlacgv(j, A(0, j), 1);
                 #endif
-                cublasZgemv( 'T', j, n-j-1,
+                magma_zgemv( MagmaTrans, j, n-j-1,
                              alpha, A(0, j+1), lda,
                                     A(0, j),   1,
                              beta,  A(j, j+1), lda); // cublas is better in upper case

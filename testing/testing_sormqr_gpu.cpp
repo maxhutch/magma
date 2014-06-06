@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Mark Gates
-       @generated from testing_zunmqr_gpu.cpp normal z -> s, Fri Apr 25 15:06:12 2014
+       @generated from testing_zunmqr_gpu.cpp normal z -> s, Fri May 30 10:41:27 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -65,14 +65,14 @@ int main( int argc, char** argv )
             gflops = FLOPS_SORMQR( m, n, k, side[iside] ) / 1e9;
             
             if ( side[iside] == MagmaLeft && m < k ) {
-                printf( "%5d %5d %5d   %4c   %5c   skipping because side=left and m < k\n",
+                printf( "%5d %5d %5d   %4c   %5c   skipping because side=left  and m < k\n",
                         (int) m, (int) n, (int) k,
                         lapacke_side_const( side[iside] ),
                         lapacke_trans_const( trans[itran] ) );
                 continue;
             }
             if ( side[iside] == MagmaRight && n < k ) {
-                printf( "%5d %5d %5d   %4c   %4c   skipping because side=right and n < k\n",
+                printf( "%5d %5d %5d   %4c   %5c   skipping because side=right and n < k\n",
                         (int) m, (int) n, (int) k,
                         lapacke_side_const( side[iside] ),
                         lapacke_trans_const( trans[itran] ) );
@@ -172,7 +172,7 @@ int main( int argc, char** argv )
                     lapacke_trans_const( trans[itran] ),
                     cpu_perf, cpu_time, gpu_perf, gpu_time,
                     error, (error < tol ? "ok" : "failed") );
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( C );
             TESTING_FREE_CPU( R );

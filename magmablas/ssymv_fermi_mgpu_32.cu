@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zhemv_fermi_mgpu_32.cu normal z -> s, Fri Apr 25 15:05:24 2014
+       @generated from zhemv_fermi_mgpu_32.cu normal z -> s, Fri May 30 10:40:44 2014
 
 */
 #include "common_magma.h"
@@ -981,7 +981,7 @@ magmablas_ssymv_mgpu_32_offset(
     if ( arch < 200  ) {
         // --------------------
         // no CUDA ARCH 1.x version
-        fprintf( stderr, "%s not supported on CUDA arch 1.x", __func__ );
+        fprintf( stderr, "%s not supported on CUDA arch 1.x\n", __func__ );
         return MAGMA_ERR_NOT_SUPPORTED;
     }
         
@@ -1079,7 +1079,7 @@ magmablas_ssymv2_mgpu_32_offset(
     if ( arch < 200  ) {
         // --------------------
         // no CUDA ARCH 1.x version
-        fprintf( stderr, "%s not supported on CUDA arch 1.x", __func__ );
+        fprintf( stderr, "%s not supported on CUDA arch 1.x\n", __func__ );
         return MAGMA_ERR_NOT_SUPPORTED;
     }
         
@@ -1175,7 +1175,7 @@ magmablas_ssymv2_mgpu_32(
     if ( arch < 200  ) {
         // --------------------
         // no CUDA ARCH 1.x version
-        fprintf( stderr, "%s not supported on CUDA arch 1.x", __func__ );
+        fprintf( stderr, "%s not supported on CUDA arch 1.x\n", __func__ );
         return MAGMA_ERR_NOT_SUPPORTED;
     }
         

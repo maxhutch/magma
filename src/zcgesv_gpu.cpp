@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions mixed zc -> ds
 
@@ -17,7 +17,7 @@
     Purpose
     -------
     ZCGESV computes the solution to a complex system of linear equations
-       A * X = B or A' * X = B
+       A * X = B,  A**T * X = B,  or  A**H * X = B,
     where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
 
     ZCGESV first attempts to factorize the matrix in complex SINGLE PRECISION
@@ -51,9 +51,9 @@
     @param[in]
     trans   magma_trans_t
             Specifies the form of the system of equations:
-      -     = MagmaNoTrans:    A * X = B  (No transpose)
-      -     = MagmaTrans:      A'* X = B  (Transpose)
-      -     = MagmaConjTrans:  A'* X = B  (Conjugate transpose = Transpose)
+      -     = MagmaNoTrans:    A    * X = B  (No transpose)
+      -     = MagmaTrans:      A**T * X = B  (Transpose)
+      -     = MagmaConjTrans:  A**H * X = B  (Conjugate transpose)
 
     @param[in]
     n       INTEGER

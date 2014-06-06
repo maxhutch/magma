@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgels_gpu.cpp normal z -> c, Fri Apr 25 15:06:10 2014
+       @generated from testing_zgels_gpu.cpp normal z -> c, Fri May 30 10:41:26 2014
 
 */
 
@@ -33,7 +33,7 @@ int main( int argc, char** argv )
     TESTING_INIT();
     
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    float           gpu_error, cpu_error, Anorm, work[1];
+    float           gpu_error, cpu_error, error, Anorm, work[1];
     magmaFloatComplex  c_one     = MAGMA_C_ONE;
     magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex *h_A, *h_A2, *h_B, *h_X, *h_R, *tau, *h_work, tmp[1];
@@ -51,15 +51,15 @@ int main( int argc, char** argv )
 
     nrhs = opts.nrhs;
     
-    printf("                                                            ||b-Ax|| / (N||A||)\n");
-    printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU     \n");
-    printf("===============================================================================\n");
+    printf("                                                            ||b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
+    printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU                         \n");
+    printf("===================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
             if ( M < N ) {
-                printf( "skipping M=%d, N=%d because M < N is not yet supported.\n", (int) M, (int) N );
+                printf( "%5d %5d %5d   skipping because M < N is not yet supported.\n", (int) M, (int) N, (int) nrhs );
                 continue;
             }
             min_mn = min(M, N);
@@ -155,11 +155,23 @@ int main( int argc, char** argv )
             cpu_error = lapackf77_clange("f", &M, &nrhs, h_B, &ldb, work) / (min_mn*Anorm);
             gpu_error = lapackf77_clange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*Anorm);
             
-            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e  %s\n",
+            // error relative to LAPACK
+            size = M*nrhs;
+            blasf77_caxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
+            error = lapackf77_clange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*Anorm);
+            
+            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %8.2e",
                    (int) M, (int) N, (int) nrhs,
-                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error,
-                   (gpu_error < tol ? "ok" : "failed"));
-            status |= ! (gpu_error < tol);
+                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error, error );
+            
+            if ( M == N ) {
+                printf( "   %s\n", (gpu_error < tol && error < tol ? "ok" : "failed"));
+                status += ! (gpu_error < tol && error < tol);
+            }
+            else {
+                printf( "   %s\n", (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
+            }
 
             TESTING_FREE_CPU( tau    );
             TESTING_FREE_CPU( h_A    );

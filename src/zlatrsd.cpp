@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -64,7 +64,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in]
-    A       COMPLEX*16 array, dimension (LDA,N)
+    A       COMPLEX_16 array, dimension (LDA,N)
             The triangular matrix A.  If UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A contains the upper
             triangular matrix, and the strictly lower triangular part of
@@ -79,11 +79,11 @@
             The leading dimension of the array A.  LDA >= max (1,N).
 
     @param[in]
-    lambda  COMPLEX*16
+    lambda  COMPLEX_16
             Eigenvalue to subtract from diagonal of A.
 
     @param[in,out]
-    x       COMPLEX*16 array, dimension (N)
+    x       COMPLEX_16 array, dimension (N)
             On entry, the right hand side b of the triangular system.
             On exit, X is overwritten by the solution vector x.
 

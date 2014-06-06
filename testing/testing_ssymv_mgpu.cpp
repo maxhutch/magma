@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zhemv_mgpu.cpp normal z -> s, Fri Apr 25 15:06:06 2014
+       @generated from testing_zhemv_mgpu.cpp normal z -> s, Fri May 30 10:41:22 2014
 */
 
 #include <stdlib.h>
@@ -56,7 +56,8 @@ int main(int argc, char **argv)
     nb = 32;
     //nb = 64;
 
-    printf("block size = %d, offset %d\n", (int) nb, (int) opts.offset );
+    printf("uplo = %s, block size = %d, offset %d\n",
+            lapack_uplo_const(opts.uplo), (int) nb, (int) opts.offset );
     printf( "    N   CUBLAS, Gflop/s   MAGMABLAS, Gflop/s      \"error\"\n"
             "==============================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -228,10 +229,10 @@ int main(int argc, char **argv)
             blasf77_saxpy( &N, &c_neg_one, Ymagma, &incx, Ycublas, &incx);
             error = lapackf77_slange( "N", &N, &ione, Ycublas, &N, work ) / N;
 #endif
-            printf( "%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s",
+            printf( "%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s",
                     (int) N, cuda_perf, cuda_time, gpu_perf, gpu_time,
                     error, (error < tol ? "ok" : "failed") );
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             /* Free Memory */
             TESTING_FREE_CPU( A );

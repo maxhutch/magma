@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zgeqr2x_gpu.cpp normal z -> d, Fri Apr 25 15:05:39 2014
+       @generated from zgeqr2x_gpu.cpp normal z -> d, Fri May 30 10:40:58 2014
 
 */
 #include "common_magma.h"
@@ -38,7 +38,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      DOUBLE PRECISION array, dimension (LDA,N)
+    dA      DOUBLE_PRECISION array, dimension (LDA,N)
             On entry, the m by n matrix A.
             On exit, the unitary matrix Q as a
             product of elementary reflectors (see Further Details).
@@ -54,22 +54,22 @@
             The leading dimension of the array A.  LDA >= max(1,M).
 
     @param[out]
-    dtau    DOUBLE PRECISION array, dimension (min(M,N))
+    dtau    DOUBLE_PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    dT      DOUBLE PRECISION array, dimension N x N.
+    dT      DOUBLE_PRECISION array, dimension N x N.
             Stores the triangular N x N factor T of the block reflector
             used in the factorization. The lower triangular part is 0.
 
     @param[out]
-    ddA     DOUBLE PRECISION array, dimension N x N.
+    ddA     DOUBLE_PRECISION array, dimension N x N.
             Stores the elements of the upper N x N diagonal block of A.
             LAPACK stores this array in A. There are 0s below the diagonal.
 
     @param
-    dwork   (workspace) DOUBLE PRECISION array, dimension (N)
+    dwork   (workspace) DOUBLE_PRECISION array, dimension (N)
 
     @param[out]
     info    INTEGER

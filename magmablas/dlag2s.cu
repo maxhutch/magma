@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zlag2c.cu mixed zc -> ds, Fri Apr 25 15:05:18 2014
-
+       @generated from zlag2c.cu mixed zc -> ds, Fri May 30 10:40:38 2014
+       @author Mark Gates
 */
 #include "common_magma.h"
 
@@ -17,34 +17,31 @@
 static __device__ int flag = 0; 
 
 __global__ void 
-magmaint_dlag2s(  int m, int n, 
-                  const double *A, int lda, 
-                  float *SA,       int ldsa, 
-                  double RMAX ) 
+dlag2s_kernel( int m, int n, 
+               const double *A, int lda, 
+               float *SA,       int ldsa, 
+               double rmax ) 
 {
-    const double *Aend = A + lda*n;
     double tmp;
-    double mRMAX = - RMAX;
-    int    mym   = blockIdx.x * blksize + threadIdx.x;
-
-    if ( mym < m ){
-        A += mym;
-        SA+= mym; 
-        
-        tmp = *A;
-        for ( ; A < Aend; )
-        {
-            A  += lda;
-            if(    ((tmp) < mRMAX) || ((tmp) > RMAX)
+    double neg_rmax = - rmax;
+    
+    int i = blockIdx.x*blksize + threadIdx.x;
+    if ( i < m ) {
+        A  += i;
+        SA += i; 
+        const double *Aend = A + lda*n;
+        while( A < Aend ) {
+            tmp = *A;
+            if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
 #if defined(PRECISION_z) || defined(PRECISION_c)
-                || ((tmp) < mRMAX) || ((tmp) > RMAX) 
+                || ((tmp) < neg_rmax) || ((tmp) > rmax) 
 #endif
                 )
             {
                 flag = 1; 
             }
             *SA = (float)( tmp );
-            tmp = *A;
+            A  += lda;
             SA += ldsa;
         }
     }
@@ -52,22 +49,14 @@ magmaint_dlag2s(  int m, int n,
 
 
 /**
-    Note
-    ----
-          - We have to provide INFO at the end that dlag2s isn't doable now. 
-          - Transfer a single value TO/FROM CPU/GPU
-          - SLAMCH that's needed is called from underlying BLAS
-          - Only used in iterative refinement
-          - Do we want to provide this in the release?
-    
     Purpose
     -------
-    DLAG2S converts a DOUBLE PRECISION matrix A to a SINGLE PRECISION
-    matrix SA.
+    DLAG2S converts a double-real matrix, A,
+                 to a single-real matrix, SA.
     
-    RMAX is the overflow for the SINGLE PRECISION arithmetic.
+    RMAX is the overflow for the single-real arithmetic.
     DLAG2S checks that all the entries of A are between -RMAX and
-    RMAX. If not the convertion is aborted and a flag is raised.
+    RMAX. If not, the conversion is aborted and a flag is raised.
         
     Arguments
     ---------
@@ -126,12 +115,17 @@ magmablas_dlag2s( magma_int_t m, magma_int_t n,
         magma_xerbla( __func__, -(*info) );
         //return *info;
     }
-    
-    double RMAX = (double)lapackf77_slamch("O");
 
-    dim3 threads( blksize, 1, 1 );
-    dim3 grid( (m+blksize-1)/blksize, 1, 1);
+    /* quick return */
+    if ( m == 0 || n == 0 ) {
+        return;
+    }
+    
+    double rmax = (double)lapackf77_slamch("O");
+
+    dim3 threads( blksize );
+    dim3 grid( (m+blksize-1)/blksize );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    magmaint_dlag2s<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, SA, ldsa, RMAX ) ; 
+    dlag2s_kernel<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, SA, ldsa, rmax ); 
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

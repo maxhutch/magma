@@ -3,16 +3,18 @@
     Later cleaned up by hand, particularly to be thread-safe (no static variables).
     
     @author Mark Gates
-    @generated from dlaln2.cpp normal d -> s, Fri Apr 25 15:05:52 2014
+    @generated from dlaln2.cpp normal d -> s, Fri May 30 10:41:09 2014
 */
 #include "common_magma.h"
 
 /**
     Purpose
     -------
-    SLALN2 solves a system of the form  (ca A - w D ) X = s B
-    or (ca A' - w D) X = s B   with possible scaling ("s") and
-    perturbation of A.  (A' means A-transpose.)
+    SLALN2 solves a system of the form
+            (ca A    - w D) X = s B
+        or  (ca A**T - w D) X = s B
+    with possible scaling ("s") and
+    perturbation of A.  (A**T means A-transpose.)
 
     A is an NA x NA real matrix, ca is a real scalar, D is an NA x NA
     real diagonal matrix, w is a real or complex value, and X and B are
@@ -254,7 +256,7 @@ magma_int_t magma_slaln2(
     }
     else {
         /* 2x2 System */
-        /* Compute the real part of  C = ca A - w D  (or  ca A' - w D ) */
+        /* Compute the real part of  C = ca A - w D  (or  ca A**T - w D ) */
         cr[0] = ca * A[lda   + 1] - wr * d1;
         cr[3] = ca * A[lda*2 + 2] - wr * d2;
         if (trans) {

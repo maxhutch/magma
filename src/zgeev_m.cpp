@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c
        @author Stan Tomov
@@ -56,7 +56,7 @@
             The order of the matrix A. N >= 0.
 
     @param[in,out]
-    A       COMPLEX*16 array, dimension (LDA,N)
+    A       COMPLEX_16 array, dimension (LDA,N)
             On entry, the N-by-N matrix A.
             On exit, A has been overwritten.
 
@@ -65,11 +65,11 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    w       COMPLEX*16 array, dimension (N)
+    w       COMPLEX_16 array, dimension (N)
             W contains the computed eigenvalues.
 
     @param[out]
-    VL      COMPLEX*16 array, dimension (LDVL,N)
+    VL      COMPLEX_16 array, dimension (LDVL,N)
             If JOBVL = MagmaVec, the left eigenvectors u(j) are stored one
             after another in the columns of VL, in the same order
             as their eigenvalues.
@@ -82,7 +82,7 @@
             JOBVL = MagmaVec, LDVL >= N.
 
     @param[out]
-    VR      COMPLEX*16 array, dimension (LDVR,N)
+    VR      COMPLEX_16 array, dimension (LDVR,N)
             If JOBVR = MagmaVec, the right eigenvectors v(j) are stored one
             after another in the columns of VR, in the same order
             as their eigenvalues.
@@ -95,7 +95,7 @@
             JOBVR = MagmaVec, LDVR >= N.
 
     @param[out]
-    work    (workspace) COMPLEX*16 array, dimension (MAX(1,LWORK))
+    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
     @param[in]

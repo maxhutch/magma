@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 
@@ -38,7 +38,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      COMPLEX*16 array, dimension (LDA,N)
+    dA      COMPLEX_16 array, dimension (LDA,N)
             On entry, the m by n matrix A.
             On exit, the unitary matrix Q as a
             product of elementary reflectors (see Further Details).
@@ -54,22 +54,22 @@
             The leading dimension of the array A.  LDA >= max(1,M).
 
     @param[out]
-    dtau    COMPLEX*16 array, dimension (min(M,N))
+    dtau    COMPLEX_16 array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param[out]
-    dT      COMPLEX*16 array, dimension N x N.
+    dT      COMPLEX_16 array, dimension N x N.
             Stores the triangular N x N factor T of the block reflector
             used in the factorization. The lower triangular part is 0.
 
     @param[out]
-    ddA     COMPLEX*16 array, dimension N x N.
+    ddA     COMPLEX_16 array, dimension N x N.
             Stores the elements of the upper N x N diagonal block of A.
             LAPACK stores this array in A. There are 0s below the diagonal.
 
     @param
-    dwork   (workspace) COMPLEX*16 array, dimension (N)
+    dwork   (workspace) COMPLEX_16 array, dimension (N)
 
     @param[out]
     info    INTEGER

@@ -130,8 +130,7 @@ Functions</h2></td></tr>
  <a href="#ga755180a4ae3a7920cf432c7598b279f5">More...</a><br/></td></tr>
 <tr class="separator:ga755180a4ae3a7920cf432c7598b279f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5ecbe1fcb27adf157b294268fc7203bc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga5ecbe1fcb27adf157b294268fc7203bc">magmablas_zlag2c</a> (magma_int_t m, magma_int_t n, const magmaDoubleComplex *A, magma_int_t lda, magmaFloatComplex *SA, magma_int_t ldsa, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga5ecbe1fcb27adf157b294268fc7203bc"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h2>Note </h2>
- <a href="#ga5ecbe1fcb27adf157b294268fc7203bc">More...</a><br/></td></tr>
+<tr class="memdesc:ga5ecbe1fcb27adf157b294268fc7203bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAG2C converts a double-complex matrix, A, to a single-complex matrix, SA.  <a href="#ga5ecbe1fcb27adf157b294268fc7203bc">More...</a><br/></td></tr>
 <tr class="separator:ga5ecbe1fcb27adf157b294268fc7203bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6068de0261037b29a75e2fb80e70f79f"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga6068de0261037b29a75e2fb80e70f79f">magmablas_zlange</a> (magma_norm_t norm, magma_int_t m, magma_int_t n, const magmaDoubleComplex *A, magma_int_t lda, double *dwork)</td></tr>
 <tr class="memdesc:ga6068de0261037b29a75e2fb80e70f79f"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLANGE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a real matrix A.  <a href="#ga6068de0261037b29a75e2fb80e70f79f">More...</a><br/></td></tr>
@@ -584,15 +583,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p><h2>Note </h2>
-</p>
-<pre class="fragment">  - We have to provide INFO at the end that zlag2c isn't doable now. 
-  - Transfer a single value TO/FROM CPU/GPU
-  - SLAMCH that's needed is called from underlying BLAS
-  - Only used in iterative refinement
-  - Do we want to provide this in the release?
-</pre><p>ZLAG2C converts a COMPLEX_16 matrix A to a COMPLEX matrix SA.</p>
-<p>RMAX is the overflow for the COMPLEX arithmetic. ZLAG2C checks that all the entries of A are between -RMAX and RMAX. If not the convertion is aborted and a flag is raised.</p>
+<p>ZLAG2C converts a double-complex matrix, A, to a single-complex matrix, SA. </p>
+<p>RMAX is the overflow for the single-complex arithmetic. ZLAG2C checks that all the entries of A are between -RMAX and RMAX. If not, the conversion is aborted and a flag is raised.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of lines of the matrix A. m &gt;= 0.</td></tr>
@@ -729,7 +721,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>ZLANHE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a complex Hermitian matrix A. </p>
-<p>ZLANHE = ( max(abs(A(i,j))), NORM = 'M' or 'm' ( ( norm1(A), NORM = '1', 'O' or 'o' ** supported only for CUDA_ARCH &gt;= 200 ( ( normI(A), NORM = 'I' or 'i' ** supported only for CUDA_ARCH &gt;= 200 ( ( normF(A), NORM = 'F', 'f', 'E' or 'e' ** not yet supported</p>
+<p>ZLANHE = ( max(abs(A(i,j))), NORM = 'M' or 'm' ( ( norm1(A), NORM = '1', 'O' or 'o' ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || <b>CUDA_ARCH</b> &gt;= 200) ( ( normI(A), NORM = 'I' or 'i' ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || <b>CUDA_ARCH</b> &gt;= 200) ( ( normF(A), NORM = 'F', 'f', 'E' or 'e' ** not yet supported</p>
 <p>where norm1 denotes the one norm of a matrix (maximum column sum), normI denotes the infinity norm of a matrix (maximum row sum) and normF denotes the Frobenius norm of a matrix (square root of sum of squares). Note that max(abs(A(i,j))) is not a consistent matrix norm.</p>
 <p>Returns ZLANHE &lt; 0: if ZLANHE = -i, the i-th argument had an illegal value.</p>
 <h2>Arguments: </h2>
@@ -744,7 +736,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0. When N = 0, ZLANHE is set to zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>COMPLEX*16 array on the GPU, dimension (LDA,N) The Hermitian matrix A. If UPLO = MagmaUpper, the leading n by n upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading n by n lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. Note that the imaginary parts of the diagonal elements need not be set and are assumed to be zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(N,1).</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE PRECISION array on the GPU, dimension (MAX(1,LWORK)), where LWORK &gt;= N. NOTE: this is different than LAPACK, where WORK is only required for norm1 and normI. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE PRECISION array on the GPU, dimension (MAX(1,LWORK)), where LWORK &gt;= N. NOTE: this is different than LAPACK, where WORK is required only for norm1 and normI. Here max-norm also requires work. </td></tr>
   </table>
   </dd>
 </dl>
@@ -950,7 +942,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:48 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:17 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

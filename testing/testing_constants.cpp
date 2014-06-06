@@ -1,457 +1,495 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Mark Gates
 */
 #include <stdio.h>
 
-#undef NDEBUG
-#include <assert.h>
-
 #include <cublas_v2.h>
 
 #include "magma.h"
 
+int gStatus;
+
+void check_( bool flag, const char* msg, int line )
+{
+    if ( ! flag ) {
+        gStatus += 1;
+        printf( "line %d: %s failed\n", line, msg );
+    }
+}
+
+#define check( flag ) check_( flag, #flag, __LINE__ )
+
+
+/* ////////////////////////////////////////////////////////////////////////////
+   -- Testing lapack_xxxxx_const and related
+*/
 int main( int argc, char** argv )
 {
+    gStatus = 0;
+    int s;
+    
     // ------------------------------------------------------------
-    printf( "testing MAGMA  -> lapack_xxxxx_const\n" );
-    assert( lapack_bool_const(   MagmaFalse         )[0] == 'N' );
-    assert( lapack_bool_const(   MagmaTrue          )[0] == 'Y' );
+    s = gStatus;
+    check( lapack_bool_const(   MagmaFalse         )[0] == 'N' );
+    check( lapack_bool_const(   MagmaTrue          )[0] == 'Y' );
 
-    assert( lapack_order_const(  MagmaRowMajor      )[0] == 'R' );
-    assert( lapack_order_const(  MagmaColMajor      )[0] == 'C' );
+    check( lapack_order_const(  MagmaRowMajor      )[0] == 'R' );
+    check( lapack_order_const(  MagmaColMajor      )[0] == 'C' );
 
-    assert( lapack_trans_const(  MagmaNoTrans       )[0] == 'N' );
-    assert( lapack_trans_const(  MagmaTrans         )[0] == 'T' );
-    assert( lapack_trans_const(  MagmaConjTrans     )[0] == 'C' );
+    check( lapack_trans_const(  MagmaNoTrans       )[0] == 'N' );
+    check( lapack_trans_const(  MagmaTrans         )[0] == 'T' );
+    check( lapack_trans_const(  MagmaConjTrans     )[0] == 'C' );
 
-    assert( lapack_uplo_const(   MagmaUpper         )[0] == 'U' );
-    assert( lapack_uplo_const(   MagmaLower         )[0] == 'L' );
-    assert( lapack_uplo_const(   MagmaFull          )[0] == 'F' );
+    check( lapack_uplo_const(   MagmaUpper         )[0] == 'U' );
+    check( lapack_uplo_const(   MagmaLower         )[0] == 'L' );
+    check( lapack_uplo_const(   MagmaFull          )[0] == 'F' );
 
-    assert( lapack_diag_const(   MagmaNonUnit       )[0] == 'N' );
-    assert( lapack_diag_const(   MagmaUnit          )[0] == 'U' );
+    check( lapack_diag_const(   MagmaNonUnit       )[0] == 'N' );
+    check( lapack_diag_const(   MagmaUnit          )[0] == 'U' );
 
-    assert( lapack_side_const(   MagmaLeft          )[0] == 'L' );
-    assert( lapack_side_const(   MagmaRight         )[0] == 'R' );
-    assert( lapack_side_const(   MagmaBothSides     )[0] == 'B' );
+    check( lapack_side_const(   MagmaLeft          )[0] == 'L' );
+    check( lapack_side_const(   MagmaRight         )[0] == 'R' );
+    check( lapack_side_const(   MagmaBothSides     )[0] == 'B' );
 
-    assert( lapack_norm_const(   MagmaOneNorm       )[0] == '1' );
-    assert( lapack_norm_const(   MagmaTwoNorm       )[0] == '2' );
-    assert( lapack_norm_const(   MagmaFrobeniusNorm )[0] == 'F' );
-    assert( lapack_norm_const(   MagmaInfNorm       )[0] == 'I' );
-    assert( lapack_norm_const(   MagmaMaxNorm       )[0] == 'M' );
+    check( lapack_norm_const(   MagmaOneNorm       )[0] == '1' );
+    check( lapack_norm_const(   MagmaTwoNorm       )[0] == '2' );
+    check( lapack_norm_const(   MagmaFrobeniusNorm )[0] == 'F' );
+    check( lapack_norm_const(   MagmaInfNorm       )[0] == 'I' );
+    check( lapack_norm_const(   MagmaMaxNorm       )[0] == 'M' );
 
-    assert( lapack_dist_const(   MagmaDistUniform   )[0] == 'U' );
-    assert( lapack_dist_const(   MagmaDistSymmetric )[0] == 'S' );
-    assert( lapack_dist_const(   MagmaDistNormal    )[0] == 'N' );
+    check( lapack_dist_const(   MagmaDistUniform   )[0] == 'U' );
+    check( lapack_dist_const(   MagmaDistSymmetric )[0] == 'S' );
+    check( lapack_dist_const(   MagmaDistNormal    )[0] == 'N' );
 
-    assert( lapack_sym_const(    MagmaHermGeev      )[0] == 'H' );
-    assert( lapack_sym_const(    MagmaHermPoev      )[0] == 'P' );
-    assert( lapack_sym_const(    MagmaNonsymPosv    )[0] == 'N' );
-    assert( lapack_sym_const(    MagmaSymPosv       )[0] == 'S' );
+    check( lapack_sym_const(    MagmaHermGeev      )[0] == 'H' );
+    check( lapack_sym_const(    MagmaHermPoev      )[0] == 'P' );
+    check( lapack_sym_const(    MagmaNonsymPosv    )[0] == 'N' );
+    check( lapack_sym_const(    MagmaSymPosv       )[0] == 'S' );
 
-    assert( lapack_pack_const(   MagmaNoPacking     )[0] == 'N' );
-    assert( lapack_pack_const(   MagmaPackSubdiag   )[0] == 'U' );
-    assert( lapack_pack_const(   MagmaPackSupdiag   )[0] == 'L' );
-    assert( lapack_pack_const(   MagmaPackColumn    )[0] == 'C' );
-    assert( lapack_pack_const(   MagmaPackRow       )[0] == 'R' );
-    assert( lapack_pack_const(   MagmaPackLowerBand )[0] == 'B' );
-    assert( lapack_pack_const(   MagmaPackUpeprBand )[0] == 'Q' );
-    assert( lapack_pack_const(   MagmaPackAll       )[0] == 'Z' );
+    check( lapack_pack_const(   MagmaNoPacking     )[0] == 'N' );
+    check( lapack_pack_const(   MagmaPackSubdiag   )[0] == 'U' );
+    check( lapack_pack_const(   MagmaPackSupdiag   )[0] == 'L' );
+    check( lapack_pack_const(   MagmaPackColumn    )[0] == 'C' );
+    check( lapack_pack_const(   MagmaPackRow       )[0] == 'R' );
+    check( lapack_pack_const(   MagmaPackLowerBand )[0] == 'B' );
+    check( lapack_pack_const(   MagmaPackUpeprBand )[0] == 'Q' );
+    check( lapack_pack_const(   MagmaPackAll       )[0] == 'Z' );
 
-    assert( lapack_vec_const(    MagmaNoVec         )[0] == 'N' );
-    assert( lapack_vec_const(    MagmaVec           )[0] == 'V' );
-    assert( lapack_vec_const(    MagmaIVec          )[0] == 'I' );
-    assert( lapack_vec_const(    MagmaAllVec        )[0] == 'A' );
-    assert( lapack_vec_const(    MagmaSomeVec       )[0] == 'S' );
-    assert( lapack_vec_const(    MagmaOverwriteVec  )[0] == 'O' );
+    check( lapack_vec_const(    MagmaNoVec         )[0] == 'N' );
+    check( lapack_vec_const(    MagmaVec           )[0] == 'V' );
+    check( lapack_vec_const(    MagmaIVec          )[0] == 'I' );
+    check( lapack_vec_const(    MagmaAllVec        )[0] == 'A' );
+    check( lapack_vec_const(    MagmaSomeVec       )[0] == 'S' );
+    check( lapack_vec_const(    MagmaOverwriteVec  )[0] == 'O' );
 
-    assert( lapack_range_const(  MagmaRangeAll      )[0] == 'A' );
-    assert( lapack_range_const(  MagmaRangeV        )[0] == 'V' );
-    assert( lapack_range_const(  MagmaRangeI        )[0] == 'I' );
+    check( lapack_range_const(  MagmaRangeAll      )[0] == 'A' );
+    check( lapack_range_const(  MagmaRangeV        )[0] == 'V' );
+    check( lapack_range_const(  MagmaRangeI        )[0] == 'I' );
 
-    assert( lapack_direct_const( MagmaForward       )[0] == 'F' );
-    assert( lapack_direct_const( MagmaBackward      )[0] == 'B' );
+    check( lapack_vect_const(   MagmaQ             )[0] == 'Q' );
+    check( lapack_vect_const(   MagmaP             )[0] == 'P' );
 
-    assert( lapack_storev_const( MagmaColumnwise    )[0] == 'C' );
-    assert( lapack_storev_const( MagmaRowwise       )[0] == 'R' );
+    check( lapack_direct_const( MagmaForward       )[0] == 'F' );
+    check( lapack_direct_const( MagmaBackward      )[0] == 'B' );
 
-
-    // ------------------------------------------------------------
-    printf( "testing MAGMA  -> lapacke_xxxxx_const\n" );
-    assert( lapacke_bool_const(   MagmaFalse         ) == 'N' );
-    assert( lapacke_bool_const(   MagmaTrue          ) == 'Y' );
-
-    assert( lapacke_order_const(  MagmaRowMajor      ) == 'R' );
-    assert( lapacke_order_const(  MagmaColMajor      ) == 'C' );
-
-    assert( lapacke_trans_const(  MagmaNoTrans       ) == 'N' );
-    assert( lapacke_trans_const(  MagmaTrans         ) == 'T' );
-    assert( lapacke_trans_const(  MagmaConjTrans     ) == 'C' );
-
-    assert( lapacke_uplo_const(   MagmaUpper         ) == 'U' );
-    assert( lapacke_uplo_const(   MagmaLower         ) == 'L' );
-    assert( lapacke_uplo_const(   MagmaFull          ) == 'F' );
-
-    assert( lapacke_diag_const(   MagmaNonUnit       ) == 'N' );
-    assert( lapacke_diag_const(   MagmaUnit          ) == 'U' );
-
-    assert( lapacke_side_const(   MagmaLeft          ) == 'L' );
-    assert( lapacke_side_const(   MagmaRight         ) == 'R' );
-    assert( lapacke_side_const(   MagmaBothSides     ) == 'B' );
-
-    assert( lapacke_norm_const(   MagmaOneNorm       ) == '1' );
-    assert( lapacke_norm_const(   MagmaTwoNorm       ) == '2' );
-    assert( lapacke_norm_const(   MagmaFrobeniusNorm ) == 'F' );
-    assert( lapacke_norm_const(   MagmaInfNorm       ) == 'I' );
-    assert( lapacke_norm_const(   MagmaMaxNorm       ) == 'M' );
-
-    assert( lapacke_dist_const(   MagmaDistUniform   ) == 'U' );
-    assert( lapacke_dist_const(   MagmaDistSymmetric ) == 'S' );
-    assert( lapacke_dist_const(   MagmaDistNormal    ) == 'N' );
-
-    assert( lapacke_sym_const(    MagmaHermGeev      ) == 'H' );
-    assert( lapacke_sym_const(    MagmaHermPoev      ) == 'P' );
-    assert( lapacke_sym_const(    MagmaNonsymPosv    ) == 'N' );
-    assert( lapacke_sym_const(    MagmaSymPosv       ) == 'S' );
-
-    assert( lapacke_pack_const(   MagmaNoPacking     ) == 'N' );
-    assert( lapacke_pack_const(   MagmaPackSubdiag   ) == 'U' );
-    assert( lapacke_pack_const(   MagmaPackSupdiag   ) == 'L' );
-    assert( lapacke_pack_const(   MagmaPackColumn    ) == 'C' );
-    assert( lapacke_pack_const(   MagmaPackRow       ) == 'R' );
-    assert( lapacke_pack_const(   MagmaPackLowerBand ) == 'B' );
-    assert( lapacke_pack_const(   MagmaPackUpeprBand ) == 'Q' );
-    assert( lapacke_pack_const(   MagmaPackAll       ) == 'Z' );
-
-    assert( lapacke_vec_const(    MagmaNoVec         ) == 'N' );
-    assert( lapacke_vec_const(    MagmaVec           ) == 'V' );
-    assert( lapacke_vec_const(    MagmaIVec          ) == 'I' );
-    assert( lapacke_vec_const(    MagmaAllVec        ) == 'A' );
-    assert( lapacke_vec_const(    MagmaSomeVec       ) == 'S' );
-    assert( lapacke_vec_const(    MagmaOverwriteVec  ) == 'O' );
-
-    assert( lapacke_range_const(  MagmaRangeAll      ) == 'A' );
-    assert( lapacke_range_const(  MagmaRangeV        ) == 'V' );
-    assert( lapacke_range_const(  MagmaRangeI        ) == 'I' );
-
-    assert( lapacke_direct_const( MagmaForward       ) == 'F' );
-    assert( lapacke_direct_const( MagmaBackward      ) == 'B' );
-
-    assert( lapacke_storev_const( MagmaColumnwise    ) == 'C' );
-    assert( lapacke_storev_const( MagmaRowwise       ) == 'R' );
+    check( lapack_storev_const( MagmaColumnwise    )[0] == 'C' );
+    check( lapack_storev_const( MagmaRowwise       )[0] == 'R' );
+    printf( "MAGMA  -> lapack_xxxxx_const    %s\n", (s == gStatus ? "ok" : "failed"));
 
 
     // ------------------------------------------------------------
-    printf( "testing MAGMA  -> lapack_const\n" );
-    assert( lapack_const( MagmaFalse         )[0] == 'N' );
-    assert( lapack_const( MagmaTrue          )[0] == 'Y' );
+    s = gStatus;
+    check( lapacke_bool_const(   MagmaFalse         ) == 'N' );
+    check( lapacke_bool_const(   MagmaTrue          ) == 'Y' );
 
-    assert( lapack_const( MagmaRowMajor      )[0] == 'R' );
-    assert( lapack_const( MagmaColMajor      )[0] == 'C' );
+    check( lapacke_order_const(  MagmaRowMajor      ) == 'R' );
+    check( lapacke_order_const(  MagmaColMajor      ) == 'C' );
 
-    assert( lapack_const( MagmaNoTrans       )[0] == 'N' );
-    assert( lapack_const( MagmaTrans         )[0] == 'T' );
-    assert( lapack_const( MagmaConjTrans     )[0] == 'C' );
+    check( lapacke_trans_const(  MagmaNoTrans       ) == 'N' );
+    check( lapacke_trans_const(  MagmaTrans         ) == 'T' );
+    check( lapacke_trans_const(  MagmaConjTrans     ) == 'C' );
 
-    assert( lapack_const( MagmaUpper         )[0] == 'U' );
-    assert( lapack_const( MagmaLower         )[0] == 'L' );
-    assert( lapack_const( MagmaFull          )[0] == 'F' );
+    check( lapacke_uplo_const(   MagmaUpper         ) == 'U' );
+    check( lapacke_uplo_const(   MagmaLower         ) == 'L' );
+    check( lapacke_uplo_const(   MagmaFull          ) == 'F' );
 
-    assert( lapack_const( MagmaNonUnit       )[0] == 'N' );
-    assert( lapack_const( MagmaUnit          )[0] == 'U' );
+    check( lapacke_diag_const(   MagmaNonUnit       ) == 'N' );
+    check( lapacke_diag_const(   MagmaUnit          ) == 'U' );
 
-    assert( lapack_const( MagmaLeft          )[0] == 'L' );
-    assert( lapack_const( MagmaRight         )[0] == 'R' );
-    assert( lapack_const( MagmaBothSides     )[0] == 'B' );
+    check( lapacke_side_const(   MagmaLeft          ) == 'L' );
+    check( lapacke_side_const(   MagmaRight         ) == 'R' );
+    check( lapacke_side_const(   MagmaBothSides     ) == 'B' );
 
-    assert( lapack_const( MagmaOneNorm       )[0] == '1' );
-    assert( lapack_const( MagmaTwoNorm       )[0] == '2' );
-    assert( lapack_const( MagmaFrobeniusNorm )[0] == 'F' );
-    assert( lapack_const( MagmaInfNorm       )[0] == 'I' );
-    assert( lapack_const( MagmaMaxNorm       )[0] == 'M' );
+    check( lapacke_norm_const(   MagmaOneNorm       ) == '1' );
+    check( lapacke_norm_const(   MagmaTwoNorm       ) == '2' );
+    check( lapacke_norm_const(   MagmaFrobeniusNorm ) == 'F' );
+    check( lapacke_norm_const(   MagmaInfNorm       ) == 'I' );
+    check( lapacke_norm_const(   MagmaMaxNorm       ) == 'M' );
 
-    assert( lapack_const( MagmaDistUniform   )[0] == 'U' );
-    assert( lapack_const( MagmaDistSymmetric )[0] == 'S' );
-    assert( lapack_const( MagmaDistNormal    )[0] == 'N' );
+    check( lapacke_dist_const(   MagmaDistUniform   ) == 'U' );
+    check( lapacke_dist_const(   MagmaDistSymmetric ) == 'S' );
+    check( lapacke_dist_const(   MagmaDistNormal    ) == 'N' );
 
-    assert( lapack_const( MagmaHermGeev      )[0] == 'H' );
-    assert( lapack_const( MagmaHermPoev      )[0] == 'P' );
-    assert( lapack_const( MagmaNonsymPosv    )[0] == 'N' );
-    assert( lapack_const( MagmaSymPosv       )[0] == 'S' );
+    check( lapacke_sym_const(    MagmaHermGeev      ) == 'H' );
+    check( lapacke_sym_const(    MagmaHermPoev      ) == 'P' );
+    check( lapacke_sym_const(    MagmaNonsymPosv    ) == 'N' );
+    check( lapacke_sym_const(    MagmaSymPosv       ) == 'S' );
 
-    assert( lapack_const( MagmaNoPacking     )[0] == 'N' );
-    assert( lapack_const( MagmaPackSubdiag   )[0] == 'U' );
-    assert( lapack_const( MagmaPackSupdiag   )[0] == 'L' );
-    assert( lapack_const( MagmaPackColumn    )[0] == 'C' );
-    assert( lapack_const( MagmaPackRow       )[0] == 'R' );
-    assert( lapack_const( MagmaPackLowerBand )[0] == 'B' );
-    assert( lapack_const( MagmaPackUpeprBand )[0] == 'Q' );
-    assert( lapack_const( MagmaPackAll       )[0] == 'Z' );
+    check( lapacke_pack_const(   MagmaNoPacking     ) == 'N' );
+    check( lapacke_pack_const(   MagmaPackSubdiag   ) == 'U' );
+    check( lapacke_pack_const(   MagmaPackSupdiag   ) == 'L' );
+    check( lapacke_pack_const(   MagmaPackColumn    ) == 'C' );
+    check( lapacke_pack_const(   MagmaPackRow       ) == 'R' );
+    check( lapacke_pack_const(   MagmaPackLowerBand ) == 'B' );
+    check( lapacke_pack_const(   MagmaPackUpeprBand ) == 'Q' );
+    check( lapacke_pack_const(   MagmaPackAll       ) == 'Z' );
 
-    assert( lapack_const( MagmaNoVec         )[0] == 'N' );
-    assert( lapack_const( MagmaVec           )[0] == 'V' );
-    assert( lapack_const( MagmaIVec          )[0] == 'I' );
-    assert( lapack_const( MagmaAllVec        )[0] == 'A' );
-    assert( lapack_const( MagmaSomeVec       )[0] == 'S' );
-    assert( lapack_const( MagmaOverwriteVec  )[0] == 'O' );
+    check( lapacke_vec_const(    MagmaNoVec         ) == 'N' );
+    check( lapacke_vec_const(    MagmaVec           ) == 'V' );
+    check( lapacke_vec_const(    MagmaIVec          ) == 'I' );
+    check( lapacke_vec_const(    MagmaAllVec        ) == 'A' );
+    check( lapacke_vec_const(    MagmaSomeVec       ) == 'S' );
+    check( lapacke_vec_const(    MagmaOverwriteVec  ) == 'O' );
 
-    assert( lapack_const( MagmaRangeAll      )[0] == 'A' );
-    assert( lapack_const( MagmaRangeV        )[0] == 'V' );
-    assert( lapack_const( MagmaRangeI        )[0] == 'I' );
+    check( lapacke_range_const(  MagmaRangeAll      ) == 'A' );
+    check( lapacke_range_const(  MagmaRangeV        ) == 'V' );
+    check( lapacke_range_const(  MagmaRangeI        ) == 'I' );
 
-    assert( lapack_const( MagmaForward       )[0] == 'F' );
-    assert( lapack_const( MagmaBackward      )[0] == 'B' );
+    check( lapacke_vect_const(   MagmaQ             ) == 'Q' );
+    check( lapacke_vect_const(   MagmaP             ) == 'P' );
 
-    assert( lapack_const( MagmaColumnwise    )[0] == 'C' );
-    assert( lapack_const( MagmaRowwise       )[0] == 'R' );
+    check( lapacke_direct_const( MagmaForward       ) == 'F' );
+    check( lapacke_direct_const( MagmaBackward      ) == 'B' );
 
-
-    // ------------------------------------------------------------
-    printf( "testing MAGMA  -> lapacke_const\n" );
-    assert( lapacke_const( MagmaFalse         ) == 'N' );
-    assert( lapacke_const( MagmaTrue          ) == 'Y' );
-
-    assert( lapacke_const( MagmaRowMajor      ) == 'R' );
-    assert( lapacke_const( MagmaColMajor      ) == 'C' );
-
-    assert( lapacke_const( MagmaNoTrans       ) == 'N' );
-    assert( lapacke_const( MagmaTrans         ) == 'T' );
-    assert( lapacke_const( MagmaConjTrans     ) == 'C' );
-
-    assert( lapacke_const( MagmaUpper         ) == 'U' );
-    assert( lapacke_const( MagmaLower         ) == 'L' );
-    assert( lapacke_const( MagmaFull          ) == 'F' );
-
-    assert( lapacke_const( MagmaNonUnit       ) == 'N' );
-    assert( lapacke_const( MagmaUnit          ) == 'U' );
-
-    assert( lapacke_const( MagmaLeft          ) == 'L' );
-    assert( lapacke_const( MagmaRight         ) == 'R' );
-    assert( lapacke_const( MagmaBothSides     ) == 'B' );
-
-    assert( lapacke_const( MagmaOneNorm       ) == '1' );
-    assert( lapacke_const( MagmaTwoNorm       ) == '2' );
-    assert( lapacke_const( MagmaFrobeniusNorm ) == 'F' );
-    assert( lapacke_const( MagmaInfNorm       ) == 'I' );
-    assert( lapacke_const( MagmaMaxNorm       ) == 'M' );
-
-    assert( lapacke_const( MagmaDistUniform   ) == 'U' );
-    assert( lapacke_const( MagmaDistSymmetric ) == 'S' );
-    assert( lapacke_const( MagmaDistNormal    ) == 'N' );
-
-    assert( lapacke_const( MagmaHermGeev      ) == 'H' );
-    assert( lapacke_const( MagmaHermPoev      ) == 'P' );
-    assert( lapacke_const( MagmaNonsymPosv    ) == 'N' );
-    assert( lapacke_const( MagmaSymPosv       ) == 'S' );
-
-    assert( lapacke_const( MagmaNoPacking     ) == 'N' );
-    assert( lapacke_const( MagmaPackSubdiag   ) == 'U' );
-    assert( lapacke_const( MagmaPackSupdiag   ) == 'L' );
-    assert( lapacke_const( MagmaPackColumn    ) == 'C' );
-    assert( lapacke_const( MagmaPackRow       ) == 'R' );
-    assert( lapacke_const( MagmaPackLowerBand ) == 'B' );
-    assert( lapacke_const( MagmaPackUpeprBand ) == 'Q' );
-    assert( lapacke_const( MagmaPackAll       ) == 'Z' );
-
-    assert( lapacke_const( MagmaNoVec         ) == 'N' );
-    assert( lapacke_const( MagmaVec           ) == 'V' );
-    assert( lapacke_const( MagmaIVec          ) == 'I' );
-    assert( lapacke_const( MagmaAllVec        ) == 'A' );
-    assert( lapacke_const( MagmaSomeVec       ) == 'S' );
-    assert( lapacke_const( MagmaOverwriteVec  ) == 'O' );
-
-    assert( lapacke_const( MagmaRangeAll      ) == 'A' );
-    assert( lapacke_const( MagmaRangeV        ) == 'V' );
-    assert( lapacke_const( MagmaRangeI        ) == 'I' );
-
-    assert( lapacke_const( MagmaForward       ) == 'F' );
-    assert( lapacke_const( MagmaBackward      ) == 'B' );
-
-    assert( lapacke_const( MagmaColumnwise    ) == 'C' );
-    assert( lapacke_const( MagmaRowwise       ) == 'R' );
+    check( lapacke_storev_const( MagmaColumnwise    ) == 'C' );
+    check( lapacke_storev_const( MagmaRowwise       ) == 'R' );
+    printf( "MAGMA  -> lapacke_xxxxx_const   %s\n", (s == gStatus ? "ok" : "failed"));
 
 
     // ------------------------------------------------------------
-    printf( "testing LAPACK -> magma_xxxxx_const\n" );
-    assert( magma_bool_const('N') == MagmaFalse );
-    assert( magma_bool_const('n') == MagmaFalse );
-    assert( magma_bool_const('Y') == MagmaTrue  );
-    assert( magma_bool_const('y') == MagmaTrue  );
+    s = gStatus;
+    check( lapack_const( MagmaFalse         )[0] == 'N' );
+    check( lapack_const( MagmaTrue          )[0] == 'Y' );
 
-    assert( magma_order_const( 'R' ) == MagmaRowMajor  );
-    assert( magma_order_const( 'r' ) == MagmaRowMajor  );
-    assert( magma_order_const( 'C' ) == MagmaColMajor  );
-    assert( magma_order_const( 'c' ) == MagmaColMajor  );
+    check( lapack_const( MagmaRowMajor      )[0] == 'R' );
+    check( lapack_const( MagmaColMajor      )[0] == 'C' );
 
-    assert( magma_trans_const( 'N' ) == MagmaNoTrans   );
-    assert( magma_trans_const( 'n' ) == MagmaNoTrans   );
-    assert( magma_trans_const( 'T' ) == MagmaTrans     );
-    assert( magma_trans_const( 't' ) == MagmaTrans     );
-    assert( magma_trans_const( 'C' ) == MagmaConjTrans );
-    assert( magma_trans_const( 'c' ) == MagmaConjTrans );
+    check( lapack_const( MagmaNoTrans       )[0] == 'N' );
+    check( lapack_const( MagmaTrans         )[0] == 'T' );
+    check( lapack_const( MagmaConjTrans     )[0] == 'C' );
 
-    assert( magma_uplo_const( 'U' ) == MagmaUpper      );
-    assert( magma_uplo_const( 'u' ) == MagmaUpper      );
-    assert( magma_uplo_const( 'L' ) == MagmaLower      );
-    assert( magma_uplo_const( 'l' ) == MagmaLower      );
-    assert( magma_uplo_const( 'A' ) == MagmaFull       );  // anything else
-    assert( magma_uplo_const( 'a' ) == MagmaFull       );
-    assert( magma_uplo_const( 'G' ) == MagmaFull       );
-    assert( magma_uplo_const( 'g' ) == MagmaFull       );
-    assert( magma_uplo_const( 'F' ) == MagmaFull       );
-    assert( magma_uplo_const( 'f' ) == MagmaFull       );
+    check( lapack_const( MagmaUpper         )[0] == 'U' );
+    check( lapack_const( MagmaLower         )[0] == 'L' );
+    check( lapack_const( MagmaFull          )[0] == 'F' );
 
-    assert( magma_diag_const( 'N' ) == MagmaNonUnit    );
-    assert( magma_diag_const( 'n' ) == MagmaNonUnit    );
-    assert( magma_diag_const( 'U' ) == MagmaUnit       );
-    assert( magma_diag_const( 'u' ) == MagmaUnit       );
+    check( lapack_const( MagmaNonUnit       )[0] == 'N' );
+    check( lapack_const( MagmaUnit          )[0] == 'U' );
 
-    assert( magma_side_const( 'L' ) == MagmaLeft       );
-    assert( magma_side_const( 'l' ) == MagmaLeft       );
-    assert( magma_side_const( 'R' ) == MagmaRight      );
-    assert( magma_side_const( 'r' ) == MagmaRight      );
+    check( lapack_const( MagmaLeft          )[0] == 'L' );
+    check( lapack_const( MagmaRight         )[0] == 'R' );
+    check( lapack_const( MagmaBothSides     )[0] == 'B' );
 
-    assert( magma_norm_const( 'O' ) == MagmaOneNorm       );
-    assert( magma_norm_const( 'o' ) == MagmaOneNorm       );
-    assert( magma_norm_const( '1' ) == MagmaOneNorm       );
-    assert( magma_norm_const( '2' ) == MagmaTwoNorm       );
-    assert( magma_norm_const( 'F' ) == MagmaFrobeniusNorm );
-    assert( magma_norm_const( 'f' ) == MagmaFrobeniusNorm );
-    assert( magma_norm_const( 'E' ) == MagmaFrobeniusNorm );
-    assert( magma_norm_const( 'e' ) == MagmaFrobeniusNorm );
-    assert( magma_norm_const( 'I' ) == MagmaInfNorm       );
-    assert( magma_norm_const( 'i' ) == MagmaInfNorm       );
-    assert( magma_norm_const( 'M' ) == MagmaMaxNorm       );
-    assert( magma_norm_const( 'm' ) == MagmaMaxNorm       );
+    check( lapack_const( MagmaOneNorm       )[0] == '1' );
+    check( lapack_const( MagmaTwoNorm       )[0] == '2' );
+    check( lapack_const( MagmaFrobeniusNorm )[0] == 'F' );
+    check( lapack_const( MagmaInfNorm       )[0] == 'I' );
+    check( lapack_const( MagmaMaxNorm       )[0] == 'M' );
 
-    assert( magma_dist_const( 'U' ) == MagmaDistUniform   );
-    assert( magma_dist_const( 'u' ) == MagmaDistUniform   );
-    assert( magma_dist_const( 'S' ) == MagmaDistSymmetric );
-    assert( magma_dist_const( 's' ) == MagmaDistSymmetric );
-    assert( magma_dist_const( 'N' ) == MagmaDistNormal    );
-    assert( magma_dist_const( 'n' ) == MagmaDistNormal    );
+    check( lapack_const( MagmaDistUniform   )[0] == 'U' );
+    check( lapack_const( MagmaDistSymmetric )[0] == 'S' );
+    check( lapack_const( MagmaDistNormal    )[0] == 'N' );
 
-    //assert( magma_xxxx_const( 'H' ) == MagmaHermGeev      );
-    //assert( magma_xxxx_const( 'P' ) == MagmaHermPoev      );
-    //assert( magma_xxxx_const( 'N' ) == MagmaNonsymPosv    );
-    //assert( magma_xxxx_const( 'S' ) == MagmaSymPosv       );
+    check( lapack_const( MagmaHermGeev      )[0] == 'H' );
+    check( lapack_const( MagmaHermPoev      )[0] == 'P' );
+    check( lapack_const( MagmaNonsymPosv    )[0] == 'N' );
+    check( lapack_const( MagmaSymPosv       )[0] == 'S' );
 
-    assert( magma_pack_const( 'N' ) == MagmaNoPacking     );
-    assert( magma_pack_const( 'n' ) == MagmaNoPacking     );
-    assert( magma_pack_const( 'U' ) == MagmaPackSubdiag   );
-    assert( magma_pack_const( 'u' ) == MagmaPackSubdiag   );
-    assert( magma_pack_const( 'L' ) == MagmaPackSupdiag   );
-    assert( magma_pack_const( 'l' ) == MagmaPackSupdiag   );
-    assert( magma_pack_const( 'C' ) == MagmaPackColumn    );
-    assert( magma_pack_const( 'c' ) == MagmaPackColumn    );
-    assert( magma_pack_const( 'R' ) == MagmaPackRow       );
-    assert( magma_pack_const( 'r' ) == MagmaPackRow       );
-    assert( magma_pack_const( 'B' ) == MagmaPackLowerBand );
-    assert( magma_pack_const( 'b' ) == MagmaPackLowerBand );
-    assert( magma_pack_const( 'Q' ) == MagmaPackUpeprBand );
-    assert( magma_pack_const( 'q' ) == MagmaPackUpeprBand );
-    assert( magma_pack_const( 'Z' ) == MagmaPackAll       );
-    assert( magma_pack_const( 'z' ) == MagmaPackAll       );
+    check( lapack_const( MagmaNoPacking     )[0] == 'N' );
+    check( lapack_const( MagmaPackSubdiag   )[0] == 'U' );
+    check( lapack_const( MagmaPackSupdiag   )[0] == 'L' );
+    check( lapack_const( MagmaPackColumn    )[0] == 'C' );
+    check( lapack_const( MagmaPackRow       )[0] == 'R' );
+    check( lapack_const( MagmaPackLowerBand )[0] == 'B' );
+    check( lapack_const( MagmaPackUpeprBand )[0] == 'Q' );
+    check( lapack_const( MagmaPackAll       )[0] == 'Z' );
 
-    assert( magma_vec_const( 'N' )  == MagmaNoVec         );
-    assert( magma_vec_const( 'n' )  == MagmaNoVec         );
-    assert( magma_vec_const( 'V' )  == MagmaVec           );
-    assert( magma_vec_const( 'v' )  == MagmaVec           );
-    assert( magma_vec_const( 'I' )  == MagmaIVec          );
-    assert( magma_vec_const( 'i' )  == MagmaIVec          );
-    assert( magma_vec_const( 'A' )  == MagmaAllVec        );
-    assert( magma_vec_const( 'a' )  == MagmaAllVec        );
-    assert( magma_vec_const( 'S' )  == MagmaSomeVec       );
-    assert( magma_vec_const( 's' )  == MagmaSomeVec       );
-    assert( magma_vec_const( 'O' )  == MagmaOverwriteVec  );
-    assert( magma_vec_const( 'o' )  == MagmaOverwriteVec  );
+    check( lapack_const( MagmaNoVec         )[0] == 'N' );
+    check( lapack_const( MagmaVec           )[0] == 'V' );
+    check( lapack_const( MagmaIVec          )[0] == 'I' );
+    check( lapack_const( MagmaAllVec        )[0] == 'A' );
+    check( lapack_const( MagmaSomeVec       )[0] == 'S' );
+    check( lapack_const( MagmaOverwriteVec  )[0] == 'O' );
 
-    assert( magma_range_const( 'A' )  == MagmaRangeAll    );
-    assert( magma_range_const( 'a' )  == MagmaRangeAll    );
-    assert( magma_range_const( 'V' )  == MagmaRangeV      );
-    assert( magma_range_const( 'v' )  == MagmaRangeV      );
-    assert( magma_range_const( 'I' )  == MagmaRangeI      );
-    assert( magma_range_const( 'i' )  == MagmaRangeI      );
+    check( lapack_const( MagmaRangeAll      )[0] == 'A' );
+    check( lapack_const( MagmaRangeV        )[0] == 'V' );
+    check( lapack_const( MagmaRangeI        )[0] == 'I' );
 
-    assert( magma_direct_const( 'F' ) == MagmaForward     );
-    assert( magma_direct_const( 'f' ) == MagmaForward     );
-    assert( magma_direct_const( 'B' ) == MagmaBackward    );
-    assert( magma_direct_const( 'b' ) == MagmaBackward    );
+    check( lapack_const( MagmaQ             )[0] == 'Q' );
+    check( lapack_const( MagmaP             )[0] == 'P' );
 
-    assert( magma_storev_const( 'C' ) == MagmaColumnwise  );
-    assert( magma_storev_const( 'c' ) == MagmaColumnwise  );
-    assert( magma_storev_const( 'R' ) == MagmaRowwise     );
-    assert( magma_storev_const( 'r' ) == MagmaRowwise     );
+    check( lapack_const( MagmaForward       )[0] == 'F' );
+    check( lapack_const( MagmaBackward      )[0] == 'B' );
+
+    check( lapack_const( MagmaColumnwise    )[0] == 'C' );
+    check( lapack_const( MagmaRowwise       )[0] == 'R' );
+    printf( "MAGMA  -> lapack_const          %s\n", (s == gStatus ? "ok" : "failed"));
+
+
+    // ------------------------------------------------------------
+    s = gStatus;
+    check( lapacke_const( MagmaFalse         ) == 'N' );
+    check( lapacke_const( MagmaTrue          ) == 'Y' );
+
+    check( lapacke_const( MagmaRowMajor      ) == 'R' );
+    check( lapacke_const( MagmaColMajor      ) == 'C' );
+
+    check( lapacke_const( MagmaNoTrans       ) == 'N' );
+    check( lapacke_const( MagmaTrans         ) == 'T' );
+    check( lapacke_const( MagmaConjTrans     ) == 'C' );
+
+    check( lapacke_const( MagmaUpper         ) == 'U' );
+    check( lapacke_const( MagmaLower         ) == 'L' );
+    check( lapacke_const( MagmaFull          ) == 'F' );
+
+    check( lapacke_const( MagmaNonUnit       ) == 'N' );
+    check( lapacke_const( MagmaUnit          ) == 'U' );
+
+    check( lapacke_const( MagmaLeft          ) == 'L' );
+    check( lapacke_const( MagmaRight         ) == 'R' );
+    check( lapacke_const( MagmaBothSides     ) == 'B' );
+
+    check( lapacke_const( MagmaOneNorm       ) == '1' );
+    check( lapacke_const( MagmaTwoNorm       ) == '2' );
+    check( lapacke_const( MagmaFrobeniusNorm ) == 'F' );
+    check( lapacke_const( MagmaInfNorm       ) == 'I' );
+    check( lapacke_const( MagmaMaxNorm       ) == 'M' );
+
+    check( lapacke_const( MagmaDistUniform   ) == 'U' );
+    check( lapacke_const( MagmaDistSymmetric ) == 'S' );
+    check( lapacke_const( MagmaDistNormal    ) == 'N' );
+
+    check( lapacke_const( MagmaHermGeev      ) == 'H' );
+    check( lapacke_const( MagmaHermPoev      ) == 'P' );
+    check( lapacke_const( MagmaNonsymPosv    ) == 'N' );
+    check( lapacke_const( MagmaSymPosv       ) == 'S' );
+
+    check( lapacke_const( MagmaNoPacking     ) == 'N' );
+    check( lapacke_const( MagmaPackSubdiag   ) == 'U' );
+    check( lapacke_const( MagmaPackSupdiag   ) == 'L' );
+    check( lapacke_const( MagmaPackColumn    ) == 'C' );
+    check( lapacke_const( MagmaPackRow       ) == 'R' );
+    check( lapacke_const( MagmaPackLowerBand ) == 'B' );
+    check( lapacke_const( MagmaPackUpeprBand ) == 'Q' );
+    check( lapacke_const( MagmaPackAll       ) == 'Z' );
+
+    check( lapacke_const( MagmaNoVec         ) == 'N' );
+    check( lapacke_const( MagmaVec           ) == 'V' );
+    check( lapacke_const( MagmaIVec          ) == 'I' );
+    check( lapacke_const( MagmaAllVec        ) == 'A' );
+    check( lapacke_const( MagmaSomeVec       ) == 'S' );
+    check( lapacke_const( MagmaOverwriteVec  ) == 'O' );
+
+    check( lapacke_const( MagmaRangeAll      ) == 'A' );
+    check( lapacke_const( MagmaRangeV        ) == 'V' );
+    check( lapacke_const( MagmaRangeI        ) == 'I' );
+
+    check( lapacke_const( MagmaQ             ) == 'Q' );
+    check( lapacke_const( MagmaP             ) == 'P' );
+
+    check( lapacke_const( MagmaForward       ) == 'F' );
+    check( lapacke_const( MagmaBackward      ) == 'B' );
+
+    check( lapacke_const( MagmaColumnwise    ) == 'C' );
+    check( lapacke_const( MagmaRowwise       ) == 'R' );
+    printf( "MAGMA  -> lapacke_const         %s\n", (s == gStatus ? "ok" : "failed"));
+
+
+    // ------------------------------------------------------------
+    s = gStatus;
+    check( magma_bool_const('N') == MagmaFalse );
+    check( magma_bool_const('n') == MagmaFalse );
+    check( magma_bool_const('Y') == MagmaTrue  );
+    check( magma_bool_const('y') == MagmaTrue  );
+
+    check( magma_order_const( 'R' ) == MagmaRowMajor  );
+    check( magma_order_const( 'r' ) == MagmaRowMajor  );
+    check( magma_order_const( 'C' ) == MagmaColMajor  );
+    check( magma_order_const( 'c' ) == MagmaColMajor  );
+
+    check( magma_trans_const( 'N' ) == MagmaNoTrans   );
+    check( magma_trans_const( 'n' ) == MagmaNoTrans   );
+    check( magma_trans_const( 'T' ) == MagmaTrans     );
+    check( magma_trans_const( 't' ) == MagmaTrans     );
+    check( magma_trans_const( 'C' ) == MagmaConjTrans );
+    check( magma_trans_const( 'c' ) == MagmaConjTrans );
+
+    check( magma_uplo_const( 'U' ) == MagmaUpper      );
+    check( magma_uplo_const( 'u' ) == MagmaUpper      );
+    check( magma_uplo_const( 'L' ) == MagmaLower      );
+    check( magma_uplo_const( 'l' ) == MagmaLower      );
+    check( magma_uplo_const( 'A' ) == MagmaFull       );  // anything else
+    check( magma_uplo_const( 'a' ) == MagmaFull       );
+    check( magma_uplo_const( 'G' ) == MagmaFull       );
+    check( magma_uplo_const( 'g' ) == MagmaFull       );
+    check( magma_uplo_const( 'F' ) == MagmaFull       );
+    check( magma_uplo_const( 'f' ) == MagmaFull       );
+
+    check( magma_diag_const( 'N' ) == MagmaNonUnit    );
+    check( magma_diag_const( 'n' ) == MagmaNonUnit    );
+    check( magma_diag_const( 'U' ) == MagmaUnit       );
+    check( magma_diag_const( 'u' ) == MagmaUnit       );
+
+    check( magma_side_const( 'L' ) == MagmaLeft       );
+    check( magma_side_const( 'l' ) == MagmaLeft       );
+    check( magma_side_const( 'R' ) == MagmaRight      );
+    check( magma_side_const( 'r' ) == MagmaRight      );
+
+    check( magma_norm_const( 'O' ) == MagmaOneNorm       );
+    check( magma_norm_const( 'o' ) == MagmaOneNorm       );
+    check( magma_norm_const( '1' ) == MagmaOneNorm       );
+    check( magma_norm_const( '2' ) == MagmaTwoNorm       );
+    check( magma_norm_const( 'F' ) == MagmaFrobeniusNorm );
+    check( magma_norm_const( 'f' ) == MagmaFrobeniusNorm );
+    check( magma_norm_const( 'E' ) == MagmaFrobeniusNorm );
+    check( magma_norm_const( 'e' ) == MagmaFrobeniusNorm );
+    check( magma_norm_const( 'I' ) == MagmaInfNorm       );
+    check( magma_norm_const( 'i' ) == MagmaInfNorm       );
+    check( magma_norm_const( 'M' ) == MagmaMaxNorm       );
+    check( magma_norm_const( 'm' ) == MagmaMaxNorm       );
+
+    check( magma_dist_const( 'U' ) == MagmaDistUniform   );
+    check( magma_dist_const( 'u' ) == MagmaDistUniform   );
+    check( magma_dist_const( 'S' ) == MagmaDistSymmetric );
+    check( magma_dist_const( 's' ) == MagmaDistSymmetric );
+    check( magma_dist_const( 'N' ) == MagmaDistNormal    );
+    check( magma_dist_const( 'n' ) == MagmaDistNormal    );
+
+    //check( magma_xxxx_const( 'H' ) == MagmaHermGeev      );
+    //check( magma_xxxx_const( 'P' ) == MagmaHermPoev      );
+    //check( magma_xxxx_const( 'N' ) == MagmaNonsymPosv    );
+    //check( magma_xxxx_const( 'S' ) == MagmaSymPosv       );
+
+    check( magma_pack_const( 'N' ) == MagmaNoPacking     );
+    check( magma_pack_const( 'n' ) == MagmaNoPacking     );
+    check( magma_pack_const( 'U' ) == MagmaPackSubdiag   );
+    check( magma_pack_const( 'u' ) == MagmaPackSubdiag   );
+    check( magma_pack_const( 'L' ) == MagmaPackSupdiag   );
+    check( magma_pack_const( 'l' ) == MagmaPackSupdiag   );
+    check( magma_pack_const( 'C' ) == MagmaPackColumn    );
+    check( magma_pack_const( 'c' ) == MagmaPackColumn    );
+    check( magma_pack_const( 'R' ) == MagmaPackRow       );
+    check( magma_pack_const( 'r' ) == MagmaPackRow       );
+    check( magma_pack_const( 'B' ) == MagmaPackLowerBand );
+    check( magma_pack_const( 'b' ) == MagmaPackLowerBand );
+    check( magma_pack_const( 'Q' ) == MagmaPackUpeprBand );
+    check( magma_pack_const( 'q' ) == MagmaPackUpeprBand );
+    check( magma_pack_const( 'Z' ) == MagmaPackAll       );
+    check( magma_pack_const( 'z' ) == MagmaPackAll       );
+
+    check( magma_vec_const( 'N' )  == MagmaNoVec         );
+    check( magma_vec_const( 'n' )  == MagmaNoVec         );
+    check( magma_vec_const( 'V' )  == MagmaVec           );
+    check( magma_vec_const( 'v' )  == MagmaVec           );
+    check( magma_vec_const( 'I' )  == MagmaIVec          );
+    check( magma_vec_const( 'i' )  == MagmaIVec          );
+    check( magma_vec_const( 'A' )  == MagmaAllVec        );
+    check( magma_vec_const( 'a' )  == MagmaAllVec        );
+    check( magma_vec_const( 'S' )  == MagmaSomeVec       );
+    check( magma_vec_const( 's' )  == MagmaSomeVec       );
+    check( magma_vec_const( 'O' )  == MagmaOverwriteVec  );
+    check( magma_vec_const( 'o' )  == MagmaOverwriteVec  );
+
+    check( magma_range_const( 'A' )  == MagmaRangeAll    );
+    check( magma_range_const( 'a' )  == MagmaRangeAll    );
+    check( magma_range_const( 'V' )  == MagmaRangeV      );
+    check( magma_range_const( 'v' )  == MagmaRangeV      );
+    check( magma_range_const( 'I' )  == MagmaRangeI      );
+    check( magma_range_const( 'i' )  == MagmaRangeI      );
+
+    check( magma_vect_const( 'Q' )   == MagmaQ           );
+    check( magma_vect_const( 'q' )   == MagmaQ           );
+    check( magma_vect_const( 'P' )   == MagmaP           );
+    check( magma_vect_const( 'p' )   == MagmaP           );
+
+    check( magma_direct_const( 'F' ) == MagmaForward     );
+    check( magma_direct_const( 'f' ) == MagmaForward     );
+    check( magma_direct_const( 'B' ) == MagmaBackward    );
+    check( magma_direct_const( 'b' ) == MagmaBackward    );
+
+    check( magma_storev_const( 'C' ) == MagmaColumnwise  );
+    check( magma_storev_const( 'c' ) == MagmaColumnwise  );
+    check( magma_storev_const( 'R' ) == MagmaRowwise     );
+    check( magma_storev_const( 'r' ) == MagmaRowwise     );
+    printf( "LAPACK -> magma_xxxxx_const     %s\n", (s == gStatus ? "ok" : "failed"));
 
 
     // ------------------------------------------------------------
     #ifdef HAVE_clAmdBlas
-    printf( "testing MAGMA  -> amdblas_xxxxx_const\n" );
-    assert( amdblas_order_const( MagmaRowMajor      ) == clAmdBlasRowMajor    );
-    assert( amdblas_order_const( MagmaColMajor      ) == clAmdBlasColumnMajor );
+    s = gStatus;
+    check( amdblas_order_const( MagmaRowMajor      ) == clAmdBlasRowMajor    );
+    check( amdblas_order_const( MagmaColMajor      ) == clAmdBlasColumnMajor );
 
-    assert( amdblas_trans_const( MagmaNoTrans       ) == clAmdBlasNoTrans     );
-    assert( amdblas_trans_const( MagmaTrans         ) == clAmdBlasTrans       );
-    assert( amdblas_trans_const( MagmaConjTrans     ) == clAmdBlasConjTrans   );
+    check( amdblas_trans_const( MagmaNoTrans       ) == clAmdBlasNoTrans     );
+    check( amdblas_trans_const( MagmaTrans         ) == clAmdBlasTrans       );
+    check( amdblas_trans_const( MagmaConjTrans     ) == clAmdBlasConjTrans   );
 
-    assert( amdblas_uplo_const(  MagmaUpper         ) == clAmdBlasUpper       );
-    assert( amdblas_uplo_const(  MagmaLower         ) == clAmdBlasLower       );
+    check( amdblas_uplo_const(  MagmaUpper         ) == clAmdBlasUpper       );
+    check( amdblas_uplo_const(  MagmaLower         ) == clAmdBlasLower       );
 
-    assert( amdblas_diag_const(  MagmaNonUnit       ) == clAmdBlasNonUnit     );
-    assert( amdblas_diag_const(  MagmaUnit          ) == clAmdBlasUnit        );
+    check( amdblas_diag_const(  MagmaNonUnit       ) == clAmdBlasNonUnit     );
+    check( amdblas_diag_const(  MagmaUnit          ) == clAmdBlasUnit        );
 
-    assert( amdblas_side_const(  MagmaLeft          ) == clAmdBlasLeft        );
-    assert( amdblas_side_const(  MagmaRight         ) == clAmdBlasRight       );
+    check( amdblas_side_const(  MagmaLeft          ) == clAmdBlasLeft        );
+    check( amdblas_side_const(  MagmaRight         ) == clAmdBlasRight       );
+    printf( "MAGMA  -> amdblas_xxxxx_const   %s\n", (s == gStatus ? "ok" : "failed"));
     #endif
 
 
     // ------------------------------------------------------------
     #ifdef CUBLAS_V2_H_
-    printf( "testing MAGMA  -> cublas_xxxxx_const\n" );
-    assert( cublas_trans_const( MagmaNoTrans       ) == CUBLAS_OP_N            );
-    assert( cublas_trans_const( MagmaTrans         ) == CUBLAS_OP_T            );
-    assert( cublas_trans_const( MagmaConjTrans     ) == CUBLAS_OP_C            );
+    s = gStatus;
+    check( cublas_trans_const( MagmaNoTrans       ) == CUBLAS_OP_N            );
+    check( cublas_trans_const( MagmaTrans         ) == CUBLAS_OP_T            );
+    check( cublas_trans_const( MagmaConjTrans     ) == CUBLAS_OP_C            );
 
-    assert( cublas_uplo_const(  MagmaUpper         ) == CUBLAS_FILL_MODE_UPPER );
-    assert( cublas_uplo_const(  MagmaLower         ) == CUBLAS_FILL_MODE_LOWER );
+    check( cublas_uplo_const(  MagmaUpper         ) == CUBLAS_FILL_MODE_UPPER );
+    check( cublas_uplo_const(  MagmaLower         ) == CUBLAS_FILL_MODE_LOWER );
 
-    assert( cublas_diag_const(  MagmaNonUnit       ) == CUBLAS_DIAG_NON_UNIT   );
-    assert( cublas_diag_const(  MagmaUnit          ) == CUBLAS_DIAG_UNIT       );
+    check( cublas_diag_const(  MagmaNonUnit       ) == CUBLAS_DIAG_NON_UNIT   );
+    check( cublas_diag_const(  MagmaUnit          ) == CUBLAS_DIAG_UNIT       );
 
-    assert( cublas_side_const(  MagmaLeft          ) == CUBLAS_SIDE_LEFT       );
-    assert( cublas_side_const(  MagmaRight         ) == CUBLAS_SIDE_RIGHT      );
+    check( cublas_side_const(  MagmaLeft          ) == CUBLAS_SIDE_LEFT       );
+    check( cublas_side_const(  MagmaRight         ) == CUBLAS_SIDE_RIGHT      );
+    printf( "MAGMA  -> cublas_xxxxx_const    %s\n", (s == gStatus ? "ok" : "failed"));
     #endif
 
 
     // ------------------------------------------------------------
     #ifdef HAVE_CBLAS
-    printf( "testing MAGMA  -> cblas_xxxxx_const\n" );
-    assert( cblas_order_const( MagmaRowMajor      ) == CblasRowMajor  );
-    assert( cblas_order_const( MagmaColMajor      ) == CblasColMajor  );
+    s = gStatus;
+    check( cblas_order_const( MagmaRowMajor      ) == CblasRowMajor  );
+    check( cblas_order_const( MagmaColMajor      ) == CblasColMajor  );
 
-    assert( cblas_trans_const( MagmaNoTrans       ) == CblasNoTrans   );
-    assert( cblas_trans_const( MagmaTrans         ) == CblasTrans     );
-    assert( cblas_trans_const( MagmaConjTrans     ) == CblasConjTrans );
+    check( cblas_trans_const( MagmaNoTrans       ) == CblasNoTrans   );
+    check( cblas_trans_const( MagmaTrans         ) == CblasTrans     );
+    check( cblas_trans_const( MagmaConjTrans     ) == CblasConjTrans );
 
-    assert( cblas_uplo_const(  MagmaUpper         ) == CblasUpper     );
-    assert( cblas_uplo_const(  MagmaLower         ) == CblasLower     );
+    check( cblas_uplo_const(  MagmaUpper         ) == CblasUpper     );
+    check( cblas_uplo_const(  MagmaLower         ) == CblasLower     );
 
-    assert( cblas_diag_const(  MagmaNonUnit       ) == CblasNonUnit   );
-    assert( cblas_diag_const(  MagmaUnit          ) == CblasUnit      );
+    check( cblas_diag_const(  MagmaNonUnit       ) == CblasNonUnit   );
+    check( cblas_diag_const(  MagmaUnit          ) == CblasUnit      );
 
-    assert( cblas_side_const(  MagmaLeft          ) == CblasLeft      );
-    assert( cblas_side_const(  MagmaRight         ) == CblasRight     );
+    check( cblas_side_const(  MagmaLeft          ) == CblasLeft      );
+    check( cblas_side_const(  MagmaRight         ) == CblasRight     );
+    printf( "MAGMA  -> cblas_xxxxx_const     %s\n", (s == gStatus ? "ok" : "failed"));
     #endif
 
-    //assert( true  );
-    //assert( false );
-
-    return 0;
+    return gStatus;
 }

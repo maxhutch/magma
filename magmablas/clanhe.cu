@@ -1,11 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zlanhe.cu normal z -> c, Fri Apr 25 15:05:22 2014
+       @author Mark Gates
+       @generated from zlanhe.cu normal z -> c, Fri May 30 10:40:42 2014
 
 */
 #include "common_magma.h"
@@ -13,533 +14,360 @@
 #define inf_bs 32
 #define max_bs 64
 
+#define PRECISION_c
+
+
+__global__ void
+clanhe_inf_kernel_generic_upper(
+    int n, const magmaFloatComplex* A, int lda, float *dwork,
+    int n_full_block, int n_mod_bs );
+
 
 /* ====================================================================== */
 /* inf-norm */
 
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf,
- * where n % inf_bs == 0 and A is stored lower.
- * Has ceil( n / inf_bs ) blocks of (inf_bs x 4) threads each.
- */
+ * where n is any size and A is stored lower.
+ * Has ceil( n / inf_bs ) blocks of (inf_bs x 4) threads each (inf_bs=32).
+ * z precision uses > 16 KB shared memory, so requires Fermi (arch >= 200). */
 __global__ void
-clanhe_inf_kernel_special_l(
-    int n, const magmaFloatComplex* A, int lda, float *dwork )
+clanhe_inf_kernel_generic_lower(
+    int n, const magmaFloatComplex* A, int lda, float *dwork,
+    int n_full_block, int n_mod_bs )
 {
-#if (__CUDA_ARCH__ >= 200)
-    int tx  = threadIdx.x;
-    int ty  = threadIdx.y;
-    int ind = blockIdx.x*inf_bs + tx;
+#if (defined(PRECISION_s) || defined(PRECISION_d) || defined(PRECISION_c) || __CUDA_ARCH__ >= 200)
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
+    
+    int diag = blockIdx.x*inf_bs;
+    int ind  = blockIdx.x*inf_bs + tx;
+    
     float res = 0.;
     
     __shared__ magmaFloatComplex la[inf_bs][inf_bs+1];
     
-    A += ind;
-    A += ty * lda;
-    int break_d = blockIdx.x*inf_bs;
-    
-    // loop over all 32x32 blocks left of the diagonal block
-    for(int i=0; i < break_d; i += inf_bs ) {
-        // 32x4 threads cooperatively load 32x32 block
+    if ( blockIdx.x < n_full_block ) {
+        // ------------------------------
+        // All full block rows
+        A += ind;
+        A += ty * lda;
+        
+        // ----------
+        // loop over all blocks left of the diagonal block
+        for(int i=0; i < diag; i += inf_bs ) {
+            // 32x4 threads cooperatively load 32x32 block
+            #pragma unroll 8
+            for(int j=0; j < inf_bs; j += 4) {
+                la[tx][ty+j] = A[j*lda];
+            }
+            A += lda*inf_bs;
+            __syncthreads();
+            
+            // compute 4 partial sums of each row, i.e.,
+            // for ty=0:  res = sum( la[tx, 0: 7] )
+            // for ty=1:  res = sum( la[tx, 8:15] )
+            // for ty=2:  res = sum( la[tx,16:23] )
+            // for ty=3:  res = sum( la[tx,24:31] )
+            #pragma unroll 8             
+            for(int j=ty*8; j < ty*8 + 8; j++) {
+                res += cuCabsf( la[tx][j] );
+            }
+            __syncthreads();
+        }
+        
+        // ----------
+        // load diagonal block
         #pragma unroll 8
         for(int j=0; j < inf_bs; j += 4) {
             la[tx][ty+j] = A[j*lda];
         }
         __syncthreads();
         
-        // compute 4 partial sums of each row
+        // copy lower triangle to upper triangle, and
+        // make diagonal real (zero imaginary part)
         #pragma unroll 8
-        for(int j=0; j < 8; j++) {
-            res += cuCabsf( la[tx][j+ty*8] );
-        }
-        A += lda*inf_bs;
-        __syncthreads();
-    }
-    
-    // 32x4 threads cooperatively load 32x32 diagonal block
-    #pragma unroll 8
-    for(int j=0; j < inf_bs; j += 4)
-        la[ty+j][tx] = A[j*lda];
-    A += inf_bs;
-    __syncthreads();
-    
-    // symmetrize block
-    // TODO make diagonal element real
-    #pragma unroll 8
-    for(int i=ty*8; i < (1+ty)*inf_bs/4; i++) {
-        if ( i < tx ) {
-            la[tx][i] = la[i][tx];
-        }
-        else
-            la[tx][i] = la[tx][i];  // TODO: not needed
-    }
-    __syncthreads();
-    
-    // compute 4 partial sums of each row
-    #pragma unroll 8
-    for(int j=0; j < inf_bs/4; j++) {
-        res += cuCabsf( la[tx][j+ty*8] );
-    }
-    break_d += inf_bs;
-    __syncthreads();
-    
-    // loop over all 32x32 blocks below diagonal block
-    for(int i=break_d; i < n; i += inf_bs ) {
-        // 32x4 threads cooperatively load 32x32 block
-        #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4)
-            la[ty+j][tx] = A[j*lda];
-        A += inf_bs;
-        __syncthreads();
-        
-        // compute 4 partial sums of each row
-        #pragma unroll 8
-        for(int j=0; j < inf_bs/4; j++) {
-            res += cuCabsf( la[tx][j+ty*8] );
-        }
-        __syncthreads();
-    }
-    
-    // store partial sums into shared memory
-    la[tx][ty] = MAGMA_C_MAKE( res, 0. );
-    __syncthreads();
-    
-    // 32x1 threads compute final result of each row
-    if ( ty == 0 ) {
-        res = res
-            + MAGMA_C_REAL( la[tx][1] )
-            + MAGMA_C_REAL( la[tx][2] )
-            + MAGMA_C_REAL( la[tx][3] );
-        dwork[ind] = res;
-    }
-#endif /* (__CUDA_ARCH__ >= 200) */
-}
-
-
-/* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf,
- * where n is any size and A is stored lower */
-__global__ void
-clanhe_inf_kernel_generic_l(
-    int n, const magmaFloatComplex* A, int lda, float *dwork,
-    int n_full_block, int n_mod_bs )
-{
-#if (__CUDA_ARCH__ >= 200)
-    int tx = threadIdx.x;
-    int ty = threadIdx.y;
-    
-    int ind = blockIdx.x*inf_bs + tx;
-    
-    float res = 0.;
-    
-    __shared__ magmaFloatComplex la[inf_bs][inf_bs+1];
-    
-    if ( blockIdx.x == n_full_block ) {
-        /************************************************************************
-        -- Last (partial) block --
-        -- We will do something unusual here
-        -- Threads past end of matrix (i.e., ind >= n) are redundantly assigned 
-        -- the last row (n-1). At the end, those results are ignored -- only
-        -- results for ind < n are saved into dwork.
-        -- For sufficiently large matrix the overhead will be very low
-        *************************************************************************/
-        if ( tx < n_mod_bs ) {
-            A += ( blockIdx.x*inf_bs + tx );
-        }
-        else {
-            A += ( blockIdx.x*inf_bs + n_mod_bs - 1);  // redundantly do last row
-        }
-        A += ty * lda;
-        int break_d = blockIdx.x*inf_bs;
-    
-        /*----------------------------
-            Go Right
-        -------------------------------*/
-        for(int i=0; i < break_d; i += inf_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
-                la[tx][ty+j] = A[j*lda];
-            }
-            __syncthreads();
-            
-            #pragma unroll 8
-            for(int j=0; j < 8; j++) {
-                res += cuCabsf( la[tx][j+ty*8] );
-            }
-            A += lda*inf_bs;
-            __syncthreads();
-        }
-        
-        /* we don't need to make results for rows >= n zero, as those computation will be discarded. */
-        
-        if ( ty == 0 ) {
-            /*--------------------------------------------
-                he will compute the triangular parts
-                others will be waiting with values.
-            -----------------------------------------------*/
-            int j;
-            int count = 1;  // TODO don't need initialization
-            if ( tx < n_mod_bs )
-                count = tx;
-            else
-                count = n_mod_bs;
-            for(j=0; j <= count; j++) {
-                res += cuCabsf( A[j*lda] );
-            }
-            A += tx*lda;
-            count = 1;
-            for( ; j < n_mod_bs; j++) {
-                res += cuCabsf( A[count] );
-                count++;
-            }
-        }
-        __syncthreads();
-        
-        la[tx][ty]= MAGMA_C_MAKE( res, 0. );
-        __syncthreads();
-        
-        /*--------------------------------------------------------
-        The leader accumulates all the results from his peer.
-        ----------------------------------------------------------*/
-        if ( ty == 0 ) {
-            res = res
-                + MAGMA_C_REAL( la[tx][1] )
-                + MAGMA_C_REAL( la[tx][2] )
-                + MAGMA_C_REAL( la[tx][3] );
-            if ( tx < n_mod_bs )
-                dwork[ind] = res;
-        }
-    }
-    else {
-        /*-----------------------------------
-        -- All the blocks but the last one --
-        -------------------------------------*/
-        A += ind;
-        A += ty * lda;
-        int break_d = blockIdx.x*inf_bs;
-        
-        /*----------------------------
-            Go Right
-        -------------------------------*/
-        for(int i=0; i < break_d; i += inf_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
-                la[tx][ty+j] = A[j*lda];
-            }
-            __syncthreads();
-            
-            #pragma unroll 8
-            for(int j=0; j < 8; j++) {
-                res += cuCabsf( la[tx][j+ty*8] );
-            }
-            A += lda*inf_bs;
-            __syncthreads();
-        }
-
-        /*------------------------------------
-            Diagonal
-            Copy + Transpose lower triangle
-        --------------------------------------*/
-        #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4)
-            la[ty+j][tx] = A[j*lda];
-        
-        A += inf_bs;
-        __syncthreads();
-        
-        /*--------------------------------------------
-            Mirror Upper Triangle to Lower triangle
-        ---------------------------------------------*/
-        #pragma unroll 8
-        for(int i=ty*8; i < (1+ty)*inf_bs/4; i++) {
+        for(int i=ty*8; i < ty*8 + 8; i++) {
             if ( i < tx ) {
-                la[tx][i] = la[i][tx];
+                la[i][tx] = la[tx][i];
             }
-            else
-                la[tx][i] = la[tx][i];  // TODO: not needed
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+            else if ( i == tx ) {
+                la[i][i] = MAGMA_C_MAKE( MAGMA_C_REAL( la[i][i] ), 0 );
+            }
+            #endif
         }
         __syncthreads();
         
-        /*--------------------------------
-            Do diagonal Computation
-        -----------------------------------*/
+        // partial row sums
         #pragma unroll 8
-        for(int j=0; j < inf_bs/4; j++) {
-            res += cuCabsf( la[tx][j+ty*8] );
+        for(int j=ty*8; j < ty*8 + 8; j++) {
+            res += cuCabsf( la[tx][j] );
         }
-        break_d += inf_bs;
         __syncthreads();
         
-        n -= n_mod_bs;
-        
-        /*-----------------------------
-            Go Down
-        -------------------------------*/
-        for(int i=break_d; i < n; i += inf_bs ) {
+        // ----------
+        // loop over all 32x32 blocks below diagonal block
+        A += inf_bs;
+        for(int i=diag + inf_bs; i < n - n_mod_bs; i += inf_bs ) {
+            // load block (transposed)
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4)
+            for(int j=0; j < inf_bs; j += 4) {
                 la[ty+j][tx] = A[j*lda];
+            }
             A += inf_bs;
             __syncthreads();
             
+            // partial row sums
             #pragma unroll 8
-            for(int j=0; j < inf_bs/4; j++) {
-                res += cuCabsf( la[tx][j+ty*8] );
+            for(int j=ty*8; j < ty*8 + 8; j++) {
+                res += cuCabsf( la[tx][j] );
             }
             __syncthreads();
         }
         
-        /*---------------------------------------------
-            doing n_mod_bs stuffs here.
-            Symmetric is giving us benefit .. true
-        -----------------------------------------------*/
-        A -= tx;
-        if ( tx < n_mod_bs ) {
-            A += tx;
-        }
-        else {
-            A += (n_mod_bs-1); /* Same as above */
+        // ----------
+        // last partial block, which is (n_mod_bs by inf_bs)
+        if ( n_mod_bs > 0 ) {
+            // load block (transposed), with zeros for rows outside matrix
+            #pragma unroll 8
+            for(int j=0; j < inf_bs; j += 4) {
+                if ( tx < n_mod_bs ) {
+                    la[ty+j][tx] = A[j*lda];
+                }
+                else {
+                    la[ty+j][tx] = MAGMA_C_ZERO;
+                }
+            }
+            __syncthreads();
+            
+            // partial row sums
+            #pragma unroll 8
+            for(int j=ty*8; j < ty*8 + 8; j++) {
+                res += cuCabsf( la[tx][j] );
+            }
+            __syncthreads();
         }
         
-        #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4) {
-            if ( tx < n_mod_bs )
-                la[ty+j][tx] = A[j*lda];      //MAGMA_C_MUL( MAGMA_C_ONE,  A[j*lda] );  // huh? just A[j*lda]?
-            else
-                la[ty+j][tx] = MAGMA_C_ZERO;  //MAGMA_C_MUL( MAGMA_C_ZERO, A[j*lda] );  // huh? just 0?
-        }
-        __syncthreads();
-        
-        /*----------------------------------------
-            What about doing some Zeroing here?
-            instead of zeroing before?
-        -----------------------------------------*/
-        #pragma unroll 8
-        for(int j=0; j < inf_bs/4; j++) {
-            res += cuCabsf( la[tx][j+ty*8] );
-        }
-        __syncthreads();
-        
+        // ----------
+        // 32x4 threads store partial sums into shared memory
         la[tx][ty] = MAGMA_C_MAKE( res, 0. );
         __syncthreads();
         
-        /*--------------------------------------------------------
-            The leader accumulates all the results from his peer.
-        ----------------------------------------------------------*/
+        // first column of 32x1 threads computes final sum of each row
         if ( ty == 0 ) {
             res = res
                 + MAGMA_C_REAL( la[tx][1] )
                 + MAGMA_C_REAL( la[tx][2] )
                 + MAGMA_C_REAL( la[tx][3] );
             dwork[ind] = res;
-        }
-    }
-#endif /* (__CUDA_ARCH__ >= 200) */
-}
-
-
-/* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf,
- * where n is any size and A is stored upper */
-__global__ void
-clanhe_inf_kernel_generic_u(
-    int n, const magmaFloatComplex* A, int lda, float *dwork,
-    int n_full_block, int n_mod_bs )
-{
-#if (__CUDA_ARCH__ >= 200)
-    int tx = threadIdx.x;
-    int ty = threadIdx.y;
-    
-    int ind = blockIdx.x*inf_bs + tx;
-    
-    float res = 0.;
-    
-    __shared__ magmaFloatComplex la[inf_bs][inf_bs+1];
-    int blockIdxx = blockIdx.x;
-    
-    if ( blockIdx.x == n_full_block ) {
-        /************************************************************************
-        -- Last block --
-        -- We will do something unusual here
-        -- For sufficiently large matrix the overhead will be very low
-        *************************************************************************/
-        
-        ind = tx;
-        A += lda*(n-1);
-        
-        if ( tx < n_mod_bs ) {
-            A += tx;
-        }
-        else {
-            A += (n_mod_bs - 1);
-        }
-        A -= ty * lda;
-        int break_d = blockIdx.x*inf_bs;
-        
-        /*----------------------------
-            Go Right
-        -------------------------------*/
-        for(int i=0; i < break_d; i += inf_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
-                la[tx][ty+j] = A[-j*lda];
-            }
-            __syncthreads();
-            
-            #pragma unroll 8
-            for(int j=0; j < 8; j++) {
-                res += cuCabsf( la[tx][j+ty*8] );
-            }
-            A -= lda*inf_bs;
-            __syncthreads();
-        }
-        
-        /* we don't need to make zero, as those computation will be discarded. */
-        if ( ty == 0 ) {
-            /*--------------------------------------------
-                he will compute the triangular parts
-                others will be waiting with values.
-            -----------------------------------------------*/
-            int j;
-            int count = 1;
-            if ( tx < n_mod_bs )
-                count = n_mod_bs- tx;
-            else
-                count = n_mod_bs;
-            for(j=0; j < count; j++) {
-                res += cuCabsf( A[-j*lda] );
-            }
-            A -= (count-1)*lda;
-            count = 1;
-            for( ; j < n_mod_bs; j++) {
-                res += cuCabsf( A[-count] );
-                    count++;
-            }
-        }
-        else {
-        }
-        __syncthreads();
-        
-        la[tx][ty] = MAGMA_C_MAKE( res, 0. );
-        __syncthreads();
-        
-        /*--------------------------------------------------------
-            The leader accumulates all the results from his peer.
-        ----------------------------------------------------------*/
-        if ( ty == 0 ) {
-            res = res
-                + MAGMA_C_REAL( la[tx][1] )
-                + MAGMA_C_REAL( la[tx][2] )
-                + MAGMA_C_REAL( la[tx][3] );
-            if ( tx < n_mod_bs )
-                dwork[ind] = res;
         }
     }
     else {
-        /*-----------------------------------
-        -- All the blocks but the last one --
-        -- By the way this code can be optimized more.
-        -------------------------------------*/
-        ind = blockIdx.x*inf_bs + tx + n_mod_bs;
-        const magmaFloatComplex *A1 = A;
-        A += lda*(n-1);
+        // ------------------------------
+        // Last, partial block row
+        // Threads past end of matrix (i.e., ind >= n) are redundantly assigned
+        // the last row (n-1). At the end, those results are ignored -- only
+        // results for ind < n are saved into dwork.
+        if ( tx < n_mod_bs ) {
+            A += ind;
+        }
+        else {
+            A += (blockIdx.x*inf_bs + n_mod_bs - 1);  // redundantly do last row
+        }
+        A += ty * lda;
         
-        A += ind;
-        A -= ty * lda;
-        
-        int break_d = (n/inf_bs - blockIdxx - 1)*inf_bs;
-        /*----------------------------
-            Go Left
-        -------------------------------*/
-        for(int i=0; i < break_d; i += inf_bs ) {
+        // ----------
+        // loop over all blocks left of the diagonal block
+        // each is (n_mod_bs by inf_bs)
+        for(int i=0; i < diag; i += inf_bs ) {
+            // load block
             #pragma unroll 8
             for(int j=0; j < inf_bs; j += 4) {
-                la[tx][ty+j] = A[-j*lda];
+                la[tx][ty+j] = A[j*lda];
             }
+            A += lda*inf_bs;
             __syncthreads();
             
+            // partial row sums
             #pragma unroll 8
             for(int j=0; j < 8; j++) {
                 res += cuCabsf( la[tx][j+ty*8] );
             }
-            A -= lda*inf_bs;
             __syncthreads();
         }
         
-        /*------------------------------------
-            Diagonal
-            Copy + Transpose lower triangle
-        --------------------------------------*/
-        #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4) {
-            la[tx][31-ty-j] = A[ -j * lda];
-        }
-        
-        A -= inf_bs;
-        __syncthreads();
-        
-        /*--------------------------------------------
-            Mirror Upper Triangle to Lower triangle
-        ---------------------------------------------*/
-        #pragma unroll 8
-        for(int i=ty*8; i < (1+ty)*inf_bs/4; i++) {
-            if ( i < tx ) {
-                la[tx][i] = la[i][tx];
+        // ----------
+        // partial diagonal block
+        if ( ty == 0 && tx < n_mod_bs ) {
+            // sum rows left of diagonal
+            for(int j=0; j < tx; j++) {
+                res += cuCabsf( *A );
+                A += lda;
             }
-            else {
-                la[tx][i] = la[tx][i];  // TODO: not needed
+            // sum diagonal (ignoring imaginary part)
+            res += MAGMA_D_ABS( MAGMA_C_REAL( *A ));
+            A += 1;
+            // sum column below diagonal
+            for(int j=tx+1; j < n_mod_bs; j++) {
+                res += cuCabsf( *A );
+                A += 1;
             }
         }
         __syncthreads();
         
-        /*--------------------------------
-            Do diagonal Computation
-        -----------------------------------*/
-        #pragma unroll 8
-        for(int j=0; j < inf_bs/4; j++) {
-            res += cuCabsf( la[tx][j+ty*8] );
-        }
-        break_d += inf_bs;
+        // ----------
+        // 32x4 threads store partial sums into shared memory
+        la[tx][ty]= MAGMA_C_MAKE( res, 0. );
         __syncthreads();
         
-        n -= n_mod_bs;
-        /*-----------------------------
-            Go Up
-        -------------------------------*/
-        int i;
-        for( i=break_d; i < n; i += inf_bs ) {
+        // first column of 32x1 threads computes final sum of each row
+        // rows outside matrix are ignored
+        if ( ty == 0 && tx < n_mod_bs ) {
+            res = res
+                + MAGMA_C_REAL( la[tx][1] )
+                + MAGMA_C_REAL( la[tx][2] )
+                + MAGMA_C_REAL( la[tx][3] );
+            dwork[ind] = res;
+        }
+    }
+#endif /* (PRECISION_s || PRECISION_d || PRECISION_c || __CUDA_ARCH__ >= 200) */
+}
+
+
+
+/* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf,
+ * where n is any size and A is stored upper.
+ * Has ceil( n / inf_bs ) blocks of (inf_bs x 4) threads each (inf_bs=32).
+ * z precision uses > 16 KB shared memory, so requires Fermi (arch >= 200).
+ * The upper implementation is similar to lower, but processes blocks
+ * in the transposed order:
+ * lower goes from left over to diagonal, then down to bottom;
+ * upper goes from top  down to diagonal, then over to right.
+ * Differences are noted with # in comments. */
+__global__ void
+clanhe_inf_kernel_generic_upper(
+    int n, const magmaFloatComplex* A, int lda, float *dwork,
+    int n_full_block, int n_mod_bs )
+{
+#if (defined(PRECISION_s) || defined(PRECISION_d) || defined(PRECISION_c) || __CUDA_ARCH__ >= 200)
+    int tx = threadIdx.x;
+    int ty = threadIdx.y;
+    
+    int diag = blockIdx.x*inf_bs;
+    int ind  = blockIdx.x*inf_bs + tx;
+    
+    float res = 0.;
+    
+    __shared__ magmaFloatComplex la[inf_bs][inf_bs+1];
+    
+    if ( blockIdx.x < n_full_block ) {
+        // ------------------------------
+        // All full block #columns
+        A += blockIdx.x*inf_bs*lda + tx;               //#
+        A += ty * lda;
+        
+        // ----------
+        // loop over all blocks #above the diagonal block
+        for(int i=0; i < diag; i += inf_bs ) {
+            // 32x4 threads cooperatively load 32x32 block (#transposed)
             #pragma unroll 8
             for(int j=0; j < inf_bs; j += 4) {
-                la[ty+j][tx] = A[- j * lda];
+                la[ty+j][tx] = A[j*lda];               //#
             }
-            A -= inf_bs;
+            A += inf_bs;                               //#
             __syncthreads();
             
-            #pragma unroll 8
-            for(int j=0; j < inf_bs/4; j++) {
-                res += cuCabsf ( la[31-tx][j+ty*8] );
+            // compute 4 partial sums of each row, i.e.,
+            // for ty=0:  res = sum( la[tx, 0: 7] )
+            // for ty=1:  res = sum( la[tx, 8:15] )
+            // for ty=2:  res = sum( la[tx,16:23] )
+            // for ty=3:  res = sum( la[tx,24:31] )
+            #pragma unroll 8             
+            for(int j=ty*8; j < ty*8 + 8; j++) {
+                res += cuCabsf( la[tx][j] );
             }
             __syncthreads();
         }
         
-        /*---------------------------------------------
-            doing n_mod_bs stuffs here.
-            Symmetric is giving us benefit .. true
-            Do the other way please......
-            see clanhe_inf_kernel_generic_l code above
-            TODO compare performance with lower case and use that implementation if better.
-        -----------------------------------------------*/
-        A1 = A1 + n_mod_bs*lda + tx*lda;
-        if ( ty == 0 ) {
-            for( int j = 0; j < n_mod_bs; j++) {
-                res += cuCabsf( A1[ j + lda * blockIdx.x * inf_bs ] );
-            }
+        // ----------
+        // load diagonal block
+        #pragma unroll 8
+        for(int j=0; j < inf_bs; j += 4) {
+            la[tx][ty+j] = A[j*lda];
         }
         __syncthreads();
         
-        la[tx][ty]= MAGMA_C_MAKE( res, 0);
+        // copy #upper triangle to #lower triangle, and
+        // make diagonal real (zero imaginary part)
+        #pragma unroll 8
+        for(int i=ty*8; i < ty*8 + 8; i++) {
+            if ( i > tx ) {                            //#
+                la[i][tx] = la[tx][i];
+            }
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+            else if ( i == tx ) {
+                la[i][i] = MAGMA_C_MAKE( MAGMA_C_REAL( la[i][i] ), 0 );
+            }
+            #endif
+        }
         __syncthreads();
         
-        /*--------------------------------------------------------
-            The leader accumulates all the results from his peer.
-        ----------------------------------------------------------*/
+        // partial row sums
+        #pragma unroll 8
+        for(int j=ty*8; j < ty*8 + 8; j++) {
+            res += cuCabsf( la[tx][j] );
+        }
+        __syncthreads();
+        
+        // ----------
+        // loop over all 32x32 blocks #right of diagonal block
+        A += inf_bs*lda;                               //#
+        for(int i=diag + inf_bs; i < n - n_mod_bs; i += inf_bs ) {
+            // load block (#non-transposed)
+            #pragma unroll 8
+            for(int j=0; j < inf_bs; j += 4) {
+                la[tx][ty+j] = A[j*lda];               //#
+            }
+            A += inf_bs*lda;                           //#
+            __syncthreads();
+            
+            // partial row sums
+            #pragma unroll 8
+            for(int j=ty*8; j < ty*8 + 8; j++) {
+                res += cuCabsf( la[tx][j] );
+            }
+            __syncthreads();
+        }
+        
+        // ----------
+        // last partial block, which is #(inf_bs by n_mod_bs)
+        if ( n_mod_bs > 0 ) {
+            // load block (#non-transposed), with zeros for #cols outside matrix
+            #pragma unroll 8
+            for(int j=0; j < inf_bs; j += 4) {
+                if ( ty+j < n_mod_bs ) {               //#
+                    la[tx][ty+j] = A[j*lda];           //#
+                }
+                else {
+                    la[tx][ty+j] = MAGMA_C_ZERO;       //#
+                }
+            }
+            __syncthreads();
+            
+            // partial row sums
+            #pragma unroll 8
+            for(int j=ty*8; j < ty*8 + 8; j++) {
+                res += cuCabsf( la[tx][j] );
+            }
+            __syncthreads();
+        }
+        
+        // ----------
+        // 32x4 threads store partial sums into shared memory
+        la[tx][ty] = MAGMA_C_MAKE( res, 0. );
+        __syncthreads();
+        
+        // first column of 32x1 threads computes final sum of each row
         if ( ty == 0 ) {
             res = res
                 + MAGMA_C_REAL( la[tx][1] )
@@ -548,102 +376,77 @@ clanhe_inf_kernel_generic_u(
             dwork[ind] = res;
         }
     }
-#endif /* (__CUDA_ARCH__ >= 200) */
-}
-
-
-/* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf,
- * where n % inf_bs == 0 and A is stored upper */
-__global__ void
-clanhe_inf_kernel_special_u(
-    int n, const magmaFloatComplex* A, int lda, float *dwork )
-{
-#if (__CUDA_ARCH__ >= 200)
-    int tx = threadIdx.x;
-    int ty = threadIdx.y;
-    int ind = blockIdx.x*inf_bs + tx;
-    float res = 0.;
-    
-    /*
-        Reverse Computation ...
-        - Left
-        - Triangle
-        - Up
-    */
-    
-    A += lda*(n-1);
-    __shared__ magmaFloatComplex la[inf_bs][inf_bs+1];
-    
-    A += ind;
-    A -= ty * lda;
-    int break_d = (n / inf_bs - blockIdx.x-1 )*inf_bs;
-    
-    for(int i=0; i < break_d; i += inf_bs ) {
-        #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4) {
-            la[tx][ty+j] = A[-j*lda];
+    else {
+        // ------------------------------
+        // Last, partial block #column
+        // Instead of assigning threads ind >= n to the last row (n-1), as in Lower,
+        // Upper simply adjusts loop bounds to avoid loading columns outside the matrix.
+        // Again, at the end, those results are ignored -- only
+        // results for ind < n are saved into dwork.
+        A += blockIdx.x*inf_bs*lda + tx;               //#
+        A += ty * lda;
+        
+        // ----------
+        // loop over all blocks #above the diagonal block
+        // each is #(inf_bs by n_mod_bs)
+        for(int i=0; i < diag; i += inf_bs ) {
+            // load block (#transposed), #ignoring columns outside matrix
+            #pragma unroll 8
+            for(int j=0; j < inf_bs; j += 4) {
+                if ( ty+j < n_mod_bs ) {
+                    la[ty+j][tx] = A[j*lda];
+                }
+            }
+            A += inf_bs;                               //#
+            __syncthreads();
+            
+            // partial row sums
+            #pragma unroll 8
+            for(int j=0; j < 8; j++) {
+                res += cuCabsf( la[tx][j+ty*8] );
+            }
+            __syncthreads();
+        }
+        
+        // ----------
+        // partial diagonal block
+        if ( ty == 0 && tx < n_mod_bs ) {
+            // #transpose pointer within diagonal block
+            // #i.e., from A = A(tx,ty), transpose to A = A(ty,tx).
+            A = A - tx - ty*lda + tx*lda + ty;
+            
+            // sum #column above diagonal
+            for(int j=0; j < tx; j++) {
+                res += cuCabsf( *A );
+                A += 1;                                //#
+            }
+            // sum diagonal (ignoring imaginary part)
+            res += MAGMA_D_ABS( MAGMA_C_REAL( *A ));
+            A += lda;                                  //#
+            // sum #row right of diagonal
+            for(int j=tx+1; j < n_mod_bs; j++) {
+                res += cuCabsf( *A );
+                A += lda;                              //#
+            }
         }
         __syncthreads();
         
-        #pragma unroll 8
-        for(int j=0; j < 8; j++) {
-            res += cuCabsf( la[tx][j+ty*8] );
-        }
-        A -= lda*inf_bs;
-        __syncthreads();
-    }
-    
-    #pragma unroll 8
-    for(int j=0; j < inf_bs; j += 4)
-        la[tx][31-ty-j] = A[ -j * lda];
-    
-    /* Look at the indexing changes */
-    A -= inf_bs;
-    __syncthreads();
-    
-    #pragma unroll 8
-    for(int i=ty*8; i < (1+ty)*inf_bs/4; i++) {
-        if ( i < tx ) {
-            la[tx][i] = la[i][tx];
-        }
-        else {
-            la[tx][i] = la[tx][i];  // TODO: not needed
-        }
-    }
-    __syncthreads();
-    
-    #pragma unroll 8
-    for(int j=0; j < inf_bs/4; j++) {
-        res += cuCabsf( la[tx][j+ty*8] );
-    }
-    break_d += inf_bs;
-    __syncthreads();
-    
-    for(int i=break_d; i < n; i += inf_bs ) {
-        #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4)
-            la[ty+j][tx] = A[ -j * lda];
-        A -= inf_bs;
+        // ----------
+        // 32x4 threads store partial sums into shared memory
+        la[tx][ty]= MAGMA_C_MAKE( res, 0. );
         __syncthreads();
         
-        #pragma unroll 8
-        for(int j=0; j < inf_bs/4; j++) {
-            res += cuCabsf( la[31-tx][j+ty*8] );
+        // first column of 32x1 threads computes final sum of each row
+        // rows outside matrix are ignored
+        if ( ty == 0 && tx < n_mod_bs ) {
+            res = res
+                + MAGMA_C_REAL( la[tx][1] )
+                + MAGMA_C_REAL( la[tx][2] )
+                + MAGMA_C_REAL( la[tx][3] );
+            dwork[ind] = res;
         }
-        __syncthreads();
     }
-    
-    la[tx][ty]= MAGMA_C_MAKE( res, 0. );
-    __syncthreads();
-    
-    if ( ty == 0 ) {
-        res = res
-            + MAGMA_C_REAL( la[tx][1] )
-            + MAGMA_C_REAL( la[tx][2] )
-            + MAGMA_C_REAL( la[tx][3] );
-        dwork[ind] = res;
-    }
-#endif /* (__CUDA_ARCH__ >= 200) */
+#endif /* (PRECISION_s || PRECISION_d || PRECISION_c || __CUDA_ARCH__ >= 200) */
 }
 
 
@@ -652,32 +455,19 @@ extern "C" void
 clanhe_inf(
     magma_uplo_t uplo, int n, const magmaFloatComplex *A, int lda, float *dwork )
 {
-    /* Note: The UPLO = 'U' Version can be optimized more. */
     int blocks = (n - 1)/inf_bs + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(inf_bs, 4, 1);
 
-    if ( n % inf_bs == 0 ) {
-        if ( uplo == MagmaLower) {
-            clanhe_inf_kernel_special_l<<< grid, threads, 0, magma_stream >>>
-                ( n, A, lda, dwork );
-        }
-        else {
-            clanhe_inf_kernel_special_u<<< grid, threads, 0, magma_stream >>>
-                ( n, A, lda, dwork);
-        }
+    int n_full_block = (n - n % inf_bs) /inf_bs;
+    int n_mod_bs = n % inf_bs;
+    if ( uplo == MagmaLower) {
+        clanhe_inf_kernel_generic_lower<<< grid, threads, 0, magma_stream >>>
+            ( n, A, lda, dwork, n_full_block, n_mod_bs );
     }
     else {
-        int n_full_block = (n - n % inf_bs) /inf_bs;
-        int n_mod_bs = n % inf_bs;
-        if ( uplo == MagmaLower) {
-            clanhe_inf_kernel_generic_l<<< grid, threads, 0, magma_stream >>>
-                ( n, A, lda, dwork, n_full_block, n_mod_bs );
-        }
-        else {
-            clanhe_inf_kernel_generic_u<<< grid, threads, 0, magma_stream >>>
-                ( n, A, lda, dwork, n_full_block, n_mod_bs );
-        }
+        clanhe_inf_kernel_generic_upper<<< grid, threads, 0, magma_stream >>>
+            ( n, A, lda, dwork, n_full_block, n_mod_bs );
     }
 }
 
@@ -687,54 +477,42 @@ clanhe_inf(
 
 /* Computes dwork[i] = max( abs( A(i,0:i) )), i=0:n-1, for ||A||_max, where A is stored lower */
 __global__ void
-clanhe_max_kernel_l(
+clanhe_max_kernel_lower(
     int n, const magmaFloatComplex* A, int lda, float *dwork )
 {
-    int tx  = threadIdx.x;
-    int ind = blockIdx.x * max_bs + tx;
-    float res = 0., res1;
-
-    int break_d = blockIdx.x * max_bs;
+    int ind = blockIdx.x*max_bs + threadIdx.x;
+    float res = 0;
 
     if (ind < n) {
         A += ind;
-        
-        // loop over blocks left of diagonal block
-        for(int i=0; i < break_d; i += max_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < max_bs; j++) {
-                res1 = cuCabsf( A[j*lda] );
-                res = fmax( res, res1 );
-            }
-            
-            A += lda*max_bs;
+        for(int j=0; j < ind; ++j) {
+            res = fmax( res, cuCabsf( *A ));
+            A += lda;
         }
-        
-        // process diagonal block
-        for(int j=0; j <= tx; j++) {
-            res1 = cuCabsf( A[j*lda] );
-            res = fmax( res, res1 );
-        }
-        
+        // diagonal element (ignoring imaginary part)
+        res = fmax( res, MAGMA_D_ABS( MAGMA_C_REAL( *A )));
         dwork[ind] = res;
     }
 }
 
 
-/* Computes dwork[i] = max( abs( A(i,0:i) )), i=0:n-1, for ||A||_max, where A is stored upper.
- * TODO compare performance with lower case and use that implementation if better. */
+/* Computes dwork[i] = max( abs( A(i,0:i) )), i=0:n-1, for ||A||_max, where A is stored upper. */
 __global__ void
-clanhe_max_kernel_u(
+clanhe_max_kernel_upper(
     int n, const magmaFloatComplex* A, int lda, float *dwork )
 {
-    int ind = blockIdx.x * max_bs + threadIdx.x;
-    float res = 0.;
+    int ind = blockIdx.x*max_bs + threadIdx.x;
+    float res = 0;
 
-    A += ind;
     if (ind < n) {
-        for(int j=n-1; j >= ind; j--)
-            res = fmax( res, cuCabsf( A[j*lda] ) );
-        
+        A += ind;
+        A += (n-1)*lda;
+        for(int j=n-1; j > ind; j--) {
+            res = fmax( res, cuCabsf( *A ));
+            A -= lda;
+        }
+        // diagonal element (ignoring imaginary part)
+        res = fmax( res, MAGMA_D_ABS( MAGMA_C_REAL( *A )));
         dwork[ind] = res;
     }
 }
@@ -750,11 +528,11 @@ clanhe_max(
     dim3 threads(max_bs, 1, 1);
 
     if ( uplo == MagmaLower ) {
-        clanhe_max_kernel_l<<< grid, threads, 0, magma_stream >>>
+        clanhe_max_kernel_lower<<< grid, threads, 0, magma_stream >>>
             ( n, A, lda, dwork );
     }
     else {
-        clanhe_max_kernel_u<<< grid, threads, 0, magma_stream >>>
+        clanhe_max_kernel_upper<<< grid, threads, 0, magma_stream >>>
             ( n, A, lda, dwork );
     }
 }
@@ -770,9 +548,9 @@ clanhe_max(
     
        CLANHE = ( max(abs(A(i,j))), NORM = 'M' or 'm'
                 (
-                ( norm1(A),         NORM = '1', 'O' or 'o'      ** supported only for CUDA_ARCH >= 200
+                ( norm1(A),         NORM = '1', 'O' or 'o'      ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || __CUDA_ARCH__ >= 200)
                 (
-                ( normI(A),         NORM = 'I' or 'i'           ** supported only for CUDA_ARCH >= 200
+                ( normI(A),         NORM = 'I' or 'i'           ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || __CUDA_ARCH__ >= 200)
                 (
                 ( normF(A),         NORM = 'F', 'f', 'E' or 'e' ** not yet supported
     
@@ -819,8 +597,8 @@ clanhe_max(
     @param
     dwork   (workspace) REAL array on the GPU, dimension (MAX(1,LWORK)),
             where LWORK >= N.
-            NOTE: this is different than LAPACK, where WORK is only required
-            for norm1 and normI.
+            NOTE: this is different than LAPACK, where WORK is required
+            only for norm1 and normI. Here max-norm also requires work.
     
     @ingroup magma_caux2
     ********************************************************************/
@@ -835,7 +613,15 @@ magmablas_clanhe(
     // 1-norm == inf-norm since A is Hermitian
     bool inf_norm = (norm == MagmaInfNorm || norm == MagmaOneNorm);
     bool max_norm = (norm == MagmaMaxNorm);
-    if ( ! max_norm && (! inf_norm || arch < 200) )
+    
+    // inf_norm Double-Complex requires > 16 KB shared data (arch >= 200)
+    #if defined(PRECISION_z)
+    const bool inf_implemented = (magma_getdevice_arch() >= 200);
+    #else
+    const bool inf_implemented = true;
+    #endif
+    
+    if ( ! (max_norm || (inf_norm && inf_implemented)) )
         info = -1;
     else if ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -2;
@@ -852,17 +638,16 @@ magmablas_clanhe(
     /* Quick return */
     if ( n == 0 )
         return 0;
-    
+        
     float res = 0;
     if ( inf_norm ) {
         clanhe_inf( uplo, n, A, lda, dwork );
-        int i = cublasIsamax( n, dwork, 1 ) - 1;
-        cudaMemcpy( &res, &dwork[i], sizeof(float), cudaMemcpyDeviceToHost );
     }
-    else if ( max_norm ) {
+    else {
         clanhe_max( uplo, n, A, lda, dwork );
-        int i = cublasIsamax( n, dwork, 1 ) - 1;
-        cudaMemcpy( &res, &dwork[i], sizeof(float), cudaMemcpyDeviceToHost );
     }
+    int i = magma_isamax( n, dwork, 1 ) - 1;
+    cudaMemcpy( &res, &dwork[i], sizeof(float), cudaMemcpyDeviceToHost );
+    
     return res;
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_dlarfg.cpp normal d -> s, Fri Apr 25 15:06:08 2014
+       @generated from testing_dlarfg.cpp normal d -> s, Fri May 30 10:41:23 2014
        @author Mark Gates
 */
 
@@ -34,10 +34,13 @@ int main( int argc, char** argv)
     float      error, work[1];
     magma_int_t N, size, nb;
     magma_int_t ione     = 1;
-    magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t ISEED[4] = {0,0,0,1};    magma_int_t status = 0;
+
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+
+float tol = opts.tolerance * lapackf77_slamch("E");
     
     // does larfg on nb columns, one after another
     nb = (opts.nb > 0 ? opts.nb : 64);
@@ -92,9 +95,13 @@ int main( int argc, char** argv)
                Error Computation and Performance Compariosn
                =================================================================== */
             blasf77_saxpy( &size, &c_neg_one, h_x1, &ione, h_x2, &ione);
-            error = lapackf77_slange( "F", &N, &nb, h_x2, &N, work );
-            printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2g\n",
-                   (int) N, (int) nb, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time, error );
+            error = lapackf77_slange( "F", &N, &nb, h_x2, &N, work )
+                  / lapackf77_slange( "F", &N, &nb, h_x1, &N, work );
+
+            printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                   (int) N, (int) nb, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
+                   error, (error < tol ? "ok" : "failed") );
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( h_x   );
             TESTING_FREE_CPU( h_x1  );
@@ -111,5 +118,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

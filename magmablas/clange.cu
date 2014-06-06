@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zlange.cu normal z -> c, Fri Apr 25 15:05:21 2014
+       @generated from zlange.cu normal z -> c, Fri May 30 10:40:40 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -154,7 +154,7 @@ magmablas_clange(
     dim3 threads( 64 );
     dim3 grid( (m-1)/64 + 1 );
     clange_inf_kernel<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, dwork );
-    int i = cublasIsamax( m, dwork, 1 ) - 1;
+    int i = magma_isamax( m, dwork, 1 ) - 1;
     float res;
     cudaMemcpy( &res, &dwork[i], sizeof(float), cudaMemcpyDeviceToHost );
     return res;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zgemv_fermi.cu normal z -> c, Fri Apr 25 15:05:23 2014
+       @generated from zgemv_fermi.cu normal z -> c, Fri May 30 10:40:43 2014
 */
 #include "common_magma.h"
 #include "commonblas_c.h"
@@ -389,7 +389,7 @@ magmablas_cgemv(
         // call CUDA ARCH 1.x version
         // magmablas for [sd] precisions, cublas for [zc] precisions.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        cublasCgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_cgemv( trans, m, n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_cgemv_tesla( trans, m, n, alpha, A, lda, x, incx, beta, y, incy );
         #endif
@@ -401,7 +401,7 @@ magmablas_cgemv(
     if ( incx == 1 && incy == 1 ) {
         if ( trans == MagmaNoTrans ) {
             if ( m < 7000 ) {
-                cublasCgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
+                magma_cgemv( trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
             }
             else {
                 magmablas_cgemvn_fermi(m, n, alpha, A, lda, x, beta, y);
@@ -418,7 +418,7 @@ magmablas_cgemv(
         }
     }
     else {
-        cublasCgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_cgemv( trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
     }
 }
 

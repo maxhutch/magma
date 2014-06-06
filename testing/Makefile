@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta1) --
+#   -- MAGMA (version 1.5.0-beta2) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date April 2014
+#      @date May 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = testing
@@ -38,6 +38,7 @@ ZSRC := \
 	testing_zgeadd_batched.cpp	\
 	testing_zlacpy.cpp	\
 	testing_zlacpy_batched.cpp	\
+	testing_zlag2c.cpp	\
 	testing_zlange.cpp	\
 	testing_zlanhe.cpp	\
 	testing_dlarfg.cpp	\
@@ -107,6 +108,8 @@ ZSRC += \
 	testing_zgeqlf.cpp	\
 	testing_zgeqrf.cpp	\
 	testing_zungqr.cpp	\
+	testing_zunmlq.cpp	\
+	testing_zunmql.cpp	\
 	testing_zunmqr.cpp	\
 	\
 	testing_zungqr_m.cpp	\
@@ -159,6 +162,7 @@ ZSRC += \
 	testing_zgesdd.cpp	\
 	testing_zgesvd.cpp	\
 	testing_zgebrd.cpp	\
+	testing_zunmbr.cpp	\
 
 # ----------
 # utilities

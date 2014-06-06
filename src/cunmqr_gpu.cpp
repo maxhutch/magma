@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zunmqr_gpu.cpp normal z -> c, Fri Apr 25 15:05:42 2014
+       @generated from zunmqr_gpu.cpp normal z -> c, Fri May 30 10:40:59 2014
 
 */
 #include "common_magma.h"
@@ -24,7 +24,7 @@
     TRANS = MagmaTrans:     Q**H * C             C * Q**H
     @endverbatim
 
-    where Q is a complex orthogonal matrix defined as the product of k
+    where Q is a complex unitary matrix defined as the product of k
     elementary reflectors
 
           Q = H(1) H(2) . . . H(k)

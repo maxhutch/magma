@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zlaqps_gpu.cpp normal z -> d, Fri Apr 25 15:05:43 2014
+       @generated from zlaqps_gpu.cpp normal z -> d, Fri May 30 10:41:00 2014
 
 */
 #include "common_magma.h"
@@ -51,7 +51,7 @@
             The number of columns actually factorized.
 
     @param[in,out]
-    A       DOUBLE PRECISION array, dimension (LDA,N)
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, block A(OFFSET+1:M,1:KB) is the triangular
             factor obtained and block A(1:OFFSET,1:N) has been
@@ -69,7 +69,7 @@
             permuted into position I in AP.
 
     @param[out]
-    tau     DOUBLE PRECISION array, dimension (KB)
+    tau     DOUBLE_PRECISION array, dimension (KB)
             The scalar factors of the elementary reflectors.
 
     @param[in,out]
@@ -81,11 +81,11 @@
             The vector with the exact column norms.
 
     @param[in,out]
-    auxv    DOUBLE PRECISION array, dimension (NB)
+    auxv    DOUBLE_PRECISION array, dimension (NB)
             Auxiliar vector.
 
     @param[in,out]
-    F       DOUBLE PRECISION array, dimension (LDF,NB)
+    F       DOUBLE_PRECISION array, dimension (LDF,NB)
             Matrix F' = L*Y'*A.
 
     @param[in]

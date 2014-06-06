@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 
@@ -935,7 +935,7 @@ magmablas_zhemv_mgpu_offset(
     if ( arch < 200  ) {
         // --------------------
         // no CUDA ARCH 1.x version
-        fprintf( stderr, "%s not supported on CUDA arch 1.x", __func__ );
+        fprintf( stderr, "%s not supported on CUDA arch 1.x\n", __func__ );
         return MAGMA_ERR_NOT_SUPPORTED;
     }
         
@@ -1026,7 +1026,7 @@ magmablas_zhemv2_mgpu_offset(
     if ( arch < 200  ) {
         // --------------------
         // no CUDA ARCH 1.x version
-        fprintf( stderr, "%s not supported on CUDA arch 1.x", __func__ );
+        fprintf( stderr, "%s not supported on CUDA arch 1.x\n", __func__ );
         return MAGMA_ERR_NOT_SUPPORTED;
     }
         
@@ -1119,7 +1119,7 @@ magmablas_zhemv2_mgpu(
     if ( arch < 200  ) {
         // --------------------
         // no CUDA ARCH 1.x version
-        fprintf( stderr, "%s not supported on CUDA arch 1.x", __func__ );
+        fprintf( stderr, "%s not supported on CUDA arch 1.x\n", __func__ );
         return MAGMA_ERR_NOT_SUPPORTED;
     }
     

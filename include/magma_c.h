@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from magma_z.h normal z -> c, Fri Apr 25 15:05:12 2014
+       @generated from magma_z.h normal z -> c, Fri May 30 10:40:33 2014
 */
 
 #ifndef MAGMA_C_H
@@ -208,6 +208,30 @@ magma_int_t magma_cungqr2(magma_int_t m, magma_int_t n, magma_int_t k,
                           magmaFloatComplex *a, magma_int_t lda,
                           magmaFloatComplex *tau, magma_int_t *info );
 
+magma_int_t magma_cunmbr( magma_vect_t vect, magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          magmaFloatComplex *A, magma_int_t lda,
+                          magmaFloatComplex *tau,
+                          magmaFloatComplex *C, magma_int_t ldc,
+                          magmaFloatComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
+
+magma_int_t magma_cunmlq( magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          magmaFloatComplex *A, magma_int_t lda,
+                          magmaFloatComplex *tau,
+                          magmaFloatComplex *C, magma_int_t ldc,
+                          magmaFloatComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
+
+magma_int_t magma_cunmrq( magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          magmaFloatComplex *A, magma_int_t lda,
+                          magmaFloatComplex *tau,
+                          magmaFloatComplex *C, magma_int_t ldc,
+                          magmaFloatComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
+
 magma_int_t magma_cunmql( magma_side_t side, magma_trans_t trans,
                           magma_int_t m, magma_int_t n, magma_int_t k,
                           magmaFloatComplex *a, magma_int_t lda,
@@ -218,9 +242,11 @@ magma_int_t magma_cunmql( magma_side_t side, magma_trans_t trans,
 
 magma_int_t magma_cunmqr( magma_side_t side, magma_trans_t trans,
                           magma_int_t m, magma_int_t n, magma_int_t k,
-                          magmaFloatComplex *a, magma_int_t lda, magmaFloatComplex *tau,
+                          magmaFloatComplex *a, magma_int_t lda,
+                          magmaFloatComplex *tau,
                           magmaFloatComplex *c, magma_int_t ldc,
-                          magmaFloatComplex *work, magma_int_t lwork, magma_int_t *info);
+                          magmaFloatComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
 
 magma_int_t magma_cunmtr( magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
                           magma_int_t m, magma_int_t n,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c
        @author Stan Tomov
@@ -28,7 +28,7 @@
  * TREVC version 4 - blocked, multi-threaded  (MAGMA)
  * TREVC version 5 - blocked, multi-threaded, GPU (MAGMA)
  */
-#define TREVC_VERSION 3
+#define TREVC_VERSION 4
 
 /**
     Purpose

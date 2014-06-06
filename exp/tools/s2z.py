@@ -10,7 +10,7 @@ def main(argv):
     head, rest = os.path.split(fname)
     zfname = os.path.join(head, "z" + rest[1:]) # assumes "z" should go in the beginning of file name
 
-    freplace(fname, "@date April 2014
+    freplace(fname, "@date May 2014
     os.system("python %s -p z --file %s" % (os.environ.get("PATH_TO_CODEGEN_PY", "codegen.py"), fname))
     freplace(zfname, "@generated z", "@precisions normal z -> s d c")
 

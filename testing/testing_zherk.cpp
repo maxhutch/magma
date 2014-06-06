@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -43,13 +43,17 @@ int main( int argc, char** argv)
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     double alpha = MAGMA_D_MAKE(  0.29, -0.86 );
     double beta  = MAGMA_D_MAKE( -0.48,  0.38 );
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+    opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    printf("If running lapack (option --lapack), MAGMA and CUBLAS error are both computed\n"
-           "relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n"
-           "uplo = %s, transA = %s\n",
+    double tol = opts.tolerance * lapackf77_dlamch("E");
+    
+    printf("If running lapack (option --lapack), CUBLAS error is computed\n"
+           "relative to CPU BLAS result.\n\n");
+    printf("uplo = %s, transA = %s\n",
            lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA) );
     printf("    N     K   CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  CUBLAS error\n");
     printf("==================================================================\n");
@@ -124,11 +128,12 @@ int main( int argc, char** argv)
                 blasf77_zaxpy( &sizeC, &c_neg_one, h_C, &ione, h_Ccublas, &ione );
                 cublas_error = lapackf77_zlanhe( "fro", lapack_uplo_const(opts.uplo), &N, h_Ccublas, &ldc, work ) / Cnorm;
                 
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e\n",
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e   %s\n",
                        (int) N, (int) K,
                        cublas_perf, 1000.*cublas_time,
                        cpu_perf,    1000.*cpu_time,
-                       cublas_error );
+                       cublas_error, (cublas_error < tol ? "ok" : "failed"));
+                status += ! (cublas_error < tol);
             }
             else {
                 printf("%5d %5d   %7.2f (%7.2f)    ---   (  ---  )    ---     ---\n",
@@ -150,5 +155,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

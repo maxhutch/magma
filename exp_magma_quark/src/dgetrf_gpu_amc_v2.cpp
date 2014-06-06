@@ -1,5 +1,5 @@
 /* 
-    -- MAGMA (version 1.5.0-beta1) -- 
+    -- MAGMA (version 1.5.0-beta2) -- 
        Univ. of Tennessee, Knoxville 
        Univ. of California, Berkeley 
        Univ. of Colorado, Denver 
@@ -68,7 +68,7 @@ extern "C" magma_int_t magma_dgetrf_gpu_amc_v2(magma_int_t m, magma_int_t n,
                  double *dA, magma_int_t dA_LD, 
                  magma_int_t *ipiv, magma_int_t *info) 
 { 
-/*  -- MAGMA (version 1.5.0-beta1) -- 
+/*  -- MAGMA (version 1.5.0-beta2) -- 
        Univ. of Tennessee, Knoxville 
        Univ. of California, Berkeley 
        Univ. of Colorado, Denver 
@@ -258,7 +258,7 @@ magma_int_t *ipiv, magma_int_t *info,
 double *AWORK, magma_int_t AWORK_LD, magma_int_t AWORK_n
 ) 
 { 
-/*  -- MAGMA (version 1.5.0-beta1) -- 
+/*  -- MAGMA (version 1.5.0-beta2) -- 
        Univ. of Tennessee, Knoxville 
        Univ. of California, Berkeley 
        Univ. of Colorado, Denver 

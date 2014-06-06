@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dsygvd.cpp normal d -> s, Fri Apr 25 15:05:51 2014
+       @generated from dsygvd.cpp normal d -> s, Fri May 30 10:41:09 2014
 
 */
 #include "common_magma.h"
@@ -55,7 +55,7 @@
             The order of the matrices A and B.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX*16 array, dimension (LDA, N)
+    A       COMPLEX_16 array, dimension (LDA, N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
@@ -76,7 +76,7 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[in,out]
-    B       COMPLEX*16 array, dimension (LDB, N)
+    B       COMPLEX_16 array, dimension (LDB, N)
             On entry, the symmetric matrix B.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of B contains the
             upper triangular part of the matrix B.  If UPLO = MagmaLower,
@@ -96,7 +96,7 @@
             If INFO = 0, the eigenvalues in ascending order.
 
     @param[out]
-    work    (workspace) COMPLEX*16 array, dimension (MAX(1,LWORK))
+    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
     @param[out]

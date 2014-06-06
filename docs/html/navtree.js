@@ -11,9 +11,9 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "dir_56ea320f36428fc096e6ea8f45d8dae0.html",
-"group__magma__dgeev__comp.html",
-"group__magma__sgeqlf__comp.html#ga46c5120736ffe860399019b2ecdd0c39",
-"group__magma__zgesvd__comp.html"
+"group__magma__dgeev__aux.html#ga7b752e8002c82b03f7f4802227f83df3",
+"group__magma__sgels__driver.html",
+"group__magma__zgesv__driver.html#ga68564db49d1c281703603743f15bb6a3"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

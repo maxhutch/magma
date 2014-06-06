@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -70,7 +70,7 @@
              The order of the matrix T. n >= 0.
 
     @param[in,out]
-    T        COMPLEX*16 array, dimension (ldt,n)
+    T        COMPLEX_16 array, dimension (ldt,n)
              The upper triangular matrix T. modified, but restored on exit.
 
     @param[in]
@@ -78,7 +78,7 @@
              The leading dimension of the array T. ldt >= max(1,n).
 
     @param[in,out]
-    VL       COMPLEX*16 array, dimension (ldvl,mm)
+    VL       COMPLEX_16 array, dimension (ldvl,mm)
              On entry, if side = MagmaLeft or MagmaBothSides and howmany = MagmaBacktransVec, VL must
              contain an n-by-n matrix Q (usually the unitary matrix Q
              of Schur vectors returned by ZHSEQR).
@@ -96,7 +96,7 @@
              ldvl >= 1, and if side = MagmaLeft or MagmaBothSides, ldvl >= n.
 
     @param[in,out]
-    VR       COMPLEX*16 array, dimension (ldvr,mm)
+    VR       COMPLEX_16 array, dimension (ldvr,mm)
              On entry, if side = MagmaRight or MagmaBothSides and howmany = MagmaBacktransVec, VR must
              contain an n-by-n matrix Q (usually the unitary matrix Q
              of Schur vectors returned by ZHSEQR).
@@ -125,7 +125,7 @@
              Each selected eigenvector occupies one column.
 
     @param[out]
-    work     COMPLEX*16 array, dimension (max(1,lwork))
+    work     COMPLEX_16 array, dimension (max(1,lwork))
 
     @param[in]
     lwork    INTEGER

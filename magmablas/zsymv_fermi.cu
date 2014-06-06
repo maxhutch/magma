@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
 
@@ -966,7 +966,7 @@ magmablas_zsymv(
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         //cublasZsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
         #else
-        cublasZsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {
@@ -1077,7 +1077,7 @@ magmablas_zsymv_work(
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         return MAGMA_ERR_NOT_SUPPORTED;
         #else
-        cublasZsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {

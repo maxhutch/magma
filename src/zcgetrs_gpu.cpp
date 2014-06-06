@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions mixed zc -> ds
 
@@ -14,7 +14,7 @@
     Purpose
     -------
     ZCGETRS solves a system of linear equations
-       A * X = B  or  A' * X = B
+       A * X = B,  A**T * X = B,  or  A**H * X = B
     with a general N-by-N matrix A using the LU factorization computed
     by MAGMA_CGETRF_GPU. B and X are in COMPLEX_16, and A is in COMPLEX.
     This routine is used in the mixed precision iterative solver
@@ -25,9 +25,9 @@
     @param[in]
     trans   magma_trans_t
             Specifies the form of the system of equations:
-      -     = MagmaNoTrans:    A * X = B  (No transpose)
-      -     = MagmaTrans:      A'* X = B  (Transpose)
-      -     = MagmaConjTrans:  A'* X = B  (Conjugate transpose = Transpose)
+      -     = MagmaNoTrans:    A * X = B     (No transpose)
+      -     = MagmaTrans:      A**T * X = B  (Transpose)
+      -     = MagmaConjTrans:  A**H * X = B  (Conjugate transpose)
 
     @param[in]
     n       INTEGER
@@ -148,10 +148,10 @@ magma_zcgetrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
         /* Cast the COMPLEX_16 RHS to COMPLEX */
         magmablas_zlag2c( n, nrhs, dB, lddb, dSX, n, info );
         
-        /* Solve A' * X = B. */
-        magma_ctrsm( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
+        /* Solve A**T * X = B, or A**H * X = B */
+        magma_ctrsm( MagmaLeft, MagmaUpper, trans, MagmaNonUnit,
                      n, nrhs, c_one, dA, ldda, dSX, n );
-        magma_ctrsm( MagmaLeft, MagmaLower, MagmaConjTrans, MagmaUnit,
+        magma_ctrsm( MagmaLeft, MagmaLower, trans, MagmaUnit,
                      n, nrhs, c_one, dA, ldda, dSX, n );
         
         magmablas_zclaswp( nrhs, dX, lddx, dSX, n, dipiv, inc );

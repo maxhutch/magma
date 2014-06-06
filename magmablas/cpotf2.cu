@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
        
-       @generated from zpotf2.cu normal z -> c, Fri Apr 25 15:05:24 2014
+       @generated from zpotf2.cu normal z -> c, Fri May 30 10:40:44 2014
 */
 
 #include <stdio.h>
@@ -122,7 +122,7 @@ magma_cpotf2_gpu(
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 clacgv(j, A(0, j), 1);
                 #endif
-                cublasCgemv( 'T', j, n-j-1,
+                magma_cgemv( MagmaTrans, j, n-j-1,
                              alpha, A(0, j+1), lda,
                                     A(0, j),   1,
                              beta,  A(j, j+1), lda); // cublas is better in upper case

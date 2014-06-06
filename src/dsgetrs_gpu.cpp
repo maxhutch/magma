@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zcgetrs_gpu.cpp mixed zc -> ds, Fri Apr 25 15:05:33 2014
+       @generated from zcgetrs_gpu.cpp mixed zc -> ds, Fri May 30 10:40:51 2014
 
 */
 #include "common_magma.h"
@@ -14,7 +14,7 @@
     Purpose
     -------
     DSGETRS solves a system of linear equations
-       A * X = B  or  A' * X = B
+       A * X = B,  A**T * X = B,  or  A**T * X = B
     with a general N-by-N matrix A using the LU factorization computed
     by MAGMA_SGETRF_GPU. B and X are in DOUBLE PRECISION, and A is in SINGLE PRECISION.
     This routine is used in the mixed precision iterative solver
@@ -25,9 +25,9 @@
     @param[in]
     trans   magma_trans_t
             Specifies the form of the system of equations:
-      -     = MagmaNoTrans:    A * X = B  (No transpose)
-      -     = MagmaTrans:      A'* X = B  (Transpose)
-      -     = MagmaTrans:  A'* X = B  (Conjugate transpose = Transpose)
+      -     = MagmaNoTrans:    A * X = B     (No transpose)
+      -     = MagmaTrans:      A**T * X = B  (Transpose)
+      -     = MagmaTrans:  A**T * X = B  (Conjugate transpose)
 
     @param[in]
     n       INTEGER
@@ -148,10 +148,10 @@ magma_dsgetrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
         /* Cast the DOUBLE PRECISION RHS to SINGLE PRECISION */
         magmablas_dlag2s( n, nrhs, dB, lddb, dSX, n, info );
         
-        /* Solve A' * X = B. */
-        magma_strsm( MagmaLeft, MagmaUpper, MagmaTrans, MagmaNonUnit,
+        /* Solve A**T * X = B, or A**T * X = B */
+        magma_strsm( MagmaLeft, MagmaUpper, trans, MagmaNonUnit,
                      n, nrhs, c_one, dA, ldda, dSX, n );
-        magma_strsm( MagmaLeft, MagmaLower, MagmaTrans, MagmaUnit,
+        magma_strsm( MagmaLeft, MagmaLower, trans, MagmaUnit,
                      n, nrhs, c_one, dA, ldda, dSX, n );
         
         magmablas_dslaswp( nrhs, dX, lddx, dSX, n, dipiv, inc );

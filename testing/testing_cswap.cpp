@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zswap.cpp normal z -> c, Fri Apr 25 15:06:09 2014
+       @generated from testing_zswap.cpp normal z -> c, Fri May 30 10:41:24 2014
        @author Mark Gates
 */
 // includes, system
@@ -76,10 +76,11 @@ int main( int argc, char** argv)
     magma_int_t ione = 1;
     magma_int_t *ipiv, *ipiv2;
     magma_int_t *d_ipiv;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
-    
+
     magma_queue_t queue = 0;
     
     printf("            cublasCswap       cswap             cswapblk          claswp   cpermute claswp2  claswpx           ccopymatrix      CPU      (all in )\n");
@@ -87,17 +88,19 @@ int main( int argc, char** argv)
     printf("==================================================================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            // each test is assigned one bit in the check bitmask, bit=1 is failure.
-            // shift keeps track of which bit is for current test
+            // For an N x N matrix, swap nb rows or nb columns using various methods.
+            // Each test is assigned one bit in the 'check' bitmask; bit=1 indicates failure.
+            // The variable 'shift' keeps track of which bit is for current test
             int shift = 1;
             int check = 0;
             N = opts.nsize[itest];
             lda    = N;
             ldda   = ((N+31)/32)*32;
             nb     = (opts.nb > 0 ? opts.nb : magma_get_cgetrf_nb( N ));
-            // for each swap, does 2N loads and 2N stores
+            nb     = min( N, nb );
+            // each swap does 2N loads and 2N stores, for nb swaps
             gbytes = sizeof(magmaFloatComplex) * 4.*N*nb / 1e9;
-            
+                        
             TESTING_MALLOC_PIN( h_A1, magmaFloatComplex, lda*N );
             TESTING_MALLOC_PIN( h_A2, magmaFloatComplex, lda*N );
             TESTING_MALLOC_PIN( h_R1, magmaFloatComplex, lda*N );
@@ -169,7 +172,7 @@ int main( int argc, char** argv)
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
-            
+
             /* =====================================================================
              * cswap, row-by-row (2 matrices)
              */
@@ -225,7 +228,7 @@ int main( int argc, char** argv)
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
-            
+
             /* =====================================================================
              * cswapblk, blocked version (2 matrices)
              */
@@ -273,7 +276,7 @@ int main( int argc, char** argv)
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
-            
+
             /* =====================================================================
              * cpermute_long (1 matrix)
              */
@@ -296,7 +299,7 @@ int main( int argc, char** argv)
             magma_cgetmatrix( N, N, d_A1, ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
-            
+
             /* =====================================================================
              * LAPACK-style claswp (1 matrix)
              */
@@ -318,7 +321,7 @@ int main( int argc, char** argv)
             magma_cgetmatrix( N, N, d_A1, ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
-            
+
             /* =====================================================================
              * LAPACK-style claswp (1 matrix) - d_ipiv on GPU
              */
@@ -341,7 +344,7 @@ int main( int argc, char** argv)
             magma_cgetmatrix( N, N, d_A1, ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
-            
+
             /* =====================================================================
              * LAPACK-style claswpx (extended for row- and col-major) (1 matrix)
              */
@@ -380,7 +383,7 @@ int main( int argc, char** argv)
             magma_cgetmatrix( N, N, d_A1, ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
-            
+
             /* =====================================================================
              * Copy matrix.
              */
@@ -396,7 +399,7 @@ int main( int argc, char** argv)
             time = magma_sync_wtime( queue ) - time;
             // copy reads 1 matrix and writes 1 matrix, so has half gbytes of swap
             row_perf6 = 0.5 * gbytes / time;
-            
+
             printf("%5d  %3d  %6.2f%c/ %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f%c  %6.2f%c  %6.2f%c  %6.2f%c/ %6.2f%c  %6.2f / %6.2f  %6.2f  %10s\n",
                    (int) N, (int) nb,
                    row_perf0, ((check & 0x001) != 0 ? '*' : ' '),
@@ -413,7 +416,8 @@ int main( int argc, char** argv)
                    row_perf6,
                    col_perf6,
                    cpu_perf,
-                   (check == 0 ? "ok" : "* failures") );
+                   (check == 0 ? "ok" : "* failed") );
+            status += ! (check == 0);
             
             TESTING_FREE_PIN( h_A1 );
             TESTING_FREE_PIN( h_A2 );
@@ -434,5 +438,5 @@ int main( int argc, char** argv)
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

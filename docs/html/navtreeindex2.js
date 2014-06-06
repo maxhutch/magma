@@ -1,5 +1,10 @@
 var NAVTREEINDEX2 =
 {
+"group__magma__sgels__driver.html":[0,2,2,0,0],
+"group__magma__sgels__driver.html#ga5d14d3e6ce4c6cd251a5e464279c6c91":[0,2,2,0,0,1],
+"group__magma__sgels__driver.html#gabc910924e0c73d3271edc1a10a3d040d":[0,2,2,0,0,0],
+"group__magma__sgeqlf__comp.html":[0,3,2,0],
+"group__magma__sgeqlf__comp.html#ga1f5dfed0430ccbafeaac13c2e8e8c428":[0,3,2,0,1],
 "group__magma__sgeqlf__comp.html#ga46c5120736ffe860399019b2ecdd0c39":[0,3,2,0,0],
 "group__magma__sgeqlf__comp.html#ga91b4830985f2ad4a56cc702141e362f0":[0,3,2,0,2],
 "group__magma__sgeqp3__comp.html":[0,3,0,1,0],
@@ -53,6 +58,7 @@ var NAVTREEINDEX2 =
 "group__magma__sgesvd__aux.html#gaf8c8f506e61454168979cd7c26a30194":[0,5,2,0,0],
 "group__magma__sgesvd__comp.html":[0,5,1,0],
 "group__magma__sgesvd__comp.html#ga7d79e86a002ca0546e1d6844f408796d":[0,5,1,0,0],
+"group__magma__sgesvd__comp.html#gac37b5799828a34d2bb8c5c09fdc52b51":[0,5,1,0,1],
 "group__magma__sgesvd__driver.html":[0,5,0,0],
 "group__magma__sgesvd__driver.html#ga1af7fbb2b1ea64aa347fc95e3924aca5":[0,5,0,0,0],
 "group__magma__sgesvd__driver.html#ga96e26a734d9c48e5c994863c4e2d83f1":[0,5,0,0,1],
@@ -185,6 +191,7 @@ var NAVTREEINDEX2 =
 "group__magma__zgeev__driver.html#gad1c91fc92e942d78df4df5cea011bd99":[0,4,0,0,3,0],
 "group__magma__zgelqf__comp.html":[0,3,3,3],
 "group__magma__zgelqf__comp.html#ga3218be0393c08a983bc1c363e6b2dbb9":[0,3,3,3,1],
+"group__magma__zgelqf__comp.html#ga48193aac4643d88878b52374445dca28":[0,3,3,3,2],
 "group__magma__zgelqf__comp.html#gafceedfc30d6813fc9da9dbba58c331db":[0,3,3,3,0],
 "group__magma__zgels__comp.html":[0,2,2,1,3],
 "group__magma__zgels__comp.html#ga08e1966dd2faa4520834eafef3c4387c":[0,2,2,1,3,0],
@@ -242,12 +249,5 @@ var NAVTREEINDEX2 =
 "group__magma__zgesv__comp.html#gac41a3568b253f7406322aaf1ae3fdc2b":[0,2,0,1,3,3],
 "group__magma__zgesv__comp.html#gacabb7a6b59279499b546258c5763c39b":[0,2,0,1,3,4],
 "group__magma__zgesv__driver.html":[0,2,0,0,3],
-"group__magma__zgesv__driver.html#ga5fe339e89dda9e63c046efcf6c94f5fe":[0,2,0,0,3,2],
-"group__magma__zgesv__driver.html#ga68564db49d1c281703603743f15bb6a3":[0,2,0,0,3,0],
-"group__magma__zgesv__driver.html#gad98a3a1583fbf7c9c8292a6a0a5ffcec":[0,2,0,0,3,1],
-"group__magma__zgesv__tile.html":[0,2,0,3,3],
-"group__magma__zgesv__tile.html#ga0bb7586c32986d6a7a459c57407e9115":[0,2,0,3,3,1],
-"group__magma__zgesv__tile.html#gaddff2bfaf81baa5cfc49c6d328883f62":[0,2,0,3,3,0],
-"group__magma__zgesvd__aux.html":[0,5,2,3],
-"group__magma__zgesvd__aux.html#ga0fa23c0b1dfae14cb4bf0b17212dfb16":[0,5,2,3,0]
+"group__magma__zgesv__driver.html#ga5fe339e89dda9e63c046efcf6c94f5fe":[0,2,0,0,3,2]
 };

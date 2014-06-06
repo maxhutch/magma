@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 
@@ -33,12 +33,12 @@ int main( int argc, char** argv)
     TESTING_INIT();
     
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double           gpu_error, cpu_error, matnorm, work[1];
+    double           gpu_error, cpu_error, error, Anorm, work[1];
     magmaDoubleComplex  c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex  c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *h_A, *h_A2, *h_B, *h_X, *h_R, *tau, *h_work, tmp[1];
     magmaDoubleComplex *d_A, *d_B;
-    magma_int_t M, N, n2, nrhs, lda, ldb, ldda, lddb, min_mn, max_mn, nb, info;
+    magma_int_t M, N, size, nrhs, lda, ldb, ldda, lddb, min_mn, max_mn, nb, info;
     magma_int_t lworkgpu, lhwork, lhwork2;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -51,22 +51,22 @@ int main( int argc, char** argv)
 
     nrhs = opts.nrhs;
     
-    printf("                                                            ||b-Ax|| / (N||A||)\n");
-    printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU     \n");
-    printf("===============================================================================\n");
+    printf("                                                            ||b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
+    printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU                         \n");
+    printf("===================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
             if ( M < N ) {
-                printf( "skipping M=%d, N=%d because M < N is not yet supported.\n", (int) M, (int) N );
+                printf( "%5d %5d %5d   skipping because M < N is not yet supported.\n", (int) M, (int) N, (int) nrhs );
                 continue;
             }
             min_mn = min(M, N);
             max_mn = max(M, N);
             lda    = M;
             ldb    = max_mn;
-            n2     = lda*N;
+            size   = lda*N;
             ldda   = ((M+31)/32)*32;
             lddb   = ((max_mn+31)/32)*32;
             nb     = magma_get_zgeqrf_nb(M);
@@ -98,17 +98,17 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_B,    magmaDoubleComplex, lddb*nrhs );
             
             /* Initialize the matrices */
-            lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
+            lapackf77_zlarnv( &ione, ISEED, &size, h_A );
             lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_A2, &lda );
             
             // make random RHS
-            n2 = M*nrhs;
-            lapackf77_zlarnv( &ione, ISEED, &n2, h_B );
+            size = M*nrhs;
+            lapackf77_zlarnv( &ione, ISEED, &size, h_B );
             lapackf77_zlacpy( MagmaUpperLowerStr, &M, &nrhs, h_B, &ldb, h_R, &ldb );
             
             // make consistent RHS
-            //n2 = N*nrhs;
-            //lapackf77_zlarnv( &ione, ISEED, &n2, h_X );
+            //size = N*nrhs;
+            //lapackf77_zlarnv( &ione, ISEED, &size, h_X );
             //blasf77_zgemm( MagmaNoTransStr, MagmaNoTransStr, &M, &nrhs, &N,
             //               &c_one,  h_A, &lda,
             //                        h_X, &ldb,
@@ -138,7 +138,7 @@ int main( int argc, char** argv)
                            &c_neg_one, h_A, &lda,
                                        h_X, &ldb,
                            &c_one,     h_R, &ldb);
-            matnorm = lapackf77_zlange("f", &M, &N, h_A, &lda, work);
+            Anorm = lapackf77_zlange("f", &M, &N, h_A, &lda, work);
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -159,15 +159,27 @@ int main( int argc, char** argv)
                                        h_X,  &ldb,
                            &c_one,     h_B,  &ldb);
             
-            cpu_error = lapackf77_zlange("f", &M, &nrhs, h_B, &ldb, work) / (min_mn*matnorm);
-            gpu_error = lapackf77_zlange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*matnorm);
+            cpu_error = lapackf77_zlange("f", &M, &nrhs, h_B, &ldb, work) / (min_mn*Anorm);
+            gpu_error = lapackf77_zlange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*Anorm);
             
-            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e  %s\n",
+            // error relative to LAPACK
+            size = M*nrhs;
+            blasf77_zaxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
+            error = lapackf77_zlange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*Anorm);
+            
+            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %8.2e",
                    (int) M, (int) N, (int) nrhs,
-                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error,
-                   (gpu_error < tol ? "ok" : "failed") );
-            status |= ! (gpu_error < tol);
-            
+                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error, error );
+                        
+            if ( M == N ) {
+                printf( "   %s\n", (gpu_error < tol && error < tol ? "ok" : "failed"));
+                status += ! (gpu_error < tol && error < tol);
+            }
+            else {
+                printf( "   %s\n", (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
+            }
+
             TESTING_FREE_CPU( tau    );
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_A2   );

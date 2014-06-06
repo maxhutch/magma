@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zlacpy.cpp normal z -> d, Fri Apr 25 15:06:06 2014
+       @generated from testing_zlacpy.cpp normal z -> d, Fri May 30 10:41:22 2014
        @author Mark Gates
 */
 
@@ -37,11 +37,12 @@ int main( int argc, char** argv)
     double *d_A, *d_B;
     magma_int_t M, N, size, lda, ldb, ldda, lddb;
     magma_int_t ione     = 1;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
-    
-    printf("    M     N   CPU GByte/s (sec)   GPU GByte/s (sec)   check\n");
+
+    printf("    M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
     printf("===========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -109,8 +110,10 @@ int main( int argc, char** argv)
             error = lapackf77_dlange("f", &M, &N, h_R, &lda, work);
 
             printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
-                   (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
+                   (int) M, (int) N,
+                   cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    (error == 0. ? "ok" : "failed") );
+            status += ! (error == 0.);
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_B );
@@ -126,5 +129,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

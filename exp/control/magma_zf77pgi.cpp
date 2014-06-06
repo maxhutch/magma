@@ -8,7 +8,7 @@
  *
  * @version 2.1.0
  * @author Mathieu Faverge
- * @date April 2014
+ * @date May 2014
  * @precisions normal z -> c d s
  *
  **/

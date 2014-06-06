@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_zhegvd_m.cpp normal z -> s, Fri Apr 25 15:06:13 2014
+    @generated from testing_zhegvd_m.cpp normal z -> s, Fri May 30 10:41:28 2014
 
 */
 
@@ -57,6 +57,7 @@ int main( int argc, char** argv)
     float c_neg_one = MAGMA_S_NEG_ONE;
 
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -73,8 +74,8 @@ int main( int argc, char** argv)
            (int) opts.ngpu, (int) opts.itype,
            lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo), (int) opts.check);
 
-    printf("  N     M   nr GPU     MGPU Time(s) \n");
-    printf("====================================\n");
+    printf("    N   CPU Time (sec)   GPU Time (sec)   MGPU Time (sec)\n");
+    printf("=========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -83,8 +84,8 @@ int main( int argc, char** argv)
             magma_int_t lwork = 2*N + N*N;
             magma_int_t lrwork = 1 + 5*N +2*N*N;
             // MKL's ssygvd has a bug for small N - it looks like what is returned by a
-            // query (consistent with LAPACK's number above) is different from a the memory
-            // requirement ckeck (that returns info -11). The lwork increase below is needed
+            // query (consistent with LAPACK's number above) is different from the memory
+            // requirement check (that returns info -11). The lwork increase below is needed
             // to pass this check.
             if (N<32)
                 lwork = 34*32;
@@ -103,9 +104,6 @@ int main( int argc, char** argv)
             TESTING_MALLOC_CPU( w1,    float, N );
             TESTING_MALLOC_CPU( w2,    float, N );
             TESTING_MALLOC_CPU( iwork, magma_int_t, liwork );
-
-            printf("  N     CPU Time(s)    GPU Time(s)   MGPU Time(s) \n");
-            printf("==================================================\n");
 
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -157,13 +155,13 @@ int main( int argc, char** argv)
 
             if ( opts.check ) {
                 /* =====================================================================
-                 Check the results following the LAPACK's [zc]hegvd routine.
-                 A x = lambda B x is solved
-                 and the following 3 tests computed:
-                 (1)    | A Z - B Z D | / ( |A||Z| N )  (itype = 1)
-                 | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
-                 | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
-                 =================================================================== */
+                   Check the results following the LAPACK's [zc]hegvd routine.
+                   A x = lambda B x is solved
+                   and the following 3 tests computed:
+                   (1)    | A Z - B Z D | / ( |A||Z| N )  (itype = 1)
+                          | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
+                          | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
+                   =================================================================== */
 
                 #if defined(PRECISION_d) || defined(PRECISION_s)
                 float *rwork = h_work + N*N;
@@ -199,8 +197,8 @@ int main( int argc, char** argv)
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_Binit, &N, h_B, &N );
 
                 /* ====================================================================
-                 Performs operation using MAGMA
-                 =================================================================== */
+                   Performs operation using MAGMA
+                   =================================================================== */
                 gpu_time = magma_wtime();
                 magma_ssygvd(opts.itype, opts.jobz, opts.uplo,
                              N, h_A, N, h_B, N, w2,
@@ -217,8 +215,8 @@ int main( int argc, char** argv)
                            (int) info, magma_strerror( info ));
 
                 /* =====================================================================
-                 Performs operation using LAPACK
-                 =================================================================== */
+                   Performs operation using LAPACK
+                   =================================================================== */
                 cpu_time = magma_wtime();
                 lapackf77_ssygvd(&opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
                                  &N, h_Ainit, &N, h_Binit, &N, w2,
@@ -243,22 +241,25 @@ int main( int argc, char** argv)
                 float result2 = temp2 / (((float)N)*temp1);
 
                 /* =====================================================================
-                 Print execution time
-                 =================================================================== */
-                printf("%5d     %6.2f         %6.2f         %6.2f\n",
+                   Print execution time
+                   =================================================================== */
+                printf("%5d   %7.2f          %7.2f          %7.2f\n",
                        (int) N, cpu_time, gpu_time, mgpu_time);
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if (opts.itype==1)
-                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
-                else if (opts.itype==2)
-                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
-                else if (opts.itype==3)
-                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result, (result < tol ? "" : "  failed") );
-
-                printf(    "(3)    | D(MGPU)-D(LAPACK) |/ |D|    = %8.2e%s\n\n", result2, (result2 < tolulp ? "" : "  failed") );
+                if (opts.itype==1) {
+                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result,  (result  < tol    ? "ok" : "failed") );
+                }
+                else if (opts.itype==2) {
+                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result,  (result  < tol    ? "ok" : "failed") );
+                }
+                else if (opts.itype==3) {
+                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result,  (result  < tol    ? "ok" : "failed") );
+                }
+                printf(    "(3)    | D(MGPU)-D(LAPACK) |/ |D|    = %8.2e   %s\n\n", result2, (result2 < tolulp ? "ok" : "failed") );
+                status += ! (result < tol && result2 < tolulp);
             }
             else {
-                printf("%5d     ------         ------         %6.2f\n",
+                printf("%5d     ---              ---            %7.2f\n",
                        (int) N, mgpu_time);
             }
 
@@ -287,4 +288,5 @@ int main( int argc, char** argv)
 
     /* Shutdown */
     TESTING_FINALIZE_MGPU();
+    return status;
 }

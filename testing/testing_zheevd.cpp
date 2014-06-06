@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
     @author Stan Tomov
 
@@ -42,10 +42,11 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     eps = lapackf77_dlamch( "E" );
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
-    
+
     double tol    = opts.tolerance * lapackf77_dlamch("E");
     double tolulp = opts.tolerance * lapackf77_dlamch("P");
     
@@ -54,6 +55,9 @@ int main( int argc, char** argv)
         opts.jobz = MagmaVec;
     }
     
+    printf("using: jobz = %s, uplo = %s\n",
+           lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo));
+
     printf("    N   CPU Time (sec)   GPU Time (sec)\n");
     printf("=======================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -185,9 +189,10 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.check ) {
                 printf("Testing the factorization A = U S U' for correctness:\n");
-                printf("(1)    | A - U S U' | / (|A| N)     = %8.2e%s\n",   result[0]*eps, (result[0]*eps < tol ? "" : "  failed") );
-                printf("(2)    | I -   U'U  | /  N          = %8.2e%s\n",   result[1]*eps, (result[1]*eps < tol ? "" : "  failed") );
-                printf("(3)    | S(w/ U) - S(w/o U) | / |S| = %8.2e%s\n\n", result[2]    , (result[2]  < tolulp ? "" : "  failed") );
+                printf("(1)    | A - U S U' | / (|A| N)     = %8.2e   %s\n",   result[0]*eps, (result[0]*eps < tol ? "ok" : "failed") );
+                printf("(2)    | I -   U'U  | /  N          = %8.2e   %s\n",   result[1]*eps, (result[1]*eps < tol ? "ok" : "failed") );
+                printf("(3)    | S(w/ U) - S(w/o U) | / |S| = %8.2e   %s\n\n", result[2]    , (result[2]  < tolulp ? "ok" : "failed") );
+                status += ! (result[0]*eps < tol && result[1]*eps < tol && result[2] < tolulp);
             }
             
             TESTING_FREE_CPU( h_A   );
@@ -206,5 +211,5 @@ int main( int argc, char** argv)
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

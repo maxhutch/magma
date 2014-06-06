@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgesdd.cpp normal z -> s, Fri Apr 25 15:06:13 2014
+       @generated from testing_zgesdd.cpp normal z -> s, Fri May 30 10:41:29 2014
        @author Mark Gates
 
 */
@@ -350,12 +350,12 @@ int main( int argc, char** argv)
                 result[4]  = lapackf77_slange("f", &min_mn, &one, S2, &min_mn, work);
                 result[4] /= lapackf77_slange("f", &min_mn, &one, S1, &min_mn, work);
                 
-                printf("    %c %5d %5d  %7.2f         %7.2f         %8.2e",
+                printf("   %c %5d %5d  %7.2f         %7.2f         %8.2e",
                        lapack_vec_const(jobz)[0],
                        (int) M, (int) N, cpu_time, gpu_time, result[4] );
             }
             else {
-                printf("    %c %5d %5d    ---           %7.2f           ---   ",
+                printf("   %c %5d %5d    ---           %7.2f           ---   ",
                        lapack_vec_const(jobz)[0],
                        (int) M, (int) N, gpu_time );
             }
@@ -364,8 +364,8 @@ int main( int argc, char** argv)
                 if ( result[1] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[1]); }
                 if ( result[2] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[2]); }
                 int success = (result[0] < tol) && (result[1] < tol) && (result[2] < tol) && (result[3] == 0.) && (result[4] < tol);
-                printf("   %3s  %s\n", (result[3] == 0. ? "yes" : "no"), (success ? "ok" : "failed"));
-                status |= ! success;
+                printf("   %3s   %s\n", (result[3] == 0. ? "yes" : "no"), (success ? "ok" : "failed"));
+                status += ! success;
             }
             else {
                 printf("\n");

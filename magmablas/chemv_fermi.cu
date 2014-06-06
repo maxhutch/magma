@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zhemv_fermi.cu normal z -> c, Fri Apr 25 15:05:24 2014
+       @generated from zhemv_fermi.cu normal z -> c, Fri May 30 10:40:44 2014
        Note: [ds] precisions generated from csymv_tesla.cu
 
 */
@@ -1576,7 +1576,7 @@ magmablas_chemv(
         // call CUDA ARCH 1.x version
         // magmablas for [sdc] precisions, cublas for [z] precisions.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        cublasChemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_chemv_tesla( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #endif
@@ -1610,7 +1610,7 @@ magmablas_chemv(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper ) {
-        cublasChemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
     }
     else {
         magma_int_t blocks = (n - 1) / hemv_bs + 1;
@@ -1645,7 +1645,7 @@ magmablas_chemv_work(
         // magmablas for [sdc] precisions, cublas for [z] precisions.
         // TODO: make _work interface for tesla.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        cublasChemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_chemv_tesla( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #endif
@@ -1679,7 +1679,7 @@ magmablas_chemv_work(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper )
-        cublasChemv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
     else {
         magma_int_t blocks = (n - 1) / hemv_bs + 1;
         /* TODO: was n*(blocks); why not lda*(blocks + 1), as elsewhere? */

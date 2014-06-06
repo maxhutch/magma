@@ -1,6 +1,14 @@
 var NAVTREEINDEX3 =
 {
+"group__magma__zgesv__driver.html#ga68564db49d1c281703603743f15bb6a3":[0,2,0,0,3,0],
+"group__magma__zgesv__driver.html#gad98a3a1583fbf7c9c8292a6a0a5ffcec":[0,2,0,0,3,1],
+"group__magma__zgesv__tile.html":[0,2,0,3,3],
+"group__magma__zgesv__tile.html#ga0bb7586c32986d6a7a459c57407e9115":[0,2,0,3,3,1],
+"group__magma__zgesv__tile.html#gaddff2bfaf81baa5cfc49c6d328883f62":[0,2,0,3,3,0],
+"group__magma__zgesvd__aux.html":[0,5,2,3],
+"group__magma__zgesvd__aux.html#ga0fa23c0b1dfae14cb4bf0b17212dfb16":[0,5,2,3,0],
 "group__magma__zgesvd__comp.html":[0,5,1,3],
+"group__magma__zgesvd__comp.html#ga13227babdef75e63eee758c32e9d9dfb":[0,5,1,3,1],
 "group__magma__zgesvd__comp.html#ga373b416c847e6bcfecc2c564b07a7777":[0,5,1,3,0],
 "group__magma__zgesvd__driver.html":[0,5,0,3],
 "group__magma__zgesvd__driver.html#ga36b9a308e414ee311ec9dba60789e770":[0,5,0,3,1],
@@ -75,7 +83,8 @@ var NAVTREEINDEX3 =
 "group__orthogonal.html":[0,3],
 "group__solvers.html":[0,2],
 "index.html":[],
-"magmawinthread_8h.html":[1,0,0,0],
+"magmawinthread_8cpp.html":[1,0,0,0],
+"magmawinthread_8h.html":[1,0,0,1],
 "modules.html":[0],
 "pages.html":[]
 };

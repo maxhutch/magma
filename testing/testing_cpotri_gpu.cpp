@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
   
-       @generated from testing_zpotri_gpu.cpp normal z -> c, Fri Apr 25 15:06:08 2014
+       @generated from testing_zpotri_gpu.cpp normal z -> c, Fri May 30 10:41:23 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -44,6 +44,7 @@ int main( int argc, char** argv)
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
+    printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
     printf("    N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||A||_F\n");
     printf("=================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -104,10 +105,10 @@ int main( int argc, char** argv)
                 error = lapackf77_clange("f", &N, &N, h_A, &lda, work);
                 blasf77_caxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
                 error = lapackf77_clange("f", &N, &N, h_R, &lda, work) / error;
-                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
+                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
                        error, (error < tol ? "ok" : "failed") );
-                status |= ! (error < tol);
+                status += ! (error < tol);
             }
             else {
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---\n",

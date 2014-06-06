@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -154,7 +154,7 @@ magmablas_zlange(
     dim3 threads( 64 );
     dim3 grid( (m-1)/64 + 1 );
     zlange_inf_kernel<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, dwork );
-    int i = cublasIdamax( m, dwork, 1 ) - 1;
+    int i = magma_idamax( m, dwork, 1 ) - 1;
     double res;
     cudaMemcpy( &res, &dwork[i], sizeof(double), cudaMemcpyDeviceToHost );
     return res;

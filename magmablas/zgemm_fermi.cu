@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 
@@ -149,8 +149,8 @@ magmablas_zgemm(
         // call CUDA ARCH 1.x version
         // magmablas for [sd] precisions, cublas for [zc] precisions.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        cublasZgemm(
-            lapacke_trans_const(TRANSA), lapacke_trans_const(TRANSB),
+        magma_zgemm(
+            TRANSA, TRANSB,
             m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
         #else
         magmablas_zgemm_tesla(
@@ -185,7 +185,7 @@ magmablas_zgemm(
     if ( sizeA >= CUBLAS_MAX_1DBUF_SIZE ||
          sizeB >= CUBLAS_MAX_1DBUF_SIZE )
     {
-        cublasZgemm( lapacke_trans_const(TRANSA), lapacke_trans_const(TRANSB), m, n, k, alpha,
+        magma_zgemm( TRANSA, TRANSB, m, n, k, alpha,
                      d_A, lda, d_B, ldb,
                      beta, d_C, ldc );
         return;

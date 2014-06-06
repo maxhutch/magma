@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_dgeev.cpp normal d -> s, Fri Apr 25 15:06:13 2014
+       @generated from testing_dgeev.cpp normal d -> s, Fri May 30 10:41:29 2014
 
 */
 
@@ -413,10 +413,10 @@ int main( int argc, char** argv)
                 error  = cblas_scnrm2( N, w1copy, 1 );
                 error /= cblas_scnrm2( N, w2copy, 1 );
                 
-                printf("%5d   %7.2f          %7.2f          %.2e  %s\n",
+                printf("%5d   %7.2f          %7.2f          %8.2e   %s\n",
                        (int) N, cpu_time, gpu_time,
                        error, (error < tolulp ? "ok" : "failed"));
-                status |= ! (error < tolulp);
+                status += ! (error < tolulp);
             }
             else {
                 printf("%5d     ---            %7.2f\n",
@@ -424,10 +424,10 @@ int main( int argc, char** argv)
             }
             if ( opts.check ) {
                 // -1 indicates test was not run
-                if ( result[0] != -1 ) { printf("        | A * VR - VR * W | / ( n |A| ) = %8.2e  %s\n", result[0], (result[0] < tol ? "ok" : "failed")); }
-                if ( result[1] != -1 ) { printf("        |  |VR(i)| - 1    |             = %8.2e  %s\n", result[1], (result[1] < tol ? "ok" : "failed")); }
-                if ( result[2] != -1 ) { printf("        | A'* VL - VL * W'| / ( n |A| ) = %8.2e  %s\n", result[2], (result[2] < tol ? "ok" : "failed")); }
-                if ( result[3] != -1 ) { printf("        |  |VL(i)| - 1    |             = %8.2e  %s\n", result[3], (result[3] < tol ? "ok" : "failed")); }
+                if ( result[0] != -1 ) { printf("        | A * VR - VR * W | / ( n |A| ) = %8.2e   %s\n", result[0], (result[0] < tol ? "ok" : "failed")); }
+                if ( result[1] != -1 ) { printf("        |  |VR(i)| - 1    |             = %8.2e   %s\n", result[1], (result[1] < tol ? "ok" : "failed")); }
+                if ( result[2] != -1 ) { printf("        | A'* VL - VL * W'| / ( n |A| ) = %8.2e   %s\n", result[2], (result[2] < tol ? "ok" : "failed")); }
+                if ( result[3] != -1 ) { printf("        |  |VL(i)| - 1    |             = %8.2e   %s\n", result[3], (result[3] < tol ? "ok" : "failed")); }
                 if ( result[4] != -1 ) { printf("        W  (full) == W  (partial, W only)           %s\n",         (result[4] == 1. ? "ok" : "failed")); }
                 if ( result[5] != -1 ) { printf("        W  (full) == W  (partial, W and VR)         %s\n",         (result[5] == 1. ? "ok" : "failed")); }
                 if ( result[6] != -1 ) { printf("        W  (full) == W  (partial, W and VL)         %s\n",         (result[6] == 1. ? "ok" : "failed")); }
@@ -435,15 +435,15 @@ int main( int argc, char** argv)
                 if ( result[8] != -1 ) { printf("        VL (full) == VL (partial, W and VL)         %s\n",         (result[8] == 1. ? "ok" : "failed")); }
                 
                 int newline = 0;
-                if ( result[0] != -1 ) { status |= ! (result[0] < tol);  newline = 1; }
-                if ( result[1] != -1 ) { status |= ! (result[1] < tol);  newline = 1; }
-                if ( result[2] != -1 ) { status |= ! (result[2] < tol);  newline = 1; }
-                if ( result[3] != -1 ) { status |= ! (result[3] < tol);  newline = 1; }
-                if ( result[4] != -1 ) { status |= ! (result[4] == 1.);  newline = 1; }
-                if ( result[5] != -1 ) { status |= ! (result[5] == 1.);  newline = 1; }
-                if ( result[6] != -1 ) { status |= ! (result[6] == 1.);  newline = 1; }
-                if ( result[7] != -1 ) { status |= ! (result[7] == 1.);  newline = 1; }
-                if ( result[8] != -1 ) { status |= ! (result[8] == 1.);  newline = 1; }
+                if ( result[0] != -1 ) { status += ! (result[0] < tol);  newline = 1; }
+                if ( result[1] != -1 ) { status += ! (result[1] < tol);  newline = 1; }
+                if ( result[2] != -1 ) { status += ! (result[2] < tol);  newline = 1; }
+                if ( result[3] != -1 ) { status += ! (result[3] < tol);  newline = 1; }
+                if ( result[4] != -1 ) { status += ! (result[4] == 1.);  newline = 1; }
+                if ( result[5] != -1 ) { status += ! (result[5] == 1.);  newline = 1; }
+                if ( result[6] != -1 ) { status += ! (result[6] == 1.);  newline = 1; }
+                if ( result[7] != -1 ) { status += ! (result[7] == 1.);  newline = 1; }
+                if ( result[8] != -1 ) { status += ! (result[8] == 1.);  newline = 1; }
                 if ( newline ) {
                     printf( "\n" );
                 }

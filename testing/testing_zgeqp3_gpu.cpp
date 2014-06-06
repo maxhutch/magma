@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
 
@@ -39,9 +39,12 @@ int main( int argc, char** argv)
     magma_int_t M, N, n2, lda, lwork, j, info, min_mn, nb;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+
+    double tol = opts.tolerance * lapackf77_dlamch("E");
     
     printf("  M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||A*P - Q*R||_F\n");
     printf("=====================================================================\n");
@@ -149,7 +152,8 @@ int main( int argc, char** argv)
                 error = lapackf77_zqpt01( &M, &N, &min_mn, h_A, h_R, &lda,
                                           tau, jpvt, h_work, &lwork );
                 error *= ulp;
-                printf("   %8.2e\n", error );
+                printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
             }
             else {
                 printf("     ---  \n");
@@ -177,5 +181,5 @@ int main( int argc, char** argv)
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

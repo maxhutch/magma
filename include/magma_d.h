@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from magma_z.h normal z -> d, Fri Apr 25 15:05:12 2014
+       @generated from magma_z.h normal z -> d, Fri May 30 10:40:33 2014
 */
 
 #ifndef MAGMA_D_H
@@ -208,6 +208,30 @@ magma_int_t magma_dorgqr2(magma_int_t m, magma_int_t n, magma_int_t k,
                           double *a, magma_int_t lda,
                           double *tau, magma_int_t *info );
 
+magma_int_t magma_dormbr( magma_vect_t vect, magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          double *A, magma_int_t lda,
+                          double *tau,
+                          double *C, magma_int_t ldc,
+                          double *work, magma_int_t lwork,
+                          magma_int_t *info);
+
+magma_int_t magma_dormlq( magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          double *A, magma_int_t lda,
+                          double *tau,
+                          double *C, magma_int_t ldc,
+                          double *work, magma_int_t lwork,
+                          magma_int_t *info);
+
+magma_int_t magma_dunmrq( magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          double *A, magma_int_t lda,
+                          double *tau,
+                          double *C, magma_int_t ldc,
+                          double *work, magma_int_t lwork,
+                          magma_int_t *info);
+
 magma_int_t magma_dormql( magma_side_t side, magma_trans_t trans,
                           magma_int_t m, magma_int_t n, magma_int_t k,
                           double *a, magma_int_t lda,
@@ -218,9 +242,11 @@ magma_int_t magma_dormql( magma_side_t side, magma_trans_t trans,
 
 magma_int_t magma_dormqr( magma_side_t side, magma_trans_t trans,
                           magma_int_t m, magma_int_t n, magma_int_t k,
-                          double *a, magma_int_t lda, double *tau,
+                          double *a, magma_int_t lda,
+                          double *tau,
                           double *c, magma_int_t ldc,
-                          double *work, magma_int_t lwork, magma_int_t *info);
+                          double *work, magma_int_t lwork,
+                          magma_int_t *info);
 
 magma_int_t magma_dormtr( magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
                           magma_int_t m, magma_int_t n,

@@ -1,20 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
 */
-
-// make sure that asserts are enabled
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-#include <assert.h>
-
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
@@ -50,9 +43,12 @@ int main( int argc, char** argv)
     magmaDoubleComplex *h_A, *h_b, *h_x, *h_xcublas;
     magmaDoubleComplex *d_A, *d_x;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+    
+    double tol = opts.tolerance * lapackf77_dlamch("E");
     
     printf("uplo = %s, transA = %s, diag = %s\n",
            lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
@@ -137,17 +133,19 @@ int main( int argc, char** argv)
             cublas_error = normr / (normA*normx);
 
             if ( opts.lapack ) {
-                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
+                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int) N,
                         cublas_perf, 1000.*cublas_time,
                         cpu_perf,    1000.*cpu_time,
-                        cublas_error );
+                        cublas_error, (cublas_error < tol ? "ok" : "failed"));
+                status += ! (cublas_error < tol);
             }
             else {
-                printf("%5d   %7.2f (%7.2f)     ---  (  ---  )   %8.2e\n",
+                printf("%5d   %7.2f (%7.2f)     ---  (  ---  )   %8.2e   %s\n",
                         (int) N,
                         cublas_perf, 1000.*cublas_time,
-                        cublas_error );
+                        cublas_error, (cublas_error < tol ? "ok" : "failed"));
+                status += ! (cublas_error < tol);
             }
             
             TESTING_FREE_CPU( ipiv );
@@ -166,5 +164,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

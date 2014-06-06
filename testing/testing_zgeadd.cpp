@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -38,9 +38,12 @@ int main( int argc, char** argv)
     magma_int_t M, N, size, lda, ldda;
     magma_int_t ione = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+
+    double tol = opts.tolerance * lapackf77_dlamch("E");
     
     /* Uncomment these lines to check parameters.
      * magma_xerbla calls lapack's xerbla to print out error. */
@@ -49,7 +52,7 @@ int main( int argc, char** argv)
     //magmablas_zgeadd(  M,  N, alpha, d_A, M-1,  d_B, ldda );
     //magmablas_zgeadd(  M,  N, alpha, d_A, ldda, d_B, N-1  );
 
-    printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Bl-Bm|/|Bl|\n");
+    printf("    M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    |Bl-Bm|/|Bl|\n");
     printf("=========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -99,8 +102,11 @@ int main( int argc, char** argv)
             blasf77_zaxpy( &size, &c_neg_one, h_A, &ione, h_B, &ione );
             error = lapackf77_zlange( "F", &M, &N, h_B, &lda, work ) / error;
             
-            printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
-                   (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
+            printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                   (int) M, (int) N,
+                   cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
+                   error, (error < tol ? "ok" : "failed"));
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_B );
@@ -115,5 +121,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

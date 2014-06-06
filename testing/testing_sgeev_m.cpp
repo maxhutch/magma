@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_dgeev_m.cpp normal d -> s, Fri Apr 25 15:06:13 2014
+       @generated from testing_dgeev_m.cpp normal d -> s, Fri May 30 10:41:29 2014
 
 */
 
@@ -351,20 +351,20 @@ int main( int argc, char** argv)
                         if ( ! MAGMA_S_EQUAL( VL[j+jj*lda], LRE[j+jj*lda] ))
                             result[6] = 0;
                 
-                printf("Test 1: | A * VR - VR * W | / ( n |A| ) = %8.2e  %s\n", result[0], (result[0] < tol ? "ok" : "failed"));
-                printf("Test 2: | A'* VL - VL * W'| / ( n |A| ) = %8.2e  %s\n", result[1], (result[1] < tol ? "ok" : "failed"));
-                printf("Test 3: |  |VR(i)| - 1    |             = %8.2e  %s\n", result[2], (result[2] < tol ? "ok" : "failed"));
-                printf("Test 4: |  |VL(i)| - 1    |             = %8.2e  %s\n", result[3], (result[3] < tol ? "ok" : "failed"));
+                printf("Test 1: | A * VR - VR * W | / ( n |A| ) = %8.2e   %s\n", result[0], (result[0] < tol ? "ok" : "failed"));
+                printf("Test 2: | A'* VL - VL * W'| / ( n |A| ) = %8.2e   %s\n", result[1], (result[1] < tol ? "ok" : "failed"));
+                printf("Test 3: |  |VR(i)| - 1    |             = %8.2e   %s\n", result[2], (result[2] < tol ? "ok" : "failed"));
+                printf("Test 4: |  |VL(i)| - 1    |             = %8.2e   %s\n", result[3], (result[3] < tol ? "ok" : "failed"));
                 printf("Test 5:   W (full)  ==  W (partial)     = %s\n",                   (result[4] == 1. ? "ok" : "failed"));
                 printf("Test 6:  VR (full)  == VR (partial)     = %s\n",                   (result[5] == 1. ? "ok" : "failed"));
                 printf("Test 7:  VL (full)  == VL (partial)     = %s\n\n",                 (result[6] == 1. ? "ok" : "failed"));
-                status |= ! (result[0] < tol);
-                status |= ! (result[1] < tol);
-                status |= ! (result[2] < tol);
-                status |= ! (result[3] < tol);
-                status |= ! (result[4] == 1.);
-                status |= ! (result[5] == 1.);
-                status |= ! (result[6] == 1.);
+                status += ! (result[0] < tol);
+                status += ! (result[1] < tol);
+                status += ! (result[2] < tol);
+                status += ! (result[3] < tol);
+                status += ! (result[4] == 1.);
+                status += ! (result[5] == 1.);
+                status += ! (result[6] == 1.);
                 
                 TESTING_FREE_PIN( LRE );
             }

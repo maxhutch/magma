@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgemm.cpp normal z -> c, Fri Apr 25 15:06:03 2014
+       @generated from testing_zgemm.cpp normal z -> c, Fri May 30 10:41:19 2014
        @author Mark Gates
 */
 // includes, system
@@ -38,6 +38,7 @@ int main( int argc, char** argv)
     magma_int_t lda, ldb, ldc, ldda, lddb, lddc;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
     
     magmaFloatComplex *h_A, *h_B, *h_C, *h_Cmagma, *h_Ccublas;
     magmaFloatComplex *d_A, *d_B, *d_C;
@@ -48,9 +49,11 @@ int main( int argc, char** argv)
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
+    float tol = opts.tolerance * lapackf77_slamch("E");
+
     printf("If running lapack (option --lapack), MAGMA and CUBLAS error are both computed\n"
-           "relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n"
-           "transA = %s, transB = %s\n",
+           "relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n");
+    printf("transA = %s, transB = %s\n",
            lapack_trans_const(opts.transA),
            lapack_trans_const(opts.transB) );
     printf("    M     N     K   MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  CUBLAS error\n");
@@ -161,25 +164,29 @@ int main( int argc, char** argv)
                 blasf77_caxpy( &sizeC, &c_neg_one, h_C, &ione, h_Ccublas, &ione );
                 cublas_error = lapackf77_clange( "M", &M, &N, h_Ccublas, &ldc, work ) / Cnorm;
                 
-                printf("%5d %5d %5d   %7.2f (%7.2f)    %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e     %8.2e\n",
+                printf("%5d %5d %5d   %7.2f (%7.2f)    %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e     %8.2e   %s\n",
                        (int) M, (int) N, (int) K,
                        magma_perf,  1000.*magma_time,
                        cublas_perf, 1000.*cublas_time,
                        cpu_perf,    1000.*cpu_time,
-                       magma_error, cublas_error );
+                       magma_error, cublas_error,
+                       (magma_error < tol && cublas_error < tol ? "ok" : "failed"));
+                status += ! (magma_error < tol && cublas_error < tol);
             }
             else {
                 // compute relative error for magma, relative to cublas
                 Cnorm = lapackf77_clange( "M", &M, &N, h_Ccublas, &ldc, work );
                 
                 blasf77_caxpy( &sizeC, &c_neg_one, h_Ccublas, &ione, h_Cmagma, &ione );
-                magma_error = lapackf77_clange( "M", &M, &N, h_Cmagma, &ldc, work ) / Cnorm;
+                magma_error = lapackf77_clange( "M", &M, &N, h_Cmagma, &ldc, work );  // / Cnorm;
                 
-                printf("%5d %5d %5d   %7.2f (%7.2f)    %7.2f (%7.2f)     ---   (  ---  )    %8.2e     ---\n",
+                printf("%5d %5d %5d   %7.2f (%7.2f)    %7.2f (%7.2f)     ---   (  ---  )    %8.2e        ---    %s\n",
                        (int) M, (int) N, (int) K,
                        magma_perf,  1000.*magma_time,
                        cublas_perf, 1000.*cublas_time,
-                       magma_error );
+                       magma_error,
+                       (magma_error < tol ? "ok" : "failed"));
+                status += ! (magma_error < tol);
             }
             
             TESTING_FREE_CPU( h_A );
@@ -199,5 +206,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

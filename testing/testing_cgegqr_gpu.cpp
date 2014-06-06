@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgegqr_gpu.cpp normal z -> c, Fri Apr 25 15:06:12 2014
+       @generated from testing_zgegqr_gpu.cpp normal z -> c, Fri May 30 10:41:27 2014
        @author Stan Tomov
 
 */
@@ -40,10 +40,13 @@ int main( int argc, char** argv)
     magma_int_t M, N, n2, lda, ldda, lwork, info, min_mn;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
+    
+    //float tol = opts.tolerance * lapackf77_slamch("E");
     
     printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)        ||I-Q'Q||_F     ||I-Q'Q||_I     ||A-Q R||_I \n");
     printf("=====================================================================================================\n");
@@ -105,8 +108,9 @@ int main( int argc, char** argv)
                 magma_cgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn);  
                 magma_cungqr_gpu( M, N, N, d_A, ldda, tau, d_T, nb, &info );
             }
-            else
+            else {
                 magma_cgegqr_gpu( 1, M, N, d_A, ldda, dwork, h_rwork, &info );
+            }
             gpu_time = magma_sync_wtime( 0 ) - gpu_time;
 
             gpu_perf = gflops / gpu_time;
@@ -147,19 +151,21 @@ int main( int argc, char** argv)
                    Check the result compared to LAPACK
                    =================================================================== */
                 blasf77_cgemm("t", "n", &N, &N, &M, &one, h_R, &M, h_R, &M, &zero, h_work, &N);
-                for(int ii=0; ii<N*N; ii+=(N+1)) h_work[ii] = MAGMA_C_SUB(h_work[ii], one);
+                for(int ii = 0; ii < N*N; ii += N+1 )
+                    h_work[ii] = MAGMA_C_SUB(h_work[ii], one);
 
                 e1    = lapackf77_clange("f", &N, &N, h_work, &N, work);
                 e3    = lapackf77_clange("i", &N, &N, h_work, &N, work);
 
                 blasf77_cgemm("t", "n", &N, &N, &M, &one, h_A, &M, h_A, &M, &zero, h_work, &N);
-                for(int ii=0; ii<N*N; ii+=(N+1)) h_work[ii] = MAGMA_C_SUB(h_work[ii], one);
+                for(int ii = 0; ii < N*N; ii += N+1 )
+                    h_work[ii] = MAGMA_C_SUB(h_work[ii], one);
                 e2    = lapackf77_clange("f", &N, &N, h_work, &N, work);
                 e4    = lapackf77_clange("i", &N, &N, h_work, &N, work);
 
                 printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2e/%7.2e  %7.2e/%7.2e  %7.2e\n",
-                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time, e1, e2,
-                       e3, e4, e5);
+                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
+                       e1, e2, e3, e4, e5);
             }
             else {
                 printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
@@ -188,5 +194,5 @@ int main( int argc, char** argv)
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

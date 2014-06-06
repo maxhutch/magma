@@ -67,6 +67,7 @@ var NAVTREEINDEX0 =
 "group__magma__cgeev__driver.html#gaffda4c5c819c6e973a68c2362e13ffe1":[0,4,0,0,2,1],
 "group__magma__cgelqf__comp.html":[0,3,3,2],
 "group__magma__cgelqf__comp.html#ga2bdc1643e291c1b78c28a1dae505366c":[0,3,3,2,1],
+"group__magma__cgelqf__comp.html#gaad2e8ada7d325dc80eede8a92bb51a53":[0,3,3,2,2],
 "group__magma__cgelqf__comp.html#gae57eccef9401979dcc31e7d19d489b65":[0,3,3,2,0],
 "group__magma__cgels__comp.html":[0,2,2,1,2],
 "group__magma__cgels__comp.html#ga290c72723a04aef1bd670d9c0000a37d":[0,2,2,1,2,0],
@@ -129,6 +130,7 @@ var NAVTREEINDEX0 =
 "group__magma__cgesvd__aux.html#ga3d12fb0f923d583a510f3689b1a2a4c4":[0,5,2,2,0],
 "group__magma__cgesvd__comp.html":[0,5,1,2],
 "group__magma__cgesvd__comp.html#gab2f1544a9f3a90b989c414c6d09f7301":[0,5,1,2,0],
+"group__magma__cgesvd__comp.html#gafe068e8f0a2ebff10a7d19762d48b77f":[0,5,1,2,1],
 "group__magma__cgesvd__driver.html":[0,5,0,2],
 "group__magma__cgesvd__driver.html#ga4fabaf4f2eb541d45768429d7ef8979a":[0,5,0,2,1],
 "group__magma__cgesvd__driver.html#gabdfa5370c04558dc13a6431907fe0c05":[0,5,0,2,0],
@@ -247,7 +249,5 @@ var NAVTREEINDEX0 =
 "group__magma__dgeev__aux.html":[0,4,0,2,1],
 "group__magma__dgeev__aux.html#ga02d66a1facdd7e3ede26b7135c4b18e7":[0,4,0,2,1,0],
 "group__magma__dgeev__aux.html#ga5d51fbe43100d2bc4bd6c650f71f3af0":[0,4,0,2,1,2],
-"group__magma__dgeev__aux.html#ga6ec257e844f955ff5aacf59644baebb1":[0,4,0,2,1,1],
-"group__magma__dgeev__aux.html#ga7b752e8002c82b03f7f4802227f83df3":[0,4,0,2,1,4],
-"group__magma__dgeev__aux.html#ga87875d13ae8a627d597d9f17670c95ae":[0,4,0,2,1,3]
+"group__magma__dgeev__aux.html#ga6ec257e844f955ff5aacf59644baebb1":[0,4,0,2,1,1]
 };

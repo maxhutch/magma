@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgetf2_gpu.cpp normal z -> d, Fri Apr 25 15:06:09 2014
+       @generated from testing_zgetf2_gpu.cpp normal z -> d, Fri May 30 10:41:25 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -79,11 +79,14 @@ int main( int argc, char** argv)
     magma_int_t M, N, n2, lda, ldda, info, min_mn;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+
+    double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||PA-LU||/(||A||*N)\n");
+    printf("    M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||PA-LU||/(||A||*N)\n");
     printf("=========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -96,7 +99,7 @@ int main( int argc, char** argv)
             gflops = FLOPS_DGETRF( M, N ) / 1e9;
             
             if ( N > 512 ) {
-                fprintf( stderr, "dgetf2 does not support N > 512; skipping N=%d.\n", (int) N );
+                printf( "%5d %5d   skipping because dgetf2 does not support N > 512\n", (int) M, (int) N );
                 continue;
             }
             
@@ -148,7 +151,8 @@ int main( int argc, char** argv)
             if ( opts.check ) {
                 magma_dgetmatrix( M, N, d_A, ldda, h_A, lda );
                 error = get_LU_error( M, N, h_R, lda, h_A, ipiv );
-                printf("   %8.2e\n", error );
+                printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed") );
+                status += ! (error < tol);
             }
             else {
                 printf("     ---  \n");
@@ -166,5 +170,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

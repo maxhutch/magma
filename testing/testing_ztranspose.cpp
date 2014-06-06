@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -38,12 +38,13 @@ int main( int argc, char** argv)
     magmaDoubleComplex *d_A, *d_B;
     magma_int_t M, N, size, lda, ldda, ldb, lddb;
     magma_int_t ione     = 1;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
-    
+
     printf("Inplace transpose requires M==N.\n");
-    printf("    M     N   CPU GByte/s (sec)   GPU GByte/s (sec) check   Inplace GB/s (sec) check\n");
+    printf("    M     N   CPU GByte/s (ms)    GPU GByte/s (ms)  check   Inplace GB/s (ms)  check\n");
     printf("====================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -119,26 +120,32 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result
                =================================================================== */
+            // check out-of-place transpose (d_B)
             size = ldb*M;
             magma_zgetmatrix( N, M, d_B, lddb, h_R, ldb );
             blasf77_zaxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
             error = lapackf77_zlange("f", &N, &M, h_R, &ldb, work );
             
             if ( M == N ) {
+                // also check in-place tranpose (d_A)
                 magma_zgetmatrix( N, M, d_A, ldda, h_R, ldb );
                 blasf77_zaxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
                 error2 = lapackf77_zlange("f", &N, &M, h_R, &ldb, work );
     
                 printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %4s    %7.2f (%7.2f)  %4s\n",
-                       (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
+                       (int) M, (int) N,
+                       cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                        (error  == 0. ? "ok" : "failed"),
                        gpu_perf2, gpu_time2,
                        (error2 == 0. ? "ok" : "failed") );
+                status += ! (error == 0. && error2 == 0.);
             }
             else {
                 printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %4s      ---   (  ---  )\n",
-                       (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
+                       (int) M, (int) N,
+                       cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                        (error  == 0. ? "ok" : "failed") );
+                status += ! (error == 0.);
             }
             
             TESTING_FREE_CPU( h_A );
@@ -155,5 +162,5 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

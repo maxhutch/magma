@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_zhegvdx_2stage.cpp normal z -> s, Fri Apr 25 15:06:13 2014
+    @generated from testing_zhegvdx_2stage.cpp normal z -> s, Fri May 30 10:41:28 2014
 
 */
 
@@ -56,7 +56,8 @@ int main( int argc, char** argv)
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
     magma_int_t ione     = 1;
-    magma_int_t ISEED[4] = {0,0,0,1};;
+    magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -77,8 +78,8 @@ int main( int argc, char** argv)
            (int) opts.itype, lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
            (int) opts.check, opts.fraction);
 
-    printf("  N     M     GPU Time(s) \n");
-    printf("==========================\n");
+    printf("    N     M   GPU Time (sec)\n");
+    printf("============================\n");
     magma_int_t threads = magma_get_parallel_numthreads();
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -159,14 +160,14 @@ int main( int argc, char** argv)
 
             if ( opts.check ) {
                 /* =====================================================================
-                 Check the results following the LAPACK's [zc]hegvdx routine.
-                 A x = lambda B x is solved
-                 and the following 3 tests computed:
-                 (1)    | A Z - B Z D | / ( |A||Z| N )  (itype = 1)
-                 | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
-                 | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
-                 (2)    | S(with V) - S(w/o V) | / | S |
-                 =================================================================== */
+                   Check the results following the LAPACK's [zc]hegvdx routine.
+                   A x = lambda B x is solved
+                   and the following 3 tests computed:
+                   (1)    | A Z - B Z D | / ( |A||Z| N )  (itype = 1)
+                   | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
+                   | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
+                   (2)    | S(with V) - S(w/o V) | / | S |
+                   =================================================================== */
                 #if defined(PRECISION_d) || defined(PRECISION_s)
                 float *rwork = h_work + N*N;
                 #endif
@@ -222,20 +223,23 @@ int main( int argc, char** argv)
 
 
             /* =====================================================================
-             Print execution time
-             =================================================================== */
-            printf("%5d %5d     %6.2f\n",
+               Print execution time
+               =================================================================== */
+            printf("%5d %5d   %7.2f\n",
                    (int) N, (int) m1, gpu_time);
             if ( opts.check ) {
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if (opts.itype==1)
-                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e%s\n", result[0], (result[0] < tol ? "" : "  failed"));
-                else if (opts.itype==2)
-                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result[0], (result[0] < tol ? "" : "  failed"));
-                else if (opts.itype==3)
-                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e%s\n", result[0], (result[0] < tol ? "" : "  failed"));
-
-                printf(    "(2)    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e%s\n\n", result[1], (result[1] < tolulp ? "" : "  failed"));
+                if (opts.itype==1) {
+                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
+                }
+                else if (opts.itype==2) {
+                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
+                }
+                else if (opts.itype==3) {
+                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
+                }
+                printf(    "(2)    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e   %s\n\n", result[1], (result[1] < tolulp ? "ok" : "failed"));
+                status += ! (result[0] < tol && result[1] < tolulp);
             }
 
             TESTING_FREE_CPU( h_A   );
@@ -259,6 +263,5 @@ int main( int argc, char** argv)
 
     /* Shutdown */
     TESTING_FINALIZE();
-
-    return 0;
+    return status;
 }

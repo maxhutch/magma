@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zgetrf_nopiv_gpu.cpp normal z -> s, Fri Apr 25 15:05:36 2014
+       @generated from zgetrf_nopiv_gpu.cpp normal z -> s, Fri May 30 10:40:54 2014
 
 */
 #include "common_magma.h"
@@ -96,7 +96,7 @@ magma_sgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
 
     /* Function Body */
     mindim = min(m, n);
-    nb     = 2*magma_get_sgetrf_nb(m);
+    nb     = magma_get_sgetrf_nb(m);
     s      = mindim / nb;
 
     if (nb <= 1 || nb >= min(m,n)) {
@@ -123,13 +123,25 @@ magma_sgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
             return *info;
         }
 
+        /* Define user stream if current stream is NULL */
+        cudaStream_t stream[2], current_stream;
+        magmablasGetKernelStream(&current_stream);
+
+        magma_queue_create( &stream[0] );
+        if (current_stream == NULL) {
+            magma_queue_create( &stream[1] );
+            magmablasSetKernelStream(stream[1]);
+        }
+        else {
+            stream[1] = current_stream;
+        }
+
         for( i=0; i < s; i++ ) {
             // download i-th panel
             cols = maxm - i*nb;
-            magma_sgetmatrix( m-i*nb, nb, dA(i,i), ldda, work, lddwork );
-            
-            // make sure that gpu queue is empty
-            magma_device_sync();
+
+            magma_queue_sync( stream[1] );
+            magma_sgetmatrix_async( m-i*nb, nb, dA(i,i), ldda, work, lddwork, stream[0] );
             
             if ( i > 0 ) {
                 magma_strsm( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit,
@@ -144,13 +156,15 @@ magma_sgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
 
             // do the cpu part
             rows = m - i*nb;
+            magma_queue_sync( stream[0] );
             magma_sgetrf_nopiv(&rows, &nb, work, &lddwork, &iinfo);
             if ( (*info == 0) && (iinfo > 0) )
                 *info = iinfo + i*nb;
 
             // upload i-th panel
-            magma_ssetmatrix( m-i*nb, nb, work, lddwork, dA(i, i), ldda );
-            
+            magma_ssetmatrix_async( m-i*nb, nb, work, lddwork, dA(i, i), ldda, stream[0] );
+            magma_queue_sync( stream[0] );
+
             // do the small non-parallel computations
             if ( s > (i+1) ) {
                 magma_strsm( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit,
@@ -196,6 +210,12 @@ magma_sgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
                             dA(s,s)+nb0, ldda);
 
         magma_free_pinned( work );
+
+        magma_queue_destroy( stream[0] );
+        if (current_stream == NULL) {
+            magma_queue_destroy( stream[1] );
+            magmablasSetKernelStream(NULL);
+        }
     }
 
     return *info;

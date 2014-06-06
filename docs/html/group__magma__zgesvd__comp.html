@@ -115,6 +115,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga373b416c847e6bcfecc2c564b07a7777"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesvd__comp.html#ga373b416c847e6bcfecc2c564b07a7777">magma_zgebrd</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t lda, double *d, double *e, magmaDoubleComplex *tauq, magmaDoubleComplex *taup, magmaDoubleComplex *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga373b416c847e6bcfecc2c564b07a7777"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEBRD reduces a general complex M-by-N matrix A to upper or lower bidiagonal form B by an orthogonal transformation: Q**H * A * P = B.  <a href="#ga373b416c847e6bcfecc2c564b07a7777">More...</a><br/></td></tr>
 <tr class="separator:ga373b416c847e6bcfecc2c564b07a7777"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga13227babdef75e63eee758c32e9d9dfb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesvd__comp.html#ga13227babdef75e63eee758c32e9d9dfb">magma_zunmbr</a> (magma_vect_t vect, magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex *tau, magmaDoubleComplex *C, magma_int_t ldc, magmaDoubleComplex *work, magma_int_t lwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga13227babdef75e63eee758c32e9d9dfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">If VECT = MagmaQ, ZUNMBR overwrites the general complex M-by-N matrix C with SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q*C C*Q TRANS = MagmaConjTrans: Q**H*C C*Q**H.  <a href="#ga13227babdef75e63eee758c32e9d9dfb">More...</a><br/></td></tr>
+<tr class="separator:ga13227babdef75e63eee758c32e9d9dfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -245,12 +248,153 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga13227babdef75e63eee758c32e9d9dfb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zunmbr </td>
+          <td>(</td>
+          <td class="paramtype">magma_vect_t&#160;</td>
+          <td class="paramname"><em>vect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_side_t&#160;</td>
+          <td class="paramname"><em>side</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>tau</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>C</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>work</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>If VECT = MagmaQ, ZUNMBR overwrites the general complex M-by-N matrix C with SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q*C C*Q TRANS = MagmaConjTrans: Q**H*C C*Q**H. </p>
+<p>If VECT = MagmaP, ZUNMBR overwrites the general complex M-by-N matrix C with SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: P*C C*P TRANS = MagmaConjTrans: P**H*C C*P**H</p>
+<p>Here Q and P**H are the unitary matrices determined by ZGEBRD when reducing A complex matrix A to bidiagonal form: A = Q*B * P**H. Q and P**H are defined as products of elementary reflectors H(i) and G(i) respectively.</p>
+<p>Let nq = m if SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Thus nq is the order of the unitary matrix Q or P**H that is applied.</p>
+<p>If VECT = MagmaQ, A is assumed to have been an NQ-by-K matrix: if nq &gt;= k, Q = H(1) H(2) . . . H(k); if nq &lt; k, Q = H(1) H(2) . . . H(nq-1).</p>
+<p>If VECT = MagmaP, A is assumed to have been A K-by-NQ matrix: if k &lt; nq, P = G(1) G(2) . . . G(k); if k &gt;= nq, P = G(1) G(2) . . . G(nq-1).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">vect</td><td>magma_vect_t<ul>
+<li>= MagmaQ: apply Q or Q**H;</li>
+<li>= MagmaP: apply P or P**H.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
+<li>= MagmaLeft: apply Q, Q**H, P or P**H from the Left;</li>
+<li>= MagmaRight: apply Q, Q**H, P or P**H from the Right.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: No transpose, apply Q or P;</li>
+<li>= MagmaConjTrans: Conjugate transpose, apply Q**H or P**H.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix C. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER If VECT = MagmaQ, the number of columns in the original matrix reduced by ZGEBRD. If VECT = MagmaP, the number of rows in the original matrix reduced by ZGEBRD. K &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>COMPLEX_16 array, dimension (LDA,min(nq,K)) if VECT = MagmaQ (LDA,nq) if VECT = MagmaP The vectors which define the elementary reflectors H(i) and G(i), whose products determine the matrices Q and P, as returned by ZGEBRD.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. If VECT = MagmaQ, LDA &gt;= max(1,nq); if VECT = MagmaP, LDA &gt;= max(1,min(nq,K)).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>COMPLEX_16 array, dimension (min(nq,K)) TAU(i) must contain the scalar factor of the elementary reflector H(i) or G(i) which determines Q or P, as returned by ZGEBRD in the array argument TAUQ or TAUP.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>COMPLEX_16 array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q or P*C or P**H*C or C*P or C*P**H.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldc</td><td>INTEGER The leading dimension of the array C. LDC &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX_16 array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M); if N = 0 or M = 0, LWORK &gt;= 1. For optimum performance if SIDE = MagmaLeft, LWORK &gt;= max(1,N*NB); if SIDE = MagmaRight, LWORK &gt;= max(1,M*NB), where NB is the optimal blocksize. (NB = 0 if M = 0 or N = 0.) <br/>
+ If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+</ul>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Apr 25 2014 15:06:47 for MAGMA by
+    <li class="footer">Generated on Fri May 30 2014 10:42:15 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @author Mark Gates
-       @generated from zgesdd.cpp normal z -> c, Fri Apr 25 15:05:52 2014
+       @generated from zgesdd.cpp normal z -> c, Fri May 30 10:41:09 2014
 
 */
 #include "common_magma.h"
@@ -584,7 +584,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &n, &n, &rwork[iru], &n, &work[iu], &ldwrku);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &n, &n, &n, &work[ir], &ldwrkr, &work[itauq], &work[iu], &ldwrku, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, n, n, n, &work[ir], ldwrkr, &work[itauq], &work[iu], ldwrku, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix VT */
                 /* Overwrite VT by the right singular vectors of R */
@@ -592,7 +596,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &n, &n, &rwork[irvt], &n, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &n, &n, &n, &work[ir], &ldwrkr, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, n, n, n, &work[ir], ldwrkr, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply Q in A by left singular vectors of R in WORK[IU], */
                 /* storing result in WORK[IR] and copying to A */
@@ -662,7 +670,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &n, &n, &rwork[iru], &n, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &n, &n, &n, &work[ir], &ldwrkr, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, n, n, n, &work[ir], ldwrkr, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix VT */
                 /* Overwrite VT by right singular vectors of R */
@@ -670,7 +682,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &n, &n, &rwork[irvt], &n, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &n, &n, &n, &work[ir], &ldwrkr, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, n, n, n, &work[ir], ldwrkr, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply Q in A by left singular vectors of R in WORK[IR], */
                 /* storing result in U */
@@ -737,7 +753,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &n, &n, &rwork[iru], &n, &work[iu], &ldwrku);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &n, &n, &n, A(1,1), &lda, &work[itauq], &work[iu], &ldwrku, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, n, n, n, A(1,1), lda, &work[itauq], &work[iu], ldwrku, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix VT */
                 /* Overwrite VT by right singular vectors of R */
@@ -745,7 +765,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &n, &n, &rwork[irvt], &n, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &n, &n, &n, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, n, n, n, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply Q in U by left singular vectors of R in WORK[IU], */
                 /* storing result in A */
@@ -985,7 +1009,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [N + N*N] + N*N) */
                 lapackf77_clacp2("F", &n, &n, &rwork[irvt], &n, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &n, &n, &n, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, n, n, n, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 if (lwork >= m*n + 3*n) {
                     /* Copy real matrix RWORK[IRU] to complex matrix WORK[IU] */
@@ -997,7 +1025,11 @@ magma_int_t magma_cgesdd(
                     lapackf77_claset("F", &m, &n, &c_zero, &c_zero, &work[iu], &ldwrku);
                     lapackf77_clacp2("F", &n, &n, &rwork[iru], &n, &work[iu], &ldwrku);
                     lnwork = lwork - nwork + 1;
+                    #if VERSION == 1
                     lapackf77_cunmbr("Q", "L", "N", &m, &n, &n, A(1,1), &lda, &work[itauq], &work[iu], &ldwrku, &work[nwork], &lnwork, &ierr);
+                    #else
+                    magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, n, n, A(1,1), lda, &work[itauq], &work[iu], ldwrku, &work[nwork], lnwork, &ierr);
+                    #endif
                     lapackf77_clacpy("F", &m, &n, &work[iu], &ldwrku, A(1,1), &lda);
                 }
                 else {
@@ -1038,7 +1070,11 @@ magma_int_t magma_cgesdd(
                 lapackf77_claset("F", &m, &n, &c_zero, &c_zero, U, &ldu);
                 lapackf77_clacp2("F", &n, &n, &rwork[iru], &n, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &n, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, n, n, A(1,1), lda, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix VT */
                 /* Overwrite VT by right singular vectors of A */
@@ -1046,7 +1082,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [N + N*N] + N*N) */
                 lapackf77_clacp2("F", &n, &n, &rwork[irvt], &n, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &n, &n, &n, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, n, n, n, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
             else {
                 /* Path 6a (M >= N, JOBZ=A) */
@@ -1074,7 +1114,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [N] + N*N) */
                 lapackf77_clacp2("F", &n, &n, &rwork[iru], &n, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix VT */
                 /* Overwrite VT by right singular vectors of A */
@@ -1083,7 +1127,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [N + N*N] + N*N) */
                 lapackf77_clacp2("F", &n, &n, &rwork[irvt], &n, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &n, &n, &n, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, n, n, n, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
         }
     }
@@ -1200,7 +1248,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &m, &m, &rwork[iru], &m, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &m, &m, &work[il], &ldwrkl, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, m, &work[il], ldwrkl, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix WORK[IVT] */
                 /* Overwrite WORK[IVT] by the right singular vectors of L */
@@ -1209,7 +1261,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &m, &m, &rwork[irvt], &m, &work[ivt], &ldwkvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &m, &m, &m, &work[il], &ldwrkl, &work[itaup], &work[ivt], &ldwkvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, m, m, m, &work[il], ldwrkl, &work[itaup], &work[ivt], ldwkvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply right singular vectors of L in WORK[IL] by Q in A, */
                 /* storing result in WORK[IL] and copying to A */
@@ -1279,7 +1335,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &m, &m, &rwork[iru], &m, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &m, &m, &work[il], &ldwrkl, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, m, &work[il], ldwrkl, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix VT */
                 /* Overwrite VT by left singular vectors of L */
@@ -1287,7 +1347,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &m, &m, &rwork[irvt], &m, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &m, &m, &m, &work[il], &ldwrkl, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, m, m, m, &work[il], ldwrkl, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy VT to WORK[IL], multiply right singular vectors of L */
                 /* in WORK[IL] by Q in A, storing result in VT */
@@ -1354,7 +1418,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &m, &m, &rwork[iru], &m, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &m, &m, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, m, A(1,1), lda, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix WORK[IVT] */
                 /* Overwrite WORK[IVT] by right singular vectors of L */
@@ -1362,7 +1430,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 lapackf77_clacp2("F", &m, &m, &rwork[irvt], &m, &work[ivt], &ldwkvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &m, &m, &m, A(1,1), &lda, &work[itaup], &work[ivt], &ldwkvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, m, m, m, A(1,1), lda, &work[itaup], &work[ivt], ldwkvt, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Multiply right singular vectors of L in WORK[IVT] by Q in VT, */
                 /* storing result in A */
@@ -1609,7 +1681,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [M + M*M] + M*M) */
                 lapackf77_clacp2("F", &m, &m, &rwork[iru], &m, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 if (lwork >= m*n + 3*m) {
                     /* Copy real matrix RWORK[IRVT] to complex matrix WORK[IVT] */
@@ -1620,7 +1696,11 @@ magma_int_t magma_cgesdd(
                     /* (RWorkspace: need [M] + M*M) */
                     lapackf77_clacp2("F", &m, &m, &rwork[irvt], &m, &work[ivt], &ldwkvt);
                     lnwork = lwork - nwork + 1;
+                    #if VERSION == 1
                     lapackf77_cunmbr("P", "R", "C", &m, &n, &m, A(1,1), &lda, &work[itaup], &work[ivt], &ldwkvt, &work[nwork], &lnwork, &ierr);
+                    #else
+                    magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, m, n, m, A(1,1), lda, &work[itaup], &work[ivt], ldwkvt, &work[nwork], lnwork, &ierr);
+                    #endif
                     lapackf77_clacpy("F", &m, &n, &work[ivt], &ldwkvt, A(1,1), &lda);
                 }
                 else {
@@ -1660,7 +1740,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [M + M*M] + M*M) */
                 lapackf77_clacp2("F", &m, &m, &rwork[iru], &m, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Copy real matrix RWORK[IRVT] to complex matrix VT */
                 /* Overwrite VT by right singular vectors of A */
@@ -1669,7 +1753,11 @@ magma_int_t magma_cgesdd(
                 lapackf77_claset("F", &m, &n, &c_zero, &c_zero, VT, &ldvt);
                 lapackf77_clacp2("F", &m, &m, &rwork[irvt], &m, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &m, &n, &m, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, m, n, m, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
             else {
                 /* Path 6ta (N >= M, JOBZ=A) */
@@ -1690,7 +1778,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [M] + M*M) */
                 lapackf77_clacp2("F", &m, &m, &rwork[iru], &m, U, &ldu);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("Q", "L", "N", &m, &m, &n, A(1,1), &lda, &work[itauq], U, &ldu, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaQ, MagmaLeft, MagmaNoTrans, m, m, n, A(1,1), lda, &work[itauq], U, ldu, &work[nwork], lnwork, &ierr);
+                #endif
 
                 /* Set all of VT to identity matrix */
                 lapackf77_claset("F", &n, &n, &c_zero, &c_one, VT, &ldvt);
@@ -1701,7 +1793,11 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need [M + M*M] + M*M) */
                 lapackf77_clacp2("F", &m, &m, &rwork[irvt], &m, VT, &ldvt);
                 lnwork = lwork - nwork + 1;
+                #if VERSION == 1
                 lapackf77_cunmbr("P", "R", "C", &n, &n, &m, A(1,1), &lda, &work[itaup], VT, &ldvt, &work[nwork], &lnwork, &ierr);
+                #else
+                magma_cunmbr(MagmaP, MagmaRight, MagmaConjTrans, n, n, m, A(1,1), lda, &work[itaup], VT, ldvt, &work[nwork], lnwork, &ierr);
+                #endif
             }
         }
     }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
 */
@@ -208,6 +208,30 @@ magma_int_t magma_zungqr2(magma_int_t m, magma_int_t n, magma_int_t k,
                           magmaDoubleComplex *a, magma_int_t lda,
                           magmaDoubleComplex *tau, magma_int_t *info );
 
+magma_int_t magma_zunmbr( magma_vect_t vect, magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          magmaDoubleComplex *A, magma_int_t lda,
+                          magmaDoubleComplex *tau,
+                          magmaDoubleComplex *C, magma_int_t ldc,
+                          magmaDoubleComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
+
+magma_int_t magma_zunmlq( magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          magmaDoubleComplex *A, magma_int_t lda,
+                          magmaDoubleComplex *tau,
+                          magmaDoubleComplex *C, magma_int_t ldc,
+                          magmaDoubleComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
+
+magma_int_t magma_zunmrq( magma_side_t side, magma_trans_t trans,
+                          magma_int_t m, magma_int_t n, magma_int_t k,
+                          magmaDoubleComplex *A, magma_int_t lda,
+                          magmaDoubleComplex *tau,
+                          magmaDoubleComplex *C, magma_int_t ldc,
+                          magmaDoubleComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
+
 magma_int_t magma_zunmql( magma_side_t side, magma_trans_t trans,
                           magma_int_t m, magma_int_t n, magma_int_t k,
                           magmaDoubleComplex *a, magma_int_t lda,
@@ -218,9 +242,11 @@ magma_int_t magma_zunmql( magma_side_t side, magma_trans_t trans,
 
 magma_int_t magma_zunmqr( magma_side_t side, magma_trans_t trans,
                           magma_int_t m, magma_int_t n, magma_int_t k,
-                          magmaDoubleComplex *a, magma_int_t lda, magmaDoubleComplex *tau,
+                          magmaDoubleComplex *a, magma_int_t lda,
+                          magmaDoubleComplex *tau,
                           magmaDoubleComplex *c, magma_int_t ldc,
-                          magmaDoubleComplex *work, magma_int_t lwork, magma_int_t *info);
+                          magmaDoubleComplex *work, magma_int_t lwork,
+                          magma_int_t *info);
 
 magma_int_t magma_zunmtr( magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
                           magma_int_t m, magma_int_t n,

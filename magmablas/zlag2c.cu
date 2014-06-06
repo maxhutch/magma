@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions mixed zc -> ds
-
+       @author Mark Gates
 */
 #include "common_magma.h"
 
@@ -17,34 +17,31 @@
 static __device__ int flag = 0; 
 
 __global__ void 
-magmaint_zlag2c(  int m, int n, 
-                  const magmaDoubleComplex *A, int lda, 
-                  magmaFloatComplex *SA,       int ldsa, 
-                  double RMAX ) 
+zlag2c_kernel( int m, int n, 
+               const magmaDoubleComplex *A, int lda, 
+               magmaFloatComplex *SA,       int ldsa, 
+               double rmax ) 
 {
-    const magmaDoubleComplex *Aend = A + lda*n;
     magmaDoubleComplex tmp;
-    double mRMAX = - RMAX;
-    int    mym   = blockIdx.x * blksize + threadIdx.x;
-
-    if ( mym < m ){
-        A += mym;
-        SA+= mym; 
-        
-        tmp = *A;
-        for ( ; A < Aend; )
-        {
-            A  += lda;
-            if(    (cuCreal(tmp) < mRMAX) || (cuCreal(tmp) > RMAX)
+    double neg_rmax = - rmax;
+    
+    int i = blockIdx.x*blksize + threadIdx.x;
+    if ( i < m ) {
+        A  += i;
+        SA += i; 
+        const magmaDoubleComplex *Aend = A + lda*n;
+        while( A < Aend ) {
+            tmp = *A;
+            if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
 #if defined(PRECISION_z) || defined(PRECISION_c)
-                || (cuCimag(tmp) < mRMAX) || (cuCimag(tmp) > RMAX) 
+                || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax) 
 #endif
                 )
             {
                 flag = 1; 
             }
             *SA = cuComplexDoubleToFloat( tmp );
-            tmp = *A;
+            A  += lda;
             SA += ldsa;
         }
     }
@@ -52,22 +49,14 @@ magmaint_zlag2c(  int m, int n,
 
 
 /**
-    Note
-    ----
-          - We have to provide INFO at the end that zlag2c isn't doable now. 
-          - Transfer a single value TO/FROM CPU/GPU
-          - SLAMCH that's needed is called from underlying BLAS
-          - Only used in iterative refinement
-          - Do we want to provide this in the release?
-    
     Purpose
     -------
-    ZLAG2C converts a COMPLEX_16 matrix A to a COMPLEX
-    matrix SA.
+    ZLAG2C converts a double-complex matrix, A,
+                 to a single-complex matrix, SA.
     
-    RMAX is the overflow for the COMPLEX arithmetic.
+    RMAX is the overflow for the single-complex arithmetic.
     ZLAG2C checks that all the entries of A are between -RMAX and
-    RMAX. If not the convertion is aborted and a flag is raised.
+    RMAX. If not, the conversion is aborted and a flag is raised.
         
     Arguments
     ---------
@@ -126,12 +115,17 @@ magmablas_zlag2c( magma_int_t m, magma_int_t n,
         magma_xerbla( __func__, -(*info) );
         //return *info;
     }
-    
-    double RMAX = (double)lapackf77_slamch("O");
 
-    dim3 threads( blksize, 1, 1 );
-    dim3 grid( (m+blksize-1)/blksize, 1, 1);
+    /* quick return */
+    if ( m == 0 || n == 0 ) {
+        return;
+    }
+    
+    double rmax = (double)lapackf77_slamch("O");
+
+    dim3 threads( blksize );
+    dim3 grid( (m+blksize-1)/blksize );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    magmaint_zlag2c<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, SA, ldsa, RMAX ) ; 
+    zlag2c_kernel<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, SA, ldsa, rmax ); 
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

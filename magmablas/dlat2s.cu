@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zlat2c.cu mixed zc -> ds, Fri Apr 25 15:05:20 2014
+       @generated from zlat2c.cu mixed zc -> ds, Fri May 30 10:40:41 2014
 
 */
 #include "common_magma.h"
@@ -1024,7 +1024,7 @@ magmablas_dlat2s(
     *info = 0;
     mdlat2s( uplo, n, A, lda, SA, ldsa, info );
     /*
-      int val = cublasIdamax(n, WORK, 1);
+      int val = magma_idamax(n, WORK, 1);
       double retVal[1];
       cublasGetMatrix( 1, 1, sizeof( double ), WORK+val-1, 1, retVal, 1 ) ;
       return retVal[0];

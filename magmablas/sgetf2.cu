@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zgetf2.cu normal z -> s, Fri Apr 25 15:05:23 2014
+       @generated from zgetf2.cu normal z -> s, Fri May 30 10:40:43 2014
 */
 
 #include <stdio.h>
@@ -114,7 +114,7 @@ magma_sgetf2_gpu(
         cudaDeviceSetCacheConfig( cudaFuncCachePreferShared );
 
         // Find pivot and test for singularity.
-        jp = j - 1 + cublasIsamax(m-j, A(j,j), 1);
+        jp = j - 1 + magma_isamax(m-j, A(j,j), 1);
         ipiv[j] = jp + 1;  // ipiv uses Fortran one-based index
         // Can't check value of A since it is on GPU
         //if ( A(jp, j) != 0.0) {

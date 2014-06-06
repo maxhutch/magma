@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from testing_zgeqr2_gpu.cpp normal z -> s, Fri Apr 25 15:06:10 2014
+       @generated from testing_zgeqr2_gpu.cpp normal z -> s, Fri May 30 10:41:26 2014
        @author Stan Tomov
 
 */
@@ -40,9 +40,12 @@ int main( int argc, char** argv)
     magma_int_t M, N, n2, lda, ldda, lwork, info, min_mn;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
+
+    float tol = opts.tolerance * lapackf77_slamch("E");
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
     printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||R||_F / ||A||_F\n");
@@ -115,8 +118,10 @@ int main( int argc, char** argv)
                 blasf77_saxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
                 error = lapackf77_slange("f", &M, &N, h_R, &lda, work) / error;
                 
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
-                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time, error );
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
+                       error, (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
             }
             else {
                 printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
@@ -140,5 +145,5 @@ int main( int argc, char** argv)
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

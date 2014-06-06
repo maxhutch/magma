@@ -10,5 +10,5 @@ $(error Set $$MKLROOT, preferably in your environment, e.g., run "source $(vars_
 endif
 
 ifeq ($(wildcard $(MKLROOT)),)
-$(error $$MKLROOT=$(MKLROOT) does not exist. Please set $$MKLROOT to where CUDA is installed.)
+$(error $$MKLROOT=$(MKLROOT) does not exist. Please set $$MKLROOT to where MKL is installed.)
 endif

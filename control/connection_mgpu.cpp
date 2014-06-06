@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
        @precisions normal z -> s d c
        @author Azzam Haidar
@@ -39,6 +39,7 @@ magma_int_t magma_buildconnection_mgpu(  magma_int_t gnode[MagmaMaxGPUs+2][Magma
         cudaGetDeviceProperties( &prop, d );
         if ( ! prop.unifiedAddressing ) {
             printf( "device %d doesn't support unified addressing\n", (int) d );
+            free(deviceid);
             return -1;
         }
         // add this device to the list if not added yet.
@@ -59,6 +60,7 @@ magma_int_t magma_buildconnection_mgpu(  magma_int_t gnode[MagmaMaxGPUs+2][Magma
             cudaGetDeviceProperties( &prop, d2 );
             if ( ! prop.unifiedAddressing ) {
                 printf( "device %d doesn't support unified addressing\n", (int) d2 );
+                free(deviceid);
                 return -1;
             }
 
@@ -74,6 +76,7 @@ magma_int_t magma_buildconnection_mgpu(  magma_int_t gnode[MagmaMaxGPUs+2][Magma
                 //printf("enabling devide %d ==> %d  error %d\n",d,d2,err);
                 if ( err != cudaSuccess && err != cudaErrorPeerAccessAlreadyEnabled ) {
                     printf( "device %d cudaDeviceEnablePeerAccess error %d\n", (int) d2, (int) err );
+                    free(deviceid);
                     return -2;
                 }
 
@@ -91,6 +94,7 @@ magma_int_t magma_buildconnection_mgpu(  magma_int_t gnode[MagmaMaxGPUs+2][Magma
                     }
                 }else{
                     printf( "device %d cudaDeviceEnablePeerAccess error %d\n", (int) d, (int) err );
+                    free(deviceid);
                     return -2;
                 }
             }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta1) --
+    -- MAGMA (version 1.5.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date April 2014
+       @date May 2014
 
-       @generated from zgeqlf.cpp normal z -> c, Fri Apr 25 15:05:42 2014
+       @generated from zgeqlf.cpp normal z -> c, Fri May 30 10:41:01 2014
 
 */
 #include "common_magma.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    SGEQLF computes a QL factorization of a COMPLEX M-by-N matrix A:
+    CGEQLF computes a QL factorization of a COMPLEX M-by-N matrix A:
     A = Q * L.
 
     Arguments

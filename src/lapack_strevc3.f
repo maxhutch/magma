@@ -1,11 +1,11 @@
 *
-*   -- MAGMA (version 1.5.0-beta1) --
+*   -- MAGMA (version 1.5.0-beta2) --
 *      Univ. of Tennessee, Knoxville
 *      Univ. of California, Berkeley
 *      Univ. of Colorado, Denver
-*      @date April 2014
+*      @date May 2014
 *
-*      @generated from lapack_dtrevc3.f normal d -> s, Fri Apr 25 15:05:52 2014
+*      @generated from lapack_dtrevc3.f normal d -> s, Fri May 30 10:41:09 2014
 *      @author Azzam Haidar
 *      @author Mark Gates
 *
@@ -208,7 +208,7 @@
 *> \author Univ. of Colorado Denver
 *> \author NAG Ltd.
 *
-*> \date @date April 2014
+*> \date @date May 2014
 *
 *> \ingroup magma_sgeev_comp
 *
