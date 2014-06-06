@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
 */
 #include "common_magma.h"
@@ -60,23 +60,9 @@ magmablas_dgemvt_tesla(
     const double *x,
     double       *y );
 
-extern "C" void
-magmablas_dgemv_tesla(
-    char trans, magma_int_t m, magma_int_t n,
-    double alpha,
-    const double *A, magma_int_t lda,
-    const double *x, magma_int_t incx,
-    double beta,
-    double       *y, magma_int_t incy)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     This routine computes:
     1) y =       A   x      if trans == 'N' or 'n', alpha == 1, beta == 0,
                             and incx == incy == 1 (using magmablas code)
@@ -86,50 +72,69 @@ magmablas_dgemv_tesla(
                             otherwise, using CUBLAS.
 
     Arguments
-    ==========
-    TRANS   CHARACTER*1
+    ----------
+    @param[in]
+    trans   magma_trans_t
             On entry, TRANS specifies the operation to be performed as
             follows:
-                TRANS = 'N' or 'n'   y := alpha*A  *x + beta*y
-                TRANS = 'T' or 't'   y := alpha*A^T*x + beta*y
+      -     = MagmaNoTrans:    y := alpha*A  *x + beta*y
+      -     = MagmaTrans:      y := alpha*A^T*x + beta*y
             
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             On entry, M specifies the number of rows of the matrix A.
             
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             On entry, N specifies the number of columns of the matrix A
             
-    ALPHA   DOUBLE PRECISION
+    @param[in]
+    alpha   DOUBLE PRECISION
             On entry, ALPHA specifies the scalar alpha.
-            Unchanged on exit.
             
-    A       (input) DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
+    @param[in]
+    A       DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
             
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             LDA specifies the leading dimension of A.
             
-    X       (input) DOUBLE PRECISION array of dimension
+    @param[in]
+    x       DOUBLE PRECISION array of dimension
             n if trans == 'n'
             m if trans == 't'
             
-    INCX    (input) Specifies the increment for the elements of X.
-            INCX must not be zero. Unchanged on exit.
-            
-    BETA    DOUBLE PRECISION
+    @param[in]
+    incx    Specifies the increment for the elements of X.
+            INCX must not be zero.
+        
+    @param[in]
+    beta    DOUBLE PRECISION
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
-            Unchanged on exit.
             
-    Y       (output) DOUBLE PRECISION array of dimension
+    @param[out]
+    y       DOUBLE PRECISION array of dimension
             m if trans == 'n'
             n if trans == 't'
             
-    INCY    (input) Specifies the increment for the elements of Y.
-            INCY must not be zero. Unchanged on exit.
-    ===================================================================== */
+    @param[in]
+    incy    Specifies the increment for the elements of Y.
+            INCY must not be zero.
 
+    @ingroup magma_dblas2
+    ********************************************************************/
+extern "C" void
+magmablas_dgemv_tesla(
+    magma_trans_t trans, magma_int_t m, magma_int_t n,
+    double alpha,
+    const double *A, magma_int_t lda,
+    const double *x, magma_int_t incx,
+    double beta,
+    double       *y, magma_int_t incy)
+{
     if ( incx == 1 && incy == 1 && beta == 0 ) {
-        if ( trans == 'n' || trans == 'N' ) {
+        if ( trans == MagmaNoTrans ) {
             if ( alpha == 1. ) {
                 magma_int_t blocks = (m - 1)/num_threads + 1;
                 dim3 grid( blocks, 1, 1 );
@@ -138,7 +143,7 @@ magmablas_dgemv_tesla(
                     (m, n, (n/gemv_bs)*gemv_bs, A, lda, x, y);
             }
             else {
-                cublasDgemv(trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+                cublasDgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
             }
         }
         else {
@@ -146,7 +151,7 @@ magmablas_dgemv_tesla(
         }
     }
     else {
-        cublasDgemv(trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+        cublasDgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
     }
 }
 
@@ -359,6 +364,40 @@ dgemvt_kernel2_tesla(
     }
 }
 
+/**
+    Purpose
+    -------
+    This routine computes y = alpha A^T x on the GPU.
+    Recommended for large M and N.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   DOUBLE PRECISION.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       DOUBLE PRECISION array of dimension m.
+
+    @param[out]
+    y       DOUBLE PRECISION array of dimension n.
+            On exit Y = alpha A^T X.
+
+    @ingroup magma_dblas2
+    ********************************************************************/
 extern "C" void
 magmablas_dgemvt1_tesla(
     magma_int_t m, magma_int_t n, double alpha,
@@ -366,34 +405,6 @@ magmablas_dgemvt1_tesla(
     const double *x,
     double       *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    This routine computes y = alpha A^T x on the GPU.
-    Recommended for large M and N.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) DOUBLE PRECISION array of dimension m.
-
-    Y       (output) DOUBLE PRECISION array of dimension n.
-            On exit Y = alpha A^T X.
-    ===================================================================== */
-
     magma_int_t blocks = (n - 1)/32 + 1;
     dim3 grid( blocks, 1, 1 );
     dim3 threads( 32, 2, 1 );
@@ -401,6 +412,41 @@ magmablas_dgemvt1_tesla(
         (m, n, alpha, (m / gemv_bs)*gemv_bs, A, lda, x, y);
 }
 
+
+/**
+    Purpose
+    -------
+    This routine computes y = alpha A^T x on the GPU. Used in least squares
+    solver for N small (e.g. = BS, a block size of order 64, 128, etc).
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   DOUBLE PRECISION.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       DOUBLE PRECISION array of dimension m.
+
+    @param[out]
+    y       DOUBLE PRECISION array of dimension n.
+            On exit Y = alpha A^T X.
+
+    @ingroup magma_dblas2
+    ********************************************************************/
 extern "C" void
 magmablas_dgemvt2_tesla(
     magma_int_t m, magma_int_t n, double alpha,
@@ -408,34 +454,6 @@ magmablas_dgemvt2_tesla(
     const double *x,
     double       *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    This routine computes y = alpha A^T x on the GPU. Used in least squares
-    solver for N small (e.g. = BS, a block size of order 64, 128, etc).
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) DOUBLE PRECISION array of dimension m.
-
-    Y       (output) DOUBLE PRECISION array of dimension n.
-            On exit Y = alpha A^T X.
-    ===================================================================== */
-
     magma_int_t blocks = (n - 1)/16 + 1;
     dim3 grid( blocks, 1, 1 );
     dim3 threads( 16, 4, 1 );
@@ -443,6 +461,40 @@ magmablas_dgemvt2_tesla(
         (m, n, alpha, (m / 32)*32, A, lda, x, y);
 }
 
+
+/**
+    Purpose
+    -------
+    This routine computes y = alpha A^T x on the GPU.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   DOUBLE PRECISION.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       DOUBLE PRECISION array of dimension m.
+
+    @param[out]
+    y       DOUBLE PRECISION array of dimension n.
+            On exit Y = alpha A^T X.
+
+    @ingroup magma_dblas2
+    ********************************************************************/
 extern "C" void
 magmablas_dgemvt_tesla(
     magma_int_t m, magma_int_t n, double alpha,
@@ -450,33 +502,6 @@ magmablas_dgemvt_tesla(
     const double *x,
     double       *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    This routine computes y = alpha A^T x on the GPU.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) DOUBLE PRECISION array of dimension (LDA, N) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) DOUBLE PRECISION array of dimension m.
-
-    Y       (output) DOUBLE PRECISION array of dimension n.
-            On exit Y = alpha A^T X.
-    ===================================================================== */
-
     if ( n <= 128 )
         magmablas_dgemvt2_tesla(m, n, alpha, A, lda, x, y);
     else

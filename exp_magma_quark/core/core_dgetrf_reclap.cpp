@@ -11,7 +11,7 @@
  * @author Mathieu Faverge
  * @author Piotr Luszczek
  * @author Simplice Donfack (GPU adaptation)
- * @date 2009-11-15
+ * @date April 2014
  *
  * @precisions normal z -> c d s
  *
@@ -434,3 +434,4 @@ CORE_zgetrf_reclap_rec(int M, int N,
         CORE_zbarrier_thread( thidx, thcnt );
     }
 }
+

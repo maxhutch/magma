@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:33 2013
+       @generated from zcposv_gpu.cpp mixed zc -> ds, Fri Apr 25 15:05:30 2014
 
 */
 #include "common_magma.h"
@@ -13,24 +13,11 @@
 #define BWDMAX 1.0
 #define ITERMAX 30
 
-extern "C" magma_int_t
-magma_dsposv_gpu(char uplo, magma_int_t n, magma_int_t nrhs,
-                 double *dA, magma_int_t ldda,
-                 double *dB, magma_int_t lddb,
-                 double *dX, magma_int_t lddx,
-                 double *dworkd, float *dworks,
-                 magma_int_t *iter, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DSPOSV computes the solution to a real system of linear equations
-       A * X = B,
+        A * X = B,
     where A is an N-by-N symmetric positive definite matrix and X and B
     are N-by-NRHS matrices.
 
@@ -61,24 +48,28 @@ magma_dsposv_gpu(char uplo, magma_int_t n, magma_int_t nrhs,
     The value ITERMAX and BWDMAX are fixed to 30 and 1.0D+00 respectively.
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER
-            = 'U':  Upper triangle of A is stored;
-            = 'L':  Lower triangle of A is stored.
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of linear equations, i.e., the order of the
             matrix A.  N >= 0.
 
-    NRHS    (input) INTEGER
+    @param[in]
+    nrhs    INTEGER
             The number of right hand sides, i.e., the number of columns
             of the matrix B.  NRHS >= 0.
 
-    dA      (input or input/output) DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
-            On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+    @param[in,out]
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
+            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of A contains the lower
             triangular part of the matrix A, and the strictly upper
             triangular part of A is not referenced.
@@ -89,50 +80,67 @@ magma_dsposv_gpu(char uplo, magma_int_t n, magma_int_t nrhs,
             array dA contains the factor U or L from the Cholesky
             factorization A = U**T*U or A = L*L**T.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,N).
 
-    dB      (input) DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
+    @param[in]
+    dB      DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
             The N-by-NRHS right hand side matrix B.
 
-    LDDB    (input) INTEGER
+    @param[in]
+    lddb    INTEGER
             The leading dimension of the array dB.  LDDB >= max(1,N).
 
-    dX      (output) DOUBLE PRECISION array on the GPU, dimension (LDDX,NRHS)
+    @param[out]
+    dX      DOUBLE PRECISION array on the GPU, dimension (LDDX,NRHS)
             If INFO = 0, the N-by-NRHS solution matrix X.
 
-    LDDX    (input) INTEGER
+    @param[in]
+    lddx    INTEGER
             The leading dimension of the array dX.  LDDX >= max(1,N).
 
+    @param
     dworkd  (workspace) DOUBLE PRECISION array on the GPU, dimension (N*NRHS)
             This array is used to hold the residual vectors.
 
+    @param
     dworks  (workspace) SINGLE PRECISION array on the GPU, dimension (N*(N+NRHS))
             This array is used to store the real single precision matrix
             and the right-hand sides or solutions in single precision.
 
-    ITER    (output) INTEGER
-            < 0: iterative refinement has failed, double precision
+    @param[out]
+    iter    INTEGER
+      -     < 0: iterative refinement has failed, double precision
                  factorization has been performed
-                 -1 : the routine fell back to full precision for
+        +        -1 : the routine fell back to full precision for
                       implementation- or machine-specific reasons
-                 -2 : narrowing the precision induced an overflow,
+        +        -2 : narrowing the precision induced an overflow,
                       the routine fell back to full precision
-                 -3 : failure of SPOTRF
-                 -31: stop the iterative refinement after the 30th iteration
-            > 0: iterative refinement has been successfully used.
+        +        -3 : failure of SPOTRF
+        +        -31: stop the iterative refinement after the 30th iteration
+      -     > 0: iterative refinement has been successfully used.
                  Returns the number of iterations
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            > 0:  if INFO = i, the leading minor of order i of (DOUBLE
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     > 0:  if INFO = i, the leading minor of order i of (DOUBLE
                   PRECISION) A is not positive definite, so the
                   factorization could not be completed, and the solution
                   has not been computed.
 
-    =====================================================================    */
-
+    @ingroup magma_dposv_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dsposv_gpu(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+                 double *dA, magma_int_t ldda,
+                 double *dB, magma_int_t lddb,
+                 double *dX, magma_int_t lddx,
+                 double *dworkd, float *dworks,
+                 magma_int_t *iter, magma_int_t *info)
+{
     #define dB(i,j)     (dB + (i) + (j)*lddb)
     #define dX(i,j)     (dX + (i) + (j)*lddx)
     #define dR(i,j)     (dR + (i) + (j)*lddr)
@@ -178,7 +186,7 @@ magma_dsposv_gpu(char uplo, magma_int_t n, magma_int_t nrhs,
     dR  = dworkd;
 
     eps  = lapackf77_dlamch("Epsilon");
-    Anrm = magmablas_dlansy('I', uplo, n, dA, ldda, (double*)dworkd );
+    Anrm = magmablas_dlansy(MagmaInfNorm, uplo, n, dA, ldda, (double*)dworkd );
     cte  = Anrm * eps * pow((double)n, 0.5) * BWDMAX;
 
     /*
@@ -274,7 +282,7 @@ REFINEMENT:
         }
 
         /*  Check whether the nrhs normwise backward errors satisfy the
-         *  stopping criterion. If yes, set ITER=IITER>0 and return. */
+         *  stopping criterion. If yes, set ITER=IITER > 0 and return. */
         for( j=0; j < nrhs; j++ ) {
             i = magma_idamax( n, dX(0,j), 1) - 1;
             magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );

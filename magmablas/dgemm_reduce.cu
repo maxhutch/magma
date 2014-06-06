@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:44 2013
+       @generated from zgemm_reduce.cu normal z -> d, Fri Apr 25 15:05:20 2014
 
 */
 #include "common_magma.h"
@@ -100,23 +100,9 @@ void dgemm_reduce_kernel(
 
 //==============================================================================
 
-extern "C" void
-magmablas_dgemm_reduce(
-    magma_int_t m, magma_int_t n, magma_int_t k,
-    double alpha,
-    const double *d_A, magma_int_t lda,
-    const double *d_B, magma_int_t ldb,
-    double beta,
-    double *d_C, magma_int_t ldc )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DGEMM_REDUCE  performs one of the matrix-matrix operations
     
         C := alpha*A^T*B + beta*C,
@@ -126,8 +112,18 @@ magmablas_dgemm_reduce(
     
     This routine is tuned for m, n << k. Typically, m and n are expected
     to be less than 128.
-    =====================================================================    */
 
+    @ingroup magma_dblas3
+    ********************************************************************/
+extern "C" void
+magmablas_dgemm_reduce(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    double alpha,
+    const double *d_A, magma_int_t lda,
+    const double *d_B, magma_int_t ldb,
+    double beta,
+    double *d_C, magma_int_t ldc )
+{
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
         // --------------------

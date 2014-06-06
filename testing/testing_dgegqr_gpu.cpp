@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:56 2013
+       @generated from testing_zgegqr_gpu.cpp normal z -> d, Fri Apr 25 15:06:11 2014
        @author Stan Tomov
 
 */
@@ -24,13 +24,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-extern "C" magma_int_t
-magma_dgegqr_gpu( magma_int_t m, magma_int_t n,
-                  double *dA,   magma_int_t ldda,
-                  double *dwork, double *work,
-                  magma_int_t *info );
-
-
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dgegqr
 */
@@ -39,8 +32,10 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double           e1, e2, work[1];
-    double *h_A, *h_R, *tau, *dtau, *h_work, tmp[1];
+    double           e1, e2, e3, e4, e5, *work;
+    double  c_neg_one = MAGMA_D_NEG_ONE, one = MAGMA_D_ONE, zero = MAGMA_D_ZERO;
+    double *h_A, *h_R, *tau, *dtau, *h_work, *h_rwork, tmp[1];
+
     double *d_A, *dwork, *ddA, *d_T;
     magma_int_t M, N, n2, lda, ldda, lwork, info, min_mn;
     magma_int_t ione     = 1;
@@ -50,12 +45,12 @@ int main( int argc, char** argv)
     parse_opts( argc, argv, &opts );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||I - Q'Q||_F    \n");
-    printf("=======================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)        ||I-Q'Q||_F     ||I-Q'Q||_I     ||A-Q R||_I \n");
+    printf("=====================================================================================================\n");
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
@@ -70,9 +65,11 @@ int main( int argc, char** argv)
             
             TESTING_MALLOC_PIN( tau,    double, min_mn );
             TESTING_MALLOC_PIN( h_work, double, lwork  );
-            
+            TESTING_MALLOC_PIN(h_rwork, double, lwork  );            
+
             TESTING_MALLOC_CPU( h_A,   double, n2     );
             TESTING_MALLOC_CPU( h_R,   double, n2     );
+            TESTING_MALLOC_CPU( work, double,             M       ); 
             
             TESTING_MALLOC_DEV( d_A,   double, ldda*N );
             TESTING_MALLOC_DEV( dtau,  double, min_mn );
@@ -80,16 +77,17 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( ddA,   double, N*N    );
             TESTING_MALLOC_DEV( d_T,   double, N*N    );
             
-            cudaMemset( ddA, 0, N*N*sizeof(double) );
-            cudaMemset( d_T, 0, N*N*sizeof(double) );
+            magmablas_dlaset( MagmaFull, N, N, ddA, N );
+            magmablas_dlaset( MagmaFull, N, N, d_T, N );
 
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
+
             lapackf77_dlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             magma_dsetmatrix( M, N, h_R, lda, d_A, ldda );
             
             // warmup
-            magma_dgegqr_gpu( M, N, d_A, ldda, dwork, h_work, &info );
+            magma_dgegqr_gpu( 1, M, N, d_A, ldda, dwork, h_work, &info );
             magma_dsetmatrix( M, N, h_R, lda, d_A, ldda );
             
             /* ====================================================================
@@ -108,14 +106,27 @@ int main( int argc, char** argv)
                 magma_dorgqr_gpu( M, N, N, d_A, ldda, tau, d_T, nb, &info );
             }
             else
-               magma_dgegqr_gpu( M, N, d_A, ldda, dwork, h_work, &info );
+                magma_dgegqr_gpu( 1, M, N, d_A, ldda, dwork, h_rwork, &info );
             gpu_time = magma_sync_wtime( 0 ) - gpu_time;
 
             gpu_perf = gflops / gpu_time;
             if (info != 0)
                 printf("magma_dgegqr returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
+
+            magma_dgetmatrix( M, N, d_A, ldda, h_R, M );
+
+            // Regenerate R
+            // blasf77_dgemm("t", "n", &N, &N, &M, &one, h_R, &M, h_A, &M, &zero, h_work, &N); 
             
+            //magma_dprint(N, N, h_work, N);
+
+            blasf77_dtrmm("r", "u", "n", "n", &M, &N, &one, h_rwork, &N, h_R, &M);
+            blasf77_daxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
+            e5 = lapackf77_dlange("i", &M, &N, h_R, &M, work) / 
+            lapackf77_dlange("i", &M, &N, h_A, &lda, work);
+            magma_dgetmatrix( M, N, d_A, ldda, h_R, M );
+ 
             if ( opts.lapack ) {
                 /* =====================================================================
                    Performs operation using LAPACK
@@ -135,20 +146,20 @@ int main( int argc, char** argv)
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                magma_dgetmatrix( M, N, d_A, ldda, h_R, M );
-
-                double one = MAGMA_D_ONE, zero = MAGMA_D_ZERO;
                 blasf77_dgemm("t", "n", &N, &N, &M, &one, h_R, &M, h_R, &M, &zero, h_work, &N);
                 for(int ii=0; ii<N*N; ii+=(N+1)) h_work[ii] = MAGMA_D_SUB(h_work[ii], one);
 
                 e1    = lapackf77_dlange("f", &N, &N, h_work, &N, work);
+                e3    = lapackf77_dlange("i", &N, &N, h_work, &N, work);
 
                 blasf77_dgemm("t", "n", &N, &N, &M, &one, h_A, &M, h_A, &M, &zero, h_work, &N);
                 for(int ii=0; ii<N*N; ii+=(N+1)) h_work[ii] = MAGMA_D_SUB(h_work[ii], one);
                 e2    = lapackf77_dlange("f", &N, &N, h_work, &N, work);
-                
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %8.2e\n",
-                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time, e1, e2 );
+                e4    = lapackf77_dlange("i", &N, &N, h_work, &N, work);
+
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2e/%7.2e  %7.2e/%7.2e  %7.2e\n",
+                       (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time, e1, e2,
+                       e3, e4, e5);
             }
             else {
                 printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
@@ -157,15 +168,19 @@ int main( int argc, char** argv)
             
             TESTING_FREE_PIN( tau    );
             TESTING_FREE_PIN( h_work );
-            
+            TESTING_FREE_PIN( h_rwork );
+           
             TESTING_FREE_CPU( h_A  );
             TESTING_FREE_CPU( h_R  );
-            
+            TESTING_FREE_CPU( work );            
+
             TESTING_FREE_DEV( d_A   );
             TESTING_FREE_DEV( dtau  );
             TESTING_FREE_DEV( dwork );
             TESTING_FREE_DEV( ddA   );
             TESTING_FREE_DEV( d_T   );
+
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

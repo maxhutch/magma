@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 */
 
 #ifndef MAGMA_H
@@ -36,27 +36,27 @@ magma_int_t magma_get_smlsize_divideconquer();
 
 // ========================================
 // initialization
-magma_err_t
+magma_int_t
 magma_init( void );
 
-magma_err_t
+magma_int_t
 magma_finalize( void );
 
-void magma_version( int* major, int* minor, int* micro );
+void magma_version( magma_int_t* major, magma_int_t* minor, magma_int_t* micro );
 
 
 // ========================================
 // memory allocation
-magma_err_t
+magma_int_t
 magma_malloc( magma_ptr *ptrPtr, size_t bytes );
 
-magma_err_t
+magma_int_t
 magma_malloc_cpu( void **ptrPtr, size_t bytes );
 
-magma_err_t
+magma_int_t
 magma_malloc_pinned( void **ptrPtr, size_t bytes );
 
-magma_err_t
+magma_int_t
 magma_free_cpu( void *ptr );
 
 #define magma_free( ptr ) \
@@ -65,12 +65,12 @@ magma_free_cpu( void *ptr );
 #define magma_free_pinned( ptr ) \
         magma_free_pinned_internal( ptr, __func__, __FILE__, __LINE__ )
 
-magma_err_t
+magma_int_t
 magma_free_internal(
     magma_ptr ptr,
     const char* func, const char* file, int line );
 
-magma_err_t
+magma_int_t
 magma_free_pinned_internal(
     void *ptr,
     const char* func, const char* file, int line );
@@ -78,23 +78,26 @@ magma_free_pinned_internal(
 
 // type-safe convenience functions to avoid using (void**) cast and sizeof(...)
 // here n is the number of elements (floats, doubles, etc.) not the number of bytes.
-static inline magma_err_t magma_imalloc( magmaInt_ptr           *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(magma_int_t)        ); }
-static inline magma_err_t magma_smalloc( magmaFloat_ptr         *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(float)              ); }
-static inline magma_err_t magma_dmalloc( magmaDouble_ptr        *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(double)             ); }
-static inline magma_err_t magma_cmalloc( magmaFloatComplex_ptr  *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(magmaFloatComplex)  ); }
-static inline magma_err_t magma_zmalloc( magmaDoubleComplex_ptr *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(magmaDoubleComplex) ); }
+static inline magma_int_t magma_imalloc( magmaInt_ptr           *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(magma_int_t)        ); }
+static inline magma_int_t magma_indexmalloc( magmaIndex_ptr     *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(magma_index_t)      ); }
+static inline magma_int_t magma_smalloc( magmaFloat_ptr         *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(float)              ); }
+static inline magma_int_t magma_dmalloc( magmaDouble_ptr        *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(double)             ); }
+static inline magma_int_t magma_cmalloc( magmaFloatComplex_ptr  *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(magmaFloatComplex)  ); }
+static inline magma_int_t magma_zmalloc( magmaDoubleComplex_ptr *ptrPtr, size_t n ) { return magma_malloc( (magma_ptr*) ptrPtr, n*sizeof(magmaDoubleComplex) ); }
 
-static inline magma_err_t magma_imalloc_cpu( magma_int_t        **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(magma_int_t)        ); }
-static inline magma_err_t magma_smalloc_cpu( float              **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(float)              ); }
-static inline magma_err_t magma_dmalloc_cpu( double             **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(double)             ); }
-static inline magma_err_t magma_cmalloc_cpu( magmaFloatComplex  **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(magmaFloatComplex)  ); }
-static inline magma_err_t magma_zmalloc_cpu( magmaDoubleComplex **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(magmaDoubleComplex) ); }
+static inline magma_int_t magma_imalloc_cpu( magma_int_t        **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(magma_int_t)        ); }
+static inline magma_int_t magma_indexmalloc_cpu( magma_index_t  **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(magma_index_t)      ); }
+static inline magma_int_t magma_smalloc_cpu( float              **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(float)              ); }
+static inline magma_int_t magma_dmalloc_cpu( double             **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(double)             ); }
+static inline magma_int_t magma_cmalloc_cpu( magmaFloatComplex  **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(magmaFloatComplex)  ); }
+static inline magma_int_t magma_zmalloc_cpu( magmaDoubleComplex **ptrPtr, size_t n ) { return magma_malloc_cpu( (void**) ptrPtr, n*sizeof(magmaDoubleComplex) ); }
 
-static inline magma_err_t magma_imalloc_pinned( magma_int_t        **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(magma_int_t)        ); }
-static inline magma_err_t magma_smalloc_pinned( float              **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(float)              ); }
-static inline magma_err_t magma_dmalloc_pinned( double             **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(double)             ); }
-static inline magma_err_t magma_cmalloc_pinned( magmaFloatComplex  **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(magmaFloatComplex)  ); }
-static inline magma_err_t magma_zmalloc_pinned( magmaDoubleComplex **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(magmaDoubleComplex) ); }
+static inline magma_int_t magma_imalloc_pinned( magma_int_t        **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(magma_int_t)        ); }
+static inline magma_int_t magma_indexmalloc_pinned( magma_index_t  **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(magma_index_t)      ); }
+static inline magma_int_t magma_smalloc_pinned( float              **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(float)              ); }
+static inline magma_int_t magma_dmalloc_pinned( double             **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(double)             ); }
+static inline magma_int_t magma_cmalloc_pinned( magmaFloatComplex  **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(magmaFloatComplex)  ); }
+static inline magma_int_t magma_zmalloc_pinned( magmaDoubleComplex **ptrPtr, size_t n ) { return magma_malloc_pinned( (void**) ptrPtr, n*sizeof(magmaDoubleComplex) ); }
 
 
 // ========================================
@@ -158,7 +161,7 @@ void magma_queue_wait_event( magma_queue_t queue, magma_event_t event );
 // error handler
 void magma_xerbla( const char *name, magma_int_t info );
 
-const char* magma_strerror( magma_err_t error );
+const char* magma_strerror( magma_int_t error );
 
 #ifdef __cplusplus
 }

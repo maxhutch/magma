@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 */
 
 #include "common_magma.h"
@@ -67,39 +67,6 @@ int gettimeofday(struct timeval* tv, struct timezone* tz)
     return 0;
 }
 #endif
-
-
-/* ////////////////////////////////////////////////////////////////////////////
-   -- Get current time.
-*/ 
-extern "C"
-magma_timestr_t get_current_time(void)
-{
-    struct timeval  time_val;
-    magma_timestr_t time;
-    
-    cudaDeviceSynchronize();
-    gettimeofday(&time_val, NULL);
-    
-    time.sec  = time_val.tv_sec;
-    time.usec = time_val.tv_usec;
-    return (time);
-}
-
-
-/* ////////////////////////////////////////////////////////////////////////////
-   -- Returns elapsed time between start and end in milliseconds.
-*/ 
-extern "C"
-double GetTimerValue(magma_timestr_t start, magma_timestr_t end)
-{
-    int sec, usec;
-    
-    sec  = end.sec  - start.sec;
-    usec = end.usec - start.usec;
-    
-    return (1000.*(double)(sec) + (double)(usec) * 0.001);
-}
 
 
 /* ////////////////////////////////////////////////////////////////////////////

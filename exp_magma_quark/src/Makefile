@@ -1,5 +1,5 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
@@ -14,11 +14,12 @@ ZSRC := \
 
 # ----------
 # parallel memory set		
-ZSRC += dmemset_async.cpp
+ZSRC += dmemset_amc.cpp
 
 # ----------
 # LU		
-ZSRC += dgetrf_async_gpu.cpp
+ZSRC += dgetrf_gpu_amc.cpp dgetrf_gpu_amc_v2.cpp\
+	dgetrf_mgpu_amc.cpp dgetrf_mgpu_amc_v2.cpp dgetrf_mgpu_amc_v3.cpp
 
 -include Makefile.local
 -include Makefile.src

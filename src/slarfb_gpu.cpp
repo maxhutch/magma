@@ -1,106 +1,111 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
        @author Mark Gates
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zlarfb_gpu.cpp normal z -> s, Fri Apr 25 15:05:41 2014
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_slarfb_gpu( char side, char trans, char direct, char storev,
-                  magma_int_t m, magma_int_t n, magma_int_t k,
-                  const float *dV,    magma_int_t ldv,
-                  const float *dT,    magma_int_t ldt,
-                  float *dC,          magma_int_t ldc,
-                  float *dwork,       magma_int_t ldwork )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Univ. of California Berkeley
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SLARFB applies a real block reflector H or its transpose H^H to a
     REAL m by n matrix C, from the left.
 
     Arguments
-    =========
-    SIDE    (input) CHARACTER
-            = 'L': apply H or H^H from the Left
-            = 'R': apply H or H^H from the Right
+    ---------
+    @param[in]
+    side    magma_side_t
+      -     = MagmaLeft:      apply H or H^H from the Left
+      -     = MagmaRight:     apply H or H^H from the Right
 
-    TRANS   (input) CHARACTER
-            = 'N': apply H   (No transpose)
-            = 'C': apply H^H (Conjugate transpose)
+    @param[in]
+    trans   magma_trans_t
+      -     = MagmaNoTrans:   apply H   (No transpose)
+      -     = MagmaTrans: apply H^H (Conjugate transpose)
 
-    DIRECT  (input) CHARACTER
+    @param[in]
+    direct  magma_direct_t
             Indicates how H is formed from a product of elementary
             reflectors
-            = 'F': H = H(1) H(2) . . . H(k) (Forward)
-            = 'B': H = H(k) . . . H(2) H(1) (Backward)
+      -     = MagmaForward:  H = H(1) H(2) . . . H(k) (Forward)
+      -     = MagmaBackward: H = H(k) . . . H(2) H(1) (Backward)
 
-    STOREV  (input) CHARACTER
+    @param[in]
+    storev  magma_storev_t
             Indicates how the vectors which define the elementary
             reflectors are stored:
-            = 'C': Columnwise
-            = 'R': Rowwise
+      -     = MagmaColumnwise: Columnwise
+      -     = MagmaRowwise:    Rowwise
 
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix C.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix C.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The order of the matrix T (= the number of elementary
             reflectors whose product defines the block reflector).
 
-    DV      (input) REAL array on the GPU, dimension
-                (LDV,K) if STOREV = 'C'
-                (LDV,M) if STOREV = 'R' and SIDE = 'L'
-                (LDV,N) if STOREV = 'R' and SIDE = 'R'
+    @param[in]
+    dV      REAL array on the GPU, dimension
+                (LDV,K) if STOREV = MagmaColumnwise
+                (LDV,M) if STOREV = MagmaRowwise and SIDE = MagmaLeft
+                (LDV,N) if STOREV = MagmaRowwise and SIDE = MagmaRight
             The matrix V. See further details.
 
-    LDV     (input) INTEGER
+    @param[in]
+    ldv     INTEGER
             The leading dimension of the array V.
-            If STOREV = 'C' and SIDE = 'L', LDV >= max(1,M);
-            if STOREV = 'C' and SIDE = 'R', LDV >= max(1,N);
-            if STOREV = 'R', LDV >= K.
+            If STOREV = MagmaColumnwise and SIDE = MagmaLeft, LDV >= max(1,M);
+            if STOREV = MagmaColumnwise and SIDE = MagmaRight, LDV >= max(1,N);
+            if STOREV = MagmaRowwise, LDV >= K.
 
-    DT      (input) REAL array on the GPU, dimension (LDT,K)
+    @param[in]
+    dT      REAL array on the GPU, dimension (LDT,K)
             The triangular k by k matrix T in the representation of the
             block reflector.
 
-    LDT     (input) INTEGER
+    @param[in]
+    ldt     INTEGER
             The leading dimension of the array T. LDT >= K.
 
-    DC      (input/output) REAL array on the GPU, dimension (LDC,N)
+    @param[in,out]
+    dC      REAL array on the GPU, dimension (LDC,N)
             On entry, the m by n matrix C.
             On exit, C is overwritten by H*C, or H^H*C, or C*H, or C*H^H.
 
-    LDC     (input) INTEGER
+    @param[in]
+    ldc     INTEGER
             The leading dimension of the array C. LDA >= max(1,M).
 
-    WORK    (workspace) REAL array, dimension (LDWORK,K)
+    @param
+    dwork   (workspace) REAL array, dimension (LDWORK,K)
 
-    LDWORK  (input) INTEGER
+    @param[in]
+    ldwork  INTEGER
             The leading dimension of the array WORK.
-            If SIDE == 'L', LDWORK >= max(1,N);
-            if SIDE == 'R', LDWORK >= max(1,M);
+            If SIDE = MagmaLeft,  LDWORK >= max(1,N);
+            if SIDE = MagmaRight, LDWORK >= max(1,M);
 
     Further Details
-    ===============
+    ---------------
     The shape of the matrix V and the storage of the vectors which define
     the H(i) is best illustrated by the following example with n = 5 and
     k = 3.
     All elements including 0's and 1's are stored, unlike LAPACK.
 
-    DIRECT = 'F' and STOREV = 'C':         DIRECT = 'F' and STOREV = 'R':
+        DIRECT = MagmaForward and         DIRECT = MagmaForward and
+        STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
 
                  V = (  1  0  0 )                 V = (  1 v1 v1 v1 v1 )
                      ( v1  1  0 )                     (  0  1 v2 v2 v2 )
@@ -108,7 +113,8 @@ magma_slarfb_gpu( char side, char trans, char direct, char storev,
                      ( v1 v2 v3 )
                      ( v1 v2 v3 )
 
-    DIRECT = 'B' and STOREV = 'C':         DIRECT = 'B' and STOREV = 'R':
+        DIRECT = MagmaBackward and        DIRECT = MagmaBackward and 
+        STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
 
                  V = ( v1 v2 v3 )                 V = ( v1 v1  1  0  0 )
                      ( v1 v2 v3 )                     ( v2 v2 v2  1  0 )
@@ -116,8 +122,16 @@ magma_slarfb_gpu( char side, char trans, char direct, char storev,
                      (  0  1 v3 )
                      (  0  0  1 )
 
-    ===================================================================      */
-
+    @ingroup magma_saux3
+    ********************************************************************/
+extern "C" magma_int_t
+magma_slarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
+                  magma_int_t m, magma_int_t n, magma_int_t k,
+                  const float *dV,    magma_int_t ldv,
+                  const float *dT,    magma_int_t ldt,
+                  float *dC,          magma_int_t ldc,
+                  float *dwork,       magma_int_t ldwork )
+{
     float c_zero    = MAGMA_S_ZERO;
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
@@ -130,16 +144,16 @@ magma_slarfb_gpu( char side, char trans, char direct, char storev,
         info = -6;
     } else if (k < 0) {
         info = -7;
-    } else if ( ((storev == 'C' || storev == 'c') && (side == 'L' || side == 'l') && ldv < max(1,m)) ||
-                ((storev == 'C' || storev == 'c') && (side == 'R' || side == 'r') && ldv < max(1,n)) ||
-                ((storev == 'R' || storev == 'r') && ldv < k) ) {
+    } else if ( ((storev == MagmaColumnwise) && (side == MagmaLeft) && ldv < max(1,m)) ||
+                ((storev == MagmaColumnwise) && (side == MagmaRight) && ldv < max(1,n)) ||
+                ((storev == MagmaRowwise) && ldv < k) ) {
         info = -9;
     } else if (ldt < k) {
         info = -11;
     } else if (ldc < max(1,m)) {
         info = -13;
-    } else if ( ((side == 'L' || side == 'l') && ldwork < max(1,n)) ||
-                ((side == 'R' || side == 'r') && ldwork < max(1,m)) ) {
+    } else if ( ((side == MagmaLeft) && ldwork < max(1,n)) ||
+                ((side == MagmaRight) && ldwork < max(1,m)) ) {
         info = -15;
     }
     if (info != 0) {
@@ -153,22 +167,22 @@ magma_slarfb_gpu( char side, char trans, char direct, char storev,
     }
 
     // opposite of trans
-    char transt;
-    if (trans == 'N' || trans == 'n')
+    magma_trans_t transt;
+    if (trans == MagmaNoTrans)
         transt = MagmaTrans;
     else
         transt = MagmaNoTrans;
     
     // whether T is upper or lower triangular
-    char uplo;
-    if (direct == 'F' || direct == 'f')
+    magma_uplo_t uplo;
+    if (direct == MagmaForward)
         uplo = MagmaUpper;
     else
         uplo = MagmaLower;
     
     // whether V is stored transposed or not
-    char notransV, transV;
-    if (storev == 'C' || storev == 'c') {
+    magma_trans_t notransV, transV;
+    if (storev == MagmaColumnwise) {
         notransV = MagmaNoTrans;
         transV   = MagmaTrans;
     }
@@ -177,7 +191,7 @@ magma_slarfb_gpu( char side, char trans, char direct, char storev,
         transV   = MagmaNoTrans;
     }
 
-    if ( side  == 'l' || side  == 'L' ) {
+    if ( side == MagmaLeft ) {
         // Form H C or H^H C
         // Comments assume H C. When forming H^H C, T gets transposed via transt.
         

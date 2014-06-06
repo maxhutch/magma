@@ -1,55 +1,32 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
        
        @author Raffaele Solca
        
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from dlaex1_m.cpp normal d -> s, Fri Apr 25 15:05:48 2014
 */
 #include "common_magma.h"
 
-#define Q(ix, iy) (q + (ix) + ldq * (iy))
-
 extern "C" {
-    magma_int_t magma_slaex3_m(magma_int_t nrgpu,
-                               magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
-                               float* q, magma_int_t ldq, float rho,
-                               float* dlamda, float* q2, magma_int_t* indx,
-                               magma_int_t* ctot, float* w, float* s, magma_int_t* indxq,
-                               float** dwork, magma_queue_t stream[MagmaMaxGPUs][2],
-                               char range, float vl, float vu, magma_int_t il, magma_int_t iu,
-                               magma_int_t* info );
-}
 
-extern "C" magma_int_t
-magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t ldq,
-               magma_int_t* indxq, float rho, magma_int_t cutpnt,
-               float* work, magma_int_t* iwork, float** dwork,
-               magma_queue_t stream[MagmaMaxGPUs][2],
-               char range, float vl, float vu,
-               magma_int_t il, magma_int_t iu, magma_int_t* info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
+magma_int_t magma_slaex3_m(magma_int_t nrgpu,
+                           magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
+                           float* Q, magma_int_t ldq, float rho,
+                           float* dlamda, float* q2, magma_int_t* indx,
+                           magma_int_t* ctot, float* w, float* s, magma_int_t* indxq,
+                           float** dwork, magma_queue_t stream[MagmaMaxGPUs][2],
+                           magma_range_t range, float vl, float vu, magma_int_t il, magma_int_t iu,
+                           magma_int_t* info );
 
-       .. Scalar Arguments ..
-      CHARACTER          RANGE
-      INTEGER            IL, IU, CUTPNT, INFO, LDQ, N
-      REAL   RHO, VL, VU
-       ..
-       .. Array Arguments ..
-      INTEGER            INDXQ( * ), iwork[* )
-      REAL   D( * ), Q( LDQ, * ), WORK( * ), DWORK( * )
-       ..
+}  // end extern "C"
 
+/**
     Purpose
-    =======
+    -------
     SLAEX1 computes the updated eigensystem of a diagonal
     matrix after modification by a rank-one symmetric matrix.
 
@@ -79,40 +56,54 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
     the overall problem.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    nrgpu   INTEGER
+            Number of GPUs to use.
+
+    @param[in]
+    n       INTEGER
             The dimension of the symmetric tridiagonal matrix.  N >= 0.
             
-    D       (input/output) REAL array, dimension (N)
+    @param[in,out]
+    d       REAL array, dimension (N)
             On entry, the eigenvalues of the rank-1-perturbed matrix.
             On exit, the eigenvalues of the repaired matrix.
             
-    Q       (input/output) REAL array, dimension (LDQ,N)
+    @param[in,out]
+    Q       REAL array, dimension (LDQ,N)
             On entry, the eigenvectors of the rank-1-perturbed matrix.
             On exit, the eigenvectors of the repaired tridiagonal matrix.
             
-    LDQ     (input) INTEGER
+    @param[in]
+    ldq     INTEGER
             The leading dimension of the array Q.  LDQ >= max(1,N).
             
-    INDXQ   (input/output) INTEGER array, dimension (N)
+    @param[in,out]
+    indxq   INTEGER array, dimension (N)
             On entry, the permutation which separately sorts the two
             subproblems in D into ascending order.
             On exit, the permutation which will reintegrate the
             subproblems back into sorted order,
             i.e. D( INDXQ( I = 1, N ) ) will be in ascending order.
             
-    RHO     (input) REAL
+    @param[in]
+    rho     REAL
             The subdiagonal entry used to create the rank-1 modification.
             
-    CUTPNT  (input) INTEGER
+    @param[in]
+    cutpnt  INTEGER
             The location of the last eigenvalue in the leading sub-matrix.
             min(1,N) <= CUTPNT <= N/2.
             
-    WORK    (workspace) REAL array, dimension (4*N + N**2)
+    @param
+    work    (workspace) REAL array, dimension (4*N + N**2)
             
-    IWORK   (workspace) INTEGER array, dimension (4*N)
-            
-    DWORK   (devices workspaces) REAL array of arrays,
+    @param
+    iwork   (workspace) INTEGER array, dimension (4*N)
+    
+    @param
+    dwork   (devices workspaces) REAL array of arrays,
             dimension NRGPU.
             if NRGPU = 1 the dimension of the first workspace
             should be (3*N*N/2+3*N)
@@ -120,42 +111,59 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
             ceil((N-N1) * (N-N1) / floor(nrgpu/2)) +
             NB * ((N-N1) + (N-N1) / floor(nrgpu/2))
 
-    STREAM  (device stream) magma_queue_t array,
+    @param
+    stream  (device stream) magma_queue_t array,
             dimension (MagmaMaxGPUs,2)
 
-    RANGE   (input) CHARACTER*1
-            = 'A': all eigenvalues will be found.
-            = 'V': all eigenvalues in the half-open interval (VL,VU]
-                   will be found.
-            = 'I': the IL-th through IU-th eigenvalues will be found.
+    @param[in]
+    range   magma_range_t
+      -     = MagmaRangeAll: all eigenvalues will be found.
+      -     = MagmaRangeV:   all eigenvalues in the half-open interval (VL,VU]
+                             will be found.
+      -     = MagmaRangeI:   the IL-th through IU-th eigenvalues will be found.
 
-    VL      (input) REAL
-    VU      (input) REAL
-            if RANGE='V', the lower and upper bounds of the interval to
+    @param[in]
+    vl      REAL
+    @param[in]
+    vu      REAL
+            if RANGE=MagmaRangeV, the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
-            Not referenced if RANGE = 'A' or 'I'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeI.
 
-    IL      (input) INTEGER
-    IU      (input) INTEGER
-            if RANGE='I', the indices (in ascending order) of the
+    @param[in]
+    il      INTEGER
+    @param[in]
+    iu      INTEGER
+            if RANGE=MagmaRangeI, the indices (in ascending order) of the
             smallest and largest eigenvalues to be returned.
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
-            Not referenced if RANGE = 'A' or 'V'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit.
-            < 0:  if INFO = -i, the i-th argument had an illegal value.
-            > 0:  if INFO = 1, an eigenvalue did not converge
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit.
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value.
+      -     > 0:  if INFO = 1, an eigenvalue did not converge
 
     Further Details
-    ===============
+    ---------------
     Based on contributions by
        Jeff Rutter, Computer Science Division, University of California
        at Berkeley, USA
     Modified by Francoise Tisseur, University of Tennessee.
 
-    =====================================================================
-*/
+    @ingroup magma_ssyev_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* Q, magma_int_t ldq,
+               magma_int_t* indxq, float rho, magma_int_t cutpnt,
+               float* work, magma_int_t* iwork, float** dwork,
+               magma_queue_t stream[MagmaMaxGPUs][2],
+               magma_range_t range, float vl, float vu,
+               magma_int_t il, magma_int_t iu, magma_int_t* info)
+{
+#define Q(ix, iy) (Q + (ix) + ldq*(iy))
+
     magma_int_t coltyp, i, idlmda;
     magma_int_t indx, indxc, indxp;
     magma_int_t iq2, is, iw, iz, k, tmp;
@@ -164,20 +172,20 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
 
     *info = 0;
 
-    if( n < 0 )
+    if ( n < 0 )
         *info = -1;
-    else if( ldq < max(1, n) )
+    else if ( ldq < max(1, n) )
         *info = -4;
-    else if( min( 1, n/2 ) > cutpnt || n/2 < cutpnt )
+    else if ( min( 1, n/2 ) > cutpnt || n/2 < cutpnt )
         *info = -7;
-    if( *info != 0 ){
-        magma_xerbla( __func__, -*info );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+    if ( *info != 0 ) {
+        magma_xerbla( __func__, -(*info) );
+        return *info;
     }
 
     //  Quick return if possible
 
-    if( n == 0 )
+    if ( n == 0 )
         return MAGMA_SUCCESS;
 
     //  The following values are integer pointers which indicate
@@ -203,31 +211,29 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* q, magma_int_t
 
     //  Deflate eigenvalues.
 
-    lapackf77_slaed2(&k, &n, &cutpnt, d, q, &ldq, indxq, &rho, &work[iz],
+    lapackf77_slaed2(&k, &n, &cutpnt, d, Q, &ldq, indxq, &rho, &work[iz],
                      &work[idlmda], &work[iw], &work[iq2],
                      &iwork[indx], &iwork[indxc], &iwork[indxp],
                      &iwork[coltyp], info);
 
-    if( *info != 0 )
+    if ( *info != 0 )
         return MAGMA_SUCCESS;
 
     //  Solve Secular Equation.
 
-    if( k != 0 ){
+    if ( k != 0 ) {
         is = (iwork[coltyp]+iwork[coltyp+1])*cutpnt + (iwork[coltyp+1]+iwork[coltyp+2])*(n-cutpnt) + iq2;
-        magma_slaex3_m(nrgpu, k, n, cutpnt, d, q, ldq, rho,
+        magma_slaex3_m(nrgpu, k, n, cutpnt, d, Q, ldq, rho,
                        &work[idlmda], &work[iq2], &iwork[indxc],
                        &iwork[coltyp], &work[iw], &work[is],
                        indxq, dwork, stream, range, vl, vu, il, iu, info );
-        if( *info != 0 )
+        if ( *info != 0 )
             return MAGMA_SUCCESS;
     }
     else {
-        for (i = 0; i<n; ++i)
+        for (i = 0; i < n; ++i)
             indxq[i] = i+1;
     }
 
     return MAGMA_SUCCESS;
-
 } /* magma_slaex1_m */
-

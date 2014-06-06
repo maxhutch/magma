@@ -1,36 +1,24 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zgetrf_mgpu.cpp normal z -> c, Fri Apr 25 15:05:37 2014
 
 */
-#include <math.h>
 #include "common_magma.h"
 
 
-extern "C" magma_int_t
-magma_cgetrf_mgpu(magma_int_t num_gpus,
-                 magma_int_t m, magma_int_t n,
-                 magmaFloatComplex **d_lA, magma_int_t ldda,
-                 magma_int_t *ipiv, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CGETRF computes an LU factorization of a general M-by-N matrix A
     using partial pivoting with row interchanges.
 
     The factorization has the form
-       A = P * L * U
+        A = P * L * U
     where P is a permutation matrix, L is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U is upper
     triangular (upper trapezoidal if m < n).
@@ -38,41 +26,52 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
     This is the right-looking Level 3 BLAS version of the algorithm.
 
     Arguments
-    =========
-    NUM_GPUS
-            (input) INTEGER
-            The number of GPUS to be used for the factorization.
+    ---------
+    @param[in]
+    num_gpus INTEGER
+            The number of GPUs to be used for the factorization.
 
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) COMPLEX array on the GPU, dimension (LDDA,N).
+    @param[in,out]
+    A       COMPLEX array on the GPU, dimension (LDDA,N).
             On entry, the M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
-    LDDA     (input) INTEGER
+    @param[in]
+    ldda     INTEGER
             The leading dimension of the array A.  LDDA >= max(1,M).
 
-    IPIV    (output) INTEGER array, dimension (min(M,N))
+    @param[out]
+    ipiv    INTEGER array, dimension (min(M,N))
             The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
-            > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+      -     > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
                   has been completed, but the factor U is exactly
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
-    =====================================================================    */
 
-#define inAT(id,i,j) (d_lAT[(id)] + (i)*nb*lddat + (j)*nb)
-
+    @ingroup magma_cgesv_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cgetrf_mgpu(magma_int_t num_gpus,
+                 magma_int_t m, magma_int_t n,
+                 magmaFloatComplex **d_lA, magma_int_t ldda,
+                 magma_int_t *ipiv, magma_int_t *info)
+{
     magma_int_t nb, n_local[MagmaMaxGPUs];
     magma_int_t maxm, mindim;
     magma_int_t i, j, d, lddat, lddwork;
@@ -116,7 +115,7 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
     } else {
         /* Use hybrid blocked code. */
         maxm = ((m + 31)/32)*32;
-        if( num_gpus > ceil((float)n/nb) ) {
+        if ( num_gpus > ceil((float)n/nb) ) {
             printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) num_gpus );
             *info = -1;
             return *info;
@@ -128,22 +127,22 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
         lddat = (lddat+num_gpus-1)/num_gpus; /* number of block columns per GPU */
         lddat = nb*lddat;                    /* number of columns per GPU       */
         lddat = ((lddat+31)/32)*32;          /* make it a multiple of 32        */
-        for(i=0; i<num_gpus; i++){
+        for (i=0; i < num_gpus; i++) {
             magma_setdevice(i);
             
             /* local-n and local-ld */
             n_local[i] = ((n/nb)/num_gpus)*nb;
             if (i < (n/nb)%num_gpus)
-               n_local[i] += nb;
+                n_local[i] += nb;
             else if (i == (n/nb)%num_gpus)
-               n_local[i] += n%nb;
+                n_local[i] += n%nb;
             
             /* workspaces */
             if (MAGMA_SUCCESS != magma_cmalloc( &d_panel[i], (3+num_gpus)*nb*maxm )) {
-                for( j=0; j<=i; j++ ) {
+                for( j=0; j <= i; j++ ) {
                     magma_setdevice(j);
                 }
-                for( j=0; j<i; j++ ) {
+                for( j=0; j < i; j++ ) {
                     magma_setdevice(j);
                     magma_free( d_panel[j] );
                     magma_free( d_lAT[j]   );
@@ -154,11 +153,11 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
             
             /* local-matrix storage */
             if (MAGMA_SUCCESS != magma_cmalloc( &d_lAT[i], lddat*maxm )) {
-                for( j=0; j<=i; j++ ) {
+                for( j=0; j <= i; j++ ) {
                     magma_setdevice(j);
                     magma_free( d_panel[j] );
                 }
-                for( j=0; j<i; j++ ) {
+                for( j=0; j < i; j++ ) {
                     magma_setdevice(j);
                     magma_free( d_lAT[j] );
                 }
@@ -173,7 +172,7 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
             magmablasSetKernelStream(streaml[i][1]);
             magmablas_ctranspose2( d_lAT[i], lddat, d_lA[i], ldda, m, n_local[i] );
         }
-        for(i=0; i<num_gpus; i++){
+        for (i=0; i < num_gpus; i++) {
             magma_setdevice(i);
             cudaStreamSynchronize(streaml[i][0]);
             magmablasSetKernelStream(NULL);
@@ -183,7 +182,7 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
         /* cpu workspace */
         lddwork = maxm;
         if (MAGMA_SUCCESS != magma_cmalloc_pinned( &work, lddwork*nb*num_gpus )) {
-            for(i=0; i<num_gpus; i++ ) {
+            for (i=0; i < num_gpus; i++ ) {
                 magma_setdevice(i);
                 magma_free( d_panel[i] );
                 magma_free( d_lAT[i]   );
@@ -199,7 +198,7 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
                            streaml, info);
 
         /* clean up */
-        for( d=0; d<num_gpus; d++ ) {
+        for( d=0; d < num_gpus; d++ ) {
             magma_setdevice(d);
             
             /* save on output */
@@ -217,5 +216,3 @@ magma_cgetrf_mgpu(magma_int_t num_gpus,
         
     return *info;
 }
-
-#undef inAT

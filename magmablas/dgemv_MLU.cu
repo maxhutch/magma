@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal d
 
@@ -70,6 +70,36 @@ dgemv_kernel_MLU(
         y[ind] -= res;
 }
 
+/**
+    Purpose
+    -------
+
+    This routine computes y = y - Ax on the GPU.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    A       DOUBLE PRECISION array of dimension ( LDA, n ) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       DOUBLE PRECISION array of dimension n.
+
+    @param[out]
+    y       DOUBLE PRECISION array of dimension n.
+            On exit Y = Y - A X.
+
+    @ingroup magma_dblas2
+    ********************************************************************/
 extern "C" void
 magmablas_dgemv_MLU(
     magma_int_t m, magma_int_t n,
@@ -77,35 +107,6 @@ magmablas_dgemv_MLU(
     const double *x,
     double *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-
-    This routine computes y = y - Ax on the GPU.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) DOUBLE PRECISION array of dimension ( LDA, n ) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) DOUBLE PRECISION array of dimension n.
-
-    Y       (output) DOUBLE PRECISION array of dimension n.
-            On exit Y = Y - A X.
-
-    ===================================================================== */
-
     magma_int_t blocks = (m - 1)/num_threads + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(num_threads, 1, 1);

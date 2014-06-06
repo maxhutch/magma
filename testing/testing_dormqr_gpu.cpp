@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Mark Gates
-       @generated d Tue Dec 17 13:18:57 2013
+       @generated from testing_zunmqr_gpu.cpp normal z -> d, Fri Apr 25 15:06:12 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -39,39 +39,47 @@ int main( int argc, char** argv )
     magma_int_t nb, ldc, lda, lwork, lwork_max, dt_size;
     double *C, *R, *A, *W, *tau;
     double *dC, *dA, *dT;
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
+    double tol = opts.tolerance * lapackf77_dlamch("E");
+    
     // test all combinations of input parameters
-    const char* side[]   = { MagmaLeftStr,      MagmaRightStr   };
-    const char* trans[]  = { MagmaTransStr, MagmaNoTransStr };
+    magma_side_t  side [] = { MagmaLeft,      MagmaRight   };
+    magma_trans_t trans[] = { MagmaTrans, MagmaNoTrans };
 
-    printf("    M     N     K  side   trans      CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
+    printf("    M     N     K   side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
     printf("===============================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
-        for( int iside = 0; iside < 2; ++iside ) {
-        for( int itran = 0; itran < 2; ++itran ) {
-            m = opts.msize[i];
-            n = opts.nsize[i];
-            k = opts.ksize[i];
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+      for( int iside = 0; iside < 2; ++iside ) {
+      for( int itran = 0; itran < 2; ++itran ) {
+        for( int iter = 0; iter < opts.niter; ++iter ) {        
+            m = opts.msize[itest];
+            n = opts.nsize[itest];
+            k = opts.ksize[itest];
             nb  = magma_get_dgeqrf_nb( m );
             ldc = ((m + 31)/32)*32;
             lda = ((max(m,n) + 31)/32)*32;
-            gflops = FLOPS_DORMQR( m, n, k, *side[iside] ) / 1e9;
+            gflops = FLOPS_DORMQR( m, n, k, side[iside] ) / 1e9;
             
-            if ( *side[iside] == 'L' && m < k ) {
-                printf( "%5d %5d %5d  %-5s  %-9s   skipping because side=left and m < k\n",
-                        (int) m, (int) n, (int) k, side[iside], trans[itran] );
+            if ( side[iside] == MagmaLeft && m < k ) {
+                printf( "%5d %5d %5d   %4c   %5c   skipping because side=left and m < k\n",
+                        (int) m, (int) n, (int) k,
+                        lapacke_side_const( side[iside] ),
+                        lapacke_trans_const( trans[itran] ) );
                 continue;
             }
-            if ( *side[iside] == 'R' && n < k ) {
-                printf( "%5d %5d %5d  %-5s  %-9s   skipping because side=right and n < k\n",
-                        (int) m, (int) n, (int) k, side[iside], trans[itran] );
+            if ( side[iside] == MagmaRight && n < k ) {
+                printf( "%5d %5d %5d   %4c   %4c   skipping because side=right and n < k\n",
+                        (int) m, (int) n, (int) k,
+                        lapacke_side_const( side[iside] ),
+                        lapacke_trans_const( trans[itran] ) );
                 continue;
             }
             
-            if ( *side[iside] == 'L' ) {
+            if ( side[iside] == MagmaLeft ) {
                 // side = left
                 lwork_max = (m - k + nb)*(n + nb) + n*nb;
                 dt_size = ( 2*min(m,k) + ((k + 31)/32)*32 )*nb;
@@ -98,7 +106,7 @@ int main( int argc, char** argv )
             magma_dsetmatrix( m, n, C, ldc, dC, ldc );
             
             // A is m x k (left) or n x k (right)
-            lda = (*side[iside] == 'L' ? m : n);
+            lda = (side[iside] == MagmaLeft ? m : n);
             size = lda*k;
             lapackf77_dlarnv( &ione, ISEED, &size, A );
             
@@ -114,7 +122,7 @@ int main( int argc, char** argv )
                Performs operation using LAPACK
                =================================================================== */
             cpu_time = magma_wtime();
-            lapackf77_dormqr( side[iside], trans[itran],
+            lapackf77_dormqr( lapack_side_const( side[iside] ), lapack_trans_const( trans[itran] ),
                               &m, &n, &k,
                               A, &lda, tau, C, &ldc, W, &lwork_max, &info );
             cpu_time = magma_wtime() - cpu_time;
@@ -128,7 +136,7 @@ int main( int argc, char** argv )
                =================================================================== */
             // query for workspace size
             lwork = -1;
-            magma_dormqr_gpu( *side[iside], *trans[itran],
+            magma_dormqr_gpu( side[iside], trans[itran],
                               m, n, k,
                               dA, lda, tau, dC, ldc, W, lwork, dT, nb, &info );
             if (info != 0)
@@ -139,7 +147,7 @@ int main( int argc, char** argv )
                 printf("invalid lwork %d, lwork_max %d\n", (int) lwork, (int) lwork_max );
             
             gpu_time = magma_sync_wtime( 0 );  // sync needed for L,N and R,T cases
-            magma_dormqr_gpu( *side[iside], *trans[itran],
+            magma_dormqr_gpu( side[iside], trans[itran],
                               m, n, k,
                               dA, lda, tau, dC, ldc, W, lwork, dT, nb, &info );
             gpu_time = magma_sync_wtime( 0 ) - gpu_time;
@@ -158,9 +166,13 @@ int main( int argc, char** argv )
             blasf77_daxpy( &size, &c_neg_one, C, &ione, R, &ione );
             error = lapackf77_dlange( "Fro", &m, &n, R, &ldc, work ) / error;
             
-            printf( "%5d %5d %5d  %-5s  %-9s  %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
-                    (int) m, (int) n, (int) k, side[iside], trans[itran],
-                    cpu_perf, cpu_time, gpu_perf, gpu_time, error );
+            printf( "%5d %5d %5d   %4c   %5c   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                    (int) m, (int) n, (int) k,
+                    lapacke_side_const( side[iside] ),
+                    lapacke_trans_const( trans[itran] ),
+                    cpu_perf, cpu_time, gpu_perf, gpu_time,
+                    error, (error < tol ? "ok" : "failed") );
+            status |= ! (error < tol);
             
             TESTING_FREE_CPU( C );
             TESTING_FREE_CPU( R );
@@ -171,10 +183,15 @@ int main( int argc, char** argv )
             TESTING_FREE_DEV( dC );
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dT );
-        }}  // end iside, itran
-        printf( "\n" );
+            fflush( stdout );
+        }
+        if ( opts.niter > 1 ) {
+            printf( "\n" );
+        }
+      }}  // end iside, itran
+      printf( "\n" );
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

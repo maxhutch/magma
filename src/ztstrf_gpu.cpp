@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -18,23 +18,9 @@
 #include "common_magma.h"
 
 
-extern "C" magma_int_t
-magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, magma_int_t nb,
-                  magmaDoubleComplex *hU, magma_int_t ldhu, magmaDoubleComplex *dU, magma_int_t lddu,
-                  magmaDoubleComplex *hA, magma_int_t ldha, magmaDoubleComplex *dA, magma_int_t ldda,
-                  magmaDoubleComplex *hL, magma_int_t ldhl, magmaDoubleComplex *dL, magma_int_t lddl,
-                  magma_int_t *ipiv,
-                  magmaDoubleComplex *hwork, magma_int_t ldhwork, magmaDoubleComplex *dwork, magma_int_t lddwork,
-                  magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZSSSSM applies the LU factorization update from a complex
     matrix formed by a lower triangular IB-by-K tile L1 on top of a
     M2-by-K tile L2 to a second complex matrix formed by a M1-by-N1
@@ -43,77 +29,99 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
     This is the right-looking Level 2.5 BLAS version of the algorithm.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    IB      (input) INTEGER
+    @param[in]
+    ib      INTEGER
             The inner-blocking size.  IB >= 0.
 
-    NB      (input) INTEGER
+    @param[in]
+    NB      INTEGER
             The blocking size.  NB >= 0.
 
-    hU      (input,output) COMPLEX_16 array, dimension(LDHU, N), on cpu.
+    @param[in,out]
+    hU      COMPLEX_16 array, dimension(LDHU, N), on cpu.
             On entry, the NB-by-N upper triangular tile hU.
             On exit, the content is incomplete. Shouldn't be used.
 
-    LDHU    (input) INTEGER
+    @param[in]
+    ldhu    INTEGER
             The leading dimension of the array hU.  LDHU >= max(1,NB).
 
-    dU      (input,output) COMPLEX_16 array, dimension(LDDU, N), on gpu.
+    @param[in,out]
+    dU      COMPLEX_16 array, dimension(LDDU, N), on gpu.
             On entry, the NB-by-N upper triangular tile dU identical to hU.
             On exit, the new factor U from the factorization.
 
-    LDDU    (input) INTEGER
+    @param[in]
+    lddu    INTEGER
             The leading dimension of the array dU.  LDDU >= max(1,NB).
 
-    hA      (input,output) COMPLEX_16 array, dimension(LDHA, N), on cpu.
+    @param[in,out]
+    hA      COMPLEX_16 array, dimension(LDHA, N), on cpu.
             On entry, only the M-by-IB first panel needs to be identical to dA(1..M, 1..IB).
             On exit, the content is incomplete. Shouldn't be used.
 
-    LDHA    (input) INTEGER
+    @param[in]
+    ldha    INTEGER
             The leading dimension of the array hA.  LDHA >= max(1,M).
 
-    dA      (input,output) COMPLEX_16 array, dimension(LDDA, N) , on gpu.
+    @param[in,out]
+    dA      COMPLEX_16 array, dimension(LDDA, N), on gpu.
             On entry, the M-by-N tile to be factored.
             On exit, the factor L from the factorization
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
 
-    hL      (output) COMPLEX_16 array, dimension(LDHL, K), on vpu.
+    @param[out]
+    hL      COMPLEX_16 array, dimension(LDHL, K), on vpu.
             On exit, contains in the upper part the IB-by-K lower triangular tile,
             and in the lower part IB-by-K the inverse of the top part.
 
-    LDHL    (input) INTEGER
+    @param[in]
+    ldhl    INTEGER
             The leading dimension of the array hL.  LDHL >= max(1,2*IB).
 
-    dL      (output) COMPLEX_16 array, dimension(LDDL, K), on gpu.
+    @param[out]
+    dL      COMPLEX_16 array, dimension(LDDL, K), on gpu.
             On exit, contains in the upper part the IB-by-K lower triangular tile,
             and in the lower part IB-by-K the inverse of the top part.
 
-    LDDL    (input) INTEGER
+    @param[in]
+    lddl    INTEGER
             The leading dimension of the array dL.  LDDL >= max(1,2*IB).
 
-    hWORK   (output) COMPLEX_16 array, dimension(LDHWORK, 2*IB), on cpu.
+    @param[out]
+    hWORK   COMPLEX_16 array, dimension(LDHWORK, 2*IB), on cpu.
             Workspace.
 
-    LDHWORK (input) INTEGER
+    @param[in]
+    ldhwork INTEGER
             The leading dimension of the array hWORK.  LDHWORK >= max(NB, 1).
 
-    dWORK   (output) COMPLEX_16 array, dimension(LDDWORK, 2*IB), on gpu.
+    @param[out]
+    dWORK   COMPLEX_16 array, dimension(LDDWORK, 2*IB), on gpu.
             Workspace.
 
-    LDDWORK (input) INTEGER
+    @param[in]
+    lddwork INTEGER
             The leading dimension of the array dWORK.  LDDWORK >= max(NB, 1).
 
-    IPIV    (output) INTEGER array on the cpu.
+    @param[out]
+    ipiv    INTEGER array on the cpu.
             The pivot indices array of size K as returned by ZTSTRF
 
-    INFO    (output) INTEGER
+    @param[out]
+    info    INTEGER
             - PLASMA_SUCCESS successful exit
             - < 0 if INFO = -k, the k-th argument had an illegal value
             - > 0 if INFO = k, U(k,k) is exactly zero. The factorization
@@ -121,8 +129,17 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
                 singular, and division by zero will occur if it is used
                 to solve a system of equations.
 
-    =====================================================================    */
-
+    @ingroup magma_zgesv_tile
+    ********************************************************************/
+extern "C" magma_int_t
+magma_ztstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t ib, magma_int_t nb,
+                  magmaDoubleComplex *hU, magma_int_t ldhu, magmaDoubleComplex *dU, magma_int_t lddu,
+                  magmaDoubleComplex *hA, magma_int_t ldha, magmaDoubleComplex *dA, magma_int_t ldda,
+                  magmaDoubleComplex *hL, magma_int_t ldhl, magmaDoubleComplex *dL, magma_int_t lddl,
+                  magma_int_t *ipiv,
+                  magmaDoubleComplex *hwork, magma_int_t ldhwork, magmaDoubleComplex *dwork, magma_int_t lddwork,
+                  magma_int_t *info)
+{
 #define UT(i,j) (dUT + (i)*ib*lddu + (j)*ib )
 #define AT(i,j) (dAT + (i)*ib*ldda + (j)*ib )
 #define L(i)    (dL  + (i)*ib*lddl          )
@@ -203,7 +220,7 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
         }
 #endif
 
-        if ( (storev == 'R') || (storev == 'r') ) {
+        if ( order == MagmaRowMajor ) {
             magma_zsetmatrix( m, n, hU, ldhu, dwork, lddwork );
             magmablas_ztranspose( dU, lddu, dwork, lddwork, m, n );
 
@@ -220,7 +237,7 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
         /* Use hybrid blocked code. */
         maxm = ((m + 31)/32)*32;
 
-        if ( (storev == 'C') || (storev == 'c') ) {
+        if ( order == MagmaColMajor ) {
             magmablas_zgetmo_in( dU, dUT, lddu, m,  n );
             magmablas_zgetmo_in( dA, dAT, ldda, m,  n );
         } else {
@@ -230,12 +247,11 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
         dUp = dAp + ib*lddwork;
 
         ip = 0;
-        for( i=0; i<s; i++ )
-        {
+        for( i=0; i < s; i++ ) {
             ii = i * ib;
             sb = min(mindim-ii, ib);
             
-            if ( i>0 ){
+            if ( i > 0 ) {
                 // download i-th panel
                 magmablas_ztranspose( dUp, lddu, UT(0, i), lddu, sb, ii );
                 magmablas_ztranspose( dAp, ldda, AT(0, i), ldda, sb, m  );
@@ -278,12 +294,12 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
             
             // Need to swap betw U and A
 #ifndef NOSWAPBLK
-            magmablas_zswapblk( 'R', n-(ii+sb),
+            magmablas_zswapblk( MagmaRowMajor, n-(ii+sb),
                                 UT(i, i+1), lddu,
                                 AT(0, i+1), ldda,
                                 1, sb, ipiv+ii, 1, nb );
 
-            for(j=0; j<ib; j++) {
+            for (j=0; j < ib; j++) {
                 im = ipiv[ip]-1;
                 if ( im == j ) {
                     ipiv[ip] += ii;
@@ -291,11 +307,11 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
                 ip++;
             }
 #else
-            for(j=0; j<ib; j++) {
+            for (j=0; j < ib; j++) {
                 im = ipiv[ip]-1;
                 if ( im != (j) ) {
                     im = im - nb;
-                    assert( (im>=0) && (im<m) );
+                    assert( (im >= 0) && (im < m) );
                     magmablas_zswap( n-(ii+sb), UT(i, i+1)+j*lddu, 1, AT(0, i+1)+im*ldda, 1 );
                 } else {
                     ipiv[ip] += ii;
@@ -363,7 +379,7 @@ magma_ztstrf_gpu( char storev, magma_int_t m, magma_int_t n, magma_int_t ib, mag
             }
         }
 
-        if ( (storev == 'C') || (storev == 'c') ) {
+        if ( order == MagmaColMajor ) {
             magmablas_zgetmo_out( dU, dUT, lddu, m,  n );
             magmablas_zgetmo_out( dA, dAT, ldda, m,  n );
         }

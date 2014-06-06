@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from ztranspose_inplace.cu normal z -> c, Fri Apr 25 15:05:22 2014
 
        @author Stan Tomov
        @author Mark Gates

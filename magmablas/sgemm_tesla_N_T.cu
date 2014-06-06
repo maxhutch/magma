@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from dgemm_tesla_N_T.cu normal d -> s, Fri Apr 25 15:05:23 2014
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -37,6 +37,20 @@ static __device__ void saxpy(
 }
 
 
+/**
+    Purpose:
+    --------
+    This routine computes
+        C = alpha * A*B^T + beta * C
+
+    B is put into shared memory
+    Parameters Used:
+        blk_M=64 blk_N=16 blk_K=4 nthd_x=16 nthd_y=4
+
+    This code should run for any matrix size.
+
+    @ingroup magma_sblas3
+    ********************************************************************/
 __global__ void
 sgemm_kernel_N_T_64_16_4_16_4(
     float*       __restrict__ C,
@@ -46,24 +60,6 @@ sgemm_kernel_N_T_64_16_4_16_4(
     int lda, int ldb, int ldc,
     float alpha, float beta )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose:
-    ========
-    This routine computes
-        C = alpha * A*B^T + beta * C
-
-    B is put into shared memory
-    Parameters Used:
-        blk_M=64 blk_N=16 blk_K=4 nthd_x=16 nthd_y=4
-
-    This code should run for any matrix size.
-    ===============================================================  */
-
     const int tx = threadIdx.x;
     const int ty = threadIdx.y;
 

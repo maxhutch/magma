@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from zgemv_fermi.cu normal z -> c, Fri Apr 25 15:05:23 2014
 */
 #include "common_magma.h"
 #include "commonblas_c.h"
@@ -95,6 +95,44 @@ cgemvn_kernel2_fermi(
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
 
+/**
+    Purpose
+    -------
+
+    This routine computes Y = alpha A x + beta y, on the GPU.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   COMPLEX.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       COMPLEX array of dimension ( LDA, n ) on the GPU.
+   
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       COMPLEX array of dimension n.
+
+    @param[in]
+    beta    REAL.
+            On entry, BETA specifies the scalar beta.
+
+    @param[out]
+    y       COMPLEX array of dimension n.
+            On exit Y = alpha A X + beta Y.
+
+    @ingroup magma_cblas2
+    ********************************************************************/
 extern "C" void
 magmablas_cgemvn_fermi(
     magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
@@ -102,35 +140,6 @@ magmablas_cgemvn_fermi(
     const magmaFloatComplex *x, magmaFloatComplex beta,
     magmaFloatComplex       *y)
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-
-    This routine computes Y = alpha A x on the GPU.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) COMPLEX array of dimension ( LDA, n ) on the GPU.
-   
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) COMPLEX array of dimension n.
-     
-    Y       (output) COMPLEX array of dimension n.
-            On exit Y = alpha A X.
-
-    ===================================================================== */
-
     magma_int_t blocks = (m - 1)/num_threads + 1;
     dim3 grid(blocks, 1, 1);
     dim3 threads(num_threads, 1, 1);
@@ -200,6 +209,45 @@ cgemvt_kernel_fermi(
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
 
+
+/**
+    Purpose
+    -------
+
+    This routine computes y = alpha * A^T * x + beta*y, on the GPU.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   COMPLEX.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       COMPLEX array of dimension ( LDA, n ) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       COMPLEX array of dimension m.
+
+    @param[in]
+    beta    COMPLEX.
+            On entry, BETA specifies the scalar beta.
+
+    @param[out]
+    y       COMPLEX array of dimension n.
+            On exit Y = alpha A^T X + beta Y.
+
+    @ingroup magma_cblas2
+    ********************************************************************/
 extern "C" void
 magmablas_cgemvt_fermi(
     magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
@@ -207,35 +255,6 @@ magmablas_cgemvt_fermi(
     const magmaFloatComplex *x, magmaFloatComplex beta,
     magmaFloatComplex       *y)
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-
-    This routine computes y = alpha * A^T * x on the GPU.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) COMPLEX array of dimension ( LDA, n ) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) COMPLEX array of dimension m.
-
-    Y       (output) COMPLEX array of dimension n.
-            On exit Y = alpha A^T X.
-
-    ===================================================================== */
-
     dim3 grid    ( 1, n, 1 );
     dim3 threads ( threadSize, 1, 1 );
     cgemvt_kernel_fermi<<< grid, threads, 0, magma_stream >>>
@@ -303,6 +322,45 @@ cgemvc_kernel_fermi(
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
 
+
+/**
+    Purpose
+    -------
+
+    This routine computes y = alpha * A^H * x + beta*y, on the GPU.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   COMPLEX.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       COMPLEX array of dimension ( LDA, n ) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       COMPLEX array of dimension m.
+
+    @param[in]
+    beta    COMPLEX.
+            On entry, BETA specifies the scalar beta.
+
+    @param[out]
+    y       COMPLEX array of dimension n.
+            On exit Y = alpha A^H X + beta y.
+
+    @ingroup magma_cblas2
+    ********************************************************************/
 extern "C" void
 magmablas_cgemvc_fermi(
     magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
@@ -311,35 +369,6 @@ magmablas_cgemvc_fermi(
     magmaFloatComplex beta,
     magmaFloatComplex *y)
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-
-    This routine computes y = alpha * A^H * x on the GPU.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) COMPLEX array of dimension ( LDA, n ) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) COMPLEX array of dimension m.
-
-    Y       (output) COMPLEX array of dimension n.
-            On exit Y = alpha A^H X.
-
-    ===================================================================== */
-
     dim3 grid    ( 1, n, 1 );
     dim3 threads ( threadSize, 1, 1 );
     cgemvc_kernel_fermi<<< grid, threads, 0, magma_stream >>>
@@ -348,7 +377,7 @@ magmablas_cgemvc_fermi(
 
 extern "C" void
 magmablas_cgemv(
-    char trans, magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
+    magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
     const magmaFloatComplex *A, magma_int_t lda,
     const magmaFloatComplex *x, magma_int_t incx,
     magmaFloatComplex beta,
@@ -360,7 +389,7 @@ magmablas_cgemv(
         // call CUDA ARCH 1.x version
         // magmablas for [sd] precisions, cublas for [zc] precisions.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        cublasCgemv( trans, m, n, alpha, A, lda, x, incx, beta, y, incy );
+        cublasCgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_cgemv_tesla( trans, m, n, alpha, A, lda, x, incx, beta, y, incy );
         #endif
@@ -370,18 +399,18 @@ magmablas_cgemv(
     // --------------------
     // CUDA ARCH 2.x (Fermi) version
     if ( incx == 1 && incy == 1 ) {
-        if ( trans == 'N' || trans == 'n' ) {
+        if ( trans == MagmaNoTrans ) {
             if ( m < 7000 ) {
-                cublasCgemv(trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+                cublasCgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
             }
             else {
                 magmablas_cgemvn_fermi(m, n, alpha, A, lda, x, beta, y);
             }
         }
-        else if ( trans == 'T' || trans == 't' ) {
+        else if ( trans == MagmaTrans ) {
             magmablas_cgemvt_fermi(m, n, alpha, A, lda, x, beta, y);
         }
-        else if ( trans == 'C' || trans == 'c' ) {
+        else if ( trans == MagmaConjTrans ) {
             magmablas_cgemvc_fermi(m, n, alpha, A, lda, x, beta, y);
         }
         else {
@@ -389,7 +418,7 @@ magmablas_cgemv(
         }
     }
     else {
-        cublasCgemv(trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+        cublasCgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
     }
 }
 

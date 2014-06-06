@@ -20,6 +20,15 @@ Included are routines for the following algorithms:
 Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
+ 1.5.0
+       - beta 1: April 25, 2014
+    * Replaced character constants with symbolic constants (enums),
+      e.g., 'N' with MagmaNoTrans.
+    * Added SVD with Divide & Conquer, gesdd.
+    * Improved performance of geev when computing eigenvectors by using
+      multi-threaded trevc.
+    * Updated documentation to doxygen format.
+
  1.4.1 - final:  December 17, 2013
        - beta 2: December  9, 2013
        - beta 1: November 23, 2013

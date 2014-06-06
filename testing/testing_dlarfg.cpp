@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal d -> s
        @author Mark Gates
@@ -46,9 +46,9 @@ int main( int argc, char** argv)
 
     printf("    N    nb    CPU GFLop/s (ms)    GPU GFlop/s (ms)    error  \n");
     printf("==============================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             gflops = FLOPS_DLARFG( N ) / 1e9 * nb;
     
             TESTING_MALLOC_CPU( h_x,   double, N*nb );
@@ -65,7 +65,7 @@ int main( int argc, char** argv)
             blasf77_dcopy( &size, h_x, &ione, h_x1, &ione );
             
             /* =====================================================================
-               Performs operation using MAGMA-BLAS
+               Performs operation using MAGMABLAS
                =================================================================== */
             magma_dsetvector( size, h_x, ione, d_x, ione );
     
@@ -103,6 +103,7 @@ int main( int argc, char** argv)
         
             TESTING_FREE_DEV( d_x   );
             TESTING_FREE_DEV( d_tau );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

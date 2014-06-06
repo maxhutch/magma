@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zlaqps.cpp normal z -> s, Fri Apr 25 15:05:43 2014
 
 */
 
@@ -14,24 +14,9 @@
 
 #define PRECISION_s
 
-extern "C" magma_int_t
-magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
-             magma_int_t nb, magma_int_t *kb,
-             float *A,  magma_int_t lda,
-             float *dA, magma_int_t ldda,
-             magma_int_t *jpvt, float *tau, float *vn1, float *vn2,
-             float *auxv,
-             float *F,  magma_int_t ldf,
-             float *dF, magma_int_t lddf)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SLAQPS computes a step of QR factorization with column pivoting
     of a real M-by-N matrix A by using Blas-3.  It tries to factorize
     NB columns from A starting from the row OFFSET+1, and updates all
@@ -44,24 +29,30 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
     Block A(1:OFFSET,1:N) is accordingly pivoted, but not factorized.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A. N >= 0
 
-    OFFSET  (input) INTEGER
+    @param[in]
+    offset  INTEGER
             The number of rows of A that have been factorized in
             previous steps.
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             The number of columns to factorize.
 
-    KB      (output) INTEGER
+    @param[out]
+    kb      INTEGER
             The number of columns actually factorized.
 
-    A       (input/output) REAL array, dimension (LDA,N)
+    @param[in,out]
+    A       REAL array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, block A(OFFSET+1:M,1:KB) is the triangular
             factor obtained and block A(1:OFFSET,1:N) has been
@@ -69,33 +60,51 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
             The rest of the matrix, block A(OFFSET+1:M,KB+1:N) has
             been updated.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A. LDA >= max(1,M).
 
-    JPVT    (input/output) INTEGER array, dimension (N)
+    @param[in,out]
+    jpvt    INTEGER array, dimension (N)
             JPVT(I) = K <==> Column K of the full matrix A has been
             permuted into position I in AP.
 
-    TAU     (output) REAL array, dimension (KB)
+    @param[out]
+    tau     REAL array, dimension (KB)
             The scalar factors of the elementary reflectors.
 
-    VN1     (input/output) REAL array, dimension (N)
+    @param[in,out]
+    vn1     REAL array, dimension (N)
             The vector with the partial column norms.
 
-    VN2     (input/output) REAL array, dimension (N)
+    @param[in,out]
+    vn2     REAL array, dimension (N)
             The vector with the exact column norms.
 
-    AUXV    (input/output) REAL array, dimension (NB)
+    @param[in,out]
+    auxv    REAL array, dimension (NB)
             Auxiliar vector.
 
-    F       (input/output) REAL array, dimension (LDF,NB)
+    @param[in,out]
+    F       REAL array, dimension (LDF,NB)
             Matrix F' = L*Y'*A.
 
-    LDF     (input) INTEGER
+    @param[in]
+    ldf     INTEGER
             The leading dimension of the array F. LDF >= max(1,N).
 
-    =====================================================================    */
-    
+    @ingroup magma_sgeqp3_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
+             magma_int_t nb, magma_int_t *kb,
+             float *A,  magma_int_t lda,
+             float *dA, magma_int_t ldda,
+             magma_int_t *jpvt, float *tau, float *vn1, float *vn2,
+             float *auxv,
+             float *F,  magma_int_t ldf,
+             float *dF, magma_int_t lddf)
+{
 #define  A(i, j) (A  + (i) + (j)*(lda ))
 #define dA(i, j) (dA + (i) + (j)*(ldda))
 #define  F(i, j) (F  + (i) + (j)*(ldf ))
@@ -136,7 +145,6 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
         pvt = k + cblas_isamax( n-k, &vn1[k], ione );
         
         if (pvt != k) {
-
             if (pvt >= nb) {
                 /* 1. Start copy from GPU                           */
                 magma_sgetmatrix_async( m - offset - nb, 1,
@@ -153,7 +161,7 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
             vn1[pvt] = vn1[k];
             vn2[pvt] = vn2[k];
 
-            if (pvt < nb){
+            if (pvt < nb) {
                 /* no need of transfer if pivot is within the panel */
                 blasf77_sswap( &m, A(0, pvt), &ione, A(0, k), &ione );
             }
@@ -176,7 +184,7 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
            Optimization: multiply with beta=0; wait for vector and subtract */
         if (k > 0) {
             #if defined(PRECISION_c) || defined(PRECISION_z)
-            for (j = 0; j < k; ++j){
+            for (j = 0; j < k; ++j) {
                 *F(k,j) = MAGMA_S_CNJG( *F(k,j) );
             }
             #endif

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:57 2013
+       @generated from testing_zgehrd.cpp normal z -> d, Fri Apr 25 15:06:13 2014
 
 */
 
@@ -52,9 +52,9 @@ int main( int argc, char** argv)
     
     printf("    N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
     printf("=========================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = N;
             n2     = lda*N;
             nb     = magma_get_dgehrd_nb(N);
@@ -149,9 +149,9 @@ int main( int argc, char** argv)
                        (int) N, gpu_perf, gpu_time );
             }
             if ( opts.check ) {
-                printf("   %8.2e        %8.2e%s\n",
+                printf("   %8.2e        %8.2e  %s\n",
                        result[0]*eps, result[1]*eps,
-                       ( ( (result[0]*eps < tol) && (result[1]*eps < tol) ) ? "" : "  failed")  );
+                       ( ( (result[0]*eps < tol) && (result[1]*eps < tol) ) ? "ok" : "failed")  );
                 status |= ! (result[0]*eps < tol);
                 status |= ! (result[1]*eps < tol);
             }
@@ -166,6 +166,7 @@ int main( int argc, char** argv)
             TESTING_FREE_PIN( h_work );
             
             TESTING_FREE_DEV( dT     );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

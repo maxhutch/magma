@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated c Tue Dec 17 13:18:57 2013
+    @generated from testing_zhegvd.cpp normal z -> c, Fri Apr 25 15:06:12 2014
 
 */
 
@@ -63,9 +63,9 @@ int main( int argc, char** argv)
     
     printf("    N   CPU Time (sec)   GPU Time(sec)\n");
     printf("======================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = N;
             n2     = N*lda;
             nb     = magma_get_chetrd_nb(N);
@@ -87,7 +87,7 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
             //lapackf77_clatms( &N, &N, "U", ISEED, "P", w1, &five, &d_ten,
-            //                 &d_one, &N, &N, &opts.uplo, h_B, &lda, h_work, &info);
+            //                 &d_one, &N, &N, lapack_uplo_const(opts.uplo), h_B, &lda, h_work, &info);
             //lapackf77_claset( "A", &N, &N, &c_zero, &c_one, h_B, &lda);
             lapackf77_clarnv( &ione, ISEED, &n2, h_B );
             magma_cmake_hpd( N, h_B, lda );
@@ -143,44 +143,44 @@ int main( int argc, char** argv)
                 if ( opts.itype == 1 || opts.itype == 2 ) {
                     lapackf77_claset( "A", &N, &N, &c_zero, &c_one, h_S, &lda);
                     blasf77_cgemm("N", "C", &N, &N, &N, &c_one, h_R, &lda, h_R, &lda, &c_zero, h_work, &N);
-                    blasf77_chemm("R", &opts.uplo, &N, &N, &c_neg_one, h_B, &lda, h_work, &N, &c_one, h_S, &lda);
+                    blasf77_chemm("R", lapack_uplo_const(opts.uplo), &N, &N, &c_neg_one, h_B, &lda, h_work, &N, &c_one, h_S, &lda);
                     result[1] = lapackf77_clange("1", &N, &N, h_S, &lda, rwork) / N;
                 }
                 else if ( opts.itype == 3 ) {
                     lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_B, &lda, h_S, &lda);
-                    blasf77_cherk(&opts.uplo, "N", &N, &N, &d_neg_one, h_R, &lda, &d_one, h_S, &lda);
-                    result[1] = lapackf77_clanhe("1", &opts.uplo, &N, h_S, &lda, rwork) / N
-                              / lapackf77_clanhe("1", &opts.uplo, &N, h_B, &lda, rwork);
+                    blasf77_cherk(lapack_uplo_const(opts.uplo), "N", &N, &N, &d_neg_one, h_R, &lda, &d_one, h_S, &lda);
+                    result[1] = lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_S, &lda, rwork) / N
+                              / lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_B, &lda, rwork);
                 }
                 
                 result[0] = 1.;
-                result[0] /= lapackf77_clanhe("1", &opts.uplo, &N, h_A, &lda, rwork);
+                result[0] /= lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_A, &lda, rwork);
                 result[0] /= lapackf77_clange("1", &N, &N, h_R, &lda, rwork);
                 
                 if ( opts.itype == 1 ) {
-                    blasf77_chemm("L", &opts.uplo, &N, &N, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
                     for(int i=0; i<N; ++i)
                         blasf77_csscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_chemm("L", &opts.uplo, &N, &N, &c_neg_one, h_B, &lda, h_R, &lda, &c_one, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_neg_one, h_B, &lda, h_R, &lda, &c_one, h_work, &N);
                     result[0] *= lapackf77_clange("1", &N, &N, h_work, &lda, rwork)/N;
                 }
                 else if ( opts.itype == 2 ) {
-                    blasf77_chemm("L", &opts.uplo, &N, &N, &c_one, h_B, &lda, h_R, &lda, &c_zero, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_B, &lda, h_R, &lda, &c_zero, h_work, &N);
                     for(int i=0; i<N; ++i)
                         blasf77_csscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_chemm("L", &opts.uplo, &N, &N, &c_one, h_A, &lda, h_work, &N, &c_neg_one, h_R, &lda);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_work, &N, &c_neg_one, h_R, &lda);
                     result[0] *= lapackf77_clange("1", &N, &N, h_R, &lda, rwork)/N;
                 }
                 else if ( opts.itype == 3 ) {
-                    blasf77_chemm("L", &opts.uplo, &N, &N, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
                     for(int i=0; i<N; ++i)
                         blasf77_csscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_chemm("L", &opts.uplo, &N, &N, &c_one, h_B, &lda, h_work, &N, &c_neg_one, h_R, &lda);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_B, &lda, h_work, &N, &c_neg_one, h_R, &lda);
                     result[0] *= lapackf77_clange("1", &N, &N, h_R, &lda, rwork)/N;
                 }
                 
                 /*
-                lapackf77_chet21( &ione, &opts.uplo, &N, &izero,
+                lapackf77_chet21( &ione, lapack_uplo_const(opts.uplo), &N, &izero,
                                   h_A, &lda,
                                   w1, w1,
                                   h_R, &lda,
@@ -215,7 +215,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_chegvd( &opts.itype, &opts.jobz, &opts.uplo,
+                lapackf77_chegvd( &opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
                                   &N, h_A, &lda, h_B, &lda, w2,
                                   h_work, &lwork,
                                   rwork, &lrwork,
@@ -262,6 +262,7 @@ int main( int argc, char** argv)
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_S    );
             TESTING_FREE_PIN( h_work );
+            fflush( stdout );
         }                         
         if ( opts.niter > 1 ) {
             printf( "\n" );

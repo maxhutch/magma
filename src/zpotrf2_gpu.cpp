@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -18,26 +18,15 @@
 #endif
 // === End defining what BLAS to use =======================================
 
-#define dA(i, j)  (dA + (j)*ldda + (i))
-
-extern "C" magma_int_t
-magma_zpotrf_gpu(char uplo, magma_int_t n,
-                 magmaDoubleComplex *dA, magma_int_t ldda, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZPOTRF computes the Cholesky factorization of a complex Hermitian
     positive definite matrix dA.
 
     The factorization has the form
-       dA = U**H * U,  if UPLO = 'U', or
-       dA = L  * L**H,  if UPLO = 'L',
+       dA = U**H * U,   if UPLO = MagmaUpper, or
+       dA = L  * L**H,  if UPLO = MagmaLower,
     where U is an upper triangular matrix and L is lower triangular.
 
     This is the block version of the algorithm, calling Level 3 BLAS.
@@ -45,51 +34,62 @@ magma_zpotrf_gpu(char uplo, magma_int_t n,
     and therefore is not overlapping some computation with communication.
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER*1
-            = 'U':  Upper triangle of dA is stored;
-            = 'L':  Lower triangle of dA is stored.
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of dA is stored;
+      -     = MagmaLower:  Lower triangle of dA is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix dA.  N >= 0.
 
-    dA      (input/output) COMPLEX_16 array on the GPU, dimension (LDDA,N)
-            On entry, the Hermitian matrix dA.  If UPLO = 'U', the leading
+    @param[in,out]
+    dA      COMPLEX_16 array on the GPU, dimension (LDDA,N)
+            On entry, the Hermitian matrix dA.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of dA contains the upper
             triangular part of the matrix dA, and the strictly lower
-            triangular part of dA is not referenced.  If UPLO = 'L', the
+            triangular part of dA is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of dA contains the lower
             triangular part of the matrix dA, and the strictly upper
             triangular part of dA is not referenced.
-
+    \n
             On exit, if INFO = 0, the factor U or L from the Cholesky
             factorization dA = U**H * U or dA = L * L**H.
 
-    LDDA     (input) INTEGER
+    @param[in]
+    ldda     INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,N).
             To benefit from coalescent memory accesses LDDA must be
-            dividable by 16.
+            divisible by 16.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            > 0:  if INFO = i, the leading minor of order i is not
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     > 0:  if INFO = i, the leading minor of order i is not
                   positive definite, and the factorization could not be
                   completed.
-    =====================================================================   */
 
+    @ingroup magma_zposv_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zpotrf_gpu(magma_uplo_t uplo, magma_int_t n,
+                 magmaDoubleComplex *dA, magma_int_t ldda, magma_int_t *info)
+{
+#define dA(i, j)  (dA + (j)*ldda + (i))
 
     magma_int_t     j, jb, nb;
-    char            uplo_[2] = {uplo, 0};
+    const char* uplo_ = lapack_uplo_const( uplo );
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *work;
     double          d_one     =  1.0;
     double          d_neg_one = -1.0;
-    int upper = lapackf77_lsame(uplo_, "U");
+    int upper = (uplo == MagmaUpper);
 
     *info = 0;
-    if ( (! upper) && (! lapackf77_lsame(uplo_, "L")) ) {
+    if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {
         *info = -2;
@@ -119,12 +119,11 @@ magma_zpotrf_gpu(char uplo, magma_int_t n,
         magma_zsetmatrix( n, n, work, n, dA, ldda );
     }
     else {
-
         /* Use blocked code. */
         if (upper) {
             
             /* Compute the Cholesky factorization A = U'*U. */
-            for (j=0; j<n; j+=nb) {
+            for (j=0; j < n; j += nb) {
                 
                 /* Update and factorize the current diagonal block and test
                    for non-positive-definiteness. Computing MIN */
@@ -169,8 +168,7 @@ magma_zpotrf_gpu(char uplo, magma_int_t n,
         else {
             //=========================================================
             // Compute the Cholesky factorization A = L*L'.
-            for (j=0; j<n; j+=nb) {
-
+            for (j=0; j < n; j += nb) {
                 //  Update and factorize the current diagonal block and test
                 //  for non-positive-definiteness. Computing MIN
                 jb = min(nb, (n-j));

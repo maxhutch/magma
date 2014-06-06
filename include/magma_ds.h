@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:17 2013
+       @generated from magma_zc.h mixed zc -> ds, Fri Apr 25 15:05:11 2014
 */
 
 #ifndef MAGMA_DS_H
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 /* Mixed precision */
-magma_int_t magma_dsgesv_gpu(   char trans, magma_int_t N, magma_int_t NRHS,
+magma_int_t magma_dsgesv_gpu(   magma_trans_t trans, magma_int_t N, magma_int_t NRHS,
                                 double *dA, magma_int_t ldda,
                                 magma_int_t *IPIV, magma_int_t *dIPIV,
                                 double *dB, magma_int_t lddb,
@@ -26,7 +26,7 @@ magma_int_t magma_dsgesv_gpu(   char trans, magma_int_t N, magma_int_t NRHS,
                                 double *dworkd, float *dworks,
                                 magma_int_t *iter, magma_int_t *info );
 
-magma_int_t magma_dsgetrs_gpu(  char trans, magma_int_t n, magma_int_t nrhs,
+magma_int_t magma_dsgetrs_gpu(  magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
                                 float  *dA, magma_int_t ldda,
                                 magma_int_t *ipiv,
                                 double *dB, magma_int_t lddb,
@@ -34,7 +34,7 @@ magma_int_t magma_dsgetrs_gpu(  char trans, magma_int_t n, magma_int_t nrhs,
                                 float  *dSX,
                                 magma_int_t *info );
 
-magma_int_t magma_dsposv_gpu(   char uplo, magma_int_t n, magma_int_t nrhs,
+magma_int_t magma_dsposv_gpu(   magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
                                 double *dA, magma_int_t ldda,
                                 double *dB, magma_int_t lddb,
                                 double *dX, magma_int_t lddx,

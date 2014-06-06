@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:45 2013
+       @generated from zlag2c.cu mixed zc -> ds, Fri Apr 25 15:05:18 2014
 
 */
 #include "common_magma.h"
@@ -17,17 +17,17 @@
 static __device__ int flag = 0; 
 
 __global__ void 
-magmaint_dlag2s(  int M, int N, 
+magmaint_dlag2s(  int m, int n, 
                   const double *A, int lda, 
                   float *SA,       int ldsa, 
                   double RMAX ) 
 {
-    const double *Aend = A + lda*N;
+    const double *Aend = A + lda*n;
     double tmp;
     double mRMAX = - RMAX;
     int    mym   = blockIdx.x * blksize + threadIdx.x;
 
-    if ( mym < M ){
+    if ( mym < m ){
         A += mym;
         SA+= mym; 
         
@@ -51,15 +51,9 @@ magmaint_dlag2s(  int M, int N,
 }
 
 
-extern "C" void 
-magmablas_dlag2s( magma_int_t M, magma_int_t N , 
-                  const double *A, magma_int_t lda, 
-                  float *SA,       magma_int_t ldsa, 
-                  magma_int_t *info ) 
-{    
-/*
+/**
     Note
-    ====
+    ----
           - We have to provide INFO at the end that dlag2s isn't doable now. 
           - Transfer a single value TO/FROM CPU/GPU
           - SLAMCH that's needed is called from underlying BLAS
@@ -67,7 +61,7 @@ magmablas_dlag2s( magma_int_t M, magma_int_t N ,
           - Do we want to provide this in the release?
     
     Purpose
-    =======
+    -------
     DLAG2S converts a DOUBLE PRECISION matrix A to a SINGLE PRECISION
     matrix SA.
     
@@ -76,42 +70,56 @@ magmablas_dlag2s( magma_int_t M, magma_int_t N ,
     RMAX. If not the convertion is aborted and a flag is raised.
         
     Arguments
-    =========
-    M       (input) INTEGER
-            The number of lines of the matrix A.  M >= 0.
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of lines of the matrix A.  m >= 0.
     
-    N       (input) INTEGER
-            The number of columns of the matrix A.  N >= 0.
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix A.  n >= 0.
     
-    A       (input) DOUBLE PRECISION array, dimension (LDA,N)
-            On entry, the M-by-N coefficient matrix A.
+    @param[in]
+    A       DOUBLE PRECISION array, dimension (LDA,n)
+            On entry, the m-by-n coefficient matrix A.
     
-    LDA     (input) INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
+    @param[in]
+    lda     INTEGER
+            The leading dimension of the array A.  LDA >= max(1,m).
     
-    SA      (output) SINGLE PRECISION array, dimension (LDSA,N)
-            On exit, if INFO=0, the M-by-N coefficient matrix SA; if
+    @param[out]
+    SA      SINGLE PRECISION array, dimension (LDSA,n)
+            On exit, if INFO=0, the m-by-n coefficient matrix SA; if
             INFO>0, the content of SA is unspecified.
     
-    LDSA    (input) INTEGER
-            The leading dimension of the array SA.  LDSA >= max(1,M).
+    @param[in]
+    ldsa    INTEGER
+            The leading dimension of the array SA.  LDSA >= max(1,m).
     
-    INFO    (output) INTEGER
-            = 0:  successful exit.
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            = 1:  an entry of the matrix A is greater than the SINGLE PRECISION
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit.
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     = 1:  an entry of the matrix A is greater than the SINGLE PRECISION
                   overflow threshold, in this case, the content
                   of SA in exit is unspecified.
-    =====================================================================    */
 
+    @ingroup magma_daux2
+    ********************************************************************/
+extern "C" void 
+magmablas_dlag2s( magma_int_t m, magma_int_t n, 
+                  const double *A, magma_int_t lda, 
+                  float *SA,       magma_int_t ldsa, 
+                  magma_int_t *info ) 
+{
     *info = 0;
-    if ( M < 0 )
+    if ( m < 0 )
         *info = -1;
-    else if ( N < 0 )
+    else if ( n < 0 )
         *info = -2;
-    else if ( lda < max(1,M) )
+    else if ( lda < max(1,m) )
         *info = -4;
-    else if ( ldsa < max(1,M) )
+    else if ( ldsa < max(1,m) )
         *info = -6;
     
     if (*info != 0) {
@@ -122,8 +130,8 @@ magmablas_dlag2s( magma_int_t M, magma_int_t N ,
     double RMAX = (double)lapackf77_slamch("O");
 
     dim3 threads( blksize, 1, 1 );
-    dim3 grid( (M+blksize-1)/blksize, 1, 1);
+    dim3 grid( (m+blksize-1)/blksize, 1, 1);
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    magmaint_dlag2s<<< grid, threads, 0, magma_stream >>>( M, N, A, lda, SA, ldsa, RMAX ) ; 
+    magmaint_dlag2s<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, SA, ldsa, RMAX ) ; 
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

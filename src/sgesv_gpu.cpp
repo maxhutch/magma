@@ -1,30 +1,17 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
-
+       @generated from zgesv_gpu.cpp normal z -> s, Fri Apr 25 15:05:35 2014
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_sgesv_gpu( magma_int_t n, magma_int_t nrhs,
-                 float *dA, magma_int_t ldda,
-                 magma_int_t *ipiv,
-                 float *dB, magma_int_t lddb,
-                 magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     Solves a system of linear equations
        A * X = B
     where A is a general N-by-N matrix and X and B are N-by-NRHS matrices.
@@ -36,38 +23,54 @@ magma_sgesv_gpu( magma_int_t n, magma_int_t nrhs,
     system of equations A * X = B.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    NRHS    (input) INTEGER
+    @param[in]
+    nrhs    INTEGER
             The number of right hand sides, i.e., the number of columns
             of the matrix B.  NRHS >= 0.
 
-    A       (input/output) REAL array on the GPU, dimension (LDDA,N).
+    @param[in,out]
+    dA      REAL array on the GPU, dimension (LDDA,N).
             On entry, the M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
-    LDA     (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    IPIV    (output) INTEGER array, dimension (min(M,N))
+    @param[out]
+    ipiv    INTEGER array, dimension (min(M,N))
             The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
 
-    B       (input/output) REAL array on the GPU, dimension (LDB,NRHS)
+    @param[in,out]
+    dB      REAL array on the GPU, dimension (LDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
-    LDB     (input) INTEGER
+    @param[in]
+    lddb    INTEGER
             The leading dimension of the array B.  LDB >= max(1,N).
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================    */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
+    @ingroup magma_sgesv_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_sgesv_gpu( magma_int_t n, magma_int_t nrhs,
+                 float *dA, magma_int_t ldda,
+                 magma_int_t *ipiv,
+                 float *dB, magma_int_t lddb,
+                 magma_int_t *info)
+{
     *info = 0;
     if (n < 0) {
         *info = -1;

@@ -1,9 +1,9 @@
 *
-*   -- MAGMA (version 1.4.1) --
+*   -- MAGMA (version 1.5.0-beta1) --
 *      Univ. of Tennessee, Knoxville
 *      Univ. of California, Berkeley
 *      Univ. of Colorado, Denver
-*      December 2013
+*      @date April 2014
 *
 *      @precisions normal d -> s
 *      @author Azzam Haidar
@@ -28,7 +28,7 @@
 *       DOUBLE PRECISION   T( LDT, * ), VL( LDVL, * ), VR( LDVR, * ),
 *      $                   WORK( * )
 *       ..
-*  
+*
 *
 *> \par Purpose:
 *  =============
@@ -39,22 +39,22 @@
 *> a real upper quasi-triangular matrix T.
 *> Matrices of this type are produced by the Schur factorization of
 *> a real general matrix:  A = Q*T*Q**T, as computed by DHSEQR.
-*> 
+*>
 *> The right eigenvector x and the left eigenvector y of T corresponding
 *> to an eigenvalue w are defined by:
-*> 
+*>
 *>    T*x = w*x,     (y**T)*T = w*(y**T)
-*> 
+*>
 *> where y**T denotes the transpose of the vector y.
 *> The eigenvalues are not input to this routine, but are read directly
 *> from the diagonal blocks of T.
-*> 
+*>
 *> This routine returns the matrices X and/or Y of right and left
 *> eigenvectors of T, or the products Q*X and/or Q*Y, where Q is an
 *> input matrix. If Q is the orthogonal factor that reduces a matrix
 *> A to Schur form T, then Q*X and Q*Y are the matrices of right and
 *> left eigenvectors of A.
-*> 
+*>
 *> This uses a Level 3 BLAS version of the back transformation.
 *> \endverbatim
 *
@@ -203,14 +203,14 @@
 *  Authors:
 *  ========
 *
-*> \author Univ. of Tennessee 
-*> \author Univ. of California Berkeley 
-*> \author Univ. of Colorado Denver 
-*> \author NAG Ltd. 
+*> \author Univ. of Tennessee
+*> \author Univ. of California Berkeley
+*> \author Univ. of Colorado Denver
+*> \author NAG Ltd.
 *
-*> \date December 2013
+*> \date @date April 2014
 *
-*> \ingroup doubleOTHERcomputational
+*> \ingroup magma_dgeev_comp
 *
 *> \par Further Details:
 *  =====================

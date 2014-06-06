@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:57 2013
+       @generated from testing_zpotrf.cpp normal z -> c, Fri Apr 25 15:06:08 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -43,12 +43,12 @@ int main( int argc, char** argv)
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("ngpu %d, uplo %c\n", (int) opts.ngpu, opts.uplo );
+    printf("ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
     printf("    N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
     printf("========================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N     = opts.nsize[i];
+            N     = opts.nsize[itest];
             lda   = N;
             n2    = lda*N;
             gflops = FLOPS_CPOTRF( N ) / 1e9;
@@ -77,7 +77,7 @@ int main( int argc, char** argv)
                    Performs operation using LAPACK
                    =================================================================== */
                 cpu_time = magma_wtime();
-                lapackf77_cpotrf( &opts.uplo, &N, h_A, &lda, &info );
+                lapackf77_cpotrf( lapack_uplo_const(opts.uplo), &N, h_A, &lda, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
@@ -91,9 +91,9 @@ int main( int argc, char** argv)
                 blasf77_caxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
                 error = lapackf77_clange("f", &N, &N, h_R, &lda, work) / error;
                 
-                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e%s\n",
+                printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                       error, (error < tol ? "" : "  failed") );
+                       error, (error < tol ? "ok" : "failed") );
                 status |= ! (error < tol);
             }
             else {
@@ -102,6 +102,10 @@ int main( int argc, char** argv)
             }
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_PIN( h_R );
+            fflush( stdout );
+        }
+        if ( opts.niter > 1 ) {
+            printf( "\n" );
         }
     }
 

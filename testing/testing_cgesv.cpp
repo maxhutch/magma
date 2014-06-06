@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:57 2013
+       @generated from testing_zgesv.cpp normal z -> c, Fri Apr 25 15:06:09 2014
        @author Mark Gates
 */
 // includes, system
@@ -50,9 +50,9 @@ int main(int argc, char **argv)
     printf("ngpu %d\n", (int) opts.ngpu );
     printf("    N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = N;
             ldb    = lda;
             gflops = ( FLOPS_CGETRF( N, N ) + FLOPS_CGETRS( N, nrhs ) ) / 1e9;
@@ -112,14 +112,14 @@ int main(int argc, char **argv)
                     printf("lapackf77_cgesv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 
-                printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e%s\n",
+                printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
                         (int) N, (int) nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                        error, (error < tol ? "" : "  failed"));
+                        error, (error < tol ? "ok" : "failed"));
             }
             else {
-                printf( "%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e%s\n",
+                printf( "%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e  %s\n",
                         (int) N, (int) nrhs, gpu_perf, gpu_time,
-                        error, (error < tol ? "" : "  failed"));
+                        error, (error < tol ? "ok" : "failed"));
             }
             
             TESTING_FREE_CPU( h_A  );
@@ -128,6 +128,7 @@ int main(int argc, char **argv)
             TESTING_FREE_CPU( h_X  );
             TESTING_FREE_CPU( work );
             TESTING_FREE_CPU( ipiv );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

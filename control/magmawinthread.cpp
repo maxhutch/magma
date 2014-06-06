@@ -2,13 +2,13 @@
  *
  * @file magmawinthread.c
  *
- *  This file handles the mapping from pthreads calls to windows threads
+ *  This file handles the mapping from pthreads calls to windows threads.
  *  MAGMA is a software package provided by Univ. of Tennessee,
  *  Univ. of California Berkeley and Univ. of Colorado Denver
  *
  * @version 2.3.1
  * @author Piotr Luszczek
- * @date 2010-11-15
+ * @date April 2014
  *
  * This file is originally from PLASMA project, where plasma has been
  * replaced by MAGMA.

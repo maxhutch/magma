@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -38,31 +38,34 @@ int main( int argc, char** argv )
     magma_int_t ione =  1;
     magma_int_t ISEED[4] = {0,0,0,1};
     double error, work[1];
+    magma_int_t status = 0;
     
     // test all combinations of input parameters
-    const char side[]   = { MagmaLeft,       MagmaRight    };
-    const char trans[]  = { MagmaConjTrans,  MagmaNoTrans  };
-    const char direct[] = { MagmaForward,    MagmaBackward };
-    const char storev[] = { MagmaColumnwise, MagmaRowwise  };
+    magma_side_t   side  [] = { MagmaLeft,       MagmaRight    };
+    magma_trans_t  trans [] = { MagmaConjTrans,  MagmaNoTrans  };
+    magma_direct_t direct[] = { MagmaForward,    MagmaBackward };
+    magma_storev_t storev[] = { MagmaColumnwise, MagmaRowwise  };
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
+    double tol = opts.tolerance * lapackf77_dlamch("E");
+    
     printf("    M     N     K   storev   side   direct   trans    ||R||_F / ||HC||_F\n");
     printf("========================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
-        M = opts.msize[i];
-        N = opts.nsize[i];
-        K = opts.ksize[i];
-        if ( M < K || N < K || K <= 0 ) {
-            printf( "skipping M %d, N %d, K %d; requires M >= K, N >= K, K >= 0.\n", (int) M, (int) N, (int) K );
-            continue;
-        }
-        for( int istor = 0; istor < 2; ++istor ) {
-        for( int iside = 0; iside < 2; ++iside ) {
-        for( int idir  = 0; idir  < 2; ++idir  ) {
-        for( int itran = 0; itran < 2; ++itran ) {
-            
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+      M = opts.msize[itest];
+      N = opts.nsize[itest];
+      K = opts.ksize[itest];
+      if ( M < K || N < K || K <= 0 ) {
+          printf( "skipping M %d, N %d, K %d; requires M >= K, N >= K, K >= 0.\n", (int) M, (int) N, (int) K );
+          continue;
+      }
+      for( int istor = 0; istor < 2; ++istor ) {
+      for( int iside = 0; iside < 2; ++iside ) {
+      for( int idir  = 0; idir  < 2; ++idir  ) {
+      for( int itran = 0; itran < 2; ++itran ) {
+        for( int iter = 0; iter < opts.niter; ++iter ) {            
             ldc = ((M+31)/32)*32;
             ldt = ((K+31)/32)*32;
             ldw = (side[iside] == MagmaLeft ? N : M);
@@ -133,7 +136,8 @@ int main( int argc, char** argv )
             magma_zsetmatrix( ldv, nv, V, ldv, dV, ldv );
             magma_zsetmatrix( K,   K,  T, ldt, dT, ldt );
             
-            lapackf77_zlarfb( &side[iside], &trans[itran], &direct[idir], &storev[istor],
+            lapackf77_zlarfb( lapack_side_const( side[iside] ), lapack_trans_const( trans[itran] ),
+                              lapack_direct_const( direct[idir] ), lapack_storev_const( storev[istor] ),
                               &M, &N, &K,
                               V, &ldv, T, &ldt, C, &ldc, W, &ldw );
             //printf( "HC=" );  magma_zprint( M, N, C, ldc );
@@ -149,9 +153,12 @@ int main( int argc, char** argv )
             size = ldc*N;
             blasf77_zaxpy( &size, &c_neg_one, C, &ione, R, &ione );
             error = lapackf77_zlange( "Fro", &M, &N, R, &ldc, work ) / error;
-            printf( "%5d %5d %5d      %c       %c       %c       %c      %8.2e\n",
+            printf( "%5d %5d %5d      %c       %c       %c       %c      %8.2e  %s\n",
                     (int) M, (int) N, (int) K,
-                    storev[istor], side[iside], direct[idir], trans[itran], error );
+                    lapacke_storev_const(storev[istor]), lapacke_side_const(side[iside]),
+                    lapacke_direct_const(direct[idir]), lapacke_trans_const(trans[itran]),
+                   error, (error < tol ? "ok" : "failed") );
+            status |= ! (error < tol);
             
             TESTING_FREE_CPU( C );
             TESTING_FREE_CPU( R );
@@ -163,10 +170,15 @@ int main( int argc, char** argv )
             TESTING_FREE_DEV( dV );
             TESTING_FREE_DEV( dT );
             TESTING_FREE_DEV( dW );
-        }}}}
-        printf( "\n" );
+            fflush( stdout );
+        }
+        if ( opts.niter > 1 ) {
+            printf( "\n" );
+        }
+      }}}}
+      printf( "\n" );
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

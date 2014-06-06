@@ -29,6 +29,12 @@
 #endif
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void flops_init();
+
 /***************************************************************************//**
  *  Global utilities
  *  in both common_magma.h and testings.h
@@ -54,8 +60,24 @@
  * Macros to handle error checking.
  */
 
+#ifdef CUBLAS_V2_H_
+
 #define TESTING_INIT()                                                     \
     magma_init();                                                          \
+    flops_init();                                                          \
+    cublasHandle_t handle;                                                 \
+    cudaSetDevice( 0 );                                                    \
+    cublasCreate( &handle );                                               \
+
+#define TESTING_FINALIZE()                                                 \
+    cublasDestroy( handle );                                               \
+    magma_finalize();                                                      \
+
+#else // not CUBLAS_V2_H_
+
+#define TESTING_INIT()                                                     \
+    magma_init();                                                          \
+    flops_init();                                                          \
     if( CUBLAS_STATUS_SUCCESS != cublasInit() ) {                          \
         fprintf(stderr, "ERROR: cublasInit failed\n");                     \
         magma_finalize();                                                  \
@@ -68,10 +90,13 @@
     magma_finalize();                                                      \
     cublasShutdown();
 
+#endif // not CUBLAS_V2_H_
+
 
 #define TESTING_INIT_MGPU()                                                \
 {                                                                          \
     magma_init();                                                          \
+    flops_init();                                                          \
     int ndevices;                                                          \
     cudaGetDeviceCount( &ndevices );                                       \
     for( int idevice = 0; idevice < ndevices; ++idevice ) {                \
@@ -126,22 +151,18 @@
     }
 
 
-#define TESTING_FREE_CPU( ptr )                                            \
-    magma_free_cpu( ptr )
+#define TESTING_FREE_CPU( ptr ) magma_free_cpu( ptr )
 
 
-#define TESTING_FREE_PIN( ptr )                                         \
-    magma_free_pinned( ptr )
+#define TESTING_FREE_PIN( ptr ) magma_free_pinned( ptr )
 
 
-#define TESTING_FREE_DEV( ptr )                                            \
-    magma_free( ptr )
+#define TESTING_FREE_DEV( ptr ) magma_free( ptr )
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+/***************************************************************************//**
+ * Functions and data structures used for testing.
+ */
 void magma_zmake_hermitian( magma_int_t N, magmaDoubleComplex* A, magma_int_t lda );
 void magma_cmake_hermitian( magma_int_t N, magmaFloatComplex*  A, magma_int_t lda );
 void magma_dmake_symmetric( magma_int_t N, double*             A, magma_int_t lda );
@@ -176,13 +197,14 @@ typedef struct magma_opts
     magma_int_t ngpu;
     magma_int_t niter;
     magma_int_t nthread;
+    magma_int_t offset;
     magma_int_t itype;     // hegvd: problem type
     magma_int_t svd_work;  // gesvd
     magma_int_t version;   // hemm_mgpu, hetrd
     double      fraction;  // hegvdx
     double      tolerance;
-    magma_int_t panel_nthread; //first dimension for a 2D big panel
-    
+    magma_int_t panel_nthread; //in magma_amc: first dimension for a 2D big panel
+    double fraction_dcpu; //in magma_amc: fraction of the work for the cpu 
     // boolean arguments
     int check;
     int lapack;
@@ -200,6 +222,10 @@ typedef struct magma_opts
     magma_vec_t     jobz;    // heev:   no eigen vectors
     magma_vec_t     jobvr;   // geev:   no right eigen vectors
     magma_vec_t     jobvl;   // geev:   no left  eigen vectors
+    
+    // misc
+    int flock_op;   // shared or exclusive lock
+    int flock_fd;   // lock file
 } magma_opts;
 
 void parse_opts( int argc, char** argv, magma_opts *opts );

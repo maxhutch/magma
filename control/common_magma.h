@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
  
        @author Mathieu Faverge
  
@@ -18,12 +18,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <cublas.h>
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
 
 #include <cuda_runtime_api.h>
+#include <cublas.h>
 
 #if defined( _WIN32 ) || defined( _WIN64 )
 

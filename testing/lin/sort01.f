@@ -59,9 +59,10 @@
 *  WORK    (workspace) REAL array, dimension (LWORK)
 *
 *  LWORK   (input) INTEGER
-*          The length of the array WORK.  For best performance, LWORK
-*          should be at least N*(N+1) if ROWCOL = 'C' or M*(M+1) if
-*          ROWCOL = 'R', but the test will be done even if LWORK is 0.
+*          The length of the array WORK.  For best performance,
+*          if ROWCOL = 'C', LWORK >= N*(N+1),
+*          if ROWCOL = 'R', LWORK >= M*(M+1),
+*          but the test will be done even if LWORK is 0.
 *
 *  RESID   (output) REAL
 *          RESID = norm( I - U * U' ) / ( n * EPS ), if ROWCOL = 'R', or

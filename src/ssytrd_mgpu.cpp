@@ -1,106 +1,99 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zhetrd_mgpu.cpp normal z -> s, Fri Apr 25 15:05:48 2014
 
 */
 #include "common_magma.h"
 #include "trace.h"
 
-#define  A(i, j)     (a           + (j)*lda  + (i))
-#define dA(id, i, j) (da[(id)]    + (j)*ldda + (i))
-#define dW(id, i, j) (dwork[(id)] + (j)*ldda + (i))
-
-extern "C" magma_int_t
-magma_ssytrd_mgpu(
-    magma_int_t num_gpus, magma_int_t k, char uplo, magma_int_t n,
-    float *a, magma_int_t lda,
-    float *d, float *e, float *tau,
-    float *work, magma_int_t lwork,
-    magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SSYTRD reduces a real symmetric matrix A to real symmetric
     tridiagonal form T by an orthogonal similarity transformation:
     Q\*\*H * A * Q = T.
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER*1
-            = 'U':  Upper triangle of A is stored;
-            = 'L':  Lower triangle of A is stored.
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    A       (input/output) REAL array, dimension (LDA,N)
-            On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+    @param[in,out]
+    A       REAL array, dimension (LDA,N)
+            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of A contains the lower
             triangular part of the matrix A, and the strictly upper
             triangular part of A is not referenced.
-            On exit, if UPLO = 'U', the diagonal and first superdiagonal
+            On exit, if UPLO = MagmaUpper, the diagonal and first superdiagonal
             of A are overwritten by the corresponding elements of the
             tridiagonal matrix T, and the elements above the first
             superdiagonal, with the array TAU, represent the orthogonal
             matrix Q as a product of elementary reflectors; if UPLO
-            = 'L', the diagonal and first subdiagonal of A are over-
+            = MagmaLower, the diagonal and first subdiagonal of A are over-
             written by the corresponding elements of the tridiagonal
             matrix T, and the elements below the first subdiagonal, with
             the array TAU, represent the orthogonal matrix Q as a product
             of elementary reflectors. See Further Details.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    D       (output) REAL array, dimension (N)
+    @param[out]
+    d       REAL array, dimension (N)
             The diagonal elements of the tridiagonal matrix T:
             D(i) = A(i,i).
 
-    E       (output) REAL array, dimension (N-1)
+    @param[out]
+    e       REAL array, dimension (N-1)
             The off-diagonal elements of the tridiagonal matrix T:
-            E(i) = A(i,i+1) if UPLO = 'U', E(i) = A(i+1,i) if UPLO = 'L'.
+            E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.
 
-    TAU     (output) REAL array, dimension (N-1)
+    @param[out]
+    tau     REAL array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details).
 
-    WORK    (workspace/output) REAL array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) REAL array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.  LWORK >= 1.
             For optimum performance LWORK >= N*NB, where NB is the
             optimal blocksize.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
     Further Details
-    ===============
-    If UPLO = 'U', the matrix Q is represented as a product of elementary
+    ---------------
+    If UPLO = MagmaUpper, the matrix Q is represented as a product of elementary
     reflectors
 
        Q = H(n-1) . . . H(2) H(1).
@@ -113,7 +106,7 @@ magma_ssytrd_mgpu(
     v(i+1:n) = 0 and v(i) = 1; v(1:i-1) is stored on exit in
     A(1:i-1,i+1), and tau in TAU(i).
 
-    If UPLO = 'L', the matrix Q is represented as a product of elementary
+    If UPLO = MagmaLower, the matrix Q is represented as a product of elementary
     reflectors
 
        Q = H(1) H(2) . . . H(n-1).
@@ -129,7 +122,7 @@ magma_ssytrd_mgpu(
     The contents of A on exit are illustrated by the following examples
     with n = 5:
 
-    if UPLO = 'U':                       if UPLO = 'L':
+    if UPLO = MagmaUpper:                if UPLO = MagmaLower:
 
       (  d   e   v2  v3  v4 )              (  d                  )
       (      d   e   v3  v4 )              (  e   d              )
@@ -139,10 +132,23 @@ magma_ssytrd_mgpu(
 
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
-    =====================================================================    */
 
-    char uplo_[2] = {uplo, 0};
+    @ingroup magma_ssyev_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_ssytrd_mgpu(
+    magma_int_t num_gpus, magma_int_t k, magma_uplo_t uplo, magma_int_t n,
+    float *A, magma_int_t lda,
+    float *d, float *e, float *tau,
+    float *work, magma_int_t lwork,
+    magma_int_t *info)
+{
+#define  A(i, j)     (A           + (j)*lda  + (i))
+#define dA(id, i, j) (dA[(id)]    + (j)*ldda + (i))
+#define dW(id, i, j) (dwork[(id)] + (j)*ldda + (i))
 
+    const char* uplo_ = lapack_uplo_const( uplo );
+    
     magma_int_t ln, ldda;
     magma_int_t nb = magma_get_ssytrd_nb(n), ib;
 
@@ -164,9 +170,9 @@ magma_ssytrd_mgpu(
     float *dwork2[MagmaMaxGPUs];
 
     *info = 0;
-    int upper = lapackf77_lsame(uplo_, "U");
-    lquery = lwork == -1;
-    if ( !upper && !lapackf77_lsame(uplo_, "L")) {
+    int upper = (uplo == MagmaUpper);
+    lquery = (lwork == -1);
+    if (! upper && uplo != MagmaLower) {
         printf( " uplo = %c\n",uplo );
         *info = -1;
     } else if (n < 0) {
@@ -175,7 +181,7 @@ magma_ssytrd_mgpu(
         *info = -4;
     } else if (lwork < nb*n && ! lquery) {
         *info = -9;
-    } else if( k > 2 ) {
+    } else if ( k > 2 ) {
         *info = 2;
     }
 
@@ -199,11 +205,11 @@ magma_ssytrd_mgpu(
         return 0;
     }
 
-    float *da[MagmaMaxGPUs];
+    float *dA[MagmaMaxGPUs];
     float *dwork[MagmaMaxGPUs];
 
     float times[11];
-    for( did=0; did<11; did++ )
+    for( did=0; did < 11; did++ )
         times[did] = 0;
 //#define PROFILE_SY2RK
 #ifdef PROFILE_SY2RK
@@ -216,31 +222,33 @@ magma_ssytrd_mgpu(
     ldda = lda;
     ln = ((nb*(1+n/(nb*num_gpus))+31)/32)*32;
     ldwork2 = (1+ n / nb + (n % nb != 0)) * ldda;
-    for( did=0; did<num_gpus; did++ ) {
+    for( did=0; did < num_gpus; did++ ) {
         magma_setdevice(did);
-        if ( MAGMA_SUCCESS != magma_smalloc(&da[did],     ln*ldda+3*lddwork*nb) ||
+        // TODO fix memory leak
+        if ( MAGMA_SUCCESS != magma_smalloc(&dA[did],     ln*ldda+3*lddwork*nb) ||
              MAGMA_SUCCESS != magma_smalloc(&dx[did],     k*n     ) ||
              MAGMA_SUCCESS != magma_smalloc(&dy[did],     k*n     ) ||
              MAGMA_SUCCESS != magma_smalloc(&dwork2[did], ldwork2 ) ) {
-            for( i=0; i<did; i++ ) {
+            for( i=0; i < did; i++ ) {
                 magma_setdevice(i);
-                magma_free(da[i]);
+                magma_free(dA[i]);
                 magma_free(dx[i]);
                 magma_free(dy[i]);
             }
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
-        dwork[did] = da[did] + ln*ldda;
+        dwork[did] = dA[did] + ln*ldda;
         
-        for( kk=0; kk<k; kk++ )
+        for( kk=0; kk < k; kk++ )
             magma_queue_create(&stream[did][kk]);
     }
     magma_setdevice(0);
-    if( MAGMA_SUCCESS != magma_smalloc_pinned( &hwork, k*num_gpus*n ) ) {
-        for( i=0; i<num_gpus; i++ ) {
+    // TODO fix memory leak dwork2
+    if ( MAGMA_SUCCESS != magma_smalloc_pinned( &hwork, k*num_gpus*n ) ) {
+        for( i=0; i < num_gpus; i++ ) {
             magma_setdevice(i);
-            magma_free(da[i]);
+            magma_free(dA[i]);
             magma_free(dx[i]);
             magma_free(dy[i]);
         }
@@ -254,10 +262,9 @@ magma_ssytrd_mgpu(
         nx = 512;
 
     if (upper) {
-
         /* Copy the matrix to the GPU */
-        if (1<=n-nx) {
-            magma_shtodhe(num_gpus, uplo, n, nb, a, lda, da, ldda, stream, &iinfo );
+        if (1 <= n-nx) {
+            magma_shtodhe(num_gpus, uplo, n, nb, A, lda, dA, ldda, stream, &iinfo );
         }
 
         /*  Reduce the upper triangle of A.
@@ -269,7 +276,7 @@ magma_ssytrd_mgpu(
             did = (i/nb)%num_gpus;
 
             /* wait for the next panel */
-            if (i!=nb*((n-1)/nb)) {
+            if (i != nb*((n-1)/nb)) {
                 magma_setdevice(did);
                 magma_queue_sync(stream[did][0]);
             }
@@ -277,15 +284,15 @@ magma_ssytrd_mgpu(
             magma_slatrd_mgpu(num_gpus, uplo, n, i+ib, ib, nb,
                               A(0, 0), lda, e, tau,
                               work, ldwork,
-                              da, ldda, 0,
+                              dA, ldda, 0,
                               dwork, i+ib,
                               dwork2, ldwork2,
                               1, dx, dy, hwork,
                               stream, times);
 
-            magma_ssyr2k_mgpu(num_gpus, 'U', 'N', nb, i, ib,
+            magma_ssyr2k_mgpu(num_gpus, MagmaUpper, MagmaNoTrans, nb, i, ib,
                          c_neg_one, dwork, i+ib, 0,
-                         d_one,     da,    ldda, 0,
+                         d_one,     dA,    ldda, 0,
                          k, stream);
 
             /* get the next panel */
@@ -305,16 +312,15 @@ magma_ssytrd_mgpu(
             /* Copy superdiagonal elements back into A, and diagonal
                elements into D */
             for (j = i; j < i+ib; ++j) {
-                if( j > 0 ) {
+                if ( j > 0 ) {
                     *A(j-1,j) = MAGMA_S_MAKE( e[j - 1], 0 );
                 }
                 d[j] = MAGMA_S_REAL( *A(j, j) );
             }
-
         } /* end of for i=... */
       
-        if( nx > 0 ) {
-            if (1<=n-nx) { /* else A is already on CPU */
+        if ( nx > 0 ) {
+            if (1 <= n-nx) { /* else A is already on CPU */
                 for (i=0; i < nx; i += nb) {
                     ib = min(nb, n-i);
                     ii  = nb*(i/(nb*num_gpus));
@@ -328,7 +334,7 @@ magma_ssytrd_mgpu(
                 }
             }
             
-            for( did=0; did<num_gpus; did++ ) {
+            for( did=0; did < num_gpus; did++ ) {
                 magma_setdevice(did);
                 magma_queue_sync(stream[did][0]);
             }
@@ -339,8 +345,8 @@ magma_ssytrd_mgpu(
     else {
         trace_init( 1, num_gpus, k, (CUstream_st**)stream );
         /* Copy the matrix to the GPU */
-        if (1<=n-nx) {
-            magma_shtodhe(num_gpus, uplo, n, nb, a, lda, da, ldda, stream, &iinfo );
+        if (1 <= n-nx) {
+            magma_shtodhe(num_gpus, uplo, n, nb, A, lda, dA, ldda, stream, &iinfo );
         }
 
         /* Reduce the lower triangle of A */
@@ -354,7 +360,7 @@ magma_ssytrd_mgpu(
                the matrix */
 
             /*   Get the current panel (no need for the 1st iteration) */
-            if (i!=0) {
+            if (i != 0) {
                 magma_setdevice(did);
                 trace_gpu_start( did, 0, "comm", "get" );
                 magma_sgetmatrix_async( n-i, ib,
@@ -371,7 +377,7 @@ magma_ssytrd_mgpu(
             magma_slatrd_mgpu(num_gpus, uplo, n, n-i, ib, nb,
                               A(i, i), lda, &e[i],
                               &tau[i], work, ldwork,
-                              da, ldda, i,
+                              dA, ldda, i,
                               dwork,  (n-i),
                               dwork2, ldwork2,
                               1, dx, dy, hwork,
@@ -379,15 +385,15 @@ magma_ssytrd_mgpu(
 
 #ifdef PROFILE_SY2RK
             magma_setdevice(0);
-            if( i > 0 ) {
+            if ( i > 0 ) {
                 cudaEventElapsedTime(&etime, start, stop);
                 up_time += (etime/1000.0);
             }
             magma_event_record(start, 0);
 #endif
-            magma_ssyr2k_mgpu(num_gpus, 'L', 'N', nb, n-i-ib, ib,
+            magma_ssyr2k_mgpu(num_gpus, MagmaLower, MagmaNoTrans, nb, n-i-ib, ib,
                          c_neg_one, dwork, n-i, ib,
-                         d_one, da, ldda, i+ib, k, stream);
+                         d_one, dA, ldda, i+ib, k, stream);
 #ifdef PROFILE_SY2RK
             magma_setdevice(0);
             magma_event_record(stop, 0);
@@ -396,7 +402,7 @@ magma_ssytrd_mgpu(
             /* Copy subdiagonal elements back into A, and diagonal
                elements into D */
             for (j = i; j < i+ib; ++j) {
-                if( j+1 < n ) {
+                if ( j+1 < n ) {
                     *A(j+1,j) = MAGMA_S_MAKE( e[j], 0 );
                 }
                 d[j] = MAGMA_S_REAL( *A(j, j) );
@@ -407,7 +413,7 @@ magma_ssytrd_mgpu(
         if ( i < n ) {
             iii = i;
             i_n = n-i;
-            if( i > 0 ) {
+            if ( i > 0 ) {
                 for (; i < n; i += nb) {
                     ib = min(nb, n-i);
                     ii  = nb*(i/(nb*num_gpus));
@@ -419,7 +425,7 @@ magma_ssytrd_mgpu(
                                              A(iii, i),       lda,
                                             stream[did][0] );
                 }
-                for( did=0; did<num_gpus; did++ ) {
+                for( did=0; did < num_gpus; did++ ) {
                     magma_setdevice(did);
                     magma_queue_sync(stream[did][0]);
                 }
@@ -430,7 +436,7 @@ magma_ssytrd_mgpu(
     }
 #ifdef PROFILE_SY2RK
     magma_setdevice(0);
-    if( n > nx ) {
+    if ( n > nx ) {
         cudaEventElapsedTime(&etime, start, stop);
         up_time += (etime/1000.0);
     }
@@ -438,14 +444,14 @@ magma_ssytrd_mgpu(
     magma_event_destroy( stop  );
 #endif
 
-    trace_finalize( "ssytrd.svg","trace.css" );
-    for( did=0; did<num_gpus; did++ ) {
+    trace_finalize( "ssytrd.svg", "trace.css" );
+    for( did=0; did < num_gpus; did++ ) {
         magma_setdevice(did);
-        for( kk=0; kk<k; kk++ )
+        for( kk=0; kk < k; kk++ )
             magma_queue_sync(stream[did][kk]);
-        for( kk=0; kk<k; kk++ )
+        for( kk=0; kk < k; kk++ )
             magma_queue_destroy(stream[did][kk]);
-        magma_free(da[did]);
+        magma_free(dA[did]);
         magma_free(dx[did]);
         magma_free(dy[did]);
         magma_free(dwork2[did]);
@@ -465,16 +471,16 @@ magma_ssytrd_mgpu(
 
 
 extern "C" magma_int_t
-magma_shtodhe(magma_int_t num_gpus, char uplo, magma_int_t n, magma_int_t nb,
-              float *a, magma_int_t lda,
-              float **da, magma_int_t ldda,
+magma_shtodhe(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
+              float *A, magma_int_t lda,
+              float **dA, magma_int_t ldda,
               magma_queue_t stream[][10], magma_int_t *info)
 {
     magma_int_t k;
-    if( lapackf77_lsame(&uplo, "L") ) {
+    if (uplo == MagmaLower) {
         /* go through each block-column */
         magma_int_t j, jj, jb, mj;
-        for (j=0; j<n; j+=nb) {
+        for (j=0; j < n; j += nb) {
             jj =  j/(nb*num_gpus);
             k  = (j/nb)%num_gpus;
             
@@ -491,7 +497,7 @@ magma_shtodhe(magma_int_t num_gpus, char uplo, magma_int_t n, magma_int_t nb,
     else {
         /* go through each block-column */
         magma_int_t j, jj, jb, mj;
-        for (j=0; j<n; j+=nb) {
+        for (j=0; j < n; j += nb) {
             jj =  j/(nb*num_gpus);
             k  = (j/nb)%num_gpus;
             
@@ -505,7 +511,7 @@ magma_shtodhe(magma_int_t num_gpus, char uplo, magma_int_t n, magma_int_t nb,
                                     stream[k][0] );
         }
     }
-    for( k=0; k<num_gpus; k++ ) {
+    for( k=0; k < num_gpus; k++ ) {
         magma_setdevice(k);
         magma_queue_sync(stream[k][0]);
     }
@@ -516,24 +522,22 @@ magma_shtodhe(magma_int_t num_gpus, char uplo, magma_int_t n, magma_int_t nb,
 
 extern "C" void
 magma_ssyr2k_mgpu(
-    magma_int_t num_gpus, char uplo, char trans, magma_int_t nb, magma_int_t n, magma_int_t k,
+    magma_int_t num_gpus, magma_uplo_t uplo, magma_trans_t trans, magma_int_t nb, magma_int_t n, magma_int_t k,
     float alpha,
     float **db, magma_int_t lddb, magma_int_t offset_b,
     float beta,
     float **dc, magma_int_t lddc, magma_int_t offset,
     magma_int_t num_streams, magma_queue_t stream[][10])
 {
-
 #define dB(id, i, j)  (db[(id)]+(j)*lddb + (i)+offset_b)
 #define dB1(id, i, j) (db[(id)]+(j)*lddb + (i)+offset_b)+k*lddb
 #define dC(id, i, j)  (dc[(id)]+(j)*lddc + (i))
 
-    char uplo_[2]  = {uplo, 0};
     magma_int_t i, id, ib, ii, kk, n1;
     float c_one = MAGMA_S_ONE;
 
     /* diagonal update */
-    for( i=0; i<n; i+=nb ) {
+    for( i=0; i < n; i += nb ) {
         id = ((i+offset)/nb)%num_gpus;
         kk = (i/(nb*num_gpus))%num_streams;
         magma_setdevice(id);
@@ -552,8 +556,8 @@ magma_ssyr2k_mgpu(
     }
 
     /* off-diagonal update */
-    if( lapackf77_lsame( uplo_, "U" ) ) {
-        for( i=nb; i<n; i+=nb ) {
+    if (uplo == MagmaUpper) {
+        for( i=nb; i < n; i += nb ) {
             id = ((i+offset)/nb)%num_gpus;
             kk = (i/(nb*num_gpus))%num_streams;
             magma_setdevice(id);
@@ -568,7 +572,7 @@ magma_ssyr2k_mgpu(
         }
     }
     else {
-        for( i=0; i<n-nb; i+=nb ) {
+        for( i=0; i < n-nb; i += nb ) {
             id = ((i+offset)/nb)%num_gpus;
             kk = (i/(nb*num_gpus))%num_streams;
             magma_setdevice(id);
@@ -588,8 +592,8 @@ magma_ssyr2k_mgpu(
         }
     }
 
-    if( lapackf77_lsame( uplo_, "U" ) ) {
-        for( i=nb; i<n; i+=nb ) {
+    if (uplo == MagmaUpper) {
+        for( i=nb; i < n; i += nb ) {
             id = ((i+offset)/nb)%num_gpus;
             kk = (i/(nb*num_gpus))%num_streams;
             magma_setdevice(id);
@@ -603,7 +607,7 @@ magma_ssyr2k_mgpu(
                         c_one, dC(id,  0, ii), lddc);
         }
     } else {
-        for( i=0; i<n-nb; i+=nb ) {
+        for( i=0; i < n-nb; i += nb ) {
             id = ((i+offset)/nb)%num_gpus;
             kk = (i/(nb*num_gpus))%num_streams;
             magma_setdevice(id);
@@ -623,9 +627,9 @@ magma_ssyr2k_mgpu(
         }
     }
 
-    for( id=0; id<num_gpus; id++ ) {
+    for( id=0; id < num_gpus; id++ ) {
         magma_setdevice(id);
-        for( kk=0; kk<num_streams; kk++ ) magma_queue_sync(stream[id][kk]);
+        for( kk=0; kk < num_streams; kk++ ) magma_queue_sync(stream[id][kk]);
         magmablasSetKernelStream(NULL);
     }
 }

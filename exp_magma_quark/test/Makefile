@@ -1,5 +1,5 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
@@ -11,7 +11,11 @@ include $(MAGMA_DIR)/Makefile.internal
 include ../make.exp.inc
 
 ZSRC := \
-     testing_dgetrf_async_gpu.cpp
+     testing_dgetrf_gpu_amc.cpp \
+     testing_dgetrf_gpu_amc_v2.cpp \
+	 testing_dgetrf_mgpu_amc.cpp \
+	 testing_dgetrf_mgpu_amc_v2.cpp \
+	 testing_dgetrf_mgpu_amc_v3.cpp \
 	 
 -include Makefile.local
 -include Makefile.src

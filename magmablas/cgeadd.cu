@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:44 2013
+       @generated from zgeadd.cu normal z -> c, Fri Apr 25 15:05:18 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -46,6 +46,45 @@ cgeadd_kernel(
 
 
 /* ===================================================================== */
+/**
+    Purpose
+    -------
+    ZGEADD adds two matrices, dB = alpha*dA + dB.
+    
+    Arguments
+    ---------
+    
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix dA.  M >= 0.
+    
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix dA.  N >= 0.
+    
+    @param[in]
+    alpha   COMPLEX REAL
+            The scalar alpha.
+            
+    @param[in]
+    dA      COMPLEX REAL array, dimension (LDDA,N)
+            The m by n matrix dA.
+    
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1,M).
+            
+    @param[in,out]
+    dB      COMPLEX REAL array, dimension (LDDB,N)
+            The m by n matrix dB.
+    
+    @param[in]
+    lddb    INTEGER
+            The leading dimension of the array dB.  LDDB >= max(1,M).
+    
+
+    @ingroup magma_caux2
+    ********************************************************************/
 extern "C" void
 magmablas_cgeadd(
     magma_int_t m, magma_int_t n,
@@ -53,37 +92,6 @@ magmablas_cgeadd(
     const magmaFloatComplex *dA, magma_int_t ldda,
     magmaFloatComplex       *dB, magma_int_t lddb )
 {
-/*
-    Purpose
-    =======
-    ZGEADD adds two matrices, dB = alpha*dA + dB.
-    
-    Arguments
-    =========
-    
-    M       (input) INTEGER
-            The number of rows of the matrix dA.  M >= 0.
-    
-    N       (input) INTEGER
-            The number of columns of the matrix dA.  N >= 0.
-    
-    ALPHA   (input) COMPLEX REAL
-            The scalar alpha.
-            
-    dA      (input) COMPLEX REAL array, dimension (LDDA,N)
-            The m by n matrix dA.
-    
-    LDDA    (input) INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,M).
-            
-    dB      (input/output) COMPLEX REAL array, dimension (LDDB,N)
-            The m by n matrix dB.
-    
-    LDDB    (input) INTEGER
-            The leading dimension of the array dB.  LDDB >= max(1,M).
-    
-    =====================================================================   */
-
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;

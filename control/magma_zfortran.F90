@@ -194,6 +194,22 @@ subroutine magmaf_zgetrf( m, n, A, lda, ipiv, info )
     integer          :: info
 end subroutine magmaf_zgetrf
 
+subroutine magmaf_zlatrsd( uplo, trans, diag, normin, n, A, lda, lambda, x, scale, cnorm,  &
+        info )
+    character        :: uplo
+    character        :: trans
+    character        :: diag
+    character        :: normin
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: lambda
+    complex*16       :: x(*)
+    double precision :: scale(*)
+    double precision :: cnorm(*)
+    integer          :: info
+end subroutine magmaf_zlatrsd
+
 subroutine magmaf_zposv( uplo, n, nrhs, A, lda, B, ldb, info )
     character        :: uplo
     integer          :: n
@@ -228,6 +244,46 @@ subroutine magmaf_zlauum( uplo, n, A, lda, info )
     integer          :: lda
     integer          :: info
 end subroutine magmaf_zlauum
+
+subroutine magmaf_ztrevc3( side, howmny, select, n, T, ldt, VL, ldvl, VR, ldvr, mm, mout,  &
+        work, lwork, rwork, info )
+    character        :: side
+    character        :: howmny
+    integer          :: select(*)
+    integer          :: n
+    complex*16       :: T(*)
+    integer          :: ldt
+    complex*16       :: VL(*)
+    integer          :: ldvl
+    complex*16       :: VR(*)
+    integer          :: ldvr
+    integer          :: mm
+    integer          :: mout(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: info
+end subroutine magmaf_ztrevc3
+
+subroutine magmaf_ztrevc3_mt( side, howmny, select, n, T, ldt, VL, ldvl, VR, ldvr, mm,  &
+        mout, work, lwork, rwork, info )
+    character        :: side
+    character        :: howmny
+    integer          :: select(*)
+    integer          :: n
+    complex*16       :: T(*)
+    integer          :: ldt
+    complex*16       :: VL(*)
+    integer          :: ldvl
+    complex*16       :: VR(*)
+    integer          :: ldvr
+    integer          :: mm
+    integer          :: mout(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: info
+end subroutine magmaf_ztrevc3_mt
 
 subroutine magmaf_ztrtri( uplo, diag, n, A, lda, info )
     character        :: uplo
@@ -364,6 +420,25 @@ subroutine magmaf_zgeqp3( m, n, a, lda, jpvt, tau, work, lwork, rwork, info )
     double precision :: rwork(*)
     integer          :: info
 end subroutine magmaf_zgeqp3
+
+subroutine magmaf_zgesdd( jobz, m, n, A, lda, s, U, ldu, VT, ldvt, work, lwork, rwork,  &
+        iwork, info )
+    character        :: jobz
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: s(*)
+    complex*16       :: U(*)
+    integer          :: ldu
+    complex*16       :: VT(*)
+    integer          :: ldvt
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: iwork(*)
+    integer          :: info
+end subroutine magmaf_zgesdd
 
 subroutine magmaf_zgesvd( jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, work, lwork,  &
         rwork, info )
@@ -948,6 +1023,17 @@ subroutine magmaf_zhegvdx_2stage_m( nrgpu, itype, jobz, range, uplo, n, a, lda, 
     integer          :: info
 end subroutine magmaf_zhegvdx_2stage_m
 
+subroutine magmaf_zgegqr_gpu( ikind, m, n, dA, ldda, dwork, work, info )
+    integer          :: ikind
+    integer          :: m
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    magma_devptr_t   :: dwork
+    complex*16       :: work(*)
+    integer          :: info
+end subroutine magmaf_zgegqr_gpu
+
 subroutine magmaf_zgels_gpu( trans, m, n, nrhs, dA, ldda, dB, lddb, hwork, lwork, info )
     character        :: trans
     integer          :: m
@@ -1097,9 +1183,9 @@ subroutine magmaf_zgeqrs3_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hwork, l
     integer          :: info
 end subroutine magmaf_zgeqrs3_gpu
 
-subroutine magmaf_zgessm_gpu( storev, m, n, k, ib, ipiv, dL1, lddl1, dL, lddl, dA, ldda,  &
+subroutine magmaf_zgessm_gpu( order, m, n, k, ib, ipiv, dL1, lddl1, dL, lddl, dA, ldda,  &
         info )
-    character        :: storev
+    character        :: order
     integer          :: m
     integer          :: n
     integer          :: k
@@ -1378,9 +1464,8 @@ subroutine magmaf_zhetrd2_gpu( uplo, n, da, ldda, d, e, tau, wa, ldwa, work, lwo
     integer          :: info
 end subroutine magmaf_zhetrd2_gpu
 
-subroutine magmaf_zhetrd_hb2st( threads, uplo, n, nb, Vblksiz, A, lda, D, E, V, ldv, TAU,  &
-        compT, T, ldt )
-    integer          :: threads
+subroutine magmaf_zhetrd_hb2st( uplo, n, nb, Vblksiz, A, lda, D, E, V, ldv, TAU, compT,  &
+        T, ldt )
     character        :: uplo
     integer          :: n
     integer          :: nb
@@ -1397,8 +1482,7 @@ subroutine magmaf_zhetrd_hb2st( threads, uplo, n, nb, Vblksiz, A, lda, D, E, V, 
     integer          :: ldt
 end subroutine magmaf_zhetrd_hb2st
 
-subroutine magmaf_zhetrd_he2hb( uplo, n, NB, a, lda, tau, work, lwork, dT, threads, info  &
-        )
+subroutine magmaf_zhetrd_he2hb( uplo, n, NB, a, lda, tau, work, lwork, dT, info )
     character        :: uplo
     integer          :: n
     integer          :: NB
@@ -1408,7 +1492,6 @@ subroutine magmaf_zhetrd_he2hb( uplo, n, NB, a, lda, tau, work, lwork, dT, threa
     complex*16       :: work(*)
     integer          :: lwork
     magma_devptr_t   :: dT
-    integer          :: threads
     integer          :: info
 end subroutine magmaf_zhetrd_he2hb
 
@@ -1423,9 +1506,9 @@ subroutine magmaf_zpotrs_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info )
     integer          :: info
 end subroutine magmaf_zpotrs_gpu
 
-subroutine magmaf_zssssm_gpu( storev, m1, n1, m2, n2, k, ib, dA1, ldda1, dA2, ldda2, dL1,  &
+subroutine magmaf_zssssm_gpu( order, m1, n1, m2, n2, k, ib, dA1, ldda1, dA2, ldda2, dL1,  &
         lddl1, dL2, lddl2, IPIV, info )
-    character        :: storev
+    character        :: order
     integer          :: m1
     integer          :: n1
     integer          :: m2

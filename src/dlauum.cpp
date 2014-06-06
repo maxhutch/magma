@@ -1,79 +1,78 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zlauum.cpp normal z -> d, Fri Apr 25 15:05:36 2014
 
 */
 #include "common_magma.h"
 
-#define A(i, j)  (a   +(j)*lda  + (i))
-#define dA(i, j) (work+(j)*ldda + (i))
-
-
-extern "C" magma_int_t
-magma_dlauum(char uplo, magma_int_t n,
-         double *a, magma_int_t lda, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DLAUUM computes the product U * U' or L' * L, where the triangular
     factor U or L is stored in the upper or lower triangular part of
     the array A.
 
-    If UPLO = 'U' or 'u' then the upper triangle of the result is stored,
+    If UPLO = MagmaUpper then the upper triangle of the result is stored,
     overwriting the factor U in A.
-    If UPLO = 'L' or 'l' then the lower triangle of the result is stored,
+    If UPLO = MagmaLower then the lower triangle of the result is stored,
     overwriting the factor L in A.
     This is the blocked form of the algorithm, calling Level 3 BLAS.
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER*1
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
             Specifies whether the triangular factor stored in the array A
             is upper or lower triangular:
-            = 'U':  Upper triangular
-            = 'L':  Lower triangular
+      -     = MagmaUpper:  Upper triangular
+      -     = MagmaLower:  Lower triangular
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the triangular factor U or L.  N >= 0.
 
-    A       (input/output) COPLEX_16 array, dimension (LDA,N)
+    @param[in,out]
+    A       COPLEX_16 array, dimension (LDA,N)
             On entry, the triangular factor U or L.
-            On exit, if UPLO = 'U', the upper triangle of A is
+            On exit, if UPLO = MagmaUpper, the upper triangle of A is
             overwritten with the upper triangle of the product U * U';
-            if UPLO = 'L', the lower triangle of A is overwritten with
+            if UPLO = MagmaLower, the lower triangle of A is overwritten with
             the lower triangle of the product L' * L.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    INFO    (output) INTEGER
-            = 0: successful exit
-            < 0: if INFO = -k, the k-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0: successful exit
+      -     < 0: if INFO = -k, the k-th argument had an illegal value
 
-    ===================================================================== */
+    @ingroup magma_dposv_aux
+    ***************************************************************************/
+extern "C" magma_int_t
+magma_dlauum(magma_uplo_t uplo, magma_int_t n,
+         double *A, magma_int_t lda, magma_int_t *info)
+{
+#define A(i, j)  (A  + (j)*lda  + (i))
+#define dA(i, j) (dA + (j)*ldda + (i))
 
     /* Local variables */
-    char uplo_[2] = {uplo, 0};
+    const char* uplo_ = lapack_uplo_const( uplo );
     magma_int_t     ldda, nb;
     magma_int_t i, ib;
-    double    c_one = MAGMA_D_ONE;
+    double c_one = MAGMA_D_ONE;
     double             d_one = MAGMA_D_ONE;
-    double    *work;
-    int upper = lapackf77_lsame(uplo_, "U");
+    double    *dA;
+    int upper = (uplo == MagmaUpper);
 
     *info = 0;
-    if ((! upper) && (! lapackf77_lsame(uplo_, "L")))
+    if (! upper && uplo != MagmaLower)
         *info = -1;
     else if (n < 0)
         *info = -2;
@@ -91,7 +90,7 @@ magma_dlauum(char uplo, magma_int_t n,
 
     ldda = ((n+31)/32)*32;
 
-    if (MAGMA_SUCCESS != magma_dmalloc( &work, (n)*ldda )) {
+    if (MAGMA_SUCCESS != magma_dmalloc( &dA, (n)*ldda )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -103,14 +102,11 @@ magma_dlauum(char uplo, magma_int_t n,
     nb = magma_get_dpotrf_nb(n);
 
     if (nb <= 1 || nb >= n)
-        lapackf77_dlauum(uplo_, &n, a, &lda, info);
-    else
-    {
-        if (upper)
-        {
+        lapackf77_dlauum(uplo_, &n, A, &lda, info);
+    else {
+        if (upper) {
             /* Compute the product U * U'. */
-            for (i=0; i<n; i=i+nb)
-            {
+            for (i=0; i < n; i += nb) {
                 ib=min(nb,n-i);
 
                 magma_dsetmatrix_async( ib, ib,
@@ -134,8 +130,7 @@ magma_dlauum(char uplo, magma_int_t n,
                                         A(i, i),  lda,
                                         dA(i, i), ldda, stream[0] );
 
-                if (i+ib < n)
-                {
+                if (i+ib < n) {
                     magma_dgemm( MagmaNoTrans, MagmaTrans,
                                  i, ib, (n-i-ib), c_one, dA(0,i+ib),
                                  ldda, dA(i, i+ib),ldda, c_one,
@@ -153,11 +148,9 @@ magma_dlauum(char uplo, magma_int_t n,
                                   A(0, i),  lda );
             }
         }
-        else
-        {
+        else {
             /* Compute the product L' * L. */
-            for(i=0; i<n; i=i+nb)
-            {
+            for (i=0; i < n; i += nb) {
                 ib=min(nb,n-i);
                 magma_dsetmatrix_async( ib, ib,
                                         A(i,i),   lda,
@@ -181,8 +174,7 @@ magma_dlauum(char uplo, magma_int_t n,
                                         A(i, i),  lda,
                                         dA(i, i), ldda, stream[0] );
 
-                if (i+ib < n)
-                {
+                if (i+ib < n) {
                     magma_dgemm(MagmaTrans, MagmaNoTrans,
                                     ib, i, (n-i-ib), c_one, dA( i+ib,i),
                                     ldda, dA(i+ib, 0),ldda, c_one,
@@ -203,7 +195,7 @@ magma_dlauum(char uplo, magma_int_t n,
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
 
-    magma_free( work );
+    magma_free( dA );
 
     return *info;
 }

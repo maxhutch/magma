@@ -1,32 +1,20 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zunghr_m.cpp normal z -> s, Fri Apr 25 15:05:51 2014
 
 */
 #include "common_magma.h"
 
 #define PRECISION_s
 
-extern "C" magma_int_t
-magma_sorghr_m( magma_int_t n, magma_int_t ilo, magma_int_t ihi,
-                float *A, magma_int_t lda,
-                float *tau,
-                float *T, magma_int_t nb,
-                magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SORGHR generates a REAL unitary matrix Q which is defined as the
     product of IHI-ILO elementary reflectors of order N, as returned by
     SGEHRD:
@@ -34,44 +22,61 @@ magma_sorghr_m( magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     Q = H(ilo) H(ilo+1) . . . H(ihi-1).
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix Q. N >= 0.
 
-    ILO     (input) INTEGER
-    IHI     (input) INTEGER
+    @param[in]
+    ilo     INTEGER
+    @param[in]
+    ihi     INTEGER
             ILO and IHI must have the same values as in the previous call
             of SGEHRD. Q is equal to the unit matrix except in the
             submatrix Q(ilo+1:ihi,ilo+1:ihi).
             1 <= ILO <= IHI <= N, if N > 0; ILO=1 and IHI=0, if N=0.
 
-    A       (input/output) REAL array, dimension (LDA,N)
+    @param[in,out]
+    A       REAL array, dimension (LDA,N)
             On entry, the vectors which define the elementary reflectors,
             as returned by SGEHRD.
             On exit, the N-by-N unitary matrix Q.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A. LDA >= max(1,N).
 
-    TAU     (input) REAL array, dimension (N-1)
+    @param[in]
+    tau     REAL array, dimension (N-1)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by SGEHRD.
 
-    T       (input) REAL array on the GPU device.
+    @param[in]
+    T       REAL array on the GPU device.
             T contains the T matrices used in blocking the elementary
             reflectors H(i), e.g., this can be the 9th argument of
             magma_sgehrd.
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             This is the block size used in SGEHRD, and correspondingly
             the size of the T matrices, used in the factorization, and
             stored in T.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    ===================================================================== */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
+    @ingroup magma_sgeev_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_sorghr_m( magma_int_t n, magma_int_t ilo, magma_int_t ihi,
+                float *A, magma_int_t lda,
+                float *tau,
+                float *T, magma_int_t nb,
+                magma_int_t *info)
+{
     #define A(i,j) (A + (i) + (j)*lda)
 
     magma_int_t i, j, nh, iinfo;

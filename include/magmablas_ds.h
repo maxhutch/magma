@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:17 2013
+       @generated from magmablas_zc.h mixed zc -> ds, Fri Apr 25 15:05:12 2014
 */
 
 #ifndef MAGMABLAS_DS_H
@@ -47,7 +47,7 @@ void magmablas_slag2d(
     magma_int_t *info );
 
 void magmablas_dlat2s(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     const double *A,  magma_int_t lda,
           float  *SA, magma_int_t ldsa,
     magma_int_t *info );

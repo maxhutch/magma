@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 */
 
 #include "common_magma.h"
@@ -14,7 +14,7 @@
 // Returns version of MAGMA, as defined by
 // MAGMA_VERSION_MAJOR, MAGMA_VERSION_MINOR, MAGMA_VERSION_MICRO constants.
 extern "C"
-void magma_version( int* major, int* minor, int* micro )
+void magma_version( magma_int_t* major, magma_int_t* minor, magma_int_t* micro )
 {
     if ( major != NULL && minor != NULL && micro != NULL ) {
         *major = MAGMA_VERSION_MAJOR;
@@ -38,7 +38,7 @@ magma_int_t magma_is_devptr( const void* A )
     cudaError_t err;
     cudaDeviceProp prop;
     cudaPointerAttributes attr;
-    int dev;
+    int dev;  // must be int
     err = cudaGetDevice( &dev );
     if ( ! err ) {
         err = cudaGetDeviceProperties( &prop, dev );
@@ -72,22 +72,22 @@ extern "C"
 magma_int_t magma_num_gpus( void )
 {
     const char *ngpu_str = getenv("MAGMA_NUM_GPUS");
-    int ngpu = 1;
+    magma_int_t ngpu = 1;
     if ( ngpu_str != NULL ) {
         char* endptr;
         ngpu = strtol( ngpu_str, &endptr, 10 );
-        int ndevices;
+        int ndevices;  // must be int
         cudaGetDeviceCount( &ndevices );
         // if *endptr == '\0' then entire string was valid number (or empty)
         if ( ngpu < 1 || *endptr != '\0' ) {
             ngpu = 1;
-            fprintf( stderr, "$MAGMA_NUM_GPUS=%s is an invalid number; using %d GPU.\n",
-                     ngpu_str, ngpu );
+            fprintf( stderr, "$MAGMA_NUM_GPUS='%s' is an invalid number; using %d GPU.\n",
+                     ngpu_str, (int) ngpu );
         }
         else if ( ngpu > MagmaMaxGPUs || ngpu > ndevices ) {
             ngpu = min( ndevices, MagmaMaxGPUs );
-            fprintf( stderr, "$MAGMA_NUM_GPUS=%s exceeds MagmaMaxGPUs=%d or available GPUs=%d; using %d GPUs.\n",
-                     ngpu_str, MagmaMaxGPUs, ndevices, ngpu );
+            fprintf( stderr, "$MAGMA_NUM_GPUS='%s' exceeds MagmaMaxGPUs=%d or available GPUs=%d; using %d GPUs.\n",
+                     ngpu_str, MagmaMaxGPUs, ndevices, (int) ngpu );
         }
         assert( 1 <= ngpu && ngpu <= ndevices );
     }
@@ -106,7 +106,7 @@ extern "C"
 void swp2pswp( magma_trans_t trans, magma_int_t n, magma_int_t *ipiv, magma_int_t *newipiv)
 {
   magma_int_t i, newind, ind;
-  magma_int_t    notran = (trans == 'N' || trans == 'n');
+  magma_int_t    notran = (trans == MagmaNoTrans);
 
   for(i=0; i<n; i++)
     newipiv[i] = -1;

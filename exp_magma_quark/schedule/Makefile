@@ -1,5 +1,5 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
@@ -10,17 +10,13 @@ MAGMA_DIR = ../..
 include $(MAGMA_DIR)/Makefile.internal
 include ../make.exp.inc
 
-ZSRC := \
-	task_core_dkernel.cpp \
-	task_magma_dkernel.cpp \
-	schedule_insert_d.cpp
+ZSRC := schedule.cpp
 	
 -include Makefile.local
 -include Makefile.src
 
-ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC) \
-	schedule.cpp
-	
+ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
+		
 ALLOBJ := $(ALLSRC:.cpp=.o)
 ALLOBJ := $(ALLOBJ:.f90=.o)
 ALLOBJ := $(ALLOBJ:.F90=.o)

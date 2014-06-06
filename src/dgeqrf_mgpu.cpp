@@ -1,41 +1,33 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zgeqrf_mgpu.cpp normal z -> d, Fri Apr 25 15:05:43 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
-                    double **dlA, magma_int_t ldda,
-                    double *tau,
-                    magma_int_t *info )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DGEQRF2_MGPU computes a QR factorization of a real M-by-N matrix A:
     A = Q * R. This is a GPU interface of the routine.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    dA      (input/output) DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    @param[in,out]
+    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the M-by-N matrix dA.
             On exit, the elements on and above the diagonal of the array
             contain the min(M,N)-by-N upper trapezoidal matrix R (R is
@@ -44,22 +36,25 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
             product of min(m,n) elementary reflectors (see Further
             Details).
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
             To benefit from coalescent memory accesses LDDA must be
-            dividable by 16.
+            divisible by 16.
 
-    TAU     (output) DOUBLE_PRECISION array, dimension (min(M,N))
+    @param[out]
+    tau     DOUBLE_PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of elementary reflectors
 
        Q = H(1) H(2) . . . H(k), where k = min(m,n).
@@ -71,8 +66,15 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
     where tau is a real scalar, and v is a real vector with
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
-    =====================================================================    */
 
+    @ingroup magma_dgeqrf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
+                    double **dlA, magma_int_t ldda,
+                    double *tau,
+                    magma_int_t *info )
+{
     #define dlA(dev, i, j)   (dlA[dev] + (i) + (j)*(ldda))
     #define hpanel(i)        (hpanel + (i))
 
@@ -163,7 +165,7 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
             /* Set the GPU number that holds the current panel */
             panel_dev = (i/nb) % num_gpus;
             
-            /* Set the local index where the current panel is (j==i) */
+            /* Set the local index where the current panel is (j == i) */
             i_local = i/(nb*num_gpus)*nb;
             
             ib = min(min_mn-i, nb);

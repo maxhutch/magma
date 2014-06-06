@@ -1,12 +1,13 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      December 2013
+#      @date April 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
+-include $(MAGMA_DIR)/make.icl
 
 #
 # Set default values if they are not set in make.inc
@@ -64,16 +65,17 @@ OPTS   += -DHAVE_CUBLAS -DMIN_CUDA_ARCH=$(MIN_ARCH)
 LIBEXT = $(LIBDIR) $(LIB)
 
 # Use Plasma to compile zgetfl and ztstrf
-PLASMA = $(shell pkg-config --libs plasma 2> /dev/null )
-ifeq (1, $(words $(findstring plasma, $(PLASMA))))
+PLASMA = $(shell pkg-config --libs coreblas 2> /dev/null )
+ifeq (1, $(words $(findstring coreblas, $(PLASMA))))
     OPTS    := $(OPTS) -DMAGMA_WITH_PLASMA
-    INC     := $(INC) $(shell pkg-config --cflags-only-I plasma)
-    LIBEXT  := $(LIBEXT) $(shell pkg-config --libs plasma)
+    INC     := $(INC) $(shell pkg-config --cflags-only-I coreblas)
+    LIBEXT  := $(LIBEXT) $(shell pkg-config --libs coreblas)
     require := plasma
 endif
 
-# INC is all external include directories (CUDA, MKL, etc.)
-# INC_MAGMA adds local magma directories needed to compile magma
+# INC is all external include directories (CUDA, MKL, etc.).
+# It is used for external programs that link with MAGMA, e.g., via pkgconfig.
+# INC_MAGMA adds internal magma directories needed to compile magma itself.
 INC_MAGMA = $(INC) -I$(MAGMA_DIR)/include -I$(MAGMA_DIR)/control
 
 # Define the pointer size for fortran compilation
@@ -86,6 +88,7 @@ PTROPT  = -Dmagma_devptr_t="integer(kind=$(PTRSIZE))"
 $(PTREXEC): $(PTROBJ)
 	$(CC) $(LDOPTS) -o $@ $<
 
+# Add to F90 (FOPTS), not needed in F77OPTS
 FOPTS += $(PTROPT)
 
 #
@@ -99,6 +102,9 @@ FOPTS += $(PTROPT)
 %.i: %.c
 	$(CC) $(OPTS) $(INC_MAGMA) -E $< -o $@
 
+%.i: %.cu
+	$(NVCC) $(NVOPTS) $(INC_MAGMA) -E $< -o $@
+
 # force headers to pre-process as C++
 %.i: %.h
 	$(CXX) $(OPTS) $(INC_MAGMA) -E $< -o $@
@@ -109,7 +115,7 @@ FOPTS += $(PTROPT)
 %.o: %.c
 	$(CC) $(OPTS) $(INC_MAGMA) -c $< -o $@
 
-%.cu_o: %.cu
+%.o: %.cu
 	$(NVCC) $(NVOPTS) $(INC_MAGMA) -c $< -o $@
 
 %.o: %.f90  $(PTREXEC)
@@ -118,7 +124,7 @@ FOPTS += $(PTROPT)
 %.o: %.F90  $(PTREXEC)
 	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@
 
-%.o: %.f    $(PTREXEC)
+%.o: %.f
 	$(FORT) $(F77OPTS) $(INC_MAGMA) -c $< -o $@
 
 -include $(MAGMA_DIR)/Makefile.gen

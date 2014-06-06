@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
        
        @author Stan Tomov
        @author Mark Gates
@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 // ==== Definition of blocking sizes for Nvidia cards
+#ifdef HAVE_CUBLAS
 
 // Optimal block sizes vary with GPU and, to lesser extent, CPU.
 // Kepler tuning was on K20c   705 MHz with SandyBridge 2.6 GHz host (bunsen).
@@ -382,10 +383,6 @@ magma_int_t magma_get_ssytrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
@@ -397,15 +394,9 @@ magma_int_t magma_get_dsytrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //return 64;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
-        //return 64;
     }
 }
 
@@ -414,10 +405,6 @@ magma_int_t magma_get_chetrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
@@ -429,15 +416,9 @@ magma_int_t magma_get_zhetrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //return 64;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
-        //return 64;
     }
 }
 
@@ -449,10 +430,6 @@ magma_int_t magma_get_sgebrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
@@ -464,10 +441,6 @@ magma_int_t magma_get_dgebrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
@@ -479,10 +452,6 @@ magma_int_t magma_get_cgebrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
@@ -494,10 +463,6 @@ magma_int_t magma_get_zgebrd_nb( magma_int_t /*m*/ )
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
-        //if (m <  1024)
-        //    return 64;
-        //else
-        //    return 64;
     }
     else {                     // 1.x
         return 32;
@@ -947,6 +912,8 @@ magma_int_t magma_get_zbulge_nb_mgpu( magma_int_t /*m*/ )
         return 64;
     }
 }
+
+#endif  // HAVE_CUBLAS
 
 #ifdef __cplusplus
 } // extern "C"

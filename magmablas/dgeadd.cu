@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:44 2013
+       @generated from zgeadd.cu normal z -> d, Fri Apr 25 15:05:19 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -46,6 +46,45 @@ dgeadd_kernel(
 
 
 /* ===================================================================== */
+/**
+    Purpose
+    -------
+    ZGEADD adds two matrices, dB = alpha*dA + dB.
+    
+    Arguments
+    ---------
+    
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix dA.  M >= 0.
+    
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix dA.  N >= 0.
+    
+    @param[in]
+    alpha   COMPLEX DOUBLE PRECISION
+            The scalar alpha.
+            
+    @param[in]
+    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+            The m by n matrix dA.
+    
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1,M).
+            
+    @param[in,out]
+    dB      COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+            The m by n matrix dB.
+    
+    @param[in]
+    lddb    INTEGER
+            The leading dimension of the array dB.  LDDB >= max(1,M).
+    
+
+    @ingroup magma_daux2
+    ********************************************************************/
 extern "C" void
 magmablas_dgeadd(
     magma_int_t m, magma_int_t n,
@@ -53,37 +92,6 @@ magmablas_dgeadd(
     const double *dA, magma_int_t ldda,
     double       *dB, magma_int_t lddb )
 {
-/*
-    Purpose
-    =======
-    ZGEADD adds two matrices, dB = alpha*dA + dB.
-    
-    Arguments
-    =========
-    
-    M       (input) INTEGER
-            The number of rows of the matrix dA.  M >= 0.
-    
-    N       (input) INTEGER
-            The number of columns of the matrix dA.  N >= 0.
-    
-    ALPHA   (input) COMPLEX DOUBLE PRECISION
-            The scalar alpha.
-            
-    dA      (input) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
-            The m by n matrix dA.
-    
-    LDDA    (input) INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,M).
-            
-    dB      (input/output) COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
-            The m by n matrix dB.
-    
-    LDDB    (input) INTEGER
-            The leading dimension of the array dB.  LDDB >= max(1,M).
-    
-    =====================================================================   */
-
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;

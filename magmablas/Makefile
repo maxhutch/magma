@@ -1,16 +1,17 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      December 2013
+#      @date April 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = magmablas
 MAGMA_DIR = ..
-include ../Makefile.internal
+include $(MAGMA_DIR)/Makefile.internal
 
-ZHDR  = commonblas_z.h
+ZHDR := \
+	commonblas_z.h
 
 # alphabetic order by base name (ignoring precision)
 ZSRC := \
@@ -51,8 +52,9 @@ ZSRC := \
 	ztranspose_inplace.cu	\
 	zgetmatrix_transpose.cu	\
 	zsetmatrix_transpose.cu	\
-	dtrsm.cu		\
-	dtrsm_work.cu		\
+	ztrsm.cu		\
+	ztrsm_work.cu		\
+	ztrtri_kernel.cu	\
 
 # Tesla-specific (CUDA arch 1.x) codes
 ZSRC += \
@@ -111,7 +113,7 @@ ALLHDR := $(ZHDR) $(CHDR) $(DHDR) $(SHDR) \
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 
-ALLOBJ := $(ALLSRC:.cu=.cu_o) 
+ALLOBJ := $(ALLSRC:.cu=.o) 
 ALLOBJ := $(ALLOBJ:.cpp=.o)
 
 .PHONY: all clean cleanall
@@ -134,7 +136,7 @@ cleanall: clean
 	rm -f $(LIBMAGMA)
 
 # extra include dependencies
-zgemm_fermi.cu_o: zgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h
-cgemm_fermi.cu_o: cgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h
-dgemm_fermi.cu_o: dgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h
-sgemm_fermi.cu_o: sgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h
+zgemm_fermi.o: zgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h
+cgemm_fermi.o: cgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h
+dgemm_fermi.o: dgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h
+sgemm_fermi.o: sgemm_fermi_kernels.h gemm_stencil.cu gemm_stencil_defs.h

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from zsymmetrize.cu normal z -> c, Fri Apr 25 15:05:22 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -59,35 +59,40 @@ csymmetrize_upper( int m, magmaFloatComplex *dA, int ldda )
 }
 
 
-extern "C" void
-magmablas_csymmetrize( char uplo, magma_int_t m, magmaFloatComplex *dA, magma_int_t ldda )
-{
-/*
+/**
     Purpose
-    =======
+    -------
     
     CSYMMETRIZE copies lower triangle to upper triangle, or vice-versa,
     to make dA a general representation of a symmetric matrix.
     
     Arguments
-    =========
+    ---------
     
-    UPLO    (input) CHARACTER*1
+    @param[in]
+    uplo    magma_uplo_t
             Specifies the part of the matrix dA that is valid on input.
-            = 'U':      Upper triangular part
-            = 'L':      Lower triangular part
+      -     = MagmaUpper:      Upper triangular part
+      -     = MagmaLower:      Lower triangular part
     
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix dA.  M >= 0.
     
-    dA      (input/output) COMPLEX REAL array, dimension (LDDA,N)
+    @param[in,out]
+    dA      COMPLEX REAL array, dimension (LDDA,N)
             The m by m matrix dA.
     
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
-    =====================================================================   */
 
+    @ingroup magma_caux2
+    ********************************************************************/
+extern "C" void
+magmablas_csymmetrize( magma_uplo_t uplo, magma_int_t m, magmaFloatComplex *dA, magma_int_t ldda )
+{
     //printf( "m %d, grid %d, threads %d\n", m, grid.x, threads.x );
     if ( m == 0 )
         return;
@@ -98,10 +103,10 @@ magmablas_csymmetrize( char uplo, magma_int_t m, magmaFloatComplex *dA, magma_in
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB );
     
-    if ( (uplo == 'U') || (uplo == 'u') ) {
+    if ( uplo == MagmaUpper ) {
         csymmetrize_upper<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
     }
-    else if ( (uplo == 'L') || (uplo == 'l') ) {
+    else if ( uplo == MagmaLower ) {
         csymmetrize_lower<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
     }
     else {

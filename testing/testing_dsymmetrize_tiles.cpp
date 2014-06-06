@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:56 2013
+       @generated from testing_zsymmetrize_tiles.cpp normal z -> d, Fri Apr 25 15:06:08 2014
 
 */
 
@@ -47,9 +47,9 @@ int main( int argc, char** argv)
     printf("nb=%d, mstride=%d, nstride=%d\n", (int) nb, (int) mstride, (int) nstride );
     printf("    N ntile   CPU GByte/s (sec)   GPU GByte/s (sec)   check\n");
     printf("===========================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = N;
             ldda   = ((N+31)/32)*32;
             size   = lda*N;
@@ -123,6 +123,7 @@ int main( int argc, char** argv)
             TESTING_FREE_CPU( h_R );
             
             TESTING_FREE_DEV( d_A );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

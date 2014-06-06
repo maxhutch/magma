@@ -6,7 +6,7 @@
  *
  * @version 1.0.0
  * @author Mathieu Faverge
- * @date 2010-12-20
+ * @date April 2014
  *
  **/
 /*
@@ -67,7 +67,7 @@
 #define FADDS_TRMM(side_, m_, n_) ( ( (side_) == MagmaLeft ) ? FADDS_TRMM_2((m_), (n_)) : FADDS_TRMM_2((n_), (m_)) )
 
 #define FMULS_TRSM FMULS_TRMM
-#define FADDS_TRSM FMULS_TRMM
+#define FADDS_TRSM FADDS_TRMM
 
 /*
  * Lapack

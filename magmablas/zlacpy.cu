@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -42,55 +42,63 @@ zlacpy_kernel(
 
 
 /* ===================================================================== */
-extern "C" void
-magmablas_zlacpy(
-    char uplo, magma_int_t m, magma_int_t n,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dB, magma_int_t lddb )
-{
-/*
-      Note
-    ========
+/**
+    Note
+    --------
     - UPLO Parameter is disabled
     - Do we want to provide a generic function to the user with all the options?
     
     Purpose
-    =======
+    -------
     ZLACPY copies all or part of a two-dimensional matrix dA to another
     matrix dB.
     
     Arguments
-    =========
+    ---------
     
-    UPLO    (input) CHARACTER*1
+    @param[in]
+    uplo    magma_uplo_t
             Specifies the part of the matrix dA to be copied to dB.
-            = 'U':      Upper triangular part
-            = 'L':      Lower triangular part
+      -     = MagmaUpper:      Upper triangular part
+      -     = MagmaLower:      Lower triangular part
             Otherwise:  All of the matrix dA
     
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix dA.  M >= 0.
     
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix dA.  N >= 0.
     
-    dA      (input) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    @param[in]
+    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
             The m by n matrix dA.
-            If UPLO = 'U', only the upper triangle or trapezoid is accessed;
-            if UPLO = 'L', only the lower triangle or trapezoid is accessed.
+            If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
+            if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
     
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
-    dB      (output) COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+    @param[out]
+    dB      COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
             The m by n matrix dB.
             On exit, dB = dA in the locations specified by UPLO.
     
-    LDDB    (input) INTEGER
+    @param[in]
+    lddb    INTEGER
             The leading dimension of the array dB.  LDDB >= max(1,M).
     
-    =====================================================================   */
 
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zlacpy(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    const magmaDoubleComplex *dA, magma_int_t ldda,
+    magmaDoubleComplex       *dB, magma_int_t lddb )
+{
     magma_int_t info = 0;
     if ( m < 0 )
         info = -2;
@@ -112,10 +120,10 @@ magmablas_zlacpy(
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB );
     
-    if ( (uplo == 'U') || (uplo == 'u') ) {
+    if ( uplo == MagmaUpper ) {
         fprintf(stderr, "lacpy upper is not implemented\n");
     }
-    else if ( (uplo == 'L') || (uplo == 'l') ) {
+    else if ( uplo == MagmaLower ) {
         fprintf(stderr, "lacpy lower is not implemented\n");
     }
     else {

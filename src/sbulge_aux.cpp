@@ -7,17 +7,18 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated s Tue Dec 17 13:18:36 2013
+ *     @generated from dbulge_aux.cpp normal d -> s, Fri Apr 25 15:05:48 2014
  *
  */
 
 #include "common_magma.h"
+#include "timer.h"
 #include "magma_sbulgeinc.h"
 
 //////////////////////////////////////////////////////////////
 //          SSTEDC          Divide and Conquer for tridiag
 //////////////////////////////////////////////////////////////
-extern "C" void  magma_sstedc_withZ(char JOBZ, magma_int_t N, float *D, float * E, float *Z, magma_int_t LDZ)
+extern "C" void  magma_sstedc_withZ(magma_vec_t JOBZ, magma_int_t N, float *D, float * E, float *Z, magma_int_t LDZ)
 {
     float *WORK;
     magma_int_t *IWORK;
@@ -26,34 +27,34 @@ extern "C" void  magma_sstedc_withZ(char JOBZ, magma_int_t N, float *D, float * 
     
     // use log() as log2() is not defined everywhere (e.g., Windows)
     const float log_2 = 0.6931471805599453;
-    if (JOBZ=='V') {
+    if (JOBZ == MagmaVec) {
         LWORK  = 1 + 3*N + 3*N*((magma_int_t)(log( (float)N )/log_2) + 1) + 4*N*N + 256*N;
         LIWORK = 6 + 6*N + 6*N*((magma_int_t)(log( (float)N )/log_2) + 1) + 256*N;
-    } else if (JOBZ=='I') {
+    } else if (JOBZ == MagmaIVec) {
         LWORK  = 2*N*N + 256*N + 1;
         LIWORK = 256*N;
-    } else if (JOBZ=='N') {
+    } else if (JOBZ == MagmaNoVec) {
         LWORK  = 256*N + 1;
         LIWORK = 256*N;
     } else {
-        printf("ERROR JOBZ %c\n",JOBZ);
+        printf("ERROR JOBZ %c\n", JOBZ);
         exit(-1);
     }
     
-    WORK  = (float*) malloc( LWORK*sizeof(float) );
-    IWORK = (magma_int_t*) malloc( LIWORK*sizeof(magma_int_t) );
+    magma_smalloc_cpu( &WORK,  LWORK  );
+    magma_imalloc_cpu( &IWORK, LIWORK );
     
-    lapackf77_sstedc(&JOBZ, &N, D, E, Z, &LDZ, WORK,&LWORK,IWORK,&LIWORK,&INFO);
+    lapackf77_sstedc( lapack_vec_const(JOBZ), &N, D, E, Z, &LDZ, WORK, &LWORK, IWORK, &LIWORK, &INFO);
     
-    if (INFO!=0) {
+    if (INFO != 0) {
         printf("=================================================\n");
         printf("SSTEDC ERROR OCCURED. HERE IS INFO %d \n ", (int) INFO);
         printf("=================================================\n");
-        //assert(INFO==0);
+        //assert(INFO == 0);
     }
     
     magma_free_cpu( IWORK );
-    magma_free_cpu( WORK );
+    magma_free_cpu( WORK  );
 }
 //////////////////////////////////////////////////////////////
 
@@ -71,8 +72,8 @@ extern "C" void  magma_sstedx_withZ(magma_int_t N, magma_int_t NE, float *D, flo
     LWORK  = N*N+4*N+1;
     LIWORK = 3 + 5*N;
     
-    WORK  = (float*) malloc( LWORK*sizeof(float) );
-    IWORK = (magma_int_t*) malloc( LIWORK*sizeof(magma_int_t) );
+    magma_smalloc_cpu( &WORK,  LWORK  );
+    magma_imalloc_cpu( &IWORK, LIWORK );
     
     if (MAGMA_SUCCESS != magma_smalloc( &dwork, 3*N*(N/2 + 1) )) {
         printf("=================================================\n");
@@ -82,32 +83,27 @@ extern "C" void  magma_sstedx_withZ(magma_int_t N, magma_int_t NE, float *D, flo
     }
     printf("using magma_sstedx\n");
 
-#ifdef ENABLE_TIMER
-    magma_timestr_t start, end;
-    start = get_current_time();
-#endif
+    magma_timer_t time=0;
+    timer_start( time );
 
-    char job = 'I';
+    //magma_range_t job = MagmaRangeI;
+    //if (NE == N)
+    //    job = MagmaRangeAll;
     
-    if (NE==N)
-        job = 'A';
+    magma_sstedx(MagmaRangeI, N, 0., 0., 1, NE, D, E, Z, LDZ, WORK, LWORK, IWORK, LIWORK, dwork, &INFO);
     
-    magma_sstedx('I', N, 0., 0., 1, NE, D, E, Z, LDZ, WORK,LWORK,IWORK,LIWORK,dwork,&INFO);
-    
-    if (INFO!=0) {
+    if (INFO != 0) {
         printf("=================================================\n");
         printf("SSTEDC ERROR OCCURED. HERE IS INFO %d \n ", (int) INFO);
         printf("=================================================\n");
-        //assert(INFO==0);
+        //assert(INFO == 0);
     }
 
-#ifdef ENABLE_TIMER
-    end = get_current_time();
-    printf("time sstedx = %6.2f\n", GetTimerValue(start,end)/1000.);
-#endif
+    timer_stop( time );
+    timer_printf( "time sstedx = %6.2f\n", time );
 
     magma_free( dwork );
     magma_free_cpu( IWORK );
-    magma_free_cpu( WORK );
+    magma_free_cpu( WORK  );
 }
 //////////////////////////////////////////////////////////////

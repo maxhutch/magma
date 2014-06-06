@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal c -> d s
 
@@ -721,11 +721,9 @@ void magmablas_csymv_tesla_L(
         (n, alpha, A, lda, x, incx, beta, y, incy, dwork);
 }
 
-/*************************************************************************
-
+/**
     Purpose
-    =======
-
+    -------
     magmablas_csymv_work performs the matrix-vector operation:
 
         y := alpha*A*x + beta*y,
@@ -753,12 +751,12 @@ void magmablas_csymv_tesla_L(
     As the overhead of allocating and free in device memory in magmablas_csymv would hurt performance.
     Our tests show that this penalty is about 10Gflop/s when matrix size is around 10000.
     
-*/
-
+    @ingroup magma_blas2
+    ********************************************************************/
 extern "C"
 magma_int_t
 magmablas_csymv_tesla_work(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex alpha,
     const magmaFloatComplex *A, magma_int_t lda,
     const magmaFloatComplex *x, magma_int_t incx,
@@ -766,14 +764,12 @@ magmablas_csymv_tesla_work(
     magmaFloatComplex *y, magma_int_t incy,
     magmaFloatComplex *dwork, magma_int_t lwork)
 {
-
-    char uplo_[2] = {uplo, 0};
-    int  upper    = lapackf77_lsame(uplo_, "U");
+    int upper = (uplo == MagmaUpper);
 
     /*
      * Test the input parameters.
      */
-    if ((! upper) && (! lapackf77_lsame(uplo_, "L"))) {
+    if ((! upper) && (uplo != MagmaLower)) {
         return -1;
     } else if ( n < 0 ) {
         return -2;
@@ -797,7 +793,7 @@ magmablas_csymv_tesla_work(
         #if defined(PRECISION_z) || defined(PRECISION_c)
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         #else
-        cublasCsymv(uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        cublasCsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {
@@ -810,7 +806,7 @@ magmablas_csymv_tesla_work(
 /*************************************************************************
 
     Purpose
-    =======
+    -------
 
     magmablas_csymv performs the matrix-vector operation:
 
@@ -820,98 +816,93 @@ magmablas_csymv_tesla_work(
     A is an n by n hermitian matrix.
 
     Arguments
-    ==========
+    ----------
 
-    UPLO    CHARACTER*1.
+    @param[in]
+    uplo    magma_uplo_t.
             On entry, UPLO specifies whether the upper or lower
             triangular part of the array A is to be referenced as
             follows:
+      -     = MagmaUpper:  Only the upper triangular part of A is to be referenced.
+      -     = MagmaLower:  Only the lower triangular part of A is to be referenced.
 
-                UPLO = 'U' or 'u'   Only the upper triangular part of A
-                                    is to be referenced.
-
-                UPLO = 'L' or 'l'   Only the lower triangular part of A
-                                    is to be referenced.
-
-            Unchanged on exit.
-
-    N       INTEGER.
+    @param[in]
+    n       INTEGER.
             On entry, N specifies the order of the matrix A.
             N must be at least zero.
-            Unchanged on exit.
 
-    ALPHA   COMPLEX*16.
+    @param[in]
+    alpha   COMPLEX*16.
             On entry, ALPHA specifies the scalar alpha.
-            Unchanged on exit.
 
+    @param[in]
     A       COMPLEX*16 array of DIMENSION ( LDA, n ).
-            Before entry with UPLO = 'U' or 'u', the leading n by n
+            Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the hermitian matrix and the strictly
             lower triangular part of A is not referenced.
-            Before entry with UPLO = 'L' or 'l', the leading n by n
+            Before entry with UPLO = MagmaLower, the leading n by n
             lower triangular part of the array A must contain the lower
             triangular part of the hermitian matrix and the strictly
             upper triangular part of A is not referenced.
             Note that the imaginary parts of the diagonal elements need
             not be set and are assumed to be zero.
-            Unchanged on exit.
 
-    LDA     INTEGER.
+    @param[in]
+    lda     INTEGER.
             On entry, LDA specifies the first dimension of A as declared
             in the calling (sub) program. LDA must be at least
             max( 1, n ).
-            Unchanged on exit.
             It is recommended that lda is multiple of 16. Otherwise
             performance would be deteriorated as the memory accesses
             would not be fully coalescent.
 
+    @param[in]
     X       COMPLEX*16 array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
-            Unchanged on exit.
 
+    @param[in]
     INCX    INTEGER.
             On entry, INCX specifies the increment for the elements of
             X. INCX must not be zero.
-            Unchanged on exit.
 
-    BETA    COMPLEX*16.
+    @param[in]
+    beta    COMPLEX*16.
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
-            Unchanged on exit.
 
+    @param[in,out]
     Y       COMPLEX*16 array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
             vector y.
 
+    @param[in]
     INCY    INTEGER.
             On entry, INCY specifies the increment for the elements of
             Y. INCY must not be zero.
-            Unchanged on exit.
 
 */
 
 extern "C"
 magma_int_t
 magmablas_csymv_tesla(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex alpha,
     const magmaFloatComplex *A, magma_int_t lda,
     const magmaFloatComplex *x, magma_int_t incx,
     magmaFloatComplex beta,
     magmaFloatComplex *y, magma_int_t incy)
 {
-    char uplo_[2] = {uplo, 0};
-    int  upper    = lapackf77_lsame(uplo_, "U");
+    int upper = (uplo == MagmaUpper);
 
     /*
      * Test the input parameters.
      */
-    if ((! upper) && (! lapackf77_lsame(uplo_, "L"))) {
+    if ((! upper) && (uplo != MagmaLower)) {
         return -1;
     } else if ( n < 0 ) {
         return -2;
@@ -935,7 +926,7 @@ magmablas_csymv_tesla(
         #if defined(PRECISION_z) || defined(PRECISION_c)
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         #else
-        cublasCsymv(uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        cublasCsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {

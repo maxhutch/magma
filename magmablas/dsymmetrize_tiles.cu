@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:45 2013
+       @generated from zsymmetrize_tiles.cu normal z -> d, Fri Apr 25 15:05:22 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -67,36 +67,54 @@ dsymmetrize_tiles_upper( int m, double *dA, int ldda, int mstride, int nstride )
 }
 
 
-extern "C" void
-magmablas_dsymmetrize_tiles( char uplo, magma_int_t m, double *dA, magma_int_t ldda,
-                             magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
-{
-/*
+/**
     Purpose
-    =======
+    -------
     
-    DSYMMETRIZE copies lower triangle to upper triangle, or vice-versa,
-    to make dA a general representation of a symmetric matrix.
+    DSYMMETRIZE_TILES copies lower triangle to upper triangle, or vice-versa,
+    to make some blocks of dA into general representations of a symmetric block.
+    This processes NTILE blocks, typically the diagonal blocks.
+    Each block is offset by mstride rows and nstride columns from the previous block.
     
     Arguments
-    =========
+    ---------
     
-    UPLO    (input) CHARACTER*1
+    @param[in]
+    uplo    magma_uplo_t
             Specifies the part of the matrix dA that is valid on input.
-            = 'U':      Upper triangular part
-            = 'L':      Lower triangular part
+      -     = MagmaUpper:      Upper triangular part
+      -     = MagmaLower:      Lower triangular part
     
-    M       (input) INTEGER
-            The number of rows of the matrix dA.  M >= 0.
+    @param[in]
+    m       INTEGER
+            The number of rows & columns of each square block of dA.  M >= 0.
     
-    dA      (input/output) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
-            The m by m matrix dA.
+    @param[in,out]
+    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+            The matrix dA. N = m + nstride*(ntile-1).
     
-    LDDA    (input) INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,M).
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1, m + mstride*(ntile-1)).
     
-    =====================================================================   */
+    @param[in]
+    ntile   INTEGER
+            Number of blocks to symmetrize.
+    
+    @param[in]
+    mstride INTEGER
+            Row offset from start of one block to start of next block.
+    
+    @param[in]
+    nstride INTEGER
+            Column offset from start of one block to start of next block.
 
+    @ingroup magma_daux2
+    ********************************************************************/
+extern "C" void
+magmablas_dsymmetrize_tiles( magma_uplo_t uplo, magma_int_t m, double *dA, magma_int_t ldda,
+                             magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
+{
     if ( m == 0 || ntile == 0 )
         return;
     
@@ -112,10 +130,10 @@ magmablas_dsymmetrize_tiles( char uplo, magma_int_t m, double *dA, magma_int_t l
     dim3 grid( ntile, (m + NB - 1)/NB );
     
     //printf( "m %d, grid %d x %d, threads %d\n", m, grid.x, grid.y, threads.x );
-    if ( (uplo == 'U') || (uplo == 'u') ) {
+    if ( uplo == MagmaUpper ) {
         dsymmetrize_tiles_upper<<< grid, threads, 0, magma_stream >>>( m, dA, ldda, mstride, nstride );
     }
-    else if ( (uplo == 'L') || (uplo == 'l') ) {
+    else if ( uplo == MagmaLower ) {
         dsymmetrize_tiles_lower<<< grid, threads, 0, magma_stream >>>( m, dA, ldda, mstride, nstride );
     }
     else {

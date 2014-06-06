@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:57 2013
+       @generated from testing_zgeqp3_gpu.cpp normal z -> c, Fri Apr 25 15:06:12 2014
 
 */
 
@@ -45,10 +45,10 @@ int main( int argc, char** argv)
     
     printf("  M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||A*P - Q*R||_F\n");
     printf("=====================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
@@ -119,7 +119,6 @@ int main( int argc, char** argv)
             #else
             magma_cgeqp3_gpu(M, N, d_A, lda, jpvt, dtau, d_work, lwork, &info);
             #endif
-            cudaDeviceSynchronize();
             gpu_time = magma_wtime() - gpu_time;
             
             /* copy outputs to cpu */
@@ -170,6 +169,10 @@ int main( int argc, char** argv)
             TESTING_FREE_DEV( dtau   );
             TESTING_FREE_DEV( d_A    );
             TESTING_FREE_DEV( d_work );
+            fflush( stdout );
+        }
+        if ( opts.niter > 1 ) {
+            printf( "\n" );
         }
     }
     

@@ -1,30 +1,18 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zgetri_gpu.cpp normal z -> c, Fri Apr 25 15:05:36 2014
 
 */
 #include "common_magma.h"
 
-#define PRECISION_c
-
-extern "C" magma_int_t
-magma_cgetri_gpu( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
-                  magma_int_t *ipiv, magmaFloatComplex *dwork, magma_int_t lwork,
-                  magma_int_t *info )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CGETRI computes the inverse of a matrix using the LU factorization
     computed by CGETRF. This method inverts U and then computes inv(A) by
     solving the system inv(A)*L = inv(U) for inv(A).
@@ -35,39 +23,51 @@ magma_cgetri_gpu( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
     instances should an explicit inverse be computed with this routine.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    dA      (input/output) COMPLEX array on the GPU, dimension (LDDA,N)
+    @param[in,out]
+    dA      COMPLEX array on the GPU, dimension (LDDA,N)
             On entry, the factors L and U from the factorization
             A = P*L*U as computed by CGETRF_GPU.
             On exit, if INFO = 0, the inverse of the original matrix A.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array A.  LDDA >= max(1,N).
 
-    IPIV    (input) INTEGER array, dimension (N)
-            The pivot indices from CGETRF; for 1<=i<=N, row i of the
+    @param[in]
+    ipiv    INTEGER array, dimension (N)
+            The pivot indices from CGETRF; for 1 <= i <= N, row i of the
             matrix was interchanged with row IPIV(i).
 
-    DWORK   (workspace/output) COMPLEX array on the GPU, dimension (MAX(1,LWORK))
+    @param[out]
+    dwork   (workspace) COMPLEX array on the GPU, dimension (MAX(1,LWORK))
   
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array DWORK.  LWORK >= N*NB, where NB is
             the optimal blocksize returned by magma_get_cgetri_nb(n).
-            
+    \n
             Unlike LAPACK, this version does not currently support a
             workspace query, because the workspace is on the GPU.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            > 0:  if INFO = i, U(i,i) is exactly zero; the matrix is
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     > 0:  if INFO = i, U(i,i) is exactly zero; the matrix is
                   singular and its cannot be computed.
 
-    ===================================================================== */
-
+    @ingroup magma_cgesv_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cgetri_gpu( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
+                  magma_int_t *ipiv, magmaFloatComplex *dwork, magma_int_t lwork,
+                  magma_int_t *info )
+{
     #define dA(i, j)  (dA + (i) + (j)*ldda)
     #define dL(i, j)  (dL + (i) + (j)*lddl)
     

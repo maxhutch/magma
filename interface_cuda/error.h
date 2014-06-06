@@ -11,7 +11,7 @@
 void magma_xerror( cudaError_t    err, const char* func, const char* file, int line );
 void magma_xerror( CUresult       err, const char* func, const char* file, int line );
 void magma_xerror( cublasStatus_t err, const char* func, const char* file, int line );
-void magma_xerror( magma_err_t    err, const char* func, const char* file, int line );
+void magma_xerror( magma_int_t    err, const char* func, const char* file, int line );
 
 #ifdef __cplusplus
 extern "C" {

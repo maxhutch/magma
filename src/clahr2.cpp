@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zlahr2.cpp normal z -> c, Fri Apr 25 15:05:51 2014
        @author Stan Tomov
        @author Mark Gates
 */
@@ -13,23 +13,9 @@
 
 #define PRECISION_c
 
-extern "C" magma_int_t
-magma_clahr2(
-    magma_int_t n, magma_int_t k, magma_int_t nb,
-    magmaFloatComplex *dA, magmaFloatComplex *dV,
-    magmaFloatComplex *A, magma_int_t lda,
-    magmaFloatComplex *tau,
-    magmaFloatComplex *T, magma_int_t ldt,
-    magmaFloatComplex *Y, magma_int_t ldy )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CLAHR2 reduces the first NB columns of a complex general n-BY-(n-k+1)
     matrix A so that elements below the k-th subdiagonal are zero. The
     reduction is performed by an orthogonal similarity transformation
@@ -40,27 +26,33 @@ magma_clahr2(
     This is an auxiliary routine called by CGEHRD.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The offset for the reduction. Elements below the k-th
             subdiagonal in the first NB columns are reduced to zero.
             K < N.
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             The number of columns to be reduced.
 
-    dA      (input/output) COMPLEX array on the GPU, dimension (LDA,N-K+1)
+    @param[in,out]
+    dA      COMPLEX array on the GPU, dimension (LDA,N-K+1)
             On entry, the n-by-(n-k+1) general matrix A.
             On exit, the elements in rows K:N of the first NB columns are
             overwritten with the matrix Y.
 
-    DV      (output) COMPLEX array on the GPU, dimension (N, NB)
+    @param[out]
+    dV      COMPLEX array on the GPU, dimension (N, NB)
             On exit this contains the Householder vectors of the transformation.
 
-    A       (input/output) COMPLEX array, dimension (LDA,N-K+1)
+    @param[in,out]
+    A       COMPLEX array, dimension (LDA,N-K+1)
             On entry, the n-by-(n-k+1) general matrix A.
             On exit, the elements on and above the k-th subdiagonal in
             the first NB columns are overwritten with the corresponding
@@ -69,27 +61,33 @@ magma_clahr2(
             product of elementary reflectors. The other columns of A are
             unchanged. See Further Details.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    TAU     (output) COMPLEX array, dimension (NB)
+    @param[out]
+    tau     COMPLEX array, dimension (NB)
             The scalar factors of the elementary reflectors. See Further
             Details.
 
-    T       (output) COMPLEX array, dimension (LDT,NB)
+    @param[out]
+    T       COMPLEX array, dimension (LDT,NB)
             The upper triangular matrix T.
 
-    LDT     (input) INTEGER
+    @param[in]
+    ldt     INTEGER
             The leading dimension of the array T.  LDT >= NB.
 
-    Y       (output) COMPLEX array, dimension (LDY,NB)
+    @param[out]
+    Y       COMPLEX array, dimension (LDY,NB)
             The n-by-nb matrix Y.
 
-    LDY     (input) INTEGER
+    @param[in]
+    ldy     INTEGER
             The leading dimension of the array Y. LDY >= N.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of nb elementary reflectors
 
        Q = H(1) H(2) . . . H(nb).
@@ -110,6 +108,7 @@ magma_clahr2(
     The contents of A on exit are illustrated by the following example
     with n = 7, k = 3 and nb = 2:
 
+    @verbatim
        ( a   a   a   a   a )
        ( a   a   a   a   a )
        ( a   a   a   a   a )
@@ -117,6 +116,7 @@ magma_clahr2(
        ( v1  h   a   a   a )
        ( v1  v2  a   a   a )
        ( v1  v2  a   a   a )
+    @endverbatim
 
     where "a" denotes an element of the original matrix A, h denotes a
     modified element of the upper Hessenberg matrix H, and vi denotes an
@@ -128,8 +128,19 @@ magma_clahr2(
     form through hybrid GPU-based computing," University of Tennessee Computer
     Science Technical Report, UT-CS-09-642 (also LAPACK Working Note 219),
     May 24, 2009.
-    =====================================================================    */
 
+    @ingroup magma_cgeev_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_clahr2(
+    magma_int_t n, magma_int_t k, magma_int_t nb,
+    magmaFloatComplex *dA,
+    magmaFloatComplex *dV,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *tau,
+    magmaFloatComplex *T, magma_int_t ldt,
+    magmaFloatComplex *Y, magma_int_t ldy )
+{
     #define  A( i, j ) ( A + (i) + (j)*lda)
     #define  Y( i, j ) ( Y + (i) + (j)*ldy)
     #define  T( i, j ) ( T + (i) + (j)*ldt)
@@ -152,9 +163,8 @@ magma_clahr2(
     // adjust from 1-based indexing
     k -= 1;
 
-    // Function Body
     if (n <= 1)
-        return 0;
+        return MAGMA_SUCCESS;
     
     for (i = 0; i < nb; ++i) {
         n_k_i_1 = n - k - i - 1;
@@ -275,5 +285,5 @@ magma_clahr2(
     // Restore diagonal element
     *A(k+nb,nb-1) = ei;
 
-    return 0;
-} // magma_clahr2
+    return MAGMA_SUCCESS;
+} /* magma_clahr2 */

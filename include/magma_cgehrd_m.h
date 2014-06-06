@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:17 2013
+       @generated from magma_zgehrd_m.h normal z -> c, Fri Apr 25 15:05:12 2014
        @author Mark Gates
 */
 
@@ -20,7 +20,7 @@ extern "C" {
 
 struct cgehrd_data
 {
-    int ngpu;
+    magma_int_t ngpu;
     
     magma_int_t ldda;
     magma_int_t ldv;

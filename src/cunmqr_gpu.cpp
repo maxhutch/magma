@@ -1,20 +1,127 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zunmqr_gpu.cpp normal z -> c, Fri Apr 25 15:05:42 2014
 
 */
 #include "common_magma.h"
 
+/**
+    Purpose
+    -------
+    CUNMQR_GPU overwrites the general complex M-by-N matrix C with
+
+    @verbatim
+                            SIDE = MagmaLeft     SIDE = MagmaRight
+    TRANS = MagmaNoTrans:   Q * C                C * Q
+    TRANS = MagmaTrans:     Q**H * C             C * Q**H
+    @endverbatim
+
+    where Q is a complex orthogonal matrix defined as the product of k
+    elementary reflectors
+
+          Q = H(1) H(2) . . . H(k)
+
+    as returned by CGEQRF. Q is of order M if SIDE = MagmaLeft and of order N
+    if SIDE = MagmaRight.
+
+    Arguments
+    ---------
+    @param[in]
+    side    magma_side_t
+      -     = MagmaLeft:   apply Q or Q**H from the Left;
+      -     = MagmaRight:  apply Q or Q**H from the Right.
+
+    @param[in]
+    trans   magma_trans_t
+      -     = MagmaNoTrans:  No transpose, apply Q;
+      -     = MagmaTrans:    Transpose, apply Q**H.
+
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix C. M >= 0.
+
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix C. N >= 0.
+
+    @param[in]
+    k       INTEGER
+            The number of elementary reflectors whose product defines
+            the matrix Q.
+            If SIDE = MagmaLeft,  M >= K >= 0;
+            if SIDE = MagmaRight, N >= K >= 0.
+
+    @param[in]
+    dA      COMPLEX array on the GPU, dimension (LDDA,K)
+            The i-th column must contain the vector which defines the
+            elementary reflector H(i), for i = 1,2,...,k, as returned by
+            CGEQRF in the first k columns of its array argument DA.
+            DA is modified by the routine but restored on exit.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array DA.
+            If SIDE = MagmaLeft,  LDDA >= max(1,M);
+            if SIDE = MagmaRight, LDDA >= max(1,N).
+
+    @param[in]
+    tau     COMPLEX array, dimension (K)
+            TAU(i) must contain the scalar factor of the elementary
+            reflector H(i), as returned by CGEQRF.
+
+    @param[in,out]
+    dC      COMPLEX array on the GPU, dimension (LDDC,N)
+            On entry, the M-by-N matrix C.
+            On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
+
+    @param[in]
+    lddc    INTEGER
+            The leading dimension of the array DC. LDDC >= max(1,M).
+
+    @param[out]
+    hwork   (workspace) COMPLEX array, dimension (MAX(1,LWORK))
+    \n
+            Currently, cgetrs_gpu assumes that on exit, hwork contains the last
+            block of A and C. This will change and *should not be relied on*!
+
+    @param[in]
+    lwork   INTEGER
+            The dimension of the array HWORK.
+            LWORK >= (M-K+NB)*(N+NB) + N*NB if SIDE = MagmaLeft, and
+            LWORK >= (N-K+NB)*(M+NB) + M*NB if SIDE = MagmaRight,
+            where NB is the given blocksize.
+    \n
+            If LWORK = -1, then a workspace query is assumed; the routine
+            only calculates the optimal size of the HWORK array, returns
+            this value as the first entry of the HWORK array, and no error
+            message related to LWORK is issued by XERBLA.
+
+    @param[in]
+    dT      COMPLEX array on the GPU that is the output
+            (the 9th argument) of magma_cgeqrf_gpu.
+
+    @param[in]
+    nb      INTEGER
+            This is the blocking size that was used in pre-computing DT, e.g.,
+            the blocking size used in magma_cgeqrf_gpu.
+
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+
+    @ingroup magma_cgeqrf_comp
+    ********************************************************************/
 extern "C" magma_int_t
-magma_cunmqr_gpu(char side, char trans,
+magma_cunmqr_gpu(magma_side_t side, magma_trans_t trans,
                  magma_int_t m, magma_int_t n, magma_int_t k,
                  magmaFloatComplex *dA,    magma_int_t ldda,
                  magmaFloatComplex *tau,
@@ -23,108 +130,14 @@ magma_cunmqr_gpu(char side, char trans,
                  magmaFloatComplex *dT,    magma_int_t nb,
                  magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    CUNMQR_GPU overwrites the general complex M-by-N matrix C with
-
-                    SIDE = 'L'     SIDE = 'R'
-    TRANS = 'N':      Q * C          C * Q
-    TRANS = 'T':      Q**H * C       C * Q**H
-
-    where Q is a complex orthogonal matrix defined as the product of k
-    elementary reflectors
-
-          Q = H(1) H(2) . . . H(k)
-
-    as returned by CGEQRF. Q is of order M if SIDE = 'L' and of order N
-    if SIDE = 'R'.
-
-    Arguments
-    =========
-    SIDE    (input) CHARACTER*1
-            = 'L': apply Q or Q**H from the Left;
-            = 'R': apply Q or Q**H from the Right.
-
-    TRANS   (input) CHARACTER*1
-            = 'N':  No transpose, apply Q;
-            = 'T':  Transpose, apply Q**H.
-
-    M       (input) INTEGER
-            The number of rows of the matrix C. M >= 0.
-
-    N       (input) INTEGER
-            The number of columns of the matrix C. N >= 0.
-
-    K       (input) INTEGER
-            The number of elementary reflectors whose product defines
-            the matrix Q.
-            If SIDE = 'L', M >= K >= 0;
-            if SIDE = 'R', N >= K >= 0.
-
-    DA      (input) COMPLEX array on the GPU, dimension (LDDA,K)
-            The i-th column must contain the vector which defines the
-            elementary reflector H(i), for i = 1,2,...,k, as returned by
-            CGEQRF in the first k columns of its array argument DA.
-            DA is modified by the routine but restored on exit.
-
-    LDDA    (input) INTEGER
-            The leading dimension of the array DA.
-            If SIDE = 'L', LDDA >= max(1,M);
-            if SIDE = 'R', LDDA >= max(1,N).
-
-    TAU     (input) COMPLEX array, dimension (K)
-            TAU(i) must contain the scalar factor of the elementary
-            reflector H(i), as returned by CGEQRF.
-
-    DC      (input/output) COMPLEX array on the GPU, dimension (LDDC,N)
-            On entry, the M-by-N matrix C.
-            On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
-
-    LDDC    (input) INTEGER
-            The leading dimension of the array DC. LDDC >= max(1,M).
-
-    HWORK   (workspace/output) COMPLEX array, dimension (MAX(1,LWORK))
-    
-            Currently, cgetrs_gpu assumes that on exit, hwork contains the last
-            block of A and C. This will change and *should not be relied on*!
-
-    LWORK   (input) INTEGER
-            The dimension of the array HWORK.
-            LWORK >= (M-K+NB)*(N+NB) + N*NB if SIDE = 'L', and
-            LWORK >= (N-K+NB)*(M+NB) + M*NB if SIDE = 'R',
-            where NB is the given blocksize.
-
-            If LWORK = -1, then a workspace query is assumed; the routine
-            only calculates the optimal size of the HWORK array, returns
-            this value as the first entry of the HWORK array, and no error
-            message related to LWORK is issued by XERBLA.
-
-    DT      (input) COMPLEX array on the GPU that is the output
-            (the 9th argument) of magma_cgeqrf_gpu.
-
-    NB      (input) INTEGER
-            This is the blocking size that was used in pre-computing DT, e.g.,
-            the blocking size used in magma_cgeqrf_gpu.
-
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================   */
-
     #define dA(a_1,a_2) (dA + (a_1) + (a_2)*ldda)
     #define dC(a_1,a_2) (dC + (a_1) + (a_2)*lddc)
     #define dT(a_1)     (dT + (a_1)*nb)
 
     magmaFloatComplex c_one = MAGMA_C_ONE;
 
-    char side_[2]  = {side,  0};
-    char trans_[2] = {trans, 0};
+    const char* side_  = lapack_side_const( side  );
+    const char* trans_ = lapack_trans_const( trans );
 
     magmaFloatComplex *dwork;
     magma_int_t i, lddwork;
@@ -133,8 +146,8 @@ magma_cunmqr_gpu(char side, char trans,
     magma_int_t lwkopt;
 
     *info = 0;
-    left   = lapackf77_lsame(side_,  "L");
-    notran = lapackf77_lsame(trans_, "N");
+    left   = (side == MagmaLeft);
+    notran = (trans == MagmaNoTrans);
     lquery = (lwork == -1);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
@@ -148,9 +161,9 @@ magma_cunmqr_gpu(char side, char trans,
     lwkopt = (nq - k + nb)*(nw + nb) + nw*nb;
     hwork[0] = MAGMA_C_MAKE( lwkopt, 0 );
     
-    if ( (!left) && (!lapackf77_lsame(side_, "R")) ) {
+    if ( ! left && side != MagmaRight ) {
         *info = -1;
-    } else if ( (!notran) && (!lapackf77_lsame(trans_, MagmaConjTransStr)) ) {
+    } else if ( ! notran && trans != MagmaConjTrans ) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -250,7 +263,7 @@ magma_cunmqr_gpu(char side, char trans,
 
     /* Use blocked code to multiply blocks */
     if (nb < k) {
-        for( i=i1; (step<0 ? i>=i2 : i<i2); i+=step ) {
+        for( i=i1; (step < 0 ? i >= i2 : i < i2); i += step ) {
             ib = min(nb, k - i);
             if (left) {
                 // ni=n, jc=0, H or H^T is applied to C(i:m-1,0:n-1)
@@ -315,4 +328,4 @@ magma_cunmqr_gpu(char side, char trans,
     // In LAPACK: On exit, if INFO = 0, HWORK(1) returns the optimal LWORK.
     //hwork[0] = MAGMA_C_MAKE( lwkopt, 0 );
     return *info;
-}   /* end of magma_cunmqr_gpu */
+} /* magma_cunmqr_gpu */

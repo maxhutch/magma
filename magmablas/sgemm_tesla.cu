@@ -1,32 +1,18 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from dgemm_tesla.cu normal d -> s, Fri Apr 25 15:05:23 2014
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
 
-extern "C" void
-magmablas_sgemm_tesla(
-    char transA, char transB, magma_int_t m, magma_int_t n, magma_int_t k,
-    float alpha,
-    const float *A, magma_int_t lda,
-    const float *B, magma_int_t ldb,
-    float beta,
-    float *C, magma_int_t ldc )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     
     SGEMM performs one of the matrix-matrix operations
     
@@ -34,94 +20,87 @@ magmablas_sgemm_tesla(
     
     where op( X ) is one of
     
-        op( X ) = X   or   op( X ) = X',
+        op( X ) = X   or   op( X ) = X**T,
     
     alpha and beta are scalars, and A, B and C are matrices, with op( A )
     an m by k matrix,  op( B ) a k by n matrix and C an m by n matrix.
     
     Parameters
-    ==========
+    ----------
     
-    transA  CHARACTER*1.
+    @param[in]
+    transA  magma_trans_t.
             On entry, transA specifies the form of op( A ) to be used in
             the matrix multiplication as follows:
+      -     = MagmaNoTrans:    op( A ) = A.
+      -     = MagmaTrans:      op( A ) = A**T.
+      -     = MagmaConjTrans:  op( A ) = A**T.
     
-                transA = 'N' or 'n',  op( A ) = A.
-    
-                transA = 'T' or 't',  op( A ) = A**T.
-    
-                transA = 'C' or 'c',  op( A ) = A**T.
-    
-            Unchanged on exit.
-    
-    transB  CHARACTER*1.
+    @param[in]
+    transB  magma_trans_t.
             On entry, transB specifies the form of op( B ) to be used in
             the matrix multiplication as follows:
+      -     = MagmaNoTrans:    op( B ) = B.
+      -     = MagmaTrans:      op( B ) = B**T.
+      -     = MagmaConjTrans:  op( B ) = B**T.
     
-                transB = 'N' or 'n',  op( B ) = B.
-    
-                transB = 'T' or 't',  op( B ) = B**T.
-    
-                transB = 'C' or 'c',  op( B ) = B**T.
-    
-            Unchanged on exit.
-    
-    M       INTEGER.
+    @param[in]
+    m       INTEGER.
             On entry,  M  specifies  the number  of rows  of the  matrix
             op( A )  and of the  matrix  C.  M  must  be at least  zero.
-            Unchanged on exit.
     
-    N       INTEGER.
+    @param[in]
+    n       INTEGER.
             On entry,  N  specifies the number  of columns of the matrix
             op( B ) and the number of columns of the matrix C. N must be
             at least zero.
-            Unchanged on exit.
     
-    K       INTEGER.
+    @param[in]
+    k       INTEGER.
             On entry,  K  specifies  the number of columns of the matrix
             op( A ) and the number of rows of the matrix op( B ). K must
             be at least  zero.
-            Unchanged on exit.
     
-    ALPHA   REAL.
+    @param[in]
+    alpha   REAL.
             On entry, ALPHA specifies the scalar alpha.
-            Unchanged on exit.
     
+    @param[in]
     A       REAL array of DIMENSION ( LDA, ka ), where ka is
-            k  when  transA = 'N' or 'n',  and is  m  otherwise.
-            Before entry with  transA = 'N' or 'n',  the leading  m by k
+            k  when  transA = MagmaNoTrans,  and is  m  otherwise.
+            Before entry with  transA = MagmaNoTrans,  the leading  m by k
             part of the array  A  must contain the matrix  A,  otherwise
             the leading  k by m  part of the array  A  must contain  the
             matrix A.
-            Unchanged on exit.
     
-    LDA     INTEGER.
+    @param[in]
+    lda     INTEGER.
             On entry, LDA specifies the first dimension of A as declared
-            in the calling (sub) program. When  transA = 'N' or 'n' then
+            in the calling (sub) program. When  transA = MagmaNoTrans then
             LDA must be at least  max( 1, m ), otherwise  LDA must be at
             least  max( 1, k ).
-            Unchanged on exit.
     
+    @param[in]
     B       REAL array of DIMENSION ( LDB, kb ), where kb is
-            n  when  transB = 'N' or 'n',  and is  k  otherwise.
-            Before entry with  transB = 'N' or 'n',  the leading  k by n
+            n  when  transB = MagmaNoTrans,  and is  k  otherwise.
+            Before entry with  transB = MagmaNoTrans,  the leading  k by n
             part of the array  B  must contain the matrix  B,  otherwise
             the leading  n by k  part of the array  B  must contain  the
             matrix B.
-            Unchanged on exit.
     
-    LDB     INTEGER.
+    @param[in]
+    ldb     INTEGER.
             On entry, LDB specifies the first dimension of B as declared
-            in the calling (sub) program. When  transB = 'N' or 'n' then
+            in the calling (sub) program. When  transB = MagmaNoTrans then
             LDB must be at least  max( 1, k ), otherwise  LDB must be at
             least  max( 1, n ).
-            Unchanged on exit.
     
-    BETA    REAL.
+    @param[in]
+    beta    REAL.
             On entry,  BETA  specifies the scalar  beta.  When  BETA  is
             supplied as zero then C need not be set on input.
-            Unchanged on exit.
     
+    @param[in,out]
     C       REAL array of DIMENSION ( LDC, n ).
             Before entry, the leading  m by n  part of the array  C must
             contain the matrix  C,  except when  beta  is zero, in which
@@ -129,18 +108,26 @@ magmablas_sgemm_tesla(
             On exit, the array  C  is overwritten by the  m by n  matrix
             ( alpha*op( A )*op( B ) + beta*C ).
     
-    LDC     INTEGER.
+    @param[in]
+    ldc     INTEGER.
             On entry, LDC specifies the first dimension of C as declared
             in  the  calling  (sub)  program.   LDC  must  be  at  least
             max( 1, m ).
-            Unchanged on exit.
-    =====================================================================    */
 
+    @ingroup magma_sblas3
+    ********************************************************************/
+extern "C" void
+magmablas_sgemm_tesla(
+    magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
+    float alpha,
+    const float *A, magma_int_t lda,
+    const float *B, magma_int_t ldb,
+    float beta,
+    float *C, magma_int_t ldc )
+{
     if ( m == 0 || n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0) ) {
         return;
     }
-    transA = toupper( transA );
-    transB = toupper( transB );
     if ( alpha == 0.0 ) {
         if ( beta == 0.0 ) {
             magmablas_sgemm_ab_0(
@@ -155,8 +142,8 @@ magmablas_sgemm_tesla(
     }
     
     if ( ldc < m ) return;  /* TODO: error */
-    if ( transA == 'N' ) {
-        if ( transB == 'N' ) {
+    if ( transA == MagmaNoTrans ) {
+        if ( transB == MagmaNoTrans ) {
             if ( lda < m ) return;  /* TODO: error */
             if ( ldb < k ) return;  /* TODO: error */
             /*=======================================================================
@@ -172,7 +159,8 @@ magmablas_sgemm_tesla(
             }
             else {
                 cublasSgemm(
-                    transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
+                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                    m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
         else {
@@ -191,12 +179,13 @@ magmablas_sgemm_tesla(
             }
             else {
                 cublasSgemm(
-                    transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
+                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                    m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
     }
     else {
-        if ( transB == 'N' ) {
+        if ( transB == MagmaNoTrans ) {
             if ( lda < k ) return;  /* TODO: error */
             if ( ldb < k ) return;  /* TODO: error */
             /*=======================================================================
@@ -212,7 +201,8 @@ magmablas_sgemm_tesla(
             }
             else {
                 cublasSgemm(
-                    transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
+                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                    m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
         else {
@@ -231,7 +221,8 @@ magmablas_sgemm_tesla(
             }
             else {
                 cublasSgemm(
-                    transA, transB, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
+                    lapacke_trans_const(transA), lapacke_trans_const(transB),
+                    m, n, k, alpha, A, lda, B, ldb, beta, C, ldc );
             }
         }
     }

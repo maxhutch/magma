@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zungqr_m.cpp normal z -> d, Fri Apr 25 15:05:44 2014
 
        @author Mark Gates
 */
@@ -14,6 +14,68 @@
 
 #define PRECISION_d
 
+/**
+    Purpose
+    -------
+    DORGQR generates an M-by-N DOUBLE_PRECISION matrix Q with orthonormal columns,
+    which is defined as the first N columns of a product of K elementary
+    reflectors of order M
+
+        Q  =  H(1) H(2) . . . H(k)
+
+    as returned by DGEQRF.
+
+    Arguments
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix Q. M >= 0.
+
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix Q. M >= N >= 0.
+
+    @param[in]
+    k       INTEGER
+            The number of elementary reflectors whose product defines the
+            matrix Q. N >= K >= 0.
+
+    @param[in,out]
+    A       DOUBLE_PRECISION array A, dimension (LDDA,N).
+            On entry, the i-th column must contain the vector
+            which defines the elementary reflector H(i), for
+            i = 1,2,...,k, as returned by DGEQRF_GPU in the
+            first k columns of its array argument A.
+            On exit, the M-by-N matrix Q.
+
+    @param[in]
+    lda     INTEGER
+            The first dimension of the array A. LDA >= max(1,M).
+
+    @param[in]
+    tau     DOUBLE_PRECISION array, dimension (K)
+            TAU(i) must contain the scalar factor of the elementary
+            reflector H(i), as returned by DGEQRF_GPU.
+
+    @param[in]
+    T       DOUBLE_PRECISION array, dimension (NB, min(M,N)).
+            T contains the T matrices used in blocking the elementary
+            reflectors H(i), e.g., this can be the 6th argument of
+            magma_dgeqrf_gpu (except stored on the CPU, not the GPU).
+
+    @param[in]
+    nb      INTEGER
+            This is the block size used in DGEQRF_GPU, and correspondingly
+            the size of the T matrices, used in the factorization, and
+            stored in T.
+
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument has an illegal value
+
+    @ingroup magma_dgeqrf_comp
+    ********************************************************************/
 extern "C" magma_int_t
 magma_dorgqr_m(
     magma_int_t m, magma_int_t n, magma_int_t k,
@@ -22,63 +84,6 @@ magma_dorgqr_m(
     double *T, magma_int_t nb,
     magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    DORGQR generates an M-by-N DOUBLE_PRECISION matrix Q with orthonormal columns,
-    which is defined as the first N columns of a product of K elementary
-    reflectors of order M
-
-          Q  =  H(1) H(2) . . . H(k)
-
-    as returned by DGEQRF.
-
-    Arguments
-    =========
-    M       (input) INTEGER
-            The number of rows of the matrix Q. M >= 0.
-
-    N       (input) INTEGER
-            The number of columns of the matrix Q. M >= N >= 0.
-
-    K       (input) INTEGER
-            The number of elementary reflectors whose product defines the
-            matrix Q. N >= K >= 0.
-
-    A       (input/output) DOUBLE_PRECISION array A, dimension (LDDA,N).
-            On entry, the i-th column must contain the vector
-            which defines the elementary reflector H(i), for
-            i = 1,2,...,k, as returned by DGEQRF_GPU in the
-            first k columns of its array argument A.
-            On exit, the M-by-N matrix Q.
-
-    LDA     (input) INTEGER
-            The first dimension of the array A. LDA >= max(1,M).
-
-    TAU     (input) DOUBLE_PRECISION array, dimension (K)
-            TAU(i) must contain the scalar factor of the elementary
-            reflector H(i), as returned by DGEQRF_GPU.
-
-    T       (input) DOUBLE_PRECISION array, dimension (NB, min(M,N)).
-            T contains the T matrices used in blocking the elementary
-            reflectors H(i), e.g., this can be the 6th argument of
-            magma_dgeqrf_gpu (except stored on the CPU, not the GPU).
-
-    NB      (input) INTEGER
-            This is the block size used in DGEQRF_GPU, and correspondingly
-            the size of the T matrices, used in the factorization, and
-            stored in T.
-
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument has an illegal value
-    =====================================================================    */
-
 #define  A(i,j)   ( A    + (i) + (j)*lda )
 #define dA(d,i,j) (dA[d] + (i) + (j)*ldda)
 #define dT(d,i,j) (dT[d] + (i) + (j)*nb)
@@ -136,7 +141,7 @@ magma_dorgqr_m(
         // last_dev    = 1
         // gpu 0: 2  blocks, cols:  0- 9, 30-39, 60-69
         // gpu 1: 1+ blocks, cols: 10-19, 40-49, 70-74 (partial)
-        // gpu 2: 1  block , cols: 20-29, 50-59
+        // gpu 2: 1  block,  cols: 20-29, 50-59
         magma_setdevice( d );
         nlocal[d] = min_lblocks*nb;
         if ( d < last_dev ) {

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:44 2013
+       @generated from zlacpy_batched.cu normal z -> c, Fri Apr 25 15:05:20 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -47,63 +47,72 @@ clacpy_batched_kernel(
 
 
 /* ===================================================================== */
-extern "C" void
-magmablas_clacpy_batched(
-    char uplo, magma_int_t m, magma_int_t n,
-    const magmaFloatComplex * const *dAarray, magma_int_t ldda,
-    magmaFloatComplex              **dBarray, magma_int_t lddb,
-    magma_int_t batchCount )
-{
-/*
-      Note
-    ========
+/**
+    Note
+    --------
     - UPLO Parameter is disabled
     - Do we want to provide a generic function to the user with all the options?
     
     Purpose
-    =======
+    -------
     CLACPY copies all or part of a set of two-dimensional matrices dAarray[i]
     to another set of matrices dBarray[i], for i = 0, ..., batchCount-1.
     
     Arguments
-    =========
+    ---------
     
-    UPLO    (input) CHARACTER*1
+    @param[in]
+    uplo    magma_uplo_t
             Specifies the part of each matrix dAarray[i] to be copied to dBarray[i].
-            = 'U':      Upper triangular part
-            = 'L':      Lower triangular part
+      -     = MagmaUpper:      Upper triangular part
+      -     = MagmaLower:      Lower triangular part
             Otherwise:  All of each matrix dAarray[i]
     
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of each matrix dAarray[i].  M >= 0.
     
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of each matrix dAarray[i].  N >= 0.
     
-    dAarray (input) array on GPU, dimension(batchCount), of pointers to arrays,
+    @param[in]
+    dAarray array on GPU, dimension(batchCount), of pointers to arrays,
             with each array a COMPLEX REAL array, dimension (LDDA,N)
             The m by n matrices dAarray[i].
-            If UPLO = 'U', only the upper triangle or trapezoid is accessed;
-            if UPLO = 'L', only the lower triangle or trapezoid is accessed.
+            If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
+            if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
     
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of each array dAarray[i].  LDDA >= max(1,M).
     
-    dBarray (output) array on GPU, dimension(batchCount), of pointers to arrays,
+    @param[out]
+    dBarray array on GPU, dimension(batchCount), of pointers to arrays,
             with each array a COMPLEX REAL array, dimension (LDDB,N)
             The m by n matrices dBarray[i].
             On exit, matrix dBarray[i] = matrix dAarray[i] in the locations
             specified by UPLO.
     
-    LDDB    (input) INTEGER
+    @param[in]
+    lddb    INTEGER
             The leading dimension of each array dBarray[i].  LDDB >= max(1,M).
     
-    batchCount (input) INTEGER
+    @param[in]
+    batchCount INTEGER
             The number of matrices to add; length of dAarray and dBarray.
             batchCount >= 0.
     
-    =====================================================================   */
 
+    @ingroup magma_caux2
+    ********************************************************************/
+extern "C" void
+magmablas_clacpy_batched(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    const magmaFloatComplex * const *dAarray, magma_int_t ldda,
+    magmaFloatComplex              **dBarray, magma_int_t lddb,
+    magma_int_t batchCount )
+{
     magma_int_t info = 0;
     if ( m < 0 )
         info = -2;
@@ -127,10 +136,10 @@ magmablas_clacpy_batched(
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB, batchCount );
     
-    if ( (uplo == 'U') || (uplo == 'u') ) {
+    if ( uplo == MagmaUpper ) {
         fprintf(stderr, "lacpy upper is not implemented\n");
     }
-    else if ( (uplo == 'L') || (uplo == 'l') ) {
+    else if ( uplo == MagmaLower ) {
         fprintf(stderr, "lacpy lower is not implemented\n");
     }
     else {

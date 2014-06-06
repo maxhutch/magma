@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:56 2013
+       @generated from testing_zungqr_m.cpp normal z -> s, Fri Apr 25 15:06:12 2014
 
        @author Stan Tomov
        @author Mathieu Faverge
@@ -43,18 +43,21 @@ int main( int argc, char** argv )
     magma_int_t n2, lda, ldda, lwork, min_mn, nb, info;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
+    magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
+    float tol = opts.tolerance * lapackf77_slamch("E");
+    
     printf("    m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
     printf("=========================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ){
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            m = opts.msize[i];
-            n = opts.nsize[i];
-            k = opts.ksize[i];
+            m = opts.msize[itest];
+            n = opts.nsize[itest];
+            k = opts.ksize[itest];
             if ( m < n || n < k ) {
                 printf( "skipping m %d, n %d, k %d because m < n or n < k\n", (int) m, (int) n, (int) k );
                 continue;
@@ -124,9 +127,11 @@ int main( int argc, char** argv )
                 blasf77_saxpy( &n2, &c_neg_one, hA, &ione, hR, &ione );
                 error = lapackf77_slange("f", &m, &n, hR, &lda, work) / error;
                 
-                printf("%5d %5d %5d   %7.1f (%7.2f)   %7.1f (%7.2f)   %8.2e\n",
+                printf("%5d %5d %5d   %7.1f (%7.2f)   %7.1f (%7.2f)   %8.2e  %s\n",
                        (int) m, (int) n, (int) k,
-                       cpu_perf, cpu_time, gpu_perf, gpu_time, error );
+                       cpu_perf, cpu_time, gpu_perf, gpu_time,
+                       error, (error < tol ? "ok" : "failed") );
+                status |= ! (error < tol);
             }
             else {
                 printf("%5d %5d %5d     ---   (  ---  )   %7.1f (%7.2f)     ---  \n",
@@ -143,6 +148,7 @@ int main( int argc, char** argv )
             
             TESTING_FREE_DEV( dA  );
             TESTING_FREE_DEV( dT  );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );
@@ -150,5 +156,5 @@ int main( int argc, char** argv )
     }
     
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

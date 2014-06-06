@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from zlange.cu normal z -> c, Fri Apr 25 15:05:21 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -71,20 +71,15 @@ clange_inf_kernel(
     }
 }
 
-extern "C" float
-magmablas_clange(
-    magma_norm_t norm, magma_int_t m, magma_int_t n,
-    const magmaFloatComplex *A, magma_int_t lda, float *dwork )
-{
-/*
+/**
     Purpose
-    =======
+    -------
     CLANGE  returns the value of the one norm, or the Frobenius norm, or
     the  infinity norm, or the  element of  largest absolute value  of a
     real matrix A.
     
     Description
-    ===========
+    -----------
     CLANGE returns the value
     
        CLANGE = ( max(abs(A(i,j))), NORM = 'M' or 'm'            ** not yet supported
@@ -95,38 +90,50 @@ magmablas_clange(
                 (
                 ( normF(A),         NORM = 'F', 'f', 'E' or 'e'  ** not yet supported
     
-    where  norm1  denotes the  one norm of a matrix (maximum column sum),
-    normI  denotes the  infinity norm  of a matrix  (maximum row sum) and
-    normF  denotes the  Frobenius norm of a matrix (square root of sum of
-    squares).  Note that  max(abs(A(i,j)))  is not a consistent matrix norm.
+    where norm1 denotes the one norm of a matrix (maximum column sum),
+    normI denotes the infinity norm of a matrix (maximum row sum) and
+    normF denotes the Frobenius norm of a matrix (square root of sum of
+    squares). Note that max(abs(A(i,j))) is not a consistent matrix norm.
     
     Arguments
-    =========
-    NORM    (input) CHARACTER*1
+    ---------
+    @param[in]
+    norm    CHARACTER*1
             Specifies the value to be returned in CLANGE as described
             above.
     
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.  When M = 0,
             CLANGE is set to zero.
     
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.  When N = 0,
             CLANGE is set to zero.
     
-    A       (input) REAL array on the GPU, dimension (LDA,N)
+    @param[in]
+    A       REAL array on the GPU, dimension (LDA,N)
             The m by n matrix A.
     
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(M,1).
     
-    DWORK   (workspace) REAL array on the GPU, dimension (MAX(1,LWORK)),
+    @param
+    dwork   (workspace) REAL array on the GPU, dimension (MAX(1,LWORK)),
             where LWORK >= M when NORM = 'I'; otherwise, WORK is not
             referenced.
-    ====================================================================  */
-    
+
+    @ingroup magma_caux2
+    ********************************************************************/
+extern "C" float
+magmablas_clange(
+    magma_norm_t norm, magma_int_t m, magma_int_t n,
+    const magmaFloatComplex *A, magma_int_t lda, float *dwork )
+{
     magma_int_t info = 0;
-    if ( norm != 'I' && norm != 'i' )
+    if ( norm != MagmaInfNorm )
         info = -1;
     else if ( m < 0 )
         info = -2;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from dgemm_tesla_N_N_special.cu normal d -> s, Fri Apr 25 15:05:23 2014
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -37,23 +37,9 @@ static __device__ void saxpy(
 }
 
 
-__global__ void
-sgemm_kernel_N_N_64_16_16_16_4_special(
-    float*       __restrict__ C,
-    const float* __restrict__ A,
-    const float* __restrict__ B,
-    int m, int n, int k,
-    int lda, int ldb, int ldc,
-    float alpha, float beta )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose:
-    ========
+    --------
     This routine computes
         C = alpha * A*B + beta * C
 
@@ -63,8 +49,18 @@ sgemm_kernel_N_N_64_16_16_16_4_special(
 
     This kernel is for matrices divisible by the corresponding
     blocking sizes.
-    ===============================================================  */
 
+    @ingroup magma_sblas3
+    ********************************************************************/
+__global__ void
+sgemm_kernel_N_N_64_16_16_16_4_special(
+    float*       __restrict__ C,
+    const float* __restrict__ A,
+    const float* __restrict__ B,
+    int m, int n, int k,
+    int lda, int ldb, int ldc,
+    float alpha, float beta )
+{
     const int tx = threadIdx.x;
     const int ty = threadIdx.y;
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:56 2013
+       @generated from testing_zgeqrf_gpu.cpp normal z -> d, Fri Apr 25 15:06:12 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -65,10 +65,10 @@ int main( int argc, char** argv)
         printf("====================================================================================\n");
         tol = opts.tolerance * lapackf77_dlamch("E");
     }
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
@@ -153,12 +153,13 @@ int main( int argc, char** argv)
 
                 if ( opts.lapack ) {
                     printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e                      %8.2e",
-                           (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, results[0],results[1] );
+                           (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, results[0], results[1] );
                 } else {
                     printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)    %8.2e                      %8.2e",
-                           (int) M, (int) N, gpu_perf, gpu_time, results[0],results[1] );
+                           (int) M, (int) N, gpu_perf, gpu_time, results[0], results[1] );
                 } 
-                printf("%s\n", (results[0] < tol ? "" : "  failed"));
+                // todo also check results[1] < tol?
+                printf("  %s\n", (results[0] < tol ? "ok" : "failed"));
                 status |= ! (results[0] < tol);
             
                 TESTING_FREE_CPU( h_W1 );
@@ -183,7 +184,7 @@ int main( int argc, char** argv)
                         printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e",
                                (int) M, (int) N, gpu_perf, gpu_time, error );
                     }
-                    printf("%s\n", (error < tol ? "" : "  failed"));
+                    printf("  %s\n", (error < tol ? "ok" : "failed"));
                     status |= ! (error < tol);
                 }
                 else if ( M >= N ) {
@@ -296,6 +297,7 @@ int main( int argc, char** argv)
             
             if ( opts.version != 2 )
                 TESTING_FREE_DEV( dT );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

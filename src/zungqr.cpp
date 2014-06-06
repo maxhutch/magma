@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
 
@@ -12,21 +12,9 @@
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_zungqr(magma_int_t m, magma_int_t n, magma_int_t k,
-             magmaDoubleComplex *A, magma_int_t lda,
-             magmaDoubleComplex *tau,
-             magmaDoubleComplex *dT, magma_int_t nb,
-             magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZUNGQR generates an M-by-N COMPLEX_16 matrix Q with orthonormal columns,
     which is defined as the first N columns of a product of K elementary
     reflectors of order M
@@ -36,46 +24,63 @@ magma_zungqr(magma_int_t m, magma_int_t n, magma_int_t k,
     as returned by ZGEQRF.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix Q. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix Q. M >= N >= 0.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The number of elementary reflectors whose product defines the
             matrix Q. N >= K >= 0.
 
-    A       (input/output) COMPLEX_16 array A, dimension (LDDA,N).
+    @param[in,out]
+    A       COMPLEX_16 array A, dimension (LDDA,N).
             On entry, the i-th column must contain the vector
             which defines the elementary reflector H(i), for
             i = 1,2,...,k, as returned by ZGEQRF_GPU in the
             first k columns of its array argument A.
             On exit, the M-by-N matrix Q.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The first dimension of the array A. LDA >= max(1,M).
 
-    TAU     (input) COMPLEX_16 array, dimension (K)
+    @param[in]
+    tau     COMPLEX_16 array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by ZGEQRF_GPU.
 
-    DT      (input) COMPLEX_16 array on the GPU device.
+    @param[in]
+    dT      COMPLEX_16 array on the GPU device.
             DT contains the T matrices used in blocking the elementary
             reflectors H(i), e.g., this can be the 6th argument of
             magma_zgeqrf_gpu.
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             This is the block size used in ZGEQRF_GPU, and correspondingly
             the size of the T matrices, used in the factorization, and
             stored in DT.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument has an illegal value
-    =====================================================================    */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument has an illegal value
 
+    @ingroup magma_zgeqrf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zungqr(magma_int_t m, magma_int_t n, magma_int_t k,
+             magmaDoubleComplex *A, magma_int_t lda,
+             magmaDoubleComplex *tau,
+             magmaDoubleComplex *dT, magma_int_t nb,
+             magma_int_t *info)
+{
 #define  A(i,j) ( A + (i) + (j)*lda )
 #define dA(i,j) (dA + (i) + (j)*ldda)
 #define dT(j)   (dT + (j)*nb)
@@ -152,7 +157,7 @@ magma_zungqr(magma_int_t m, magma_int_t n, magma_int_t k,
         k_kk = k - kk;
         /*
             // Replacing this with the following 4 routines works but zungqr is slow for
-            // k smaller than the zungqr's blocking size (new version can be up to 60x faster) 
+            // k smaller than the zungqr's blocking size (new version can be up to 60x faster)
             lapackf77_zungqr( &m_kk, &n_kk, &k_kk,
                               A(kk, kk), &lda,
                               &tau[kk], work, &lwork, &iinfo );

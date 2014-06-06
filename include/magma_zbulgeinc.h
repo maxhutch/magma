@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
 */
@@ -81,7 +81,7 @@ extern volatile magma_int_t *ss_prog;
     int grsiz;
     int Vblksiz;
     int WANTZ;
-    char SIDE;
+    magma_side_t SIDE;
     real_Double_t *timeblg;
     real_Double_t *timeaplQ;
     volatile int *ss_prog;

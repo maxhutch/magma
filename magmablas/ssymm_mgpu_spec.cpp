@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zhemm_mgpu_spec.cpp normal z -> s, Fri Apr 25 15:05:24 2014
        @author Azzam Haidar
 */
 #include "common_magma.h"
@@ -15,7 +15,7 @@
 
 extern "C"
 void magmablas_ssymm_mgpu_spec(
-    char side, char uplo, magma_int_t m, magma_int_t n,
+    magma_side_t side, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     float alpha,
     float *dA[],    magma_int_t ldda,  magma_int_t offset,
     float *dB[],    magma_int_t lddb,
@@ -34,6 +34,10 @@ void magmablas_ssymm_mgpu_spec(
     #define dC(dev, i, j) (dC[dev] + (i) + (j)*lddc)
     #define dwork(dev, i, j) (dwork[dev] + (i) + (j)*lddwork)
     #define C(i, j) (C + (i) + (j)*ldc)
+    
+    if ( side != MagmaLeft || uplo != MagmaLower ) {
+        fprintf( stderr, "%s: only Left Lower implemented\n", __func__ );
+    }
     
     assert( ldda >= m );
     assert( lddb >= m );
@@ -338,7 +342,7 @@ void magmablas_ssymm_mgpu_spec(
                         }
                         ib     = min(ib,m-gbblki);
                         //printf("                    blockoffset %d nbblk %d stdev %d  receiving from gdev %d gblk %d  gcolsize %d copying blki %d of size ibxn %dx%d from work[%d] to C[%d]\n", blockoffset,nbblk,stdev,gdev,gblk,gcolsize,blki,ib,n,lcblki,gbblki);
-                        magmablas_slacpy( 'A', ib, n, &dwork[dev][maxgsize*gdev+lcblki], gcolsize, &dC[dev][gbblki], lddc);
+                        magmablas_slacpy( MagmaFull, ib, n, &dwork[dev][maxgsize*gdev+lcblki], gcolsize, &dC[dev][gbblki], lddc);
                     }// end blki
                 }
 
@@ -386,7 +390,7 @@ void magmablas_ssymm_mgpu_spec(
                                     }
                                     ib     = min(ib,m-gbblki);
                                     //printf("                    blockoffset %d nbblk %d stdev %d  receiving from gdev %d gblk %d  gcolsize %d copying blki %d of size ibxn %dx%d from work[%d] to C[%d]\n", blockoffset,nbblk,stdev,gdev,gblk,gcolsize,blki,ib,n,lcblki,gbblki);
-                                    magmablas_slacpy( 'A', ib, n, &dwork[dev][maxgsize*gdev+lcblki], gcolsize, &dC[dev][gbblki], lddc);
+                                    magmablas_slacpy( MagmaFull, ib, n, &dwork[dev][maxgsize*gdev+lcblki], gcolsize, &dC[dev][gbblki], lddc);
                                 }// end blki
                             }// en gcolsize>0 meaning gdev is active
                         } // end if gdev != dev

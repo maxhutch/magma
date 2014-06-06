@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from zsymv_fermi.cu normal z -> c, Fri Apr 25 15:05:24 2014
 
 */
 #include "common_magma.h"
@@ -828,11 +828,9 @@ void magmablas_csymv_fermi_L(
         (n, alpha, A, lda, x, incx, beta, y, incy, dwork);
 }
 
-/*************************************************************************
-
+/**
     Purpose
-    =======
-
+    -------
     magmablas_csymv performs the matrix-vector operation:
 
         y := alpha*A*x + beta*y,
@@ -841,85 +839,80 @@ void magmablas_csymv_fermi_L(
     A is an n by n symmetric matrix.
 
     Arguments
-    ==========
-
-    UPLO    CHARACTER*1.
+    ----------
+    @param[in]
+    uplo    magma_uplo_t.
             On entry, UPLO specifies whether the upper or lower
             triangular part of the array A is to be referenced as
             follows:
+      -     = MagmaUpper:  Only the upper triangular part of A is to be referenced.
+      -     = MagmaLower:  Only the lower triangular part of A is to be referenced.
 
-                UPLO = 'U' or 'u'   Only the upper triangular part of A
-                                    is to be referenced.
-                
-                UPLO = 'L' or 'l'   Only the lower triangular part of A
-                                    is to be referenced.
-
-            Unchanged on exit.
-
-    N       INTEGER.
+    @param[in]
+    n       INTEGER.
             On entry, N specifies the order of the matrix A.
             N must be at least zero.
-            Unchanged on exit.
 
-    ALPHA   COMPLEX.
+    @param[in]
+    alpha   COMPLEX.
             On entry, ALPHA specifies the scalar alpha.
-            Unchanged on exit.
 
+    @param[in]
     A       COMPLEX array of DIMENSION ( LDA, n ).
-            Before entry with UPLO = 'U' or 'u', the leading n by n
+            Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the hermitian matrix and the strictly
             lower triangular part of A is not referenced.
-            Before entry with UPLO = 'L' or 'l', the leading n by n
+            Before entry with UPLO = MagmaLower, the leading n by n
             lower triangular part of the array A must contain the lower
             triangular part of the hermitian matrix and the strictly
             upper triangular part of A is not referenced.
             Note that the imaginary parts of the diagonal elements need
             not be set and are assumed to be zero.
-            Unchanged on exit.
 
-    LDA     INTEGER.
+    @param[in]
+    lda     INTEGER.
             On entry, LDA specifies the first dimension of A as declared
             in the calling (sub) program. LDA must be at least
             max( 1, n ).
-            Unchanged on exit.
             It is recommended that lda is multiple of 16. Otherwise
             performance would be deteriorated as the memory accesses
             would not be fully coalescent.
 
-    X       COMPLEX array of dimension at least
+    @param[in]
+    x       COMPLEX array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
-            Unchanged on exit.
 
-    INCX    INTEGER.
+    @param[in]
+    incx    INTEGER.
             On entry, INCX specifies the increment for the elements of
             X. INCX must not be zero.
-            Unchanged on exit.
 
-    BETA    COMPLEX.
+    @param[in]
+    beta    COMPLEX.
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
-            Unchanged on exit.
 
-    Y       COMPLEX array of dimension at least
+    @param[in,out]
+    y       COMPLEX array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
             vector y.
 
-    INCY    INTEGER.
+    @param[in]
+    incy    INTEGER.
             On entry, INCY specifies the increment for the elements of
             Y. INCY must not be zero.
-            Unchanged on exit.
 
-*/
-
+    @ingroup magma_cblas2
+    ********************************************************************/
 extern "C"
 magma_int_t
 magmablas_csymv(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex alpha,
     const magmaFloatComplex *A, magma_int_t lda,
     const magmaFloatComplex *x, magma_int_t incx,
@@ -934,7 +927,7 @@ magmablas_csymv(
         // NOTE: [cz]symv are not implemented in cublas v1, but are in cublas v2.
         #if defined(PRECISION_z) || defined(PRECISION_c)
         fprintf(stderr, "%s: %s\n", __func__, "complex case not implemented");
-        //cublasCsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
+        //cublasCsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_csymv_tesla( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         #endif
@@ -943,13 +936,12 @@ magmablas_csymv(
     
     // --------------------
     // CUDA ARCH 2.x (Fermi) version
-    char uplo_[2] = {uplo, 0};
-    int  upper    = lapackf77_lsame(uplo_, "U");
+    int upper = (uplo == MagmaUpper);
 
     /*
      * Test the input parameters.
      */
-    if ( (! upper) && (! lapackf77_lsame(uplo_, "L")) ) {
+    if ( (! upper) && (uplo != MagmaLower) ) {
         return -1;
     } else if ( n < 0 ) {
         return -2;
@@ -972,9 +964,9 @@ magmablas_csymv(
     if ( upper ) {
         #if defined(PRECISION_z) || defined(PRECISION_c)
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
-        //cublasCsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
+        //cublasCsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
         #else
-        cublasCsymv(uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        cublasCsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {
@@ -996,7 +988,7 @@ magmablas_csymv(
 /*************************************************************************
 
     Purpose
-    =======
+    -------
 
     magmablas_csymv_work performs the matrix-vector operation:
 
@@ -1030,7 +1022,7 @@ magmablas_csymv(
 extern "C"
 magma_int_t
 magmablas_csymv_work(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex alpha,
     const magmaFloatComplex *A, magma_int_t lda,
     const magmaFloatComplex *x, magma_int_t incx,
@@ -1046,7 +1038,7 @@ magmablas_csymv_work(
         // NOTE: [z]symv is not implemented in cublas v1, but is in cublas v2.
         #if defined(PRECISION_z)
         fprintf(stderr, "%s: %s\n", __func__, "complex case not implemented");
-        //cublasCsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
+        //cublasCsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy );
         #else
         magmablas_csymv_tesla_work( uplo, n, alpha, A, lda, x, incx, beta, y, incy, dwork, lwork );
         #endif
@@ -1055,13 +1047,12 @@ magmablas_csymv_work(
     
     // --------------------
     // CUDA ARCH 2.x (Fermi) version
-    char uplo_[2] = {uplo, 0};
-    int  upper    = lapackf77_lsame(uplo_, "U");
+    int upper = (uplo == MagmaUpper);
 
     /*
      * Test the input parameters.
      */
-    if ( (! upper) && (! lapackf77_lsame(uplo_, "L")) ) {
+    if ( (! upper) && (uplo != MagmaLower) ) {
         return -1;
     } else if ( n < 0 ) {
         return -2;
@@ -1086,7 +1077,7 @@ magmablas_csymv_work(
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         return MAGMA_ERR_NOT_SUPPORTED;
         #else
-        cublasCsymv(uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        cublasCsymv( lapacke_uplo_const(uplo), n, alpha, A, lda, x, incx, beta, y, incy);
         #endif
     }
     else {

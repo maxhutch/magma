@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from dgemm_tesla_T_T.cu normal d -> s, Fri Apr 25 15:05:24 2014
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -37,23 +37,9 @@ static __device__ void saxpy(
 }
 
 
-__global__ void
-sgemm_kernel_T_T_64_16_16_16_4(
-    float*       __restrict__ C,
-    const float* __restrict__ A,
-    const float* __restrict__ B,
-    int m, int n, int k,
-    int lda, int ldb, int ldc,
-    float alpha, float beta )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose:
-    ========
+    --------
     This routine computes
         C = alpha * A^T*B^T + beta * C
 
@@ -63,8 +49,18 @@ sgemm_kernel_T_T_64_16_16_16_4(
 
     This code should run for any matrix size.
     This kernel outperforms cuda-2.2 when m, n, k >= 512
-    ===============================================================  */
 
+    @ingroup magma_sblas3
+    ********************************************************************/
+__global__ void
+sgemm_kernel_T_T_64_16_16_16_4(
+    float*       __restrict__ C,
+    const float* __restrict__ A,
+    const float* __restrict__ B,
+    int m, int n, int k,
+    int lda, int ldb, int ldc,
+    float alpha, float beta )
+{
     __shared__ float Bb[16][17];
 
     const int tx = threadIdx.x;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
        
        @author Azzam Haidar
        @author Stan Tomov
@@ -26,7 +26,7 @@
 
 static void *magma_zapplyQ_m_parallel_section(void *arg);
 
-static void magma_ztile_bulge_applyQ(magma_int_t core_id, char side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+static void magma_ztile_bulge_applyQ(magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
                                      magmaDoubleComplex *E, magma_int_t lde, magmaDoubleComplex *V, magma_int_t ldv,
                                      magmaDoubleComplex *TAU, magmaDoubleComplex *T, magma_int_t ldt);
 
@@ -58,7 +58,7 @@ public:
     {
         magma_int_t count = threads_num;
 
-        if(threads_num > 1)
+        if (threads_num > 1)
             --count;
 
         pthread_barrier_init(&barrier, NULL, count);
@@ -87,7 +87,6 @@ public:
 private:
 
     magma_zapplyQ_m_data(magma_zapplyQ_m_data& data); // disable copy
-
 };
 
 class magma_zapplyQ_m_id_data {
@@ -104,22 +103,23 @@ public:
 
     magma_int_t id;
     magma_zapplyQ_m_data* data;
-
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extern "C" magma_int_t 
-magma_zbulge_back_m(magma_int_t nrgpu, magma_int_t threads, char uplo, 
-                        magma_int_t n, magma_int_t nb, 
+extern "C" magma_int_t
+magma_zbulge_back_m(magma_int_t nrgpu, magma_uplo_t uplo,
+                        magma_int_t n, magma_int_t nb,
                         magma_int_t ne, magma_int_t Vblksiz,
                         magmaDoubleComplex *Z, magma_int_t ldz,
-                        magmaDoubleComplex *V, magma_int_t ldv, 
-                        magmaDoubleComplex *TAU, 
-                        magmaDoubleComplex *T, magma_int_t ldt, 
+                        magmaDoubleComplex *V, magma_int_t ldv,
+                        magmaDoubleComplex *TAU,
+                        magmaDoubleComplex *T, magma_int_t ldt,
                         magma_int_t* info)
 {
-    magma_setlapack_numthreads(1);
+    magma_int_t threads = magma_get_parallel_numthreads();
+    magma_int_t mklth   = magma_get_lapack_numthreads();
+    magma_set_lapack_numthreads(1);
 
     real_Double_t timeaplQ2=0.0;
 
@@ -134,10 +134,10 @@ magma_zbulge_back_m(magma_int_t nrgpu, magma_int_t threads, char uplo,
 
     double perf_temp= .85;
     double perf_temp2= perf_temp;
-    for (magma_int_t itmp=1; itmp<nrgpu; ++itmp)
-        perf_temp2*=perf_temp;
+    for (magma_int_t itmp=1; itmp < nrgpu; ++itmp)
+        perf_temp2 *= perf_temp;
     magma_int_t gpu_cpu_perf = magma_get_zbulge_gcperf();
-    if(threads>1){
+    if (threads > 1) {
         f = 1. / (1. + (double)(threads-1)/ ((double)gpu_cpu_perf*(1.-perf_temp2)/(1.-perf_temp)));
         n_gpu = (magma_int_t)(f*ne);
     }
@@ -157,13 +157,11 @@ magma_zbulge_back_m(magma_int_t nrgpu, magma_int_t threads, char uplo,
      *  use GPU+CPU's
      *==========================*/
 //n_gpu = ne;
-    if(n_gpu < ne)
-    {
-
+    if (n_gpu < ne) {
         // define the size of Q to be done on CPU's and the size on GPU's
         // note that GPU use Q(1:N_GPU) and CPU use Q(N_GPU+1:N)
         #ifdef ENABLE_DEBUG
-        printf("---> calling GPU + CPU(if N_CPU>0) to apply V2 to Z with NE %d     N_GPU %d   N_CPU %d\n",ne, n_gpu, ne-n_gpu);
+        printf("---> calling GPU + CPU(if N_CPU > 0) to apply V2 to Z with NE %d     N_GPU %d   N_CPU %d\n",ne, n_gpu, ne-n_gpu);
         #endif
         magma_zapplyQ_m_data data_applyQ(nrgpu, threads, n, ne, n_gpu, nb, Vblksiz, Z, ldz, V, ldv, TAU, T, ldt);
 
@@ -184,8 +182,7 @@ magma_zbulge_back_m(magma_int_t nrgpu, magma_int_t threads, char uplo,
         pthread_setconcurrency(threads);
 
         // Launch threads
-        for (magma_int_t thread = 1; thread < threads; thread++)
-        {
+        for (magma_int_t thread = 1; thread < threads; thread++) {
             arg[thread] = magma_zapplyQ_m_id_data(thread, &data_applyQ);
             pthread_create(&thread_id[thread], &thread_attr, magma_zapplyQ_m_parallel_section, &arg[thread]);
         }
@@ -193,8 +190,7 @@ magma_zbulge_back_m(magma_int_t nrgpu, magma_int_t threads, char uplo,
         magma_zapplyQ_m_parallel_section(&arg[0]);
 
         // Wait for completion
-        for (magma_int_t thread = 1; thread < threads; thread++)
-        {
+        for (magma_int_t thread = 1; thread < threads; thread++) {
             void *exitcodep;
             pthread_join(thread_id[thread], &exitcodep);
         }
@@ -205,21 +201,20 @@ magma_zbulge_back_m(magma_int_t nrgpu, magma_int_t threads, char uplo,
         /*============================
          *  use only GPU
          *==========================*/
-    }else{
-        magma_zbulge_applyQ_v2_m(nrgpu, 'L', ne, n, nb, Vblksiz, Z, ldz, V, ldv, T, ldt, info);
+    } else {
+        magma_zbulge_applyQ_v2_m(nrgpu, MagmaLeft, ne, n, nb, Vblksiz, Z, ldz, V, ldv, T, ldt, info);
         magma_device_sync();
     }
 
     timeaplQ2 = magma_wtime()-timeaplQ2;
 
-    magma_setlapack_numthreads(threads);
+    magma_set_lapack_numthreads(mklth);
     return MAGMA_SUCCESS;
 }
 
 //##################################################################################################
 static void *magma_zapplyQ_m_parallel_section(void *arg)
 {
-
     magma_int_t my_core_id     = ((magma_zapplyQ_m_id_data*)arg) -> id;
     magma_zapplyQ_m_data* data = ((magma_zapplyQ_m_id_data*)arg) -> data;
 
@@ -249,7 +244,7 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
 
     // with MKL and when using omp_set_num_threads instead of mkl_set_num_threads
     // it need that all threads setting it to 1.
-    magma_setlapack_numthreads(1);
+    magma_set_lapack_numthreads(1);
 
 #ifdef MAGMA_SETAFFINITY
     //#define PRINTAFFINITY
@@ -268,8 +263,7 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
         if (check2 != 0)
             printf("Error in sched_setaffinity (single cpu)\n");
     }
-    else
-    {
+    else {
         printf("Error in sched_getaffinity\n");
     }
 #ifdef PRINTAFFINITY
@@ -277,8 +271,7 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
 #endif
 #endif
 
-    if(my_core_id==0)
-    {
+    if (my_core_id == 0) {
         //=============================================
         //   on GPU on thread 0:
         //    - apply V2*Z(:,1:N_GPU)
@@ -287,20 +280,20 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
         timeQgpu = magma_wtime();
         #endif
 
-        magma_zbulge_applyQ_v2_m(nrgpu, 'L', n_gpu, n, nb, Vblksiz, E, lde, V, ldv, T, ldt, &info);
+        magma_zbulge_applyQ_v2_m(nrgpu, MagmaLeft, n_gpu, n, nb, Vblksiz, E, lde, V, ldv, T, ldt, &info);
         magma_device_sync();
 
         #ifdef ENABLE_TIMER
         timeQgpu = magma_wtime()-timeQgpu;
         printf("  Finish Q2_GPU GGG timing= %f\n", timeQgpu);
         #endif
-    }else{
+    } else {
         //=============================================
         //   on CPU on threads 1:allcores_num-1:
         //    - apply V2*Z(:,N_GPU+1:NE)
         //=============================================
         #ifdef ENABLE_TIMER
-        if(my_core_id == 1)
+        if (my_core_id == 1)
             timeQcpu = magma_wtime();
         #endif
 
@@ -308,21 +301,20 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
         magmaDoubleComplex* E_loc = E + (n_gpu+ n_loc * (my_core_id-1))*lde;
         n_loc = min(n_loc,n_cpu - n_loc * (my_core_id-1));
 
-        magma_ztile_bulge_applyQ(my_core_id, 'L', n_loc, n, nb, Vblksiz, E_loc, lde, V, ldv, TAU, T, ldt);
+        magma_ztile_bulge_applyQ(my_core_id, MagmaLeft, n_loc, n, nb, Vblksiz, E_loc, lde, V, ldv, TAU, T, ldt);
         pthread_barrier_wait(barrier);
 
         #ifdef ENABLE_TIMER
-        if(my_core_id == 1){
+        if (my_core_id == 1) {
             timeQcpu = magma_wtime()-timeQcpu;
             printf("  Finish Q2_CPU CCC timing= %f\n", timeQcpu);
         }
         #endif
-
     } // END if my_core_id
 
 #ifdef MAGMA_SETAFFINITY
     // unbind threads
-    if (check == 0){
+    if (check == 0) {
         check2 = original_set.set_affinity();
         if (check2 != 0)
             printf("Error in sched_setaffinity (restore cpu list)\n");
@@ -341,7 +333,7 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
 #define V(m)     &(V[(m)])
 #define TAU(m)   &(TAU[(m)])
 #define T(m)     &(T[(m)])
-static void magma_ztile_bulge_applyQ(magma_int_t core_id, char side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+static void magma_ztile_bulge_applyQ(magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
                                      magmaDoubleComplex *E, magma_int_t lde, magmaDoubleComplex *V, magma_int_t ldv,
                                      magmaDoubleComplex *TAU, magmaDoubleComplex *T, magma_int_t ldt)//, magma_int_t* info)
 {
@@ -355,10 +347,10 @@ static void magma_ztile_bulge_applyQ(magma_int_t core_id, char side, magma_int_t
     magma_int_t cur_blksiz,avai_blksiz, ncolinvolvd;
     magma_int_t nbgr, colst, coled;
 
-    if(n<=0)
-        return ;
-    if(n_loc<=0)
-        return ;
+    if (n <= 0)
+        return;
+    if (n_loc <= 0)
+        return;
 
     //info = 0;
     magma_int_t INFO=0;
@@ -396,34 +388,30 @@ static void magma_ztile_bulge_applyQ(magma_int_t core_id, char side, magma_int_t
      *            that q_i+1 overlap a portion of the E(:, col_i).
      *            IN parallel E is splitten in horizontal block over the threads  */
     #ifdef ENABLE_DEBUG
-    if((core_id==0)||(core_id==1))
+    if ((core_id == 0) || (core_id == 1))
         printf("  APPLY Q2_cpu zbulge_back_m   N %d  N_loc %d  nbchunk %d  NB %d  Vblksiz %d  SIDE %c \n", n, n_loc, nbchunk, nb, Vblksiz, side);
     #endif
    
-    for (magma_int_t i = 0; i<nbchunk; i++)
-    {
+    for (magma_int_t i = 0; i < nbchunk; i++) {
         magma_int_t ib_loc = min(nb_loc, (n_loc - i*nb_loc));
 
-        if(side=='L'){
-            for (bg = nbGblk; bg>0; bg--)
-            {
+        if (side == MagmaLeft) {
+            for (bg = nbGblk; bg > 0; bg--) {
                 firstcolj = (bg-1)*Vblksiz + 1;
                 rownbm    = magma_ceildiv((n-(firstcolj+1)),nb);
-                if(bg==nbGblk) rownbm    = magma_ceildiv((n-(firstcolj)),nb);  // last blk has size=1 used for complex to handle A(N,N-1)
-                for (magma_int_t j = rownbm; j>0; j--)
-                {
+                if (bg == nbGblk) rownbm    = magma_ceildiv((n-(firstcolj)),nb);  // last blk has size=1 used for complex to handle A(N,N-1)
+                for (magma_int_t j = rownbm; j > 0; j--) {
                     vlen = 0;
                     vnb  = 0;
-                    colj      = (bg-1)*Vblksiz; // for k=0;I compute the fst and then can remove it from the loop
+                    colj      = (bg-1)*Vblksiz; // for k=0; I compute the fst and then can remove it from the loop
                     fst       = (rownbm -j)*nb+colj +1;
-                    for (magma_int_t k=0; k<Vblksiz; k++)
-                    {
+                    for (magma_int_t k=0; k < Vblksiz; k++) {
                         colj     = (bg-1)*Vblksiz + k;
                         st       = (rownbm -j)*nb+colj +1;
                         ed       = min(st+nb-1,n-1);
-                        if(st>ed)
+                        if (st > ed)
                             break;
-                        if((st==ed)&&(colj!=n-2))
+                        if ((st == ed) && (colj != n-2))
                             break;
                         vlen=ed-fst+1;
                         vnb=k+1;
@@ -431,57 +419,52 @@ static void magma_ztile_bulge_applyQ(magma_int_t core_id, char side, magma_int_t
                     colst     = (bg-1)*Vblksiz;
                     magma_bulge_findVTpos(n, nb, Vblksiz, colst, fst, ldv, ldt, &vpos, &tpos);
 
-                    if((vlen>0)&&(vnb>0)){
+                    if ((vlen > 0) && (vnb > 0)) {
                         lapackf77_zlarfb( "L", "N", "F", "C", &vlen, &ib_loc, &vnb, V(vpos), &ldv, T(tpos), &ldt, E(fst,i*nb_loc), &lde, work, &ib_loc);
                     }
-                    if(INFO!=0)
+                    if (INFO != 0)
                         printf("ERROR ZUNMQR INFO %d \n", (int) INFO);
                 }
             }
-        }else if (side=='R'){
+        } else if (side == MagmaRight) {
             rownbm    = magma_ceildiv((n-1),nb);
-            for (magma_int_t k = 1; k<=rownbm; k++)
-            {
+            for (magma_int_t k = 1; k <= rownbm; k++) {
                 ncolinvolvd = min(n-1, k*nb);
                 avai_blksiz=min(Vblksiz,ncolinvolvd);
                 nbgr = magma_ceildiv(ncolinvolvd,avai_blksiz);
-                for (magma_int_t j = 1; j<=nbgr; j++)
-                {
+                for (magma_int_t j = 1; j <= nbgr; j++) {
                     vlen = 0;
                     vnb  = 0;
                     cur_blksiz = min(ncolinvolvd-(j-1)*avai_blksiz, avai_blksiz);
                     colst = (j-1)*avai_blksiz;
                     coled = colst + cur_blksiz -1;
                     fst   = (rownbm -k)*nb+colst +1;
-                    for (colj=colst; colj<=coled; colj++)
-                    {
+                    for (colj=colst; colj <= coled; colj++) {
                         st       = (rownbm -k)*nb+colj +1;
                         ed       = min(st+nb-1,n-1);
-                        if(st>ed)
+                        if (st > ed)
                             break;
-                        if((st==ed)&&(colj!=n-2))
+                        if ((st == ed) && (colj != n-2))
                             break;
                         vlen=ed-fst+1;
                         vnb=vnb+1;
                     }
                     magma_bulge_findVTpos(n, nb, Vblksiz, colst, fst, ldv, ldt, &vpos, &tpos);
-                    if((vlen>0)&&(vnb>0)){
+                    if ((vlen > 0) && (vnb > 0)) {
                         lapackf77_zlarfb( "R", "N", "F", "C", &ib_loc, &vlen, &vnb, V(vpos), &ldv, T(tpos), &ldt, E(i*nb_loc,fst), &lde, work, &ib_loc);
                     }
                 }
             }
-        }else{
+        } else {
             printf("ERROR SIDE %d \n",side);
         }
     } // END loop over the chunks
 
     magma_free_cpu(work);
     magma_free_cpu(work2);
-
 }
 #undef E
 #undef V
 #undef TAU
 #undef T
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-

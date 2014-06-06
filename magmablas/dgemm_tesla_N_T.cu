@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal d -> s
 */
@@ -37,6 +37,20 @@ static __device__ void daxpy(
 }
 
 
+/**
+    Purpose:
+    --------
+    This routine computes
+        C = alpha * A*B^T + beta * C
+
+    B is put into shared memory
+    Parameters Used:
+        blk_M=64 blk_N=16 blk_K=4 nthd_x=16 nthd_y=4
+
+    This code should run for any matrix size.
+
+    @ingroup magma_dblas3
+    ********************************************************************/
 __global__ void
 dgemm_kernel_N_T_64_16_4_16_4(
     double*       __restrict__ C,
@@ -46,24 +60,6 @@ dgemm_kernel_N_T_64_16_4_16_4(
     int lda, int ldb, int ldc,
     double alpha, double beta )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose:
-    ========
-    This routine computes
-        C = alpha * A*B^T + beta * C
-
-    B is put into shared memory
-    Parameters Used:
-        blk_M=64 blk_N=16 blk_K=4 nthd_x=16 nthd_y=4
-
-    This code should run for any matrix size.
-    ===============================================================  */
-
     const int tx = threadIdx.x;
     const int ty = threadIdx.y;
 

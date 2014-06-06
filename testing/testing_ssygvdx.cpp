@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2010
+       @date April 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated s Tue Dec 17 13:18:57 2013
+    @generated from testing_zhegvdx.cpp normal z -> s, Fri Apr 25 15:06:13 2014
 
 */
 
@@ -28,6 +28,7 @@
 #define PRECISION_s
 
 #define absv(v1) ((v1)>0? (v1): -(v1))
+
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing ssygvdx
 */
@@ -44,10 +45,10 @@ int main( int argc, char** argv)
     float c_zero    = MAGMA_S_ZERO;
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
-#if defined(PRECISION_z) || defined(PRECISION_c)
+    #if defined(PRECISION_z) || defined(PRECISION_c)
     float *rwork;
     magma_int_t lrwork;
-#endif
+    #endif
     //float d_one         =  1.;
     //float d_ten         = 10.;
     magma_int_t ione     = 1;
@@ -66,17 +67,17 @@ int main( int argc, char** argv)
     
     printf("    N     M   GPU Time (sec)\n");
     printf("============================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             n2     = N*N;
             nb     = magma_get_ssytrd_nb(N);
-#if defined(PRECISION_z) || defined(PRECISION_c)
+            #if defined(PRECISION_z) || defined(PRECISION_c)
             lwork  = 2*N*nb + N*N;
             lrwork = 1 + 5*N +2*N*N;
-#else
+            #else
             lwork  = 1 + 6*N*nb + 2* N*N;
-#endif
+            #endif
             liwork = 3 + 5*N;
 
             if ( opts.fraction == 0 ) {
@@ -98,9 +99,9 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_R,    float, n2     );
             TESTING_MALLOC_PIN( h_S,    float, n2     );
             TESTING_MALLOC_PIN( h_work, float, lwork  );
-#if defined(PRECISION_z) || defined(PRECISION_c)
+            #if defined(PRECISION_z) || defined(PRECISION_c)
             TESTING_MALLOC_PIN( rwork, float, lrwork);
-#endif
+            #endif
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -115,12 +116,12 @@ int main( int argc, char** argv)
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_S, &N );
                 
-                magma_ssygvdx( opts.itype, opts.jobz, 'I', opts.uplo,
+                magma_ssygvdx( opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
                                N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
                                h_work, lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                               #if defined(PRECISION_z) || defined(PRECISION_c)
                                rwork, lrwork,
-#endif      
+                               #endif      
                                iwork, liwork,
                                &info );
                 if (info != 0)
@@ -134,12 +135,12 @@ int main( int argc, char** argv)
             lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_S, &N );
 
             gpu_time = magma_wtime();
-            magma_ssygvdx( opts.itype, opts.jobz, 'I', opts.uplo,
+            magma_ssygvdx( opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
                            N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
                            h_work, lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                           #if defined(PRECISION_z) || defined(PRECISION_c)
                            rwork, lrwork,
-#endif
+                           #endif
                            iwork, liwork,
                            &info );
             gpu_time = magma_wtime() - gpu_time;
@@ -157,46 +158,46 @@ int main( int argc, char** argv)
                           | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
                    (2)    | S(with V) - S(w/o V) | / | S |
                    =================================================================== */
-#if defined(PRECISION_d) || defined(PRECISION_s)
+                #if defined(PRECISION_d) || defined(PRECISION_s)
                 float *rwork = h_work + N*N;
-#endif
+                #endif
                 float temp1, temp2;
                 
                 result[0] = 1.;
-                result[0] /= lapackf77_slansy("1", &opts.uplo, &N, h_A, &N, rwork);
+                result[0] /= lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_A, &N, rwork);
                 result[0] /= lapackf77_slange("1", &N, &m1, h_R, &N, rwork);
                 
                 if (opts.itype == 1) {
-                    blasf77_ssymm("L", &opts.uplo, &N, &m1, &c_one, h_A, &N, h_R, &N, &c_zero, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &N, h_R, &N, &c_zero, h_work, &N);
                     for(int i=0; i < m1; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_ssymm("L", &opts.uplo, &N, &m1, &c_neg_one, h_B, &N, h_R, &N, &c_one, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_neg_one, h_B, &N, h_R, &N, &c_one, h_work, &N);
                     result[0] *= lapackf77_slange("1", &N, &m1, h_work, &N, rwork)/N;
                 }
                 else if (opts.itype == 2) {
-                    blasf77_ssymm("L", &opts.uplo, &N, &m1, &c_one, h_B, &N, h_R, &N, &c_zero, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_B, &N, h_R, &N, &c_zero, h_work, &N);
                     for(int i=0; i < m1; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_ssymm("L", &opts.uplo, &N, &m1, &c_one, h_A, &N, h_work, &N, &c_neg_one, h_R, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &N, h_work, &N, &c_neg_one, h_R, &N);
                     result[0] *= lapackf77_slange("1", &N, &m1, h_R, &N, rwork)/N;
                 }
                 else if (opts.itype == 3) {
-                    blasf77_ssymm("L", &opts.uplo, &N, &m1, &c_one, h_A, &N, h_R, &N, &c_zero, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &N, h_R, &N, &c_zero, h_work, &N);
                     for(int i=0; i < m1; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_ssymm("L", &opts.uplo, &N, &m1, &c_one, h_B, &N, h_work, &N, &c_neg_one, h_R, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_B, &N, h_work, &N, &c_neg_one, h_R, &N);
                     result[0] *= lapackf77_slange("1", &N, &m1, h_R, &N, rwork)/N;
                 }
                 
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_S, &N );
                 
-                magma_ssygvdx( opts.itype, 'N', 'I', opts.uplo,
+                magma_ssygvdx( opts.itype, MagmaNoVec, MagmaRangeI, opts.uplo,
                                N, h_R, N, h_S, N, vl, vu, il, iu, &m2, w2,
                                h_work, lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                               #if defined(PRECISION_z) || defined(PRECISION_c)
                                rwork, lrwork,
-#endif
+                               #endif
                                iwork, liwork,
                                &info );
                 if (info != 0)
@@ -237,9 +238,10 @@ int main( int argc, char** argv)
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_S    );
             TESTING_FREE_PIN( h_work );
-#if defined(PRECISION_z) || defined(PRECISION_c)
+            #if defined(PRECISION_z) || defined(PRECISION_c)
             TESTING_FREE_PIN( rwork );
-#endif
+            #endif
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

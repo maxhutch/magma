@@ -1,34 +1,20 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zlahr2_m.cpp normal z -> s, Fri Apr 25 15:05:52 2014
        @author Mark Gates
 */
 #include "common_magma.h"
 
 #define PRECISION_s
 
-extern "C" magma_int_t
-magma_slahr2_m(
-    magma_int_t n, magma_int_t k, magma_int_t nb,
-    float *A, magma_int_t lda,
-    float *tau,
-    float *T, magma_int_t ldt,
-    float *Y, magma_int_t ldy,
-    struct sgehrd_data* data )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SLAHR2 reduces the first NB columns of a real general n-BY-(n-k+1)
     matrix A so that elements below the k-th subdiagonal are zero. The
     reduction is performed by an orthogonal similarity transformation
@@ -39,19 +25,23 @@ magma_slahr2_m(
     This is an auxiliary routine called by SGEHRD.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The offset for the reduction. Elements below the k-th
             subdiagonal in the first NB columns are reduced to zero.
             K < N.
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             The number of columns to be reduced.
 
-    A       (input/output) REAL array, dimension (LDA,N-K+1)
+    @param[in,out]
+    A       REAL array, dimension (LDA,N-K+1)
             On entry, the n-by-(n-k+1) general matrix A.
             On exit, the elements on and above the k-th subdiagonal in
             the first NB columns are overwritten with the corresponding
@@ -60,35 +50,37 @@ magma_slahr2_m(
             product of elementary reflectors. The other columns of A are
             unchanged. See Further Details.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    TAU     (output) REAL array, dimension (NB)
+    @param[out]
+    tau     REAL array, dimension (NB)
             The scalar factors of the elementary reflectors. See Further
             Details.
 
-    T       (output) REAL array, dimension (LDT,NB)
+    @param[out]
+    T       REAL array, dimension (LDT,NB)
             The upper triangular matrix T.
 
-    LDT     (input) INTEGER
+    @param[in]
+    ldt     INTEGER
             The leading dimension of the array T.  LDT >= NB.
 
-    Y       (output) REAL array, dimension (LDY,NB)
+    @param[out]
+    Y       REAL array, dimension (LDY,NB)
             The n-by-nb matrix Y.
 
-    LDY     (input) INTEGER
+    @param[in]
+    ldy     INTEGER
             The leading dimension of the array Y. LDY >= N.
 
-    dA      (input/output) REAL array on the GPU, dimension (LDA,N-K+1)
-            On entry, the n-by-(n-k+1) general matrix A.
-            On exit, the elements in rows K:N of the first NB columns are
-            overwritten with the matrix Y.
-
-    DV      (output) REAL array on the GPU, dimension (N, NB)
-            On exit this contains the Householder vectors of the transformation.
+    @param[in,out]
+    data    Structure with pointers to dA, dT, dV, dW, dY
+            which are distributed across multiple GPUs.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of nb elementary reflectors
 
        Q = H(1) H(2) . . . H(nb).
@@ -109,6 +101,7 @@ magma_slahr2_m(
     The contents of A on exit are illustrated by the following example
     with n = 7, k = 3 and nb = 2:
 
+    @verbatim
        ( a   a   a   a   a )
        ( a   a   a   a   a )
        ( a   a   a   a   a )
@@ -116,6 +109,7 @@ magma_slahr2_m(
        ( v1  h   a   a   a )
        ( v1  v2  a   a   a )
        ( v1  v2  a   a   a )
+    @endverbatim
 
     where "a" denotes an element of the original matrix A, h denotes a
     modified element of the upper Hessenberg matrix H, and vi denotes an
@@ -127,8 +121,18 @@ magma_slahr2_m(
     form through hybrid GPU-based computing," University of Tennessee Computer
     Science Technical Report, UT-CS-09-642 (also LAPACK Working Note 219),
     May 24, 2009.
-    =====================================================================    */
 
+    @ingroup magma_sgeev_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_slahr2_m(
+    magma_int_t n, magma_int_t k, magma_int_t nb,
+    float *A, magma_int_t lda,
+    float *tau,
+    float *T, magma_int_t ldt,
+    float *Y, magma_int_t ldy,
+    struct sgehrd_data* data )
+{
     #define  A(  i, j ) ( A + (i) + (j)*lda)
     #define  Y(  i, j ) ( Y + (i) + (j)*ldy)
     #define  T(  i, j ) ( T + (i) + (j)*ldt)
@@ -280,9 +284,9 @@ magma_slahr2_m(
                 lblock += 1;
             }
             // treat V as (nb*ngpu) x nblock matrix, and Vd as nb x nblock matrix
-            magmablas_slacpy( 'F', nb, nblocks-lblock,
+            magmablas_slacpy( MagmaFull, nb, nblocks-lblock,
                               dV (d, d*nb + lblock*nb*ngpu, i), nb*ngpu,
-                              dVd(d, 0    + lblock*nb     , i), nb );
+                              dVd(d, 0    + lblock*nb,      i), nb );
             
             // convert global indices (k) to local indices (dk)
             magma_indices_1D_bcyclic( nb, ngpu, d, k+i+1, n, &dki1, &dn );
@@ -292,10 +296,10 @@ magma_slahr2_m(
             // each GPU copies to different temporary vector in Y,
             // which are summed in separate loop below
             if ( dn-dki1 > 0 ) {
-                magma_sgemv( 'N', n-k, dn-dki1,
-                             c_one,  dA (d, k   , dki1), ldda,
+                magma_sgemv( MagmaNoTrans, n-k, dn-dki1,
+                             c_one,  dA (d, k,    dki1), ldda,
                                      dVd(d, dki1,    i), 1,
-                             c_zero, dY (d, k   ,    i), 1 );
+                             c_zero, dY (d, k,       i), 1 );
                 
                 // copy vector to host, storing in column nb+d of Y
                 // as temporary space (Y has >= nb+ngpu columns)
@@ -379,10 +383,10 @@ magma_slahr2_m(
         // each GPU copies to different temporary block in Y,
         // which are summed in separate loop below
         if ( dn-dki1 > 0 ) {
-            magma_sgemm( 'N', 'N', k, nb, dn-dki1,
-                         c_one,  dA (d, 0   , dki1), ldda,
+            magma_sgemm( MagmaNoTrans, MagmaNoTrans, k, nb, dn-dki1,
+                         c_one,  dA (d, 0,    dki1), ldda,
                                  dVd(d, dki1,    0), ldvd,
-                         c_zero, dY (d, 0   ,    0), ldda );
+                         c_zero, dY (d, 0,       0), ldda );
             
             // copy result to host, storing in columns [nb + nb*d : nb + nb*(d+1)] of Y
             // as temporary space (Y has nb + nb*ngpu columns)
@@ -413,4 +417,4 @@ magma_slahr2_m(
     }
 
     return 0;
-} // magma_slahr2
+} /* magma_slahr2 */

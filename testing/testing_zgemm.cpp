@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -14,7 +14,7 @@
 #include <string.h>
 #include <math.h>
 #include <cuda_runtime_api.h>
-#include <cublas.h>
+#include <cublas_v2.h>
 
 // includes, project
 #include "flops.h"
@@ -50,14 +50,16 @@ int main( int argc, char** argv)
     
     printf("If running lapack (option --lapack), MAGMA and CUBLAS error are both computed\n"
            "relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n"
-           "transA = %c, transB = %c\n", opts.transA, opts.transB );
+           "transA = %s, transB = %s\n",
+           lapack_trans_const(opts.transA),
+           lapack_trans_const(opts.transB) );
     printf("    M     N     K   MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  CUBLAS error\n");
     printf("=========================================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
-            K = opts.ksize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
+            K = opts.ksize[itest];
             gflops = FLOPS_ZGEMM( M, N, K ) / 1e9;
 
             if ( opts.transA == MagmaNoTrans ) {
@@ -101,7 +103,7 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &sizeC, h_C );
             
             /* =====================================================================
-               Performs operation using MAGMA-BLAS
+               Performs operation using MAGMABLAS
                =================================================================== */
             magma_zsetmatrix( Am, An, h_A, lda, d_A, ldda );
             magma_zsetmatrix( Bm, Bn, h_B, ldb, d_B, lddb );
@@ -118,15 +120,15 @@ int main( int argc, char** argv)
             magma_zgetmatrix( M, N, d_C, lddc, h_Cmagma, ldc );
             
             /* =====================================================================
-               Performs operation using CUDA-BLAS
+               Performs operation using CUBLAS
                =================================================================== */
             magma_zsetmatrix( M, N, h_C, ldc, d_C, lddc );
             
             cublas_time = magma_sync_wtime( NULL );
-            cublasZgemm( opts.transA, opts.transB, M, N, K,
-                         alpha, d_A, ldda,
-                                d_B, lddb,
-                         beta,  d_C, lddc );
+            cublasZgemm( handle, cublas_trans_const(opts.transA), cublas_trans_const(opts.transB), M, N, K,
+                         &alpha, d_A, ldda,
+                                 d_B, lddb,
+                         &beta,  d_C, lddc );
             cublas_time = magma_sync_wtime( NULL ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
@@ -137,7 +139,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                blasf77_zgemm( &opts.transA, &opts.transB, &M, &N, &K,
+                blasf77_zgemm( lapack_trans_const(opts.transA), lapack_trans_const(opts.transB), &M, &N, &K,
                                &alpha, h_A, &lda,
                                        h_B, &ldb,
                                &beta,  h_C, &ldc );
@@ -189,6 +191,7 @@ int main( int argc, char** argv)
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_B );
             TESTING_FREE_DEV( d_C );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

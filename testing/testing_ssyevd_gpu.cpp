@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-    @generated s Tue Dec 17 13:18:57 2013
+    @generated from testing_dsyevd_gpu.cpp normal d -> s, Fri Apr 25 15:06:13 2014
 
 */
 
@@ -55,9 +55,9 @@ int main( int argc, char** argv)
     
     printf("    N   CPU Time (sec)   GPU Time (sec)\n");
     printf("=======================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             n2   = N*N;
             lda  = N;
             ldda = ((N + 31)/32)*32;
@@ -128,7 +128,7 @@ int main( int argc, char** argv)
                 
                 // tau=NULL is unused since itype=1
                 magma_sgetmatrix( N, N, d_R, ldda, h_R, lda );
-                lapackf77_ssyt21( &ione, &opts.uplo, &N, &izero,
+                lapackf77_ssyt21( &ione, lapack_uplo_const(opts.uplo), &N, &izero,
                                   h_A, &lda,
                                   w1, h_work,
                                   h_R, &lda,
@@ -160,7 +160,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_ssyevd( &opts.jobz, &opts.uplo,
+                lapackf77_ssyevd( lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
                                   &N, h_A, &lda, w2,
                                   h_work, &lwork,
                                   iwork, &liwork,
@@ -197,6 +197,7 @@ int main( int argc, char** argv)
             TESTING_FREE_PIN( h_work );
             
             TESTING_FREE_DEV( d_R );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:56 2013
+       @generated from testing_zhemv_mgpu.cpp normal z -> s, Fri Apr 25 15:06:06 2014
 */
 
 #include <stdlib.h>
@@ -13,396 +13,254 @@
 #include <string.h>
 #include <math.h>
 #include <cuda_runtime_api.h>
-#include <cublas.h>
+#include <cublas_v2.h>
 #include <cblas.h>
 
 #include "flops.h"
 #include "magma.h"
-#include "magmablas.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
 #define PRECISION_s
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
-#define FLOPS(n) ( 6. * FMULS_SYMV(n) + 2. * FADDS_SYMV(n))
-#else
-#define FLOPS(n) (      FMULS_SYMV(n) +      FADDS_SYMV(n))
-#endif
-
-#define MultiGPUs
-#define validate
-
-
 int main(int argc, char **argv)
-{        
+{
     TESTING_INIT();
     magma_setdevice(0);
 
-    magma_timestr_t  start, end;
-    float      flops, magma_perf, cuda_perf, error, work[1];
+    real_Double_t gflops, gpu_time, gpu_perf, cuda_time, cuda_perf;
+    float      error, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     float c_neg_one = MAGMA_S_NEG_ONE;
-    magma_int_t n_local[4];
+    magma_int_t n_local[MagmaMaxGPUs];
 
-    FILE        *fp ; 
-    magma_int_t N, m, i, j, lda, LDA, M;
-    magma_int_t matsize;
-    magma_int_t vecsize;
-    magma_int_t istart = 64;
+    magma_int_t N, d, j, lda, nb, blocks, lwork, matsize, vecsize;
     magma_int_t incx = 1;
-    char        uplo = MagmaLower;
 
-    float alpha = MAGMA_S_MAKE(1., 0.); // MAGMA_S_MAKE(  1.5, -2.3 );
-    float beta  = MAGMA_S_MAKE(0., 0.); // MAGMA_S_MAKE( -0.6,  0.8 );
-    float *A, *X, *Y[4], *Ycublas, *Ymagma;
-    float *dA, *dX[4], *dY[4], *d_lA[4], *dYcublas ;
+    float alpha = MAGMA_S_MAKE(  1.5, -2.3 );  // MAGMA_S_ONE;
+    float beta  = MAGMA_S_MAKE( -0.6,  0.8 );  // MAGMA_S_ZERO;
+    float *A, *X, *Y[MagmaMaxGPUs], *Ycublas, *Ymagma;
+    float *dA, *dX[MagmaMaxGPUs], *dY[MagmaMaxGPUs], *d_lA[MagmaMaxGPUs], *dYcublas;
 
-    magma_queue_t stream[4][10];
+    //magma_queue_t stream[MagmaMaxGPUs][10];
     float *C_work;
-    float *dC_work[4];
-
-    int max_num_gpus;
-    magma_int_t num_gpus = 1, nb;
-    magma_int_t blocks, lwork;
-    magma_int_t offset = 0;
-
-    M = 0;
-    N = 0;
-    if (argc != 1){
-        for(i = 1; i<argc; i++){
-            if (strcmp("-N", argv[i])==0)
-            {
-                N = atoi(argv[++i]);
-                istart = N;
-            }
-            else if (strcmp("-M", argv[i])==0)
-                M = atoi(argv[++i]);
-            else if (strcmp("-NGPU", argv[i])==0)
-              num_gpus = atoi(argv[++i]);
-            else if (strcmp("-offset", argv[i])==0)
-              offset = atoi(argv[++i]);
-        }
-        if ( M == 0 ) {
-            M = N;
-        }
-        if ( N == 0 ) {
-            N = M;
-        }
-        if (M>0 && N>0)
-        {    printf("  testing_ssymv_mgpu -M %d -N %d -NGPU %d\n\n", (int) M, (int) N, (int) num_gpus);
-            printf("  in %c side \n", uplo);
-        }
-        else
-            {
-                printf("\nUsage: \n");
-                printf("  testing_ssymv_mgpu -M %d -N %d -NGPU %d\n\n", 
-                       1024, 1024, 1);
-                exit(1);
-            }
-    }
-    else {
-#if defined(PRECISION_z)
-        M = N = 8000;
-#else
-        M = N = 12480;
-#endif 
-        num_gpus = 2;
-        offset = 0;
-        printf("\nUsage: \n");
-        printf("  testing_ssymv_mgpu -M %d -N %d -NGPU %d\n\n", (int) M, (int) N, (int) num_gpus);
-    }
-         
-
-    //////////////////////////////////////////////////////////////////////////
-    cudaGetDeviceCount(&max_num_gpus);
-    if (num_gpus > max_num_gpus){
-      printf("More GPUs requested than available. Have to change it.\n");
-      num_gpus = max_num_gpus;
-    }
-    printf("Number of GPUs to be used = %d\n", (int) num_gpus);
-    for(int i=0; i< num_gpus; i++)
-    {
-        magma_queue_create(&stream[i][0]);
-    }
+    float *dC_work[MagmaMaxGPUs];
+    magma_int_t     status = 0;
     
+    magma_opts opts;
+    parse_opts( argc, argv, &opts );
+    
+    float tol = opts.tolerance * lapackf77_slamch("E");
 
-    LDA = ((N+31)/32)*32;
-    matsize = N*LDA;
-    vecsize = N*incx;
     nb = 32;
     //nb = 64;
 
-    printf("block size = %d\n", (int) nb);
-   
-    TESTING_MALLOC_CPU( A,       float, matsize );
-    TESTING_MALLOC_CPU( X,       float, vecsize );
-    TESTING_MALLOC_CPU( Ycublas, float, vecsize );
-    TESTING_MALLOC_CPU( Ymagma,  float, vecsize );
-    for(i=0; i<num_gpus; i++)
-    {     
-        TESTING_MALLOC_CPU( Y[i], float, vecsize );
-    }
-
-    magma_setdevice(0);
-    TESTING_MALLOC_DEV( dA,       float, matsize );
-    TESTING_MALLOC_DEV( dYcublas, float, vecsize );
-
-    for(i=0; i<num_gpus; i++)
-    {      
-        n_local[i] = ((N/nb)/num_gpus)*nb;
-        if (i < (N/nb)%num_gpus)
-            n_local[i] += nb;
-        else if (i == (N/nb)%num_gpus)
-            n_local[i] += N%nb;
-        
-        magma_setdevice(i);
-        
-        TESTING_MALLOC_DEV( d_lA[i], float, LDA*n_local[i] );// potentially bugged 
-        TESTING_MALLOC_DEV( dX[i],   float, vecsize );
-        TESTING_MALLOC_DEV( dY[i],   float, vecsize );
-        
-        printf("device %2d n_local = %4d\n", (int) i, (int) n_local[i]); 
-    }
-    magma_setdevice(0);
-
-      
-
-    //////////////////////////////////////////////////////////////////////////
-
-    /* Initialize the matrix */
-    lapackf77_slarnv( &ione, ISEED, &matsize, A );
-    magma_smake_symmetric( N, A, LDA );
-
-    blocks = N / nb + (N % nb != 0);
-    lwork = LDA * (blocks + 1);
-    TESTING_MALLOC_CPU( C_work, float, lwork );
-    for(i=0; i<num_gpus; i++){
-           magma_setdevice(i);  
-           TESTING_MALLOC_DEV( dC_work[i], float, lwork );
-           //fillZero(dC_work[i], lwork);
-    }
-      
-     magma_setdevice(0);
-
-
-    //////////////////////////////////////////////////////////////////////////
-   
-    fp = fopen ("results_ssymv_mgpu.csv", "w") ;
-    if( fp == NULL ){ printf("Couldn't open output file\n"); exit(1);}
-
-    printf("SSYMV float precision\n\n");
-
-    printf( "   n   CUBLAS,Gflop/s   MAGMABLAS,Gflop/s      \"error\"\n" 
+    printf("block size = %d, offset %d\n", (int) nb, (int) opts.offset );
+    printf( "    N   CUBLAS, Gflop/s   MAGMABLAS, Gflop/s      \"error\"\n"
             "==============================================================\n");
-    fprintf(fp, "   n   CUBLAS,Gflop/s   MAGMABLAS,Gflop/s      \"error\"\n" 
-            "==============================================================\n");
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+        for( int iter = 0; iter < opts.niter; ++iter ) {
+            N = opts.nsize[itest];
+            lda = ((N+31)/32)*32;
+            matsize = N*lda;
+            vecsize = N*incx;
+            gflops = FLOPS_SSYMV( N ) / 1e9;
 
-
-//    for( offset = 0; offset< N; offset ++ )
-    
-    for(int size = istart ; size <= N ; size += 128)
-    {
-    //    printf("offset = %d ", offset);
-        m = size ;
-    //    m = N;
-        // lda = ((m+31)/32)*32;// 
-        lda = LDA; 
-        flops = FLOPS( (float)m ) / 1e6;
-
-        printf(      "N %5d ", (int) m );
-        fprintf( fp, "%5d, ", (int) m );
-
-        vecsize = m * incx;
-        lapackf77_slarnv( &ione, ISEED, &vecsize, X );
-        lapackf77_slarnv( &ione, ISEED, &vecsize, Y[0] );
-
-        /* =====================================================================
-           Performs operation using CUDA-BLAS
-           =================================================================== */
-        magma_setdevice(0);
-        magma_ssetmatrix_1D_col_bcyclic(m, m, A, LDA, d_lA, lda, num_gpus, nb); 
-        magma_setdevice(0);
-
-    
-    
-    magma_ssetmatrix( m, m, A, LDA, dA, lda );
-        magma_ssetvector( m, Y[0], incx, dYcublas, incx );
-        
-        for(i=0; i<num_gpus; i++){
-            magma_setdevice(i);
-            magma_ssetvector( m, X, incx, dX[i], incx );
-            magma_ssetvector( m, Y[0], incx, dY[i], incx );
-
-
-            blocks    = m / nb + (m % nb != 0);
-            magma_ssetmatrix( lda, blocks, C_work, LDA, dC_work[i], lda );
-        }
-
-        magma_setdevice(0);
-        start = get_current_time();
-        cublasSsymv( uplo, m-offset, alpha, dA + offset + offset * lda, lda, dX[0] + offset, incx, beta, dYcublas + offset, incx );
-         
-        end = get_current_time();
-
-        magma_sgetvector( m, dYcublas, incx, Ycublas, incx );
-                
-        
-        cuda_perf = flops / GetTimerValue(start,end);
-        printf(     "%11.2f", cuda_perf );
-        fprintf(fp, "%11.2f,", cuda_perf );
-       
-        
-        magma_setdevice(0);
-
-        
-        start = get_current_time();
-        
-
-        if(nb == 32)
-       { 
-
-        magmablas_ssymv2_mgpu_32_offset( uplo, m, alpha, d_lA, lda, dX, incx, beta, dY, incx, 
-                dC_work, lwork, num_gpus, nb, offset);
- 
-        }
-        else // nb = 64
-       { 
-
-        magmablas_ssymv2_mgpu_offset( uplo, m, alpha, d_lA, lda, dX, incx, beta, dY, incx, 
-                dC_work, lwork, num_gpus, nb, offset);
- 
-        }
-    
-            
-        for(i=1; i<num_gpus; i++)
-        {
-           magma_setdevice(i);
-           cudaDeviceSynchronize();
-        }
-      
-        end = get_current_time();
-        magma_perf = flops / GetTimerValue(start,end); 
-        printf(     "%11.2f", magma_perf );
-        fprintf(fp, "%11.2f,", magma_perf );
-       
-
-        for(i=0; i<num_gpus; i++)
-        {        
-            magma_setdevice(i);
-            magma_sgetvector( m, dY[i], incx, Y[i], incx );
-        }
-        magma_setdevice(0);
-
-        
-#ifdef validate        
-
-        for( j= offset;j<m;j++)
-        {
-            for(i=1; i<num_gpus; i++)
-            {
-
-//            printf("Y[%d][%d] = %15.14f\n", i, j, Y[i][j].x);
-#if defined(PRECISION_z) || defined(PRECISION_c)
-            Y[0][j].x = Y[0][j].x + Y[i][j].x;
-                        Y[0][j].y = Y[0][j].y + Y[i][j].y;
-#else 
-            Y[0][j] = Y[0][j] + Y[i][j];
-            
-#endif 
-
+            TESTING_MALLOC_CPU( A,       float, matsize );
+            TESTING_MALLOC_CPU( X,       float, vecsize );
+            TESTING_MALLOC_CPU( Ycublas, float, vecsize );
+            TESTING_MALLOC_CPU( Ymagma,  float, vecsize );
+            for(d=0; d < opts.ngpu; d++) {
+                TESTING_MALLOC_CPU( Y[d], float, vecsize );
             }
-        }
+            
+            magma_setdevice(0);
+            TESTING_MALLOC_DEV( dA,       float, matsize );
+            TESTING_MALLOC_DEV( dYcublas, float, vecsize );
+            
+            for(d=0; d < opts.ngpu; d++) {
+                n_local[d] = ((N/nb)/opts.ngpu)*nb;
+                if (d < (N/nb)%opts.ngpu)
+                    n_local[d] += nb;
+                else if (d == (N/nb)%opts.ngpu)
+                    n_local[d] += N%nb;
+                
+                magma_setdevice(d);
+                
+                TESTING_MALLOC_DEV( d_lA[d], float, lda*n_local[d] ); // potentially bugged
+                TESTING_MALLOC_DEV( dX[d],   float, vecsize );
+                TESTING_MALLOC_DEV( dY[d],   float, vecsize );
+                
+                printf("device %2d n_local = %4d\n", (int) d, (int) n_local[d]);
+            }
+            magma_setdevice(0);
+            
+            //////////////////////////////////////////////////////////////////////////
+            
+            /* Initialize the matrix */
+            lapackf77_slarnv( &ione, ISEED, &matsize, A );
+            magma_smake_symmetric( N, A, lda );
+            
+            blocks = (N-1) / nb + 1;
+            lwork = lda * (blocks + 1);
+            TESTING_MALLOC_CPU( C_work, float, lwork );
+            for(d=0; d < opts.ngpu; d++) {
+                magma_setdevice(d);
+                TESTING_MALLOC_DEV( dC_work[d], float, lwork );
+            }
+            magma_setdevice(0);
+            
+            lapackf77_slarnv( &ione, ISEED, &vecsize, X );
+            lapackf77_slarnv( &ione, ISEED, &vecsize, Y[0] );
+            
+            /* =====================================================================
+               Performs operation using CUBLAS
+               =================================================================== */
+            magma_setdevice(0);
+            magma_ssetmatrix_1D_col_bcyclic(N, N, A, lda, d_lA, lda, opts.ngpu, nb);
+            magma_setdevice(0);
+            
+            magma_ssetmatrix( N, N, A, lda, dA, lda );
+            magma_ssetvector( N, Y[0], incx, dYcublas, incx );
+            
+            for(d=0; d < opts.ngpu; d++) {
+                magma_setdevice(d);
+                magma_ssetvector( N, X, incx, dX[d], incx );
+                magma_ssetvector( N, Y[0], incx, dY[d], incx );
+                magma_ssetmatrix( lda, blocks, C_work, lda, dC_work[d], lda );
+            }
+            
+            magma_setdevice(0);
+            cuda_time = magma_wtime();
+            cublasSsymv( handle, cublas_uplo_const(opts.uplo), N-opts.offset,
+                         &alpha, dA + opts.offset + opts.offset*lda, lda,
+                                 dX[0] + opts.offset,    incx,
+                         &beta,  dYcublas + opts.offset, incx );
+            cuda_time = magma_wtime() - cuda_time;
+            cuda_perf = gflops / cuda_time;
+            
+            magma_sgetvector( N, dYcublas, incx, Ycublas, incx );
+            
+            /* =====================================================================
+               Performs operation using MAGMABLAS
+               =================================================================== */
+            magma_setdevice(0);
+            gpu_time = magma_wtime();
+            
+            if (nb == 32) {
+                magmablas_ssymv2_mgpu_32_offset(
+                    opts.uplo, N, alpha, d_lA, lda, dX, incx, beta, dY, incx,
+                    dC_work, lwork, opts.ngpu, nb, opts.offset);
+            }
+            else { // nb = 64
+                magmablas_ssymv2_mgpu_offset(
+                    opts.uplo, N, alpha, d_lA, lda, dX, incx, beta, dY, incx,
+                    dC_work, lwork, opts.ngpu, nb, opts.offset);
+            }
+            
+            // todo probably don't need sync here; getvector will sync
+            for(d=1; d < opts.ngpu; d++) {
+                magma_setdevice(d);
+                cudaDeviceSynchronize();
+            }
+            
+            for(d=0; d < opts.ngpu; d++) {
+                magma_setdevice(d);
+                magma_sgetvector( N, dY[d], incx, Y[d], incx );
+            }
+            magma_setdevice(0);
+            
+            for( j = opts.offset; j < N; j++) {
+                for(d=1; d < opts.ngpu; d++) {
+                    //printf("Y[%d][%d] = %15.14f\n", d, j, Y[d][j].x);
+                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    Y[0][j].x = Y[0][j].x + Y[d][j].x;
+                                Y[0][j].y = Y[0][j].y + Y[d][j].y;
+                    #else
+                    Y[0][j] = Y[0][j] + Y[d][j];
+                    #endif
+                }
+            }
+            
+            gpu_time = magma_wtime() - gpu_time;
+            gpu_perf = gflops / gpu_time;
 
 /*
 
 #if defined(PRECISION_z) || defined(PRECISION_c)
-        
-        for( j=offset;j<m;j++)
-        {
-            if(Y[0][j].x != Ycublas[j].x)
-            {
-                     printf("Y-multi[%d] = %f, %f\n",  j, Y[0][j].x, Y[0][j].y );
-                     printf("Ycublas[%d] = %f, %f\n",  j, Ycublas[j].x, Ycublas[j].y);
-            }
-        }
 
-#else 
-
-        for( j=offset;j<m;j++)
-        {
-            if(Y[0][j] != Ycublas[j])
-            {
-                     printf("Y-multi[%d] = %f\n",  j, Y[0][j] );
-                     printf("Ycublas[%d] = %f\n",  j, Ycublas[j]);
+            for( j = opts.offset; j < N; j++) {
+                if (Y[0][j].x != Ycublas[j].x) {
+                    printf("Y-multi[%d] = %f, %f\n",  j, Y[0][j].x, Y[0][j].y );
+                    printf("Ycublas[%d] = %f, %f\n",  j, Ycublas[j].x, Ycublas[j].y);
+                }
             }
-        }
+
+#else
+
+            for( j = opts.offset; j < N; j++) {
+                if (Y[0][j] != Ycublas[j]) {
+                    printf("Y-multi[%d] = %f\n",  j, Y[0][j] );
+                    printf("Ycublas[%d] = %f\n",  j, Ycublas[j]);
+                }
+            }
 
 #endif
 
-*/        
-        /* =====================================================================
-           Computing the Difference Cublas VS Magma
-           =================================================================== */
-       
-        magma_int_t nw = m - offset ;
-        blasf77_saxpy( &nw, &c_neg_one, Y[0] + offset, &incx, Ycublas + offset, &incx);
-        error = lapackf77_slange( "M", &nw, &ione, Ycublas + offset, &nw, work );
-            
+*/
+            /* =====================================================================
+               Compute the Difference Cublas VS Magma
+               =================================================================== */
+            magma_int_t nw = N - opts.offset;
+            blasf77_saxpy( &nw, &c_neg_one, Y[0] + opts.offset, &incx, Ycublas + opts.offset, &incx);
+            error = lapackf77_slange( "N", &nw, &ione, Ycublas + opts.offset, &nw, work ) / N;
+
 #if  0
-        printf(      "\t\t %8.6e", error / m );
-        fprintf( fp, "\t\t %8.6e", error / m );
-
-        /*
-         * Extra check with cblas vs magma
-         */
-        cblas_scopy( m, Y, incx, Ycublas, incx );
-        cblas_ssymv( CblasColMajor, CblasLower, m, 
-                     (alpha), A, LDA, X, incx, 
-                     (beta), Ycublas, incx );
- 
-        blasf77_saxpy( &m, &c_neg_one, Ymagma, &incx, Ycublas, &incx);
-        error = lapackf77_slange( "M", &m, &ione, Ycublas, &m, work );
+            /*
+             * Extra check with cblas vs magma
+             */
+            cblas_scopy( N, Y, incx, Ycublas, incx );
+            cblas_ssymv( CblasColMajor, CblasLower, N,
+                         (alpha), A, lda, X, incx,
+                         (beta), Ycublas, incx );
+            
+            blasf77_saxpy( &N, &c_neg_one, Ymagma, &incx, Ycublas, &incx);
+            error = lapackf77_slange( "N", &N, &ione, Ycublas, &N, work ) / N;
 #endif
-
-        printf(      "\t\t %8.6e", error / m );
-        fprintf( fp, "\t\t %8.6e", error / m );
- 
-#endif 
-        printf("\n");        
-        fprintf(fp, "\n");        
+            printf( "%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s",
+                    (int) N, cuda_perf, cuda_time, gpu_perf, gpu_time,
+                    error, (error < tol ? "ok" : "failed") );
+            status |= ! (error < tol);
+            
+            /* Free Memory */
+            TESTING_FREE_CPU( A );
+            TESTING_FREE_CPU( X );
+            TESTING_FREE_CPU( Ycublas );
+            TESTING_FREE_CPU( Ymagma  );
+            TESTING_FREE_CPU( C_work  );
+            
+            magma_setdevice(0);
+            TESTING_FREE_DEV( dA );
+            TESTING_FREE_DEV( dYcublas );
+            
+            for(d=0; d < opts.ngpu; d++) {
+                TESTING_FREE_CPU( Y[d] );
+                magma_setdevice(d);
+                
+                TESTING_FREE_DEV( d_lA[d]    );
+                TESTING_FREE_DEV( dX[d]      );
+                TESTING_FREE_DEV( dY[d]      );
+                TESTING_FREE_DEV( dC_work[d] );
+            }
+            magma_setdevice(0);
+            fflush( stdout );
+        }
+        if ( opts.niter > 1 ) {
+            printf( "\n" );
+        }
     }
     
-    fclose( fp ) ; 
-
-    /* Free Memory */
-    TESTING_FREE_CPU( A );
-    TESTING_FREE_CPU( X );
-    TESTING_FREE_CPU( Ycublas );
-    TESTING_FREE_CPU( Ymagma  );
-    TESTING_FREE_CPU( C_work  );
-
-    magma_setdevice(0);
-    TESTING_FREE_DEV( dA );
-    TESTING_FREE_DEV( dYcublas );
-    
-    for(i=0; i<num_gpus; i++)
-    { 
-        TESTING_FREE_CPU( Y[i] );
-        magma_setdevice(i);
-
-        TESTING_FREE_DEV( d_lA[i]    );
-        TESTING_FREE_DEV( dX[i]      );
-        TESTING_FREE_DEV( dY[i]      );
-        TESTING_FREE_DEV( dC_work[i] );
-    }
-
-    magma_setdevice(0);
- ///////////////////////////////////////////////////////////   
-      
-
-    /* Free device */
     TESTING_FINALIZE();
-    return 0;
-}        
+    return status;
+}

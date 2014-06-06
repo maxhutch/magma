@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -21,7 +21,7 @@
 #include <string.h>
 #include <math.h>
 #include <cuda_runtime_api.h>
-#include <cublas.h>
+#include <cublas_v2.h>
 
 // includes, project
 #include "flops.h"
@@ -54,12 +54,13 @@ int main( int argc, char** argv)
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
-    printf("uplo = %c, transA = %c, diag = %c\n", opts.uplo, opts.transA, opts.diag );
+    printf("uplo = %s, transA = %s, diag = %s\n",
+           lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
     printf("    N  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)   CUBLAS error\n");
     printf("============================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             gflops = FLOPS_ZTRSM(opts.side, N, 1) / 1e9;
             lda    = N;
             ldda   = ((lda+31)/32)*32;
@@ -90,13 +91,14 @@ int main( int argc, char** argv)
             blasf77_zcopy( &N, h_b, &ione, h_x, &ione );
             
             /* =====================================================================
-               Performs operation using CUDA-BLAS
+               Performs operation using CUBLAS
                =================================================================== */
             magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
             magma_zsetvector( N, h_x, 1, d_x, 1 );
             
             cublas_time = magma_sync_wtime( NULL );
-            cublasZtrsv( opts.uplo, opts.transA, opts.diag,
+            cublasZtrsv( handle, cublas_uplo_const(opts.uplo),
+                         cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
                          N,
                          d_A, ldda,
                          d_x, 1 );
@@ -110,7 +112,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                blasf77_ztrsv( &opts.uplo, &opts.transA, &opts.diag,
+                blasf77_ztrsv( lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                                &N,
                                h_A, &lda,
                                h_x, &ione );
@@ -126,7 +128,7 @@ int main( int argc, char** argv)
             normA = lapackf77_zlange( "F", &N, &N, h_A, &lda, work );
             
             normx = lapackf77_zlange( "F", &N, &ione, h_xcublas, &ione, work );
-            blasf77_ztrmv( &opts.uplo, &opts.transA, &opts.diag,
+            blasf77_ztrmv( lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                            &N,
                            h_A, &lda,
                            h_xcublas, &ione );
@@ -156,6 +158,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_x );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

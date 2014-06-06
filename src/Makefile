@@ -1,14 +1,14 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      December 2013
+#      @date April 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = src
 MAGMA_DIR = ..
-include ../Makefile.internal
+include $(MAGMA_DIR)/Makefile.internal
 
 # ------------------------------------------------------------
 # Loosely, the order is alphabetic in each section, but mixed precision,
@@ -29,17 +29,18 @@ ZSRC := \
 	ztrtri_gpu.cpp		\
 	\
 	zpotrf_mgpu.cpp		\
+	zpotrf2_mgpu.cpp	\
+	zpotrf3_mgpu.cpp	\
 
 # Cholesky, CPU interface
 ZSRC += \
 	zposv.cpp		\
 	zpotrf.cpp		\
-	zpotrf_m.cpp		\
-	zpotrf2_mgpu.cpp	\
-	zpotrf3_mgpu.cpp	\
 	zpotri.cpp		\
 	zlauum.cpp		\
 	ztrtri.cpp		\
+	\
+	zpotrf_m.cpp		\
 
 # ----------
 # LU, GPU interface
@@ -54,19 +55,20 @@ ZSRC += \
 	zgetrs_gpu.cpp		\
 	\
 	zgetrf_mgpu.cpp		\
-	zgetrf2_mgpu.cpp		\
+	zgetrf2_mgpu.cpp	\
 
 # LU, CPU interface
 ZSRC += \
 	zgesv.cpp		\
 	zgetrf.cpp		\
-	zgetrf_m.cpp		\
 	zgetf2_nopiv.cpp	\
 	zgetrf_nopiv.cpp	\
+	\
+	zgetrf_m.cpp		\
 
 # LU, auxiliary for multi-gpu-dynamic
 ZSRC += \
-	zgetrf_incpiv_gpu.cpp		\
+	zgetrf_incpiv_gpu.cpp	\
 	zgessm_gpu.cpp		\
 	zssssm_gpu.cpp		\
 	ztstrf_gpu.cpp		\
@@ -79,17 +81,17 @@ ZSRC += \
 	zgelqf_gpu.cpp		\
 	zgels3_gpu.cpp		\
 	zgels_gpu.cpp		\
-	zgegqr_gpu.cpp          \
+	zgegqr_gpu.cpp		\
 	zgeqrf2_gpu.cpp		\
 	zgeqrf3_gpu.cpp		\
 	zgeqrf_gpu.cpp		\
-	zgeqr2x_gpu.cpp         \
-	zgeqr2x_gpu-v2.cpp      \
-	zgeqr2x_gpu-v3.cpp      \
+	zgeqr2x_gpu.cpp		\
+	zgeqr2x_gpu-v2.cpp	\
+	zgeqr2x_gpu-v3.cpp	\
 	zgeqrs3_gpu.cpp		\
 	zgeqrs_gpu.cpp		\
 	zlarfb_gpu.cpp		\
-	zlarfb_gpu_gemm.cpp		\
+	zlarfb_gpu_gemm.cpp	\
 	zungqr_gpu.cpp		\
 	zunmql2_gpu.cpp		\
 	zunmqr2_gpu.cpp		\
@@ -97,8 +99,8 @@ ZSRC += \
 	\
 	zgeqrf_mgpu.cpp		\
 	\
-	zgeqp3_gpu.cpp          \
-	zlaqps_gpu.cpp          \
+	zgeqp3_gpu.cpp		\
+	zlaqps_gpu.cpp		\
 
 # QR, CPU interface
 ZSRC += \
@@ -108,15 +110,15 @@ ZSRC += \
 	zgeqrf.cpp		\
 	zgeqrf_ooc.cpp		\
 	zungqr.cpp		\
-	zungqr2.cpp             \
+	zungqr2.cpp		\
 	zunmql.cpp		\
 	zunmqr.cpp		\
-	zunmqr_m.cpp		\
 	\
 	zgeqp3.cpp		\
 	zlaqps.cpp		\
 	\
 	zungqr_m.cpp		\
+	zunmqr_m.cpp		\
 
 # ----------
 # symmetric eigenvalues, GPU interface
@@ -143,6 +145,7 @@ ZSRC += \
 	dlaex0.cpp		\
 	dlaex1.cpp		\
 	dlaex3.cpp		\
+	dmove_eig.cpp		\
 	dstedx.cpp		\
 	zhetrd.cpp		\
 	zlatrd.cpp		\
@@ -150,7 +153,6 @@ ZSRC += \
 	zstedx.cpp		\
 	zungtr.cpp		\
 	zunmtr.cpp		\
-	dmove_eig.cpp		\
 
 # symmetric eigenvalues, multi-GPU 
 ZSRC += \
@@ -184,6 +186,7 @@ ZSRC += \
 	dsygvdx_2stage.cpp	\
 	zheevdx_2stage.cpp	\
 	zhegvdx_2stage.cpp	\
+	\
 	zbulge_back_m.cpp	\
 	zbulge_applyQ_v2_m.cpp	\
 	dsyevdx_2stage_m.cpp	\
@@ -220,6 +223,13 @@ ZSRC += \
 	zgehrd2.cpp		\
 	zlahr2.cpp		\
 	zlahru.cpp		\
+	dlaln2.cpp		\
+	dlaqtrsd.cpp		\
+	zlatrsd.cpp		\
+	dtrevc3.cpp		\
+	dtrevc3_mt.cpp		\
+	ztrevc3.cpp		\
+	ztrevc3_mt.cpp		\
 	zunghr.cpp		\
 	lapack_dtrevc3.f	\
 	lapack_ztrevc3.f	\
@@ -236,6 +246,8 @@ ZSRC += \
 # ----------
 # SVD
 ZSRC += \
+	dgesdd.cpp		\
+	zgesdd.cpp		\
 	dgesvd.cpp		\
 	zgesvd.cpp		\
 	zgebrd.cpp		\

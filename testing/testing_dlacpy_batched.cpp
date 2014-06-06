@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:56 2013
+       @generated from testing_zlacpy_batched.cpp normal z -> d, Fri Apr 25 15:06:07 2014
        @author Mark Gates
 
 */
@@ -51,10 +51,10 @@ int main( int argc, char** argv)
     printf("mb=%d, nb=%d, mstride=%d, nstride=%d\n", (int) mb, (int) nb, (int) mstride, (int) nstride );
     printf("    M    N ntile   CPU GFlop/s (sec)   GPU GFlop/s (sec)   check\n");
     printf("=================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             lda    = M;
             ldda   = ((M+31)/32)*32;
             size   = lda*N;
@@ -135,6 +135,7 @@ int main( int argc, char** argv)
             TESTING_FREE_CPU( hBarray );
             TESTING_FREE_DEV( dAarray );
             TESTING_FREE_DEV( dBarray );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

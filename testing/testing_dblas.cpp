@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:56 2013
+       @generated from testing_zblas.cpp normal z -> d, Fri Apr 25 15:06:07 2014
        @author Mark Gates
        
        These tests ensure that the MAGMA wrappers around CUBLAS calls are
@@ -15,11 +15,13 @@
 */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <cuda_runtime_api.h>
+#include <cublas_v2.h>
 
 // make sure that asserts are enabled
-#ifdef NDEBUG
 #undef NDEBUG
-#endif
 #include <assert.h>
 
 // includes, project
@@ -41,10 +43,10 @@ int main( int argc, char** argv )
     real_Double_t   gflops, t1, t2;
     double c_neg_one = MAGMA_D_NEG_ONE;
     magma_int_t ione = 1;
-    const char trans[] = { 'N', 'C', 'T' };
-    const char uplo[]  = { 'L', 'U' };
-    const char diag[]  = { 'U', 'N' };
-    const char side[]  = { 'L', 'R' };
+    magma_trans_t trans[] = { MagmaNoTrans, MagmaTrans, MagmaTrans };
+    magma_uplo_t  uplo [] = { MagmaLower, MagmaUpper };
+    magma_diag_t  diag [] = { MagmaUnit, MagmaNonUnit };
+    magma_side_t  side [] = { MagmaLeft, MagmaRight };
     
     double  *A,  *B,  *C,   *C2, *LU;
     double *dA, *dB, *dC1, *dC2;
@@ -56,7 +58,7 @@ int main( int argc, char** argv )
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t m, n, k, size, maxn, ld, info;
     magma_int_t *piv;
-    magma_err_t err;
+    magma_int_t err;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -64,18 +66,18 @@ int main( int argc, char** argv )
     printf( "Compares magma wrapper function to cublas function; all diffs should be exactly 0.\n\n" );
     
     total_error = 0.;
-    for( int i = 0; i < opts.ntest; ++i ) {
-        m = opts.msize[i];
-        n = opts.nsize[i];
-        k = opts.ksize[i];
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+        m = opts.msize[itest];
+        n = opts.nsize[itest];
+        k = opts.ksize[itest];
         printf("=========================================================================\n");
         printf( "m=%d, n=%d, k=%d\n", (int) m, (int) n, (int) k );
         
         // allocate matrices
         // over-allocate so they can be any combination of {m,n,k} x {m,n,k}.
         maxn = max( max( m, n ), k );
-        ld = maxn;
-        size = maxn*maxn;
+        ld = max( 1, maxn );
+        size = ld*maxn;
         err = magma_malloc_cpu( (void**) &piv, maxn*sizeof(magma_int_t) );  assert( err == 0 );
         err = magma_dmalloc_pinned( &A,  size );  assert( err == 0 );
         err = magma_dmalloc_pinned( &B,  size );  assert( err == 0 );
@@ -104,7 +106,7 @@ int main( int argc, char** argv )
             magma_dswap( m, dB(0,1), 1, dB(0,2), 1 );
             
             // check results, storing diff between magma and cuda calls in C2
-            cublasDaxpy( ld*n, c_neg_one, dA, 1, dB, 1 );
+            cublasDaxpy( handle, ld*n, &c_neg_one, dA, 1, dB, 1 );
             magma_dgetmatrix( m, n, dB, ld, C2, ld );
             error = lapackf77_dlange( "F", &m, &k, C2, &ld, work );
             total_error += error;
@@ -120,7 +122,9 @@ int main( int argc, char** argv )
         error = 0;
         for( int j = 0; j < k; ++j ) {
             magma_int_t i1 = magma_idamax( m, dA(0,j), 1 );
-            magma_int_t i2 = cublasIdamax( m, dA(0,j), 1 );
+            int i2;  // NOT magma_int_t, for cublas
+            cublasIdamax( handle, m, dA(0,j), 1, &i2 );
+            // todo need sync here?
             assert( i1 == i2 );
             error += abs( i1 - i2 );
         }
@@ -139,22 +143,25 @@ int main( int argc, char** argv )
             magma_dsetvector( maxn, B, 1, dB,  1 );
             magma_dsetvector( maxn, C, 1, dC1, 1 );
             magma_dsetvector( maxn, C, 1, dC2, 1 );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dgemv( trans[ia], m, n, alpha, dA, ld, dB, 1, beta, dC1, 1 );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDgemv( trans[ia], m, n, alpha, dA, ld, dB, 1, beta, dC2, 1 );
+            cublasDgemv( handle, cublas_trans_const(trans[ia]),
+                         m, n, &alpha, dA, ld, dB, 1, &beta, dC2, 1 );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            size = (trans[ia] == 'N' ? m : n);
-            cublasDaxpy( size, c_neg_one, dC1, 1, dC2, 1 );
+            size = (trans[ia] == MagmaNoTrans ? m : n);
+            cublasDaxpy( handle, size, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetvector( size, dC2, 1, C2, 1 );
             error = lapackf77_dlange( "F", &size, &ione, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DGEMV( m, n ) / 1e9;
             printf( "dgemv( %c )        diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    trans[ia], error, gflops/t1, gflops/t2 );
+                    lapacke_trans_const(trans[ia]), error, gflops/t1, gflops/t2 );
         }
         printf( "\n" );
         
@@ -166,21 +173,24 @@ int main( int argc, char** argv )
             magma_dsetvector( m, B, 1, dB,  1 );
             magma_dsetvector( m, C, 1, dC1, 1 );
             magma_dsetvector( m, C, 1, dC2, 1 );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dsymv( uplo[iu], m, alpha, dA, ld, dB, 1, beta, dC1, 1 );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDsymv( uplo[iu], m, alpha, dA, ld, dB, 1, beta, dC2, 1 );
+            cublasDsymv( handle, cublas_uplo_const(uplo[iu]),
+                         m, &alpha, dA, ld, dB, 1, &beta, dC2, 1 );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( m, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, m, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetvector( m, dC2, 1, C2, 1 );
             error = lapackf77_dlange( "F", &m, &ione, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYMV( m ) / 1e9;
             printf( "dsymv( %c )        diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    uplo[iu], error, gflops/t1, gflops/t2 );
+                    lapacke_uplo_const(uplo[iu]), error, gflops/t1, gflops/t2 );
         }
         printf( "\n" );
         
@@ -204,21 +214,25 @@ int main( int argc, char** argv )
             magma_dsetmatrix( m, m, LU, ld, dA, ld );
             magma_dsetvector( m, C, 1, dC1, 1 );
             magma_dsetvector( m, C, 1, dC2, 1 );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dtrsv( uplo[iu], trans[it], diag[id], m, dA, ld, dC1, 1 );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDtrsv( uplo[iu], trans[it], diag[id], m, dA, ld, dC2, 1 );
+            cublasDtrsv( handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
+                         cublas_diag_const(diag[id]), m, dA, ld, dC2, 1 );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( m, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, m, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetvector( m, dC2, 1, C2, 1 );
             error = lapackf77_dlange( "F", &m, &ione, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DTRSM( MagmaLeft, m, 1 ) / 1e9;
             printf( "dtrsv( %c, %c, %c )  diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    uplo[iu], trans[it], diag[id], error, gflops/t1, gflops/t2 );
+                    lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]), lapacke_diag_const(diag[id]),
+                    error, gflops/t1, gflops/t2 );
         }}}
         printf( "\n" );
         
@@ -229,27 +243,31 @@ int main( int argc, char** argv )
         // try combinations of no-trans/trans
         for( int ia = 0; ia < 3; ++ia ) {
         for( int ib = 0; ib < 3; ++ib ) {
-            bool nta = (trans[ia] == 'N');
-            bool ntb = (trans[ib] == 'N');
+            bool nta = (trans[ia] == MagmaNoTrans);
+            bool ntb = (trans[ib] == MagmaNoTrans);
             magma_dsetmatrix( (nta ? m : k), (nta ? m : k), A, ld, dA,  ld );
             magma_dsetmatrix( (ntb ? k : n), (ntb ? n : k), B, ld, dB,  ld );
             magma_dsetmatrix( m, n, C, ld, dC1, ld );
             magma_dsetmatrix( m, n, C, ld, dC2, ld );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dgemm( trans[ia], trans[ib], m, n, k, alpha, dA, ld, dB, ld, beta, dC1, ld );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDgemm( trans[ia], trans[ib], m, n, k, alpha, dA, ld, dB, ld, beta, dC2, ld );
+            cublasDgemm( handle, cublas_trans_const(trans[ia]), cublas_trans_const(trans[ib]),
+                         m, n, k, &alpha, dA, ld, dB, ld, &beta, dC2, ld );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( ld*n, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetmatrix( m, n, dC2, ld, C2, ld );
             error = lapackf77_dlange( "F", &m, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DGEMM( m, n, k ) / 1e9;
             printf( "dgemm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    trans[ia], trans[ib], error, gflops/t1, gflops/t2 );
+                    lapacke_trans_const(trans[ia]), lapacke_trans_const(trans[ib]),
+                    error, gflops/t1, gflops/t2 );
         }}
         printf( "\n" );
         
@@ -263,21 +281,25 @@ int main( int argc, char** argv )
             magma_dsetmatrix( m, n, B, ld, dB,  ld );
             magma_dsetmatrix( m, n, C, ld, dC1, ld );
             magma_dsetmatrix( m, n, C, ld, dC2, ld );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dsymm( side[is], uplo[iu], m, n, alpha, dA, ld, dB, ld, beta, dC1, ld );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDsymm( side[is], uplo[iu], m, n, alpha, dA, ld, dB, ld, beta, dC2, ld );
+            cublasDsymm( handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
+                         m, n, &alpha, dA, ld, dB, ld, &beta, dC2, ld );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( ld*n, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetmatrix( m, n, dC2, ld, C2, ld );
             error = lapackf77_dlange( "F", &m, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYMM( side[is], m, n ) / 1e9;
             printf( "dsymm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    side[is], uplo[iu], error, gflops/t1, gflops/t2 );
+                    lapacke_side_const(side[is]), lapacke_uplo_const(uplo[iu]),
+                    error, gflops/t1, gflops/t2 );
         }}
         printf( "\n" );
         
@@ -290,21 +312,25 @@ int main( int argc, char** argv )
             magma_dsetmatrix( n, k, A, ld, dA,  ld );
             magma_dsetmatrix( n, n, C, ld, dC1, ld );
             magma_dsetmatrix( n, n, C, ld, dC2, ld );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dsyrk( uplo[iu], trans[it], n, k, dalpha, dA, ld, dbeta, dC1, ld );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDsyrk( uplo[iu], trans[it], n, k, dalpha, dA, ld, dbeta, dC2, ld );
+            cublasDsyrk( handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
+                         n, k, &dalpha, dA, ld, &dbeta, dC2, ld );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( ld*n, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetmatrix( n, n, dC2, ld, C2, ld );
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYRK( k, n ) / 1e9;
             printf( "dsyrk( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    uplo[iu], trans[it], error, gflops/t1, gflops/t2 );
+                    lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
+                    error, gflops/t1, gflops/t2 );
         }}
         printf( "\n" );
         
@@ -314,25 +340,29 @@ int main( int argc, char** argv )
         // try upper/lower, no-trans/trans
         for( int iu = 0; iu < 2; ++iu ) {
         for( int it = 0; it < 3; ++it ) {
-            bool nt = (trans[it] == 'N');
+            bool nt = (trans[it] == MagmaNoTrans);
             magma_dsetmatrix( (nt ? n : k), (nt ? n : k), A, ld, dA,  ld );
             magma_dsetmatrix( n, n, C, ld, dC1, ld );
             magma_dsetmatrix( n, n, C, ld, dC2, ld );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dsyr2k( uplo[iu], trans[it], n, k, alpha, dA, ld, dB, ld, dbeta, dC1, ld );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDsyr2k( uplo[iu], trans[it], n, k, alpha, dA, ld, dB, ld, dbeta, dC2, ld );
+            cublasDsyr2k( handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
+                          n, k, &alpha, dA, ld, dB, ld, &dbeta, dC2, ld );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( ld*n, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetmatrix( n, n, dC2, ld, C2, ld );
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DSYR2K( k, n ) / 1e9;
             printf( "dsyr2k( %c, %c )    diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    uplo[iu], trans[it], error, gflops/t1, gflops/t2 );
+                    lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
+                    error, gflops/t1, gflops/t2 );
         }}
         printf( "\n" );
         
@@ -344,25 +374,32 @@ int main( int argc, char** argv )
         for( int iu = 0; iu < 2; ++iu ) {
         for( int it = 0; it < 3; ++it ) {
         for( int id = 0; id < 2; ++id ) {
-            bool left = (side[is] == 'L');
+            bool left = (side[is] == MagmaLeft);
             magma_dsetmatrix( (left ? m : n), (left ? m : n), A, ld, dA,  ld );
             magma_dsetmatrix( m, n, C, ld, dC1, ld );
             magma_dsetmatrix( m, n, C, ld, dC2, ld );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dtrmm( side[is], uplo[iu], trans[it], diag[id], m, n, alpha, dA, ld, dC1, ld );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
+            // note cublas does trmm out-of-place (i.e., adds output matrix C),
+            // but allows C=B to do in-place.
             t2 = magma_sync_wtime( 0 );
-            cublasDtrmm( side[is], uplo[iu], trans[it], diag[id], m, n, alpha, dA, ld, dC2, ld );
+            cublasDtrmm( handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
+                         cublas_trans_const(trans[it]), cublas_diag_const(diag[id]),
+                         m, n, &alpha, dA, ld, dC2, ld, dC2, ld );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( ld*n, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetmatrix( m, n, dC2, ld, C2, ld );
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DTRMM( side[is], m, n ) / 1e9;
             printf( "dtrmm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    uplo[iu], trans[it], error, gflops/t1, gflops/t2 );
+                    lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
+                    error, gflops/t1, gflops/t2 );
         }}}}
         printf( "\n" );
         
@@ -374,25 +411,30 @@ int main( int argc, char** argv )
         for( int iu = 0; iu < 2; ++iu ) {
         for( int it = 0; it < 3; ++it ) {
         for( int id = 0; id < 2; ++id ) {
-            bool left = (side[is] == 'L');
+            bool left = (side[is] == MagmaLeft);
             magma_dsetmatrix( (left ? m : n), (left ? m : n), LU, ld, dA,  ld );
             magma_dsetmatrix( m, n, C, ld, dC1, ld );
             magma_dsetmatrix( m, n, C, ld, dC2, ld );
+            
             t1 = magma_sync_wtime( 0 );
             magma_dtrsm( side[is], uplo[iu], trans[it], diag[id], m, n, alpha, dA, ld, dC1, ld );
             t1 = magma_sync_wtime( 0 ) - t1;
+            
             t2 = magma_sync_wtime( 0 );
-            cublasDtrsm( side[is], uplo[iu], trans[it], diag[id], m, n, alpha, dA, ld, dC2, ld );
+            cublasDtrsm( handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
+                         cublas_trans_const(trans[it]), cublas_diag_const(diag[id]),
+                         m, n, &alpha, dA, ld, dC2, ld );
             t2 = magma_sync_wtime( 0 ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
-            cublasDaxpy( ld*n, c_neg_one, dC1, 1, dC2, 1 );
+            cublasDaxpy( handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
             magma_dgetmatrix( m, n, dC2, ld, C2, ld );
             error = lapackf77_dlange( "F", &n, &n, C2, &ld, work );
             total_error += error;
             gflops = FLOPS_DTRSM( side[is], m, n ) / 1e9;
             printf( "dtrsm( %c, %c )     diff %.2g,  Gflop/s %6.2f, %6.2f\n",
-                    uplo[iu], trans[it], error, gflops/t1, gflops/t2 );
+                    lapacke_uplo_const(uplo[iu]), lapacke_trans_const(trans[it]),
+                    error, gflops/t1, gflops/t2 );
         }}}}
         printf( "\n" );
         

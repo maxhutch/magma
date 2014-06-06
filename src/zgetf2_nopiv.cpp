@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
 
@@ -12,18 +12,9 @@
 
 #define PRECISION_z
 
-extern "C" magma_int_t
-magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *a,
-                   magma_int_t *lda, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZGETF2_NOPIV computes an LU factorization of a general m-by-n
     matrix A without pivoting.
 
@@ -36,30 +27,40 @@ magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *a,
     This is the right-looking Level 2 BLAS version of the algorithm.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) COMPLEX_16 array, dimension (LDA,N)
+    @param[in,out]
+    A       COMPLEX_16 array, dimension (LDA,N)
             On entry, the m by n matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
 
-    INFO    (output) INTEGER
-            = 0: successful exit
-            < 0: if INFO = -k, the k-th argument had an illegal value
-            > 0: if INFO = k, U(k,k) is exactly zero. The factorization
+    @param[out]
+    info    INTEGER
+      -     = 0: successful exit
+      -     < 0: if INFO = -k, the k-th argument had an illegal value
+      -     > 0: if INFO = k, U(k,k) is exactly zero. The factorization
                  has been completed, but the factor U is exactly
                  singular, and division by zero will occur if it is used
                  to solve a system of equations.
-    =====================================================================   */
 
+    @ingroup magma_zgesv_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *A,
+                   magma_int_t *lda, magma_int_t *info)
+{
     magmaDoubleComplex c_one = MAGMA_Z_ONE;
     magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
@@ -72,7 +73,7 @@ magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *a,
 
     a_dim1 = *lda;
     a_offset = 1 + a_dim1;
-    a -= a_offset;
+    A -= a_offset;
 
     /* Function Body */
     *info = 0;
@@ -99,20 +100,19 @@ magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *a,
     for (j = 1; j <= i__1; ++j) {
         /* Test for singularity. */
         i__2 = j + j * a_dim1;
-        if (!MAGMA_Z_EQUAL(a[i__2], c_zero)) {
-
+        if ( ! MAGMA_Z_EQUAL(A[i__2], c_zero)) {
             /* Compute elements J+1:M of J-th column. */
             if (j < *m) {
-                if (MAGMA_Z_ABS(a[j + j * a_dim1]) >= sfmin) {
+                if (MAGMA_Z_ABS(A[j + j * a_dim1]) >= sfmin) {
                     i__2 = *m - j;
-                    z__1 = MAGMA_Z_DIV(c_one, a[j + j * a_dim1]);
-                    blasf77_zscal(&i__2, &z__1, &a[j + 1 + j * a_dim1], &ione);
+                    z__1 = MAGMA_Z_DIV(c_one, A[j + j * a_dim1]);
+                    blasf77_zscal(&i__2, &z__1, &A[j + 1 + j * a_dim1], &ione);
                 }
                 else {
                     i__2 = *m - j;
                     for (i__ = 1; i__ <= i__2; ++i__) {
                         i__3 = j + i__ + j * a_dim1;
-                        a[i__3] = MAGMA_Z_DIV(a[j + i__ + j * a_dim1], a[j + j*a_dim1]);
+                        A[i__3] = MAGMA_Z_DIV(A[j + i__ + j * a_dim1], A[j + j*a_dim1]);
                     }
                 }
             }
@@ -126,9 +126,9 @@ magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *a,
             i__2 = *m - j;
             i__3 = *n - j;
             blasf77_zgeru( &i__2, &i__3, &c_neg_one,
-                           &a[j + 1 + j * a_dim1], &ione,
-                           &a[j + (j+1) * a_dim1], lda,
-                           &a[j + 1 + (j+1) * a_dim1], lda);
+                           &A[j + 1 + j * a_dim1], &ione,
+                           &A[j + (j+1) * a_dim1], lda,
+                           &A[j + 1 + (j+1) * a_dim1], lda);
         }
     }
 

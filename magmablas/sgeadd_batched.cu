@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zgeadd_batched.cu normal z -> s, Fri Apr 25 15:05:20 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -51,6 +51,53 @@ sgeadd_batched_kernel(
 
 
 /* ===================================================================== */
+/**
+    Purpose
+    -------
+    ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i],
+    for i = 0, ..., batchCount-1.
+    
+    Arguments
+    ---------
+    
+    @param[in]
+    m       INTEGER
+            The number of rows of each matrix dAarray[i].  M >= 0.
+    
+    @param[in]
+    n       INTEGER
+            The number of columns of each matrix dAarray[i].  N >= 0.
+    
+    @param[in]
+    alpha   COMPLEX REAL
+            The scalar alpha.
+            
+    @param[in]
+    dAarray array on GPU, dimension(batchCount), of pointers to arrays,
+            with each array a COMPLEX REAL array, dimension (LDDA,N)
+            The m by n matrices dAarray[i].
+    
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of each array dAarray[i].  LDDA >= max(1,M).
+            
+    @param[in,out]
+    dBarray array on GPU, dimension(batchCount), of pointers to arrays,
+            with each array a COMPLEX REAL array, dimension (LDDB,N)
+            The m by n matrices dBarray[i].
+    
+    @param[in]
+    lddb    INTEGER
+            The leading dimension of each array dBarray[i].  LDDB >= max(1,M).
+    
+    @param[in]
+    batchCount INTEGER
+            The number of matrices to add; length of dAarray and dBarray.
+            batchCount >= 0.
+    
+
+    @ingroup magma_saux2
+    ********************************************************************/
 extern "C" void
 magmablas_sgeadd_batched(
     magma_int_t m, magma_int_t n,
@@ -59,44 +106,6 @@ magmablas_sgeadd_batched(
     float              **dBarray, magma_int_t lddb,
     magma_int_t batchCount )
 {
-/*
-    Purpose
-    =======
-    ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i],
-    for i = 0, ..., batchCount-1.
-    
-    Arguments
-    =========
-    
-    M       (input) INTEGER
-            The number of rows of each matrix dAarray[i].  M >= 0.
-    
-    N       (input) INTEGER
-            The number of columns of each matrix dAarray[i].  N >= 0.
-    
-    ALPHA   (input) COMPLEX REAL
-            The scalar alpha.
-            
-    dAarray (input) array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX REAL array, dimension (LDDA,N)
-            The m by n matrices dAarray[i].
-    
-    LDDA    (input) INTEGER
-            The leading dimension of each array dAarray[i].  LDDA >= max(1,M).
-            
-    dBarray (input/output) array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX REAL array, dimension (LDDB,N)
-            The m by n matrices dBarray[i].
-    
-    LDDB    (input) INTEGER
-            The leading dimension of each array dBarray[i].  LDDB >= max(1,M).
-    
-    batchCount (input) INTEGER
-            The number of matrices to add; length of dAarray and dBarray.
-            batchCount >= 0.
-    
-    =====================================================================   */
-
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;

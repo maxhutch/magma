@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from ztranspose-v2.cu normal z -> s, Fri Apr 25 15:05:22 2014
 
        @author Stan Tomov
 */
@@ -45,14 +45,15 @@ __global__ void stranspose3_32( float       *B, int ldb,
     __syncthreads();
 
 #if defined(PRECISION_s) || defined(PRECISION_d) || defined(PRECISION_c)
+    t2 = ibx + iny;
     if (iby + inx < n) {
-        if (ibx + iny < m) {
+        if (t2 < m) {
             B[0*ldb] = sA[inx][iny+0];
-            if (ibx + iny + 8 < m) {
+            if (t2 + 8 < m) {
                 B[8*ldb] = sA[inx][iny+8];
-                if (ibx + iny +16 < m) {
+                if (t2 + 16 < m) {
                     B[16*ldb] = sA[inx][iny+16];
-                    if (ibx + iny + 24 < m) {
+                    if (t2 + 24 < m) {
                         B[24*ldb] = sA[inx][iny+24];
                     }
                 }

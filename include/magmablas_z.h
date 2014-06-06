@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
 */
@@ -34,6 +34,14 @@ void zzero_32x32_block(
 void zzero_nbxnb_block(
     magma_int_t nb,
     magmaDoubleComplex_ptr dA, magma_int_t ldda );
+
+void magmablas_zsetdiag1subdiag0_stream(
+    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
+    magmaDoubleComplex *A, magma_int_t lda, magma_queue_t stream);
+
+void magmablas_zsetdiag1subdiag0(
+    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
+    magmaDoubleComplex *A, magma_int_t lda);
 
 // see also zlaswp
 // ipiv gets updated
@@ -437,6 +445,14 @@ void magmablas_zsymmetrize_tiles(
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magma_int_t ntile, magma_int_t mstride, magma_int_t nstride );
 
+void magma_zlarfg(
+    magma_int_t n, magmaDoubleComplex *alpha,
+    magmaDoubleComplex *x, magma_int_t incx, magmaDoubleComplex *tau );
+
+void magma_zlarfg_gpu(
+    magma_int_t n, magmaDoubleComplex *dx0, magmaDoubleComplex *dx,
+    magmaDoubleComplex *dtau, double *dxnorm, magmaDoubleComplex *dAkk );
+
 void magma_zlarfgx_gpu(
     magma_int_t n, magmaDoubleComplex *dx0, magmaDoubleComplex *dx,
     magmaDoubleComplex *dtau, double *dxnorm,
@@ -484,7 +500,7 @@ void magmablas_zswap(
     magmaDoubleComplex_ptr dB, magma_int_t lddb );
 
 void magmablas_zswapblk(
-    magma_storev_t storev,
+    magma_order_t order,
     magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr dB, magma_int_t lddb,
@@ -614,8 +630,6 @@ void magmablas_zher2k(
     double  beta,
     magmaDoubleComplex_ptr       dC, magma_int_t lddc );
 
-#ifdef REAL
-// only real [sd] precisions available
 void magmablas_ztrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
@@ -629,8 +643,8 @@ void magmablas_ztrsm_work(
     magmaDoubleComplex alpha,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr       db, magma_int_t lddb,
-    int flag, magmaDoubleComplex_ptr d_dinvA, magmaDoubleComplex_ptr dx );
-#endif
+    magma_int_t flag, magmaDoubleComplex_ptr d_dinvA, magmaDoubleComplex_ptr dx );
+
 
   /*
    * Wrappers for platform independence.
@@ -675,7 +689,7 @@ void magma_zgetvector_internal(
     magmaDoubleComplex*          hy_dst, magma_int_t incy,
     const char* func, const char* file, int line );
 
-magma_err_t
+magma_int_t
 magma_zcopyvector_internal(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr dx_src, magma_int_t incx,
@@ -696,7 +710,7 @@ void magma_zgetvector_async_internal(
     magma_queue_t queue,
     const char* func, const char* file, int line );
 
-magma_err_t
+magma_int_t
 magma_zcopyvector_async_internal(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr dx_src, magma_int_t incx,

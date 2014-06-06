@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:57 2013
+       @generated from testing_zungqr_gpu.cpp normal z -> c, Fri Apr 25 15:06:11 2014
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -50,11 +50,11 @@ int main( int argc, char** argv)
     
     printf("    m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
     printf("=========================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            m = opts.msize[i];
-            n = opts.nsize[i];
-            k = opts.ksize[i];
+            m = opts.msize[itest];
+            n = opts.nsize[itest];
+            k = opts.ksize[itest];
             if ( m < n || n < k ) {
                 printf( "skipping m %d, n %d, k %d because m < n or n < k\n", (int) m, (int) n, (int) k );
                 continue;
@@ -141,6 +141,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dT );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

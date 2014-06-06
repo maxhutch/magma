@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
  
        @author Mark Gates
-       @generated c Tue Dec 17 13:18:37 2013
+       @generated from blas_z.cpp normal z -> c, Fri Apr 25 15:05:56 2014
 */
 
 #include <stdlib.h>
@@ -19,12 +19,14 @@
 
 #ifdef HAVE_CUBLAS
 
-// For now, magma constants are the same as cublas v1 constants (character).
-// This will change in the future.
-#define cublas_side_const(  x )  (x)
-#define cublas_uplo_const(  x )  (x)
-#define cublas_trans_const( x )  (x)
-#define cublas_diag_const(  x )  (x)
+// ----------------------------------------
+// Convert MAGMA constants to CUBLAS v1 constants, which are the same as lapack.
+// These must be static to avoid conflict with CUBLAS v2 translators.
+#define cublas_trans_const( magma_const ) lapacke_trans_const( magma_const )
+#define cublas_side_const(  magma_const ) lapacke_side_const(  magma_const )
+#define cublas_diag_const(  magma_const ) lapacke_diag_const(  magma_const )
+#define cublas_uplo_const(  magma_const ) lapacke_uplo_const(  magma_const )
+
 
 // ========================================
 // Level 1 BLAS

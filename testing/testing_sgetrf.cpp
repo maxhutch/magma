@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:57 2013
+       @generated from testing_zgetrf.cpp normal z -> s, Fri Apr 25 15:06:09 2014
        @author Mark Gates
 */
 // includes, system
@@ -174,10 +174,10 @@ int main( int argc, char** argv)
         printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |PA-LU|/(N*|A|)\n");
     }
     printf("=========================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
@@ -228,12 +228,12 @@ int main( int argc, char** argv)
             }
             if ( opts.check == 2 ) {
                 error = get_residual( M, N, h_A, lda, ipiv );
-                printf("   %8.2e%s\n", error, (error < tol ? "" : "  failed"));
+                printf("   %8.2e  %s\n", error, (error < tol ? "ok" : "failed"));
                 status |= ! (error < tol);
             }
             else if ( opts.check ) {
                 error = get_LU_error( M, N, h_A, lda, ipiv );
-                printf("   %8.2e%s\n", error, (error < tol ? "" : "  failed"));
+                printf("   %8.2e  %s\n", error, (error < tol ? "ok" : "failed"));
                 status |= ! (error < tol);
             }
             else {
@@ -242,6 +242,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_CPU( ipiv );
             TESTING_FREE_PIN( h_A  );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

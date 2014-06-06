@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:56 2013
+       @generated from testing_zsymmetrize.cpp normal z -> s, Fri Apr 25 15:06:07 2014
        @author Mark Gates
 
 */
@@ -44,9 +44,9 @@ int main( int argc, char** argv)
     
     printf("    N   CPU GByte/s (sec)   GPU GByte/s (sec)   check\n");
     printf("=====================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = N;
             ldda   = ((N+31)/32)*32;
             size   = lda*N;
@@ -112,6 +112,7 @@ int main( int argc, char** argv)
             TESTING_FREE_CPU( h_R );
             
             TESTING_FREE_DEV( d_A );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

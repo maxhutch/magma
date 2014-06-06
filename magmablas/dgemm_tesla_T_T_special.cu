@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal d -> s
 */
@@ -37,23 +37,9 @@ static __device__ void daxpy(
 }
 
 
-__global__ void
-dgemm_kernel_T_T_64_16_16_16_4_special(
-    double*       __restrict__ C,
-    const double* __restrict__ A,
-    const double* __restrict__ B,
-    int m, int n, int k,
-    int lda, int ldb, int ldc,
-    double alpha, double beta )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose:
-    ========
+    --------
     This routine computes
         C = alpha * A^T*B^T + beta * C
 
@@ -63,8 +49,18 @@ dgemm_kernel_T_T_64_16_16_16_4_special(
 
     This kernel is for matrices divisible by the corresponding
     blocking sizes.
-    ===============================================================  */
 
+    @ingroup magma_dblas3
+    ********************************************************************/
+__global__ void
+dgemm_kernel_T_T_64_16_16_16_4_special(
+    double*       __restrict__ C,
+    const double* __restrict__ A,
+    const double* __restrict__ B,
+    int m, int n, int k,
+    int lda, int ldb, int ldc,
+    double alpha, double beta )
+{
     __shared__ double Bb[16][17];
     const int tx = threadIdx.x;
     const int ty = threadIdx.y;

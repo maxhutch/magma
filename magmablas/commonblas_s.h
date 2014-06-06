@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from commonblas_z.h normal z -> s, Fri Apr 25 15:05:24 2014
 */
 
 #ifndef COMMONBLAS_S_H
@@ -37,7 +37,7 @@ MAGMABLAS_SGEMM( T_T_64_16_16_16_4_special );
 MAGMABLAS_SGEMM( T_T_64_16_16_16_4         );
                    
 void magmablas_sgemm_tesla(
-    char transA, char transB, magma_int_t m, magma_int_t n, magma_int_t k,
+    magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
     float alpha,
     const float *A, magma_int_t lda,
     const float *B, magma_int_t ldb,
@@ -45,7 +45,7 @@ void magmablas_sgemm_tesla(
     float *C, magma_int_t ldc );
 
 void magmablas_sgemv_tesla(
-    char trans, magma_int_t m, magma_int_t n,
+    magma_trans_t trans, magma_int_t m, magma_int_t n,
     float alpha,
     const float *A, magma_int_t lda,
     const float *x, magma_int_t incx,
@@ -54,14 +54,14 @@ void magmablas_sgemv_tesla(
 
 // for tesla, z is not available, and chemv doesn't have _work interface
 void magmablas_ssymv_tesla(
-    char uplo, magma_int_t n, float alpha,
+    magma_uplo_t uplo, magma_int_t n, float alpha,
     const float *dA, magma_int_t lda,
     const float *dx, magma_int_t incx,
     float beta,
     float *dy, magma_int_t incy );
 
 //void magmablas_ssymv_tesla_work(
-//    char uplo, magma_int_t n, float alpha,
+//    magma_uplo_t uplo, magma_int_t n, float alpha,
 //    const float *dA, magma_int_t lda,
 //    const float *dx, magma_int_t incx,
 //    float beta,
@@ -69,14 +69,14 @@ void magmablas_ssymv_tesla(
 //    float *dwork, magma_int_t lwork );
 
 void magmablas_ssymv_tesla(
-    char uplo, magma_int_t n, float alpha,
+    magma_uplo_t uplo, magma_int_t n, float alpha,
     const float *dA, magma_int_t lda,
     const float *dx, magma_int_t incx,
     float beta,
     float *dy, magma_int_t incy );
 
 void magmablas_ssymv_tesla_work(
-    char uplo, magma_int_t n, float alpha,
+    magma_uplo_t uplo, magma_int_t n, float alpha,
     const float *dA, magma_int_t lda,
     const float *dx, magma_int_t incx,
     float beta,

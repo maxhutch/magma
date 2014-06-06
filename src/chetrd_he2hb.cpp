@@ -1,36 +1,23 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zhetrd_he2hb.cpp normal z -> c, Fri Apr 25 15:05:49 2014
 
 */
 #include "common_magma.h"
 #include "trace.h"
 
 
-extern "C" magma_int_t
-magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
-                    magmaFloatComplex *a, magma_int_t lda,
-                    magmaFloatComplex *tau,
-                    magmaFloatComplex *work, magma_int_t lwork,
-                    magmaFloatComplex *dT,
-                    magma_int_t threads, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CHETRD_HE2HB reduces a complex Hermitian matrix A to real symmetric
     band-diagonal form T by an orthogonal similarity transformation:
     Q**H * A * Q = T.
@@ -38,67 +25,76 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
     Householder transformations (I - V T V').
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER*1
-            = 'U':  Upper triangle of A is stored;
-            = 'L':  Lower triangle of A is stored.
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    A       (input/output) COMPLEX array, dimension (LDA,N)
-            On entry, the Hermitian matrix A.  If UPLO = 'U', the leading
+    @param[in,out]
+    A       COMPLEX array, dimension (LDA,N)
+            On entry, the Hermitian matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of A contains the lower
             triangular part of the matrix A, and the strictly upper
             triangular part of A is not referenced.
-            On exit, if UPLO = 'U', the Upper band-diagonal of A is
+            On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is
             overwritten by the corresponding elements of the
             band-diagonal matrix T, and the elements above the band
             diagonal, with the array TAU, represent the orthogonal
             matrix Q as a product of elementary reflectors; if UPLO
-            = 'L', the the Lower band-diagonal of A is overwritten by
+            = MagmaLower, the the Lower band-diagonal of A is overwritten by
             the corresponding elements of the band-diagonal
             matrix T, and the elements below the band-diagonal, with
             the array TAU, represent the orthogonal matrix Q as a product
             of elementary reflectors. See Further Details.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    TAU     (output) COMPLEX array, dimension (N-1)
+    @param[out]
+    tau     COMPLEX array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details).
 
-    WORK    (workspace/output) COMPLEX array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) COMPLEX array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.  LWORK >= 1.
             For optimum performance LWORK >= N*NB, where NB is the
             optimal blocksize.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    dT      (output) COMPLEX array on the GPU, dimension N*NB,
+    @param[out]
+    dT      COMPLEX array on the GPU, dimension N*NB,
             where NB is the optimal blocksize.
             On exit dT holds the upper triangular matrices T from the
             accumulated Householder transformations (I - V T V') used
             in the factorization. The nb x nb matrices T are ordered
             consecutively in memory one after another.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
     Further Details
-    ===============
-    If UPLO = 'U', the matrix Q is represented as a product of elementary
+    ---------------
+    If UPLO = MagmaUpper, the matrix Q is represented as a product of elementary
     reflectors
 
        Q = H(n-1) . . . H(2) H(1).
@@ -111,7 +107,7 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
     v(i+1:n) = 0 and v(i) = 1; v(1:i-1) is stored on exit in
     A(1:i-1,i+1), and tau in TAU(i).
 
-    If UPLO = 'L', the matrix Q is represented as a product of elementary
+    If UPLO = MagmaLower, the matrix Q is represented as a product of elementary
     reflectors
 
        Q = H(1) H(2) . . . H(n-1).
@@ -127,7 +123,7 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
     The contents of A on exit are illustrated by the following examples
     with n = 5:
 
-    if UPLO = 'U':                       if UPLO = 'L':
+    if UPLO = MagmaUpper:                if UPLO = MagmaLower:
 
       (  d   e   v2  v3  v4 )              (  d                  )
       (      d   e   v3  v4 )              (  e   d              )
@@ -137,21 +133,28 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
 
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
-    =====================================================================    */
 
-    #define a_ref(a_1,a_2)  ( a  + ((a_2)-1)*( lda) + (a_1)-1)
-    #define da_ref(a_1,a_2) (da  + ((a_2)-1)*(ldda) + (a_1)-1)
-    #define tau_ref(a_1)    (tau + (a_1)-1)
-    #define t_ref(a_1)      (dT  + ((a_1)-1)*(lddt))
-
-    char uplo_[2] = {uplo, 0};
+    @ingroup magma_cheev_2stage
+    ********************************************************************/
+extern "C" magma_int_t
+magma_chetrd_he2hb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
+                    magmaFloatComplex *A, magma_int_t lda,
+                    magmaFloatComplex *tau,
+                    magmaFloatComplex *work, magma_int_t lwork,
+                    magmaFloatComplex *dT,
+                    magma_int_t *info)
+{
+    #define  A(a_1,a_2)  ( A + ((a_2)-1)*( lda) + (a_1)-1)
+    #define dA(a_1,a_2)  (dA + ((a_2)-1)*(ldda) + (a_1)-1)
+    #define tau_ref(a_1) (tau + (a_1)-1)
+    #define dT(a_1)      (dT + ((a_1)-1)*(lddt))
 
     int ldda = ((n+31)/32)*32;
     int lddt = nb;
    
     magmaFloatComplex c_neg_one  = MAGMA_C_NEG_ONE;
     magmaFloatComplex c_neg_half = MAGMA_C_NEG_HALF;
-    magmaFloatComplex c_one  = MAGMA_C_ONE ;
+    magmaFloatComplex c_one  = MAGMA_C_ONE;
     magmaFloatComplex c_zero = MAGMA_C_ZERO;
     float  d_one = MAGMA_D_ONE;
 
@@ -163,9 +166,9 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
     int lquery;
 
     *info = 0;
-    int upper = lapackf77_lsame(uplo_, "U");
-    lquery = lwork == -1;
-    if (! upper && ! lapackf77_lsame(uplo_, "L")) {
+    int upper = (uplo == MagmaUpper);
+    lquery = (lwork == -1);
+    if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {
         *info = -2;
@@ -192,18 +195,18 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
         return *info;
     }
 
-    magmaFloatComplex *da;
-    if (MAGMA_SUCCESS != magma_cmalloc( &da, (n + 2*nb)*ldda )) {
+    magmaFloatComplex *dA;
+    if (MAGMA_SUCCESS != magma_cmalloc( &dA, (n + 2*nb)*ldda )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
-    magma_int_t mklth = min(threads,16);
-    magma_setlapack_numthreads(mklth);
+    magma_int_t threads = magma_get_lapack_numthreads();
+    magma_int_t mklth   = min(threads,16);
+    magma_set_lapack_numthreads(mklth);
 
-
-    /* Use the first panel of da as work space */
-    magmaFloatComplex *dwork = da+n*ldda;
+    /* Use the first panel of dA as work space */
+    magmaFloatComplex *dwork = dA+n*ldda;
     magmaFloatComplex *dW    = dwork + nb*ldda;
 
     #ifdef TRACING
@@ -229,20 +232,18 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
     if (upper) {
         printf("CHETRD_HE2HB is not yet implemented for upper matrix storage. Exit.\n");
         exit(1);
-
-    }else {
+    } else {
         /* Copy the matrix to the GPU */
-        if (1 <= n-nb){
+        if (1 <= n-nb) {
             trace_gpu_start( 0, 0, "set", "set A" );
             magma_csetmatrix_async( (n-nb), (n-nb),
-                                    a_ref(nb+1, nb+1),  lda,
-                                    da_ref(nb+1, nb+1), ldda, stream[0] );
+                                    A(nb+1, nb+1),  lda,
+                                    dA(nb+1, nb+1), ldda, stream[0] );
             trace_gpu_end( 0, 0 );
         }
 
         /* Reduce the lower triangle of A */
-        for (i = 1; i <= n-nb; i += nb)
-        {
+        for (i = 1; i <= n-nb; i += nb) {
              indi = i+nb;
              indj = i;
              pm   = n - i - nb + 1;
@@ -250,34 +251,34 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
              pn   = nb;
              
              /*   Get the current panel (no need for the 1st iteration) */
-             if (i > 1 ){
+             if (i > 1 ) {
                  // cpanel_to_q copy the upper oof diagonal part of
                  // the matrix to work to be restored later. acctually
                  //  the zero's and one's putted are not used this is only
                  //   because we don't have a function that copy only the
                  //    upper part of A to be restored after copying the
                  //    lookahead panel that has been computted from GPU to CPU.
-                 cpanel_to_q(MagmaUpper, pn-1, a_ref(i, i+1), lda, work);
+                 cpanel_to_q(MagmaUpper, pn-1, A(i, i+1), lda, work);
 
                  trace_gpu_start( 0, 1, "get", "get panel" );
                  //magma_queue_sync( stream[0] );
                  cudaStreamWaitEvent(stream[1], Pupdate_event, 0);
                  magma_cgetmatrix_async( (pm+pn), pn,
-                                         da_ref( i, i), ldda,
-                                         a_ref ( i, i), lda, stream[1] );
+                                         dA( i, i), ldda,
+                                         A ( i, i), lda, stream[1] );
                  trace_gpu_end( 0, 1 );
 
                  trace_gpu_start( 0, 2, "her2k", "her2k" );
                  magma_cher2k(MagmaLower, MagmaNoTrans, pm_old-pn_old, pn_old, c_neg_one,
-                      da_ref(indi_old+pn_old, indj_old), ldda,
-                      dW + pn_old           , pm_old, d_one,
-                      da_ref(indi_old+pn_old, indi_old+pn_old), ldda);
+                      dA(indi_old+pn_old, indj_old), ldda,
+                      dW + pn_old,            pm_old, d_one,
+                      dA(indi_old+pn_old, indi_old+pn_old), ldda);
                  trace_gpu_end( 0, 2 );
 
                  trace_cpu_start( 0, "sync", "sync on 1" );
                  magma_queue_sync( stream[1] );
                  trace_cpu_end( 0 );
-                 cq_to_panel(MagmaUpper, pn-1, a_ref(i, i+1), lda, work);
+                 cq_to_panel(MagmaUpper, pn-1, A(i, i+1), lda, work);
              }
 
              /* ==========================================================
@@ -288,30 +289,30 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
              snprintf( buf, sizeof(buf), "panel %d", i );
              #endif
              trace_cpu_start( 0, "geqrf", buf );
-             lapackf77_cgeqrf(&pm, &pn, a_ref(indi, indj), &lda,
+             lapackf77_cgeqrf(&pm, &pn, A(indi, indj), &lda,
                         tau_ref(i), work, &lwork, info);
              
              /* Form the matrix T */
                          pk=min(pm,pn);
              lapackf77_clarft( MagmaForwardStr, MagmaColumnwiseStr,
-                           &pm, &pk, a_ref(indi, indj), &lda,
+                           &pm, &pk, A(indi, indj), &lda,
                            tau_ref(i), hT, &nb);
 
              /* Prepare V - put 0s in the upper triangular part of the panel
                 (and 1s on the diagonal), temporaly storing the original in work */
-             cpanel_to_q(MagmaUpper, pk, a_ref(indi, indj), lda, work);
+             cpanel_to_q(MagmaUpper, pk, A(indi, indj), lda, work);
              trace_cpu_end( 0 );
 
              /* Send V from the CPU to the GPU */
              trace_gpu_start( 0, 0, "set", "set V and T" );
              magma_csetmatrix_async( pm, pk,
-                                     a_ref(indi, indj),  lda,
-                                     da_ref(indi, indj), ldda, stream[0] );
+                                     A(indi, indj),  lda,
+                                     dA(indi, indj), ldda, stream[0] );
 
              /* Send the triangular factor T to the GPU */
              magma_csetmatrix_async( pk, pk,
                                      hT,       nb,
-                                     t_ref(i), lddt, stream[0] );
+                                     dT(i), lddt, stream[0] );
              trace_gpu_end( 0, 0 );
              
              /* ==========================================================
@@ -330,20 +331,20 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
              
              trace_gpu_start( 0, 2, "gemm", "work = V*T" );
              magma_cgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
-                         c_one, da_ref(indi, indj), ldda,
-                         t_ref(i), lddt,
+                         c_one, dA(indi, indj), ldda,
+                         dT(i), lddt,
                          c_zero, dwork, pm);
              trace_gpu_end( 0, 2 );
              
              /* dW = X = A*V*T. dW = A*dwork */
              trace_gpu_start( 0, 2, "hemm", "X = A*work" );
              magma_chemm(MagmaLeft, uplo, pm, pk,
-                         c_one, da_ref(indi, indi), ldda,
+                         c_one, dA(indi, indi), ldda,
                          dwork, pm,
                          c_zero, dW, pm);
              trace_gpu_end( 0, 2 );
              /* restore the panel */
-             cq_to_panel(MagmaUpper, pk, a_ref(indi, indj), lda, work);
+             cq_to_panel(MagmaUpper, pk, A(indi, indj), lda, work);
              
              /* dwork = V*T already ==> dwork' = T'*V'
               * compute T'*V'*X ==> dwork'*W ==>
@@ -359,7 +360,7 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
               *   = X - 0.5 * V * (dwork + pm*nb) = W - 0.5 * V * (dwork + pm*nb) */
              trace_gpu_start( 0, 2, "gemm", "W = X - 0.5*V*(T'*V'*X)" );
              magma_cgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
-                         c_neg_half, da_ref(indi, indj), ldda,
+                         c_neg_half, dA(indi, indj), ldda,
                          dwork + pm*nb, nb,
                          c_one,     dW, pm);
              trace_gpu_end( 0, 2 );
@@ -368,21 +369,21 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
                 Update the unreduced submatrix A(i+ib:n,i+ib:n), using
                 an update of the form:  A := A - V*W' - W*V'
                 ==========================================================  */
-             if (i + nb <= n-nb){
+             if (i + nb <= n-nb) {
                  /* There would be next iteration;
                     do lookahead - update the next panel */
                  trace_gpu_start( 0, 2, "gemm", "gemm 4 next panel left" );
                  magma_cgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
-                             da_ref(indi, indj), ldda,
-                             dW                , pm, c_one,
-                             da_ref(indi, indi), ldda);
+                             dA(indi, indj), ldda,
+                             dW,                 pm, c_one,
+                             dA(indi, indi), ldda);
                  trace_gpu_end( 0, 2 );
              
                  trace_gpu_start( 0, 2, "gemm", "gemm 5 next panel right" );
                  magma_cgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
-                             dW                , pm,
-                             da_ref(indi, indj), ldda, c_one,
-                             da_ref(indi, indi), ldda);
+                             dW,                 pm,
+                             dA(indi, indj), ldda, c_one,
+                             dA(indi, indi), ldda);
                  trace_gpu_end( 0, 2 );
                  cudaEventRecord(Pupdate_event, stream[0]);
              }
@@ -390,9 +391,9 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
                  /* no look-ahead as this is last iteration */
                  trace_gpu_start( 0, 2, "her2k", "her2k last iteration" );
                  magma_cher2k(MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
-                              da_ref(indi, indj), ldda,
-                              dW                , pm, d_one,
-                              da_ref(indi, indi), ldda);
+                              dA(indi, indj), ldda,
+                              dW,                 pm, d_one,
+                              dA(indi, indi), ldda);
                  trace_gpu_end( 0, 2 );
              }
              
@@ -400,18 +401,18 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
              indj_old = indj;
              pm_old   = pm;
              pn_old   = pn;
-        }  // end loop for(i)
+        }  // end loop for (i)
 
         /* Send the last block to the CPU */
         pk = min(pm,pn);
-        if (1 <= n-nb){
-            cpanel_to_q(MagmaUpper, pk-1, a_ref(n-pk+1, n-pk+2), lda, work);
+        if (1 <= n-nb) {
+            cpanel_to_q(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
             trace_gpu_start( 0, 2, "get", "get last block" );
             magma_cgetmatrix( pk, pk,
-                              da_ref(n-pk+1, n-pk+1), ldda,
-                              a_ref(n-pk+1, n-pk+1),  lda );
+                              dA(n-pk+1, n-pk+1), ldda,
+                              A(n-pk+1, n-pk+1),  lda );
             trace_gpu_end( 0, 2 );
-            cq_to_panel(MagmaUpper, pk-1, a_ref(n-pk+1, n-pk+2), lda, work);
+            cq_to_panel(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
         }
     }// end of LOWER
     
@@ -420,11 +421,11 @@ magma_chetrd_he2hb( char uplo, magma_int_t n, magma_int_t nb,
     cudaEventDestroy(Pupdate_event);
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
-    magma_free( da );
+    magma_free( dA );
     work[0] = MAGMA_C_MAKE( lwkopt, 0 );
     magmablasSetKernelStream( 0 );
     
-    magma_setlapack_numthreads(1);
+    magma_set_lapack_numthreads(threads);
 
     return *info;
-} /* chetrd_he2hb_ */
+} /* magma_chetrd_he2hb */

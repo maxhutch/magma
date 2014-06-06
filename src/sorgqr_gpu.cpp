@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zungqr_gpu.cpp normal z -> s, Fri Apr 25 15:05:41 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -14,21 +14,9 @@
 
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
-                 float *dA, magma_int_t ldda,
-                 float *tau,
-                 float *dT, magma_int_t nb,
-                 magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SORGQR generates an M-by-N REAL matrix Q with orthonormal columns,
     which is defined as the first N columns of a product of K elementary
     reflectors of order M
@@ -38,48 +26,65 @@ magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
     as returned by SGEQRF_GPU.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix Q. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix Q. M >= N >= 0.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The number of elementary reflectors whose product defines the
             matrix Q. N >= K >= 0.
 
-    DA      (input/output) REAL array A on the GPU, dimension (LDDA,N).
+    @param[in,out]
+    dA      REAL array A on the GPU, dimension (LDDA,N).
             On entry, the i-th column must contain the vector
             which defines the elementary reflector H(i), for
             i = 1,2,...,k, as returned by SGEQRF_GPU in the
             first k columns of its array argument A.
             On exit, the M-by-N matrix Q.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The first dimension of the array A. LDDA >= max(1,M).
 
-    TAU     (input) REAL array, dimension (K)
+    @param[in]
+    tau     REAL array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by SGEQRF_GPU.
 
-    DT      (input/workspace) REAL work space array on the GPU,
+    @param[in]
+    dT      (workspace) REAL work space array on the GPU,
             dimension (2*MIN(M, N) + (N+31)/32*32 )*NB.
             This must be the 6th argument of magma_sgeqrf_gpu
             [ note that if N here is bigger than N in magma_sgeqrf_gpu,
               the workspace requirement DT in magma_sgeqrf_gpu must be
               as specified in this routine ].
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             This is the block size used in SGEQRF_GPU, and correspondingly
             the size of the T matrices, used in the factorization, and
             stored in DT.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument has an illegal value
-    =====================================================================    */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument has an illegal value
 
+    @ingroup magma_sgeqrf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
+                 float *dA, magma_int_t ldda,
+                 float *tau,
+                 float *dT, magma_int_t nb,
+                 magma_int_t *info)
+{
 #define dA(i,j) (dA + (i) + (j)*ldda)
 #define dT(j)   (dT + (j)*nb)
 

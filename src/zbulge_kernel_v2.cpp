@@ -18,17 +18,17 @@
 #define PRECISION_z
 
 inline static void
-magma_zlarfxsym_v2(magma_int_t n, 
-                magmaDoubleComplex *A, magma_int_t lda, 
-                magmaDoubleComplex *V, magmaDoubleComplex *TAU, 
+magma_zlarfxsym_v2(magma_int_t n,
+                magmaDoubleComplex *A, magma_int_t lda,
+                magmaDoubleComplex *V, magmaDoubleComplex *TAU,
                 magmaDoubleComplex *work);
 ///////////////////////////////////////////////////////////
 
 inline static void
-magma_zlarfxsym_v2(magma_int_t n, 
-                magmaDoubleComplex *A, magma_int_t lda, 
-                magmaDoubleComplex *V, magmaDoubleComplex *TAU, 
-                magmaDoubleComplex *work) 
+magma_zlarfxsym_v2(magma_int_t n,
+                magmaDoubleComplex *A, magma_int_t lda,
+                magmaDoubleComplex *V, magmaDoubleComplex *TAU,
+                magmaDoubleComplex *work)
 {
 /*
     WORK (workspace) double complex array, dimension N
@@ -45,9 +45,9 @@ magma_zlarfxsym_v2(magma_int_t n,
 
     /* compute dtmp= X'*V */
 #if defined(PRECISION_z) || defined(PRECISION_c)
-   dtmp = c_zero;
-   for (magma_int_t j = 0; j < n ; j++)
-      dtmp = dtmp + MAGMA_Z_CNJG(work[j]) * V[j];
+    dtmp = c_zero;
+    for (magma_int_t j = 0; j < n; j++)
+        dtmp = dtmp + MAGMA_Z_CNJG(work[j]) * V[j];
     //cblas_zdotc_sub(n, work, ione, V, ione, &dtmp);
 #else
     dtmp = cblas_zdotc(n, work, ione, V, ione);
@@ -62,7 +62,6 @@ magma_zlarfxsym_v2(magma_int_t n,
 
     /* performs the symmetric rank 2 operation A := alpha*x*y' + alpha*y*x' + A */
     blasf77_zher2("L", &n, &c_neg_one, work, &ione, V, &ione, A, &lda);
-
 }
 
 ///////////////////////////////////////////////////////////
@@ -73,15 +72,14 @@ magma_zlarfxsym_v2(magma_int_t n,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_ztrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb, 
-                                magmaDoubleComplex *A, magma_int_t lda, 
-                                magmaDoubleComplex *V, magma_int_t ldv, 
+magma_ztrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
+                                magmaDoubleComplex *A, magma_int_t lda,
+                                magmaDoubleComplex *V, magma_int_t ldv,
                                 magmaDoubleComplex *TAU,
-                                magma_int_t st, magma_int_t ed, 
-                                magma_int_t sweep, magma_int_t Vblksiz, 
-                                magmaDoubleComplex *work) 
+                                magma_int_t st, magma_int_t ed,
+                                magma_int_t sweep, magma_int_t Vblksiz,
+                                magmaDoubleComplex *work)
 {
-
 /*
     WORK (workspace) double complex array, dimension N
 */
@@ -106,7 +104,6 @@ magma_ztrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 
     /* apply left and right on A(st:ed,st:ed)*/
     magma_zlarfxsym_v2(len, A(st,st), lda-1, V(vpos), TAU(taupos), work);
-
 }
 #undef A
 #undef V
@@ -120,15 +117,14 @@ magma_ztrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_ztrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb, 
-                                magmaDoubleComplex *A, magma_int_t lda, 
-                                magmaDoubleComplex *V, magma_int_t ldv, 
+magma_ztrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
+                                magmaDoubleComplex *A, magma_int_t lda,
+                                magmaDoubleComplex *V, magma_int_t ldv,
                                 magmaDoubleComplex *TAU,
-                                magma_int_t st, magma_int_t ed, 
-                                magma_int_t sweep, magma_int_t Vblksiz, 
-                                magmaDoubleComplex *work) 
+                                magma_int_t st, magma_int_t ed,
+                                magma_int_t sweep, magma_int_t Vblksiz,
+                                magmaDoubleComplex *work)
 {
-
     /*
      WORK (workspace) double complex array, dimension NB
     */
@@ -144,12 +140,12 @@ magma_ztrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
     magma_int_t len = ed - st + 1;
     magma_int_t lem = min(ed+nb, n) - ed;
 
-    if(lem>0){
+    if (lem > 0) {
         magma_bulge_findVTAUpos(n, nb, Vblksiz, sweep-1, st-1, ldv, &vpos, &taupos);
         /* apply remaining right coming from the top block */
         lapackf77_zlarfx("R", &lem, &len, V(vpos), TAU(taupos), A(ed+1, st), &ldx, work);
     }
-    if(lem>1){
+    if (lem > 1) {
         magma_bulge_findVTAUpos(n, nb, Vblksiz, sweep-1, ed, ldv, &vpos, &taupos);
 
         /* remove the first column of the created bulge */
@@ -162,11 +158,10 @@ magma_ztrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
         lapackf77_zlarfg( &lem, A(ed+1, st), V(vpos+1), &ione, TAU(taupos) );
 
         /* apply left on A(J1:J2,st+1:ed) */
-        len = len-1; /* because we start at col st+1 instead of st. col st is the col that has been removed;*/
+        len = len-1; /* because we start at col st+1 instead of st. col st is the col that has been removed; */
         conjtmp = MAGMA_Z_CNJG(*TAU(taupos));
         lapackf77_zlarfx("L", &lem, &len, V(vpos),  &conjtmp, A(ed+1, st+1), &ldx, work);
     }
-
 }
 #undef A
 #undef V
@@ -180,15 +175,14 @@ magma_ztrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_ztrdtype3cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb, 
-                                magmaDoubleComplex *A, magma_int_t lda, 
-                                magmaDoubleComplex *V, magma_int_t ldv, 
+magma_ztrdtype3cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
+                                magmaDoubleComplex *A, magma_int_t lda,
+                                magmaDoubleComplex *V, magma_int_t ldv,
                                 magmaDoubleComplex *TAU,
-                                magma_int_t st, magma_int_t ed, 
-                                magma_int_t sweep, magma_int_t Vblksiz, 
-                                magmaDoubleComplex *work) 
+                                magma_int_t st, magma_int_t ed,
+                                magma_int_t sweep, magma_int_t Vblksiz,
+                                magmaDoubleComplex *work)
 {
-
     /*
      WORK (workspace) double complex array, dimension N
      */
@@ -201,14 +195,8 @@ magma_ztrdtype3cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 
     /* apply left and right on A(st:ed,st:ed)*/
     magma_zlarfxsym_v2(len, A(st,st), lda-1, V(vpos), TAU(taupos), work);
-
 }
 #undef A
 #undef V
 #undef TAU
 ///////////////////////////////////////////////////////////
-
-
-
-
-

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:17 2013
+       @generated from magmablas_z.h normal z -> c, Fri Apr 25 15:05:12 2014
 */
 
 #ifndef MAGMABLAS_C_H
@@ -34,6 +34,14 @@ void czero_32x32_block(
 void czero_nbxnb_block(
     magma_int_t nb,
     magmaFloatComplex_ptr dA, magma_int_t ldda );
+
+void magmablas_csetdiag1subdiag0_stream(
+    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
+    magmaFloatComplex *A, magma_int_t lda, magma_queue_t stream);
+
+void magmablas_csetdiag1subdiag0(
+    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
+    magmaFloatComplex *A, magma_int_t lda);
 
 // see also claswp
 // ipiv gets updated
@@ -437,6 +445,14 @@ void magmablas_csymmetrize_tiles(
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     magma_int_t ntile, magma_int_t mstride, magma_int_t nstride );
 
+void magma_clarfg(
+    magma_int_t n, magmaFloatComplex *alpha,
+    magmaFloatComplex *x, magma_int_t incx, magmaFloatComplex *tau );
+
+void magma_clarfg_gpu(
+    magma_int_t n, magmaFloatComplex *dx0, magmaFloatComplex *dx,
+    magmaFloatComplex *dtau, float *dxnorm, magmaFloatComplex *dAkk );
+
 void magma_clarfgx_gpu(
     magma_int_t n, magmaFloatComplex *dx0, magmaFloatComplex *dx,
     magmaFloatComplex *dtau, float *dxnorm,
@@ -484,7 +500,7 @@ void magmablas_cswap(
     magmaFloatComplex_ptr dB, magma_int_t lddb );
 
 void magmablas_cswapblk(
-    magma_storev_t storev,
+    magma_order_t order,
     magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     magmaFloatComplex_ptr dB, magma_int_t lddb,
@@ -614,8 +630,6 @@ void magmablas_cher2k(
     float  beta,
     magmaFloatComplex_ptr       dC, magma_int_t lddc );
 
-#ifdef REAL
-// only real [sd] precisions available
 void magmablas_ctrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
@@ -629,8 +643,8 @@ void magmablas_ctrsm_work(
     magmaFloatComplex alpha,
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
     magmaFloatComplex_ptr       db, magma_int_t lddb,
-    int flag, magmaFloatComplex_ptr d_dinvA, magmaFloatComplex_ptr dx );
-#endif
+    magma_int_t flag, magmaFloatComplex_ptr d_dinvA, magmaFloatComplex_ptr dx );
+
 
   /*
    * Wrappers for platform independence.
@@ -675,7 +689,7 @@ void magma_cgetvector_internal(
     magmaFloatComplex*          hy_dst, magma_int_t incy,
     const char* func, const char* file, int line );
 
-magma_err_t
+magma_int_t
 magma_ccopyvector_internal(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr dx_src, magma_int_t incx,
@@ -696,7 +710,7 @@ void magma_cgetvector_async_internal(
     magma_queue_t queue,
     const char* func, const char* file, int line );
 
-magma_err_t
+magma_int_t
 magma_ccopyvector_async_internal(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr dx_src, magma_int_t incx,

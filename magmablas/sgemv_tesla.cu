@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
 */
 #include "common_magma.h"
@@ -102,23 +102,9 @@ magmablas_sgemvt_tesla(
     const float *x,
     float       *y );
 
-extern "C" void
-magmablas_sgemv_tesla(
-    char trans, magma_int_t m, magma_int_t n,
-    float alpha,
-    const float *A, magma_int_t lda,
-    const float *x, magma_int_t incx,
-    float beta,
-    float       *y, magma_int_t incy)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     This routine computes:
     1) y =       A   x      if trans == 'N' or 'n', alpha == 1, beta == 0,
                             and incx == incy == 1 (using magmablas code)
@@ -128,50 +114,69 @@ magmablas_sgemv_tesla(
                             otherwise, using CUBLAS.
 
     Arguments
-    ==========
-    TRANS   CHARACTER*1
+    ----------
+    @param[in]
+    trans   magma_trans_t
             On entry, TRANS specifies the operation to be performed as
             follows:
-                TRANS = 'N' or 'n'   y := alpha*A  *x + beta*y
-                TRANS = 'T' or 't'   y := alpha*A^T*x + beta*y
+      -     = MagmaNoTrans:    y := alpha*A  *x + beta*y
+      -     = MagmaTrans:      y := alpha*A^T*x + beta*y
             
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             On entry, M specifies the number of rows of the matrix A.
             
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             On entry, N specifies the number of columns of the matrix A
             
-    ALPHA   REAL
+    @param[in]
+    alpha   REAL
             On entry, ALPHA specifies the scalar alpha.
-            Unchanged on exit.
             
-    A       (input) REAL array of dimension (LDA, N) on the GPU.
+    @param[in]
+    A       REAL array of dimension (LDA, N) on the GPU.
             
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             LDA specifies the leading dimension of A.
             
-    X       (input) REAL array of dimension
+    @param[in]
+    x       REAL array of dimension
             n if trans == 'n'
             m if trans == 't'
             
-    INCX    (input) Specifies the increment for the elements of X.
-            INCX must not be zero. Unchanged on exit.
+    @param[in]
+    incx    Specifies the increment for the elements of X.
+            INCX must not be zero.
             
-    BETA    REAL
+    @param[in]
+    beta    REAL
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
-            Unchanged on exit.
             
-    Y       (output) REAL array of dimension
+    @param[out]
+    y       REAL array of dimension
             m if trans == 'n'
             n if trans == 't'
             
-    INCY    (input) Specifies the increment for the elements of Y.
-            INCY must not be zero. Unchanged on exit.
-    ===================================================================== */
+    @param[in]
+    incy    Specifies the increment for the elements of Y.
+            INCY must not be zero.
 
+    @ingroup magma_sblas2
+    ********************************************************************/
+extern "C" void
+magmablas_sgemv_tesla(
+    magma_trans_t trans, magma_int_t m, magma_int_t n,
+    float alpha,
+    const float *A, magma_int_t lda,
+    const float *x, magma_int_t incx,
+    float beta,
+    float       *y, magma_int_t incy)
+{
     if ( incx == 1 && incy == 1 && beta == 0 ) {
-        if ( trans == 'n' || trans == 'N' ) {
+        if ( trans == MagmaNoTrans ) {
             if ( alpha == 1. ) {
                 magma_int_t blocks = (m - 1)/num_threads + 1;
                 dim3 grid( blocks, 1, 1 );
@@ -180,7 +185,7 @@ magmablas_sgemv_tesla(
                     (m, n, (n/gemv_bs)*gemv_bs, A, lda, x, y);
             }
             else {
-                cublasSgemv(trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+                cublasSgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
             }
         }
         else {
@@ -188,10 +193,45 @@ magmablas_sgemv_tesla(
         }
     }
     else {
-        cublasSgemv(trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+        cublasSgemv( lapacke_trans_const(trans), m, n, alpha, A, lda, x, incx, beta, y, incy);
     }
 }
 
+
+/**
+    Purpose
+    -------
+    This routine computes y = A x on the GPU.
+    This version has INCX as an argument.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    A       REAL array of dimension (LDA, N) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       REAL array of dimension N.
+
+    @param[in]
+    incx    Specifies the increment for the elements of X.
+            INCX must not be zero.
+
+    @param[out]
+    y       REAL array of dimension M.
+            On exit Y = A X.
+
+    @ingroup magma_sblas2
+    ********************************************************************/
 extern "C" void
 magmablas_sgemv2_tesla(
     magma_int_t m, magma_int_t n,
@@ -199,37 +239,6 @@ magmablas_sgemv2_tesla(
     const float *x, magma_int_t incx,
     float       *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    This routine computes y = A x on the GPU.
-    This version has INCX as an argument.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) REAL array of dimension (LDA, N) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) REAL array of dimension N.
-
-    INCX    (input) Specifies the increment for the elements of X.
-            INCX must not be zero. Unchanged on exit.
-
-    Y       (output) REAL array of dimension M.
-            On exit Y = A X.
-    ===================================================================== */
-
     magma_int_t blocks = (m - 1)/num_threads + 1;
     dim3 grid( blocks, 1, 1 );
     dim3 threads( num_threads, 1, 1 );
@@ -443,6 +452,41 @@ sgemvt_kernel2_tesla(
     }
 }
 
+
+/**
+    Purpose
+    -------
+    This routine computes y = alpha A^T x on the GPU.
+    Recommended for large M and N.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   REAL.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       REAL array of dimension (LDA, N) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       REAL array of dimension m.
+   
+    @param[out]
+    y       REAL array of dimension n.
+            On exit Y = alpha A^T X.
+
+    @ingroup magma_sblas2
+    ********************************************************************/
 extern "C" void
 magmablas_sgemvt1_tesla(
     magma_int_t m, magma_int_t n, float alpha,
@@ -450,34 +494,6 @@ magmablas_sgemvt1_tesla(
     const float *x,
     float       *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    This routine computes y = alpha A^T x on the GPU.
-    Recommended for large M and N.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) REAL array of dimension (LDA, N) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) REAL array of dimension m.
-
-    Y       (output) REAL array of dimension n.
-            On exit Y = alpha A^T X.
-    ===================================================================== */
-
     magma_int_t blocks = (n - 1)/32 + 1;
     dim3 grid( blocks, 1, 1 );
     dim3 threads( 32, 2, 1 );
@@ -485,6 +501,41 @@ magmablas_sgemvt1_tesla(
         (m, n, alpha, (m / gemv_bs)*gemv_bs, A, lda, x, y);
 }
 
+
+/**
+    Purpose
+    -------
+    This routine computes y = alpha A^T x on the GPU. Used in least squares
+    solver for N small (e.g. = BS, a block size of order 64, 128, etc).
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   REAL.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       REAL array of dimension (LDA, N) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       REAL array of dimension m.
+
+    @param[out]
+    y       REAL array of dimension n.
+            On exit Y = alpha A^T X.
+
+    @ingroup magma_sblas2
+    ********************************************************************/
 extern "C" void
 magmablas_sgemvt2_tesla(
     magma_int_t m, magma_int_t n, float alpha,
@@ -492,34 +543,6 @@ magmablas_sgemvt2_tesla(
     const float *x,
     float       *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    This routine computes y = alpha A^T x on the GPU. Used in least squares
-    solver for N small (e.g. = BS, a block size of order 64, 128, etc).
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) REAL array of dimension (LDA, N) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) REAL array of dimension m.
-
-    Y       (output) REAL array of dimension n.
-            On exit Y = alpha A^T X.
-    ===================================================================== */
-
     magma_int_t blocks = (n - 1)/16 + 1;
     dim3 grid( blocks, 1, 1 );
     dim3 threads( 16, 4, 1 );
@@ -527,6 +550,40 @@ magmablas_sgemvt2_tesla(
         (m, n, alpha, (m / 32)*32, A, lda, x, y);
 }
 
+
+/**
+    Purpose
+    -------
+    This routine computes y = alpha A^T x on the GPU.
+
+    @param[in]
+    m       INTEGER.
+            On entry, M specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER.
+            On entry, N specifies the number of columns of the matrix A
+
+    @param[in]
+    alpha   REAL.
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       REAL array of dimension (LDA, N) on the GPU.
+
+    @param[in]
+    lda     INTEGER.
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       REAL array of dimension m.
+ 
+    @param[out]
+    y       REAL array of dimension n.
+            On exit Y = alpha A^T X.
+
+    @ingroup magma_sblas2
+    ********************************************************************/
 extern "C" void
 magmablas_sgemvt_tesla(
     magma_int_t m, magma_int_t n, float alpha,
@@ -534,33 +591,6 @@ magmablas_sgemvt_tesla(
     const float *x,
     float       *y )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    This routine computes y = alpha A^T x on the GPU.
-
-    M       (input) INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    N       (input) INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    A       (input) REAL array of dimension (LDA, N) on the GPU.
-
-    LDA     (input) INTEGER.
-            LDA specifies the leading dimension of A.
-
-    X       (input) REAL array of dimension m.
-
-    Y       (output) REAL array of dimension n.
-            On exit Y = alpha A^T X.
-    ===================================================================== */
-
     if ( n <= 128 )
         magmablas_sgemvt2_tesla(m, n, alpha, A, lda, x, y);
     else

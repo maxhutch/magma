@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:17 2013
+       @generated from magmablas_z.h normal z -> s, Fri Apr 25 15:05:12 2014
 */
 
 #ifndef MAGMABLAS_S_H
@@ -34,6 +34,14 @@ void szero_32x32_block(
 void szero_nbxnb_block(
     magma_int_t nb,
     magmaFloat_ptr dA, magma_int_t ldda );
+
+void magmablas_ssetdiag1subdiag0_stream(
+    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
+    float *A, magma_int_t lda, magma_queue_t stream);
+
+void magmablas_ssetdiag1subdiag0(
+    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
+    float *A, magma_int_t lda);
 
 // see also slaswp
 // ipiv gets updated
@@ -437,6 +445,14 @@ void magmablas_ssymmetrize_tiles(
     magmaFloat_ptr dA, magma_int_t ldda,
     magma_int_t ntile, magma_int_t mstride, magma_int_t nstride );
 
+void magma_slarfg(
+    magma_int_t n, float *alpha,
+    float *x, magma_int_t incx, float *tau );
+
+void magma_slarfg_gpu(
+    magma_int_t n, float *dx0, float *dx,
+    float *dtau, float *dxnorm, float *dAkk );
+
 void magma_slarfgx_gpu(
     magma_int_t n, float *dx0, float *dx,
     float *dtau, float *dxnorm,
@@ -484,7 +500,7 @@ void magmablas_sswap(
     magmaFloat_ptr dB, magma_int_t lddb );
 
 void magmablas_sswapblk(
-    magma_storev_t storev,
+    magma_order_t order,
     magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dB, magma_int_t lddb,
@@ -614,8 +630,6 @@ void magmablas_ssyr2k(
     float  beta,
     magmaFloat_ptr       dC, magma_int_t lddc );
 
-#ifdef REAL
-// only real [sd] precisions available
 void magmablas_strsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
@@ -629,8 +643,8 @@ void magmablas_strsm_work(
     float alpha,
     magmaFloat_const_ptr dA, magma_int_t ldda,
     magmaFloat_ptr       db, magma_int_t lddb,
-    int flag, magmaFloat_ptr d_dinvA, magmaFloat_ptr dx );
-#endif
+    magma_int_t flag, magmaFloat_ptr d_dinvA, magmaFloat_ptr dx );
+
 
   /*
    * Wrappers for platform independence.
@@ -675,7 +689,7 @@ void magma_sgetvector_internal(
     float*          hy_dst, magma_int_t incy,
     const char* func, const char* file, int line );
 
-magma_err_t
+magma_int_t
 magma_scopyvector_internal(
     magma_int_t m, magma_int_t n,
     magmaFloat_const_ptr dx_src, magma_int_t incx,
@@ -696,7 +710,7 @@ void magma_sgetvector_async_internal(
     magma_queue_t queue,
     const char* func, const char* file, int line );
 
-magma_err_t
+magma_int_t
 magma_scopyvector_async_internal(
     magma_int_t m, magma_int_t n,
     magmaFloat_const_ptr dx_src, magma_int_t incx,

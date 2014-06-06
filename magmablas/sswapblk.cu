@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zswapblk.cu normal z -> s, Fri Apr 25 15:05:22 2014
 
 */
 #include "common_magma.h"
@@ -69,7 +69,7 @@ __global__ void magmagpu_sswapblkcm( magmagpu_sswapblk_params_t params )
 }
 
 extern "C" void 
-magmablas_sswapblk( char storev, magma_int_t n, 
+magmablas_sswapblk( magma_order_t order, magma_int_t n, 
                     float *dA1T, magma_int_t lda1,
                     float *dA2T, magma_int_t lda2,
                     magma_int_t i1, magma_int_t i2,
@@ -83,7 +83,7 @@ magmablas_sswapblk( char storev, magma_int_t n,
     if ( n == 0 )
         return;
     
-    if ( (storev == 'C') || (storev == 'c') ) {
+    if ( order == MagmaColMajor ) {
         for( k=(i1-1); k<i2; k+=BLOCK_SIZE )
         {
             magma_int_t sb = min(BLOCK_SIZE, i2-k);
@@ -91,7 +91,7 @@ magmablas_sswapblk( char storev, magma_int_t n,
             for( magma_int_t j = 0; j < sb; j++ )
             {
                 im = ipiv[(k+j)*inci] - 1;
-                if ( (k+j) == im)
+                if ( (k+j) == im )
                     params.ipiv[j] = -1;
                 else
                     params.ipiv[j] = im - offset;
@@ -107,7 +107,7 @@ magmablas_sswapblk( char storev, magma_int_t n,
             for( magma_int_t j = 0; j < sb; j++ )
             {
                 im = ipiv[(k+j)*inci] - 1;
-                if ( (k+j) == im)
+                if ( (k+j) == im )
                     params.ipiv[j] = -1;
                 else
                     params.ipiv[j] = im - offset;

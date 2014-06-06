@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Mark Gates
-       @generated d Tue Dec 17 13:18:17 2013
+       @generated from zpanel_to_q.cpp normal z -> d, Fri Apr 25 15:05:54 2014
 */
 #include "common_magma.h"
 
@@ -14,14 +14,14 @@
 // Put 0s in the upper triangular part of a panel and 1s on the diagonal.
 // Stores previous values in work array, to be restored later with dq_to_panel.
 extern "C"
-void dpanel_to_q(char uplo, magma_int_t ib, double *A, magma_int_t lda, double *work)
+void dpanel_to_q(magma_uplo_t uplo, magma_int_t ib, double *A, magma_int_t lda, double *work)
 {
     int i, j, k = 0;
     double *col;
     double c_zero = MAGMA_D_ZERO;
     double c_one  = MAGMA_D_ONE;
     
-    if (uplo == 'U' || uplo == 'u'){
+    if (uplo == MagmaUpper){
         for(i = 0; i < ib; ++i){
             col = A + i*lda;
             for(j = 0; j < i; ++j){
@@ -54,12 +54,12 @@ void dpanel_to_q(char uplo, magma_int_t ib, double *A, magma_int_t lda, double *
 // -------------------------
 // Restores a panel, after call to dpanel_to_q.
 extern "C"
-void dq_to_panel(char uplo, magma_int_t ib, double *A, magma_int_t lda, double *work)
+void dq_to_panel(magma_uplo_t uplo, magma_int_t ib, double *A, magma_int_t lda, double *work)
 {
     int i, j, k = 0;
     double *col;
     
-    if (uplo == 'U' || uplo == 'u'){
+    if (uplo == MagmaUpper){
         for(i = 0; i < ib; ++i){
             col = A + i*lda;
             for(j = 0; j <= i; ++j){

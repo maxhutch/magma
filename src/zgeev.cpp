@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> c
        @author Stan Tomov
@@ -24,27 +24,15 @@
 /*
  * TREVC version 1 - LAPACK
  * TREVC version 2 - new blocked LAPACK
+ * TREVC version 3 - blocked, single-threaded (MAGMA)
+ * TREVC version 4 - blocked, multi-threaded  (MAGMA)
+ * TREVC version 5 - blocked, multi-threaded, GPU (MAGMA)
  */
-#define TREVC_VERSION 2
+#define TREVC_VERSION 3
 
-extern "C" magma_int_t
-magma_zgeev(
-    char jobvl, char jobvr, magma_int_t n,
-    magmaDoubleComplex *A, magma_int_t lda,
-    magmaDoubleComplex *W,
-    magmaDoubleComplex *vl, magma_int_t ldvl,
-    magmaDoubleComplex *vr, magma_int_t ldvr,
-    magmaDoubleComplex *work, magma_int_t lwork,
-    double *rwork, magma_int_t *info )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZGEEV computes for an N-by-N complex nonsymmetric matrix A, the
     eigenvalues and, optionally, the left and/or right eigenvectors.
 
@@ -59,100 +47,122 @@ magma_zgeev(
     equal to 1 and largest component real.
 
     Arguments
-    =========
-    JOBVL   (input) CHARACTER*1
-            = 'N': left eigenvectors of A are not computed;
-            = 'V': left eigenvectors of are computed.
+    ---------
+    @param[in]
+    jobvl   magma_vec_t
+      -     = MagmaNoVec:        left eigenvectors of A are not computed;
+      -     = MagmaVec:          left eigenvectors of are computed.
 
-    JOBVR   (input) CHARACTER*1
-            = 'N': right eigenvectors of A are not computed;
-            = 'V': right eigenvectors of A are computed.
+    @param[in]
+    jobvr   magma_vec_t
+      -     = MagmaNoVec:        right eigenvectors of A are not computed;
+      -     = MagmaVec:          right eigenvectors of A are computed.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A. N >= 0.
 
-    A       (input/output) COMPLEX_16 array, dimension (LDA,N)
+    @param[in,out]
+    A       COMPLEX_16 array, dimension (LDA,N)
             On entry, the N-by-N matrix A.
             On exit, A has been overwritten.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    W       (output) COMPLEX_16 array, dimension (N)
+    @param[out]
+    W       COMPLEX_16 array, dimension (N)
             W contains the computed eigenvalues.
 
-    VL      (output) COMPLEX_16 array, dimension (LDVL,N)
-            If JOBVL = 'V', the left eigenvectors u(j) are stored one
+    @param[out]
+    VL      COMPLEX_16 array, dimension (LDVL,N)
+            If JOBVL = MagmaVec, the left eigenvectors u(j) are stored one
             after another in the columns of VL, in the same order
             as their eigenvalues.
-            If JOBVL = 'N', VL is not referenced.
+            If JOBVL = MagmaNoVec, VL is not referenced.
             u(j) = VL(:,j), the j-th column of VL.
 
-    LDVL    (input) INTEGER
+    @param[in]
+    ldvl    INTEGER
             The leading dimension of the array VL.  LDVL >= 1; if
-            JOBVL = 'V', LDVL >= N.
+            JOBVL = MagmaVec, LDVL >= N.
 
-    VR      (output) COMPLEX_16 array, dimension (LDVR,N)
-            If JOBVR = 'V', the right eigenvectors v(j) are stored one
+    @param[out]
+    VR      COMPLEX_16 array, dimension (LDVR,N)
+            If JOBVR = MagmaVec, the right eigenvectors v(j) are stored one
             after another in the columns of VR, in the same order
             as their eigenvalues.
-            If JOBVR = 'N', VR is not referenced.
+            If JOBVR = MagmaNoVec, VR is not referenced.
             v(j) = VR(:,j), the j-th column of VR.
 
-    LDVR    (input) INTEGER
+    @param[in]
+    ldvr    INTEGER
             The leading dimension of the array VR.  LDVR >= 1; if
-            JOBVR = 'V', LDVR >= N.
+            JOBVR = MagmaVec, LDVR >= N.
 
-    WORK    (workspace/output) COMPLEX_16 array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.  LWORK >= (1+nb)*N.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    RWORK   (workspace) DOUBLE PRECISION array, dimension (2*N)
+    @param
+    rwork   (workspace) DOUBLE PRECISION array, dimension (2*N)
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value.
-            > 0:  if INFO = i, the QR algorithm failed to compute all the
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value.
+      -     > 0:  if INFO = i, the QR algorithm failed to compute all the
                   eigenvalues, and no eigenvectors have been computed;
                   elements and i+1:N of W contain eigenvalues which have
                   converged.
-    =====================================================================    */
 
-    #define vl(i,j)  (vl + (i) + (j)*ldvl)
-    #define vr(i,j)  (vr + (i) + (j)*ldvr)
+    @ingroup magma_zgeev_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zgeev(
+    magma_vec_t jobvl, magma_vec_t jobvr, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex *W,
+    magmaDoubleComplex *VL, magma_int_t ldvl,
+    magmaDoubleComplex *VR, magma_int_t ldvr,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    double *rwork, magma_int_t *info )
+{
+    #define VL(i,j)  (VL + (i) + (j)*ldvl)
+    #define VR(i,j)  (VR + (i) + (j)*ldvr)
     
     magma_int_t c_one  = 1;
     magma_int_t c_zero = 0;
     
     double d__1, d__2;
-    magmaDoubleComplex z__1, z__2;
     magmaDoubleComplex tmp;
     double scl;
     double dum[1], eps;
     double anrm, cscale, bignum, smlnum;
     magma_int_t i, k, ilo, ihi;
-    magma_int_t ibal, ierr, itau, iwrk, nout, liwrk, i__1, i__2, nb;
+    magma_int_t ibal, ierr, itau, iwrk, nout, liwrk, nb;
     magma_int_t scalea, minwrk, irwork, lquery, wantvl, wantvr, select[1];
 
-    char side[2]   = {0, 0};
-    char jobvl_[2] = {jobvl, 0};
-    char jobvr_[2] = {jobvr, 0};
+    magma_side_t side = MagmaRight;
 
     irwork = 0;
     *info = 0;
-    lquery = lwork == -1;
-    wantvl = lapackf77_lsame( jobvl_, "V" );
-    wantvr = lapackf77_lsame( jobvr_, "V" );
-    if (! wantvl && ! lapackf77_lsame( jobvl_, "N" )) {
+    lquery = (lwork == -1);
+    wantvl = (jobvl == MagmaVec);
+    wantvr = (jobvr == MagmaVec);
+    if (! wantvl && jobvl != MagmaNoVec) {
         *info = -1;
-    } else if (! wantvr && ! lapackf77_lsame( jobvr_, "N" )) {
+    } else if (! wantvr && jobvr != MagmaNoVec) {
         *info = -2;
     } else if (n < 0) {
         *info = -3;
@@ -220,13 +230,15 @@ magma_zgeev(
 
     /* Balance the matrix
      * (CWorkspace: none)
-     * (RWorkspace: need N) */
+     * (RWorkspace: need N)
+     *  - this space is reserved until after gebak */
     ibal = 0;
     lapackf77_zgebal( "B", &n, A, &lda, &ilo, &ihi, &rwork[ibal], &ierr );
 
     /* Reduce to upper Hessenberg form
      * (CWorkspace: need 2*N, prefer N + N*NB)
-     * (RWorkspace: none) */
+     * (RWorkspace: N)
+     *  - including N reserved for gebal/gebak, unused by zgehrd */
     itau = 0;
     iwrk = itau + n;
     liwrk = lwork - iwrk;
@@ -248,70 +260,75 @@ magma_zgeev(
     if (wantvl) {
         /* Want left eigenvectors
          * Copy Householder vectors to VL */
-        side[0] = 'L';
-        lapackf77_zlacpy( MagmaLowerStr, &n, &n, A, &lda, vl, &ldvl );
+        side = MagmaLeft;
+        lapackf77_zlacpy( MagmaLowerStr, &n, &n, A, &lda, VL, &ldvl );
 
         /* Generate unitary matrix in VL
          * (CWorkspace: need 2*N-1, prefer N + (N-1)*NB)
-         * (RWorkspace: none) */
+         * (RWorkspace: N)
+         *  - including N reserved for gebal/gebak, unused by zunghr */
         #if defined(VERSION1) || defined(VERSION2)
             // Version 1 & 2 - LAPACK
-            lapackf77_zunghr( &n, &ilo, &ihi, vl, &ldvl, &work[itau],
+            lapackf77_zunghr( &n, &ilo, &ihi, VL, &ldvl, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
-            magma_zunghr( n, ilo, ihi, vl, ldvl, &work[itau], dT, nb, &ierr );
+            magma_zunghr( n, ilo, ihi, VL, ldvl, &work[itau], dT, nb, &ierr );
         #endif
 
         /* Perform QR iteration, accumulating Schur vectors in VL
          * (CWorkspace: need 1, prefer HSWORK (see comments) )
-         * (RWorkspace: none) */
+         * (RWorkspace: N)
+         *  - including N reserved for gebal/gebak, unused by zhseqr */
         iwrk = itau;
         liwrk = lwork - iwrk;
         lapackf77_zhseqr( "S", "V", &n, &ilo, &ihi, A, &lda, W,
-                          vl, &ldvl, &work[iwrk], &liwrk, info );
+                          VL, &ldvl, &work[iwrk], &liwrk, info );
 
         if (wantvr) {
             /* Want left and right eigenvectors
              * Copy Schur vectors to VR */
-            side[0] = 'B';
-            lapackf77_zlacpy( "F", &n, &n, vl, &ldvl, vr, &ldvr );
+            side = MagmaBothSides;
+            lapackf77_zlacpy( "F", &n, &n, VL, &ldvl, VR, &ldvr );
         }
     }
     else if (wantvr) {
         /* Want right eigenvectors
          * Copy Householder vectors to VR */
-        side[0] = 'R';
-        lapackf77_zlacpy( "L", &n, &n, A, &lda, vr, &ldvr );
+        side = MagmaRight;
+        lapackf77_zlacpy( "L", &n, &n, A, &lda, VR, &ldvr );
 
         /* Generate unitary matrix in VR
          * (CWorkspace: need 2*N-1, prefer N + (N-1)*NB)
-         * (RWorkspace: none) */
+         * (RWorkspace: N)
+         *  - including N reserved for gebal/gebak, unused by zunghr */
         #if defined(VERSION1) || defined(VERSION2)
             // Version 1 & 2 - LAPACK
-            lapackf77_zunghr( &n, &ilo, &ihi, vr, &ldvr, &work[itau],
+            lapackf77_zunghr( &n, &ilo, &ihi, VR, &ldvr, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
         #elif defined(VERSION3)
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
-            magma_zunghr( n, ilo, ihi, vr, ldvr, &work[itau], dT, nb, &ierr );
+            magma_zunghr( n, ilo, ihi, VR, ldvr, &work[itau], dT, nb, &ierr );
         #endif
 
         /* Perform QR iteration, accumulating Schur vectors in VR
          * (CWorkspace: need 1, prefer HSWORK (see comments) )
-         * (RWorkspace: none) */
+         * (RWorkspace: N)
+         *  - including N reserved for gebal/gebak, unused by zhseqr */
         iwrk = itau;
         liwrk = lwork - iwrk;
         lapackf77_zhseqr( "S", "V", &n, &ilo, &ihi, A, &lda, W,
-                          vr, &ldvr, &work[iwrk], &liwrk, info );
+                          VR, &ldvr, &work[iwrk], &liwrk, info );
     }
     else {
         /* Compute eigenvalues only
          * (CWorkspace: need 1, prefer HSWORK (see comments) )
-         * (RWorkspace: none) */
+         * (RWorkspace: N)
+         *  - including N reserved for gebal/gebak, unused by zhseqr */
         iwrk = itau;
         liwrk = lwork - iwrk;
         lapackf77_zhseqr( "E", "N", &n, &ilo, &ihi, A, &lda, W,
-                          vr, &ldvr, &work[iwrk], &liwrk, info );
+                          VR, &ldvr, &work[iwrk], &liwrk, info );
     }
 
     /* If INFO > 0 from ZHSEQR, then quit */
@@ -322,15 +339,27 @@ magma_zgeev(
     if (wantvl || wantvr) {
         /* Compute left and/or right eigenvectors
          * (CWorkspace: need 2*N)
-         * (RWorkspace: need 2*N) */
+         * (RWorkspace: need 2*N)
+         *  - including N reserved for gebal/gebak, unused by ztrevc */
         irwork = ibal + n;
         #if TREVC_VERSION == 1
-        lapackf77_ztrevc( side, "B", select, &n, A, &lda, vl, &ldvl,
-                          vr, &ldvr, &n, &nout, &work[iwrk], &rwork[irwork], &ierr );
+        lapackf77_ztrevc( lapack_side_const(side), "B", select, &n, A, &lda, VL, &ldvl,
+                          VR, &ldvr, &n, &nout, &work[iwrk], &rwork[irwork], &ierr );
         #elif TREVC_VERSION == 2
         liwrk = lwork - iwrk;
-        lapackf77_ztrevc3( side, "B", select, &n, A, &lda, vl, &ldvl,
-                           vr, &ldvr, &n, &nout, &work[iwrk], &liwrk, &rwork[irwork], &ierr );
+        lapackf77_ztrevc3( lapack_side_const(side), "B", select, &n, A, &lda, VL, &ldvl,
+                           VR, &ldvr, &n, &nout, &work[iwrk], &liwrk, &rwork[irwork], &ierr );
+        #elif TREVC_VERSION == 3
+        magma_ztrevc3( side, MagmaBacktransVec, select, n, A, lda, VL, ldvl,
+                       VR, ldvr, n, &nout, &work[iwrk], liwrk, &rwork[irwork], &ierr );
+        #elif TREVC_VERSION == 4
+        magma_ztrevc3_mt( side, MagmaBacktransVec, select, n, A, lda, VL, ldvl,
+                          VR, ldvr, n, &nout, &work[iwrk], liwrk, &rwork[irwork], &ierr );
+        #elif TREVC_VERSION == 5
+        magma_ztrevc3_mt_gpu( side, MagmaBacktransVec, select, n, A, lda, VL, ldvl,
+                              VR, ldvr, n, &nout, &work[iwrk], liwrk, &rwork[irwork], &ierr );
+        #else
+        #error Unknown TREVC_VERSION
         #endif
     }
 
@@ -339,27 +368,22 @@ magma_zgeev(
          * (CWorkspace: none)
          * (RWorkspace: need N) */
         lapackf77_zgebak( "B", "L", &n, &ilo, &ihi, &rwork[ibal], &n,
-                          vl, &ldvl, &ierr );
+                          VL, &ldvl, &ierr );
 
         /* Normalize left eigenvectors and make largest component real */
         for (i = 0; i < n; ++i) {
-            scl = 1. / cblas_dznrm2( n, vl(0,i), 1 );
-            cblas_zdscal( n, scl, vl(0,i), 1 );
+            scl = 1. / cblas_dznrm2( n, VL(0,i), 1 );
+            cblas_zdscal( n, scl, VL(0,i), 1 );
             for (k = 0; k < n; ++k) {
                 /* Computing 2nd power */
-                d__1 = MAGMA_Z_REAL( *vl(k,i) );
-                d__2 = MAGMA_Z_IMAG( *vl(k,i) );
+                d__1 = MAGMA_Z_REAL( *VL(k,i) );
+                d__2 = MAGMA_Z_IMAG( *VL(k,i) );
                 rwork[irwork + k] = d__1*d__1 + d__2*d__2;
             }
             k = cblas_idamax( n, &rwork[irwork], 1 );
-            z__2 = MAGMA_Z_CNJG( *vl(k,i) );
-            d__1 = magma_dsqrt( rwork[irwork + k] );
-            MAGMA_Z_DSCALE( z__1, z__2, d__1 );
-            tmp = z__1;
-            cblas_zscal( n, CBLAS_SADDR(tmp), vl(0,i), 1 );
-            d__1 = MAGMA_Z_REAL( *vl(k,i) );
-            z__1 = MAGMA_Z_MAKE( d__1, 0 );
-            *vl(k,i) = z__1;
+            tmp = MAGMA_Z_CNJG( *VL(k,i) ) / magma_dsqrt( rwork[irwork + k] );
+            cblas_zscal( n, CBLAS_SADDR(tmp), VL(0,i), 1 );
+            *VL(k,i) = MAGMA_Z_MAKE( MAGMA_Z_REAL( *VL(k,i) ), 0. );
         }
     }
 
@@ -368,41 +392,37 @@ magma_zgeev(
          * (CWorkspace: none)
          * (RWorkspace: need N) */
         lapackf77_zgebak( "B", "R", &n, &ilo, &ihi, &rwork[ibal], &n,
-                          vr, &ldvr, &ierr );
+                          VR, &ldvr, &ierr );
 
         /* Normalize right eigenvectors and make largest component real */
         for (i = 0; i < n; ++i) {
-            scl = 1. / cblas_dznrm2( n, vr(0,i), 1 );
-            cblas_zdscal( n, scl, vr(0,i), 1 );
+            scl = 1. / cblas_dznrm2( n, VR(0,i), 1 );
+            cblas_zdscal( n, scl, VR(0,i), 1 );
             for (k = 0; k < n; ++k) {
                 /* Computing 2nd power */
-                d__1 = MAGMA_Z_REAL( *vr(k,i) );
-                d__2 = MAGMA_Z_IMAG( *vr(k,i) );
+                d__1 = MAGMA_Z_REAL( *VR(k,i) );
+                d__2 = MAGMA_Z_IMAG( *VR(k,i) );
                 rwork[irwork + k] = d__1*d__1 + d__2*d__2;
             }
             k = cblas_idamax( n, &rwork[irwork], 1 );
-            z__2 = MAGMA_Z_CNJG( *vr(k,i) );
-            d__1 = magma_dsqrt( rwork[irwork + k] );
-            MAGMA_Z_DSCALE( z__1, z__2, d__1 );
-            tmp = z__1;
-            cblas_zscal( n, CBLAS_SADDR(tmp), vr(0,i), 1 );
-            d__1 = MAGMA_Z_REAL( *vr(k,i) );
-            z__1 = MAGMA_Z_MAKE( d__1, 0 );
-            *vr(k,i) = z__1;
+            tmp = MAGMA_Z_CNJG( *VR(k,i) ) / magma_dsqrt( rwork[irwork + k] );
+            cblas_zscal( n, CBLAS_SADDR(tmp), VR(0,i), 1 );
+            *VR(k,i) = MAGMA_Z_MAKE( MAGMA_Z_REAL( *VR(k,i) ), 0. );
         }
     }
 
 CLEANUP:
     /* Undo scaling if necessary */
     if (scalea) {
-        i__1 = n - (*info);
-        i__2 = max( n - (*info), 1 );
-        lapackf77_zlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &i__1, &c_one,
-                          W + (*info), &i__2, &ierr );
+        // converged eigenvalues, stored in WR[i+1:n] and WI[i+1:n] for i = INFO
+        magma_int_t nval = n - (*info);
+        magma_int_t ld   = max( nval, 1 );
+        lapackf77_zlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &nval, &c_one, W + (*info), &ld, &ierr );
         if (*info > 0) {
-            i__1 = ilo - 1;
-            lapackf77_zlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &i__1, &c_one,
-                              W, &n, &ierr );
+            // first ilo columns were already upper triangular,
+            // so the corresponding eigenvalues are also valid.
+            nval = ilo - 1;
+            lapackf77_zlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &nval, &c_one, W, &n, &ierr );
         }
     }
 
@@ -410,5 +430,7 @@ CLEANUP:
     magma_free( dT );
     #endif
     
+    work[0] = MAGMA_Z_MAKE( (double) minwrk, 0. );  // TODO use optwrk as in dgeev
+
     return *info;
 } /* magma_zgeev */

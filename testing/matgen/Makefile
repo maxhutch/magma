@@ -1,5 +1,5 @@
 MAGMA_DIR = ../..
-include ../../Makefile.internal
+include $(MAGMA_DIR)/Makefile.internal
 
 #######################################################################
 #  This is the makefile to create a library of the test matrix

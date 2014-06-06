@@ -1,9 +1,9 @@
 /*
  *    Llog.h
- *    Tracer l'execution des threads dans un fichier.
- * Auteur: Simplice D.
- *    Last modif:30 oct 2008
-*/
+ *    Enable the visual tracing of threads and GPUs.
+ *	  @auteur: Simplice D.
+ *    @Last modif:30 oct 2013
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "Llog.h"
@@ -256,3 +256,4 @@ void Llog_free(Llog **l)
         (*l) = (*l)->next; 
     }
 }
+

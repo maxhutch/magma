@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:56 2013
+       @generated from testing_zgels_gpu.cpp normal z -> c, Fri Apr 25 15:06:10 2014
 
 */
 
@@ -54,10 +54,10 @@ int main( int argc, char** argv )
     printf("                                                            ||b-Ax|| / (N||A||)\n");
     printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU     \n");
     printf("===============================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             if ( M < N ) {
                 printf( "skipping M=%d, N=%d because M < N is not yet supported.\n", (int) M, (int) N );
                 continue;
@@ -155,13 +155,12 @@ int main( int argc, char** argv )
             cpu_error = lapackf77_clange("f", &M, &nrhs, h_B, &ldb, work) / (min_mn*Anorm);
             gpu_error = lapackf77_clange("f", &M, &nrhs, h_R, &ldb, work) / (min_mn*Anorm);
             
-            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e",
+            printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e  %s\n",
                    (int) M, (int) N, (int) nrhs,
-                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error );
-            printf("%s\n", (gpu_error < tol ? "" : "  failed"));
+                   cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error,
+                   (gpu_error < tol ? "ok" : "failed"));
             status |= ! (gpu_error < tol);
 
-            
             TESTING_FREE_CPU( tau    );
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_A2   );
@@ -172,6 +171,7 @@ int main( int argc, char** argv )
             
             TESTING_FREE_DEV( d_A    );
             TESTING_FREE_DEV( d_B    );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

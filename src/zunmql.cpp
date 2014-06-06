@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Raffaele Solca
 
@@ -12,104 +12,115 @@
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_zunmql(const char side, const char trans,
-             magma_int_t m, magma_int_t n, magma_int_t k,
-             magmaDoubleComplex *a, magma_int_t lda,
-             magmaDoubleComplex *tau,
-             magmaDoubleComplex *c, magma_int_t ldc,
-             magmaDoubleComplex *work, magma_int_t lwork,
-             magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZUNMQL overwrites the general complex M-by-N matrix C with
 
-                    SIDE = 'L'     SIDE = 'R'
-    TRANS = 'N':      Q * C          C * Q
-    TRANS = 'C':      Q**H * C       C * Q**H
+    @verbatim
+                              SIDE = MagmaLeft   SIDE = MagmaRight
+    TRANS = MagmaNoTrans:     Q * C              C * Q
+    TRANS = MagmaConjTrans:   Q**H * C           C * Q**H
+    @endverbatim
 
     where Q is a complex unitary matrix defined as the product of k
     elementary reflectors
 
           Q = H(k) . . . H(2) H(1)
 
-    as returned by ZGEQLF. Q is of order M if SIDE = 'L' and of order N
-    if SIDE = 'R'.
+    as returned by ZGEQLF. Q is of order M if SIDE = MagmaLeft and of order N
+    if SIDE = MagmaRight.
 
     Arguments
-    =========
-    SIDE    (input) CHARACTER*1
-            = 'L': apply Q or Q**H from the Left;
-            = 'R': apply Q or Q**H from the Right.
+    ---------
+    @param[in]
+    side    magma_side_t
+      -     = MagmaLeft:      apply Q or Q**H from the Left;
+      -     = MagmaRight:     apply Q or Q**H from the Right.
 
-    TRANS   (input) CHARACTER*1
-            = 'N':  No transpose, apply Q;
-            = 'C':  Transpose, apply Q**H.
+    @param[in]
+    trans   magma_trans_t
+      -     = MagmaNoTrans:    No transpose, apply Q;
+      -     = MagmaConjTrans:  Transpose, apply Q**H.
 
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix C. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix C. N >= 0.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The number of elementary reflectors whose product defines
             the matrix Q.
-            If SIDE = 'L', M >= K >= 0;
-            if SIDE = 'R', N >= K >= 0.
+            If SIDE = MagmaLeft,  M >= K >= 0;
+            if SIDE = MagmaRight, N >= K >= 0.
 
-    A       (input) COMPLEX_16 array, dimension (LDA,K)
+    @param[in]
+    A       COMPLEX_16 array, dimension (LDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
             ZGEQLF in the last k columns of its array argument A.
             A is modified by the routine but restored on exit.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.
-            If SIDE = 'L', LDA >= max(1,M);
-            if SIDE = 'R', LDA >= max(1,N).
+            If SIDE = MagmaLeft,  LDA >= max(1,M);
+            if SIDE = MagmaRight, LDA >= max(1,N).
 
-    TAU     (input) COMPLEX_16 array, dimension (K)
+    @param[in]
+    tau     COMPLEX_16 array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by ZGEQLF.
 
-    C       (input/output) COMPLEX_16 array, dimension (LDC,N)
+    @param[in,out]
+    C       COMPLEX_16 array, dimension (LDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q.
 
-    LDC     (input) INTEGER
+    @param[in]
+    ldc     INTEGER
             The leading dimension of the array C. LDC >= max(1,M).
 
-    WORK    (workspace/output) COMPLEX_16 array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.
-            If SIDE = 'L', LWORK >= max(1,N);
-            if SIDE = 'R', LWORK >= max(1,M).
-            For optimum performance LWORK >= N*NB if SIDE = 'L', and
-            LWORK >= M*NB if SIDE = 'R', where NB is the optimal
+            If SIDE = MagmaLeft,  LWORK >= max(1,N);
+            if SIDE = MagmaRight, LWORK >= max(1,M).
+            For optimum performance LWORK >= N*NB if SIDE = MagmaLeft, and
+            LWORK >= M*NB if SIDE = MagmaRight, where NB is the optimal
             blocksize.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================    */
-    
-    char side_[2] = {side, 0};
-    char trans_[2] = {trans, 0};
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+
+    @ingroup magma_zgeqlf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zunmql(magma_side_t side, magma_trans_t trans,
+             magma_int_t m, magma_int_t n, magma_int_t k,
+             magmaDoubleComplex *A, magma_int_t lda,
+             magmaDoubleComplex *tau,
+             magmaDoubleComplex *C, magma_int_t ldc,
+             magmaDoubleComplex *work, magma_int_t lwork,
+             magma_int_t *info)
+{
+    const char* side_  = lapack_side_const( side  );
+    const char* trans_ = lapack_trans_const( trans );
 
     magma_int_t i__4, i__;
     magmaDoubleComplex *T;
@@ -118,8 +129,8 @@ magma_zunmql(const char side, const char trans,
     int lquery, left, notran;
 
     *info  = 0;
-    left   = lapackf77_lsame(side_, "L");
-    notran = lapackf77_lsame(trans_, "N");
+    left   = (side == MagmaLeft);
+    notran = (trans == MagmaNoTrans);
     lquery = (lwork == -1);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
@@ -130,9 +141,9 @@ magma_zunmql(const char side, const char trans,
         nq = n;
         nw = max(1,m);
     }
-    if (! left && ! lapackf77_lsame(side_, "R")) {
+    if (! left && side != MagmaRight) {
         *info = -1;
-    } else if (! notran && ! lapackf77_lsame(trans_, "C")) {
+    } else if (! notran && trans != MagmaConjTrans) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -181,7 +192,7 @@ magma_zunmql(const char side, const char trans,
     magma_zmalloc( &dwork, 2*(m + 64)*64 );
 
     /* Copy matrix C from the CPU to the GPU */
-    magma_zsetmatrix( m, n, c, ldc, dc, m );
+    magma_zsetmatrix( m, n, C, ldc, dc, m );
 
     /* work space on CPU */
     if (  MAGMA_SUCCESS != magma_zmalloc_pinned( &T, 2*nb*nb ) ) {
@@ -194,8 +205,8 @@ magma_zunmql(const char side, const char trans,
 
     if ( nb >= k ) {
         /* Use CPU code */
-        lapackf77_zunmql(side_, trans_, &m, &n, &k, a, &lda, tau,
-                         c, &ldc, work, &lwork, &iinfo);
+        lapackf77_zunmql(side_, trans_, &m, &n, &k, A, &lda, tau,
+                         C, &ldc, work, &lwork, &iinfo);
     }
     else {
         /* Use hybrid CPU-GPU code */
@@ -226,14 +237,14 @@ magma_zunmql(const char side, const char trans,
                H = H(i+ib-1) . . . H(i+1) H(i) */
             i__4 = nq - k + i__ + ib - 1;
             lapackf77_zlarft("Backward", "Columnwise", &i__4, &ib,
-                             &a[(i__-1) * lda], &lda, &tau[i__-1], T, &ib);
+                             &A[(i__-1) * lda], &lda, &tau[i__-1], T, &ib);
             
             /* 1) Put 0s in the lower triangular part of A;
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
-            zpanel_to_q('L', ib, &a[i__-1 + (i__-1) * lda], lda, T+ib*ib);
-            magma_zsetmatrix( i__4, ib, &a[(i__-1) * lda], lda, dwork, i__4 );
-            zq_to_panel('L', ib, &a[i__-1 + (i__-1) * lda], lda, T+ib*ib);
+            zpanel_to_q( MagmaLower, ib, &A[i__-1 + (i__-1) * lda], lda, T+ib*ib);
+            magma_zsetmatrix( i__4, ib, &A[(i__-1) * lda], lda, dwork, i__4 );
+            zq_to_panel( MagmaLower, ib, &A[i__-1 + (i__-1) * lda], lda, T+ib*ib);
             
             if (left) {
                 /* H or H' is applied to C(1:m-k+i+ib-1,1:n) */
@@ -253,14 +264,14 @@ magma_zunmql(const char side, const char trans,
                              dwork+i__4*ib + ib*ib, ldwork);
         }
 
-        magma_zgetmatrix( m, n, dc, m, c, ldc );
+        magma_zgetmatrix( m, n, dc, m, C, ldc );
     }
     work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
 
     magma_free( dc );
     magma_free( dwork );
 
-    magma_free_pinned( T);  
+    magma_free_pinned( T);
 
     return *info;
 } /* magma_zunmql */

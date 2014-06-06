@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
 
@@ -52,10 +52,10 @@ int main( int argc, char** argv)
     
     printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QBP'|/N|A|  |I-QQ'|/N  |I-PP'|/N\n");
     printf("=========================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             minmn  = min(M, N);
             nb     = magma_get_zgebrd_nb(N);
             lda    = M;
@@ -107,11 +107,11 @@ int main( int argc, char** argv)
                 // generate Q & P'
                 lapackf77_zungbr("Q", &M, &minmn, &N, h_Q,  &lda, tauq, chkwork, &lchkwork, &info);
                 if (info != 0)
-                    printf("lapackf77_zungbr returned error %d: %s.\n",
+                    printf("lapackf77_zungbr #1 returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 lapackf77_zungbr("P", &minmn, &N, &M, h_PT, &lda, taup, chkwork, &lchkwork, &info);
                 if (info != 0)
-                    printf("lapackf77_zungbr (2) returned error %d: %s.\n",
+                    printf("lapackf77_zungbr #2 returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 
                 // Test 1:  Check the decomposition A := Q * B * PT
@@ -182,6 +182,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_PIN( h_Q    );
             TESTING_FREE_PIN( h_work );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

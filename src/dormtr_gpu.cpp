@@ -1,136 +1,126 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zunmtr_gpu.cpp normal z -> d, Fri Apr 25 15:05:44 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_dormtr_gpu(char side, char uplo, char trans,
-                 magma_int_t m, magma_int_t n,
-                 double *da,    magma_int_t ldda,
-                 double *tau,
-                 double *dc,    magma_int_t lddc,
-                 double *wa,    magma_int_t ldwa,
-                 magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DORMTR overwrites the general real M-by-N matrix C with
 
-                    SIDE = 'L'     SIDE = 'R'
-    TRANS = 'N':      Q * C          C * Q
-    TRANS = 'T':      Q**T * C       C * Q**T
+                    SIDE = MagmaLeft     SIDE = MagmaRight
+    TRANS = MagmaNoTrans:      Q * C          C * Q
+    TRANS = MagmaTrans:      Q**T * C       C * Q**T
 
     where Q is a real orthogonal matrix of order nq, with nq = m if
-    SIDE = 'L' and nq = n if SIDE = 'R'. Q is defined as the product of
-    nq-1 elementary reflectors, as returned by SSYTRD:
+    SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
+    nq-1 elementary reflectors, as returned by DSYTRD:
 
-    if UPLO = 'U', Q = H(nq-1) . . . H(2) H(1);
+    if UPLO = MagmaUpper, Q = H(nq-1) . . . H(2) H(1);
 
-    if UPLO = 'L', Q = H(1) H(2) . . . H(nq-1).
+    if UPLO = MagmaLower, Q = H(1) H(2) . . . H(nq-1).
 
     Arguments
-    =========
-    SIDE    (input) CHARACTER*1
-            = 'L': apply Q or Q**T from the Left;
-            = 'R': apply Q or Q**T from the Right.
+    ---------
+    @param[in]
+    side    magma_side_t
+      -     = MagmaLeft:      apply Q or Q**T from the Left;
+      -     = MagmaRight:     apply Q or Q**T from the Right.
 
-    UPLO    (input) CHARACTER*1
-            = 'U': Upper triangle of A contains elementary reflectors
-                   from SSYTRD;
-            = 'L': Lower triangle of A contains elementary reflectors
-                   from SSYTRD.
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper: Upper triangle of A contains elementary reflectors
+                   from DSYTRD;
+      -     = MagmaLower: Lower triangle of A contains elementary reflectors
+                   from DSYTRD.
 
-    TRANS   (input) CHARACTER*1
-            = 'N':  No transpose, apply Q;
-            = 'T':  Transpose, apply Q**T.
+    @param[in]
+    trans   magma_trans_t
+      -     = MagmaNoTrans:    No transpose, apply Q;
+      -     = MagmaTrans:      Transpose, apply Q**T.
 
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix C. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix C. N >= 0.
 
-    DA      (device input) DOUBLE_PRECISION array, dimension
-                                 (LDDA,M) if SIDE = 'L'
-                                 (LDDA,N) if SIDE = 'R'
+    @param[in]
+    dA      DOUBLE_PRECISION array, dimension
+                                 (LDDA,M) if SIDE = MagmaLeft
+                                 (LDDA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
             returned by DSYTRD_GPU. On output the diagonal, the subdiagonal and the
-            upper part (UPLO='L') or lower part (UPLO='U') are destroyed.
+            upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper) are destroyed.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array DA.
-            LDDA >= max(1,M) if SIDE = 'L'; LDDA >= max(1,N) if SIDE = 'R'.
+            LDDA >= max(1,M) if SIDE = MagmaLeft; LDDA >= max(1,N) if SIDE = MagmaRight.
 
-    TAU     (input) DOUBLE_PRECISION array, dimension
-                                 (M-1) if SIDE = 'L'
-                                 (N-1) if SIDE = 'R'
+    @param[in]
+    tau     DOUBLE_PRECISION array, dimension
+                                 (M-1) if SIDE = MagmaLeft
+                                 (N-1) if SIDE = MagmaRight
             TAU(i) must contain the scalar factor of the elementary
-            reflector H(i), as returned by SSYTRD.
+            reflector H(i), as returned by DSYTRD.
 
-    DC      (device input/output) DOUBLE_PRECISION array, dimension (LDDC,N)
+    @param[in,out]
+    dC      DOUBLE_PRECISION array, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by (Q*C) or (Q**T * C) or (C * Q**T) or (C*Q).
 
-    LDDC    (input) INTEGER
+    @param[in]
+    lddc    INTEGER
             The leading dimension of the array C. LDDC >= max(1,M).
 
-    WA      (input/workspace) DOUBLE_PRECISION array, dimension
-                                 (LDWA,M) if SIDE = 'L'
-                                 (LDWA,N) if SIDE = 'R'
+    @param[in]
+    wA      (workspace) DOUBLE_PRECISION array, dimension
+                                 (LDWA,M) if SIDE = MagmaLeft
+                                 (LDWA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
             returned by DSYTRD_GPU.
 
-    LDWA    (input) INTEGER
-            The leading dimension of the array A.
-            LDWA >= max(1,M) if SIDE = 'L'; LDWA >= max(1,N) if SIDE = 'R'.
+    @param[in]
+    ldwa    INTEGER
+            The leading dimension of the array wA.
+            LDWA >= max(1,M) if SIDE = MagmaLeft; LDWA >= max(1,N) if SIDE = MagmaRight.
 
-    WORK    (workspace/output) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    LWORK   (input) INTEGER
-            The dimension of the array WORK.
-            If SIDE = 'L', LWORK >= max(1,N);
-            if SIDE = 'R', LWORK >= max(1,M).
-            For optimum performance LWORK >= N*NB if SIDE = 'L', and
-            LWORK >= M*NB if SIDE = 'R', where NB is the optimal
-            blocksize.
-
-            If LWORK = -1, then a workspace query is assumed; the routine
-            only calculates the optimal size of the WORK array, returns
-            this value as the first entry of the WORK array, and no error
-            message related to LWORK is issued.
-
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================    */
-
-    char side_[2]  = {side, 0};
-    char uplo_[2]  = {uplo, 0};
-    char trans_[2] = {trans, 0};
+    @ingroup magma_dsyev_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dormtr_gpu(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
+                 magma_int_t m, magma_int_t n,
+                 double *dA,    magma_int_t ldda,
+                 double *tau,
+                 double *dC,    magma_int_t lddc,
+                 double *wA,    magma_int_t ldwa,
+                 magma_int_t *info)
+{
     magma_int_t i1, i2, mi, ni, nq, nw;
     int left, upper;
     magma_int_t iinfo;
 
     *info = 0;
-    left   = lapackf77_lsame(side_, "L");
-    upper  = lapackf77_lsame(uplo_, "U");
+    left   = (side == MagmaLeft);
+    upper  = (uplo == MagmaUpper);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
@@ -140,12 +130,12 @@ magma_dormtr_gpu(char side, char uplo, char trans,
         nq = n;
         nw = m;
     }
-    if (! left && ! lapackf77_lsame(side_, "R")) {
+    if (! left && side != MagmaRight) {
         *info = -1;
-    } else if (! upper && ! lapackf77_lsame(uplo_, "L")) {
+    } else if (! upper && uplo != MagmaLower) {
         *info = -2;
-    } else if (! lapackf77_lsame(trans_, "N") &&
-               ! lapackf77_lsame(trans_, "C")) {
+    } else if (trans != MagmaNoTrans &&
+               trans != MagmaTrans) {
         *info = -3;
     } else if (m < 0) {
         *info = -4;
@@ -178,11 +168,11 @@ magma_dormtr_gpu(char side, char uplo, char trans,
     }
 
     if (upper) {
-        magma_dormql2_gpu(side, trans, mi, ni, nq-1, &da[ldda], ldda, tau,
-                          dc, lddc, &wa[ldwa], ldwa, &iinfo);
+        magma_dormql2_gpu(side, trans, mi, ni, nq-1, &dA[ldda], ldda, tau,
+                          dC, lddc, &wA[ldwa], ldwa, &iinfo);
     }
     else {
-        /* Q was determined by a call to SSYTRD with UPLO = 'L' */
+        /* Q was determined by a call to DSYTRD with UPLO = 'L' */
         if (left) {
             i1 = 1;
             i2 = 0;
@@ -190,9 +180,9 @@ magma_dormtr_gpu(char side, char uplo, char trans,
             i1 = 0;
             i2 = 1;
         }
-        magma_dormqr2_gpu(side, trans, mi, ni, nq-1, &da[1], ldda, tau,
-                          &dc[i1 + i2*lddc], lddc, &wa[1], ldwa, &iinfo);
+        magma_dormqr2_gpu(side, trans, mi, ni, nq-1, &dA[1], ldda, tau,
+                          &dC[i1 + i2*lddc], lddc, &wA[1], ldwa, &iinfo);
     }
 
     return *info;
-} /* dormtr */
+} /* magma_dormtr */

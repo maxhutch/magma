@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -13,23 +13,9 @@
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_zssssm_gpu(char storev, magma_int_t m1, magma_int_t n1,
-                 magma_int_t m2, magma_int_t n2, magma_int_t k, magma_int_t ib,
-                 magmaDoubleComplex *dA1, magma_int_t ldda1,
-                 magmaDoubleComplex *dA2, magma_int_t ldda2,
-                 magmaDoubleComplex *dL1, magma_int_t lddl1,
-                 magmaDoubleComplex *dL2, magma_int_t lddl2,
-                 magma_int_t *IPIV, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZSSSSM applies the LU factorization update from a complex
     matrix formed by a lower triangular IB-by-K tile L1 on top of a
     M2-by-K tile L2 to a second complex matrix formed by a M1-by-N1
@@ -38,57 +24,81 @@ magma_zssssm_gpu(char storev, magma_int_t m1, magma_int_t n1,
     This is the right-looking Level 2.5 BLAS version of the algorithm.
 
     Arguments
-    =========
-    M1      (input) INTEGER
+    ---------
+    @param[in]
+    m1      INTEGER
             The number of rows of the matrix A1.  M1 >= 0.
 
-    N1      (input) INTEGER
+    @param[in]
+    n1      INTEGER
             The number of columns of the matrix A1.  N1 >= 0.
 
-    M2      (input) INTEGER
+    @param[in]
+    m2      INTEGER
             The number of rows of the matrix A2.  M2 >= 0.
 
-    N2      (input) INTEGER
+    @param[in]
+    n2      INTEGER
             The number of columns of the matrix A2.  N2 >= 0.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The number of columns of the matrix L1 and L2.  K >= 0.
 
-    IB      (input) INTEGER
+    @param[in]
+    ib      INTEGER
             The inner-blocking size.  IB >= 0.
 
-    dA1     (input,output) COMPLEX_16 array, dimension(LDDA1, N), on gpu.
+    @param[in,out]
+    dA1     COMPLEX_16 array, dimension(LDDA1, N), on gpu.
             On entry, the M1-by-N1 tile dA1.
             On exit, dA1 is updated by the application of dL (dL1 dL2).
 
-    LDDA1   (input) INTEGER
+    @param[in]
+    ldda1   INTEGER
             The leading dimension of the array dA1.  LDDA1 >= max(1,M1).
 
-    dA2     (input,output) COMPLEX_16 array, dimension(LDDA2, N) , on gpu.
+    @param[in,out]
+    dA2     COMPLEX_16 array, dimension(LDDA2, N), on gpu.
             On entry, the M2-by-N2 tile dA2.
             On exit, dA2 is updated by the application of dL (dL1 dL2).
 
-    LDDA2   (input) INTEGER
+    @param[in]
+    ldda2   INTEGER
             The leading dimension of the array dA2.  LDDA2 >= max(1,M2).
 
-    dL1     (input) COMPLEX_16 array, dimension(LDDL1, K), on gpu.
+    @param[in]
+    dL1     COMPLEX_16 array, dimension(LDDL1, K), on gpu.
             The inverse of the IB-by-K lower triangular tile as returned by
             ZTSTRF.
 
-    LDDL1   (input) INTEGER
+    @param[in]
+    lddl1   INTEGER
             The leading dimension of the array L1.  LDDL1 >= max(1,2*IB).
 
-    dL2     (input) COMPLEX_16 array, dimension(LDDL2, K)
+    @param[in]
+    dL2     COMPLEX_16 array, dimension(LDDL2, K)
             The M2-by-K tile as returned by ZTSTRF.
 
-    LDDL2   (input) INTEGER
+    @param[in]
+    lddl2   INTEGER
             The leading dimension of the array L2.  LDDL2 >= max(1,M2).
 
-    IPIV    (input) INTEGER array on the cpu.
+    @param[in]
+    ipiv    INTEGER array on the cpu.
             The pivot indices array of size K as returned by ZTSTRF
 
-    =====================================================================    */
-
+    @ingroup magma_zgesv_tile
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zssssm_gpu(magma_order_t order, magma_int_t m1, magma_int_t n1,
+                 magma_int_t m2, magma_int_t n2, magma_int_t k, magma_int_t ib,
+                 magmaDoubleComplex *dA1, magma_int_t ldda1,
+                 magmaDoubleComplex *dA2, magma_int_t ldda2,
+                 magmaDoubleComplex *dL1, magma_int_t lddl1,
+                 magmaDoubleComplex *dL2, magma_int_t lddl2,
+                 magma_int_t *ipiv, magma_int_t *info)
+{
 #define A1T(i,j) (dA1T + (i)*ldda1 + (j))
 #define A2T(i,j) (dA2T + (i)*ldda2 + (j))
 #define L1(i)    (dL1  + (i)*lddl1      )
@@ -99,7 +109,7 @@ magma_zssssm_gpu(char storev, magma_int_t m1, magma_int_t n1,
 
     int ip, ii, sb;
     magmaDoubleComplex *dA1T, *dA2T;
-    char transL;
+    magma_trans_t transL;
     int lddl2i, lddl2j;
 
     /* Check input arguments */
@@ -144,7 +154,7 @@ magma_zssssm_gpu(char storev, magma_int_t m1, magma_int_t n1,
     if ((m1 == 0) || (n1 == 0) || (m2 == 0) || (n2 == 0) || (k == 0) || (ib == 0))
         return *info;
 
-    if ( (storev == 'C') || (storev == 'c') ) {
+    if ( order == MagmaColMajor ) {
         magmablas_zgetmo_in( dA1, dA1T, ldda1, m1, n1 );
         magmablas_zgetmo_in( dA2, dA2T, ldda2, m2, n2 );
         transL = MagmaTrans;
@@ -157,25 +167,24 @@ magma_zssssm_gpu(char storev, magma_int_t m1, magma_int_t n1,
     }
 
     ip = 0;
-    for( ii=0; ii<k; ii+=ib )
-    {
+    for( ii=0; ii < k; ii += ib ) {
         sb = min( k-ii, ib);
 
 #ifndef NOSWAPBLK
-        magmablas_zswapblk( 'R', n1,
+        magmablas_zswapblk( MagmaRowMajor, n1,
                             A1T(0, 0), ldda1,
                             A2T(0, 0), ldda2,
-                            ii+1, ii+ib, IPIV, 1, m1 );
+                            ii+1, ii+ib, ipiv, 1, m1 );
 #else
         {
             int im;
-            for(i=0; i<ib; i++) {
-                im = IPIV[ip]-1;
+            for (i=0; i < ib; i++) {
+                im = ipiv[ip]-1;
 
                 if (im != (ii+i)) {
                     im = im - m1;
 
-                    assert( (im>=0) && (im<m1) && (im<m2) );
+                    assert( (im >= 0) && (im < m1) && (im < m2) );
                     magmablas_zswap( n1, A1T(ii+i, 0), 1, A2T(im, 0), 1 );
                 }
                 ip++;
@@ -205,7 +214,7 @@ magma_zssssm_gpu(char storev, magma_int_t m1, magma_int_t n1,
                      c_one,     A2T(0, 0 ), ldda2 );
     }
 
-    if ( (storev == 'C') || (storev == 'c') ) {
+    if ( order == MagmaColMajor ) {
         magmablas_zgetmo_out( dA1, dA1T, ldda1, m1, n1 );
         magmablas_zgetmo_out( dA2, dA2T, ldda2, m2, n2 );
     }

@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
     @author Stan Tomov
 
-    @generated c Tue Dec 17 13:18:57 2013
+    @generated from testing_zheevd.cpp normal z -> c, Fri Apr 25 15:06:12 2014
 
 */
 
@@ -56,9 +56,9 @@ int main( int argc, char** argv)
     
     printf("    N   CPU Time (sec)   GPU Time (sec)\n");
     printf("=======================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             n2  = N*N;
             lda = N;
             
@@ -129,7 +129,7 @@ int main( int argc, char** argv)
                 float temp1, temp2;
                 
                 // tau=NULL is unused since itype=1
-                lapackf77_chet21( &ione, &opts.uplo, &N, &izero,
+                lapackf77_chet21( &ione, lapack_uplo_const(opts.uplo), &N, &izero,
                                   h_A, &lda,
                                   w1, w1,
                                   h_R, &lda,
@@ -161,7 +161,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_cheevd( &opts.jobz, &opts.uplo,
+                lapackf77_cheevd( lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
                                   &N, h_A, &lda, w2,
                                   h_work, &lwork,
                                   rwork, &lrwork,
@@ -198,6 +198,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_work );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

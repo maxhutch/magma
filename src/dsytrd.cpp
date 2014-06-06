@@ -1,102 +1,97 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zhetrd.cpp normal z -> d, Fri Apr 25 15:05:47 2014
 
 */
 #include "common_magma.h"
 
-#define  A(i, j) ( a+(j)*lda  + (i))
-#define dA(i, j) (da+(j)*ldda + (i))
-
-extern "C" magma_int_t
-magma_dsytrd(char uplo, magma_int_t n,
-             double *a, magma_int_t lda,
-             double *d, double *e, double *tau,
-             double *work, magma_int_t lwork,
-             magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DSYTRD reduces a real symmetric matrix A to real symmetric
     tridiagonal form T by an orthogonal similarity transformation:
     Q**T * A * Q = T.
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER*1
-            = 'U':  Upper triangle of A is stored;
-            = 'L':  Lower triangle of A is stored.
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    A       (input/output) DOUBLE_PRECISION array, dimension (LDA,N)
-            On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+    @param[in,out]
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
+            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of A contains the lower
             triangular part of the matrix A, and the strictly upper
             triangular part of A is not referenced.
-            On exit, if UPLO = 'U', the diagonal and first superdiagonal
+            On exit, if UPLO = MagmaUpper, the diagonal and first superdiagonal
             of A are overwritten by the corresponding elements of the
             tridiagonal matrix T, and the elements above the first
             superdiagonal, with the array TAU, represent the orthogonal
             matrix Q as a product of elementary reflectors; if UPLO
-            = 'L', the diagonal and first subdiagonal of A are over-
+            = MagmaLower, the diagonal and first subdiagonal of A are over-
             written by the corresponding elements of the tridiagonal
             matrix T, and the elements below the first subdiagonal, with
             the array TAU, represent the orthogonal matrix Q as a product
             of elementary reflectors. See Further Details.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    D       (output) DOUBLE_PRECISION array, dimension (N)
+    @param[out]
+    d       DOUBLE_PRECISION array, dimension (N)
             The diagonal elements of the tridiagonal matrix T:
             D(i) = A(i,i).
 
-    E       (output) DOUBLE_PRECISION array, dimension (N-1)
+    @param[out]
+    e       DOUBLE_PRECISION array, dimension (N-1)
             The off-diagonal elements of the tridiagonal matrix T:
-            E(i) = A(i,i+1) if UPLO = 'U', E(i) = A(i+1,i) if UPLO = 'L'.
+            E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.
 
-    TAU     (output) DOUBLE_PRECISION array, dimension (N-1)
+    @param[out]
+    tau     DOUBLE_PRECISION array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details).
 
-    WORK    (workspace/output) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.  LWORK >= N*NB, where NB is the
             optimal blocksize given by magma_get_dsytrd_nb().
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
     Further Details
-    ===============
-    If UPLO = 'U', the matrix Q is represented as a product of elementary
+    ---------------
+    If UPLO = MagmaUpper, the matrix Q is represented as a product of elementary
     reflectors
 
        Q = H(n-1) . . . H(2) H(1).
@@ -109,7 +104,7 @@ magma_dsytrd(char uplo, magma_int_t n,
     v(i+1:n) = 0 and v(i) = 1; v(1:i-1) is stored on exit in
     A(1:i-1,i+1), and tau in TAU(i).
 
-    If UPLO = 'L', the matrix Q is represented as a product of elementary
+    If UPLO = MagmaLower, the matrix Q is represented as a product of elementary
     reflectors
 
        Q = H(1) H(2) . . . H(n-1).
@@ -125,7 +120,7 @@ magma_dsytrd(char uplo, magma_int_t n,
     The contents of A on exit are illustrated by the following examples
     with n = 5:
 
-    if UPLO = 'U':                       if UPLO = 'L':
+    if UPLO = MagmaUpper:                if UPLO = MagmaLower:
 
       (  d   e   v2  v3  v4 )              (  d                  )
       (      d   e   v3  v4 )              (  e   d              )
@@ -135,9 +130,20 @@ magma_dsytrd(char uplo, magma_int_t n,
 
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
-    =====================================================================    */
 
-    char uplo_[2] = {uplo, 0};
+    @ingroup magma_dsyev_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dsytrd(magma_uplo_t uplo, magma_int_t n,
+             double *A, magma_int_t lda,
+             double *d, double *e, double *tau,
+             double *work, magma_int_t lwork,
+             magma_int_t *info)
+{
+#define  A(i, j) ( A + (j)*lda  + (i))
+#define dA(i, j) (dA + (j)*ldda + (i))
+
+    const char* uplo_ = lapack_uplo_const( uplo );
 
     magma_int_t ldda = lda;
     magma_int_t nb = magma_get_dsytrd_nb(n);
@@ -153,9 +159,9 @@ magma_dsytrd(char uplo, magma_int_t n,
     magma_int_t lquery;
 
     *info = 0;
-    int upper = lapackf77_lsame(uplo_, "U");
-    lquery = lwork == -1;
-    if (! upper && ! lapackf77_lsame(uplo_, "L")) {
+    int upper = (uplo == MagmaUpper);
+    lquery = (lwork == -1);
+    if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {
         *info = -2;
@@ -185,13 +191,13 @@ magma_dsytrd(char uplo, magma_int_t n,
         return *info;
     }
 
-    double *da;
-    if (MAGMA_SUCCESS != magma_dmalloc( &da, n*ldda + 2*n*nb )) {
+    double *dA;
+    if (MAGMA_SUCCESS != magma_dmalloc( &dA, n*ldda + 2*n*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
-    double *dwork = da + (n)*ldda;
+    double *dwork = dA + (n)*ldda;
 
     if (n < 2048)
         nx = n;
@@ -212,7 +218,7 @@ magma_dsytrd(char uplo, magma_int_t n,
                the matrix */
             
             /*   Get the current panel (no need for the 1st iteration) */
-            if (i!=n-nb)
+            if (i != n-nb)
                 magma_dgetmatrix( i+nb, nb, dA(0, i), ldda, A(0, i), lda );
             
             magma_dlatrd(uplo, i+nb, nb, A(0, 0), lda, e, tau,
@@ -241,11 +247,11 @@ magma_dsytrd(char uplo, magma_int_t n,
     }
     else {
         /* Copy the matrix to the GPU */
-        if (1<=n-nx)
+        if (1 <= n-nx)
             magma_dsetmatrix( n, n, A(0,0), lda, dA(0,0), ldda );
 
         #ifdef FAST_HEMV
-        // TODO this leaks memory from da, above
+        // TODO this leaks memory from dA, above
         double *dwork2;
         if (MAGMA_SUCCESS != magma_dmalloc( &dwork2, n*n )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -259,7 +265,7 @@ magma_dsytrd(char uplo, magma_int_t n,
                the matrix */
 
             /*   Get the current panel (no need for the 1st iteration) */
-            if (i!=0)
+            if (i != 0)
                 magma_dgetmatrix( n-i, nb, dA(i, i), ldda, A(i, i), lda );
             #ifdef FAST_HEMV
             magma_dlatrd2(uplo, n-i, nb, A(i, i), lda, &e[i],
@@ -294,15 +300,14 @@ magma_dsytrd(char uplo, magma_int_t n,
         #endif
 
         /* Use unblocked code to reduce the last or only block */
-        if (1<=n-nx)
+        if (1 <= n-nx)
             magma_dgetmatrix( n-i, n-i, dA(i, i), ldda, A(i, i), lda );
         i_n = n-i;
         lapackf77_dsytrd(uplo_, &i_n, A(i, i), &lda, &d[i], &e[i],
                          &tau[i], work, &lwork, &iinfo);
-        
     }
     
-    magma_free( da );
+    magma_free( dA );
     work[0] = MAGMA_D_MAKE( lwkopt, 0 );
 
     return *info;

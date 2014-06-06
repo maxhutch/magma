@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
        
-       @generated d Tue Dec 17 13:18:45 2013
+       @generated from zpotf2.cu normal z -> d, Fri Apr 25 15:05:24 2014
 */
 
 #include <stdio.h>
@@ -29,72 +29,72 @@ void dpotf2_ddot(magma_int_t n, double *x, magma_int_t incx);
 void dlacgv(magma_int_t n, double *x, magma_int_t incx);
 #endif
 
+/**
+    Purpose
+    -------
+
+    dpotf2 computes the Cholesky factorization of a real symmetric
+    positive definite matrix A.
+
+    The factorization has the form
+        A = U' * U , if UPLO = MagmaUpper, or
+        A = L  * L', if UPLO = MagmaLower,
+    where U is an upper triangular matrix and L is lower triangular.
+
+    This is the unblocked version of the algorithm, calling Level 2 BLAS.
+
+    Arguments
+    ---------
+
+    @param[in]
+    uplo    magma_uplo_t
+            Specifies whether the upper or lower triangular part of the
+            symmetric matrix A is stored.
+      -     = MagmaUpper:  Upper triangular
+      -     = MagmaLower:  Lower triangular
+
+    @param[in]
+    n       INTEGER
+            The order of the matrix A.  N >= 0 and N <= 1024.
+            On CUDA architecture 1.x cards, N <= 512.
+
+    @param[in,out]
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
+            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
+            n by n upper triangular part of A contains the upper
+            triangular part of the matrix A, and the strictly lower
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
+            leading n by n lower triangular part of A contains the lower
+            triangular part of the matrix A, and the strictly upper
+            triangular part of A is not referenced.
+    \n
+            On exit, if INFO = 0, the factor U or L from the Cholesky
+            factorization A = U'*U  or A = L*L'.
+
+    @param[in]
+    lda     INTEGER
+            The leading dimension of the array A.  LDA >= max(1,N).
+
+    @param[out]
+    info    INTEGER
+      -     = 0: successful exit
+      -     < 0: if INFO = -k, the k-th argument had an illegal value
+      -     > 0: if INFO = k, the leading minor of order k is not
+                 positive definite, and the factorization could not be
+                 completed.
+
+    @ingroup magma_dposv_aux
+    ********************************************************************/
 extern "C" magma_int_t
 magma_dpotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
     double *A, magma_int_t lda,
     magma_int_t *info )
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-
-    dpotf2 computes the Cholesky factorization of a real symmetric
-    positive definite matrix A.
-
-    The factorization has the form
-        A = U' * U , if UPLO = 'U', or
-        A = L  * L', if UPLO = 'L',
-    where U is an upper triangular matrix and L is lower triangular.
-
-    This is the unblocked version of the algorithm, calling Level 2 BLAS.
-
-    Arguments
-    =========
-
-    UPLO    (input) CHARACTER*1
-            Specifies whether the upper or lower triangular part of the
-            symmetric matrix A is stored.
-            = 'U':  Upper triangular
-            = 'L':  Lower triangular
-
-    N       (input) INTEGER
-            The order of the matrix A.  N >= 0 and N <= 1024.
-            On CUDA architecture 1.x cards, N <= 512.
-
-    A       (input/output) DOUBLE_PRECISION array, dimension (LDA,N)
-            On entry, the symmetric matrix A.  If UPLO = 'U', the leading
-            n by n upper triangular part of A contains the upper
-            triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
-            leading n by n lower triangular part of A contains the lower
-            triangular part of the matrix A, and the strictly upper
-            triangular part of A is not referenced.
-
-            On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization A = U'*U  or A = L*L'.
-
-    LDA     (input) INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
-
-    INFO    (output) INTEGER
-            = 0: successful exit
-            < 0: if INFO = -k, the k-th argument had an illegal value
-            > 0: if INFO = k, the leading minor of order k is not
-                 positive definite, and the factorization could not be
-                 completed.
-
-    ===================================================================== */
-
     magma_int_t j;
 
     *info = 0;
-    if ( uplo != 'U' && uplo != 'u' && uplo != 'L' && uplo != 'l') {
+    if ( uplo != MagmaUpper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0 || n > ddot_max_bs) {
         *info = -2;
@@ -115,14 +115,14 @@ magma_dpotf2_gpu(
     double alpha = MAGMA_D_NEG_ONE;
     double beta  = MAGMA_D_ONE;
 
-    if (uplo == 'U' || uplo == 'u') {
+    if (uplo == MagmaUpper) {
         for(j = 0; j < n; j++) {
             dpotf2_ddot(j, A(0,j), 1); // including ddot product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 dlacgv(j, A(0, j), 1);
                 #endif
-                cublasDgemv( MagmaTrans, j, n-j-1,
+                cublasDgemv( 'T', j, n-j-1,
                              alpha, A(0, j+1), lda,
                                     A(0, j),   1,
                              beta,  A(j, j+1), lda); // cublas is better in upper case
@@ -280,30 +280,33 @@ __global__ void kernel_dlacgv(int n, double *x, int incx)
 }
 
 
-void dlacgv(magma_int_t n, double *x, magma_int_t incx)
-{
-/*
+/**
     Purpose
-    =======
+    -------
 
     DLACGV conjugates a real vector of length N.
 
     Arguments
-    =========
+    ---------
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The length of the vector X.  N >= 0.
 
-    X       (input/output) DOUBLE PRECISION array, dimension
+    @param[in,out]
+    x       DOUBLE PRECISION array, dimension
                            (1+(N-1)*abs(INCX))
             On entry, the vector of length N to be conjugated.
             On exit, X is overwritten with conjg(X).
 
-    INCX    (input) INTEGER
+    @param[in]
+    incx    INTEGER
             The spacing between successive elements of X.
 
-    ===================================================================== */
-
+    @ingroup magma_dposv_aux
+    ********************************************************************/
+void dlacgv(magma_int_t n, double *x, magma_int_t incx)
+{
     dim3 threads(dlacgv_bs, 1, 1);
     int num_blocks = (n - 1)/dlacgv_bs + 1;
     dim3 grid(num_blocks,1);

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from dgemm_tesla_ab_0.cu normal d -> s, Fri Apr 25 15:05:23 2014
 */
 #include "common_magma.h"
 #include "commonblas_s.h"

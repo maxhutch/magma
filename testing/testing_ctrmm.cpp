@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:56 2013
+       @generated from testing_ztrmm.cpp normal z -> c, Fri Apr 25 15:06:03 2014
        @author Chongxiao Cao
 */
 
@@ -15,7 +15,7 @@
 #include <string.h>
 #include <math.h>
 #include <cuda_runtime_api.h>
-#include <cublas.h>
+#include <cublas_v2.h>
 
 // includes, project
 #include "flops.h"
@@ -50,13 +50,15 @@ int main( int argc, char** argv)
     
     printf("If running lapack (option --lapack), MAGMA and CUBLAS error are both computed\n"
            "relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n"
-           "side = %c, uplo = %c, transA = %c, diag = %c \n", opts.side, opts.uplo, opts.transA, opts.diag );
+           "side = %s, uplo = %s, transA = %s, diag = %s \n",
+           lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
+           lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
     printf("    M     N   CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  CUBLAS error\n");
     printf("==================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             gflops = FLOPS_CTRMM(opts.side, M, N) / 1e9;
 
             if ( opts.side == MagmaLeft ) {
@@ -87,16 +89,20 @@ int main( int argc, char** argv)
             lapackf77_clarnv( &ione, ISEED, &sizeB, h_B );
             
             /* =====================================================================
-               Performs operation using CUDA-BLAS
+               Performs operation using CUBLAS
                =================================================================== */
             magma_csetmatrix( Ak, Ak, h_A, lda, d_A, ldda );
             magma_csetmatrix( M, N, h_B, ldb, d_B, lddb );
             
+            // note cublas does trmm out-of-place (i.e., adds output matrix C),
+            // but allows C=B to do in-place.
             cublas_time = magma_sync_wtime( NULL );
-            cublasCtrmm( opts.side, opts.uplo, opts.transA, opts.diag,
+            cublasCtrmm( handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
+                         cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
                          M, N, 
-                         alpha, d_A, ldda,
-                                d_B, lddb );
+                         &alpha, d_A, ldda,
+                                 d_B, lddb,
+                                 d_B, lddb );
             cublas_time = magma_sync_wtime( NULL ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
@@ -107,7 +113,8 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                blasf77_ctrmm( &opts.side, &opts.uplo, &opts.transA, &opts.diag, 
+                blasf77_ctrmm( lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
+                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
                                &M, &N,
                                &alpha, h_A, &lda,
                                        h_B, &ldb );
@@ -144,6 +151,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_B );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

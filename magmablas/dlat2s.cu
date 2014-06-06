@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:45 2013
+       @generated from zlat2c.cu mixed zc -> ds, Fri Apr 25 15:05:20 2014
 
 */
 #include "common_magma.h"
@@ -41,11 +41,11 @@ l_dlat2s_special(
 
     int break_d  =   blockIdx.x* dgemv_bs ;
     double temp ;
-    for(int  i=0; i<break_d; i += dgemv_bs ){
+    for(int  i=0; i<break_d; i += dgemv_bs ) {
         #pragma unroll 8
-        for(int j=0; j < dgemv_bs; j+=4){
+        for(int j=0; j < dgemv_bs; j+=4) {
             temp = A[j*lda] ;
-            if( ((temp) < mRMAX) || ((temp) > RMAX)
+            if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                 || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -67,7 +67,7 @@ l_dlat2s_special(
 
     A += dgemv_bs ;
 #pragma unroll 8
-    for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++){
+    for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
         if ( i < tx )   {
             la[tx][i] = la[i][tx] ;
         }
@@ -77,9 +77,9 @@ l_dlat2s_special(
 
     __syncthreads();
 #pragma unroll 8
-    for(int j =0; j<dgemv_bs; j+=4){
+    for(int j =0; j<dgemv_bs; j+=4) {
         temp =  la[ty+j][tx] ;
-        if( ((temp) < mRMAX) || ((temp) > RMAX)
+        if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
             || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -93,7 +93,7 @@ l_dlat2s_special(
     __syncthreads();
     //la[tx][ty] = flag ;
     //__syncthreads();
-    //if( ty == 0 ) {
+    //if ( ty == 0 ) {
     //    //  info[0] = flag+ la[tx] [1] +  la[tx] [2] + la[tx] [3] ;
     //}
 }
@@ -116,17 +116,17 @@ l_dlat2s_generic(
 
     double temp ;
 
-    if( blockIdx.x == m_full_block ) {
+    if ( blockIdx.x == m_full_block ) {
         /************************************************************************
-   -- Last block --
-   -- We will do something unusual here
-   -- For sufficiently large matrix the overhead will be very low
+        -- Last block --
+        -- We will do something unusual here
+        -- For sufficiently large matrix the overhead will be very low
         *************************************************************************/
-        if  ( tx < m_mod_32 ){
+        if  ( tx < m_mod_32 ) {
             A+= ( blockIdx.x * dgemv_bs + tx ) ;
             SA+= ( blockIdx.x * dgemv_bs + tx ) ;
         }
-        else{
+        else {
             A+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
             SA+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
         }
@@ -138,11 +138,11 @@ l_dlat2s_generic(
           Go Right
           -------------------------------*/
 
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
 #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4){
+            for(int j=0; j < dgemv_bs ; j+=4) {
                 temp = A[j*lda] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -158,20 +158,20 @@ l_dlat2s_generic(
         /*
           we don't need to make zero, as those computation will be discarded.
         */
-        if( ty==0  ) {
+        if ( ty==0  ) {
             /*--------------------------------------------
               he will compute the triangular parts
               others will be waiting with values.
               -----------------------------------------------*/
             int j ;
             int count = 1 ;
-            if( tx < m_mod_32 )
+            if ( tx < m_mod_32 )
                 count = tx ;
             else
                 count = m_mod_32 ;
-            for(j =0; j<=count; j++){
+            for(j =0; j<=count; j++) {
                 temp =  A[j*lda] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -184,9 +184,9 @@ l_dlat2s_generic(
             A  += (tx)*lda;
             SA += (tx)*ldsa;
             count = 1 ;
-            for(; j<m_mod_32; j++){
+            for(; j<m_mod_32; j++) {
                 temp= A[count] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -198,7 +198,7 @@ l_dlat2s_generic(
                 count++;
             }
         }
-        else{
+        else {
         }
 
         //la[tx][ty] = flag ;
@@ -207,18 +207,17 @@ l_dlat2s_generic(
         /*--------------------------------------------------------
           The leader accumulates all the results from his peer.
           ----------------------------------------------------------*/
-        //if( ty == 0 ) {
+        //if ( ty == 0 ) {
             //  info[ind] = ld[tx][0] +  ld[tx][1] + ld[tx][2] + ld[tx][3] ;
         //}
 
     }
-
-    else{
+    else {
         /***************************************
-    -----------------------------------
-  -- All the blocks but the last one --
-  ****************************************
-  -------------------------------------*/
+        -----------------------------------
+        -- All the blocks but the last one --
+        ****************************************
+        -------------------------------------*/
         A += ind;
         SA += ind;
         A+= ty * lda  ;
@@ -228,11 +227,11 @@ l_dlat2s_generic(
         /*----------------------------
           Go Right
           -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
 #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4){
+            for(int j=0; j < dgemv_bs ; j+=4) {
                 temp = A[j*lda] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -263,7 +262,7 @@ l_dlat2s_generic(
           Mirror Upper Triangle to Lower triangle
           ---------------------------------------------*/
 #pragma unroll 8
-        for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++){
+        for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
             if ( i < tx )   {
                 la[tx][i] = la[i][tx] ;
             }
@@ -278,9 +277,9 @@ l_dlat2s_generic(
           -----------------------------------*/
 
 #pragma unroll 8
-        for(int j =0; j<dgemv_bs; j+=4){
+        for(int j =0; j<dgemv_bs; j+=4) {
             temp =  la[ty+j][tx] ;
-            if( ((temp) < mRMAX) || ((temp) > RMAX)
+            if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                 || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -296,7 +295,7 @@ l_dlat2s_generic(
         /*--------------------------------------------------------
           The leader accumulates all the results from his peer.
           ----------------------------------------------------------*/
-        //if( ty == 0 )
+        //if ( ty == 0 )
         //    {
                 //  info [ind] =  flag + la[tx][1]+ la[tx][2]+ la[tx][3] ;
         //    }
@@ -324,12 +323,12 @@ u_dlat2s_generic(
     __shared__ double la   [dgemv_bs][dgemv_bs+1];
     int blockIdxx =  blockIdx.x ;
     double temp ;
-    if( blockIdx.x == m_full_block ) {
+    if ( blockIdx.x == m_full_block ) {
 
         /************************************************************************
-   -- Last block --
-   -- We will do something unusual here
-   -- For sufficiently large matrix the overhead will be very low
+        -- Last block --
+        -- We will do something unusual here
+        -- For sufficiently large matrix the overhead will be very low
         *************************************************************************/
 
         ind =  tx ;
@@ -337,11 +336,11 @@ u_dlat2s_generic(
         SA+= ldsa*(n-1) ;
 
 
-        if  ( tx < m_mod_32 ){
+        if  ( tx < m_mod_32 ) {
             A+= (  tx ) ;
             SA+= (  tx ) ;
         }
-        else{
+        else {
             A+= (  m_mod_32 -1) ;
             SA+= (  m_mod_32 -1) ;
         }
@@ -353,11 +352,11 @@ u_dlat2s_generic(
           Go Right
           -------------------------------*/
 
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
 #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4){
+            for(int j=0; j < dgemv_bs ; j+=4) {
                 temp  = A[-j*lda] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -373,20 +372,20 @@ u_dlat2s_generic(
         /*
           we don't need to make zero, as those computation will be discarded.
         */
-        if( ty==0  ) {
+        if ( ty==0  ) {
             /*--------------------------------------------
               he will compute the triangular parts
               others will be waiting with values.
               -----------------------------------------------*/
             int j ;
             int count = 1 ;
-            if( tx < m_mod_32 )
+            if ( tx < m_mod_32 )
                 count =m_mod_32- tx ;
             else
                 count = m_mod_32 ;
-            for(j =0; j<count; j++){
+            for(j =0; j<count; j++) {
                 temp =  A[-j*lda] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -399,9 +398,9 @@ u_dlat2s_generic(
             A-=(count-1)*lda;
             SA-=(count-1)*ldsa;
             count = 1 ;
-            for(; j<m_mod_32; j++){
+            for(; j<m_mod_32; j++) {
                 temp =  A[-count] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -413,7 +412,7 @@ u_dlat2s_generic(
                 count++;
             }
         }
-        else{
+        else {
         }
 
         /*--------------------------------------------------------
@@ -421,19 +420,18 @@ u_dlat2s_generic(
           ----------------------------------------------------------*/
         //la[tx][ty] = flag ;
         //__syncthreads();
-        //if( ty == 0 ) {
+        //if ( ty == 0 ) {
         //    // info [ind] = flag  + la[tx][1] + la[tx][2] + la[tx][3]  ;
         //}
 
     }
-
-    else{
+    else {
         /***************************************
-    -----------------------------------
-  -- All the blocks but the last one --
-  -- By the way this code can be optimized more.
-  ****************************************
-  -------------------------------------*/
+        -----------------------------------
+        -- All the blocks but the last one --
+        -- By the way this code can be optimized more.
+        ****************************************
+        -------------------------------------*/
         ind = blockIdx.x *  dgemv_bs + tx + m_mod_32 ;
         A+= lda*(n-1)  ;
         SA+= ldsa*(n-1)  ;
@@ -448,11 +446,11 @@ u_dlat2s_generic(
         /*----------------------------
           Go Left
           -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
 #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4){
+            for(int j=0; j < dgemv_bs ; j+=4) {
                 temp  = A[-j*lda] ;
-                if( ((temp) < mRMAX) || ((temp) > RMAX)
+                if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                     || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -472,7 +470,7 @@ u_dlat2s_generic(
           Copy + Transpose lower triangle
           --------------------------------------*/
 #pragma unroll 8
-        for(int j =0; j<dgemv_bs; j+=4){
+        for(int j =0; j<dgemv_bs; j+=4) {
             la[tx][31-ty-j] = A[ -j * lda];
         }
 
@@ -482,11 +480,11 @@ u_dlat2s_generic(
           Mirror Upper Triangle to Lower triangle
           ---------------------------------------------*/
 #pragma unroll 8
-        for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++){
-            if ( i <tx ){
+        for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
+            if ( i <tx ) {
                 la[tx][i] = la[i][tx];
             }
-            else{
+            else {
                 la[tx][i] = la[tx][i]  ;
             }
         }
@@ -495,10 +493,10 @@ u_dlat2s_generic(
           Do diagonal Computation
           -----------------------------------*/
 #pragma unroll 8
-        for(int j =0; j<dgemv_bs; j+=4){
+        for(int j =0; j<dgemv_bs; j+=4) {
             temp =   la[tx][31-ty-j];
             // temp =  la[ty+j][tx] ;
-            if( ((temp) < mRMAX) || ((temp) > RMAX)
+            if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                 || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -515,7 +513,7 @@ u_dlat2s_generic(
         //la[tx] [ty] = flag ;
         //__syncthreads();
         //
-        //if( ty == 0 ) {
+        //if ( ty == 0 ) {
         //    //  info[ind] = flag +  la[tx] [1] +  la[tx] [2] + la[tx] [3]  ;
         //}
 
@@ -556,12 +554,12 @@ u_dlat2s_special (
     double temp ;
     int break_d  = (n / dgemv_bs -   blockIdx.x-1 )* dgemv_bs ;
 
-    for(int  i=0; i<break_d; i += dgemv_bs ){
+    for(int  i=0; i<break_d; i += dgemv_bs ) {
 #pragma unroll 8
-        for(int j=0; j < dgemv_bs ; j+=4){
+        for(int j=0; j < dgemv_bs ; j+=4) {
             //   la[tx][ty+j] = A[-j*lda] ;
             temp =  A[-j*lda] ;
-            if( ((temp) < mRMAX) || ((temp) > RMAX)
+            if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
                 || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -586,11 +584,11 @@ u_dlat2s_special (
     A-= dgemv_bs ;
     __syncthreads();
 #pragma unroll 8
-    for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++){
-        if ( i <tx ){
+    for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
+        if ( i <tx ) {
             la[tx][i] = la[i][tx];
         }
-        else{
+        else {
             la[tx][i] = la[tx][i]  ;
         }
 
@@ -598,9 +596,9 @@ u_dlat2s_special (
     __syncthreads();
 
 #pragma unroll 8
-    for(int j =0; j<dgemv_bs; j+=4){
+    for(int j =0; j<dgemv_bs; j+=4) {
         temp =   la[tx][31-ty-j];
-        if( ((temp) < mRMAX) || ((temp) > RMAX)
+        if ( ((temp) < mRMAX) || ((temp) > RMAX)
 #if defined(PRECISION_z) || defined(PRECISION_c)
             || ((temp) < mRMAX) || ((temp) > RMAX) 
 #endif
@@ -615,7 +613,7 @@ u_dlat2s_special (
     //
     //__syncthreads();
     //
-    //if( ty == 0 ) {
+    //if ( ty == 0 ) {
     //    // info[0] = flag + la[tx][1] + la[tx][2] + la[tx][3] ;
     //}
 }
@@ -623,7 +621,7 @@ u_dlat2s_special (
 
 extern "C" void
 mdlat2s(
-    char uplo, magma_int_t m,
+    magma_uplo_t uplo, magma_int_t m,
     const double *A,  magma_int_t lda,
     float        *SA, magma_int_t ldsa,
     magma_int_t *info)
@@ -642,22 +640,22 @@ mdlat2s(
     dim3 grid(blocks, 1, 1);
     dim3 threads(32, 4, 1);
 
-    if( m % dgemv_bs == 0 ) {
-        if( uplo == 'L' || uplo == 'l'){
+    if ( m % dgemv_bs == 0 ) {
+        if ( uplo == MagmaLower) {
             l_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa  );
         }
-        else{
+        else {
             u_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa  );
         }
 
     }
-    else{
+    else {
         int  m_full_block = (m - m % 32 ) /32 ;
         int  m_mod_32 = m%32 ;
-        if( uplo == 'L' || uplo == 'l'){
+        if ( uplo == MagmaLower) {
             l_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
         }
-        else{
+        else {
             u_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
         }
     }
@@ -671,7 +669,7 @@ mdlat2s(
 */
 extern "C" void
 magmablas_dlat2s(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     const double *A,  magma_int_t lda,
     float        *SA, magma_int_t ldsa,
     magma_int_t *info)
@@ -706,7 +704,7 @@ l_dlat2s_special (
     SA += ty * ldsa;
 
     int break_d  =   (blockIdx.x+1)* dgemv_bs ;
-    for(int  i=0; i<break_d; i += dgemv_bs ){
+    for(int  i=0; i<break_d; i += dgemv_bs ) {
 
         #pragma unroll 8
         for(int j=0; j < dgemv_bs ; j+=4)
@@ -730,17 +728,17 @@ l_dlat2s_generic(
 
     int ind = blockIdx.x*  dgemv_bs + tx ;
 
-    if( blockIdx.x == m_full_block ) {
+    if ( blockIdx.x == m_full_block ) {
         /************************************************************************
-   -- Last block --
-   -- We will do something unusual here
-   -- For sufficiently large matrix the overhead will be very low
+        -- Last block --
+        -- We will do something unusual here
+        -- For sufficiently large matrix the overhead will be very low
         *************************************************************************/
-        if  ( tx < m_mod_32 ){
+        if  ( tx < m_mod_32 ) {
             A+= ( blockIdx.x * dgemv_bs + tx ) ;
             SA+= ( blockIdx.x * dgemv_bs + tx ) ;
         }
-        else{
+        else {
             A+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
             SA+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
         }
@@ -752,7 +750,7 @@ l_dlat2s_generic(
           Go Right
           -------------------------------*/
 
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
             #pragma unroll 8
             for(int j=0; j < dgemv_bs ; j+=4)
                 SA[j*ldsa] = (float)(A[j*lda]);
@@ -763,14 +761,14 @@ l_dlat2s_generic(
         /*
           we don't need to make zero, as those computation will be discarded.
         */
-        if( ty==0  ) {
+        if ( ty==0  ) {
             /*--------------------------------------------
               he will compute the triangular parts
               others will be waiting with values.
               -----------------------------------------------*/
             int j ;
             int count = 1 ;
-            if( tx < m_mod_32 )
+            if ( tx < m_mod_32 )
                 count = tx ;
             else
                 count = m_mod_32 ;
@@ -780,18 +778,17 @@ l_dlat2s_generic(
             A  += (tx)*lda;
             SA += (tx)*ldsa;
             count = 1 ;
-            for(; j<m_mod_32; j++){
+            for(; j<m_mod_32; j++) {
                 SA[count] = (float)(A[count]);
                 count++;
             }
         }
-        else{
+        else {
         }
 
         __syncthreads();
     }
-
-    else{
+    else {
         /* **************************************
          -- All the blocks but the last one --
            ************************************** */
@@ -804,7 +801,7 @@ l_dlat2s_generic(
         /*----------------------------
           Go Right
           -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
             #pragma unroll 8
             for(int j=0; j < dgemv_bs ; j+=4)
                 SA[j*ldsa] = (float)(A[j*lda]);
@@ -831,23 +828,23 @@ u_dlat2s_generic(
     int ind = blockIdx.x*  dgemv_bs + tx ;
 
     int blockIdxx =  blockIdx.x ;
-    if( blockIdx.x == m_full_block ) {
+    if ( blockIdx.x == m_full_block ) {
 
         /************************************************************************
-   -- Last block --
-   -- We will do something unusual here
-   -- For sufficiently large matrix the overhead will be very low
+        -- Last block --
+        -- We will do something unusual here
+        -- For sufficiently large matrix the overhead will be very low
         *************************************************************************/
         ind =  tx ;
         A+= lda*(n-1) ;
         SA+= ldsa*(n-1) ;
 
 
-        if  ( tx < m_mod_32 ){
+        if  ( tx < m_mod_32 ) {
             A+= (  tx ) ;
             SA+= (  tx ) ;
         }
-        else{
+        else {
             A+= (  m_mod_32 -1) ;
             SA+= (  m_mod_32 -1) ;
         }
@@ -858,7 +855,7 @@ u_dlat2s_generic(
         /*----------------------------
           Go Right
           -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
             #pragma unroll 8
             for(int j=0; j < dgemv_bs ; j+=4)
                 SA[-j*ldsa] = (float)(A[-j*lda]);
@@ -869,14 +866,14 @@ u_dlat2s_generic(
         /*
           we don't need to make zero, as those computation will be discarded.
         */
-        if( ty==0  ) {
+        if ( ty==0  ) {
             /*--------------------------------------------
               he will compute the triangular parts
               others will be waiting with values.
               -----------------------------------------------*/
             int j ;
             int count = 1 ;
-            if( tx < m_mod_32 )
+            if ( tx < m_mod_32 )
                 count =m_mod_32- tx ;
             else
                 count = m_mod_32 ;
@@ -886,16 +883,15 @@ u_dlat2s_generic(
             A-=(count-1)*lda;
             SA-=(count-1)*ldsa;
             count = 1 ;
-            for(; j<m_mod_32; j++){
+            for(; j<m_mod_32; j++) {
                 SA[-count] = (float)(A[-count]);
                 count++;
             }
         }
-        else{
+        else {
         }
     }
-
-    else{
+    else {
         /* **************************************
            -- All the blocks but the last one --
            -- By the way this code can be optimized more.
@@ -913,7 +909,7 @@ u_dlat2s_generic(
         /*----------------------------
           Go Left
           -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ){
+        for(int  i=0; i<break_d; i += dgemv_bs ) {
             #pragma unroll 8
             for(int j=0; j < dgemv_bs ; j+=4)
                 SA[-j*ldsa] = (float)(A[-j*lda]);
@@ -955,7 +951,7 @@ u_dlat2s_special (
 
     int break_d  = (n / dgemv_bs -   blockIdx.x )* dgemv_bs ;
 
-    for(int  i=0; i<break_d; i += dgemv_bs ){
+    for(int  i=0; i<break_d; i += dgemv_bs ) {
         #pragma unroll 8
         for(int j=0; j < dgemv_bs ; j+=4)
             SA[-j*ldsa] = (float)(A[-j*lda]);
@@ -967,7 +963,7 @@ u_dlat2s_special (
 
 extern "C" void
 mdlat2s(
-    char uplo, magma_int_t m,
+    magma_uplo_t uplo, magma_int_t m,
     const double *A,  magma_int_t lda,
     float        *SA, magma_int_t ldsa,
     magma_int_t *info)
@@ -986,22 +982,22 @@ mdlat2s(
     dim3 grid(blocks, 1, 1);
     dim3 threads(32, 4, 1);
 
-    if( m % dgemv_bs == 0 ) {
-        if( uplo == 'L' || uplo == 'l'){
+    if ( m % dgemv_bs == 0 ) {
+        if ( uplo == MagmaLower) {
             l_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa );
         }
-        else{
+        else {
             u_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa );
         }
 
     }
-    else{
+    else {
         int  m_full_block = (m - m % 32 ) /32 ;
         int  m_mod_32 = m%32 ;
-        if( uplo == 'L' || uplo == 'l'){
+        if ( uplo == MagmaLower) {
             l_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
         }
-        else{
+        else {
             u_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
         }
     }
@@ -1015,7 +1011,7 @@ mdlat2s(
 */
 extern "C" void
 magmablas_dlat2s(
-    char uplo, magma_int_t n,
+    magma_uplo_t uplo, magma_int_t n,
     const double *A,  magma_int_t lda,
     float        *SA, magma_int_t ldsa,
     magma_int_t *info)

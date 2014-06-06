@@ -1,19 +1,118 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zunmqr.cpp normal z -> d, Fri Apr 25 15:05:43 2014
 
 */
 #include "common_magma.h"
 
+/**
+    Purpose
+    -------
+    DORMQR overwrites the general real M-by-N matrix C with
+
+    @verbatim
+                              SIDE = MagmaLeft   SIDE = MagmaRight
+    TRANS = MagmaNoTrans:     Q * C              C * Q
+    TRANS = MagmaTrans:   Q**T * C           C * Q**T
+    @endverbatim
+
+    where Q is a real orthogonal matrix defined as the product of k
+    elementary reflectors
+
+          Q = H(1) H(2) . . . H(k)
+
+    as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N
+    if SIDE = MagmaRight.
+
+    Arguments
+    ---------
+    @param[in]
+    side    magma_side_t
+      -     = MagmaLeft:      apply Q or Q**T from the Left;
+      -     = MagmaRight:     apply Q or Q**T from the Right.
+
+    @param[in]
+    trans   magma_trans_t
+      -     = MagmaNoTrans:    No transpose, apply Q;
+      -     = MagmaTrans:  Conjugate transpose, apply Q**T.
+
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix C. M >= 0.
+
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix C. N >= 0.
+
+    @param[in]
+    k       INTEGER
+            The number of elementary reflectors whose product defines
+            the matrix Q.
+            If SIDE = MagmaLeft,  M >= K >= 0;
+            if SIDE = MagmaRight, N >= K >= 0.
+
+    @param[in]
+    A       DOUBLE_PRECISION array, dimension (LDA,K)
+            The i-th column must contain the vector which defines the
+            elementary reflector H(i), for i = 1,2,...,k, as returned by
+            DGEQRF in the first k columns of its array argument A.
+            A is modified by the routine but restored on exit.
+
+    @param[in]
+    lda     INTEGER
+            The leading dimension of the array A.
+            If SIDE = MagmaLeft,  LDA >= max(1,M);
+            if SIDE = MagmaRight, LDA >= max(1,N).
+
+    @param[in]
+    tau     DOUBLE_PRECISION array, dimension (K)
+            TAU(i) must contain the scalar factor of the elementary
+            reflector H(i), as returned by DGEQRF.
+
+    @param[in,out]
+    C       DOUBLE_PRECISION array, dimension (LDC,N)
+            On entry, the M-by-N matrix C.
+            On exit, C is overwritten by Q*C or Q**T * C or C * Q**T or C*Q.
+
+    @param[in]
+    ldc     INTEGER
+            The leading dimension of the array C. LDC >= max(1,M).
+
+    @param[out]
+    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+            On exit, if INFO = 0, WORK(0) returns the optimal LWORK.
+
+    @param[in]
+    lwork   INTEGER
+            The dimension of the array WORK.
+            If SIDE = MagmaLeft,  LWORK >= max(1,N);
+            if SIDE = MagmaRight, LWORK >= max(1,M).
+            For optimum performance
+            LWORK >= N*NB if SIDE = MagmaLeft, and
+            LWORK >= M*NB if SIDE = MagmaRight,
+            where NB is the optimal blocksize.
+    \n
+            If LWORK = -1, then a workspace query is assumed; the routine
+            only calculates the optimal size of the WORK array, returns
+            this value as the first entry of the WORK array, and no error
+            message related to LWORK is issued by XERBLA.
+
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+
+    @ingroup magma_dgeqrf_comp
+    ********************************************************************/
 extern "C" magma_int_t
-magma_dormqr(const char side, const char trans,
+magma_dormqr(magma_side_t side, magma_trans_t trans,
              magma_int_t m, magma_int_t n, magma_int_t k,
              double *A,    magma_int_t lda,
              double *tau,
@@ -21,94 +120,6 @@ magma_dormqr(const char side, const char trans,
              double *work, magma_int_t lwork,
              magma_int_t *info)
 {
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-    Purpose
-    =======
-    DORMQR overwrites the general real M-by-N matrix C with
-
-                    SIDE = 'L'     SIDE = 'R'
-    TRANS = 'N':      Q * C          C * Q
-    TRANS = 'T':      Q**T * C       C * Q**T
-
-    where Q is a real orthogonal matrix defined as the product of k
-    elementary reflectors
-
-          Q = H(1) H(2) . . . H(k)
-
-    as returned by DGEQRF. Q is of order M if SIDE = 'L' and of order N
-    if SIDE = 'R'.
-
-    Arguments
-    =========
-    SIDE    (input) CHARACTER*1
-            = 'L': apply Q or Q**T from the Left;
-            = 'R': apply Q or Q**T from the Right.
-
-    TRANS   (input) CHARACTER*1
-            = 'N':  No transpose, apply Q;
-            = 'T':  Transpose, apply Q**T.
-
-    M       (input) INTEGER
-            The number of rows of the matrix C. M >= 0.
-
-    N       (input) INTEGER
-            The number of columns of the matrix C. N >= 0.
-
-    K       (input) INTEGER
-            The number of elementary reflectors whose product defines
-            the matrix Q.
-            If SIDE = 'L', M >= K >= 0;
-            if SIDE = 'R', N >= K >= 0.
-
-    A       (input) DOUBLE_PRECISION array, dimension (LDA,K)
-            The i-th column must contain the vector which defines the
-            elementary reflector H(i), for i = 1,2,...,k, as returned by
-            DGEQRF in the first k columns of its array argument A.
-            A is modified by the routine but restored on exit.
-
-    LDA     (input) INTEGER
-            The leading dimension of the array A.
-            If SIDE = 'L', LDA >= max(1,M);
-            if SIDE = 'R', LDA >= max(1,N).
-
-    TAU     (input) DOUBLE_PRECISION array, dimension (K)
-            TAU(i) must contain the scalar factor of the elementary
-            reflector H(i), as returned by DGEQRF.
-
-    C       (input/output) DOUBLE_PRECISION array, dimension (LDC,N)
-            On entry, the M-by-N matrix C.
-            On exit, C is overwritten by Q*C or Q**T * C or C * Q**T or C*Q.
-
-    LDC     (input) INTEGER
-            The leading dimension of the array C. LDC >= max(1,M).
-
-    WORK    (workspace/output) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(0) returns the optimal LWORK.
-
-    LWORK   (input) INTEGER
-            The dimension of the array WORK.
-            If SIDE = 'L', LWORK >= max(1,N);
-            if SIDE = 'R', LWORK >= max(1,M).
-            For optimum performance
-            LWORK >= N*NB if SIDE = 'L', and
-            LWORK >= M*NB if SIDE = 'R',
-            where NB is the optimal blocksize.
-
-            If LWORK = -1, then a workspace query is assumed; the routine
-            only calculates the optimal size of the WORK array, returns
-            this value as the first entry of the WORK array, and no error
-            message related to LWORK is issued by XERBLA.
-
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================   */
-    
     #define  A(a_1,a_2) ( A + (a_1) + (a_2)*lda)
     #define dC(a_1,a_2) (dC + (a_1) + (a_2)*lddc)
     
@@ -116,8 +127,8 @@ magma_dormqr(const char side, const char trans,
     
     double c_one = MAGMA_D_ONE;
 
-    char side_[2]  = {side,  0};
-    char trans_[2] = {trans, 0};
+    const char* side_  = lapack_side_const( side  );
+    const char* trans_ = lapack_trans_const( trans );
 
     magma_int_t nq_i, lddwork;
     magma_int_t i;
@@ -127,8 +138,8 @@ magma_dormqr(const char side, const char trans,
     magma_int_t iinfo, lwkopt;
 
     *info = 0;
-    left   = lapackf77_lsame(side_,  "L");
-    notran = lapackf77_lsame(trans_, "N");
+    left   = (side == MagmaLeft);
+    notran = (trans == MagmaNoTrans);
     lquery = (lwork == -1);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
@@ -142,9 +153,9 @@ magma_dormqr(const char side, const char trans,
     lwkopt = max(1,nw) * nb;
     work[0] = MAGMA_D_MAKE( lwkopt, 0 );
     
-    if (! left && ! lapackf77_lsame(side_, "R")) {
+    if (! left && side != MagmaRight) {
         *info = -1;
-    } else if (! notran && ! lapackf77_lsame(trans_, MagmaTransStr)) {
+    } else if (! notran && trans != MagmaTrans) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -187,7 +198,7 @@ magma_dormqr(const char side, const char trans,
     }
     
     /* work space on CPU */
-    T = (double*) malloc( 2*nb*nb * sizeof(double) );
+    magma_dmalloc_cpu( &T, 2*nb*nb );
     if ( T == NULL ) {
         magma_free( dC );
         magma_free( dwork );
@@ -227,7 +238,7 @@ magma_dormqr(const char side, const char trans,
             ic = 0;
         }
         
-        for( i=i1; (step<0 ? i>=i2 : i<i2); i += step ) {
+        for( i=i1; (step < 0 ? i >= i2 : i < i2); i += step ) {
             ib = min(nb, k - i);
 
             /* Form the triangular factor of the block reflector
@@ -239,9 +250,9 @@ magma_dormqr(const char side, const char trans,
             /* 1) Put 0s in the upper triangular part of A;
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
-            dpanel_to_q('U', ib, A(i,i), lda, T+ib*ib);
+            dpanel_to_q( MagmaUpper, ib, A(i,i), lda, T+ib*ib);
             magma_dsetmatrix( nq_i, ib, A(i,i), lda, dwork, nq_i );
-            dq_to_panel('U', ib, A(i,i), lda, T+ib*ib);
+            dq_to_panel( MagmaUpper, ib, A(i,i), lda, T+ib*ib);
 
             if (left) {
                 /* H or H' is applied to C(i:m,1:n) */
@@ -273,7 +284,7 @@ magma_dormqr(const char side, const char trans,
 
     magma_free( dC );
     magma_free( dwork );
-    free( T );
+    magma_free_cpu( T );
 
     return *info;
 } /* magma_dormqr */

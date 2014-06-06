@@ -1,78 +1,79 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zgetrf.cpp normal z -> c, Fri Apr 25 15:05:38 2014
 */
 #include "common_magma.h"
 
 
 
-extern "C" magma_int_t
-magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda,
-             magma_int_t *ipiv, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CGETRF computes an LU factorization of a general M-by-N matrix A
     using partial pivoting with row interchanges.  This version does not
     require work space on the GPU passed as input. GPU memory is allocated
     in the routine.
 
     The factorization has the form
-       A = P * L * U
+        A = P * L * U
     where P is a permutation matrix, L is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U is upper
     triangular (upper trapezoidal if m < n).
 
     This is the right-looking Level 3 BLAS version of the algorithm.
     If the current stream is NULL, this version replaces it with user defined
-    stream to overlap computation with communication. 
+    stream to overlap computation with communication.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) COMPLEX array, dimension (LDA,N)
+    @param[in,out]
+    A       COMPLEX array, dimension (LDA,N)
             On entry, the M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
-
+    \n
             Higher performance is achieved if A is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
 
-    IPIV    (output) INTEGER array, dimension (min(M,N))
+    @param[out]
+    ipiv    INTEGER array, dimension (min(M,N))
             The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
-            > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+      -     > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
                   has been completed, but the factor U is exactly
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
 
-    =====================================================================    */
-
+    @ingroup magma_cgesv_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda,
+             magma_int_t *ipiv, magma_int_t *info)
+{
 #define dAT(i,j) (dAT + (i)*nb*ldda + (j)*nb)
 
     magmaFloatComplex *dAT, *dA, *da, *work;
@@ -102,7 +103,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
 
     if ( (nb <= 1) || (nb >= min(m,n)) ) {
         /* Use CPU code. */
-        lapackf77_cgetrf(&m, &n, a, &lda, ipiv, info);
+        lapackf77_cgetrf(&m, &n, A, &lda, ipiv, info);
     } else {
         /* Use hybrid blocked code. */
         magma_int_t maxm, maxn, ldda, maxdim;
@@ -116,7 +117,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
         magma_int_t num_gpus = magma_num_gpus();
         if ( num_gpus > 1 ) {
             /* call multi-GPU non-GPU-resident interface  */
-            magma_cgetrf_m(num_gpus, m, n, a, lda, ipiv, info);
+            magma_cgetrf_m(num_gpus, m, n, A, lda, ipiv, info);
             return *info;
         }
 
@@ -127,33 +128,34 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
 
         int h = 1+(2+num_gpus), num_gpus2 = num_gpus;
         int NB = (magma_int_t)(0.8*freeMem/maxm-h*nb);
-        char * ngr_nb_char = getenv("MAGMA_NGR_NB");
-        if( ngr_nb_char != NULL ) NB = max( nb, min( NB, atoi(ngr_nb_char) ) );
+        const char* ngr_nb_char = getenv("MAGMA_NGR_NB");
+        if ( ngr_nb_char != NULL )
+            NB = max( nb, min( NB, atoi(ngr_nb_char) ) );
 
-        if( num_gpus > ceil((float)NB/nb) ) {
+        if ( num_gpus > ceil((float)NB/nb) ) {
             num_gpus2 = (int)ceil((float)NB/nb);
             h = 1+(2+num_gpus2);
             NB = (magma_int_t)(0.8*freeMem/maxm-h*nb);
-        } 
-        if( num_gpus2*NB < n ) {
+        }
+        if ( num_gpus2*NB < n ) {
             /* require too much memory, so call non-GPU-resident version */
-            magma_cgetrf_m(num_gpus, m, n, a, lda, ipiv, info);
+            magma_cgetrf_m(num_gpus, m, n, A, lda, ipiv, info);
             return *info;
         }
 
         ldda = maxn;
-        work = a;
+        work = A;
         if (maxdim*maxdim < 2*maxm*maxn) {
             // if close to square, allocate square matrix and transpose in-place
             if (MAGMA_SUCCESS != magma_cmalloc( &dA, nb*maxm + maxdim*maxdim )) {
                 /* alloc failed so call non-GPU-resident version */
-                magma_cgetrf_m(num_gpus, m, n, a, lda, ipiv, info);
+                magma_cgetrf_m(num_gpus, m, n, A, lda, ipiv, info);
                 return *info;
             }
             da = dA + nb*maxm;
             
             ldda = maxdim;
-            magma_csetmatrix( m, n, a, lda, da, ldda );
+            magma_csetmatrix( m, n, A, lda, da, ldda );
             
             dAT = da;
             magmablas_ctranspose_inplace( ldda, dAT, ldda );
@@ -162,17 +164,17 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
             // if very rectangular, allocate dA and dAT and transpose out-of-place
             if (MAGMA_SUCCESS != magma_cmalloc( &dA, (nb + maxn)*maxm )) {
                 /* alloc failed so call non-GPU-resident version */
-                magma_cgetrf_m(num_gpus, m, n, a, lda, ipiv, info);
+                magma_cgetrf_m(num_gpus, m, n, A, lda, ipiv, info);
                 return *info;
             }
             da = dA + nb*maxm;
             
-            magma_csetmatrix( m, n, a, lda, da, maxm );
+            magma_csetmatrix( m, n, A, lda, da, maxm );
             
             if (MAGMA_SUCCESS != magma_cmalloc( &dAT, maxm*maxn )) {
                 /* alloc failed so call non-GPU-resident version */
                 magma_free( dA );
-                magma_cgetrf_m(num_gpus, m, n, a, lda, ipiv, info);
+                magma_cgetrf_m(num_gpus, m, n, A, lda, ipiv, info);
                 return *info;
             }
 
@@ -193,19 +195,18 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
         else
             stream[1] = current_stream;
 
-        for( i = 0; i < s; i++ )
-        {
+        for( i = 0; i < s; i++ ) {
             // download i-th panel
             cols = maxm - i*nb;
             
-            if (i>0){
-                // download i-th panel 
+            if (i > 0) {
+                // download i-th panel
                 magmablas_ctranspose( dA, cols, dAT(i,i), ldda, nb, cols );
 
                 // make sure that gpu queue is empty
                 magma_device_sync();
 
-                magma_cgetmatrix_async( m-i*nb, nb, dA, cols, work, lda, 
+                magma_cgetmatrix_async( m-i*nb, nb, dA, cols, work, lda,
                                         stream[0]);
                 
                 magma_ctrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
@@ -236,7 +237,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
             magmablas_ctranspose( dAT(i,i), ldda, dA, cols, cols, nb);
 
             // do the small non-parallel computations
-            if (s > (i+1)){
+            if (s > (i+1)) {
                 magma_ctrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
                              nb, nb,
                              c_one, dAT(i, i  ), ldda,
@@ -247,7 +248,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
                                         dAT(i+1, i  ), ldda,
                              c_one,     dAT(i+1, i+1), ldda );
             }
-            else{
+            else {
                 magma_ctrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
                              n-s*nb, nb,
                              c_one, dAT(i, i  ), ldda,
@@ -288,10 +289,10 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *a, magma_int_t lda
        
         if (maxdim*maxdim < 2*maxm*maxn) {
             magmablas_ctranspose_inplace( ldda, dAT, ldda );
-            magma_cgetmatrix( m, n, da, ldda, a, lda );
+            magma_cgetmatrix( m, n, da, ldda, A, lda );
         } else {
             magmablas_ctranspose2( da, maxm, dAT, ldda, n, m );
-            magma_cgetmatrix( m, n, da, maxm, a, lda );
+            magma_cgetmatrix( m, n, da, maxm, A, lda );
             magma_free( dAT );
         }
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -12,79 +12,49 @@
 
 #define PRECISION_z
 
-extern "C" magma_int_t
-magma_zlahru_m(
-    magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
-    magmaDoubleComplex *A, magma_int_t lda,
-    struct zgehrd_data* data )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZLAHRU is an auxiliary MAGMA routine that is used in ZGEHRD to update
     the trailing sub-matrices after the reductions of the corresponding
     panels.
     See further details below.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    IHI     (input) INTEGER
+    @param[in]
+    ihi     INTEGER
             Last row to update. Same as IHI in zgehrd.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             Number of rows of the matrix Am (see details below)
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             Block size
 
-    A       (output) COMPLEX_16 array, dimension (LDA,N-K)
+    @param[out]
+    A       COMPLEX_16 array, dimension (LDA,N-K)
             On entry, the N-by-(N-K) general matrix to be updated. The
             computation is done on the GPU. After Am is updated on the GPU
             only Am(1:NB) is transferred to the CPU - to update the
             corresponding Am matrix. See Further Details below.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    DA      (input/output) COMPLEX_16 array on the GPU, dimension
-            (N,N-K). On entry, the N-by-(N-K) general matrix to be updated.
-            On exit, the 1st K rows (matrix Am) of A are updated by
-            applying an orthogonal transformation from the right
-            Am = Am (I-V T V'), and sub-matrix Ag is updated by
-            Ag = (I - V T V') Ag (I - V T V(NB+1:)' )
-            where Q = I - V T V' represent the orthogonal matrix
-            (as a product of elementary reflectors V) used to reduce
-            the current panel of A to upper Hessenberg form. After Am
-            is updated Am(:,1:NB) is sent to the CPU.
-            See Further Details below.
-
-    DY      (input/workspace) COMPLEX_16 array on the GPU, dimension
-            (N, NB). On entry the (N-K)-by-NB Y = A V. It is used internally
-            as workspace, so its value is changed on exit.
-
-    DV      (input/workspace) COMPLEX_16 array on the GPU, dimension
-            (N, NB). On entry the (N-K)-by-NB matrix V of elementary reflectors
-            used to reduce the current panel of A to upper Hessenberg form.
-            The rest K-by-NB part is used as workspace. V is unchanged on
-            exit.
-
-    DT      (input) COMPLEX_16 array on the GPU, dimension (NB, NB).
-            On entry the NB-by-NB upper trinagular matrix defining the
-            orthogonal Hessenberg reduction transformation matrix for
-            the current panel. The lower triangular part are 0s.
-
-    DWORK   (workspace) COMPLEX_16 array on the GPU, dimension N*NB.
+    @param[in,out]
+    data    Structure with pointers to dA, dT, dV, dW, dY
+            which are distributed across multiple GPUs.
 
     Further Details
-    ===============
+    ---------------
     This implementation follows the algorithm and notations described in:
 
     S. Tomov and J. Dongarra, "Accelerating the reduction to upper Hessenberg
@@ -94,8 +64,15 @@ magma_zlahru_m(
 
     The difference is that here Am is computed on the GPU.
     M is renamed Am, G is renamed Ag.
-    =====================================================================    */
 
+    @ingroup magma_zgeev_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zlahru_m(
+    magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
+    magmaDoubleComplex *A, magma_int_t lda,
+    struct zgehrd_data* data )
+{
     #define dA(  d, i, j ) (data->A [d] + (i) + (j)*ldda)
     #define dTi( d       ) (data->Ti[d])
     #define dV(  d, i, j ) (data->V [d] + (i) + (j)*ldv )

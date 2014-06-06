@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zhemm_mgpu.cpp normal z -> s, Fri Apr 25 15:05:24 2014
        @author Mark Gates
        @author Azzam Haidar
        
@@ -18,7 +18,7 @@
 
 extern "C"
 void magmablas_ssymm_mgpu_com(
-    char side, char uplo, magma_int_t m, magma_int_t n,
+    magma_side_t side, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     float alpha,
     float *dA[],    magma_int_t ldda,  magma_int_t offset,
     float *dB[],    magma_int_t lddb,
@@ -40,6 +40,10 @@ void magmablas_ssymm_mgpu_com(
     //printf("                      start ssymm                   \n");
     //printf("####################################################\n");
    
+    if ( side != MagmaLeft || uplo != MagmaLower ) {
+        fprintf( stderr, "%s: only Left Lower implemented\n", __func__ );
+    }
+    
     assert( ldda >= m );
     assert( lddb >= m );
     assert( lddc >= m );
@@ -148,7 +152,8 @@ void magmablas_ssymm_mgpu_com(
 
 /*
     magma_int_t siz = m+offset;
-    float *R=(float *) malloc(siz*siz*sizeof(float));
+    float *R;
+    magma_smalloc_cpu( &R, siz*siz );
     // collecte back A
     magmablas_sgetmatrix_1D_bcyclic( siz, siz, dA, ldda, R, siz, ngpu, nb );
     magma_setdevice( 0 );

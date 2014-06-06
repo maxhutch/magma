@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions mixed zc -> ds
 
@@ -13,23 +13,9 @@
 #define BWDMAX 1.0
 #define ITERMAX 30
 
-extern "C" magma_int_t
-magma_zcgesv_gpu(char trans, magma_int_t n, magma_int_t nrhs,
-                 magmaDoubleComplex *dA, magma_int_t ldda,
-                 magma_int_t *ipiv,  magma_int_t *dipiv,
-                 magmaDoubleComplex *dB, magma_int_t lddb,
-                 magmaDoubleComplex *dX, magma_int_t lddx,
-                 magmaDoubleComplex *dworkd, magmaFloatComplex *dworks,
-                 magma_int_t *iter, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZCGESV computes the solution to a complex system of linear equations
        A * X = B or A' * X = B
     where A is an N-by-N matrix and X and B are N-by-NRHS matrices.
@@ -61,22 +47,26 @@ magma_zcgesv_gpu(char trans, magma_int_t n, magma_int_t nrhs,
     The value ITERMAX and BWDMAX are fixed to 30 and 1.0D+00 respectively.
 
     Arguments
-    =========
-    TRANS   (input) CHARACTER*1
+    ---------
+    @param[in]
+    trans   magma_trans_t
             Specifies the form of the system of equations:
-            = 'N':  A * X = B  (No transpose)
-            = 'T':  A'* X = B  (Transpose)
-            = 'C':  A'* X = B  (Conjugate transpose = Transpose)
+      -     = MagmaNoTrans:    A * X = B  (No transpose)
+      -     = MagmaTrans:      A'* X = B  (Transpose)
+      -     = MagmaConjTrans:  A'* X = B  (Conjugate transpose = Transpose)
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of linear equations, i.e., the order of the
             matrix A.  N >= 0.
 
-    NRHS    (input) INTEGER
+    @param[in]
+    nrhs    INTEGER
             The number of right hand sides, i.e., the number of columns
             of the matrix B.  NRHS >= 0.
 
-    dA      (input or input/output) COMPLEX_16 array on the GPU, dimension (ldda,N)
+    @param[in,out]
+    dA      COMPLEX_16 array on the GPU, dimension (ldda,N)
             On entry, the N-by-N coefficient matrix A.
             On exit, if iterative refinement has been successfully used
             (info.EQ.0 and ITER.GE.0, see description below), A is
@@ -85,60 +75,83 @@ magma_zcgesv_gpu(char trans, magma_int_t n, magma_int_t nrhs,
             array dA contains the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
-    ldda    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  ldda >= max(1,N).
 
-    IPIV    (output) INTEGER array, dimension (N)
+    @param[out]
+    ipiv    INTEGER array, dimension (N)
             The pivot indices that define the permutation matrix P;
             row i of the matrix was interchanged with row IPIV(i).
-            Corresponzc either to the single precision factorization
+            Corresponds either to the single precision factorization
             (if info.EQ.0 and ITER.GE.0) or the double precision
             factorization (if info.EQ.0 and ITER.LT.0).
 
-    dIPIV   (output) INTEGER array on the GPU, dimension (min(M,N))
-            The pivot indices; for 1 <= i <= min(M,N), row i of the
-            matrix was moved to row IPIV(i).
+    @param[out]
+    dipiv   INTEGER array on the GPU, dimension (N)
+            The pivot indices; for 1 <= i <= N, after permuting, row i of the
+            matrix was moved to row dIPIV(i).
+            Note this is different than IPIV, where interchanges
+            are applied one-after-another.
 
-    dB      (input) COMPLEX_16 array on the GPU, dimension (lddb,NRHS)
+    @param[in]
+    dB      COMPLEX_16 array on the GPU, dimension (lddb,NRHS)
             The N-by-NRHS right hand side matrix B.
 
-    lddb    (input) INTEGER
+    @param[in]
+    lddb    INTEGER
             The leading dimension of the array dB.  lddb >= max(1,N).
 
-    dX      (output) COMPLEX_16 array on the GPU, dimension (lddx,NRHS)
+    @param[out]
+    dX      COMPLEX_16 array on the GPU, dimension (lddx,NRHS)
             If info = 0, the N-by-NRHS solution matrix X.
 
-    lddx    (input) INTEGER
+    @param[in]
+    lddx    INTEGER
             The leading dimension of the array dX.  lddx >= max(1,N).
 
+    @param
     dworkd  (workspace) COMPLEX_16 array on the GPU, dimension (N*NRHS)
             This array is used to hold the residual vectors.
 
+    @param
     dworks  (workspace) COMPLEX array on the GPU, dimension (N*(N+NRHS))
             This array is used to store the complex single precision matrix
             and the right-hand sides or solutions in single precision.
 
-    iter    (output) INTEGER
-            < 0: iterative refinement has failed, double precision
+    @param[out]
+    iter    INTEGER
+      -     < 0: iterative refinement has failed, double precision
                  factorization has been performed
-                 -1 : the routine fell back to full precision for
+        +        -1 : the routine fell back to full precision for
                       implementation- or machine-specific reasons
-                 -2 : narrowing the precision induced an overflow,
+        +        -2 : narrowing the precision induced an overflow,
                       the routine fell back to full precision
-                 -3 : failure of SGETRF
-                 -31: stop the iterative refinement after the 30th iteration
-            > 0: iterative refinement has been successfully used.
+        +        -3 : failure of SGETRF
+        +        -31: stop the iterative refinement after the 30th iteration
+      -     > 0: iterative refinement has been successfully used.
                  Returns the number of iterations
  
-    info   (output) INTEGER
-            = 0:  successful exit
-            < 0:  if info = -i, the i-th argument had an illegal value
-            > 0:  if info = i, U(i,i) computed in DOUBLE PRECISION is
+    @param[out]
+    info   INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if info = -i, the i-th argument had an illegal value
+      -     > 0:  if info = i, U(i,i) computed in DOUBLE PRECISION is
                   exactly zero.  The factorization has been completed,
                   but the factor U is exactly singular, so the solution
                   could not be computed.
-    =====================================================================    */
 
+    @ingroup magma_zgesv_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zcgesv_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
+                 magmaDoubleComplex *dA, magma_int_t ldda,
+                 magma_int_t *ipiv,  magma_int_t *dipiv,
+                 magmaDoubleComplex *dB, magma_int_t lddb,
+                 magmaDoubleComplex *dX, magma_int_t lddx,
+                 magmaDoubleComplex *dworkd, magmaFloatComplex *dworks,
+                 magma_int_t *iter, magma_int_t *info)
+{
     #define dB(i,j)     (dB + (i) + (j)*lddb)
     #define dX(i,j)     (dX + (i) + (j)*lddx)
     #define dR(i,j)     (dR + (i) + (j)*lddr)
@@ -182,7 +195,7 @@ magma_zcgesv_gpu(char trans, magma_int_t n, magma_int_t nrhs,
     dR  = dworkd;
     
     eps  = lapackf77_dlamch("Epsilon");
-    Anrm = magmablas_zlange('I', n, n, dA, ldda, (double*)dworkd );
+    Anrm = magmablas_zlange(MagmaInfNorm, n, n, dA, ldda, (double*)dworkd );
     cte  = Anrm * eps * pow((double)n, 0.5) * BWDMAX;
     
     /*
@@ -294,7 +307,7 @@ REFINEMENT:
         }
         
         /*  Check whether the nrhs normwise backward errors satisfy the
-         *  stopping criterion. If yes, set ITER=IITER>0 and return. */
+         *  stopping criterion. If yes, set ITER=IITER > 0 and return. */
         for( j=0; j < nrhs; j++ ) {
             i = magma_izamax( n, dX(0,j), 1) - 1;
             magma_zgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );

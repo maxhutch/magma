@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
        @author Azzam Haidar 
@@ -13,14 +13,14 @@
 
 extern "C"
 void magmablas_zherk_gpu(
-    char uplo, char trans, magma_int_t n, magma_int_t k, magma_int_t nb,
+    magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k, magma_int_t nb,
     double alpha, magmaDoubleComplex *dA, magma_int_t lda, magma_int_t aoff,
     double beta,           magmaDoubleComplex *dC, magma_int_t ldc,  magma_int_t offset)
 {
     #define dA(i, j) (dA + (i) + (j)*lda + (aoff) )
     #define dC(i, j) (dC + (i) + (j)*ldc)
-    char transA;
-    char transB;  
+    magma_transA_t transA;
+    magma_transB_t transB;  
     magmaDoubleComplex cbeta  = MAGMA_Z_MAKE( beta, 0. );
     magmaDoubleComplex calpha = MAGMA_Z_MAKE( alpha, 0. );
     

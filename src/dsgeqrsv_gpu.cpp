@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:36 2013
+       @generated from zcgeqrsv_gpu.cpp mixed zc -> ds, Fri Apr 25 15:05:35 2014
 
 */
 #include "common_magma.h"
@@ -13,21 +13,9 @@
 #define BWDMAX 1.0
 #define ITERMAX 30
 
-extern "C" magma_int_t
-magma_dsgeqrsv_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
-                   double *dA,  magma_int_t ldda,
-                   double *dB,  magma_int_t lddb,
-                   double *dX,  magma_int_t lddx,
-                   magma_int_t *iter, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DSGEQRSV solves the least squares problem
        min || A*X - B ||,
     where A is an M-by-N matrix and X and B are M-by-NRHS matrices.
@@ -59,18 +47,22 @@ magma_dsgeqrsv_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     The value ITERMAX and BWDMAX are fixed to 30 and 1.0D+00 respectively.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A. M >= N >= 0.
 
-    NRHS    (input) INTEGER
+    @param[in]
+    nrhs    INTEGER
             The number of right hand sides, i.e., the number of columns
             of the matrix B.  NRHS >= 0.
 
-    dA      (input or input/output) DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
+    @param[in,out]
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the M-by-N coefficient matrix A.
             On exit, if iterative refinement has been successfully used
             (info.EQ.0 and ITER.GE.0, see description below), A is
@@ -79,40 +71,54 @@ magma_dsgeqrsv_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
             array dA contains the QR factorization of A as returned by
             function DGEQRF_GPU.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
 
-    dB      (input or input/output) DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
+    @param[in,out]
+    dB      DOUBLE PRECISION array on the GPU, dimension (LDDB,NRHS)
             The M-by-NRHS right hand side matrix B.
             May be overwritten (e.g., if refinement fails).
 
-    LDDB    (input) INTEGER
+    @param[in]
+    lddb    INTEGER
             The leading dimension of the array dB.  LDDB >= max(1,M).
 
-    dX      (output) DOUBLE PRECISION array on the GPU, dimension (LDDX,NRHS)
+    @param[out]
+    dX      DOUBLE PRECISION array on the GPU, dimension (LDDX,NRHS)
             If info = 0, the N-by-NRHS solution matrix X.
 
-    LDDX    (input) INTEGER
+    @param[in]
+    lddx    INTEGER
             The leading dimension of the array dX.  LDDX >= max(1,N).
 
-    ITER    (output) INTEGER
-            < 0: iterative refinement has failed, double precision
+    @param[out]
+    iter    INTEGER
+      -     < 0: iterative refinement has failed, double precision
                  factorization has been performed
-                 -1 : the routine fell back to full precision for
+        +        -1 : the routine fell back to full precision for
                       implementation- or machine-specific reasons
-                 -2 : narrowing the precision induced an overflow,
+        +        -2 : narrowing the precision induced an overflow,
                       the routine fell back to full precision
-                 -3 : failure of SGEQRF
-                 -31: stop the iterative refinement after the 30th iteration
-            > 0: iterative refinement has been successfully used.
+        +        -3 : failure of SGEQRF
+        +        -31: stop the iterative refinement after the 30th iteration
+      -     > 0: iterative refinement has been successfully used.
                  Returns the number of iterations
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if info = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if info = -i, the i-th argument had an illegal value
 
-    =====================================================================    */
-
+    @ingroup magma_dgels_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dsgeqrsv_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
+                   double *dA,  magma_int_t ldda,
+                   double *dB,  magma_int_t lddb,
+                   double *dX,  magma_int_t lddx,
+                   magma_int_t *iter, magma_int_t *info)
+{
     #define dB(i,j)     (dB + (i) + (j)*lddb)
     #define dX(i,j)     (dX + (i) + (j)*lddx)
     #define dR(i,j)     (dR + (i) + (j)*lddr)
@@ -199,7 +205,7 @@ magma_dsgeqrsv_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     stau = hworks + lhwork;
 
     eps  = lapackf77_dlamch("Epsilon");
-    Anrm = magmablas_dlange('I', m, n, dA, ldda, (double*)dworkd );
+    Anrm = magmablas_dlange(MagmaInfNorm, m, n, dA, ldda, (double*)dworkd );
     cte  = Anrm * eps * pow((double)n, 0.5) * BWDMAX;
 
     /*
@@ -313,7 +319,7 @@ REFINEMENT:
         }
 
         /*  Check whether the nrhs normwise backward errors satisfy the
-         *  stopping criterion. If yes, set ITER=IITER>0 and return. */
+         *  stopping criterion. If yes, set ITER=IITER > 0 and return. */
         for( j=0; j < nrhs; j++ ) {
             i = magma_idamax( n, dX(0,j), 1) - 1;
             magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );
@@ -357,7 +363,7 @@ FALLBACK:
     /*
      * Allocate temporary buffers
      */
-    /* dworkd = dT for zgeqrf */
+    /* dworkd = dT for dgeqrf */
     nb   = magma_get_dgeqrf_nb( m );
     size = (2*min(m, n) + (n+31)/32*32 )*nb;
     if ( size > ldworkd ) {
@@ -370,7 +376,7 @@ FALLBACK:
     }
     dT = dworkd;
 
-    /* hworkd(dtau + workspace for zgeqrs) = min(m,n) + lhwork */
+    /* hworkd(dtau + workspace for dgeqrs) = min(m,n) + lhwork */
     size = lhwork + minmn;
     magma_dmalloc_cpu( &hworkd, size );
     if ( hworkd == NULL ) {

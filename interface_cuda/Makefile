@@ -1,14 +1,14 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      December 2013
+#      @date April 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = interface_cuda
 MAGMA_DIR = ..
-include ../Makefile.internal
+include $(MAGMA_DIR)/Makefile.internal
 
 ZSRC := \
 	blas_z.cpp	\
@@ -26,7 +26,6 @@ SRC := \
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC) $(SRC)
 
 ALLOBJ := $(ALLSRC:.cpp=.o)
-ALLOBJ := $(ALLOBJ:.f=.o)
 
 .PHONY: all clean cleanall
 
@@ -38,7 +37,7 @@ $(LIBMAGMA): $(ALLOBJ) stamp
 	$(RANLIB) $@
 
 # this forces LIBMAGMA to be archived
-stamp: $(ALLHDR) $(ALLOBJ)
+stamp: $(ALLOBJ)
 	touch $@
 
 clean:

@@ -1,31 +1,20 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zungqr2.cpp normal z -> s, Fri Apr 25 15:05:42 2014
 
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_sorgqr2(magma_int_t m, magma_int_t n, magma_int_t k,
-              float *A, magma_int_t lda,
-              float *tau, 
-              magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SORGQR generates an M-by-N REAL matrix Q with orthonormal columns,
     which is defined as the first N columns of a product of K elementary
     reflectors of order M
@@ -37,36 +26,50 @@ magma_sorgqr2(magma_int_t m, magma_int_t n, magma_int_t k,
     This version recomputes the T matrices on the CPU and sends them to the GPU.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix Q. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix Q. M >= N >= 0.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The number of elementary reflectors whose product defines the
             matrix Q. N >= K >= 0.
 
-    A       (input/output) REAL array A, dimension (LDDA,N).
+    @param[in,out]
+    A       REAL array A, dimension (LDDA,N).
             On entry, the i-th column must contain the vector
             which defines the elementary reflector H(i), for
             i = 1,2,...,k, as returned by SGEQRF_GPU in the
             first k columns of its array argument A.
             On exit, the M-by-N matrix Q.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The first dimension of the array A. LDA >= max(1,M).
 
-    TAU     (input) REAL array, dimension (K)
+    @param[in]
+    tau     REAL array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by SGEQRF_GPU.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument has an illegal value
-    =====================================================================    */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument has an illegal value
 
+    @ingroup magma_sgeqrf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_sorgqr2(magma_int_t m, magma_int_t n, magma_int_t k,
+              float *A, magma_int_t lda,
+              float *tau,
+              magma_int_t *info)
+{
 #define  A(i,j) ( A + (i) + (j)*lda )
 #define dA(i,j) (dA + (i) + (j)*ldda)
 
@@ -192,7 +195,7 @@ magma_sorgqr2(magma_int_t m, magma_int_t n, magma_int_t k,
                               A(i,i), &lda, &tau[i], T, &nb);
             magma_ssetmatrix_async( ib, ib,
                                     T, nb,
-                                    dT  , nb, stream );
+                                    dT, nb, stream );
 
             // set panel to identity
             magmablas_slaset( MagmaUpperLower, i, ib, dA(0, i), ldda );

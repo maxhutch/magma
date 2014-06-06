@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -59,35 +59,40 @@ zsymmetrize_upper( int m, magmaDoubleComplex *dA, int ldda )
 }
 
 
-extern "C" void
-magmablas_zsymmetrize( char uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda )
-{
-/*
+/**
     Purpose
-    =======
+    -------
     
     ZSYMMETRIZE copies lower triangle to upper triangle, or vice-versa,
     to make dA a general representation of a symmetric matrix.
     
     Arguments
-    =========
+    ---------
     
-    UPLO    (input) CHARACTER*1
+    @param[in]
+    uplo    magma_uplo_t
             Specifies the part of the matrix dA that is valid on input.
-            = 'U':      Upper triangular part
-            = 'L':      Lower triangular part
+      -     = MagmaUpper:      Upper triangular part
+      -     = MagmaLower:      Lower triangular part
     
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix dA.  M >= 0.
     
-    dA      (input/output) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    @param[in,out]
+    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
             The m by m matrix dA.
     
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
-    =====================================================================   */
 
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zsymmetrize( magma_uplo_t uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda )
+{
     //printf( "m %d, grid %d, threads %d\n", m, grid.x, threads.x );
     if ( m == 0 )
         return;
@@ -98,10 +103,10 @@ magmablas_zsymmetrize( char uplo, magma_int_t m, magmaDoubleComplex *dA, magma_i
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB );
     
-    if ( (uplo == 'U') || (uplo == 'u') ) {
+    if ( uplo == MagmaUpper ) {
         zsymmetrize_upper<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
     }
-    else if ( (uplo == 'L') || (uplo == 'l') ) {
+    else if ( uplo == MagmaLower ) {
         zsymmetrize_lower<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
     }
     else {

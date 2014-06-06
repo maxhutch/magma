@@ -1,31 +1,37 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      December 2013
+#      @date April 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = testing
 MAGMA_DIR = ..
-include ../Makefile.internal
+include $(MAGMA_DIR)/Makefile.internal
 
 # ----------
 # BLAS and auxiliary
 ZSRC := \
 	testing_z_cublas_v2.cpp	\
+	\
 	testing_zgemm.cpp	\
 	testing_zgemv.cpp	\
 	testing_zhemv.cpp	\
-	testing_zsymv.cpp	\
 	testing_zherk.cpp	\
 	testing_zher2k.cpp	\
+	testing_zsymv.cpp	\
 	testing_ztrmm.cpp	\
 	testing_ztrmv.cpp	\
 	testing_ztrsm.cpp	\
 	testing_ztrsv.cpp	\
 	\
+	testing_zhemm_mgpu.cpp	\
+	testing_zhemv_mgpu.cpp	\
+	testing_zher2k_mgpu.cpp	\
+	\
 	testing_auxiliary.cpp	\
+	testing_constants.cpp	\
 	testing_parse_opts.cpp	\
 	testing_zblas.cpp	\
 	testing_zgeadd.cpp	\
@@ -40,10 +46,6 @@ ZSRC := \
 	testing_zsymmetrize_tiles.cpp	\
 	testing_zswap.cpp	\
 	testing_ztranspose.cpp	\
-	testing_zhemv_mgpu.cpp	\
-	\
-	testing_zhemm_mgpu.cpp	\
-	testing_zher2k_mgpu.cpp	\
 
 # ----------
 # Cholesky, GPU interface
@@ -86,11 +88,11 @@ ZSRC += \
 	testing_zcgeqrsv_gpu.cpp	\
 	\
 	testing_zgelqf_gpu.cpp	\
-	testing_zgeqrf_gpu.cpp	\
+	testing_zgels_gpu.cpp	\
+	testing_zgels3_gpu.cpp	\
 	testing_zgeqr2_gpu.cpp	\
 	testing_zgeqr2x_gpu.cpp	\
-	testing_zgels3_gpu.cpp	\
-	testing_zgels_gpu.cpp	\
+	testing_zgeqrf_gpu.cpp	\
 	testing_zlarfb_gpu.cpp	\
 	testing_zungqr_gpu.cpp	\
 	testing_zunmqr_gpu.cpp	\
@@ -118,6 +120,8 @@ ZSRC += \
 	testing_dsyevd_gpu.cpp	\
 	testing_zheevd_gpu.cpp	\
 	testing_zhetrd_gpu.cpp	\
+	\
+	testing_zhetrd_mgpu.cpp	\
 
 # symmetric eigenvalues, CPU interface
 ZSRC += \
@@ -152,8 +156,15 @@ ZSRC += \
 # ----------
 # SVD
 ZSRC += \
+	testing_zgesdd.cpp	\
 	testing_zgesvd.cpp	\
 	testing_zgebrd.cpp	\
+
+# ----------
+# utilities
+ZSRC += \
+	magma_util.cpp		\
+	magma_zutil.cpp		\
 
 # ----------
 ifeq ($(FORT), pgfortran)
@@ -174,31 +185,19 @@ ZSRC += $(ZSRCF)
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 
-ALLOBJ := $(ALLSRC:.f90=.o)
+ALLOBJ := $(ALLSRC:.cpp=.o)
+ALLOBJ := $(ALLOBJ:.f90=.o)
 ALLOBJ := $(ALLOBJ:.F90=.o)
 ALLOBJ := $(ALLOBJ:.cuf=.o)
-ALLOBJ := $(ALLOBJ:.cpp=.o)
 
-EXE    := $(ALLOBJ:.o=)
+TESTS  := $(filter testing_%,$(ALLOBJ))
+EXE    := $(TESTS:.o=)
 
 # --------------------
 LIBTEST := libtest.a
-LIBSRC  := testing_zutil.o testing_cutil.o testing_dutil.o testing_sutil.o testing_util.o
+LIBSRC  := magma_zutil.o magma_cutil.o magma_dutil.o magma_sutil.o magma_util.o
 LIBOBJ  := $(LIBSRC:.cpp=.o)
 LIBEXE  := $(LIBOBJ:.o=)
-
-# testing_zutil.cpp isn't in ZSRC (since they don't generate EXEs),
-# so add generation rules here instead of .Makefile.gen
-testing_cutil.cpp: testing_zutil.cpp
-	$(PYTHON) ../tools/codegen.py  -p c --file testing_zutil.cpp
-
-testing_dutil.cpp: testing_zutil.cpp
-	$(PYTHON) ../tools/codegen.py  -p d --file testing_zutil.cpp
-
-testing_sutil.cpp: testing_zutil.cpp
-	$(PYTHON) ../tools/codegen.py  -p s --file testing_zutil.cpp
-
-generate: testing_cutil.cpp testing_dutil.cpp testing_sutil.cpp
 
 
 # --------------------
@@ -236,23 +235,23 @@ cleanall: clean cleanexe
 
 ifeq ($(FORT), pgfortran)
 testing_%.o : testing_%.cuf
-	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@ 
+	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@
 else
 testing_%.o : testing_%.f90
-	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@ 
+	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@
 endif
 
 testing_%_f : testing_%_f.o $(FOBJ)
 	$(FORT) $(LDOPTS) $< $(FOBJ) -o $@ \
-	$(LIBTEST) $(LIBLAPACKTEST) -L../lib -lmagma \
+	$(LIBTEST) $(LIBLAPACKTEST) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
-	$(LIB) 
+	$(LIB)
 
 testing_% : testing_%.o
 	$(CC) $(LDOPTS) $(NOMAIN) $< -o $@ \
-	$(LIBTEST) $(LIBLAPACKTEST) -L../lib -lmagma \
+	$(LIBTEST) $(LIBLAPACKTEST) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
-	$(LIB) 
+	$(LIB)
 
 #
 # These two files are provided by cuda

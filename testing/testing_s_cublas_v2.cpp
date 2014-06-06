@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:55 2013
+       @generated from testing_z_cublas_v2.cpp normal z -> s, Fri Apr 25 15:06:02 2014
        @author Mark Gates
        
        This demonstrates how to use cublas_v2 with magma.

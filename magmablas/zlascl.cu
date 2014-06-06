@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
 
@@ -37,7 +37,7 @@ u_zlascl (int m, int n, double mul, magmaDoubleComplex* A, int lda){
 
 
 extern "C" void
-magmablas_zlascl(char type, magma_int_t kl, magma_int_t ku, 
+magmablas_zlascl(magma_type_t type, magma_int_t kl, magma_int_t ku, 
                  double cfrom, double cto,
                  magma_int_t m, magma_int_t n, 
                  magmaDoubleComplex *A, magma_int_t lda, magma_int_t *info )
@@ -54,14 +54,12 @@ magmablas_zlascl(char type, magma_int_t kl, magma_int_t ku,
     /* To do : implment the accuracy procedure */
     double mul = cto / cfrom;
 
-    if (type == 'L' || type =='l')  
+    if (type == MagmaLower)  
        l_zlascl <<< grid, threads, 0, magma_stream >>> (m, n, mul, A, lda);
-    else if (type == 'U' || type =='u')
+    else if (type == MagmaUpper)
        u_zlascl <<< grid, threads, 0, magma_stream >>> (m, n, mul, A, lda);  
     else {
        printf("Only type L and U are available in zlascl. Exit.\n");
        exit(1);
     }
 }
-
-

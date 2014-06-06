@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2010
+       @date April 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
@@ -28,19 +28,16 @@
 #include "magma_threadsetting.h"
 
 #define PRECISION_z
-#define absv(v1) ((v1)>0? (v1): -(v1))
 
-
-static magma_int_t check_orthogonality(magma_int_t, magma_int_t, magmaDoubleComplex*, magma_int_t, double);
-static magma_int_t check_reduction(magma_int_t, magma_int_t, magma_int_t, magmaDoubleComplex*, double*, magma_int_t, magmaDoubleComplex*, double);
-static magma_int_t check_solution(magma_int_t, double*, double*, double);
+static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, magmaDoubleComplex *Q, magma_int_t LDQ, double eps);
+static magma_int_t check_reduction(magma_uplo_t uplo, magma_int_t N, magma_int_t bw, magmaDoubleComplex *A, double *D, magma_int_t LDA, magmaDoubleComplex *Q, double eps );
+static magma_int_t check_solution(magma_int_t N, double *E1, double *E2, double eps);
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zhegvdx
 */
 int main( int argc, char** argv)
 {
-
     TESTING_INIT();
 
     real_Double_t gpu_time;
@@ -61,38 +58,30 @@ int main( int argc, char** argv)
     magma_int_t info_ortho     = 0;
     magma_int_t info_solution  = 0;
     magma_int_t info_reduction = 0;
-
-    magma_timestr_t start, end;
+    magma_int_t status = 0;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
 
-    magma_int_t ngpu = opts.ngpu;
-    char jobz = opts.jobz;
-    magma_int_t checkres = opts.check;
+    magma_range_t range = MagmaRangeAll;
+    if (opts.fraction != 1)
+        range = MagmaRangeI;
 
-    char range = 'A';
-    char uplo = opts.uplo;
-    magma_int_t itype = opts.itype;
-    double f = opts.fraction;
-
-    if (f != 1)
-        range='I';
-
-    if ( checkres && jobz == MagmaNoVec ) {
+    if ( opts.check && opts.jobz == MagmaNoVec ) {
         fprintf( stderr, "checking results requires vectors; setting jobz=V (option -JV)\n" );
-        jobz = MagmaVec;
+        opts.jobz = MagmaVec;
     }
 
-    printf("using: itype = %d, jobz = %c, range = %c, uplo = %c, checkres = %d, fraction = %6.4f\n",
-           (int) itype, jobz, range, uplo, (int) checkres, f);
+    printf("using: itype = %d, jobz = %s, range = %s, uplo = %s, check = %d, fraction = %6.4f\n",
+           (int) opts.itype, lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
+           (int) opts.check, opts.fraction);
 
-    printf("  N     M     GPU Time(s) \n");
-    printf("==========================\n");
-    magma_int_t threads = magma_get_numthreads();
-    for( magma_int_t i = 0; i < opts.ntest; ++i ) {
-        for( magma_int_t iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+    printf("    N     M  GPU Time (sec)  ||I-Q'Q||/.  ||A-QDQ'||/.  ||D-D_magma||/.\n");
+    printf("=======================================================================\n");
+    magma_int_t threads = magma_get_parallel_numthreads();
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+        for( int iter = 0; iter < opts.niter; ++iter ) {
+            N = opts.nsize[itest];
             n2     = N*N;
             #if defined(PRECISION_z) || defined(PRECISION_c)
             lwork  = magma_zbulge_get_lq2(N, threads) + 2*N + N*N;
@@ -123,19 +112,19 @@ int main( int argc, char** argv)
             double vu = 0;
             magma_int_t il = 0;
             magma_int_t iu = 0;
-            if (range == 'I'){
+            if (range == MagmaRangeI) {
                 il = 1;
-                iu = (int) (f*N);
+                iu = (int) (opts.fraction*N);
             }
 
-            if(opts.warmup){
+            if (opts.warmup) {
                 // ==================================================================
                 // Warmup using MAGMA
                 // ==================================================================
                 lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
-                if(ngpu==1){
-                    printf("calling zheevdx_2stage 1 GPU\n");
-                    magma_zheevdx_2stage(jobz, range, uplo, N, 
+                if (opts.ngpu == 1) {
+                    //printf("calling zheevdx_2stage 1 GPU\n");
+                    magma_zheevdx_2stage(opts.jobz, range, opts.uplo, N, 
                                     h_R, N, 
                                     vl, vu, il, iu, 
                                     &m1, w1, 
@@ -145,10 +134,9 @@ int main( int argc, char** argv)
                                     #endif
                                     iwork, liwork, 
                                     &info);
-               
-                }else{
-                    printf("calling zheevdx_2stage_m %d GPU\n", (int) ngpu);
-                    magma_zheevdx_2stage_m(ngpu, jobz, range, uplo, N, 
+                } else {
+                    //printf("calling zheevdx_2stage_m %d GPU\n", (int) opts.ngpu);
+                    magma_zheevdx_2stage_m(opts.ngpu, opts.jobz, range, opts.uplo, N, 
                                     h_R, N, 
                                     vl, vu, il, iu, 
                                     &m1, w1, 
@@ -166,10 +154,10 @@ int main( int argc, char** argv)
             // Performs operation using MAGMA
             // ===================================================================
             lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
-            start = get_current_time();
-            if(ngpu==1){
-                printf("calling zheevdx_2stage 1 GPU\n");
-                magma_zheevdx_2stage(jobz, range, uplo, N, 
+            gpu_time = magma_wtime();
+            if (opts.ngpu == 1) {
+                //printf("calling zheevdx_2stage 1 GPU\n");
+                magma_zheevdx_2stage(opts.jobz, range, opts.uplo, N, 
                                 h_R, N, 
                                 vl, vu, il, iu, 
                                 &m1, w1, 
@@ -180,9 +168,9 @@ int main( int argc, char** argv)
                                 iwork, liwork, 
                                 &info);
            
-            }else{
-                printf("calling zheevdx_2stage_m %d GPU\n", (int) ngpu);
-                magma_zheevdx_2stage_m(ngpu, jobz, range, uplo, N, 
+            } else {
+                //printf("calling zheevdx_2stage_m %d GPU\n", (int) opts.ngpu);
+                magma_zheevdx_2stage_m(opts.ngpu, opts.jobz, range, opts.uplo, N, 
                                 h_R, N, 
                                 vl, vu, il, iu, 
                                 &m1, w1, 
@@ -193,26 +181,28 @@ int main( int argc, char** argv)
                                 iwork, liwork, 
                                 &info);
             }
-            end = get_current_time();
-            gpu_time = GetTimerValue(start,end)/1000.;
+            gpu_time = magma_wtime() - gpu_time;
+            
+            printf("%5d %5d  %7.2f      ",
+                   (int) N, (int) m1, gpu_time );
 
-            if ( checkres ) {
+            if ( opts.check ) {
                 double eps   = lapackf77_dlamch("E");
-                printf("\n");
-                printf("------ TESTS FOR MAGMA ZHEEVD ROUTINE -------  \n");
-                printf("        Size of the Matrix %d by %d\n", (int) N, (int) N);
-                printf("\n");
-                printf(" The matrix A is randomly generated for each test.\n");
-                printf("============\n");
-                printf(" The relative machine precision (eps) is %8.2e\n",eps);
-                printf(" Computational tests pass if scaled residuals are less than 60.\n");
+                //printf("\n");
+                //printf("------ TESTS FOR MAGMA ZHEEVD ROUTINE -------  \n");
+                //printf("        Size of the Matrix %d by %d\n", (int) N, (int) N);
+                //printf("\n");
+                //printf(" The matrix A is randomly generated for each test.\n");
+                //printf("============\n");
+                //printf(" The relative machine precision (eps) is %8.2e\n",eps);
+                //printf(" Computational tests pass if scaled residuals are less than 60.\n");
               
                 /* Check the orthogonality, reduction and the eigen solutions */
-                if (jobz == MagmaVec) {
+                if (opts.jobz == MagmaVec) {
                     info_ortho = check_orthogonality(N, N, h_R, N, eps);
-                    info_reduction = check_reduction(uplo, N, 1, h_A, w1, N, h_R, eps);
+                    info_reduction = check_reduction(opts.uplo, N, 1, h_A, w1, N, h_R, eps);
                 }
-                printf("------ CALLING LAPACK ZHEEVD TO COMPUTE only eigenvalue and verify elementswise -------  \n");
+                //printf("------ CALLING LAPACK ZHEEVD TO COMPUTE only eigenvalue and verify elementswise -------  \n");
                 lapackf77_zheevd("N", "L", &N, 
                                 h_A, &N, w2, 
                                 h_work, &lwork, 
@@ -224,23 +214,19 @@ int main( int argc, char** argv)
                 info_solution = check_solution(N, w2, w1, eps);
               
                 if ( (info_solution == 0) & (info_ortho == 0) & (info_reduction == 0) ) {
-                    printf("***************************************************\n");
-                    printf(" ---- TESTING ZHEEVD ...................... PASSED !\n");
-                    printf("***************************************************\n");
+                    printf("  ok\n");
+                    //printf("***************************************************\n");
+                    //printf(" ---- TESTING ZHEEVD ...................... PASSED !\n");
+                    //printf("***************************************************\n");
                 }
                 else {
-                    printf("************************************************\n");
-                    printf(" - TESTING ZHEEVD ... FAILED !\n");
-                    printf("************************************************\n");
+                    printf("  failed\n");
+                    status |= 1;
+                    //printf("************************************************\n");
+                    //printf(" - TESTING ZHEEVD ... FAILED !\n");
+                    //printf("************************************************\n");
                 }
             }
-
-
-            /* =====================================================================
-             Print execution time
-             =================================================================== */
-            printf("%5d %5d     %6.2f\n",
-                   (int) N, (int) m1, gpu_time);
 
             TESTING_FREE_CPU( h_A   );
             TESTING_FREE_CPU( w1    );
@@ -252,6 +238,7 @@ int main( int argc, char** argv)
             #if defined(PRECISION_z) || defined(PRECISION_c)
             TESTING_FREE_PIN( rwork  );
             #endif
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );
@@ -260,8 +247,7 @@ int main( int argc, char** argv)
 
     /* Shutdown */
     TESTING_FINALIZE();
-
-    return 0;
+    return status;
 }
 
 
@@ -278,10 +264,12 @@ static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, magmaDouble
     double  normQ, result;
     magma_int_t     info_ortho;
     magma_int_t     minMN = min(M, N);
-    double *work = (double *)malloc(minMN*sizeof(double));
+    double *work;
+    magma_dmalloc_cpu( &work, minMN );
 
     /* Build the idendity matrix */
-    magmaDoubleComplex *Id = (magmaDoubleComplex *) malloc(minMN*minMN*sizeof(magmaDoubleComplex));
+    magmaDoubleComplex *Id;
+    magma_zmalloc_cpu( &Id, minMN*minMN );
     lapackf77_zlaset("A", &minMN, &minMN, &c_zero, &c_one, Id, &minMN);
 
     /* Perform Id - Q'Q */
@@ -293,41 +281,47 @@ static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, magmaDouble
     normQ = lapackf77_zlanhe("I", "U", &minMN, Id, &minMN, work);
 
     result = normQ / (minMN * eps);
-    printf(" ======================================================\n");
-    printf(" ||Id-Q'*Q||_oo / (minMN*eps)          : %15.3E \n",  result );
-    printf(" ======================================================\n");
+    printf( "  %12.2e", result*eps );
+    //printf(" ======================================================\n");
+    //printf(" ||Id-Q'*Q||_oo / (minMN*eps)          : %15.3E \n",  result );
+    //printf(" ======================================================\n");
 
     if ( isnan(result) || isinf(result) || (result > 60.0) ) {
-        printf("-- Orthogonality is suspicious ! \n");
+        //printf("-- Orthogonality is suspicious ! \n");
         info_ortho=1;
     }
     else {
-        printf("-- Orthogonality is CORRECT ! \n");
+        //printf("-- Orthogonality is CORRECT ! \n");
         info_ortho=0;
     }
-    free(work); free(Id);
+    magma_free_cpu(work);
+    magma_free_cpu(Id);
     return info_ortho;
 }
+
+
 /*------------------------------------------------------------
  *  Check the reduction 
  */
-static magma_int_t check_reduction(magma_int_t uplo, magma_int_t N, magma_int_t bw, magmaDoubleComplex *A, double *D, magma_int_t LDA, magmaDoubleComplex *Q, double eps )
+static magma_int_t check_reduction(magma_uplo_t uplo, magma_int_t N, magma_int_t bw, magmaDoubleComplex *A, double *D, magma_int_t LDA, magmaDoubleComplex *Q, double eps )
 {
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-    magmaDoubleComplex *TEMP     = (magmaDoubleComplex *)malloc(N*N*sizeof(magmaDoubleComplex));
-    magmaDoubleComplex *Residual = (magmaDoubleComplex *)malloc(N*N*sizeof(magmaDoubleComplex));
-    double *work = (double *)malloc(N*sizeof(double));
+    magmaDoubleComplex *TEMP, *Residual;
+    double *work;
     double Anorm, Rnorm, result;
     magma_int_t info_reduction;
     magma_int_t i;
     magma_int_t ione=1;
-    char luplo =  uplo == MagmaLower ? 'L' : 'U';
 
+    magma_zmalloc_cpu( &TEMP, N*N );
+    magma_zmalloc_cpu( &Residual, N*N );
+    magma_dmalloc_cpu( &work, N );
+    
     /* Compute TEMP =  Q * LAMBDA */
     lapackf77_zlacpy("A", &N, &N, Q, &LDA, TEMP, &N);        
-    for (i = 0; i < N; i++){
-            blasf77_zdscal(&N, &D[i], &(TEMP[i*N]), &ione);
+    for (i = 0; i < N; i++) {
+        blasf77_zdscal(&N, &D[i], &(TEMP[i*N]), &ione);
     }
     /* Compute Residual = A - Q * LAMBDA * Q^H */
     /* A is Hermetian but both upper and lower 
@@ -341,34 +335,38 @@ static magma_int_t check_reduction(magma_int_t uplo, magma_int_t N, magma_int_t 
     // since A has been generated by larnv and we did not symmetrize, 
     // so only the uplo portion of A should be equal to Q*LAMBDA*Q^H 
     // for that Rnorm use zlanhe instead of zlange
-    Rnorm = lapackf77_zlanhe("1", &luplo, &N, Residual, &N, work);
-    Anorm = lapackf77_zlanhe("1", &luplo, &N, A,        &LDA, work);
+    Rnorm = lapackf77_zlanhe("1", lapack_uplo_const(uplo), &N, Residual, &N, work);
+    Anorm = lapackf77_zlanhe("1", lapack_uplo_const(uplo), &N, A,        &LDA, work);
 
     result = Rnorm / ( Anorm * N * eps);
-    if ( uplo == MagmaLower ){
-        printf(" ======================================================\n");
-        printf(" ||A-Q*LAMBDA*Q'||_oo/(||A||_oo.N.eps) : %15.3E \n",  result );
-        printf(" ======================================================\n");
-    }else{ 
-        printf(" ======================================================\n");
-        printf(" ||A-Q'*LAMBDA*Q||_oo/(||A||_oo.N.eps) : %15.3E \n",  result );
-        printf(" ======================================================\n");
-    }
+    printf("  %12.2e", result );
+    //if ( uplo == MagmaLower ) {
+    //    printf(" ======================================================\n");
+    //    printf(" ||A-Q*LAMBDA*Q'||_oo/(||A||_oo.N.eps) : %15.3E \n",  result );
+    //    printf(" ======================================================\n");
+    //} else { 
+    //    printf(" ======================================================\n");
+    //    printf(" ||A-Q'*LAMBDA*Q||_oo/(||A||_oo.N.eps) : %15.3E \n",  result );
+    //    printf(" ======================================================\n");
+    //}
 
     if ( isnan(result) || isinf(result) || (result > 60.0) ) {
-        printf("-- Reduction is suspicious ! \n");
+        //printf("-- Reduction is suspicious ! \n");
         info_reduction = 1;
     }
     else {
-        printf("-- Reduction is CORRECT ! \n");
+        //printf("-- Reduction is CORRECT ! \n");
         info_reduction = 0;
     }
 
-    free(TEMP); free(Residual);
-    free(work);
+    magma_free_cpu(TEMP);
+    magma_free_cpu(Residual);
+    magma_free_cpu(work);
 
     return info_reduction;
 }
+
+
 /*------------------------------------------------------------
  *  Check the eigenvalues 
  */
@@ -379,7 +377,7 @@ static magma_int_t check_solution(magma_int_t N, double *E1, double *E2, double 
     double maxtmp;
     double maxel = fabs( fabs(E1[0]) - fabs(E2[0]) );
     double maxeig = max( fabs(E1[0]), fabs(E2[0]) );
-    for (i = 1; i < N; i++){
+    for (i = 1; i < N; i++) {
         resid   = fabs(fabs(E1[i])-fabs(E2[i]));
         maxtmp  = max(fabs(E1[i]), fabs(E2[i]));
 
@@ -389,16 +387,17 @@ static magma_int_t check_solution(magma_int_t N, double *E1, double *E2, double 
     }
 
     maxel = maxel / (maxeig * N * eps);
-    printf(" ======================================================\n");
-    printf(" | D - eigcomputed | / (|D| * N * eps) : %15.3E \n",  maxel );
-    printf(" ======================================================\n");
+    printf("  %12.2e", maxel*eps );
+    //printf(" ======================================================\n");
+    //printf(" | D - eigcomputed | / (|D| * N * eps) : %15.3E \n",  maxel );
+    //printf(" ======================================================\n");
 
     if ( isnan(maxel) || isinf(maxel) || (maxel > 100) ) {
-        printf("-- The eigenvalues are suspicious ! \n");
+        //printf("-- The eigenvalues are suspicious ! \n");
         info_solution = 1;
     }
-    else{
-        printf("-- The eigenvalues are CORRECT ! \n");
+    else {
+        //printf("-- The eigenvalues are CORRECT ! \n");
         info_solution = 0;
     }
     return info_solution;

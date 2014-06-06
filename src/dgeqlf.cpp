@@ -1,40 +1,33 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zgeqlf.cpp normal z -> d, Fri Apr 25 15:05:43 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_dgeqlf(magma_int_t m, magma_int_t n,
-             double *a,    magma_int_t lda, double *tau,
-             double *work, magma_int_t lwork, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SGEQLF computes a QL factorization of a DOUBLE_PRECISION M-by-N matrix A:
     A = Q * L.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) DOUBLE_PRECISION array, dimension (LDA,N)
+    @param[in,out]
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, if m >= n, the lower triangle of the subarray
             A(m-n+1:m,1:n) contains the N-by-N lower triangular matrix L;
@@ -43,40 +36,45 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
             the remaining elements, with the array TAU, represent the
             orthogonal matrix Q as a product of elementary reflectors
             (see Further Details).
-
+    \n
             Higher performance is achieved if A is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
 
-    TAU     (output) DOUBLE_PRECISION array, dimension (min(M,N))
+    @param[out]
+    tau     DOUBLE_PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
-    WORK    (workspace/output) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
-
+    \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.  LWORK >= max(1,N).
             For optimum performance LWORK >= N*NB, where NB can be obtained
             through magma_get_dgeqlf_nb(M).
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of elementary reflectors
 
        Q = H(k) . . . H(2) H(1), where k = min(m,n).
@@ -88,12 +86,18 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
     where tau is a real scalar, and v is a real vector with
     v(m-k+i+1:m) = 0 and v(m-k+i) = 1; v(1:m-k+i-1) is stored on exit in
     A(1:m-k+i-1,n-k+i), and tau in TAU(i).
-    =====================================================================    */
 
-    #define  a_ref(a_1,a_2) ( a+(a_2)*(lda) + (a_1))
-    #define da_ref(a_1,a_2) (da+(a_2)*ldda   + (a_1))
+    @ingroup magma_dgeqlf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dgeqlf(magma_int_t m, magma_int_t n,
+             double *A,    magma_int_t lda, double *tau,
+             double *work, magma_int_t lwork, magma_int_t *info)
+{
+    #define  A(a_1,a_2) ( A + (a_2)*(lda) + (a_1))
+    #define dA(a_1,a_2) (dA + (a_2)*ldda  + (a_1))
 
-    double *da, *dwork;
+    double *dA, *dwork;
     double c_one = MAGMA_D_ONE;
     magma_int_t i, k, lddwork, old_i, old_ib, nb;
     magma_int_t rows, cols;
@@ -142,11 +146,11 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
     lddwork = ((n+31)/32)*32;
     ldda    = ((m+31)/32)*32;
 
-    if (MAGMA_SUCCESS != magma_dmalloc( &da, (n)*ldda + nb*lddwork )) {
+    if (MAGMA_SUCCESS != magma_dmalloc( &dA, (n)*ldda + nb*lddwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-    dwork = da + ldda*(n);
+    dwork = dA + ldda*(n);
 
     magma_queue_t stream[2];
     magma_queue_create( &stream[0] );
@@ -157,8 +161,8 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
             The last kk columns are handled by the block method.
             First, copy the matrix on the GPU except the last kk columns */
         magma_dsetmatrix_async( (m), (n-nb),
-                                a_ref(0, 0),  lda,
-                                da_ref(0, 0), ldda, stream[0] );
+                                A(0, 0),  lda,
+                                dA(0, 0), ldda, stream[0] );
 
         ki = ((k - nb - 1) / nb) * nb;
         kk = min(k, ki + nb);
@@ -171,12 +175,12 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
                    to the CPU)                                        */
                 rows = m - k + i + ib;
                 magma_dgetmatrix_async( rows, ib,
-                                        da_ref(0, n-k+i), ldda,
-                                        a_ref(0, n-k+i),  lda, stream[1] );
+                                        dA(0, n-k+i), ldda,
+                                        A(0, n-k+i),  lda, stream[1] );
 
                 magma_dgetmatrix_async( (m-rows), ib,
-                                        da_ref(rows, n-k+i), ldda,
-                                        a_ref(rows, n-k+i),  lda, stream[0] );
+                                        dA(rows, n-k+i), ldda,
+                                        A(rows, n-k+i),  lda, stream[0] );
 
                 /* Apply H' to A(1:m-k+i+ib-1,1:n-k+i-1) from the left in
                    two steps - implementing the lookahead techniques.
@@ -185,8 +189,8 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
                 cols = n - k + old_i - old_ib;
                 magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaBackward, MagmaColumnwise,
                                   rows, cols, old_ib,
-                                  da_ref(0, cols+old_ib), ldda, dwork,        lddwork,
-                                  da_ref(0, 0          ), ldda, dwork+old_ib, lddwork);
+                                  dA(0, cols+old_ib), ldda, dwork,        lddwork,
+                                  dA(0, 0          ), ldda, dwork+old_ib, lddwork);
             }
 
             magma_queue_sync( stream[1] );
@@ -194,20 +198,20 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
                A(1:m-k+i+ib-1,n-k+i:n-k+i+ib-1) */
             rows = m - k + i + ib;
             cols = n - k + i;
-            lapackf77_dgeqlf(&rows,&ib, a_ref(0,cols), &lda, tau+i, work, &lwork, &iinfo);
+            lapackf77_dgeqlf(&rows,&ib, A(0,cols), &lda, tau+i, work, &lwork, &iinfo);
 
             if (cols > 0) {
                 /* Form the triangular factor of the block reflector
                    H = H(i+ib-1) . . . H(i+1) H(i) */
                 lapackf77_dlarft( MagmaBackwardStr, MagmaColumnwiseStr,
                                   &rows, &ib,
-                                  a_ref(0, cols), &lda, tau + i, work, &ib);
+                                  A(0, cols), &lda, tau + i, work, &ib);
 
-                dpanel_to_q( MagmaLower, ib, a_ref(rows-ib,cols), lda, work+ib*ib);
+                dpanel_to_q( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
                 magma_dsetmatrix( rows, ib,
-                                  a_ref(0,cols),  lda,
-                                  da_ref(0,cols), ldda );
-                dq_to_panel( MagmaLower, ib, a_ref(rows-ib,cols), lda, work+ib*ib);
+                                  A(0,cols),  lda,
+                                  dA(0,cols), ldda );
+                dq_to_panel( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
 
                 // Send the triangular part on the GPU
                 magma_dsetmatrix( ib, ib, work, ib, dwork, lddwork );
@@ -218,13 +222,13 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
                 if (i-ib >= k -kk)
                     magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaBackward, MagmaColumnwise,
                                       rows, ib, ib,
-                                      da_ref(0, cols),   ldda, dwork,    lddwork,
-                                      da_ref(0,cols-ib), ldda, dwork+ib, lddwork);
-                else{
+                                      dA(0, cols),   ldda, dwork,    lddwork,
+                                      dA(0,cols-ib), ldda, dwork+ib, lddwork);
+                else {
                     magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaBackward, MagmaColumnwise,
                                       rows, cols, ib,
-                                      da_ref(0, cols), ldda, dwork,    lddwork,
-                                      da_ref(0, 0   ), ldda, dwork+ib, lddwork);
+                                      dA(0, cols), ldda, dwork,    lddwork,
+                                      dA(0, 0   ), ldda, dwork+ib, lddwork);
                 }
 
                 old_i  = i;
@@ -234,7 +238,7 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
         mu = m - k + i + nb;
         nu = n - k + i + nb;
 
-        magma_dgetmatrix( m, nu, da_ref(0,0), ldda, a_ref(0,0), lda );
+        magma_dgetmatrix( m, nu, dA(0,0), ldda, A(0,0), lda );
     } else {
         mu = m;
         nu = n;
@@ -242,13 +246,13 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
 
     /* Use unblocked code to factor the last or only block */
     if (mu > 0 && nu > 0)
-        lapackf77_dgeqlf(&mu, &nu, a_ref(0,0), &lda, tau, work, &lwork, &iinfo);
+        lapackf77_dgeqlf(&mu, &nu, A(0,0), &lda, tau, work, &lwork, &iinfo);
 
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
-    magma_free( da );
+    magma_free( dA );
     return *info;
 } /* magma_dgeqlf */
 
-#undef  a_ref
-#undef da_ref
+#undef  A
+#undef dA

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:56 2013
+       @generated from testing_zcposv_gpu.cpp mixed zc -> ds, Fri Apr 25 15:06:04 2014
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,9 +51,9 @@ int main(int argc, char **argv)
     
     printf("    N NRHS   DP-Factor  DP-Solve  SP-Factor  SP-Solve  MP-Solve  ||b-Ax||/||A||  Iter\n");
     printf("=====================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             ldb = ldx = lda = N;
             gflopsF = FLOPS_DPOTRF( N ) / 1e9;
             gflopsS = gflopsF + FLOPS_DPOTRS( N, nrhs ) / 1e9;
@@ -97,8 +97,8 @@ int main(int argc, char **argv)
             //=====================================================================
             magma_dgetmatrix( N, nrhs, d_X, ldx, h_X, ldx ) ;
             
-            Anorm = lapackf77_dlansy( "I", &opts.uplo, &N, h_A, &N, h_workd);
-            blasf77_dsymm( "L", &opts.uplo, &N, &nrhs,
+            Anorm = lapackf77_dlansy( "I", lapack_uplo_const(opts.uplo), &N, h_A, &N, h_workd);
+            blasf77_dsymm( "L", lapack_uplo_const(opts.uplo), &N, &nrhs,
                            &c_one,     h_A, &lda,
                                        h_X, &ldx,
                            &c_neg_one, h_B, &ldb);
@@ -180,6 +180,7 @@ int main(int argc, char **argv)
             TESTING_FREE_DEV( d_X );
             TESTING_FREE_DEV( d_works );
             TESTING_FREE_DEV( d_workd );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

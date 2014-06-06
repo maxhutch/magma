@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zlascl.cu normal z -> s, Fri Apr 25 15:05:21 2014
 
 */
 #include "common_magma.h"
@@ -37,7 +37,7 @@ u_slascl (int m, int n, float mul, float* A, int lda){
 
 
 extern "C" void
-magmablas_slascl(char type, magma_int_t kl, magma_int_t ku, 
+magmablas_slascl(magma_type_t type, magma_int_t kl, magma_int_t ku, 
                  float cfrom, float cto,
                  magma_int_t m, magma_int_t n, 
                  float *A, magma_int_t lda, magma_int_t *info )
@@ -54,14 +54,12 @@ magmablas_slascl(char type, magma_int_t kl, magma_int_t ku,
     /* To do : implment the accuracy procedure */
     float mul = cto / cfrom;
 
-    if (type == 'L' || type =='l')  
+    if (type == MagmaLower)  
        l_slascl <<< grid, threads, 0, magma_stream >>> (m, n, mul, A, lda);
-    else if (type == 'U' || type =='u')
+    else if (type == MagmaUpper)
        u_slascl <<< grid, threads, 0, magma_stream >>> (m, n, mul, A, lda);  
     else {
        printf("Only type L and U are available in slascl. Exit.\n");
        exit(1);
     }
 }
-
-

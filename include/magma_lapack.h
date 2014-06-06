@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
  
        @precisions normal z -> s d c
 */
@@ -44,10 +44,28 @@ extern "C" {
 #define lapackf77_dlapy2 FORTRAN_NAME( dlapy2, DLAPY2 )
 #define lapackf77_slapy2 FORTRAN_NAME( slapy2, SLAPY2 )
 
+// Can't call lapack ilaenv directly because passing strings, i.e.,
+// character*(*), to Fortran is not portable.
+// This wrapper passes a character(*) array and separate length,
+// which should be portable.
+#define magmaf77_ilaenv  FORTRAN_NAME( magmaf77_ilaenv, MAGMAF77_ILAENV )
+
+magma_int_t magmaf77_ilaenv( const magma_int_t* ispec,
+                             const char* name, const magma_int_t* namelen,
+                             const char* opts, const magma_int_t* optslen,
+                             const magma_int_t* n1, const magma_int_t* n2,
+                             const magma_int_t* n3, const magma_int_t* n4 );
+
+// Convenience C wrapper that calls magmaf77_ilaenv.
+magma_int_t magma_ilaenv( magma_int_t ispec, const char* name, const char* opts,
+                          magma_int_t n1, magma_int_t n2,
+                          magma_int_t n3, magma_int_t n4 );
+
 magma_int_t lapackf77_ieeeck( magma_int_t* ispec, float* zero, float* one );
 
 long   lapackf77_lsame(  const char *ca, const char *cb );
 
+// NOT portable! Assumes particular Fortran string convention (Intel/gfortran).
 void   lapackf77_xerbla( const char *name, magma_int_t *info, magma_int_t name_len );
 
 float  lapackf77_slamch( const char *cmach );

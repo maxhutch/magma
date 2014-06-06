@@ -1,46 +1,39 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zgehrd2.cpp normal z -> c, Fri Apr 25 15:05:51 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
-              magmaFloatComplex *a, magma_int_t lda,
-              magmaFloatComplex *tau, magmaFloatComplex *work,
-              magma_int_t lwork, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CGEHRD2 reduces a COMPLEX general matrix A to upper Hessenberg form H by
     an orthogonal similarity transformation:  Q' * A * Q = H .
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    ILO     (input) INTEGER
-    IHI     (input) INTEGER
+    @param[in]
+    ilo     INTEGER
+    @param[in]
+    ihi     INTEGER
             It is assumed that A is already upper triangular in rows
             and columns 1:ILO-1 and IHI+1:N. ILO and IHI are normally
             set by a previous call to CGEBAL; otherwise they should be
             set to 1 and N respectively. See Further Details.
             1 <= ILO <= IHI <= N, if N > 0; ILO=1 and IHI=0, if N=0.
 
-    A       (input/output) COMPLEX array, dimension (LDA,N)
+    @param[in,out]
+    A       COMPLEX array, dimension (LDA,N)
             On entry, the N-by-N general matrix to be reduced.
             On exit, the upper triangle and the first subdiagonal of A
             are overwritten with the upper Hessenberg matrix H, and the
@@ -48,33 +41,38 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
             represent the orthogonal matrix Q as a product of elementary
             reflectors. See Further Details.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    TAU     (output) COMPLEX array, dimension (N-1)
+    @param[out]
+    tau     COMPLEX array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details). Elements 1:ILO-1 and IHI:N-1 of TAU are set to
             zero.
 
-    WORK    (workspace/output) COMPLEX array, dimension (LWORK)
+    @param[out]
+    work    (workspace) COMPLEX array, dimension (LWORK)
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The length of the array WORK.  LWORK >= max(1,N).
             For optimum performance LWORK >= N*NB, where NB is the
             optimal blocksize.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value.
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of (ihi-ilo) elementary
     reflectors
 
@@ -91,6 +89,7 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     The contents of A are illustrated by the following example, with
     n = 7, ilo = 2 and ihi = 6:
 
+    @verbatim
     on entry,                        on exit,
 
     ( a   a   a   a   a   a   a )    (  a   a   h   h   h   h   a )
@@ -100,6 +99,7 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     (     a   a   a   a   a   a )    (      v2  v3  h   h   h   h )
     (     a   a   a   a   a   a )    (      v2  v3  v4  h   h   h )
     (                         a )    (                          a )
+    @endverbatim
 
     where a denotes an element of the original matrix A, h denotes a
     modified element of the upper Hessenberg matrix H, and vi denotes an
@@ -111,9 +111,15 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     form through hybrid GPU-based computing," University of Tennessee Computer
     Science Technical Report, UT-CS-09-642 (also LAPACK Working Note 219),
     May 24, 2009.
-    =====================================================================    */
 
-
+    @ingroup magma_cgeev_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
+              magmaFloatComplex *A, magma_int_t lda,
+              magmaFloatComplex *tau, magmaFloatComplex *work,
+              magma_int_t lwork, magma_int_t *info)
+{
     magmaFloatComplex c_one = MAGMA_C_ONE;
     magmaFloatComplex c_zero = MAGMA_C_ZERO;
 
@@ -131,7 +137,7 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     *info = 0;
     work[0] = MAGMA_C_MAKE( n * nb, 0 );
 
-    lquery = lwork == -1;
+    lquery = (lwork == -1);
     if (n < 0) {
         *info = -1;
     } else if (ilo < 1 || ilo > max(1,n)) {
@@ -186,7 +192,7 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     for (i__ = max(1,ihi); i__ < n; ++i__)
         tau[i__] = c_zero;
 
-    for(i__=0; i__< nb*nb; i__+=4)
+    for (i__=0; i__ < nb*nb; i__ += 4)
         t[i__] = t[i__+1] = t[i__+2] = t[i__+3] = c_zero;
 
     nbmin = 2;
@@ -218,7 +224,7 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     else {
         /* Use blocked code */
         /* Copy the matrix to the GPU */
-        magma_csetmatrix( N, N-ilo+1, a+(ilo-1)*(lda), lda, d_A, ldda );
+        magma_csetmatrix( N, N-ilo+1, A+(ilo-1)*(lda), lda, d_A, ldda );
         
         for (i__ = ilo; i__ < ihi - nb; i__ += nb) {
             /* Computing MIN */
@@ -231,19 +237,19 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
             /*   Get the current panel (no need for the 1st iteration) */
             magma_cgetmatrix( ihi-i__+1, ib,
                               d_A + (i__ - ilo)*ldda + i__ - 1, ldda,
-                              a   + (i__ -  1 )*lda  + i__ - 1, lda );
+                              A   + (i__ -  1 )*lda  + i__ - 1, lda );
             
             magma_clahr2(ihi, i__, ib,
                          d_A + (i__ - ilo)*ldda,
                          d_A + N*ldda + 1,
-                         a   + (i__ -   1 )*(lda) , lda,
+                         A   + (i__ -   1 )*(lda), lda,
                          &tau[i__], t, nb, work, ldwork);
             
             /* Copy T from the CPU to D_T on the GPU */
             magma_csetmatrix( nb, nb, t, nb, d_t, nb );
             
             magma_clahru(n, ihi, i__ - 1, ib,
-                         a   + (i__ -  1 )*(lda), lda,
+                         A   + (i__ -  1 )*(lda), lda,
                          d_A + (i__ - ilo)*ldda,
                          d_A + (i__ - ilo)*ldda + i__ - 1,
                          d_A + N*ldda, d_t, d_work);
@@ -254,9 +260,9 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     if (!(nb < nbmin || nb >= nh)) {
         magma_cgetmatrix( n, n-i__+1,
                           d_A+ (i__-ilo)*ldda, ldda,
-                          a  + (i__-1)*(lda),  lda );
+                          A  + (i__-1)*(lda),  lda );
     }
-    lapackf77_cgehd2(&n, &i__, &ihi, a, &lda, &tau[1], work, &iinfo);
+    lapackf77_cgehd2(&n, &i__, &ihi, A, &lda, &tau[1], work, &iinfo);
     work[0] = MAGMA_C_MAKE( iws, 0 );
     
     magma_free( da );
@@ -264,4 +270,3 @@ magma_cgehrd2(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
 
     return *info;
 } /* magma_cgehrd2 */
-

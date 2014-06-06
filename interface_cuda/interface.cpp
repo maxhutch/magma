@@ -1,15 +1,30 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
  
        @author Mark Gates
 */
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
+
+#if defined(MAGMA_WITH_MKL)
+#include <mkl_service.h>
+#endif
+
+#if defined(MAGMA_WITH_ACML)
+// header conflicts with magma's lapack prototypes, so declare function directly
+// #include <acml.h>
+extern "C"
+void acmlversion(int *major, int *minor, int *patch);
+#endif
 
 #include "common_magma.h"
 #include "error.h"
@@ -38,7 +53,7 @@ struct magma_device* g_magma_devices = NULL;
 // ensures there isn't a memory leak if magma_init is called multiple times
 // without calling magma_finalize.
 extern "C"
-magma_err_t magma_init()
+magma_int_t magma_init()
 {
     if ( g_magma_devices == NULL ) {
         cudaGetDeviceCount( &g_magma_devices_cnt );
@@ -56,7 +71,7 @@ magma_err_t magma_init()
 // --------------------
 // Frees information about CUDA devices.
 extern "C"
-magma_err_t magma_finalize()
+magma_int_t magma_finalize()
 {
     free( g_magma_devices );
     g_magma_devices = NULL;
@@ -68,10 +83,44 @@ magma_err_t magma_finalize()
 extern "C"
 void magma_print_devices()
 {
-    int major, minor, micro;
+    magma_int_t major, minor, micro;
     magma_version( &major, &minor, &micro );
-    printf( "MAGMA %d.%d.%d %s, compiled for CUDA capability >= %.1f\n",
-            major, minor, micro, MAGMA_VERSION_STAGE, MIN_CUDA_ARCH/100. );
+    printf( "MAGMA %d.%d.%d %s compiled for CUDA capability >= %.1f\n",
+            (int) major, (int) minor, (int) micro, MAGMA_VERSION_STAGE, MIN_CUDA_ARCH/100. );
+    
+    int cuda_runtime, cuda_driver;
+    cudaDriverGetVersion( &cuda_driver );
+    cudaRuntimeGetVersion( &cuda_runtime );
+    printf( "CUDA runtime %d, driver %d. ", cuda_runtime, cuda_driver );
+    
+#if defined(_OPENMP)
+    int omp_threads = 0;
+    #pragma omp parallel
+    {
+        omp_threads = omp_get_num_threads();
+    }
+    printf( "OpenMP threads %d. ", omp_threads );
+#else
+    printf( "MAGMA not compiled with OpenMP. " );
+#endif
+    
+#if defined(MAGMA_WITH_MKL)
+    MKLVersion mkl_version;
+    mkl_get_version( &mkl_version );
+    printf( "MKL %d.%d.%d, MKL threads %d. ",
+            mkl_version.MajorVersion,
+            mkl_version.MinorVersion,
+            mkl_version.UpdateVersion,
+            mkl_get_max_threads() );
+#endif
+    
+#if defined(MAGMA_WITH_ACML)
+    int acml_major, acml_minor, acml_patch;
+    acmlversion( &acml_major, &acml_minor, &acml_patch );
+    printf( "ACML %d.%d.%d. ", acml_major, acml_minor, acml_patch );
+#endif
+    
+    printf( "\n" );
     
     int ndevices;
     cudaGetDeviceCount( &ndevices );

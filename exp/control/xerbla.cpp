@@ -7,11 +7,11 @@
 extern "C"
 void magma_xerbla(const char *srname , magma_int_t info)
 {
-/*  -- MAGMA (version 1.4.1) --
+/*  -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
     Purpose
     =======

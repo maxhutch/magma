@@ -1,29 +1,18 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zgeqrf_ooc.cpp normal z -> d, Fri Apr 25 15:05:43 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
-                 double *a,    magma_int_t lda, double *tau,
-                 double *work, magma_int_t lwork,
-                 magma_int_t *info )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DGEQRF_OOC computes a QR factorization of a DOUBLE_PRECISION M-by-N matrix A:
     A = Q * R. This version does not require work space on the GPU
     passed as input. GPU memory is allocated in the routine.
@@ -32,14 +21,17 @@ magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
     does not fit into the GPU memory at once.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) DOUBLE_PRECISION array, dimension (LDA,N)
+    @param[in,out]
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, the elements on and above the diagonal of the array
             contain the min(M,N)-by-N upper trapezoidal matrix R (R is
@@ -47,39 +39,44 @@ magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
             with the array TAU, represent the orthogonal matrix Q as a
             product of min(m,n) elementary reflectors (see Further
             Details).
-
+    \n
             Higher performance is achieved if A is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
 
-    TAU     (output) DOUBLE_PRECISION array, dimension (min(M,N))
+    @param[out]
+    tau     DOUBLE_PRECISION array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
-    WORK    (workspace/output) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
-
+    \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.  LWORK >= N*NB,
             where NB can be obtained through magma_get_dgeqrf_nb(M).
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of elementary reflectors
 
        Q = H(1) H(2) . . . H(k), where k = min(m,n).
@@ -91,12 +88,19 @@ magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
     where tau is a real scalar, and v is a real vector with
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
-    =====================================================================    */
 
-    #define  a_ref(a_1,a_2) ( a+(a_2)*(lda) + (a_1))
-    #define da_ref(a_1,a_2) (da+(a_2)*ldda  + (a_1))
+    @ingroup magma_dgeqrf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
+                 double *A,    magma_int_t lda, double *tau,
+                 double *work, magma_int_t lwork,
+                 magma_int_t *info )
+{
+    #define  A(a_1,a_2) ( A + (a_2)*(lda) + (a_1))
+    #define dA(a_1,a_2) (dA + (a_2)*ldda  + (a_1))
 
-    double *da, *dwork;
+    double *dA, *dwork;
     double c_one = MAGMA_D_ONE;
 
     int  k, lddwork, ldda;
@@ -132,7 +136,7 @@ magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
     NB = (NB / nb) * nb;
 
     if (NB >= n)
-        return magma_dgeqrf(m, n, a, lda, tau, work, lwork, info);
+        return magma_dgeqrf(m, n, A, lda, tau, work, lwork, info);
 
     k = min(m,n);
     if (k == 0) {
@@ -143,7 +147,7 @@ magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
     lddwork = ((NB+31)/32)*32+nb;
     ldda    = ((m+31)/32)*32;
 
-    if (MAGMA_SUCCESS != magma_dmalloc( &da, (NB + nb)*ldda + nb*lddwork )) {
+    if (MAGMA_SUCCESS != magma_dmalloc( &dA, (NB + nb)*ldda + nb*lddwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -154,22 +158,22 @@ magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
 
     //   magmablasSetKernelStream(stream[1]);
 
-    double *ptr = da + ldda * NB;
-    dwork = da + ldda*(NB + nb);
+    double *ptr = dA + ldda * NB;
+    dwork = dA + ldda*(NB + nb);
 
     /* start the main loop over the blocks that fit in the GPU memory */
-    for(int i=0; i<n; i+=NB) {
+    for (int i=0; i < n; i += NB) {
         IB = min(n-i, NB);
         //printf("Processing %5d columns -- %5d to %5d ... \n", IB, i, i+IB);
 
         /* 1. Copy the next part of the matrix to the GPU */
         magma_dsetmatrix_async( (m), IB,
-                                a_ref(0,i),  lda,
-                                da_ref(0,0), ldda, stream[0] );
+                                A(0,i),  lda,
+                                dA(0,0), ldda, stream[0] );
         magma_queue_sync( stream[0] );
 
         /* 2. Update it with the previous transformations */
-        for(int j=0; j<min(i,k); j+=nb) {
+        for (int j=0; j < min(i,k); j += nb) {
             magma_int_t ib = min(k-j, nb);
 
             /* Get a panel in ptr.                                           */
@@ -181,41 +185,40 @@ magma_dgeqrf_ooc(magma_int_t m, magma_int_t n,
             //   6. Restore the upper part of V.
             magma_int_t rows = m-j;
             lapackf77_dlarft( MagmaForwardStr, MagmaColumnwiseStr,
-                              &rows, &ib, a_ref(j,j), &lda, tau+j, work, &ib);
+                              &rows, &ib, A(j,j), &lda, tau+j, work, &ib);
             magma_dsetmatrix_async( ib, ib,
                                     work,  ib,
                                     dwork, lddwork, stream[1] );
 
-            dpanel_to_q(MagmaUpper, ib, a_ref(j,j), lda, work+ib*ib);
+            dpanel_to_q(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
             magma_dsetmatrix_async( rows, ib,
-                                    a_ref(j,j), lda,
+                                    A(j,j), lda,
                                     ptr,        rows, stream[1] );
             magma_queue_sync( stream[1] );
 
             magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
                               rows, IB, ib,
                               ptr, rows, dwork,    lddwork,
-                              da_ref(j, 0), ldda, dwork+ib, lddwork);
+                              dA(j, 0), ldda, dwork+ib, lddwork);
 
-            dq_to_panel(MagmaUpper, ib, a_ref(j,j), lda, work+ib*ib);
+            dq_to_panel(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
         }
 
         /* 3. Do a QR on the current part */
-        if (i<k)
-            magma_dgeqrf2_gpu(m-i, IB, da_ref(i,0), ldda, tau+i, info);
+        if (i < k)
+            magma_dgeqrf2_gpu(m-i, IB, dA(i,0), ldda, tau+i, info);
 
         /* 4. Copy the current part back to the CPU */
         magma_dgetmatrix_async( (m), IB,
-                                da_ref(0,0), ldda,
-                                a_ref(0,i),  lda, stream[0] );
+                                dA(0,0), ldda,
+                                A(0,i),  lda, stream[0] );
     }
 
     magma_queue_sync( stream[0] );
 
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
-    magma_free( da );
+    magma_free( dA );
 
     return *info;
 } /* magma_dgeqrf_ooc */
-

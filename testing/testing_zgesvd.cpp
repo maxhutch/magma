@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -22,10 +22,12 @@
 #include "magma.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#define PRECISION_z
+
+#define COMPLEX
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing zgesvd
+   -- Testing zgesvd (SVD with QR iteration)
+      Please keep code in testing_zgesdd.cpp and testing_zgesvd.cpp similar.
 */
 int main( int argc, char** argv)
 {
@@ -33,14 +35,15 @@ int main( int argc, char** argv)
 
     real_Double_t   gpu_time, cpu_time;
     magmaDoubleComplex *h_A, *h_R, *U, *VT, *h_work;
+    magmaDoubleComplex dummy[1];
     double *S1, *S2;
-#if defined(PRECISION_z) || defined(PRECISION_c)
+    #ifdef COMPLEX
     double *rwork;
-#endif
-    magma_int_t M, N, n2, min_mn, info, nb, lwork;
+    #endif
+    magma_int_t M, N, N_U, M_VT, lda, ldu, ldv, n2, min_mn, info, nb, lwork;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    char jobu, jobvt;
+    magma_vec_t jobu, jobvt;
     magma_int_t status = 0;
     
     magma_opts opts;
@@ -50,16 +53,16 @@ int main( int argc, char** argv)
     
     jobu  = opts.jobu;
     jobvt = opts.jobvt;
-
-    const char jobs[] = { 'N', 'S', 'O', 'A' };
     
-    if ( opts.check && (jobu == 'N' || jobvt == 'N')) {
+    magma_vec_t jobs[] = { MagmaNoVec, MagmaSomeVec, MagmaOverwriteVec, MagmaAllVec };
+    
+    if ( opts.check && ! opts.all && (jobu == MagmaNoVec || jobvt == MagmaNoVec)) {
         printf( "NOTE: some checks require that singular vectors are computed;\n"
                 "      set both jobu (option -U[NASO]) and jobvt (option -V[NASO]) to be S, O, or A.\n\n" );
     }
     printf("jobu jobv     M     N  CPU time (sec)  GPU time (sec)  |S1-S2|/.  |A-USV'|/. |I-UU'|/M  |I-VV'|/N  S sorted\n");
     printf("===========================================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int ijobu = 0; ijobu < 4; ++ijobu ) {
         for( int ijobv = 0; ijobv < 4; ++ijobv ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -68,22 +71,44 @@ int main( int argc, char** argv)
                 jobvt = jobs[ ijobv ];
             }
             else if ( ijobu > 0 || ijobv > 0 ) {
-                // if not testing all, run only once, with ijobu = ijobv = 0
+                // if not testing all, run only once, when ijobu = ijobv = 0,
+                // but jobu and jobv come from opts (above loops).
                 continue;
             }
-            if ( jobu == 'O' && jobvt == 'O' ) {
+            if ( jobu == MagmaOverwriteVec && jobvt == MagmaOverwriteVec ) {
                 // illegal combination; skip
                 continue;
             }
             
-            M = opts.msize[i];
-            N = opts.nsize[i];
-            n2 = M*N;
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             min_mn = min(M, N);
+            N_U  = (jobu  == MagmaAllVec ? M : min_mn);
+            M_VT = (jobvt == MagmaAllVec ? N : min_mn);
+            lda = M;
+            ldu = M;
+            ldv = M_VT;
+            n2 = lda*N;
             nb = magma_get_zgesvd_nb(N);
+            
+            // query or use formula for workspace size 
             switch( opts.svd_work ) {
-                default:
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                case 0: {  // query for workspace size
+                    lwork = -1;
+                    magma_zgesvd( jobu, jobvt, M, N,
+                                  h_R, lda, S1, U, ldu, VT, ldv, dummy, lwork,
+                                  #ifdef COMPLEX
+                                  rwork,
+                                  #endif
+                                  &info );
+                    lwork = (int) MAGMA_Z_REAL( dummy[0] );
+                    break;
+                }
+                
+                // these are not tight bounds:
+                // if (m >> n), it may need only (2*N)*nb instead of (M+N)*nb.
+                // if (n >> m), it may need only (2*M)*nb instead of (M+N)*nb.
+                #ifdef COMPLEX
                 case 1: lwork = (M+N)*nb + 2*min_mn;                   break;  // minimum
                 case 2: lwork = (M+N)*nb + 2*min_mn +   min_mn*min_mn; break;  // optimal for some paths
                 case 3: lwork = (M+N)*nb + 2*min_mn + 2*min_mn*min_mn; break;  // optimal for all paths
@@ -92,36 +117,40 @@ int main( int argc, char** argv)
                 case 2: lwork = (M+N)*nb + 3*min_mn +   min_mn*min_mn; break;  // optimal for some paths
                 case 3: lwork = (M+N)*nb + 3*min_mn + 2*min_mn*min_mn; break;  // optimal for all paths
                 #endif
+                
+                default: {
+                    fprintf( stderr, "Error: unknown option svd_work %d\n", (int) opts.svd_work );
+                    exit(1);
+                    break;
+                }
             }
             
-            TESTING_MALLOC_CPU( h_A, magmaDoubleComplex, n2  );
-            TESTING_MALLOC_CPU( VT,  magmaDoubleComplex, N*N );
-            TESTING_MALLOC_CPU( U,   magmaDoubleComplex, M*M );
-            TESTING_MALLOC_CPU( S1,  double, min_mn );
-            TESTING_MALLOC_CPU( S2,  double, min_mn );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            TESTING_MALLOC_CPU( h_A,   magmaDoubleComplex, lda*N );
+            TESTING_MALLOC_CPU( VT,    magmaDoubleComplex, ldv*N );   // N x N (jobvt=A) or min(M,N) x N
+            TESTING_MALLOC_CPU( U,     magmaDoubleComplex, ldu*N_U ); // M x M (jobu=A)  or M x min(M,N)
+            TESTING_MALLOC_CPU( S1,    double, min_mn );
+            TESTING_MALLOC_CPU( S2,    double, min_mn );
+            TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, lda*N );
+            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork );
+            
+            #ifdef COMPLEX
             TESTING_MALLOC_CPU( rwork, double, 5*min_mn );
             #endif
-            TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, n2    );
-            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &M, h_R, &M );
+            lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            #if defined(PRECISION_z) || defined(PRECISION_c)
             magma_zgesvd( jobu, jobvt, M, N,
-                          h_R, M, S1, U, M,
-                          VT, N, h_work, lwork, rwork, &info );
-            #else
-            magma_zgesvd( jobu, jobvt, M, N,
-                          h_R, M, S1, U, M,
-                          VT, N, h_work, lwork, &info );
-            #endif
+                          h_R, lda, S1, U, ldu, VT, ldv, h_work, lwork,
+                          #ifdef COMPLEX
+                          rwork,
+                          #endif
+                          &info );
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0)
                 printf("magma_zgesvd returned error %d: %s.\n",
@@ -140,56 +169,66 @@ int main( int argc, char** argv)
                           (Return 0 if true, 1/ULP if false.)
                    =================================================================== */
                 magma_int_t izero = 0;
-                magmaDoubleComplex *h_work_err;
-                magma_int_t lwork_err = max(5*min_mn, (3*min_mn + max(M,N)))*128;
-                TESTING_MALLOC_CPU( h_work_err, magmaDoubleComplex, lwork_err );
                 
                 // get size and location of U and V^T depending on jobu and jobvt
                 // U2=NULL and VT2=NULL if they were not computed (e.g., jobu=N)
-                magma_int_t M2  = (jobu  == 'A' ? M : min_mn);
-                magma_int_t N2  = (jobvt == 'A' ? N : min_mn);
-                magma_int_t ldu = M;
-                magma_int_t ldv = (jobvt == 'O' ? M : N);
                 magmaDoubleComplex *U2  = NULL;
                 magmaDoubleComplex *VT2 = NULL;
-                if ( jobu == 'S' || jobu == 'A' ) {
+                if ( jobu == MagmaSomeVec || jobu == MagmaAllVec ) {
                     U2 = U;
-                } else if ( jobu == 'O' ) {
-                    U2 = h_R;
                 }
-                if ( jobvt == 'S' || jobvt == 'A' ) {
+                else if ( jobu == MagmaOverwriteVec ) {
+                    U2 = h_R;
+                    ldu = lda;
+                }
+                if ( jobvt == MagmaSomeVec || jobvt == MagmaAllVec ) {
                     VT2 = VT;
-                } else if ( jobvt == 'O' ) {
+                }
+                else if ( jobvt == MagmaOverwriteVec ) {
                     VT2 = h_R;
+                    ldv = lda;
                 }
                 
-                // since KD=0 (3rd arg), E is not referenced so pass NULL (9th arg)
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                // zbdt01 needs M+N
+                // zunt01 prefers N*(N+1) to check U; M*(M+1) to check V
+                magma_int_t lwork_err = M+N;
+                if ( U2 != NULL ) {
+                    lwork_err = max( lwork_err, N_U*(N_U+1) );
+                }
+                if ( VT2 != NULL ) {
+                    lwork_err = max( lwork_err, M_VT*(M_VT+1) );
+                }
+                magmaDoubleComplex *h_work_err;
+                TESTING_MALLOC_CPU( h_work_err, magmaDoubleComplex, lwork_err );
+                
+                // zbdt01 and zunt01 need max(M,N), depending
+                double *rwork_err;
+                TESTING_MALLOC_CPU( rwork_err, double, max(M,N) );                
+                
                 if ( U2 != NULL && VT2 != NULL ) {
-                    lapackf77_zbdt01(&M, &N, &izero, h_A, &M,
+                    // since KD=0 (3rd arg), E is not referenced so pass NULL (9th arg)
+                    lapackf77_zbdt01(&M, &N, &izero, h_A, &lda,
                                      U2, &ldu, S1, NULL, VT2, &ldv,
-                                     h_work_err, rwork, &result[0]);
+                                     h_work_err,
+                                     #ifdef COMPLEX
+                                     rwork_err,
+                                     #endif
+                                     &result[0]);
                 }
                 if ( U2 != NULL ) {
-                    lapackf77_zunt01("Columns", &M, &M2, U2,  &ldu, h_work_err, &lwork_err, rwork, &result[1]);
+                    lapackf77_zunt01("Columns", &M,  &N_U, U2,  &ldu, h_work_err, &lwork_err,
+                                     #ifdef COMPLEX
+                                     rwork_err,
+                                     #endif
+                                     &result[1]);
                 }
                 if ( VT2 != NULL ) {
-                    lapackf77_zunt01(   "Rows", &N2, &N, VT2, &ldv, h_work_err, &lwork_err, rwork, &result[2]);
+                    lapackf77_zunt01("Rows",    &M_VT, &N, VT2, &ldv, h_work_err, &lwork_err,
+                                     #ifdef COMPLEX
+                                     rwork_err,
+                                     #endif
+                                     &result[2]);
                 }
-                #else
-                if ( U2 != NULL && VT2 != NULL ) {
-                    lapackf77_zbdt01(&M, &N, &izero, h_A, &M,
-                                      U2, &ldu, S1, NULL, VT2, &ldv,
-                                      h_work_err, &result[0]);
-                }
-                if ( U2 != NULL ) {
-                    lapackf77_zunt01("Columns", &M, &M2, U2,  &ldu, h_work_err, &lwork_err, &result[1]);
-                }
-                if ( VT2 != NULL ) {
-                    // this step may be really slow for large N
-                    lapackf77_zunt01(   "Rows", &N2, &N, VT2, &ldv, h_work_err, &lwork_err, &result[2]);
-                }
-                #endif
                 
                 result[3] = 0.;
                 for(int j=0; j < min_mn-1; j++){
@@ -206,6 +245,7 @@ int main( int argc, char** argv)
                 result[2] *= eps;
                 
                 TESTING_FREE_CPU( h_work_err );
+                TESTING_FREE_CPU( rwork_err );
             }
             
             /* =====================================================================
@@ -213,15 +253,12 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_zgesvd( &jobu, &jobvt, &M, &N,
-                                  h_A, &M, S2, U, &M,
-                                  VT, &N, h_work, &lwork, rwork, &info);
-                #else
-                lapackf77_zgesvd( &jobu, &jobvt, &M, &N,
-                                  h_A, &M, S2, U, &M,
-                                  VT, &N, h_work, &lwork, &info);
-                #endif
+                lapackf77_zgesvd( lapack_vec_const(jobu), lapack_vec_const(jobvt), &M, &N,
+                                  h_A, &lda, S2, U, &ldu, VT, &ldv, h_work, &lwork,
+                                  #ifdef COMPLEX
+                                  rwork,
+                                  #endif
+                                  &info);
                 cpu_time = magma_wtime() - cpu_time;
                 if (info != 0)
                     printf("lapackf77_zgesvd returned error %d: %s.\n",
@@ -238,18 +275,20 @@ int main( int argc, char** argv)
                 result[4] /= lapackf77_dlange("f", &min_mn, &one, S1, &min_mn, work);
                 
                 printf("   %c    %c %5d %5d  %7.2f         %7.2f         %8.2e",
-                       jobu, jobvt, (int) M, (int) N, cpu_time, gpu_time, result[4] );
+                       lapack_vec_const(jobu)[0], lapack_vec_const(jobvt)[0],
+                       (int) M, (int) N, cpu_time, gpu_time, result[4] );
             }
             else {
                 printf("   %c    %c %5d %5d    ---           %7.2f           ---   ",
-                       jobu, jobvt, (int) M, (int) N, gpu_time );
+                       lapack_vec_const(jobu)[0], lapack_vec_const(jobvt)[0],
+                       (int) M, (int) N, gpu_time );
             }
             if ( opts.check ) {
                 if ( result[0] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[0]); }
                 if ( result[1] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[1]); }
                 if ( result[2] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[2]); }
                 int success = (result[0] < tol) && (result[1] < tol) && (result[2] < tol) && (result[3] == 0.) && (result[4] < tol);
-                printf("   %3s%s\n", (result[3] == 0. ? "yes" : "no"), (success ? "" : "  failed"));
+                printf("   %3s  %s\n", (result[3] == 0. ? "yes" : "no"), (success ? "ok" : "failed"));
                 status |= ! success;
             }
             else {
@@ -261,11 +300,12 @@ int main( int argc, char** argv)
             TESTING_FREE_CPU( U   );
             TESTING_FREE_CPU( S1  );
             TESTING_FREE_CPU( S2  );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_FREE_CPU( rwork );
             #endif
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_work );
+            fflush( stdout );
         }}}
         if ( opts.all || opts.niter > 1 ) {
             printf("\n");

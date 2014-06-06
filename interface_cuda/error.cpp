@@ -36,7 +36,7 @@ void magma_xerror( cublasStatus_t err, const char* func, const char* file, int l
 
 
 // --------------------
-void magma_xerror( magma_err_t err, const char* func, const char* file, int line )
+void magma_xerror( magma_int_t err, const char* func, const char* file, int line )
 {
     if ( err != MAGMA_SUCCESS ) {
         fprintf( stderr, "MAGMA error: %s (%d) in %s at %s:%d\n",
@@ -224,7 +224,7 @@ const char* magma_cublasGetErrorString( cublasStatus_t error )
 
 // ----------------------------------------
 extern "C"
-const char* magma_strerror( magma_err_t error )
+const char* magma_strerror( magma_int_t error )
 {
     // LAPACK-compliant errors
     if ( error > 0 ) {

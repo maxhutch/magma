@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from zgeqr2x_gpu-v4.cu normal z -> c, Fri Apr 25 15:05:24 2014
 
 */
 #include "common_magma.h"
@@ -41,20 +41,9 @@ magma_ctrmv_tkernel(magmaFloatComplex *T, int ldt, magmaFloatComplex *v,
 __global__ void
 magma_scnrm2_adjust_kernel(float *xnorm, magmaFloatComplex *c);
 
-extern "C" magma_int_t
-magma_cgeqr2x4_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA, 
-                   magma_int_t *ldda, magmaFloatComplex *dtau,
-                   magmaFloatComplex *dT, magmaFloatComplex *ddA,
-                   float *dwork, magma_int_t *info, magma_queue_t stream)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose   
-    =======   
+    -------
     CGEQR2 computes a QR factorization of a complex m by n matrix A:   
     A = Q * R.
 
@@ -70,47 +59,56 @@ magma_cgeqr2x4_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA,
     This version adds internal blocking.
 
     Arguments   
-    =========   
-    M       (input) INTEGER   
+    ---------
+    @param[in]
+    m       INTEGER   
             The number of rows of the matrix A.  M >= 0.   
 
-    N       (input) INTEGER   
+    @param[in]
+    n       INTEGER   
             The number of columns of the matrix A.  N >= 0.   
 
-    A       (input/output) COMPLEX array, dimension (LDA,N)   
+    @param[in,out]
+    dA      COMPLEX array, dimension (LDA,N)   
             On entry, the m by n matrix A.   
             On exit, the unitary matrix Q as a
             product of elementary reflectors (see Further Details).
-
+    \n
             the elements on and above the diagonal of the array   
             contain the min(m,n) by n upper trapezoidal matrix R (R is   
             upper triangular if m >= n); the elements below the diagonal,   
             with the array TAU, represent the unitary matrix Q as a   
             product of elementary reflectors (see Further Details).   
 
-    LDA     (input) INTEGER   
+    @param[in]
+    ldda    INTEGER   
             The leading dimension of the array A.  LDA >= max(1,M).   
 
-    TAU     (output) COMPLEX array, dimension (min(M,N))   
+    @param[out]
+    dtau    COMPLEX array, dimension (min(M,N))   
             The scalar factors of the elementary reflectors (see Further   
             Details).   
 
-    dT      (output) COMPLEX array, dimension N x N.
+    @param[out]
+    dT      COMPLEX array, dimension N x N.
             Stores the triangular N x N factor T of the block reflector 
             used in the factorization. The lower triangular part is 0.
 
-    ddA     (output) COMPLEX array, dimension N x N.
+    @param[out]
+    ddA     COMPLEX array, dimension N x N.
             Stores the elements of the upper N x N diagonal block of A.
             LAPACK stores this array in A. There are 0s below the diagonal.
 
-    RWORK   (workspace) DOUBLE_PRECISION array, dimension (3 N)
+    @param
+    dwork   (workspace) DOUBLE_PRECISION array, dimension (3 N)
 
-    INFO    (output) INTEGER   
-            = 0: successful exit   
-            < 0: if INFO = -i, the i-th argument had an illegal value   
+    @param[out]
+    info    INTEGER   
+      -     = 0: successful exit   
+      -     < 0: if INFO = -i, the i-th argument had an illegal value   
 
     Further Details   
-    ===============   
+    ---------------
     The matrix Q is represented as a product of elementary reflectors   
 
        Q = H(1) H(2) . . . H(k), where k = min(m,n).   
@@ -122,8 +120,15 @@ magma_cgeqr2x4_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA,
     where tau is a complex scalar, and v is a complex vector with   
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),   
     and tau in TAU(i).   
-    =====================================================================    */
 
+    @ingroup magma_cgeqrf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cgeqr2x4_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA, 
+                   magma_int_t *ldda, magmaFloatComplex *dtau,
+                   magmaFloatComplex *dT, magmaFloatComplex *ddA,
+                   float *dwork, magma_int_t *info, magma_queue_t stream)
+{
     #define da_ref(a_1,a_2) ( dA+(a_2)*(*ldda) + (a_1))
     #define dt_ref(a_1,a_2) ( dT+(a_2)*(k) + (a_1))
     #define BS 32

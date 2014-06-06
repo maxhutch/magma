@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 */
 
 #ifndef MAGMA_BULGE_H
@@ -12,7 +12,7 @@
 #include "magma_types.h"
 
 #ifdef __cplusplus
-extern "C"{
+extern "C" {
 #endif
 
     inline magma_int_t magma_ceildiv(magma_int_t a, magma_int_t b)

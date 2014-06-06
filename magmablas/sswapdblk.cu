@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zswapdblk.cu normal z -> s, Fri Apr 25 15:05:22 2014
 
 */
 #include "common_magma.h"
@@ -39,27 +39,23 @@ magmagpu_sswapdblk(int nb,
 }
 
 
-extern "C" void 
-magmablas_sswapdblk(magma_int_t n, magma_int_t nb,
-                    float *dA1, magma_int_t ldda1, magma_int_t inca1,
-                    float *dA2, magma_int_t ldda2, magma_int_t inca2 )
-{
-/* -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     This is an auxiliary MAGMA routine. It swaps diagonal blocks
     of size nb x nb between matrices dA1 and dA2 on the GPU.
 
     The number of blocks swapped is (n-1)/nb. For i = 1 .. (n-1)/nb matrices
     dA1 + i * nb * (ldda1 + inca1) and
     dA2 + i * nb * (ldda2 + inca2) are swapped.
-*/
-
+    
+    @ingroup magma_saux2
+    ********************************************************************/
+extern "C" void 
+magmablas_sswapdblk(magma_int_t n, magma_int_t nb,
+                    float *dA1, magma_int_t ldda1, magma_int_t inca1,
+                    float *dA2, magma_int_t ldda2, magma_int_t inca2 )
+{
     magma_int_t blocksize = nb;
     dim3 blocks( (n-1) / blocksize, 1, 1);
 

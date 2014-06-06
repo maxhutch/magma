@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -14,25 +14,11 @@
 
 */
 #include "common_magma.h"
+#include "timer.h"
 
-extern "C" magma_int_t
-magma_dsyevdx(char jobz, char range, char uplo,
-              magma_int_t n,
-              double *a, magma_int_t lda,
-              double vl, double vu, magma_int_t il, magma_int_t iu,
-              magma_int_t *m, double *w,
-              double *work, magma_int_t lwork,
-              magma_int_t *iwork, magma_int_t liwork,
-              magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DSYEVDX computes selected eigenvalues and, optionally, eigenvectors
     of a real symmetric matrix A. Eigenvalues and eigenvectors can
     be selected by specifying either a range of values or a range of
@@ -47,113 +33,140 @@ magma_dsyevdx(char jobz, char range, char uplo,
     without guard digits, but we know of none.
 
     Arguments
-    =========
-    JOBZ    (input) CHARACTER*1
-            = 'N':  Compute eigenvalues only;
-            = 'V':  Compute eigenvalues and eigenvectors.
+    ---------
+    @param[in]
+    jobz    magma_vec_t
+      -     = MagmaNoVec:  Compute eigenvalues only;
+      -     = MagmaVec:    Compute eigenvalues and eigenvectors.
 
-    RANGE   (input) CHARACTER*1
-            = 'A': all eigenvalues will be found.
-            = 'V': all eigenvalues in the half-open interval (VL,VU]
-                   will be found.
-            = 'I': the IL-th through IU-th eigenvalues will be found.
+    @param[in]
+    range   magma_range_t
+      -     = MagmaRangeAll: all eigenvalues will be found.
+      -     = MagmaRangeV:   all eigenvalues in the half-open interval (VL,VU]
+                             will be found.
+      -     = MagmaRangeI:   the IL-th through IU-th eigenvalues will be found.
 
-    UPLO    (input) CHARACTER*1
-            = 'U':  Upper triangle of A is stored;
-            = 'L':  Lower triangle of A is stored.
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    A       (input/output) DOUBLE_PRECISION array, dimension (LDA, N)
-            On entry, the symmetric matrix A.  If UPLO = 'U', the
+    @param[in,out]
+    A       DOUBLE_PRECISION array, dimension (LDA, N)
+            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
-            upper triangular part of the matrix A.  If UPLO = 'L',
+            upper triangular part of the matrix A.  If UPLO = MagmaLower,
             the leading N-by-N lower triangular part of A contains
             the lower triangular part of the matrix A.
-            On exit, if JOBZ = 'V', then if INFO = 0, A contains the
+            On exit, if JOBZ = MagmaVec, then if INFO = 0, A contains the
             orthonormal eigenvectors of the matrix A.
-            If JOBZ = 'N', then on exit the lower triangle (if UPLO='L')
-            or the upper triangle (if UPLO='U') of A, including the
+            If JOBZ = MagmaNoVec, then on exit the lower triangle (if UPLO=MagmaLower)
+            or the upper triangle (if UPLO=MagmaUpper) of A, including the
             diagonal, is destroyed.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
-            If RANGE='V', the lower and upper bounds of the interval to
+    @param[in]
+    vl      DOUBLE PRECISION
+    @param[in]
+    vu      DOUBLE PRECISION
+            If RANGE=MagmaRangeV, the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
-            Not referenced if RANGE = 'A' or 'I'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeI.
 
-    IL      (input) INTEGER
-    IU      (input) INTEGER
-            If RANGE='I', the indices (in ascending order) of the
+    @param[in]
+    il      INTEGER
+    @param[in]
+    iu      INTEGER
+            If RANGE=MagmaRangeI, the indices (in ascending order) of the
             smallest and largest eigenvalues to be returned.
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
-            Not referenced if RANGE = 'A' or 'V'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
-    M       (output) INTEGER
+    @param[out]
+    m       INTEGER
             The total number of eigenvalues found.  0 <= M <= N.
-            If RANGE = 'A', M = N, and if RANGE = 'I', M = IU-IL+1.
+            If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
 
-    W       (output) DOUBLE PRECISION array, dimension (N)
+    @param[out]
+    w       DOUBLE PRECISION array, dimension (N)
             If INFO = 0, the required m eigenvalues in ascending order.
 
-    WORK    (workspace/output) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The length of the array WORK.
-            If N <= 1,                LWORK >= 1.
-            If JOBZ  = 'N' and N > 1, LWORK >= 2*N + N*NB.
-            If JOBZ  = 'V' and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
+            If N <= 1,                      LWORK >= 1.
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
+            If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
             NB can be obtained through magma_get_dsytrd_nb(N).
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal sizes of the WORK and IWORK
             arrays, returns these values as the first entries of the WORK
             and IWORK arrays, and no error message related to LWORK or
             LIWORK is issued by XERBLA.
 
-    IWORK   (workspace/output) INTEGER array, dimension (MAX(1,LIWORK))
+    @param[out]
+    iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
             On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
-    LIWORK  (input) INTEGER
+    @param[in]
+    liwork  INTEGER
             The dimension of the array IWORK.
-            If N <= 1,                LIWORK >= 1.
-            If JOBZ  = 'N' and N > 1, LIWORK >= 1.
-            If JOBZ  = 'V' and N > 1, LIWORK >= 3 + 5*N.
-
+            If N <= 1,                      LIWORK >= 1.
+            If JOBZ = MagmaNoVec and N > 1, LIWORK >= 1.
+            If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
+    \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal sizes of the WORK and
             IWORK arrays, returns these values as the first entries of
             the WORK and IWORK arrays, and no error message related to
             LWORK or LIWORK is issued by XERBLA.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            > 0:  if INFO = i and JOBZ = 'N', then the algorithm failed
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     > 0:  if INFO = i and JOBZ = MagmaNoVec, then the algorithm failed
                   to converge; i off-diagonal elements of an intermediate
                   tridiagonal form did not converge to zero;
-                  if INFO = i and JOBZ = 'V', then the algorithm failed
+                  if INFO = i and JOBZ = MagmaVec, then the algorithm failed
                   to compute an eigenvalue while working on the submatrix
                   lying in rows and columns INFO/(N+1) through
                   mod(INFO,N+1).
 
     Further Details
-    ===============
+    ---------------
     Based on contributions by
        Jeff Rutter, Computer Science Division, University of California
        at Berkeley, USA
 
     Modified description of INFO. Sven, 16 Feb 05.
-    =====================================================================   */
 
-    char uplo_[2] = {uplo, 0};
-    char jobz_[2] = {jobz, 0};
-    char range_[2] = {range, 0};
+    @ingroup magma_dsyev_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dsyevdx(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
+              magma_int_t n,
+              double *A, magma_int_t lda,
+              double vl, double vu, magma_int_t il, magma_int_t iu,
+              magma_int_t *m, double *w,
+              double *work, magma_int_t lwork,
+              magma_int_t *iwork, magma_int_t liwork,
+              magma_int_t *info)
+{
+    const char* uplo_  = lapack_uplo_const( uplo  );
+    const char* jobz_  = lapack_vec_const( jobz  );
     magma_int_t ione = 1;
     magma_int_t izero = 0;
     double d_one = 1.;
@@ -181,21 +194,21 @@ magma_dsyevdx(char jobz, char range, char uplo,
 
     double* dwork;
 
-    wantz = lapackf77_lsame(jobz_, MagmaVecStr);
-    lower = lapackf77_lsame(uplo_, MagmaLowerStr);
+    wantz = (jobz == MagmaVec);
+    lower = (uplo == MagmaLower);
 
-    alleig = lapackf77_lsame( range_, "A" );
-    valeig = lapackf77_lsame( range_, "V" );
-    indeig = lapackf77_lsame( range_, "I" );
+    alleig = (range == MagmaRangeAll);
+    valeig = (range == MagmaRangeV);
+    indeig = (range == MagmaRangeI);
 
-    lquery = lwork == -1 || liwork == -1;
+    lquery = (lwork == -1 || liwork == -1);
 
     *info = 0;
-    if (! (wantz || lapackf77_lsame(jobz_, MagmaNoVecStr))) {
+    if (! (wantz || (jobz == MagmaNoVec))) {
         *info = -1;
     } else if (! (alleig || valeig || indeig)) {
         *info = -2;
-    } else if (! (lower || lapackf77_lsame(uplo_, MagmaUpperStr))) {
+    } else if (! (lower || (uplo == MagmaUpper))) {
         *info = -3;
     } else if (n < 0) {
         *info = -4;
@@ -230,7 +243,8 @@ magma_dsyevdx(char jobz, char range, char uplo,
     }
     // multiply by 1+eps to ensure length gets rounded up,
     // if it cannot be exactly represented in floating point.
-    work[0]  = lwmin * (1. + lapackf77_dlamch("Epsilon"));
+    double one_eps = 1. + lapackf77_dlamch("Epsilon");
+    work[0]  = lwmin * one_eps;
     iwork[0] = liwmin;
 
     if ((lwork < lwmin) && !lquery) {
@@ -253,21 +267,21 @@ magma_dsyevdx(char jobz, char range, char uplo,
     }
 
     if (n == 1) {
-        w[0] = a[0];
+        w[0] = A[0];
         if (wantz) {
-            a[0] = 1.;
+            A[0] = 1.;
         }
         return *info;
     }
     /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
-    if (n <= 128){
+    if (n <= 128) {
         #ifdef ENABLE_DEBUG
         printf("--------------------------------------------------------------\n");
         printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
         printf("--------------------------------------------------------------\n");
         #endif
         lapackf77_dsyevd(jobz_, uplo_,
-                         &n, a, &lda,
+                         &n, A, &lda,
                          w, work, &lwork,
                          iwork, &liwork, info);
         return *info;
@@ -282,7 +296,7 @@ magma_dsyevdx(char jobz, char range, char uplo,
     rmax = magma_dsqrt(bignum);
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = lapackf77_dlansy("M", uplo_, &n, a, &lda, work);
+    anrm = lapackf77_dlansy("M", uplo_, &n, A, &lda, work);
     iscale = 0;
     if (anrm > 0. && anrm < rmin) {
         iscale = 1;
@@ -292,7 +306,7 @@ magma_dsyevdx(char jobz, char range, char uplo,
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        lapackf77_dlascl(uplo_, &izero, &izero, &d_one, &sigma, &n, &n, a,
+        lapackf77_dlascl(uplo_, &izero, &izero, &d_one, &sigma, &n, &n, A,
                 &lda, info);
     }
 
@@ -306,19 +320,14 @@ magma_dsyevdx(char jobz, char range, char uplo,
     llwork = lwork - indwrk;
     llwrk2 = lwork - indwk2;
 
-//
-#ifdef ENABLE_TIMER
-    magma_timestr_t start, end;
-    start = get_current_time();
-#endif
+    magma_timer_t time=0;
+    timer_start( time );
 
-    magma_dsytrd(uplo, n, a, lda, w, &work[inde],
+    magma_dsytrd(uplo, n, A, lda, w, &work[inde],
                  &work[indtau], &work[indwrk], llwork, &iinfo);
 
-#ifdef ENABLE_TIMER
-    end = get_current_time();
-    printf("time dsytrd = %6.2f\n", GetTimerValue(start,end)/1000.);
-#endif
+    timer_stop( time );
+    timer_printf( "time dsytrd = %6.2f\n", time );
 
     /* For eigenvalues only, call DSTERF.  For eigenvectors, first call
        DSTEDC to generate the eigenvector matrix, WORK(INDWRK), of the
@@ -328,12 +337,9 @@ magma_dsyevdx(char jobz, char range, char uplo,
         lapackf77_dsterf(&n, w, &work[inde], info );
 
         magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
-
-    } else {
-
-#ifdef ENABLE_TIMER
-        start = get_current_time();
-#endif
+    }
+    else {
+        timer_start( time );
 
         if (MAGMA_SUCCESS != magma_dmalloc( &dwork, 3*n*(n/2 + 1) )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -346,23 +352,19 @@ magma_dsyevdx(char jobz, char range, char uplo,
 
         magma_free( dwork );
 
-#ifdef ENABLE_TIMER
-        end = get_current_time();
-        printf("time dstedx = %6.2f\n", GetTimerValue(start,end)/1000.);
-        start = get_current_time();
-#endif
+        timer_stop( time );
+        timer_printf( "time dstedx = %6.2f\n", time );
+        timer_start( time );
 
         magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
 
-        magma_dormtr(MagmaLeft, uplo, MagmaNoTrans, n, *m, a, lda, &work[indtau],
+        magma_dormtr(MagmaLeft, uplo, MagmaNoTrans, n, *m, A, lda, &work[indtau],
                      &work[indwrk + n * (il-1) ], n, &work[indwk2], llwrk2, &iinfo);
 
-        lapackf77_dlacpy("A", &n, m, &work[indwrk + n * (il-1) ], &n, a, &lda);
+        lapackf77_dlacpy("A", &n, m, &work[indwrk + n * (il-1) ], &n, A, &lda);
 
-#ifdef ENABLE_TIMER
-        end = get_current_time();
-        printf("time dormtr + copy = %6.2f\n", GetTimerValue(start,end)/1000.);
-#endif
+        timer_stop( time );
+        timer_printf( "time dormtr + copy = %6.2f\n", time );
     }
 
     /* If matrix was scaled, then rescale eigenvalues appropriately. */
@@ -371,7 +373,7 @@ magma_dsyevdx(char jobz, char range, char uplo,
         blasf77_dscal(&n, &d__1, w, &ione);
     }
 
-    work[0]  = lwmin * (1. + lapackf77_dlamch("Epsilon"));  // round up
+    work[0]  = lwmin * one_eps;  // round up
     iwork[0] = liwmin;
 
     return *info;

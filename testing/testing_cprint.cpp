@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
   
-       @generated c Tue Dec 17 13:18:56 2013
+       @generated from testing_zprint.cpp normal z -> c, Fri Apr 25 15:06:06 2014
        @author Mark Gates
 */
 // includes, system
@@ -24,53 +24,52 @@
 
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing cgetrf
+   -- Testing cprint
 */
 int main( int argc, char** argv)
 {
     TESTING_INIT();
-    magma_setdevice( 0 );
 
     magmaFloatComplex *hA, *dA;
-
-    /* Matrix size */
-    magma_int_t m = 5;
-    magma_int_t n = 10;
     //magma_int_t ione     = 1;
     //magma_int_t ISEED[4] = {0,0,0,1};
     //magma_int_t size;
-    magma_int_t lda, ldda;
+    magma_int_t M, N, lda, ldda, size;
     
-    lda    = ((m + 31)/32)*32;
-    ldda   = ((m + 31)/32)*32;
+    magma_opts opts;
+    parse_opts( argc, argv, &opts );
+    
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+        for( int iter = 0; iter < opts.niter; ++iter ) {
+            M     = opts.msize[itest];
+            N     = opts.nsize[itest];
+            lda   = N;
+            ldda  = ((M + 31)/32)*32;
+            size  = lda*N;
 
-    /* Allocate host memory for the matrix */
-    TESTING_MALLOC_CPU( hA, magmaFloatComplex, lda *n );
-    TESTING_MALLOC_DEV( dA, magmaFloatComplex, ldda*n );
-
-    //size = lda*n;
-    //lapackf77_clarnv( &ione, ISEED, &size, hA );
-    for( int j = 0; j < n; ++j ) {
-        for( int i = 0; i < m; ++i ) {
-            hA[i + j*lda] = MAGMA_C_MAKE( i + j*0.01, 0. );
+            /* Allocate host memory for the matrix */
+            TESTING_MALLOC_CPU( hA, magmaFloatComplex, lda *N );
+            TESTING_MALLOC_DEV( dA, magmaFloatComplex, ldda*N );
+        
+            //lapackf77_clarnv( &ione, ISEED, &size, hA );
+            for( int j = 0; j < N; ++j ) {
+                for( int i = 0; i < M; ++i ) {
+                    hA[i + j*lda] = MAGMA_C_MAKE( i + j*0.01, 0. );
+                }
+            }
+            magma_csetmatrix( M, N, hA, lda, dA, ldda );
+            
+            printf( "A=" );
+            magma_cprint( M, N, hA, lda );
+            
+            printf( "dA=" );
+            magma_cprint_gpu( M, N, dA, ldda );
+            
+            TESTING_FREE_CPU( hA );
+            TESTING_FREE_DEV( dA );
         }
     }
-    magma_csetmatrix( m, n, hA, lda, dA, ldda );
-    
-    printf( "A=" );
-    magma_cprint( m, n, hA, lda );
-    printf( "dA=" );
-    magma_cprint_gpu( m, n, dA, ldda );
-    
-    //printf( "dA=" );
-    //magma_cprint( m, n, dA, ldda );
-    //printf( "A=" );
-    //magma_cprint_gpu( m, n, hA, lda );
-    
-    /* Memory clean up */
-    TESTING_FREE_CPU( hA );
-    TESTING_FREE_DEV( dA );
 
-    /* Shutdown */
     TESTING_FINALIZE();
+    return 0;
 }

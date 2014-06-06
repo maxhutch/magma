@@ -1,30 +1,18 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zgels_gpu.cpp normal z -> d, Fri Apr 25 15:05:39 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_dgels_gpu( char trans, magma_int_t m, magma_int_t n, magma_int_t nrhs,
-                 double *dA,    magma_int_t ldda,
-                 double *dB,    magma_int_t lddb,
-                 double *hwork, magma_int_t lwork,
-                 magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     Solves the overdetermined, least squares problem
            min || A*X - C ||
     using the QR factorization A.
@@ -32,53 +20,73 @@ magma_dgels_gpu( char trans, magma_int_t m, magma_int_t n, magma_int_t nrhs,
 
 
     Arguments
-    =========
-    TRANS   (input) CHARACTER*1
-            = 'N': the linear system involves A.
-            Only trans='N' is currently handled.
+    ---------
+    @param[in]
+    trans   magma_trans_t
+      -     = MagmaNoTrans:   the linear system involves A.
+            Only TRANS=MagmaNoTrans is currently handled.
 
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A. M >= N >= 0.
 
-    NRHS    (input) INTEGER
+    @param[in]
+    nrhs    INTEGER
             The number of columns of the matrix C. NRHS >= 0.
 
-    DA       (input/output) DOUBLE_PRECISION array on the GPU, dimension (LDA,N)
+    @param[in,out]
+    dA       DOUBLE_PRECISION array on the GPU, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, A is overwritten by details of its QR
             factorization as returned by DGEQRF.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array A, LDDA >= M.
 
-    DB      (input/output) DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
+    @param[in,out]
+    dB      DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
             On entry, the M-by-NRHS matrix C.
             On exit, the N-by-NRHS solution matrix X.
 
-    LDDB    (input) INTEGER
-            The leading dimension of the array DB. LDDB >= M.
+    @param[in]
+    lddb    INTEGER
+            The leading dimension of the array dB. LDDB >= M.
 
-    HWORK   (workspace/output) DOUBLE_PRECISION array, dimension MAX(1,LWORK).
+    @param[out]
+    hwork   (workspace) DOUBLE_PRECISION array, dimension MAX(1,LWORK).
             On exit, if INFO = 0, HWORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array HWORK,
             LWORK >= (M - N + NB)*(NRHS + NB) + NRHS*NB,
             where NB is the blocksize given by magma_get_dgeqrf_nb( M ).
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the HWORK array, returns
             this value as the first entry of the HWORK array.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================    */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    double *dT, *tau;
+    @ingroup magma_dgels_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dgels_gpu( magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs,
+                 double *dA,    magma_int_t ldda,
+                 double *dB,    magma_int_t lddb,
+                 double *hwork, magma_int_t lwork,
+                 magma_int_t *info)
+{
+    double *dT;
+    double *tau;
     magma_int_t k;
 
     magma_int_t nb     = magma_get_dgeqrf_nb(m);
@@ -89,7 +97,7 @@ magma_dgels_gpu( char trans, magma_int_t m, magma_int_t n, magma_int_t nrhs,
 
     *info = 0;
     /* For now, N is the only case working */
-    if ( (trans != 'N') && (trans != 'n' ) )
+    if ( trans != MagmaNoTrans )
         *info = -1;
     else if (m < 0)
         *info = -2;

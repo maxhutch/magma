@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from zlanhe.cu normal z -> c, Fri Apr 25 15:05:22 2014
 
 */
 #include "common_magma.h"
@@ -658,7 +658,7 @@ clanhe_inf(
     dim3 threads(inf_bs, 4, 1);
 
     if ( n % inf_bs == 0 ) {
-        if ( uplo == 'L' || uplo == 'l') {
+        if ( uplo == MagmaLower) {
             clanhe_inf_kernel_special_l<<< grid, threads, 0, magma_stream >>>
                 ( n, A, lda, dwork );
         }
@@ -670,7 +670,7 @@ clanhe_inf(
     else {
         int n_full_block = (n - n % inf_bs) /inf_bs;
         int n_mod_bs = n % inf_bs;
-        if ( uplo == 'L' || uplo == 'l') {
+        if ( uplo == MagmaLower) {
             clanhe_inf_kernel_generic_l<<< grid, threads, 0, magma_stream >>>
                 ( n, A, lda, dwork, n_full_block, n_mod_bs );
         }
@@ -749,7 +749,7 @@ clanhe_max(
     dim3 grid(blocks, 1, 1);
     dim3 threads(max_bs, 1, 1);
 
-    if ( uplo == 'L' || uplo == 'l' ) {
+    if ( uplo == MagmaLower ) {
         clanhe_max_kernel_l<<< grid, threads, 0, magma_stream >>>
             ( n, A, lda, dwork );
     }
@@ -761,10 +761,9 @@ clanhe_max(
 
 
 /* ====================================================================== */
-/*
+/**
     Purpose
-    =======
-    
+    -------
     CLANHE returns the value of the one norm, or the Frobenius norm, or
     the infinity norm, or the element of largest absolute value of a
     complex Hermitian matrix A.
@@ -785,39 +784,46 @@ clanhe_max(
     Returns CLANHE < 0: if CLANHE = -i, the i-th argument had an illegal value.
     
     Arguments:
-    ==========
-    
-    NORM    (input) CHARACTER*1
+    ----------
+    @param[in]
+    norm    CHARACTER*1
             Specifies the value to be returned in CLANHE as described above.
     
-    UPLO    (input) CHARACTER*1
+    @param[in]
+    uplo    magma_uplo_t
             Specifies whether the upper or lower triangular part of the
             Hermitian matrix A is to be referenced.
-            = 'U': Upper triangular part of A is referenced
-            = 'L': Lower triangular part of A is referenced
+      -     = MagmaUpper: Upper triangular part of A is referenced
+      -     = MagmaLower: Lower triangular part of A is referenced
     
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A. N >= 0. When N = 0, CLANHE is
             set to zero.
     
-    A       (input) COMPLEX array on the GPU, dimension (LDA,N)
-            The Hermitian matrix A. If UPLO = 'U', the leading n by n
+    @param[in]
+    A       COMPLEX array on the GPU, dimension (LDA,N)
+            The Hermitian matrix A. If UPLO = MagmaUpper, the leading n by n
             upper triangular part of A contains the upper triangular part
             of the matrix A, and the strictly lower triangular part of A
-            is not referenced. If UPLO = 'L', the leading n by n lower
+            is not referenced. If UPLO = MagmaLower, the leading n by n lower
             triangular part of A contains the lower triangular part of
             the matrix A, and the strictly upper triangular part of A is
             not referenced. Note that the imaginary parts of the diagonal
             elements need not be set and are assumed to be zero.
     
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A. LDA >= max(N,1).
     
-    DWORK   (workspace) REAL array on the GPU, dimension (MAX(1,LWORK)),
+    @param
+    dwork   (workspace) REAL array on the GPU, dimension (MAX(1,LWORK)),
             where LWORK >= N.
             NOTE: this is different than LAPACK, where WORK is only required
             for norm1 and normI.
-*/
+    
+    @ingroup magma_caux2
+    ********************************************************************/
 
 extern "C" float
 magmablas_clanhe(
@@ -827,11 +833,11 @@ magmablas_clanhe(
     magma_int_t info = 0;
     magma_int_t arch = magma_getdevice_arch();
     // 1-norm == inf-norm since A is Hermitian
-    bool inf_norm = (norm == 'I' || norm == 'i' || norm == '1' || norm == 'O' || norm == 'o');
-    bool max_norm = (norm == 'M' || norm == 'm');
+    bool inf_norm = (norm == MagmaInfNorm || norm == MagmaOneNorm);
+    bool max_norm = (norm == MagmaMaxNorm);
     if ( ! max_norm && (! inf_norm || arch < 200) )
         info = -1;
-    else if ( uplo != 'u' && uplo != 'U' && uplo != 'l' && uplo != 'L' )
+    else if ( uplo != MagmaUpper && uplo != MagmaLower )
         info = -2;
     else if ( n < 0 )
         info = -3;

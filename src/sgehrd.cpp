@@ -1,34 +1,19 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zgehrd.cpp normal z -> s, Fri Apr 25 15:05:51 2014
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
 
-#define PRECISION_s
-
-extern "C" magma_int_t
-magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
-             float *A, magma_int_t lda,
-             float *tau,
-             float *work, magma_int_t lwork,
-             float *dT,
-             magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SGEHRD reduces a REAL general matrix A to upper Hessenberg form H by
     an orthogonal similarity transformation:  Q' * A * Q = H . This version
     stores the triangular matrices used in the factorization so that they can
@@ -36,19 +21,23 @@ magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     the application of Q is much faster.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    ILO     (input) INTEGER
-    IHI     (input) INTEGER
+    @param[in]
+    ilo     INTEGER
+    @param[in]
+    ihi     INTEGER
             It is assumed that A is already upper triangular in rows
             and columns 1:ILO-1 and IHI+1:N. ILO and IHI are normally
             set by a previous call to SGEBAL; otherwise they should be
             set to 1 and N respectively. See Further Details.
             1 <= ILO <= IHI <= N, if N > 0; ILO=1 and IHI=0, if N=0.
 
-    A       (input/output) REAL array, dimension (LDA,N)
+    @param[in,out]
+    A       REAL array, dimension (LDA,N)
             On entry, the N-by-N general matrix to be reduced.
             On exit, the upper triangle and the first subdiagonal of A
             are overwritten with the upper Hessenberg matrix H, and the
@@ -56,37 +45,43 @@ magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
             represent the orthogonal matrix Q as a product of elementary
             reflectors. See Further Details.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    TAU     (output) REAL array, dimension (N-1)
+    @param[out]
+    tau     REAL array, dimension (N-1)
             The scalar factors of the elementary reflectors (see Further
             Details). Elements 1:ILO-1 and IHI:N-1 of TAU are set to
             zero.
 
-    WORK    (workspace/output) REAL array, dimension (LWORK)
+    @param[out]
+    work    (workspace) REAL array, dimension (LWORK)
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The length of the array WORK.  LWORK >= max(1,N).
             For optimum performance LWORK >= N*NB, where NB is the
             optimal blocksize.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    dT      (output)  REAL array on the GPU, dimension NB*N,
+    @param[out]
+    dT      REAL array on the GPU, dimension NB*N,
             where NB is the optimal blocksize. It stores the NB*NB blocks
             of the triangular T matrices used in the reduction.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value.
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of (ihi-ilo) elementary
     reflectors
 
@@ -103,6 +98,7 @@ magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     The contents of A are illustrated by the following example, with
     n = 7, ilo = 2 and ihi = 6:
 
+    @verbatim
     on entry,                        on exit,
 
     ( a   a   a   a   a   a   a )    (  a   a   h   h   h   h   a )
@@ -112,7 +108,8 @@ magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     (     a   a   a   a   a   a )    (      v2  v3  h   h   h   h )
     (     a   a   a   a   a   a )    (      v2  v3  v4  h   h   h )
     (                         a )    (                          a )
-
+    @endverbatim
+    
     where a denotes an element of the original matrix A, h denotes a
     modified element of the upper Hessenberg matrix H, and vi denotes an
     element of the vector defining H(i).
@@ -126,8 +123,16 @@ magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     
     This version stores the T matrices in dT, for later use in magma_sorghr.
 
-    =====================================================================    */
-
+    @ingroup magma_sgeev_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
+             float *A, magma_int_t lda,
+             float *tau,
+             float *work, magma_int_t lwork,
+             float *dT,
+             magma_int_t *info)
+{
     #define  A( i, j ) ( A + (i) + (j)*lda)
     #define dA( i, j ) (dA + (i) + (j-ilo)*ldda)
 
@@ -146,7 +151,7 @@ magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     iws = n*nb;
     work[0] = MAGMA_S_MAKE( iws, 0 );
 
-    lquery = lwork == -1;
+    lquery = (lwork == -1);
     if (n < 0) {
         *info = -1;
     } else if (ilo < 1 || ilo > max(1,n)) {
@@ -202,15 +207,15 @@ magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
     szero_nbxnb_block(nb, dV, ldda);
 
     // Set elements 0:ILO-1 and IHI-1:N-2 of TAU to zero
-    for(i = 0; i < ilo; ++i)
+    for (i = 0; i < ilo; ++i)
         tau[i] = c_zero;
 
-    for(i = max(0,ihi-1); i < n-1; ++i)
+    for (i = max(0,ihi-1); i < n-1; ++i)
         tau[i] = c_zero;
 
-    for(i=0; i < nb*nb; i += 4)
+    for (i=0; i < nb*nb; i += 4)
         T[i] = T[i+1] = T[i+2] = T[i+3] = c_zero;
-    magmablas_slaset( 'F', nb, n, dT, nb );
+    magmablas_slaset( MagmaFull, nb, n, dT, nb );
 
     // If not enough workspace, use unblocked code
     if ( lwork < iws ) {

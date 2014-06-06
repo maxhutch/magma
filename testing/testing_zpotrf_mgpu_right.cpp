@@ -1,5 +1,5 @@
 /*
- *  -- MAGMA (version 1.4.1) --
+ *  -- MAGMA (version 1.5.0-beta1) --
  *     Univ. of Tennessee, Knoxville
  *     Univ. of California, Berkeley
  *     Univ. of Colorado, Denver
@@ -37,7 +37,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex *h_A, *h_R;
     magmaDoubleComplex *d_lA[4] = {NULL, NULL, NULL, NULL};
     magma_int_t N, n2, lda, ldda, info;
-    magma_int_t i, j, k, num_gpus0 = 1, num_gpus;
+    magma_int_t j, k, num_gpus0 = 1, num_gpus;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -47,12 +47,12 @@ int main( int argc, char** argv)
     parse_opts( argc, argv, &opts );
     num_gpus0 = opts.ngpu;
 
-    printf("ngpu %d, uplo %c\n", (int) opts.ngpu, opts.uplo );
+    printf("ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
     printf("  N     CPU GFlop/s (sec)   MAGMA GFlop/s (sec)   ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
     printf("=============================================================================================\n");
-    for(i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N   = opts.nsize[i];
+            N   = opts.nsize[itest];
             lda = N;
             n2  = lda*N;
             ldda = ((N+31)/32)*32;
@@ -126,7 +126,7 @@ int main( int argc, char** argv)
                    Performs operation using LAPACK
                    =================================================================== */
                 cpu_time = magma_wtime();
-                lapackf77_zpotrf( &opts.uplo, &N, h_A, &lda, &info );
+                lapackf77_zpotrf( lapack_uplo_const(opts.uplo), &N, h_A, &lda, &info );
                 //printf( " ==== LAPACK ====\n" );
                 //magma_zprint( N,N, h_A, lda );
                 cpu_time = magma_wtime() - cpu_time;
@@ -167,7 +167,6 @@ int main( int argc, char** argv)
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
                         (int) N, gpu_perf, gpu_time );
             }
-            fflush(0);
 
             for(j = 0; j < num_gpus; j++) {
                 magma_setdevice(j);
@@ -176,6 +175,7 @@ int main( int argc, char** argv)
             magma_setdevice(0);
             TESTING_FREE( h_A );
             TESTING_HOSTFREE( h_R );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

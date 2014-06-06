@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:56 2013
+       @generated from testing_zposv.cpp normal z -> c, Fri Apr 25 15:06:09 2014
 */
 // includes, system
 #include <stdio.h>
@@ -43,12 +43,12 @@ int main( int argc, char** argv)
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("ngpu %d, uplo %c\n", (int) opts.ngpu, opts.uplo );
+    printf("ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
     printf("    N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
     printf("================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N   = opts.nsize[i];
+            N   = opts.nsize[itest];
             lda = ldb = N;
             gflops = ( FLOPS_CPOTRF( N ) + FLOPS_CPOTRS( N, opts.nrhs ) ) / 1e9;
             
@@ -102,21 +102,21 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_cposv( &opts.uplo, &N, &opts.nrhs, h_A, &lda, h_B, &ldb, &info );
+                lapackf77_cposv( lapack_uplo_const(opts.uplo), &N, &opts.nrhs, h_A, &lda, h_B, &ldb, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
                     printf("lapackf77_cposv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 
-                printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e%s\n",
+                printf( "%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
                         (int) N, (int) opts.nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                        error, (error < tol ? "" : "  failed"));
+                        error, (error < tol ? "ok" : "failed"));
             }
             else {
-                printf( "%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e%s\n",
+                printf( "%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e  %s\n",
                         (int) N, (int) opts.nrhs, gpu_perf, gpu_time,
-                        error, (error < tol ? "" : "  failed"));
+                        error, (error < tol ? "ok" : "failed"));
             }
             
             TESTING_FREE_CPU( h_A );
@@ -124,6 +124,7 @@ int main( int argc, char** argv)
             TESTING_FREE_CPU( h_B );
             TESTING_FREE_CPU( h_X );
             TESTING_FREE_CPU( work );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

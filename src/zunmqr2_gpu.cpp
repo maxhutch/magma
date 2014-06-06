@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -13,103 +13,107 @@
 */
 #include "common_magma.h"
 
-extern"C"{
-  void magmablas_zsetdiag1subdiag0(char uplo, int k, int nb, magmaDoubleComplex *A, int lda);
-}
-
-extern "C" magma_int_t
-magma_zunmqr2_gpu(const char side, const char trans,
-                  magma_int_t m, magma_int_t n, magma_int_t k,
-                  magmaDoubleComplex *da,   magma_int_t ldda,
-                  magmaDoubleComplex *tau,
-                  magmaDoubleComplex *dc,    magma_int_t lddc,
-                  magmaDoubleComplex *wa,    magma_int_t ldwa,
-                  magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     ZUNMQR overwrites the general complex M-by-N matrix C with
 
-                    SIDE = 'L'     SIDE = 'R'
-    TRANS = 'N':      Q * C          C * Q
-    TRANS = 'T':      Q**H * C     C * Q**H
+    @verbatim
+                            SIDE = MagmaLeft   SIDE = MagmaRight
+    TRANS = MagmaNoTrans:   Q * C              C * Q
+    TRANS = MagmaTrans:     Q**H * C           C * Q**H
+    @endverbatim
 
     where Q is a complex orthogonal matrix defined as the product of k
     elementary reflectors
 
           Q = H(1) H(2) . . . H(k)
 
-    as returned by ZGEQRF. Q is of order M if SIDE = 'L' and of order N
-    if SIDE = 'R'.
+    as returned by ZGEQRF. Q is of order M if SIDE = MagmaLeft and of order N
+    if SIDE = MagmaRight.
 
     Arguments
-    =========
-    SIDE    (input) CHARACTER*1
-            = 'L': apply Q or Q**H from the Left;
-            = 'R': apply Q or Q**H from the Right.
+    ---------
+    @param[in]
+    side    magma_side_t
+      -     = MagmaLeft:      apply Q or Q**H from the Left;
+      -     = MagmaRight:     apply Q or Q**H from the Right.
 
-    TRANS   (input) CHARACTER*1
-            = 'N':  No transpose, apply Q;
-            = 'T':  Transpose, apply Q**H.
+    @param[in]
+    trans   magma_trans_t
+      -     = MagmaNoTrans:    No transpose, apply Q;
+      -     = MagmaTrans:      Transpose, apply Q**H.
 
-    M       (input) INTEGER
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix C. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix C. N >= 0.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             The number of elementary reflectors whose product defines
             the matrix Q.
-            If SIDE = 'L', M >= K >= 0;
-            if SIDE = 'R', N >= K >= 0.
+            If SIDE = MagmaLeft,  M >= K >= 0;
+            if SIDE = MagmaRight, N >= K >= 0.
 
-    DA      (input) COMPLEX_16 array, dimension (LDA,K)
+    @param[in]
+    dA      COMPLEX_16 array, dimension (LDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
             ZGEQRF in the first k columns of its array argument A.
             The diagonal and the upper part
             are destroyed, the reflectors are not modified.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array DA.
-            LDDA >= max(1,M) if SIDE = 'L'; LDDA >= max(1,N) if SIDE = 'R'.
+            LDDA >= max(1,M) if SIDE = MagmaLeft; LDDA >= max(1,N) if SIDE = MagmaRight.
 
-    TAU     (input) COMPLEX_16 array, dimension (K)
+    @param[in]
+    tau     COMPLEX_16 array, dimension (K)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by ZGEQRF.
 
-    DC      (device input/output) COMPLEX_16 array, dimension (LDDC,N)
+    @param[in,out]
+    dC      COMPLEX_16 array, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).
 
-    LDDC    (input) INTEGER
+    @param[in]
+    lddc    INTEGER
             The leading dimension of the array C. LDDC >= max(1,M).
 
-    WA      (input/workspace) COMPLEX_16 array, dimension
-                                 (LDWA,M) if SIDE = 'L'
-                                 (LDWA,N) if SIDE = 'R'
+    @param[in]
+    wA      (workspace) COMPLEX_16 array, dimension
+                                 (LDWA,M) if SIDE = MagmaLeft
+                                 (LDWA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
             returned by ZHETRD_GPU.
 
-    LDWA    (input) INTEGER
-            The leading dimension of the array A.
-            LDWA >= max(1,M) if SIDE = 'L'; LDWA >= max(1,N) if SIDE = 'R'.
+    @param[in]
+    ldwa    INTEGER
+            The leading dimension of the array wA.
+            LDWA >= max(1,M) if SIDE = MagmaLeft; LDWA >= max(1,N) if SIDE = MagmaRight.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================   */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    char side_[2]  = {side,  0};
-    char trans_[2] = {trans, 0};
-
+    @ingroup magma_zgeqrf_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_zunmqr2_gpu(magma_side_t side, magma_trans_t trans,
+                  magma_int_t m, magma_int_t n, magma_int_t k,
+                  magmaDoubleComplex *dA, magma_int_t ldda,
+                  magmaDoubleComplex *tau,
+                  magmaDoubleComplex *dC, magma_int_t lddc,
+                  magmaDoubleComplex *wA, magma_int_t ldwa,
+                  magma_int_t *info)
+{
     /* Allocate work space on the GPU */
     magmaDoubleComplex *dwork;
 
@@ -120,14 +124,14 @@ magma_zunmqr2_gpu(const char side, const char trans,
     int left, notran;
 
     wa_offset = 1 + ldwa;
-    wa -= wa_offset;
+    wA -= wa_offset;
     --tau;
     dc_offset = 1 + lddc;
-    dc -= dc_offset;
+    dC -= dc_offset;
 
     *info = 0;
-    left   = lapackf77_lsame(side_,  "L");
-    notran = lapackf77_lsame(trans_, "N");
+    left   = (side == MagmaLeft);
+    notran = (trans == MagmaNoTrans);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
@@ -139,9 +143,9 @@ magma_zunmqr2_gpu(const char side, const char trans,
         nw = m;
         magma_zmalloc( &dwork, (m + 64)*64 );
     }
-    if (! left && ! lapackf77_lsame(side_, "R")) {
+    if (! left && side != MagmaRight) {
         *info = -1;
-    } else if (! notran && ! lapackf77_lsame(trans_, "T")) {
+    } else if (! notran && trans != MagmaTrans) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -193,7 +197,7 @@ magma_zunmqr2_gpu(const char side, const char trans,
         ic = 1;
     }
 
-    magmablas_zsetdiag1subdiag0('L', k, nb, da, ldda);
+    magmablas_zsetdiag1subdiag0(MagmaLower, k, nb, dA, ldda);
 
     // for i=i1 to i2 by step
     for (i = i1; (step < 0 ? i >= i2 : i <= i2); i += step) {
@@ -202,7 +206,7 @@ magma_zunmqr2_gpu(const char side, const char trans,
         /* Form the triangular factor of the block reflector
            H = H(i) H(i+1) . . . H(i+ib-1) */
         i__4 = nq - i + 1;
-        lapackf77_zlarft("F", "C", &i__4, &ib, &wa[i + i*ldwa], &ldwa,
+        lapackf77_zlarft("F", "C", &i__4, &ib, &wA[i + i*ldwa], &ldwa,
                          &tau[i], t, &ib);
 
 
@@ -226,8 +230,8 @@ magma_zunmqr2_gpu(const char side, const char trans,
         magma_zsetmatrix( ib, ib, t, ib, dwork, ib );
         magma_zlarfb_gpu( side, trans, MagmaForward, MagmaColumnwise,
                           mi, ni, ib,
-                          da + (i - 1) + (i - 1)*ldda , ldda, dwork, ib,
-                          &dc[ic + jc*lddc], lddc,
+                          dA + (i - 1) + (i - 1)*ldda, ldda, dwork, ib,
+                          &dC[ic + jc*lddc], lddc,
                           dwork + ib*ib, lddwork);
     }
 
@@ -235,5 +239,3 @@ magma_zunmqr2_gpu(const char side, const char trans,
 
     return *info;
 } /* magma_zunmqr */
-
-

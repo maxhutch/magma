@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:45 2013
+       @generated from clag2z.cu mixed zc -> ds, Fri Apr 25 15:05:18 2014
 
 */
 #include "common_magma.h"
@@ -84,6 +84,51 @@ magmablas_slag2d_64_64_16_4_v2( magma_int_t M, magma_int_t N,
     }
 }
 
+/**
+    Purpose
+    -------
+    
+    SLAG2D converts a SINGLE PRECISION matrix, SA,
+                 to a DOUBLE PRECISION matrix, A.
+    
+    Note that while it is possible to overflow while converting
+    from double to single, it is not possible to overflow when
+    converting from single to double.
+        
+    Arguments
+    ---------
+    
+    @param[in]
+    m       INTEGER
+            The number of lines of the matrix A.  M >= 0.
+    
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix A.  N >= 0.
+    
+    @param[in]
+    SA      REAL array, dimension (LDSA,N)
+            On entry, the M-by-N coefficient matrix SA.
+    
+    @param[in]
+    ldsa    INTEGER
+            The leading dimension of the array SA.  LDSA >= max(1,M).
+    
+    @param[out]
+    A       DOUBLE PRECISION array, dimension (LDA,N)
+            On exit, the M-by-N coefficient matrix A.
+    
+    @param[in]
+    lda     INTEGER
+            The leading dimension of the array A.  LDA >= max(1,M).
+    
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+
+    @ingroup magma_saux2
+    ********************************************************************/
 extern "C" void 
 magmablas_slag2d(
     magma_int_t m, magma_int_t n,
@@ -91,43 +136,6 @@ magmablas_slag2d(
     double       *A, magma_int_t lda,
     magma_int_t *info)
 {
-/*
-    Purpose
-    =======
-    
-    SLAG2D converts a SINGLE PRECISION matrix, SA, to a DOUBLE
-    PRECISION matrix, A.
-    
-    Note that while it is possible to overflow while converting
-    from double to single, it is not possible to overflow when
-    converting from single to double.
-        
-    Arguments
-    =========
-    
-    M       (input) INTEGER
-            The number of lines of the matrix A.  M >= 0.
-    
-    N       (input) INTEGER
-            The number of columns of the matrix A.  N >= 0.
-    
-    SA      (input) REAL array, dimension (LDSA,N)
-            On entry, the M-by-N coefficient matrix SA.
-    
-    LDSA    (input) INTEGER
-            The leading dimension of the array SA.  LDSA >= max(1,M).
-    
-    A       (output) DOUBLE PRECISION array, dimension (LDA,N)
-            On exit, the M-by-N coefficient matrix A.
-    
-    LDA     (input) INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
-    
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================    */
-    
     *info = 0;
     if ( m < 0 )
         *info = -1;

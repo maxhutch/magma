@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> s d c
 
@@ -12,7 +12,7 @@
 
 // 512 is maximum number of threads for CUDA capability 1.x
 //#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 512
+    #define BLOCK_SIZE 512
 //#else
 //   #define BLOCK_SIZE 768
 //#endif
@@ -40,7 +40,7 @@ void magma_zlarfgx_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComple
   
     magmaDoubleComplex dxi;
 
-    if ( j < n-1)
+    if ( j < n-1 )
         dxi = dx[j];
   
     if ( i == 0 ) {
@@ -59,9 +59,9 @@ void magma_zlarfgx_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComple
  
             // todo: deal with badly scaled vectors (see lapack's larfg)
             if (j==0){
-               *dtau = (beta - alpha) / beta;
-               //*dx0  = 1.;
-               *dA   = beta;  
+                *dtau = (beta - alpha) / beta;
+                //*dx0  = 1.;
+                *dA   = beta;  
             }
 
             scale = 1. / (alpha - beta);
@@ -75,9 +75,9 @@ void magma_zlarfgx_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComple
 
             // todo: deal with badly scaled vectors (see lapack's larfg)
             if (j==0){
-               *dtau = MAGMA_Z_MAKE((beta - alphar)/beta, -alphai/beta);
-               //*dx0  = MAGMA_Z_MAKE(  1., 0.);
-               *dA   = MAGMA_Z_MAKE(beta, 0.);
+                *dtau = MAGMA_Z_MAKE((beta - alphar)/beta, -alphai/beta);
+                //*dx0  = MAGMA_Z_MAKE(  1., 0.);
+                *dA   = MAGMA_Z_MAKE(beta, 0.);
             }            
 
             alpha = MAGMA_Z_MAKE( MAGMA_Z_REAL(alpha) - beta, MAGMA_Z_IMAG(alpha));
@@ -100,16 +100,16 @@ void magma_zlarfgx_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComple
 //==============================================================================
 
 /*
-   Generates Householder elementary reflector H = I - tau v v^T to reduce
-     H [ dx0 ] = [ beta ]
-       [ dx  ]   [ 0    ]
-   with beta = ±norm( [dx0, dx] ) = ±dxnorm[0].
-   Stores v over dx; first element of v is 1 and is not stored.
-   Stores beta over dx0.
-   Stores tau.  
-
-   The difference with LAPACK's zlarfg is that the norm of dx, and hance beta,
-   are computed outside the routine and passed to it in dxnorm (array on the GPU).
+    Generates Householder elementary reflector H = I - tau v v^T to reduce
+        H [ dx0 ] = [ beta ]
+          [ dx  ]   [ 0    ]
+    with beta = ±norm( [dx0, dx] ) = ±dxnorm[0].
+    Stores v over dx; first element of v is 1 and is not stored.
+    Stores beta over dx0.
+    Stores tau.  
+    
+    The difference with LAPACK's zlarfg is that the norm of dx, and hance beta,
+    are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
 magma_zlarfgx_gpu(magma_int_t n, magmaDoubleComplex *dx0, magmaDoubleComplex *dx, 
@@ -125,16 +125,16 @@ magma_zlarfgx_gpu(magma_int_t n, magmaDoubleComplex *dx0, magmaDoubleComplex *dx
 //==============================================================================
 
 /*
-   Generates Householder elementary reflector H = I - tau v v^T to reduce
-     H [ dx0 ] = [ beta ]
-       [ dx  ]   [ 0    ]
-   with beta = ±norm( [dx0, dx] ) = ±dxnorm[0].
-   Stores v over dx; first element of v is 1 and is not stored.
-   Stores beta over dx0.
-   Stores tau.
-
-   The difference with LAPACK's zlarfg is that the norm of dx, and hance beta,
-   are computed outside the routine and passed to it in dxnorm (array on the GPU).
+    Generates Householder elementary reflector H = I - tau v v^T to reduce
+        H [ dx0 ] = [ beta ]
+          [ dx  ]   [ 0    ]
+    with beta = ±norm( [dx0, dx] ) = ±dxnorm[0].
+    Stores v over dx; first element of v is 1 and is not stored.
+    Stores beta over dx0.
+    Stores tau.
+    
+    The difference with LAPACK's zlarfg is that the norm of dx, and hance beta,
+    are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
 magma_zlarfgtx_gpu(magma_int_t n, magmaDoubleComplex *dx0, magmaDoubleComplex *dx,
@@ -143,21 +143,19 @@ magma_zlarfgtx_gpu(magma_int_t n, magmaDoubleComplex *dx0, magmaDoubleComplex *d
                    magmaDoubleComplex *V, magma_int_t ldv, magmaDoubleComplex *T, magma_int_t ldt, 
                    magmaDoubleComplex *work)
 {
-   /*  Generate the elementary reflector H(i)  */
-   magma_zlarfgx_gpu(n, dx0, dx, dtau, dxnorm, dA, i);
-
-   if (i==0){
-      magmaDoubleComplex tt = MAGMA_Z_ONE;
-      magmablas_zlacpy(MagmaUpperLower, 1, 1, dtau, 1, T+i+i*ldt, 1);
-      magma_zsetmatrix(1,1, &tt,1, dx0,1);
-   }
-   else
-   {
-      /* Compute the i-th column of T */      
-      magma_zgemv_kernel3<<< i, BLOCK_SIZE, 0, magma_stream >>>(n, V, ldv, dx0, work, dtau);
-      magma_ztrmv_kernel2<<< i, i, 0, magma_stream          >>>( T, ldt, work, T+i*ldt, dtau);
-   }
+    /*  Generate the elementary reflector H(i)  */
+    magma_zlarfgx_gpu(n, dx0, dx, dtau, dxnorm, dA, i);
+    
+    if (i==0) {
+        magmaDoubleComplex tt = MAGMA_Z_ONE;
+        magmablas_zlacpy(MagmaUpperLower, 1, 1, dtau, 1, T+i+i*ldt, 1);
+        magma_zsetmatrix(1,1, &tt,1, dx0,1);
+    }
+    else {
+        /* Compute the i-th column of T */      
+        magma_zgemv_kernel3<<< i, BLOCK_SIZE, 0, magma_stream >>>(n, V, ldv, dx0, work, dtau);
+        magma_ztrmv_kernel2<<< i, i, 0, magma_stream          >>>( T, ldt, work, T+i*ldt, dtau);
+    }
 }
 
 //==============================================================================
-

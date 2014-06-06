@@ -1,63 +1,58 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zgeqrs_gpu.cpp normal z -> d, Fri Apr 25 15:05:40 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_dgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
-                 double *dA,    magma_int_t ldda,
-                 double *tau,   double *dT,
-                 double *dB,    magma_int_t lddb,
-                 double *hwork, magma_int_t lwork,
-                 magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     Solves the least squares problem
            min || A*X - C ||
     using the QR factorization A = Q*R computed by DGEQRF_GPU.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A. M >= N >= 0.
 
-    NRHS    (input) INTEGER
+    @param[in]
+    nrhs    INTEGER
             The number of columns of the matrix C. NRHS >= 0.
 
-    A       (input) DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    @param[in]
+    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,n, as returned by
             DGEQRF_GPU in the first n columns of its array argument A.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array A, LDDA >= M.
 
-    TAU     (input) DOUBLE_PRECISION array, dimension (N)
+    @param[in]
+    tau     DOUBLE_PRECISION array, dimension (N)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by MAGMA_DGEQRF_GPU.
 
-    DB      (input/output) DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
+    @param[in,out]
+    dB      DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
             On entry, the M-by-NRHS matrix C.
             On exit, the N-by-NRHS solution matrix X.
 
-    DT      (input) DOUBLE_PRECISION array that is the output (the 6th argument)
+    @param[in]
+    dT      DOUBLE_PRECISION array that is the output (the 6th argument)
             of magma_dgeqrf_gpu of size
             2*MIN(M, N)*NB + ((N+31)/32*32 )* MAX(NB, NRHS).
             The array starts with a block of size MIN(M,N)*NB that stores
@@ -66,28 +61,41 @@ magma_dgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
             inverses for the R matrix, followed by work space of size
             ((N+31)/32*32 )* MAX(NB, NRHS).
 
-    LDDB    (input) INTEGER
-            The leading dimension of the array DB. LDDB >= M.
+    @param[in]
+    lddb    INTEGER
+            The leading dimension of the array dB. LDDB >= M.
 
-    HWORK   (workspace/output) DOUBLE_PRECISION array, dimension (LWORK)
+    @param[out]
+    hwork   (workspace) DOUBLE_PRECISION array, dimension (LWORK)
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK,
             LWORK >= (M - N + NB)*(NRHS + NB) + NRHS*NB,
             where NB is the blocksize given by magma_get_dgeqrf_nb( M ).
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the HWORK array, returns
             this value as the first entry of the WORK array.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================    */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    #define a_ref(a_1,a_2) (dA+(a_2)*(ldda) + (a_1))
-    #define d_ref(a_1)     (dT+(lddwork+(a_1))*nb)
+    @ingroup magma_dgels_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
+                 double *dA,    magma_int_t ldda,
+                 double *tau,   double *dT,
+                 double *dB,    magma_int_t lddb,
+                 double *hwork, magma_int_t lwork,
+                 magma_int_t *info)
+{
+    #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
+    #define dT(a_1)     (dT + (lddwork+(a_1))*nb)
 
     double c_zero    = MAGMA_D_ZERO;
     double c_one     = MAGMA_D_ONE;
@@ -132,7 +140,7 @@ magma_dgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     /* B := Q' * B */
     magma_dormqr_gpu( MagmaLeft, MagmaTrans,
                       m, nrhs, n,
-                      a_ref(0,0), ldda, tau,
+                      dA(0,0), ldda, tau,
                       dB, lddb, hwork, lwork, dT, nb, info );
     if ( *info != 0 ) {
         return *info;
@@ -172,42 +180,42 @@ magma_dgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     // update c
     if (nrhs == 1)
         magma_dgemv( MagmaNoTrans, i, ib,
-                     c_neg_one, a_ref(0, i), ldda,
+                     c_neg_one, dA(0, i), ldda,
                                 dwork + i,   1,
                      c_one,     dB,           1);
     else
         magma_dgemm( MagmaNoTrans, MagmaNoTrans,
                      i, nrhs, ib,
-                     c_neg_one, a_ref(0, i), ldda,
+                     c_neg_one, dA(0, i), ldda,
                                 dwork + i,   lddwork,
                      c_one,     dB,           lddb);
 
     int start = i-nb;
     if (nb < k) {
-        for (i = start; i >=0; i -= nb) {
+        for (i = start; i >= 0; i -= nb) {
             ib = min(k-i, nb);
             rows = m -i;
 
             if (i + ib < n) {
                 if (nrhs == 1) {
                     magma_dgemv( MagmaNoTrans, ib, ib,
-                                 c_one,  d_ref(i), ib,
+                                 c_one,  dT(i), ib,
                                          dB+i,      1,
                                  c_zero, dwork+i,  1);
                     magma_dgemv( MagmaNoTrans, i, ib,
-                                 c_neg_one, a_ref(0, i), ldda,
+                                 c_neg_one, dA(0, i), ldda,
                                             dwork + i,   1,
                                  c_one,     dB,           1);
                 }
                 else {
                     magma_dgemm( MagmaNoTrans, MagmaNoTrans,
                                  ib, nrhs, ib,
-                                 c_one,  d_ref(i), ib,
+                                 c_one,  dT(i), ib,
                                          dB+i,      lddb,
                                  c_zero, dwork+i,  lddwork);
                     magma_dgemm( MagmaNoTrans, MagmaNoTrans,
                                  i, nrhs, ib,
-                                 c_neg_one, a_ref(0, i), ldda,
+                                 c_neg_one, dA(0, i), ldda,
                                             dwork + i,   lddwork,
                                  c_one,     dB,          lddb);
                 }
@@ -222,5 +230,5 @@ magma_dgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     return *info;
 }
 
-#undef a_ref
-#undef d_ref
+#undef dA
+#undef dT

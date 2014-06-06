@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated c Tue Dec 17 13:18:36 2013
+ *     @generated from zbulge_kernel.cpp normal z -> c, Fri Apr 25 15:05:48 2014
  *
  */
 
@@ -26,8 +26,8 @@ void findVTsiz(magma_int_t N, magma_int_t NB, magma_int_t Vblksiz, magma_int_t *
 
 magma_int_t plasma_ceildiv(magma_int_t a, magma_int_t b);
 
-void magma_ctrdtype1cbHLsym_withQ(magma_int_t N, magma_int_t NB, 
-                                magmaFloatComplex *A, magma_int_t LDA, magmaFloatComplex *V, magmaFloatComplex *TAU, 
+void magma_ctrdtype1cbHLsym_withQ(magma_int_t N, magma_int_t NB,
+                                magmaFloatComplex *A, magma_int_t LDA, magmaFloatComplex *V, magmaFloatComplex *TAU,
                                 magma_int_t st, magma_int_t ed, magma_int_t sweep, magma_int_t Vblksiz);
 
 void magma_ctrdtype2cbHLsym_withQ(magma_int_t N, magma_int_t NB, magmaFloatComplex *A, magma_int_t LDA, magmaFloatComplex *V, magmaFloatComplex *TAU, magma_int_t st, magma_int_t ed, magma_int_t sweep, magma_int_t Vblksiz);
@@ -43,16 +43,17 @@ void magma_clarfxsym(magma_int_t N, magmaFloatComplex *A, magma_int_t LDA, magma
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extern "C" void 
+extern "C" void
 magma_clarfxsym(magma_int_t N, magmaFloatComplex *A, magma_int_t LDA, magmaFloatComplex *V, magmaFloatComplex *TAU) {
-  magma_int_t IONE=1; 
+  magma_int_t IONE=1;
   magmaFloatComplex dtmp;
   magmaFloatComplex Z_ZERO =  MAGMA_C_ZERO;
   //magmaFloatComplex Z_ONE  =  MAGMA_C_ONE;
   magmaFloatComplex Z_MONE =  MAGMA_C_NEG_ONE;
   magmaFloatComplex Z_HALF =  MAGMA_C_HALF;
   //magmaFloatComplex WORK[N];
-  magmaFloatComplex *WORK  = (magmaFloatComplex *) malloc( N * sizeof(magmaFloatComplex) );
+  magmaFloatComplex *WORK;
+  magma_cmalloc_cpu( &WORK, N );
 
   /* apply left and right on A(st:ed,st:ed)*/
   //magma_clarfxsym(len,A(st,st),LDX,V(st),TAU(st));
@@ -61,7 +62,7 @@ magma_clarfxsym(magma_int_t N, magmaFloatComplex *A, magma_int_t LDA, magmaFloat
   /* je calcul dtmp= X'*V */
 #if defined(PRECISION_z) || defined(PRECISION_c)
    dtmp = Z_ZERO;
-   for (magma_int_t j = 0; j < N ; j++)
+   for (magma_int_t j = 0; j < N; j++)
       dtmp = dtmp + MAGMA_C_CNJG(WORK[j]) * V[j];
    //cblas_cdotc_sub(N, WORK, IONE, V, IONE, &dtmp);
 #else
@@ -71,7 +72,7 @@ magma_clarfxsym(magma_int_t N, magmaFloatComplex *A, magma_int_t LDA, magmaFloat
   dtmp = -dtmp * Z_HALF * (*TAU);
   /* je calcul W=X-1/2VX'Vt = X - dtmp*V */
   /*
-  for (j = 0; j < N ; j++)
+  for (j = 0; j < N; j++)
       WORK[j] = WORK[j] + (dtmp*V[j]); */
   blasf77_caxpy(&N, &dtmp, V, &IONE, WORK, &IONE);
   /* performs the symmetric rank 2 operation A := alpha*x*y' + alpha*y*x' + A */
@@ -91,10 +92,11 @@ extern "C" void magma_ctrdtype1cbHLsym_withQ(magma_int_t N, magma_int_t NB, magm
   //magma_int_t    J1, J2, J3, i, j;
   magma_int_t    len, LDX;
   magma_int_t    IONE=1;
-  magma_int_t    blkid, vpos, taupos, tpos; 
+  magma_int_t    blkid, vpos, taupos, tpos;
   //magmaFloatComplex conjtmp;
   magmaFloatComplex Z_ONE  =  MAGMA_C_ONE;
-  magmaFloatComplex *WORK  = (magmaFloatComplex *) malloc( N * sizeof(magmaFloatComplex) );
+  magmaFloatComplex *WORK;
+  magma_cmalloc_cpu( &WORK, N );
 
 
   findVTpos(N,NB,Vblksiz,sweep-1,st-1, &vpos, &taupos, &tpos, &blkid);
@@ -128,11 +130,12 @@ extern "C" void magma_ctrdtype2cbHLsym_withQ(magma_int_t N, magma_int_t NB, magm
   magma_int_t    J1, J2, len, lem, LDX;
   //magma_int_t    i, j;
   magma_int_t    IONE=1;
-  magma_int_t    blkid, vpos, taupos, tpos; 
+  magma_int_t    blkid, vpos, taupos, tpos;
   magmaFloatComplex conjtmp;
   magmaFloatComplex Z_ONE  =  MAGMA_C_ONE;
   //magmaFloatComplex WORK[NB];
-  magmaFloatComplex *WORK  = (magmaFloatComplex *) malloc( NB * sizeof(magmaFloatComplex) );
+  magmaFloatComplex *WORK;
+  magma_cmalloc_cpu( &WORK, NB );
 
 
   findVTpos(N,NB,Vblksiz,sweep-1,st-1, &vpos, &taupos, &tpos, &blkid);
@@ -141,11 +144,11 @@ extern "C" void magma_ctrdtype2cbHLsym_withQ(magma_int_t N, magma_int_t NB, magm
   J2     = min(ed+NB,N);
   len    = ed-st+1;
   lem    = J2-J1+1;
-  if(lem>0){
+  if (lem > 0) {
      /* apply remaining right commming from the top block */
      lapackf77_clarfx("R", &lem, &len, V(vpos), TAU(taupos), A(J1, st), &LDX, WORK);
   }
-  if(lem>1){
+  if (lem > 1) {
      findVTpos(N,NB,Vblksiz,sweep-1,J1-1, &vpos, &taupos, &tpos, &blkid);
      /* remove the first column of the created bulge */
      *V(vpos)  = Z_ONE;
@@ -154,11 +157,11 @@ extern "C" void magma_ctrdtype2cbHLsym_withQ(magma_int_t N, magma_int_t NB, magm
      /* Eliminate the col at st */
      lapackf77_clarfg( &lem, A(J1, st), V(vpos+1), &IONE, TAU(taupos) );
      /* apply left on A(J1:J2,st+1:ed) */
-     len = len-1; /* because we start at col st+1 instead of st. col st is the col that has been revomved;*/
+     len = len-1; /* because we start at col st+1 instead of st. col st is the col that has been revomved; */
      conjtmp = MAGMA_C_CNJG(*TAU(taupos));
      lapackf77_clarfx("L", &lem, &len, V(vpos),  &conjtmp, A(J1, st+1), &LDX, WORK);
   }
-  free (WORK);
+  magma_free_cpu(WORK);
 }
 #undef A
 #undef V
@@ -176,9 +179,10 @@ extern "C" void magma_ctrdtype3cbHLsym_withQ(magma_int_t N, magma_int_t NB, magm
   //magma_int_t    J1, J2, J3, i, j;
   magma_int_t    len, LDX;
   //magma_int_t    IONE=1;
-  magma_int_t    blkid, vpos, taupos, tpos; 
+  magma_int_t    blkid, vpos, taupos, tpos;
   //magmaFloatComplex conjtmp;
-  magmaFloatComplex *WORK  = (magmaFloatComplex *) malloc( N * sizeof(magmaFloatComplex) );
+  magmaFloatComplex *WORK;
+  magma_cmalloc_cpu( &WORK, N );
 
 
   findVTpos(N,NB,Vblksiz,sweep-1,st-1, &vpos, &taupos, &tpos, &blkid);
@@ -195,8 +199,3 @@ extern "C" void magma_ctrdtype3cbHLsym_withQ(magma_int_t N, magma_int_t NB, magm
 #undef V
 #undef TAU
 ///////////////////////////////////////////////////////////
-
-
-
-
-

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Stan Tomov
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from zpotrf_gpu.cpp normal z -> d, Fri Apr 25 15:05:33 2014
 */
 #include "common_magma.h"
 
@@ -14,30 +14,19 @@
 #define PRECISION_d
 
 #if (defined(PRECISION_s) || defined(PRECISION_d))
-  #define magma_dtrsm magmablas_dtrsm
+    #define magma_dtrsm magmablas_dtrsm
 #endif
 // === End defining what BLAS to use =======================================
 
-#define dA(i, j)  (dA + (j)*ldda + (i))
-
-extern "C" magma_int_t
-magma_dpotrf_gpu(char uplo, magma_int_t n,
-                 double *dA, magma_int_t ldda, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DPOTRF computes the Cholesky factorization of a real symmetric
     positive definite matrix dA.
 
     The factorization has the form
-       dA = U**T * U,  if UPLO = 'U', or
-       dA = L  * L**T,  if UPLO = 'L',
+        dA = U**T * U,   if UPLO = MagmaUpper, or
+        dA = L  * L**T,  if UPLO = MagmaLower,
     where U is an upper triangular matrix and L is lower triangular.
 
     This is the block version of the algorithm, calling Level 3 BLAS.
@@ -45,51 +34,62 @@ magma_dpotrf_gpu(char uplo, magma_int_t n,
     stream to overlap computation with communication.
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER*1
-            = 'U':  Upper triangle of dA is stored;
-            = 'L':  Lower triangle of dA is stored.
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of dA is stored;
+      -     = MagmaLower:  Lower triangle of dA is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix dA.  N >= 0.
 
-    dA      (input/output) DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
-            On entry, the symmetric matrix dA.  If UPLO = 'U', the leading
+    @param[in,out]
+    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+            On entry, the symmetric matrix dA.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of dA contains the upper
             triangular part of the matrix dA, and the strictly lower
-            triangular part of dA is not referenced.  If UPLO = 'L', the
+            triangular part of dA is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of dA contains the lower
             triangular part of the matrix dA, and the strictly upper
             triangular part of dA is not referenced.
-
+    \n
             On exit, if INFO = 0, the factor U or L from the Cholesky
             factorization dA = U**T * U or dA = L * L**T.
 
-    LDDA     (input) INTEGER
+    @param[in]
+    ldda     INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,N).
             To benefit from coalescent memory accesses LDDA must be
-            dividable by 16.
+            divisible by 16.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            > 0:  if INFO = i, the leading minor of order i is not
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     > 0:  if INFO = i, the leading minor of order i is not
                   positive definite, and the factorization could not be
                   completed.
-    =====================================================================   */
 
+    @ingroup magma_dposv_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dpotrf_gpu(magma_uplo_t uplo, magma_int_t n,
+                 double *dA, magma_int_t ldda, magma_int_t *info)
+{
+#define dA(i, j) (dA + (j)*ldda + (i))
 
     magma_int_t     j, jb, nb;
-    char            uplo_[2] = {uplo, 0};
+    const char* uplo_ = lapack_uplo_const( uplo );
     double c_one     = MAGMA_D_ONE;
     double c_neg_one = MAGMA_D_NEG_ONE;
     double *work;
     double          d_one     =  1.0;
     double          d_neg_one = -1.0;
-    int upper = lapackf77_lsame(uplo_, "U");
+    int upper = (uplo == MagmaUpper);
 
     *info = 0;
-    if ( (! upper) && (! lapackf77_lsame(uplo_, "L")) ) {
+    if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {
         *info = -2;
@@ -114,12 +114,13 @@ magma_dpotrf_gpu(char uplo, magma_int_t n,
 
     magma_queue_create( &stream[0] );
     if (current_stream == NULL) {
-      magma_queue_create( &stream[1] );
-      magmablasSetKernelStream(stream[1]);
+        magma_queue_create( &stream[1] );
+        magmablasSetKernelStream(stream[1]);
     }
-    else
-      stream[1] = current_stream;
-
+    else {
+        stream[1] = current_stream;
+    }
+    
     if ((nb <= 1) || (nb >= n)) {
         /*  Use unblocked code. */
         magma_dgetmatrix_async( n, n, dA, ldda, work, n, stream[1] );
@@ -128,12 +129,11 @@ magma_dpotrf_gpu(char uplo, magma_int_t n,
         magma_dsetmatrix_async( n, n, work, n, dA, ldda, stream[1] );
     }
     else {
-
         /* Use blocked code. */
         if (upper) {
             
             /* Compute the Cholesky factorization A = U'*U. */
-            for (j=0; j<n; j+=nb) {
+            for (j=0; j < n; j += nb) {
                 
                 /* Update and factorize the current diagonal block and test
                    for non-positive-definiteness. Computing MIN */
@@ -178,8 +178,7 @@ magma_dpotrf_gpu(char uplo, magma_int_t n,
         else {
             //=========================================================
             // Compute the Cholesky factorization A = L*L'.
-            for (j=0; j<n; j+=nb) {
-
+            for (j=0; j < n; j += nb) {
                 //  Update and factorize the current diagonal block and test
                 //  for non-positive-definiteness. Computing MIN
                 jb = min(nb, (n-j));
@@ -225,8 +224,8 @@ magma_dpotrf_gpu(char uplo, magma_int_t n,
 
     magma_queue_destroy( stream[0] );
     if (current_stream == NULL) {
-      magma_queue_destroy( stream[1] );
-      magmablasSetKernelStream(NULL);
+        magma_queue_destroy( stream[1] );
+        magmablasSetKernelStream(NULL);
     }
 
     return *info;

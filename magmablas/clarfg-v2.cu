@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:45 2013
+       @generated from zlarfg-v2.cu normal z -> c, Fri Apr 25 15:05:21 2014
 
 */
 #include "common_magma.h"
@@ -44,7 +44,7 @@ void magma_clarfg_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex* 
 
 #if (defined(PRECISION_s) || defined(PRECISION_d))
     if ( xnorm != 0 ) {
-       if (i == 0) {  
+        if (i == 0) {  
             float beta  = sqrt( alpha*alpha + xnorm*xnorm );
             beta  = -copysign( beta, alpha );
 
@@ -53,11 +53,12 @@ void magma_clarfg_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex* 
             *dAkk  = beta;
 
             scale = 1. / (alpha - beta);
-       }
+        }
 #else
-    float alphar =  MAGMA_C_REAL(alpha), alphai = MAGMA_C_IMAG(alpha);
+    float alphar = MAGMA_C_REAL(alpha);
+    float alphai = MAGMA_C_IMAG(alpha);
     if ( xnorm != 0 || alphai != 0) {
-       if (i == 0) {
+        if (i == 0) {
             float beta  = sqrt( alphar*alphar + alphai*alphai + xnorm*xnorm );
             beta  = -copysign( beta, alphar );
 
@@ -67,32 +68,32 @@ void magma_clarfg_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex* 
 
             alpha = MAGMA_C_MAKE( MAGMA_C_REAL(alpha) - beta, MAGMA_C_IMAG(alpha));
             scale = MAGMA_C_DIV( MAGMA_C_ONE, alpha);
-      }
+        }
 #endif
 
-      // scale x
-      __syncthreads();
-      if ( xnorm != 0 && j < n-1)
-          dx[j] = MAGMA_C_MUL(dxi, scale);
+        // scale x
+        __syncthreads();
+        if ( xnorm != 0 && j < n-1)
+            dx[j] = MAGMA_C_MUL(dxi, scale);
 
     } else
         *dtau = MAGMA_C_ZERO;
-}
+    }
 
 
 /*
-   Generates Householder elementary reflector H = I - tau v v^T to reduce
-     H [ dx0 ] = [ beta ]
-       [ dx  ]   [ 0    ]
-   with beta = ±norm( [dx0, dx] ) = ±dxnorm[0].
-   Stores v over dx; first element of v is 1 and is not stored.
-   Stores beta over dx0.
-   Stores tau.  
-
-   The difference with LAPACK's clarfg is that the norm of dx, and hence beta,
-   are computed outside the routine and passed to it in dxnorm (array on the GPU).
+    Generates Householder elementary reflector H = I - tau v v^T to reduce
+        H [ dx0 ] = [ beta ]
+          [ dx  ]   [ 0    ]
+    with beta = ±norm( [dx0, dx] ) = ±dxnorm[0].
+    Stores v over dx; first element of v is 1 and is not stored.
+    Stores beta over dx0.
+    Stores tau.  
+    
+    The difference with LAPACK's clarfg is that the norm of dx, and hence beta,
+    are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
-extern "C" magma_int_t
+extern "C" void
 magma_clarfg_gpu( magma_int_t n, magmaFloatComplex *dx0, magmaFloatComplex *dx,
                   magmaFloatComplex *dtau, float *dxnorm, magmaFloatComplex *dAkk)
 {
@@ -105,7 +106,4 @@ magma_clarfg_gpu( magma_int_t n, magmaFloatComplex *dx0, magmaFloatComplex *dx,
 
     magma_clarfg_gpu_kernel<<< blocks, threads,
                                0, magma_stream >>>(n, dx0, dx, dtau, dxnorm, dAkk);
-
-    return MAGMA_SUCCESS;
 }
-

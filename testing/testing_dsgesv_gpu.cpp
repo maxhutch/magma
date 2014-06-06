@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated ds Tue Dec 17 13:18:56 2013
+       @generated from testing_zcgesv_gpu.cpp mixed zc -> ds, Fri Apr 25 15:06:07 2014
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,9 +53,9 @@ int main(int argc, char **argv)
     
     printf("    N  NRHS   DP-Factor  DP-Solve  SP-Factor  SP-Solve  MP-Solve  ||b-Ax||/(N*||A||)  Iter\n");
     printf("==========================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             ldb  = ldx = lda = N;
             ldda = ((N+31)/32)*32;
             lddb = lddx = ldda;
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
             magma_dgetmatrix( N, nrhs, d_X, lddx, h_X, ldx );
             
             Anorm = lapackf77_dlange("I", &N, &N, h_A, &lda, h_workd);
-            blasf77_dgemm( &opts.transA, MagmaNoTransStr,
+            blasf77_dgemm( lapack_trans_const(opts.transA), MagmaNoTransStr,
                            &N, &nrhs, &N,
                            &c_one,     h_A, &lda,
                                        h_X, &ldx,
@@ -192,6 +192,7 @@ int main(int argc, char **argv)
             TESTING_FREE_DEV( d_ipiv  );
             TESTING_FREE_DEV( d_WORKS );
             TESTING_FREE_DEV( d_WORKD );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

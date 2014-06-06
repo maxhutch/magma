@@ -1,58 +1,55 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 */
 
 #include "common_magma.h"
 
 magma_queue_t magma_stream = 0;
 
-cublasStatus_t magmablasSetKernelStream( magma_queue_t stream )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
 
+/**
     Purpose
-    =======
+    -------
     magmablasSetKernelStream sets the CUDA stream that all MAGMA BLAS and
     CUBLAS routines use.
 
     Arguments
-    =========
-    stream  (input) magma_queue_t
+    ---------
+    @param[in]
+    stream  magma_queue_t
             The CUDA stream.
 
-    =====================================================================   */
+    @ingroup magma_s
+    ********************************************************************/
+extern "C"
+cublasStatus_t magmablasSetKernelStream( magma_queue_t stream )
+{
     magma_stream = stream;
     return cublasSetKernelStream( stream );
 }
 
 
-cublasStatus_t magmablasGetKernelStream( magma_queue_t *stream )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     magmablasSetKernelStream gets the CUDA stream that all MAGMA BLAS
     routines use.
 
     Arguments
-    =========
-    stream  (output) magma_queue_t
+    ---------
+    @param[out]
+    stream  magma_queue_t
             The CUDA stream.
 
-    =====================================================================   */
+    @ingroup magma_s
+    ********************************************************************/
+extern "C"
+cublasStatus_t magmablasGetKernelStream( magma_queue_t *stream )
+{
     *stream = magma_stream;
     return CUBLAS_STATUS_SUCCESS;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> c
 */
@@ -43,9 +43,9 @@ int main(int argc, char **argv)
     
     printf("    N   MAGMA Gflop/s (ms)  CPU Gflop/s (ms)  MAGMA error\n");
     printf("=========================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = ((N+31)/32)*32;
             sizeA  = N*lda;
             sizeX  = N*incx;
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
             /* Note: CUBLAS does not implement zsymv */
             
             /* =====================================================================
-               Performs operation using MAGMA BLAS
+               Performs operation using MAGMABLAS
                =================================================================== */
             magma_zsetvector( N, Y, incy, dY, incy );
             
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
                Performs operation using CPU BLAS
                =================================================================== */
             cpu_time = magma_wtime();
-            lapackf77_zsymv( &opts.uplo, &N, &alpha, A, &lda, X, &incx, &beta, Y, &incy );
+            lapackf77_zsymv( lapack_uplo_const(opts.uplo), &N, &alpha, A, &lda, X, &incx, &beta, Y, &incy );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gflops / cpu_time;
             
@@ -109,6 +109,7 @@ int main(int argc, char **argv)
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dX );
             TESTING_FREE_DEV( dY );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

@@ -1,63 +1,55 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:36 2013
+       @generated from zlahru.cpp normal z -> s, Fri Apr 25 15:05:51 2014
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
 
-#define PRECISION_s
-
-extern "C" magma_int_t
-magma_slahru(
-    magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
-    float *A, magma_int_t lda,
-    float *dA, float *dY,
-    float *dV, float *dT,
-    float *dwork )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SLAHRU is an auxiliary MAGMA routine that is used in SGEHRD to update
     the trailing sub-matrices after the reductions of the corresponding
     panels.
     See further details below.
 
     Arguments
-    =========
-    N       (input) INTEGER
+    ---------
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    IHI     (input) INTEGER
+    @param[in]
+    ihi     INTEGER
             Last row to update. Same as IHI in sgehrd.
 
-    K       (input) INTEGER
+    @param[in]
+    k       INTEGER
             Number of rows of the matrix Am (see details below)
 
-    NB      (input) INTEGER
+    @param[in]
+    nb      INTEGER
             Block size
 
-    A       (output) REAL array, dimension (LDA,N-K)
+    @param[out]
+    A       REAL array, dimension (LDA,N-K)
             On entry, the N-by-(N-K) general matrix to be updated. The
             computation is done on the GPU. After Am is updated on the GPU
             only Am(1:NB) is transferred to the CPU - to update the
             corresponding Am matrix. See Further Details below.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    DA      (input/output) REAL array on the GPU, dimension
+    @param[in,out]
+    dA      REAL array on the GPU, dimension
             (N,N-K). On entry, the N-by-(N-K) general matrix to be updated.
             On exit, the 1st K rows (matrix Am) of A are updated by
             applying an orthogonal transformation from the right
@@ -68,26 +60,30 @@ magma_slahru(
             the current panel of A to upper Hessenberg form. After Am
             is updated Am(:,1:NB) is sent to the CPU.
             See Further Details below.
-
-    DY      (input/workspace) REAL array on the GPU, dimension
+    
+    @param[in]
+    dY      (workspace) REAL array on the GPU, dimension
             (N, NB). On entry the (N-K)-by-NB Y = A V. It is used internally
             as workspace, so its value is changed on exit.
-
-    DV      (input/workspace) REAL array on the GPU, dimension
+    
+    @param[in]
+    dV      (workspace) REAL array on the GPU, dimension
             (N, NB). On entry the (N-K)-by-NB matrix V of elementary reflectors
             used to reduce the current panel of A to upper Hessenberg form.
             The rest K-by-NB part is used as workspace. V is unchanged on
             exit.
-
-    DT      (input) REAL array on the GPU, dimension (NB, NB).
+    
+    @param[in]
+    dT      REAL array on the GPU, dimension (NB, NB).
             On entry the NB-by-NB upper trinagular matrix defining the
             orthogonal Hessenberg reduction transformation matrix for
             the current panel. The lower triangular part are 0s.
 
-    DWORK   (workspace) REAL array on the GPU, dimension N*NB.
+    @param
+    dwork   (workspace) REAL array on the GPU, dimension N*NB.
 
     Further Details
-    ===============
+    ---------------
     This implementation follows the algorithm and notations described in:
 
     S. Tomov and J. Dongarra, "Accelerating the reduction to upper Hessenberg
@@ -97,8 +93,19 @@ magma_slahru(
 
     The difference is that here Am is computed on the GPU.
     M is renamed Am, G is renamed Ag.
-    =====================================================================    */
 
+    @ingroup magma_sgeev_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_slahru(
+    magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
+    float *A, magma_int_t lda,
+    float *dA,
+    float *dY,
+    float *dV,
+    float *dT,
+    float *dwork )
+{
     #define dA( i, j ) (dA + (i) + (j)*ldda)
     
     float c_zero    = MAGMA_S_ZERO;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
        
        @author Raffaele Solca
        
@@ -11,34 +11,9 @@
 */
 #include "common_magma.h"
 
-#define Z(ix, iy) (z + (ix) + ldz * (iy))
-
-
-extern "C" magma_int_t
-magma_dstedx(char range, magma_int_t n, double vl, double vu,
-             magma_int_t il, magma_int_t iu, double* d, double* e, double* z, magma_int_t ldz,
-             double* work, magma_int_t lwork, magma_int_t* iwork, magma_int_t liwork,
-             double* dwork, magma_int_t* info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
-       .. Scalar Arguments ..
-      CHARACTER          RANGE
-      INTEGER            IL, IU, INFO, LDZ, LIWORK, LWORK, N
-      DOUBLE PRECISION   VL, VU
-       ..
-       .. Array Arguments ..
-      INTEGER            IWORK( * )
-      DOUBLE PRECISION   D( * ), E( * ), WORK( * ), Z( LDZ, * ),
-     $                   DWORK ( * )
-       ..
-
+/**
     Purpose
-    =======
+    -------
     DSTEDX computes some eigenvalues and, optionally, eigenvectors of a
     symmetric tridiagonal matrix using the divide and conquer method.
 
@@ -50,94 +25,115 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
     without guard digits, but we know of none.  See DLAEX3 for details.
 
     Arguments
-    =========
-    RANGE   (input) CHARACTER*1
-            = 'A': all eigenvalues will be found.
-            = 'V': all eigenvalues in the half-open interval (VL,VU]
-                   will be found.
-            = 'I': the IL-th through IU-th eigenvalues will be found.
+    ---------
+    @param[in]
+    range   magma_range_t
+      -     = MagmaRangeAll: all eigenvalues will be found.
+      -     = MagmaRangeV:   all eigenvalues in the half-open interval (VL,VU]
+                             will be found.
+      -     = MagmaRangeI:   the IL-th through IU-th eigenvalues will be found.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The dimension of the symmetric tridiagonal matrix.  N >= 0.
 
-    VL      (input) DOUBLE PRECISION
-    VU      (input) DOUBLE PRECISION
-            If RANGE='V', the lower and upper bounds of the interval to
+    @param[in]
+    vl      DOUBLE PRECISION
+    @param[in]
+    vu      DOUBLE PRECISION
+            If RANGE=MagmaRangeV, the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
-            Not referenced if RANGE = 'A' or 'I'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeI.
 
-    IL      (input) INTEGER
-    IU      (input) INTEGER
-            If RANGE='I', the indices (in ascending order) of the
+    @param[in]
+    il      INTEGER
+    @param[in]
+    iu      INTEGER
+            If RANGE=MagmaRangeI, the indices (in ascending order) of the
             smallest and largest eigenvalues to be returned.
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
-            Not referenced if RANGE = 'A' or 'V'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
-    D       (input/output) DOUBLE PRECISION array, dimension (N)
+    @param[in,out]
+    d       DOUBLE PRECISION array, dimension (N)
             On entry, the diagonal elements of the tridiagonal matrix.
             On exit, if INFO = 0, the eigenvalues in ascending order.
 
-    E       (input/output) DOUBLE PRECISION array, dimension (N-1)
+    @param[in,out]
+    e       DOUBLE PRECISION array, dimension (N-1)
             On entry, the subdiagonal elements of the tridiagonal matrix.
             On exit, E has been destroyed.
 
-    Z       (input/output) DOUBLE PRECISION array, dimension (LDZ,N)
+    @param[in,out]
+    Z       DOUBLE PRECISION array, dimension (LDZ,N)
             On exit, if INFO = 0, Z contains the orthonormal eigenvectors
             of the symmetric tridiagonal matrix.
 
-    LDZ     (input) INTEGER
+    @param[in]
+    ldz     INTEGER
             The leading dimension of the array Z. LDZ >= max(1,N).
 
-    WORK    (workspace/output) DOUBLE PRECISION array,
-                                           dimension (LWORK)
+    @param[out]
+    work    (workspace) DOUBLE PRECISION array, dimension (LWORK)
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.
             If N > 1 then LWORK >= ( 1 + 4*N + N**2 ).
             Note that  if N is less than or
             equal to the minimum divide size, usually 25, then LWORK need
             only be max(1,2*(N-1)).
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    IWORK   (workspace/output) INTEGER array, dimension (MAX(1,LIWORK))
+    @param[out]
+    iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
             On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
 
-    LIWORK  (input) INTEGER
+    @param[in]
+    liwork  INTEGER
             The dimension of the array IWORK.
             LIWORK >= ( 3 + 5*N ).
             Note that if N is less than or
             equal to the minimum divide size, usually 25, then LIWORK
             need only be 1.
-
+    \n
             If LIWORK = -1, then a workspace query is assumed; the
             routine only calculates the optimal size of the IWORK array,
             returns this value as the first entry of the IWORK array, and
             no error message related to LIWORK is issued by XERBLA.
 
-    DWORK  (device workspace) DOUBLE PRECISION array, dimension (3*N*N/2+3*N)
+    @param
+    dwork  (workspace) DOUBLE PRECISION array, dimension (3*N*N/2+3*N)
 
-    INFO    (output) INTEGER
-            = 0:  successful exit.
-            < 0:  if INFO = -i, the i-th argument had an illegal value.
-            > 0:  The algorithm failed to compute an eigenvalue while
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit.
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value.
+      -     > 0:  The algorithm failed to compute an eigenvalue while
                   working on the submatrix lying in rows and columns
                   INFO/(N+1) through mod(INFO,N+1).
 
     Further Details
-    ===============
+    ---------------
     Based on contributions by
        Jeff Rutter, Computer Science Division, University of California
        at Berkeley, USA
     Modified by Francoise Tisseur, University of Tennessee.
 
-    =====================================================================
-*/
-    char range_[2] = {range, 0};
+    @ingroup magma_dsyev_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dstedx(magma_range_t range, magma_int_t n, double vl, double vu,
+             magma_int_t il, magma_int_t iu, double* d, double* e, double* Z, magma_int_t ldz,
+             double* work, magma_int_t lwork, magma_int_t* iwork, magma_int_t liwork,
+             double* dwork, magma_int_t* info)
+{
+#define Z(ix, iy) (Z + (ix) + ldz * (iy))
 
     double d_zero = 0.;
     double d_one  = 1.;
@@ -153,10 +149,10 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
 
     // Test the input parameters.
 
-    alleig = lapackf77_lsame(range_, "A");
-    valeig = lapackf77_lsame(range_, "V");
-    indeig = lapackf77_lsame(range_, "I");
-    lquery = lwork == -1 || liwork == -1;
+    alleig = (range == MagmaRangeAll);
+    valeig = (range == MagmaRangeV);
+    indeig = (range == MagmaRangeI);
+    lquery = (lwork == -1 || liwork == -1);
 
     *info = 0;
 
@@ -184,7 +180,7 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
         // Compute the workspace requirements
 
         smlsiz = magma_get_smlsize_divideconquer();
-        if( n <= 1 ){
+        if ( n <= 1 ) {
             lwmin = 1;
             liwmin = 1;
         } else {
@@ -211,37 +207,34 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
 
     // Quick return if possible
 
-    if(n==0)
+    if (n == 0)
         return MAGMA_SUCCESS;
-    if(n==1){
-        *z = 1.;
+    if (n == 1) {
+        *Z = 1.;
         return MAGMA_SUCCESS;
     }
 
-    /* determine the number of threads */
-    magma_int_t threads = magma_get_numthreads();
-    magma_setlapack_numthreads(threads);
+    /* determine the number of threads *///not needed here to be checked Azzam
+    //magma_int_t threads = magma_get_parallel_numthreads();
+    //magma_int_t mklth   = magma_get_lapack_numthreads();
+    //magma_set_lapack_numthreads(mklth);
 
 #ifdef ENABLE_DEBUG
-    printf("  D&C is using %d threads\n", threads);
+    //printf("  D&C is using %d threads\n", threads);
 #endif
 
     // If N is smaller than the minimum divide size (SMLSIZ+1), then
     // solve the problem with another solver.
 
-    if (n < smlsiz){
-        char char_I[]= {'I', 0};
-        lapackf77_dsteqr(char_I, &n, d, e, z, &ldz, work, info);
+    if (n < smlsiz) {
+        lapackf77_dsteqr("I", &n, d, e, Z, &ldz, work, info);
     } else {
-        char char_F[]= {'F', 0};
-        lapackf77_dlaset(char_F, &n, &n, &d_zero, &d_one, z, &ldz);
+        lapackf77_dlaset("F", &n, &n, &d_zero, &d_one, Z, &ldz);
 
         //Scale.
-        char char_M[]= {'M', 0};
+        orgnrm = lapackf77_dlanst("M", &n, d, e);
 
-        orgnrm = lapackf77_dlanst(char_M, &n, d, e);
-
-        if (orgnrm == 0){
+        if (orgnrm == 0) {
             work[0]  = lwmin;
             iwork[0] = liwmin;
             return MAGMA_SUCCESS;
@@ -249,9 +242,9 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
 
         eps = lapackf77_dlamch( "Epsilon" );
 
-        if (alleig){
+        if (alleig) {
             start = 0;
-            while ( start < n ){
+            while ( start < n ) {
 
                 // Let FINISH be the position of the next subdiagonal entry
                 // such that E( END ) <= TINY or FINISH = N if no such
@@ -259,7 +252,7 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
                 // between START and END constitutes an independent
                 // sub-problem.
 
-                for(end = start+1; end < n; ++end){
+                for (end = start+1; end < n; ++end) {
                     tiny = eps * sqrt( MAGMA_D_ABS(d[end-1]*d[end]));
                     if (MAGMA_D_ABS(e[end-1]) <= tiny)
                         break;
@@ -268,33 +261,28 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
                 // (Sub) Problem determined.  Compute its size and solve it.
 
                 m = end - start;
-                if (m==1){
+                if (m == 1) {
                     start = end;
                     continue;
                 }
-                if (m > smlsiz){
-
+                if (m > smlsiz) {
                     // Scale
-                    char char_G[] = {'G', 0};
-                    orgnrm = lapackf77_dlanst(char_M, &m, &d[start], &e[start]);
-                    lapackf77_dlascl(char_G, &izero, &izero, &orgnrm, &d_one, &m, &ione, &d[start], &m, info);
+                    orgnrm = lapackf77_dlanst("M", &m, &d[start], &e[start]);
+                    lapackf77_dlascl("G", &izero, &izero, &orgnrm, &d_one, &m, &ione, &d[start], &m, info);
                     magma_int_t mm = m-1;
-                    lapackf77_dlascl(char_G, &izero, &izero, &orgnrm, &d_one, &mm, &ione, &e[start], &mm, info);
+                    lapackf77_dlascl("G", &izero, &izero, &orgnrm, &d_one, &mm, &ione, &e[start], &mm, info);
 
-                    magma_dlaex0( m, &d[start], &e[start], Z(start, start), ldz, work, iwork, dwork, 'A', vl, vu, il, iu, info);
+                    magma_dlaex0( m, &d[start], &e[start], Z(start, start), ldz, work, iwork, dwork, MagmaRangeAll, vl, vu, il, iu, info);
 
-                    if( *info != 0) {
+                    if ( *info != 0) {
                         return MAGMA_SUCCESS;
                     }
 
                     // Scale Back
-                    lapackf77_dlascl(char_G, &izero, &izero, &d_one, &orgnrm, &m, &ione, &d[start], &m, info);
-
+                    lapackf77_dlascl("G", &izero, &izero, &d_one, &orgnrm, &m, &ione, &d[start], &m, info);
                 } else {
-
-                    char char_I[]= {'I', 0};
-                    lapackf77_dsteqr( char_I, &m, &d[start], &e[start], Z(start, start), &ldz, work, info);
-                    if (*info != 0){
+                    lapackf77_dsteqr( "I", &m, &d[start], &e[start], Z(start, start), &ldz, work, info);
+                    if (*info != 0) {
                         *info = (start+1) *(n+1) + end;
                     }
                 }
@@ -307,43 +295,38 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
             // will not be properly ordered.  Here we permute the eigenvalues
             // (and the associated eigenvectors) into ascending order.
 
-            if (m < n){
-
+            if (m < n) {
                 // Use Selection Sort to minimize swaps of eigenvectors
-                for (i = 1; i < n; ++i){
+                for (i = 1; i < n; ++i) {
                     k = i-1;
                     p = d[i-1];
-                    for (j = i; j < n; ++j){
-                        if (d[j] < p){
+                    for (j = i; j < n; ++j) {
+                        if (d[j] < p) {
                             k = j;
                             p = d[j];
                         }
                     }
-                    if(k != i-1) {
+                    if (k != i-1) {
                         d[k] = d[i-1];
                         d[i-1] = p;
                         blasf77_dswap(&n, Z(0,i-1), &ione, Z(0,k), &ione);
                     }
                 }
             }
-
         } else {
-
             // Scale
-            char char_G[] = {'G', 0};
-            lapackf77_dlascl(char_G, &izero, &izero, &orgnrm, &d_one, &n, &ione, d, &n, info);
+            lapackf77_dlascl("G", &izero, &izero, &orgnrm, &d_one, &n, &ione, d, &n, info);
             magma_int_t nm = n-1;
-            lapackf77_dlascl(char_G, &izero, &izero, &orgnrm, &d_one, &nm, &ione, e, &nm, info);
+            lapackf77_dlascl("G", &izero, &izero, &orgnrm, &d_one, &nm, &ione, e, &nm, info);
 
-            magma_dlaex0( n, d, e, z, ldz, work, iwork, dwork, range, vl, vu, il, iu, info);
+            magma_dlaex0( n, d, e, Z, ldz, work, iwork, dwork, range, vl, vu, il, iu, info);
 
-            if( *info != 0) {
+            if ( *info != 0) {
                 return MAGMA_SUCCESS;
             }
 
             // Scale Back
-            lapackf77_dlascl(char_G, &izero, &izero, &d_one, &orgnrm, &n, &ione, d, &n, info);
-
+            lapackf77_dlascl("G", &izero, &izero, &d_one, &orgnrm, &n, &ione, d, &n, info);
         }
     }
 
@@ -351,5 +334,4 @@ magma_dstedx(char range, magma_int_t n, double vl, double vu,
     iwork[0] = liwmin;
 
     return MAGMA_SUCCESS;
-
-} /* dstedx */
+} /* magma_dstedx */

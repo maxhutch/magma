@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:56 2013
+       @generated from testing_zlange.cpp normal z -> d, Fri Apr 25 15:06:06 2014
        @author Mark Gates
 */
 // includes, system
@@ -47,15 +47,15 @@ int main( int argc, char** argv)
     
     // Only one norm supported for now, but leave this here for future support
     // of different norms. See similar code in testing_dlansy.cpp.
-    const char* norm[] = { MagmaInfNormStr };
+    magma_norm_t norm[] = { MagmaInfNorm };
     
     printf("    M     N   norm   CPU GByte/s (ms)    GPU GByte/s (ms)    error   \n");
     printf("=====================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int inorm = 0; inorm < 1; ++inorm ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M   = opts.msize[i];
-            N   = opts.nsize[i];
+            M   = opts.msize[itest];
+            N   = opts.nsize[itest];
             lda = M;
             n2  = lda*N;
             ldda = roundup( M, opts.pad );
@@ -76,7 +76,7 @@ int main( int argc, char** argv)
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            norm_magma = magmablas_dlange( *norm[inorm], M, N, d_A, ldda, d_work );
+            norm_magma = magmablas_dlange( norm[inorm], M, N, d_A, ldda, d_work );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (norm_magma < 0)
@@ -87,7 +87,7 @@ int main( int argc, char** argv)
                Performs operation using LAPACK
                =================================================================== */
             cpu_time = magma_wtime();
-            norm_lapack = lapackf77_dlange( norm[inorm], &M, &N, h_A, &lda, h_work );
+            norm_lapack = lapackf77_dlange( lapack_norm_const(norm[inorm]), &M, &N, h_A, &lda, h_work );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
             if (norm_lapack < 0)
@@ -97,13 +97,13 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result compared to LAPACK
                =================================================================== */
-            if ( lapackf77_lsame( norm[inorm], MagmaMaxNormStr ))
+            if ( norm[inorm] == MagmaMaxNorm )
                 error = fabs( norm_magma - norm_lapack );
             else
                 error = fabs( norm_magma - norm_lapack ) / norm_lapack;
             
             printf("%5d %5d   %4s   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s\n",
-                   (int) M, (int) N, norm[inorm],
+                   (int) M, (int) N, lapack_norm_const(norm[inorm]),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    error, (error < tol ? "ok" : "failed") );
             status |= ! (error < tol);
@@ -113,6 +113,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_DEV( d_A    );
             TESTING_FREE_DEV( d_work );
+            fflush( stdout );
         }} // end inorm, iter
         if ( opts.niter > 1 ) {
             printf( "\n" );

@@ -1,182 +1,203 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zheevx_gpu.cpp normal z -> c, Fri Apr 25 15:05:45 2014
 
  */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
-                 magmaFloatComplex *da, magma_int_t ldda, float vl, float vu,
-                 magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
-                 float *w, magmaFloatComplex *dz, magma_int_t lddz,
-                 magmaFloatComplex *wa, magma_int_t ldwa,
-                 magmaFloatComplex *wz, magma_int_t ldwz,
-                 magmaFloatComplex *work, magma_int_t lwork,
-                 float *rwork, magma_int_t *iwork, magma_int_t *ifail, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CHEEVX computes selected eigenvalues and, optionally, eigenvectors
     of a complex Hermitian matrix A.  Eigenvalues and eigenvectors can
     be selected by specifying either a range of values or a range of
     indices for the desired eigenvalues.
 
     Arguments
-    =========
-    JOBZ    (input) CHARACTER*1
-            = 'N':  Compute eigenvalues only;
-            = 'V':  Compute eigenvalues and eigenvectors.
+    ---------
+    @param[in]
+    jobz    magma_vec_t
+      -     = MagmaNoVec:  Compute eigenvalues only;
+      -     = MagmaVec:    Compute eigenvalues and eigenvectors.
 
-    RANGE   (input) CHARACTER*1
-            = 'A': all eigenvalues will be found.
-            = 'V': all eigenvalues in the half-open interval (VL,VU]
+    @param[in]
+    range   magma_range_t
+      -     = MagmaRangeAll: all eigenvalues will be found.
+      -     = MagmaRangeV:   all eigenvalues in the half-open interval (VL,VU]
                    will be found.
-            = 'I': the IL-th through IU-th eigenvalues will be found.
+      -     = MagmaRangeI:   the IL-th through IU-th eigenvalues will be found.
 
-    UPLO    (input) CHARACTER*1
-            = 'U':  Upper triangle of A is stored;
-            = 'L':  Lower triangle of A is stored.
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    DA      (device input/output) COMPLEX array, dimension (LDDA, N)
-            On entry, the Hermitian matrix A.  If UPLO = 'U', the
+    @param[in,out]
+    dA      COMPLEX array, dimension (LDDA, N)
+            On entry, the Hermitian matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
-            upper triangular part of the matrix A.  If UPLO = 'L',
+            upper triangular part of the matrix A.  If UPLO = MagmaLower,
             the leading N-by-N lower triangular part of A contains
             the lower triangular part of the matrix A.
-            On exit, the lower triangle (if UPLO='L') or the upper
-            triangle (if UPLO='U') of A, including the diagonal, is
+            On exit, the lower triangle (if UPLO=MagmaLower) or the upper
+            triangle (if UPLO=MagmaUpper) of A, including the diagonal, is
             destroyed.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array DA.  LDDA >= max(1,N).
 
-    VL      (input) REAL
-    VU      (input) REAL
-            If RANGE='V', the lower and upper bounds of the interval to
+    @param[in]
+    vl      REAL
+    @param[in]
+    vu      REAL
+            If RANGE=MagmaRangeV, the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
-            Not referenced if RANGE = 'A' or 'I'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeI.
 
-    IL      (input) INTEGER
-    IU      (input) INTEGER
-            If RANGE='I', the indices (in ascending order) of the
+    @param[in]
+    il      INTEGER
+    @param[in]
+    iu      INTEGER
+            If RANGE=MagmaRangeI, the indices (in ascending order) of the
             smallest and largest eigenvalues to be returned.
             1 <= IL <= IU <= N, if N > 0; IL = 1 and IU = 0 if N = 0.
-            Not referenced if RANGE = 'A' or 'V'.
+            Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
-    ABSTOL  (input) REAL
+    @param[in]
+    abstol  REAL
             The absolute error tolerance for the eigenvalues.
             An approximate eigenvalue is accepted as converged
             when it is determined to lie in an interval [a,b]
             of width less than or equal to
 
-                    ABSTOL + EPS *   max( |a|,|b| ) ,
-
+                    ABSTOL + EPS * max( |a|,|b| ),
+    \n
             where EPS is the machine precision.  If ABSTOL is less than
             or equal to zero, then  EPS*|T|  will be used in its place,
             where |T| is the 1-norm of the tridiagonal matrix obtained
             by reducing A to tridiagonal form.
-
+    \n
             Eigenvalues will be computed most accurately when ABSTOL is
             set to twice the underflow threshold 2*SLAMCH('S'), not zero.
-            If this routine returns with INFO>0, indicating that some
+            If this routine returns with INFO > 0, indicating that some
             eigenvectors did not converge, try setting ABSTOL to
             2*SLAMCH('S').
-
+    \n
             See "Computing Small Singular Values of Bidiagonal Matrices
             with Guaranteed High Relative Accuracy," by Demmel and
             Kahan, LAPACK Working Note #3.
 
-    M       (output) INTEGER
+    @param[out]
+    m       INTEGER
             The total number of eigenvalues found.  0 <= M <= N.
-            If RANGE = 'A', M = N, and if RANGE = 'I', M = IU-IL+1.
+            If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
 
-    W       (output) REAL array, dimension (N)
+    @param[out]
+    w       REAL array, dimension (N)
             On normal exit, the first M elements contain the selected
             eigenvalues in ascending order.
 
-    DZ      (device output) COMPLEX array, dimension (LDDZ, max(1,M))
-            If JOBZ = 'V', then if INFO = 0, the first M columns of Z
+    @param[out]
+    dZ      COMPLEX array, dimension (LDDZ, max(1,M))
+            If JOBZ = MagmaVec, then if INFO = 0, the first M columns of Z
             contain the orthonormal eigenvectors of the matrix A
             corresponding to the selected eigenvalues, with the i-th
             column of Z holding the eigenvector associated with W(i).
             If an eigenvector fails to converge, then that column of Z
             contains the latest approximation to the eigenvector, and the
             index of the eigenvector is returned in IFAIL.
-            If JOBZ = 'N', then Z is not referenced.
+            If JOBZ = MagmaNoVec, then Z is not referenced.
             Note: the user must ensure that at least max(1,M) columns are
-            supplied in the array Z; if RANGE = 'V', the exact value of M
+            supplied in the array Z; if RANGE = MagmaRangeV, the exact value of M
             is not known in advance and an upper bound must be used.
 *********   (workspace) If FAST_HEMV is defined DZ should be (LDDZ, max(1,N)) in both cases.
 
-    LDDZ    (input) INTEGER
+    @param[in]
+    lddz    INTEGER
             The leading dimension of the array DZ.  LDDZ >= 1, and if
-            JOBZ = 'V', LDDZ >= max(1,N).
+            JOBZ = MagmaVec, LDDZ >= max(1,N).
 
-    WA      (workspace) COMPLEX array, dimension (LDWA, N)
+    @param
+    wA      (workspace) COMPLEX array, dimension (LDWA, N)
 
-    LDWA    (input) INTEGER
-            The leading dimension of the array WA.  LDWA >= max(1,N).
+    @param[in]
+    ldwa    INTEGER
+            The leading dimension of the array wA.  LDWA >= max(1,N).
 
-    WZ      (workspace) COMPLEX array, dimension (LDWZ, max(1,M))
+    @param
+    wZ      (workspace) COMPLEX array, dimension (LDWZ, max(1,M))
 
-    LDWZ    (input) INTEGER
-            The leading dimension of the array DZ.  LDWZ >= 1, and if
-            JOBZ = 'V', LDWZ >= max(1,N).
+    @param[in]
+    ldwz    INTEGER
+            The leading dimension of the array wZ.  LDWZ >= 1, and if
+            JOBZ = MagmaVec, LDWZ >= max(1,N).
 
-    WORK    (workspace/output) COMPLEX array, dimension (LWORK)
+    @param[out]
+    work    (workspace) COMPLEX array, dimension (LWORK)
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The length of the array WORK.  LWORK >= (NB+1)*N,
             where NB is the max of the blocksize for CHETRD.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    RWORK   (workspace) REAL array, dimension (7*N)
+    @param
+    rwork   (workspace) REAL array, dimension (7*N)
 
-    IWORK   (workspace) INTEGER array, dimension (5*N)
+    @param
+    iwork   (workspace) INTEGER array, dimension (5*N)
 
-    IFAIL   (output) INTEGER array, dimension (N)
-            If JOBZ = 'V', then if INFO = 0, the first M elements of
+    @param[out]
+    ifail   INTEGER array, dimension (N)
+            If JOBZ = MagmaVec, then if INFO = 0, the first M elements of
             IFAIL are zero.  If INFO > 0, then IFAIL contains the
             indices of the eigenvectors that failed to converge.
-            If JOBZ = 'N', then IFAIL is not referenced.
+            If JOBZ = MagmaNoVec, then IFAIL is not referenced.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            > 0:  if INFO = i, then i eigenvectors failed to converge.
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     > 0:  if INFO = i, then i eigenvectors failed to converge.
                   Their indices are stored in array IFAIL.
-    =====================================================================     */
-    
-    char uplo_[2] = {uplo, 0};
-    char jobz_[2] = {jobz, 0};
-    char range_[2] = {range, 0};
+
+    @ingroup magma_cheev_driver
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cheevx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+                 magmaFloatComplex *dA, magma_int_t ldda, float vl, float vu,
+                 magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
+                 float *w, magmaFloatComplex *dZ, magma_int_t lddz,
+                 magmaFloatComplex *wA, magma_int_t ldwa,
+                 magmaFloatComplex *wZ, magma_int_t ldwz,
+                 magmaFloatComplex *work, magma_int_t lwork,
+                 float *rwork, magma_int_t *iwork, magma_int_t *ifail, magma_int_t *info)
+{
+    const char* uplo_  = lapack_uplo_const( uplo  );
+    const char* jobz_  = lapack_vec_const( jobz  );
+    const char* range_ = lapack_range_const( range );
     
     magma_int_t ione = 1;
     
-    char order[1];
+    const char* order_;
     magma_int_t indd, inde;
     magma_int_t imax;
     magma_int_t lopt, itmp1, indee;
@@ -200,19 +221,19 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
     float *dwork;
     
     /* Function Body */
-    lower = lapackf77_lsame(uplo_, MagmaLowerStr);
-    wantz = lapackf77_lsame(jobz_, MagmaVecStr);
-    alleig = lapackf77_lsame(range_, "A");
-    valeig = lapackf77_lsame(range_, "V");
-    indeig = lapackf77_lsame(range_, "I");
-    lquery = lwork == -1;
+    lower  = (uplo  == MagmaLower);
+    wantz  = (jobz  == MagmaVec);
+    alleig = (range == MagmaRangeAll);
+    valeig = (range == MagmaRangeV);
+    indeig = (range == MagmaRangeI);
+    lquery = (lwork == -1);
     
     *info = 0;
-    if (! (wantz || lapackf77_lsame(jobz_, MagmaNoVecStr))) {
+    if (! (wantz || (jobz == MagmaNoVec))) {
         *info = -1;
     } else if (! (alleig || valeig || indeig)) {
         *info = -2;
-    } else if (! (lower || lapackf77_lsame(uplo_, MagmaUpperStr))) {
+    } else if (! (lower || (uplo == MagmaUpper))) {
         *info = -3;
     } else if (n < 0) {
         *info = -4;
@@ -263,15 +284,16 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
         printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
         printf("--------------------------------------------------------------\n");
         #endif
-        magmaFloatComplex *a = (magmaFloatComplex *) malloc( n * n * sizeof(magmaFloatComplex) );
-        magma_cgetmatrix(n, n, da, ldda, a, n);
+        magmaFloatComplex *a;
+        magma_cmalloc_cpu( &a, n*n );
+        magma_cgetmatrix(n, n, dA, ldda, a, n);
         lapackf77_cheevx(jobz_, range_, uplo_,
                          &n, a, &n, &vl, &vu, &il, &iu, &abstol, m,
-                         w, wz, &ldwz, work, &lwork,
+                         w, wZ, &ldwz, work, &lwork,
                          rwork, iwork, ifail, info);
-        magma_csetmatrix( n,  n,  a,    n, da, ldda);
-        magma_csetmatrix( n, *m, wz, ldwz, dz, lddz);
-        free(a);
+        magma_csetmatrix( n,  n,  a,    n, dA, ldda);
+        magma_csetmatrix( n, *m, wZ, ldwz, dZ, lddz);
+        magma_free_cpu(a);
         return *info;
     }
 
@@ -296,7 +318,7 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
     rmax = magma_ssqrt(bignum);
     
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_clanhe('M', uplo, n, da, ldda, dwork);
+    anrm = magmablas_clanhe(MagmaMaxNorm, uplo, n, dA, ldda, dwork);
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -308,7 +330,7 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
     }
     if (iscale == 1) {
         d__1 = 1.;
-        magmablas_clascl(uplo, 0, 0, 1., sigma, n, n, da,
+        magmablas_clascl(uplo, 0, 0, 1., sigma, n, n, dA,
                          ldda, info);
         
         if (abstol > 0.) {
@@ -329,11 +351,11 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
     llwork = lwork - indwrk + 1;
     
 #ifdef FAST_HEMV
-    magma_chetrd2_gpu(uplo, n, da, ldda, &rwork[indd], &rwork[inde],
-                      &work[indtau], wa, ldwa, &work[indwrk], llwork, dz, lddz*n, &iinfo);
+    magma_chetrd2_gpu(uplo, n, dA, ldda, &rwork[indd], &rwork[inde],
+                      &work[indtau], wA, ldwa, &work[indwrk], llwork, dZ, lddz*n, &iinfo);
 #else
-    magma_chetrd_gpu (uplo, n, da, ldda, &rwork[indd], &rwork[inde],
-                      &work[indtau], wa, ldwa, &work[indwrk], llwork, &iinfo);
+    magma_chetrd_gpu (uplo, n, dA, ldda, &rwork[indd], &rwork[inde],
+                      &work[indtau], wA, ldwa, &work[indwrk], llwork, &iinfo);
 #endif
 
     lopt = n + (magma_int_t)MAGMA_C_REAL(work[indwrk]);
@@ -350,16 +372,16 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
             lapackf77_ssterf(&n, &w[1], &rwork[indee], info);
         }
         else {
-            lapackf77_clacpy("A", &n, &n, wa, &ldwa, wz, &ldwz);
-            lapackf77_cungtr(uplo_, &n, wz, &ldwz, &work[indtau], &work[indwrk], &llwork, &iinfo);
+            lapackf77_clacpy("A", &n, &n, wA, &ldwa, wZ, &ldwz);
+            lapackf77_cungtr(uplo_, &n, wZ, &ldwz, &work[indtau], &work[indwrk], &llwork, &iinfo);
             i__1 = n - 1;
             blasf77_scopy(&i__1, &rwork[inde], &ione, &rwork[indee], &ione);
-            lapackf77_csteqr(jobz_, &n, &w[1], &rwork[indee], wz, &ldwz, &rwork[indrwk], info);
+            lapackf77_csteqr(jobz_, &n, &w[1], &rwork[indee], wZ, &ldwz, &rwork[indrwk], info);
             if (*info == 0) {
                 for (i = 1; i <= n; ++i) {
                     ifail[i] = 0;
                 }
-                magma_csetmatrix( n, n, wz, ldwz, dz, lddz );
+                magma_csetmatrix( n, n, wZ, ldwz, dZ, lddz );
             }
         }
         if (*info == 0) {
@@ -371,28 +393,28 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
     if (*m == 0) {
         *info = 0;
         if (wantz) {
-            *(unsigned char *)order = 'B';
+            order_ = "B";
         } else {
-            *(unsigned char *)order = 'E';
+            order_ = "E";
         }
         indibl = 1;
         indisp = indibl + n;
         indiwk = indisp + n;
 
-        lapackf77_sstebz(range_, order, &n, &vl, &vu, &il, &iu, &abstol, &rwork[indd], &rwork[inde], m,
+        lapackf77_sstebz(range_, order_, &n, &vl, &vu, &il, &iu, &abstol, &rwork[indd], &rwork[inde], m,
                          &nsplit, &w[1], &iwork[indibl], &iwork[indisp], &rwork[indrwk], &iwork[indiwk], info);
         
         if (wantz) {
             
             lapackf77_cstein(&n, &rwork[indd], &rwork[inde], m, &w[1], &iwork[indibl], &iwork[indisp],
-                             wz, &ldwz, &rwork[indrwk], &iwork[indiwk], &ifail[1], info);
+                             wZ, &ldwz, &rwork[indrwk], &iwork[indiwk], &ifail[1], info);
             
-            magma_csetmatrix( n, *m, wz, ldwz, dz, lddz );
+            magma_csetmatrix( n, *m, wZ, ldwz, dZ, lddz );
             
             /* Apply unitary matrix used in reduction to tridiagonal
                form to eigenvectors returned by CSTEIN. */
-            magma_cunmtr_gpu(MagmaLeft, uplo, MagmaNoTrans, n, *m, da, ldda, &work[indtau],
-                             dz, lddz, wa, ldwa, &iinfo);
+            magma_cunmtr_gpu(MagmaLeft, uplo, MagmaNoTrans, n, *m, dA, ldda, &work[indtau],
+                             dZ, lddz, wA, ldwa, &iinfo);
         }
     }
     /* If matrix was scaled, then rescale eigenvalues appropriately. */
@@ -425,7 +447,7 @@ magma_cheevx_gpu(char jobz, char range, char uplo, magma_int_t n,
                 iwork[indibl + i - 1] = iwork[indibl + j - 1];
                 w[j] = tmp1;
                 iwork[indibl + j - 1] = itmp1;
-                magma_cswap(n, dz + (i-1)*lddz, ione, dz + (j-1)*lddz, ione);
+                magma_cswap(n, dZ + (i-1)*lddz, ione, dZ + (j-1)*lddz, ione);
                 if (*info != 0) {
                     itmp1 = ifail[i];
                     ifail[i] = ifail[j];

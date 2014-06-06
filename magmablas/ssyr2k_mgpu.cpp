@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zher2k_mgpu.cpp normal z -> s, Fri Apr 25 15:05:24 2014
        @author Mark Gates
        @author Azzam Haidar 
 */
 #include "common_magma.h"
 
-/*
+/**
     Purpose
-    =======
+    -------
     SSYR2K performs one of the symmetric rank 2k operations
 
        C := alpha*A*B**T + conjg( alpha )*B*A**T + beta*C,
@@ -27,135 +27,145 @@
     and k by n matrices in the second case.
 
     Arguments
-    ==========
-
-    UPLO     (input) CHARACTER*1.
+    ----------
+    @param[in]
+    uplo     magma_uplo_t.
              On entry, UPLO specifies whether the upper or lower
              triangular part of the array C is to be referenced as
              follows:
-
-                UPLO = 'U' or 'u'   Only the upper triangular part of C
-                                    is to be referenced.
-
-                UPLO = 'L' or 'l'   Only the lower triangular part of C
-                                    is to be referenced.
+      -     = MagmaUpper:  Only the upper triangular part of C is to be referenced.
+      -     = MagmaLower:  Only the lower triangular part of C is to be referenced.
 
              **** current only Lower case is implemented.
 
-    TRANS    (input) CHARACTER*1.
+    @param[in]
+    trans    magma_trans_t.
              On entry, TRANS specifies the operation to be performed as
              follows:
-
-                TRANS = 'N' or 'n'
-                  C := alpha*A*B**T + conjg( alpha )*B*A**T + beta*C.
-
-                TRANS = 'C' or 'c'
-                  C := alpha*A**T*B + conjg( alpha )*B**T*A + beta*C.
+      -     = MagmaNoTrans:    C := alpha*A*B**T + ( alpha )*B*A**T + beta*C.
+      -     = MagmaTrans:  C := alpha*A**T*B + ( alpha )*B**T*A + beta*C.
 
              **** current only NoTrans case is implemented.
 
-    N        (input) INTEGER.
+    @param[in]
+    n        INTEGER.
              On entry, N specifies the order of the matrix C. N must be
              at least zero.
 
-    K        (input) INTEGER.
-             On entry with TRANS = 'N' or 'n', K specifies the number
+    @param[in]
+    k        INTEGER.
+             On entry with TRANS = MagmaNoTrans, K specifies the number
              of columns of the matrices A and B, and on entry with
-             TRANS = 'C' or 'c', K specifies the number of rows of the
+             TRANS = MagmaTrans, K specifies the number of rows of the
              matrices A and B. K must be at least zero.
 
-    ALPHA    (input) REAL.
+    @param[in]
+    alpha    REAL.
              On entry, ALPHA specifies the scalar alpha.
 
-    dA       (input) REAL array of DIMENSION ( LDA, ka ), where ka is
-             k when TRANS = 'N' or 'n', and is n otherwise.
-             Before entry with TRANS = 'N' or 'n', the leading n by k
+    @param[in]
+    dA       REAL array of DIMENSION ( LDA, ka ), where ka is
+             k when TRANS = MagmaNoTrans, and is n otherwise.
+             Before entry with TRANS = MagmaNoTrans, the leading n by k
              part of the array A must contain the matrix A, otherwise
              the leading k by n part of the array A must contain the
              matrix A.
              
              [TODO: describe distribution: duplicated on all GPUs.]
 
-    LDA      (input) INTEGER.
+    @param[in]
+    lda      INTEGER.
              On entry, LDA specifies the first dimension of A as declared
-             in the calling (sub) program. When TRANS = 'N' or 'n'
+             in the calling (sub) program. When TRANS = MagmaNoTrans
              then LDA must be at least max( 1, n ), otherwise LDA must
              be at least max( 1, k ).
 
-    AOFFSET  (input) INTEGER
+    @param[in]
+    aoffset  INTEGER
              Row offset to start sub-matrix of dA. Uses dA(aoffset:aoffset+n, :).
              0 <= aoffset < lda.
              
-    dB       (input) REAL array of DIMENSION ( LDB, kb ), where kb is
-             k when TRANS = 'N' or 'n', and is n otherwise.
-             Before entry with TRANS = 'N' or 'n', the leading n by k
+    @param[in]
+    dB       REAL array of DIMENSION ( LDB, kb ), where kb is
+             k when TRANS = MagmaNoTrans, and is n otherwise.
+             Before entry with TRANS = MagmaNoTrans, the leading n by k
              part of the array B must contain the matrix B, otherwise
              the leading k by n part of the array B must contain the
              matrix B.
              
              [TODO: describe distribution: duplicated on all GPUs.]
 
-    LDB      (input) INTEGER.
+    @param[in]
+    ldb      INTEGER.
              On entry, LDB specifies the first dimension of B as declared
-             in the calling (sub) program. When TRANS = 'N' or 'n'
+             in the calling (sub) program. When TRANS = MagmaNoTrans
              then LDB must be at least max( 1, n ), otherwise LDB must
              be at least max( 1, k ).
 
-    BOFFSET  (input) INTEGER
+    @param[in]
+    boffset  INTEGER
              Row offset to start sub-matrix of dB. Uses dB(boffset:boffset+n, :).
              0 <= boffset < ldb.
              
-    BETA     (input) REAL.
+    @param[in]
+    beta     REAL.
              On entry, BETA specifies the scalar beta.
 
-    dC       (input/output) REAL array of DIMENSION ( LDC, n ).
-             Before entry with UPLO = 'U' or 'u', the leading n by n
+    @param[in,out]
+    dC       REAL array of DIMENSION ( LDC, n ).
+             Before entry with UPLO = MagmaUpper, the leading n by n
              upper triangular part of the array C must contain the upper
              triangular part of the symmetric matrix and the strictly
              lower triangular part of C is not referenced. On exit, the
              upper triangular part of the array C is overwritten by the
              upper triangular part of the updated matrix.
-
-             Before entry with UPLO = 'L' or 'l', the leading n by n
+    \n
+             Before entry with UPLO = MagmaLower, the leading n by n
              lower triangular part of the array C must contain the lower
              triangular part of the symmetric matrix and the strictly
              upper triangular part of C is not referenced. On exit, the
              lower triangular part of the array C is overwritten by the
              lower triangular part of the updated matrix.
-
+    \n
              Note that the imaginary parts of the diagonal elements need
              not be set, they are assumed to be zero, and on exit they
              are set to zero. [TODO: verify]
              
              [TODO: describe distribution: 1D column block-cyclic across GPUs.]
 
-    LDC      (input) INTEGER.
+    @param[in]
+    ldc      INTEGER.
              On entry, LDC specifies the first dimension of C as declared
              in the calling (sub) program. LDC must be at least max( 1, n ).
 
-    COFFSET  (input) INTEGER.
+    @param[in]
+    coffset  INTEGER.
              Row and column offset to start sub-matrix of dC.
              Uses dC(coffset:coffset+n, coffset:coffset+n).
              0 <= coffset < ldc.
 
-    NGPU     (input) INTEGER.
+    @param[in]
+    ngpu     INTEGER.
              Number of GPUs over which matrix C is distributed.
 
-    NB       (input) INTEGER.
+    @param[in]
+    nb       INTEGER.
              Block size used for distribution of C.
 
-    STREAMS  (input) array of CUDA streams, of dimension NGPU by 20.
+    @param[in]
+    streams  array of CUDA streams, of dimension NGPU by 20.
              Streams to use for running multiple GEMMs in parallel.
              Only up to NSTREAM streams are used on each GPU.
 
-    NSTREAM  (input) INTEGER.
+    @param[in]
+    nstream  INTEGER.
              Number of streams to use on each device
-             
-*/
 
+    @ingroup magma_sblas3
+    ********************************************************************/
 extern "C"
 void magmablas_ssyr2k_mgpu2(
-    char uplo, char trans, magma_int_t n, magma_int_t k,
+    magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
     float alpha, float *dA[], magma_int_t lda, magma_int_t aoffset,
                            float *dB[], magma_int_t ldb, magma_int_t boffset,
     float beta,           float *dC[], magma_int_t ldc, magma_int_t coffset,
@@ -167,21 +177,21 @@ void magmablas_ssyr2k_mgpu2(
     
     /* Check arguments */
     magma_int_t info = 0;
-    if ( ! (uplo == 'l' || uplo == 'L')) {
+    if ( uplo != MagmaLower) {
         info = -1;  // 'u' not yet handled
-    } else if ( ! (trans == 'n' || trans == 'N')) {
+    } else if ( trans != MagmaNoTrans) {
         info = -2;  // 'c' not yet handled
     } else if ( n < 0 ) {
         info = -3;
     } else if ( k < 0 ) {
         info = -4;
-    } else if ( ((trans == 'n' || trans == 'N') && lda < max(1,n)) ||
-                ((trans == 'c' || trans == 'C') && lda < max(1,k)) ) {
+    } else if ( ((trans == MagmaNoTrans)   && lda < max(1,n)) ||
+                ((trans == MagmaTrans) && lda < max(1,k)) ) {
         info = -7;
     } else if ( aoffset < 0 || aoffset > lda ) {
         info = -8;
-    } else if ( ((trans == 'n' || trans == 'N') && ldb < max(1,n)) ||
-                ((trans == 'c' || trans == 'C') && ldb < max(1,k)) ) {
+    } else if ( ((trans == MagmaNoTrans)   && ldb < max(1,n)) ||
+                ((trans == MagmaTrans) && ldb < max(1,k)) ) {
         info = -10;
     } else if ( boffset < 0 || boffset > ldb ) {
         info = -11;

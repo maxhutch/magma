@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:56 2013
+       @generated from testing_zher2k_mgpu.cpp normal z -> s, Fri Apr 25 15:06:06 2014
        
        @author Mark Gates
 */
@@ -67,9 +67,9 @@ int main( int argc, char** argv)
     printf( "nb %d, ngpu %d, nstream %d\n", (int) nb, (int) ngpu, (int) nstream );
     printf("    n     k    nb offset  CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R|/(|V|*|W|+|A|)\n");
     printf("===================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
-        n = opts.nsize[i];
-        k = opts.ksize[i];
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+        n = opts.nsize[itest];
+        k = opts.ksize[itest];
         
         for( int offset = 0; offset < n; offset += min(k,nb) ) {
             for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -111,8 +111,7 @@ int main( int argc, char** argv)
                     magma_ssetmatrix( n, k, hW, lda, dW[d], ldda );
                 }
                 
-                cudaDeviceSynchronize();
-                gpu_time = magma_wtime();
+                gpu_time = magma_sync_wtime(0);
                 
                 if ( opts.version == 1 ) {
                     magmablas_ssyr2k_mgpu2(
@@ -141,8 +140,7 @@ int main( int argc, char** argv)
 #endif
                 }
                 
-                cudaDeviceSynchronize();
-                gpu_time = magma_wtime() - gpu_time;
+                gpu_time = magma_sync_wtime(0) - gpu_time;
                 gpu_perf = gflops / gpu_time;
                 
                 // Get dA back to the CPU to compare with the CPU result.
@@ -196,6 +194,10 @@ int main( int argc, char** argv)
                         magma_queue_destroy( streams[d][i] );
                     }
                 }
+                fflush( stdout );
+            }
+            if ( opts.niter > 1 ) {
+                printf( "\n" );
             }
         } // offset
         printf( "\n" );

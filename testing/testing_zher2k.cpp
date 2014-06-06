@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -14,7 +14,7 @@
 #include <string.h>
 #include <math.h>
 #include <cuda_runtime_api.h>
-#include <cublas.h>
+#include <cublas_v2.h>
 
 // includes, project
 #include "flops.h"
@@ -50,13 +50,14 @@ int main( int argc, char** argv)
     
     printf("If running lapack (option --lapack), MAGMA and CUBLAS error are both computed\n"
            "relative to CPU BLAS result. Else, MAGMA error is computed relative to CUBLAS result.\n\n"
-           "uplo = %c, transA = %c\n", opts.uplo, opts.transA );
+           "uplo = %s, transA = %s\n",
+           lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA) );
     printf("    N     K   CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  CUBLAS error\n");
     printf("==================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.msize[i];
-            K = opts.ksize[i];
+            N = opts.msize[itest];
+            K = opts.ksize[itest];
             gflops = FLOPS_ZHER2K(K, N) / 1e9;
 
             if ( opts.transA == MagmaNoTrans ) {
@@ -96,17 +97,17 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &sizeC, h_C );
             
             /* =====================================================================
-               Performs operation using CUDA-BLAS
+               Performs operation using CUBLAS
                =================================================================== */
             magma_zsetmatrix( An, Ak, h_A, lda, d_A, ldda );
             magma_zsetmatrix( Bn, Bk, h_B, ldb, d_B, lddb );
             magma_zsetmatrix( N, N, h_C, ldc, d_C, lddc );
             
             cublas_time = magma_sync_wtime( NULL );
-            cublasZher2k( opts.uplo, opts.transA, N, K,
-                         alpha, d_A, ldda,
-                                d_B, lddb,
-                         beta,  d_C, lddc );
+            cublasZher2k( handle, cublas_uplo_const(opts.uplo), cublas_trans_const(opts.transA), N, K,
+                          &alpha, d_A, ldda,
+                                  d_B, lddb,
+                          &beta,  d_C, lddc );
             cublas_time = magma_sync_wtime( NULL ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
@@ -117,7 +118,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                blasf77_zher2k( &opts.uplo, &opts.transA, &N, &K,
+                blasf77_zher2k( lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA), &N, &K,
                                &alpha, h_A, &lda,
                                        h_B, &ldb,
                                &beta,  h_C, &ldc );
@@ -156,6 +157,7 @@ int main( int argc, char** argv)
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_B );
             TESTING_FREE_DEV( d_C );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

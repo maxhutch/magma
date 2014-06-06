@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
   
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zgeqp3.cpp normal z -> c, Fri Apr 25 15:05:44 2014
 
 */
 
@@ -13,37 +13,26 @@
 #include <cblas.h>
 
 #define PRECISION_c
+#define COMPLEX
 
-extern "C" magma_int_t
-magma_cgeqp3( magma_int_t m, magma_int_t n,
-              magmaFloatComplex *A, magma_int_t lda,
-              magma_int_t *jpvt, magmaFloatComplex *tau,
-              magmaFloatComplex *work, magma_int_t lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
-              float *rwork,
-#endif
-              magma_int_t *info )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     CGEQP3 computes a QR factorization with column pivoting of a
     matrix A:  A*P = Q*R  using Level 3 BLAS.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
-    A       (input/output) COMPLEX array, dimension (LDA,N)
+    @param[in,out]
+    A       COMPLEX array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, the upper triangle of the array contains the
             min(M,N)-by-N upper trapezoidal matrix R; the elements below
@@ -51,42 +40,48 @@ magma_cgeqp3( magma_int_t m, magma_int_t n,
             unitary matrix Q as a product of min(M,N) elementary
             reflectors.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A. LDA >= max(1,M).
 
-    JPVT    (input/output) INTEGER array, dimension (N)
+    @param[in,out]
+    jpvt    INTEGER array, dimension (N)
             On entry, if JPVT(J).ne.0, the J-th column of A is permuted
             to the front of A*P (a leading column); if JPVT(J)=0,
             the J-th column of A is a free column.
             On exit, if JPVT(J)=K, then the J-th column of A*P was the
             the K-th column of A.
 
-    TAU     (output) COMPLEX array, dimension (min(M,N))
+    @param[out]
+    tau     COMPLEX array, dimension (min(M,N))
             The scalar factors of the elementary reflectors.
 
-    WORK    (workspace/output) COMPLEX array, dimension (MAX(1,LWORK))
+    @param[out]
+    work    (workspace) COMPLEX array, dimension (MAX(1,LWORK))
             On exit, if INFO=0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK.
             For [sd]geqp3, LWORK >= (N+1)*NB + 2*N;
             for [cz]geqp3, LWORK >= (N+1)*NB,
             where NB is the optimal blocksize.
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    For [cz]geqp3 only:
-    RWORK   (workspace) REAL array, dimension (2*N)
+    @param
+    rwork   (workspace, for [cz]geqp3 only) REAL array, dimension (2*N)
 
-    INFO    (output) INTEGER
-            = 0: successful exit.
-            < 0: if INFO = -i, the i-th argument had an illegal value.
+    @param[out]
+    info    INTEGER
+      -     = 0: successful exit.
+      -     < 0: if INFO = -i, the i-th argument had an illegal value.
 
     Further Details
-    ===============
+    ---------------
     The matrix Q is represented as a product of elementary reflectors
 
       Q = H(1) H(2) . . . H(k), where k = min(m,n).
@@ -98,8 +93,19 @@ magma_cgeqp3( magma_int_t m, magma_int_t n,
     where tau is a complex scalar, and v is a complex vector
     with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in
     A(i+1:m,i), and tau in TAU(i).
-    =====================================================================   */
 
+    @ingroup magma_cgeqp3_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cgeqp3( magma_int_t m, magma_int_t n,
+              magmaFloatComplex *A, magma_int_t lda,
+              magma_int_t *jpvt, magmaFloatComplex *tau,
+              magmaFloatComplex *work, magma_int_t lwork,
+              #ifdef COMPLEX
+              float *rwork,
+              #endif
+              magma_int_t *info )
+{
 #define  A(i, j) (A     + (i) + (j)*(lda ))
 #define dA(i, j) (dwork + (i) + (j)*(ldda))
 
@@ -128,9 +134,9 @@ magma_cgeqp3( magma_int_t m, magma_int_t n,
             lwkopt = 1;
         } else {
             lwkopt = (n + 1)*nb;
-#if defined(PRECISION_d) || defined(PRECISION_s)
+            #ifdef REAL
             lwkopt += 2*n;
-#endif
+            #endif
         }
         work[0] = MAGMA_C_MAKE( lwkopt, 0. );
 
@@ -149,9 +155,9 @@ magma_cgeqp3( magma_int_t m, magma_int_t n,
     if (minmn == 0)
         return *info;
 
-#if defined(PRECISION_d) || defined(PRECISION_s)
+    #ifdef REAL
     float *rwork = work + (n + 1)*nb;
-#endif
+    #endif
 
     ldda = ((m+31)/32)*32;
     ldwork = n*ldda + (n+1)*nb;
@@ -234,7 +240,7 @@ magma_cgeqp3( magma_int_t m, magma_int_t n,
                 /* Factorize JB columns among columns J:N. */
                 n_j = n - j;
                 
-                if (j>nfxd) {
+                if (j > nfxd) {
                     // Get panel to the CPU
                     magma_cgetmatrix( m-j, jb,
                                       dA(j,j), ldda,
@@ -277,4 +283,4 @@ magma_cgeqp3( magma_int_t m, magma_int_t n,
     magma_queue_destroy( stream );
 
     return *info;
-} /* cgeqp3 */
+} /* magma_cgeqp3 */

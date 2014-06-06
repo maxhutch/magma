@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:17 2013
+       @generated from magma_zbulge.h normal z -> c, Fri Apr 25 15:05:12 2014
 */
 
 #ifndef MAGMA_CBULGE_H
@@ -18,14 +18,14 @@ extern "C" {
 #endif
 
 
-magma_int_t magma_cbulge_applyQ_v2(char side, 
+magma_int_t magma_cbulge_applyQ_v2(magma_side_t side, 
                               magma_int_t NE, magma_int_t N, 
                               magma_int_t NB, magma_int_t Vblksiz, 
                               magmaFloatComplex *dE, magma_int_t ldde, 
                               magmaFloatComplex *V, magma_int_t ldv, 
                               magmaFloatComplex *T, magma_int_t ldt, 
                               magma_int_t *info);
-magma_int_t magma_cbulge_applyQ_v2_m(magma_int_t ngpu, char side, 
+magma_int_t magma_cbulge_applyQ_v2_m(magma_int_t ngpu, magma_side_t side, 
                               magma_int_t NE, magma_int_t N, 
                               magma_int_t NB, magma_int_t Vblksiz, 
                               magmaFloatComplex *E, magma_int_t lde, 
@@ -33,7 +33,7 @@ magma_int_t magma_cbulge_applyQ_v2_m(magma_int_t ngpu, char side,
                               magmaFloatComplex *T, magma_int_t ldt, 
                               magma_int_t *info);
 
-magma_int_t magma_cbulge_back( magma_int_t threads, char uplo, 
+magma_int_t magma_cbulge_back( magma_uplo_t uplo, 
                               magma_int_t n, magma_int_t nb, 
                               magma_int_t ne, magma_int_t Vblksiz,
                               magmaFloatComplex *Z, magma_int_t ldz,
@@ -42,7 +42,7 @@ magma_int_t magma_cbulge_back( magma_int_t threads, char uplo,
                               magmaFloatComplex *TAU,
                               magmaFloatComplex *T, magma_int_t ldt,
                               magma_int_t* info);
-magma_int_t magma_cbulge_back_m(magma_int_t nrgpu, magma_int_t threads, char uplo, 
+magma_int_t magma_cbulge_back_m(magma_int_t nrgpu, magma_uplo_t uplo, 
                               magma_int_t n, magma_int_t nb, 
                               magma_int_t ne, magma_int_t Vblksiz,
                               magmaFloatComplex *Z, magma_int_t ldz,
@@ -73,14 +73,14 @@ void magma_ctrdtype3cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
                               magma_int_t sweep, magma_int_t Vblksiz, 
                               magmaFloatComplex *work);
 
-magma_int_t magma_cunmqr_gpu_2stages(char side, char trans, magma_int_t m, magma_int_t n, magma_int_t k,
+magma_int_t magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k,
                               magmaFloatComplex *dA, magma_int_t ldda,
                               magmaFloatComplex *dC, magma_int_t lddc,
                               magmaFloatComplex *dT, magma_int_t nb,
                               magma_int_t *info);
 
 // used only for old version and internal
-magma_int_t magma_chetrd_bhe2trc_v5(magma_int_t threads, magma_int_t wantz, char uplo, 
+magma_int_t magma_chetrd_bhe2trc_v5(magma_int_t threads, magma_int_t wantz, magma_uplo_t uplo, 
                               magma_int_t ne, magma_int_t n, magma_int_t nb,
                               magmaFloatComplex *A, magma_int_t lda, 
                               float *D, float *E,

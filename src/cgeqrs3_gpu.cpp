@@ -1,63 +1,58 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:36 2013
+       @generated from zgeqrs3_gpu.cpp normal z -> c, Fri Apr 25 15:05:40 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_cgeqrs3_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
-                  magmaFloatComplex *dA,    magma_int_t ldda,
-                  magmaFloatComplex *tau,   magmaFloatComplex *dT,
-                  magmaFloatComplex *dB,    magma_int_t lddb,
-                  magmaFloatComplex *hwork, magma_int_t lwork,
-                  magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     Solves the least squares problem
            min || A*X - C ||
     using the QR factorization A = Q*R computed by CGEQRF3_GPU.
 
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    m       INTEGER
             The number of rows of the matrix A. M >= 0.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The number of columns of the matrix A. M >= N >= 0.
 
-    NRHS    (input) INTEGER
+    @param[in]
+    nrhs    INTEGER
             The number of columns of the matrix C. NRHS >= 0.
 
-    A       (input) COMPLEX array on the GPU, dimension (LDDA,N)
+    @param[in]
+    dA      COMPLEX array on the GPU, dimension (LDDA,N)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,n, as returned by
             CGEQRF3_GPU in the first n columns of its array argument A.
 
-    LDDA    (input) INTEGER
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array A, LDDA >= M.
 
-    TAU     (input) COMPLEX array, dimension (N)
+    @param[in]
+    tau     COMPLEX array, dimension (N)
             TAU(i) must contain the scalar factor of the elementary
             reflector H(i), as returned by MAGMA_CGEQRF_GPU.
 
-    DB      (input/output) COMPLEX array on the GPU, dimension (LDDB,NRHS)
+    @param[in,out]
+    dB      COMPLEX array on the GPU, dimension (LDDB,NRHS)
             On entry, the M-by-NRHS matrix C.
             On exit, the N-by-NRHS solution matrix X.
 
-    DT      (input) COMPLEX array that is the output (the 6th argument)
+    @param[in]
+    dT      COMPLEX array that is the output (the 6th argument)
             of magma_cgeqrf_gpu of size
             2*MIN(M, N)*NB + ((N+31)/32*32 )* MAX(NB, NRHS).
             The array starts with a block of size MIN(M,N)*NB that stores
@@ -66,28 +61,41 @@ magma_cgeqrs3_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
             matrices for the R matrix, followed by work space of size
             ((N+31)/32*32 )* MAX(NB, NRHS).
 
-    LDDB    (input) INTEGER
-            The leading dimension of the array DB. LDDB >= M.
+    @param[in]
+    lddb    INTEGER
+            The leading dimension of the array dB. LDDB >= M.
 
-    HWORK   (workspace/output) COMPLEX array, dimension (LWORK)
+    @param[out]
+    hwork   (workspace) COMPLEX array, dimension (LWORK)
             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
-    LWORK   (input) INTEGER
+    @param[in]
+    lwork   INTEGER
             The dimension of the array WORK,
             LWORK >= (M - N + NB)*(NRHS + NB) + NRHS*NB,
             where NB is the blocksize given by magma_get_cgeqrf_nb( M ).
-
+    \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the HWORK array, returns
             this value as the first entry of the WORK array.
 
-    INFO    (output) INTEGER
-            = 0:  successful exit
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-    =====================================================================    */
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
-    #define a_ref(a_1,a_2) (dA+(a_2)*(ldda) + (a_1))
-    #define d_ref(a_1)     (dT+(lddwork+(a_1))*nb)
+    @ingroup magma_cgels_comp
+    ********************************************************************/
+extern "C" magma_int_t
+magma_cgeqrs3_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
+                  magmaFloatComplex *dA,    magma_int_t ldda,
+                  magmaFloatComplex *tau,   magmaFloatComplex *dT,
+                  magmaFloatComplex *dB,    magma_int_t lddb,
+                  magmaFloatComplex *hwork, magma_int_t lwork,
+                  magma_int_t *info)
+{
+    #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
+    #define dT(a_1)     (dT + (lddwork+(a_1))*nb)
 
     magmaFloatComplex c_one     = MAGMA_C_ONE;
     magma_int_t k, lddwork;
@@ -129,29 +137,29 @@ magma_cgeqrs3_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     /* B := Q' * B */
     magma_cunmqr_gpu( MagmaLeft, MagmaConjTrans,
                       m, nrhs, n,
-                      a_ref(0,0), ldda, tau,
+                      dA(0,0), ldda, tau,
                       dB, lddb, hwork, lwork, dT, nb, info );
     if ( *info != 0 ) {
         return *info;
     }
 
     /* Solve R*X = B(1:n,:)
-       1. Move the block diagonal submatrices from d_ref to R
+       1. Move the block diagonal submatrices from dT to R
        2. Solve
-       3. Restore the data format moving data from R back to d_ref
+       3. Restore the data format moving data from R back to dT
     */
-    magmablas_cswapdblk(k, nb, a_ref(0,0), ldda, 1, d_ref(0), nb, 0);
+    magmablas_cswapdblk(k, nb, dA(0,0), ldda, 1, dT(0), nb, 0);
     if ( nrhs == 1 ) {
         magma_ctrsv(MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                    n, a_ref(0,0), ldda, dB, 1);
+                    n, dA(0,0), ldda, dB, 1);
     } else {
         magma_ctrsm(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                    n, nrhs, c_one, a_ref(0,0), ldda, dB, lddb);
+                    n, nrhs, c_one, dA(0,0), ldda, dB, lddb);
     }
-    magmablas_cswapdblk(k, nb, d_ref(0), nb, 0, a_ref(0,0), ldda, 1);
+    magmablas_cswapdblk(k, nb, dT(0), nb, 0, dA(0,0), ldda, 1);
 
     return *info;
 }
 
-#undef a_ref
-#undef d_ref
+#undef dA
+#undef dT

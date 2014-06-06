@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:45 2013
+       @generated from zgemm_fermi.cu normal z -> s, Fri Apr 25 15:05:23 2014
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -29,23 +29,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-extern "C" void
-magmablas_sgemm(
-    char TRANSA, char TRANSB, magma_int_t m, magma_int_t n, magma_int_t k,
-    float alpha,
-    const float *d_A, magma_int_t lda,
-    const float *d_B, magma_int_t ldb,
-    float beta,
-    float *d_C, magma_int_t ldc )
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     SGEMM performs one of the matrix-matrix operations
     
         C = alpha*op( A )*op( B ) + beta*C,
@@ -58,79 +44,80 @@ magmablas_sgemm(
     op( A ) an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
     
     Parameters
-    ==========
+    ----------
+    @param[in]
     TRANSA  CHARACTER*1.
             On entry, TRANSA specifies the form of op( A ) to be used in
             the matrix multiplication as follows:
-                TRANSA = 'N' or 'n',  op( A ) = A.
-                TRANSA = 'T' or 't',  op( A ) = A**T.
-                TRANSA = 'C' or 'c',  op( A ) = A**T.
-            Unchanged on exit.
+      -     = 'N':  op( A ) = A.
+      -     = 'T':  op( A ) = A**T.
+      -     = 'C':  op( A ) = A**T.
     
+    @param[in]
     TRANSB  CHARACTER*1.
             On entry, TRANSB specifies the form of op( B ) to be used in
             the matrix multiplication as follows:
-                TRANSB = 'N' or 'n',  op( B ) = B.
-                TRANSB = 'T' or 't',  op( B ) = B**T.
-                TRANSB = 'C' or 'c',  op( B ) = B**T.
-            Unchanged on exit.
+      -     = 'N':  op( B ) = B.
+      -     = 'T':  op( B ) = B**T.
+      -     = 'C':  op( B ) = B**T.
     
-    M       INTEGER.
+    @param[in]
+    m       INTEGER.
             On entry,  M  specifies  the number  of rows  of the  matrix
             op( d_A )  and of the  matrix d_C.  M  must  be at least  zero.
-            Unchanged on exit.
     
-    N       INTEGER.
+    @param[in]
+    n       INTEGER.
             On entry,  N  specifies the number  of columns of the matrix
             op( d_B ) and the number of columns of the matrix d_C. N must be
             at least zero.
-            Unchanged on exit.
     
-    K       INTEGER.
+    @param[in]
+    k       INTEGER.
             On entry,  K  specifies  the number of columns of the matrix
             op( d_A ) and the number of rows of the matrix op( d_B ). K must
             be at least  zero.
-            Unchanged on exit.
     
-    ALPHA   REAL
+    @param[in]
+    alpha   REAL
             On entry, ALPHA specifies the scalar alpha.
-            Unchanged on exit.
     
+    @param[in]
     d_A     REAL array of DIMENSION ( LDA, ka ), where ka is
-            k  when  TRANSA = 'N' or 'n',  and is  m  otherwise.
-            Before entry with  TRANSA = 'N' or 'n',  the leading  m by k
+            k  when  TRANSA = MagmaNoTrans,  and is  m  otherwise.
+            Before entry with  TRANSA = MagmaNoTrans,  the leading  m by k
             part of the array d_A must contain the matrix d_A, otherwise
             the leading  k by m  part of the array d_A must contain  the
             matrix d_A.
-            Unchanged on exit.
     
-    LDA     INTEGER.
+    @param[in]
+    lda     INTEGER.
             On entry, LDA specifies the first dimension of A as declared
-            in the calling (sub) program. When  TRANSA = 'N' or 'n' then
+            in the calling (sub) program. When  TRANSA = MagmaNoTrans then
             LDA must be at least  max( 1, m ), otherwise  LDA must be at
             least  max( 1, k ).
-            Unchanged on exit.
     
+    @param[in]
     d_B     REAL array of DIMENSION ( LDB, kb ), where kb is
-            n  when  TRANSB = 'N' or 'n',  and is  k  otherwise.
-            Before entry with  TRANSB = 'N' or 'n',  the leading  k by n
+            n  when  TRANSB = MagmaNoTrans,  and is  k  otherwise.
+            Before entry with  TRANSB = MagmaNoTrans,  the leading  k by n
             part of the array d_B must contain the matrix d_B, otherwise
             the leading  n by k  part of the array d_B must contain  the
             matrix d_B.
-            Unchanged on exit.
     
-    LDB     INTEGER.
+    @param[in]
+    ldb     INTEGER.
             On entry, LDB specifies the first dimension of d_B as declared
-            in the calling (sub) program. When  TRANSB = 'N' or 'n' then
+            in the calling (sub) program. When  TRANSB = MagmaNoTrans then
             LDB must be at least  max( 1, k ), otherwise  LDB must be at
             least  max( 1, n ).
-            Unchanged on exit.
     
-    BETA    REAL.
+    @param[in]
+    beta    REAL.
             On entry,  BETA  specifies the scalar  beta.  When  BETA  is
             supplied as zero then d_C need not be set on input.
-            Unchanged on exit.
     
+    @param[in,out]
     d_C     REAL array of DIMENSION ( LDC, n ).
             Before entry, the leading  m by n  part of the array  d_C must
             contain the matrix  d_C,  except when  beta  is zero, in which
@@ -138,12 +125,23 @@ magmablas_sgemm(
             On exit, the array  d_C  is overwritten by the  m by n  matrix
             ( alpha*op( d_A )*op( d_B ) + beta*d_C ).
     
-    LDC     INTEGER.
+    @param[in]
+    ldc     INTEGER.
             On entry, LDC specifies the first dimension of d_C as declared
             in  the  calling  (sub)  program.   LDC  must  be  at  least
             max( 1, m ).
-            Unchanged on exit.
-    =====================================================================    */
+
+    @ingroup magma_sblas3
+    ********************************************************************/
+extern "C" void
+magmablas_sgemm(
+    magma_trans_t TRANSA, magma_trans_t TRANSB, magma_int_t m, magma_int_t n, magma_int_t k,
+    float alpha,
+    const float *d_A, magma_int_t lda,
+    const float *d_B, magma_int_t ldb,
+    float beta,
+    float *d_C, magma_int_t ldc )
+{
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
@@ -152,7 +150,8 @@ magmablas_sgemm(
         // magmablas for [sd] precisions, cublas for [zc] precisions.
         #if defined(PRECISION_z) || defined(PRECISION_c)
         cublasSgemm(
-            TRANSA, TRANSB, m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+            lapacke_trans_const(TRANSA), lapacke_trans_const(TRANSB),
+            m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
         #else
         magmablas_sgemm_tesla(
             TRANSA, TRANSB, m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
@@ -169,14 +168,14 @@ magmablas_sgemm(
     size_t offsetB = 0;
 
     int TransA = 2, TransB = 2;
-    if      ( TRANSA == 'T' || TRANSA == 't' )
+    if      ( TRANSA == MagmaTrans )
         TransA = 1;
-    else if ( TRANSA == 'N' || TRANSA == 'n' )
+    else if ( TRANSA == MagmaNoTrans )
         TransA = 0;
                     
-    if      ( TRANSB == 'T' || TRANSB == 't' )
+    if      ( TRANSB == MagmaTrans )
         TransB = 1;
-    else if ( TRANSB == 'N' || TRANSB == 'n' )
+    else if ( TRANSB == MagmaNoTrans )
         TransB = 0;
 
     size_t sizeA = (size_t) lda * (size_t) (!TransA ? k : m);
@@ -186,7 +185,7 @@ magmablas_sgemm(
     if ( sizeA >= CUBLAS_MAX_1DBUF_SIZE ||
          sizeB >= CUBLAS_MAX_1DBUF_SIZE )
     {
-        cublasSgemm( TRANSA, TRANSB, m, n, k, alpha,
+        cublasSgemm( lapacke_trans_const(TRANSA), lapacke_trans_const(TRANSB), m, n, k, alpha,
                      d_A, lda, d_B, ldb,
                      beta, d_C, ldc );
         return;

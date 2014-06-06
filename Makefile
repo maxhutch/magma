@@ -1,13 +1,13 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      December 2013
+#      @date April 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = .
-include ./Makefile.internal
+include $(MAGMA_DIR)/Makefile.internal
 -include Makefile.local
 
 
@@ -51,28 +51,28 @@ lapacktest:
 	( cd testing/lin    && $(MAKE) )
 
 test: lib
-	@echo ======================================== test
+	@echo ======================================== testing
 	( cd testing        && $(MAKE) )
 
 clean:
-	( cd control        && $(MAKE) clean )
+	( cd magmablas      && $(MAKE) clean )
 	( cd src            && $(MAKE) clean )
+	( cd control        && $(MAKE) clean )
 	( cd interface_cuda && $(MAKE) clean )
 	( cd testing        && $(MAKE) clean )
 	( cd testing/lin    && $(MAKE) clean )
-	( cd magmablas      && $(MAKE) clean ) 
-#	( cd quark          && $(MAKE) clean )
+	#(cd quark          && $(MAKE) clean )
 	-rm -f $(LIBMAGMA) $(LIBMAGMA_SO)
 
 cleanall:
-	( cd control        && $(MAKE) cleanall )
+	( cd magmablas      && $(MAKE) cleanall )
 	( cd src            && $(MAKE) cleanall )
+	( cd control        && $(MAKE) cleanall )
 	( cd interface_cuda && $(MAKE) cleanall )
 	( cd testing        && $(MAKE) cleanall )
 	( cd testing/lin    && $(MAKE) cleanall )
-	( cd magmablas      && $(MAKE) cleanall ) 
-	( cd lib            && rm -f *.a )
-#	( cd quark          && $(MAKE) cleanall )
+	( cd lib            && rm -f *.a *.so )
+	#(cd quark          && $(MAKE) cleanall )
 	$(MAKE) cleanall2
 
 # cleanall2 is a dummy rule to run cleanmkgen at the *end* of make cleanall, so
@@ -87,17 +87,17 @@ dir:
 	mkdir -p $(prefix)/lib/pkgconfig
 
 install: lib dir
-#       MAGMA
+	# MAGMA
 	cp $(MAGMA_DIR)/include/*.h  $(prefix)/include
 	cp $(LIBMAGMA)               $(prefix)/lib
 	-cp $(LIBMAGMA_SO)           $(prefix)/lib
-#       QUARK
-#	cp $(QUARKDIR)/include/quark.h             $(prefix)/include
-#	cp $(QUARKDIR)/include/quark_unpack_args.h $(prefix)/include
-#	cp $(QUARKDIR)/include/icl_hash.h          $(prefix)/include
-#	cp $(QUARKDIR)/include/icl_list.h          $(prefix)/include
-#	cp $(QUARKDIR)/lib/libquark.a              $(prefix)/lib
-#       pkgconfig
+	# QUARK
+	# cp $(QUARKDIR)/include/quark.h             $(prefix)/include
+	# cp $(QUARKDIR)/include/quark_unpack_args.h $(prefix)/include
+	# cp $(QUARKDIR)/include/icl_hash.h          $(prefix)/include
+	# cp $(QUARKDIR)/include/icl_list.h          $(prefix)/include
+	# cp $(QUARKDIR)/lib/libquark.a              $(prefix)/lib
+	# pkgconfig
 	cat $(MAGMA_DIR)/lib/pkgconfig/magma.pc.in | \
 	    sed -e s:@INSTALL_PREFIX@:"$(prefix)": | \
 	    sed -e s:@INCLUDES@:"$(INC)":          | \
@@ -112,15 +112,13 @@ install: lib dir
 # Better solution would be to use non-recursive make, so make knows all the
 # objects in each subdirectory, or use libtool, or put rules for, e.g., the
 # control directory in src/Makefile (as done in src/CMakeLists.txt)
-LIBMAGMA_SO     = $(LIBMAGMA:.a=.so)
+LIBMAGMA_SO = $(LIBMAGMA:.a=.so)
 
 shared: lib
 	$(MAKE) $(LIBMAGMA_SO)
 
-$(LIBMAGMA_SO): src/*.o control/*.o interface_cuda/*.o magmablas/*.cu_o
-	@echo ======================================== libmagma.so
-	$(CC) $(LDOPTS) -shared -o $(LIBMAGMA_SO) \
-	src/*.o control/*.o \
-	interface_cuda/*.o magmablas/*.cu_o magmablas/*.o \
+$(LIBMAGMA_SO): src/*.o control/*.o interface_cuda/*.o magmablas/*.o
+	@echo ======================================== $(LIBMAGMA_SO)
+	$(CC) $(LDOPTS) -shared -o $(LIBMAGMA_SO) $^ \
 	$(LIBDIR) \
 	$(LIB)

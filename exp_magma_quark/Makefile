@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.4.1) --
+#   -- MAGMA (version 1.5.0-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      December 2013
+#      November 2011
 #
 #	   @author: Simplice Donfack
 #//////////////////////////////////////////////////////////////////////////////
@@ -28,6 +28,10 @@ libexp:
 	( cd core     && $(MAKE) )
 	@echo ======================================== schedule
 	( cd schedule && $(MAKE) )
+	@echo ======================================== magma_insert
+	( cd magma_insert && $(MAKE) )
+	@echo ======================================== magma_task
+	( cd magma_task && $(MAKE) )
 	@echo ======================================== src
 	( cd src      && $(MAKE) )
 	

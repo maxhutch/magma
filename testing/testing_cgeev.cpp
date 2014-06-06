@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated c Tue Dec 17 13:18:56 2013
+       @generated from testing_zgeev.cpp normal z -> c, Fri Apr 25 15:06:13 2014
 
 */
 
@@ -105,9 +105,9 @@ int main( int argc, char** argv)
     
     printf("    N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
     printf("===========================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda   = N;
             n2    = lda*N;
             nb    = magma_get_cgehrd_nb(N);
@@ -358,7 +358,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_cgeev( &opts.jobvl, &opts.jobvr,
+                lapackf77_cgeev( lapack_vec_const(opts.jobvl), lapack_vec_const(opts.jobvr),
                                  &N, h_A, &lda, w2,
                                  VL, &lda, VR, &lda,
                                  h_work, &lwork, rwork, &info );
@@ -393,9 +393,9 @@ int main( int argc, char** argv)
                 error  = cblas_scnrm2( N, w1copy, 1 );
                 error /= cblas_scnrm2( N, w2copy, 1 );
                 
-                printf("%5d   %7.2f          %7.2f          %.2e %s\n",
+                printf("%5d   %7.2f          %7.2f          %.2e  %s\n",
                        (int) N, cpu_time, gpu_time,
-                       error, (error < tolulp ? "  ok" : "  failed"));
+                       error, (error < tolulp ? "ok" : "failed"));
                 status |= ! (error < tolulp);
             }
             else {
@@ -404,15 +404,15 @@ int main( int argc, char** argv)
             }
             if ( opts.check ) {
                 // -1 indicates test was not run
-                if ( result[0] != -1 ) { printf("        | A * VR - VR * W | / ( n |A| ) = %8.2e %s\n", result[0], (result[0] < tol ? "  ok" : "  failed")); }
-                if ( result[1] != -1 ) { printf("        |  |VR(i)| - 1    |             = %8.2e %s\n", result[1], (result[1] < tol ? "  ok" : "  failed")); }
-                if ( result[2] != -1 ) { printf("        | A'* VL - VL * W'| / ( n |A| ) = %8.2e %s\n", result[2], (result[2] < tol ? "  ok" : "  failed")); }
-                if ( result[3] != -1 ) { printf("        |  |VL(i)| - 1    |             = %8.2e %s\n", result[3], (result[3] < tol ? "  ok" : "  failed")); }
-                if ( result[4] != -1 ) { printf("        W  (full) == W  (partial, W only)          %s\n",         (result[4] == 1. ? "  ok" : "  failed")); }
-                if ( result[5] != -1 ) { printf("        W  (full) == W  (partial, W and VR)        %s\n",         (result[5] == 1. ? "  ok" : "  failed")); }
-                if ( result[6] != -1 ) { printf("        W  (full) == W  (partial, W and VL)        %s\n",         (result[6] == 1. ? "  ok" : "  failed")); }
-                if ( result[7] != -1 ) { printf("        VR (full) == VR (partial, W and VR)        %s\n",         (result[7] == 1. ? "  ok" : "  failed")); }
-                if ( result[8] != -1 ) { printf("        VL (full) == VL (partial, W and VL)        %s\n",         (result[8] == 1. ? "  ok" : "  failed")); }
+                if ( result[0] != -1 ) { printf("        | A * VR - VR * W | / ( n |A| ) = %8.2e  %s\n", result[0], (result[0] < tol ? "ok" : "failed")); }
+                if ( result[1] != -1 ) { printf("        |  |VR(i)| - 1    |             = %8.2e  %s\n", result[1], (result[1] < tol ? "ok" : "failed")); }
+                if ( result[2] != -1 ) { printf("        | A'* VL - VL * W'| / ( n |A| ) = %8.2e  %s\n", result[2], (result[2] < tol ? "ok" : "failed")); }
+                if ( result[3] != -1 ) { printf("        |  |VL(i)| - 1    |             = %8.2e  %s\n", result[3], (result[3] < tol ? "ok" : "failed")); }
+                if ( result[4] != -1 ) { printf("        W  (full) == W  (partial, W only)           %s\n",         (result[4] == 1. ? "ok" : "failed")); }
+                if ( result[5] != -1 ) { printf("        W  (full) == W  (partial, W and VR)         %s\n",         (result[5] == 1. ? "ok" : "failed")); }
+                if ( result[6] != -1 ) { printf("        W  (full) == W  (partial, W and VL)         %s\n",         (result[6] == 1. ? "ok" : "failed")); }
+                if ( result[7] != -1 ) { printf("        VR (full) == VR (partial, W and VR)         %s\n",         (result[7] == 1. ? "ok" : "failed")); }
+                if ( result[8] != -1 ) { printf("        VL (full) == VL (partial, W and VL)         %s\n",         (result[8] == 1. ? "ok" : "failed")); }
                 
                 int newline = 0;
                 if ( result[0] != -1 ) { status |= ! (result[0] < tol);  newline = 1; }
@@ -440,6 +440,7 @@ int main( int argc, char** argv)
             TESTING_FREE_PIN( VL     );
             TESTING_FREE_PIN( VR     );
             TESTING_FREE_PIN( h_work );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

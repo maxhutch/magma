@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
     @author Stan Tomov
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated s Tue Dec 17 13:18:57 2013
+    @generated from testing_dsygvd.cpp normal d -> s, Fri Apr 25 15:06:13 2014
 
 */
 
@@ -65,9 +65,9 @@ int main( int argc, char** argv)
     
     printf("    N   CPU Time (sec)   GPU Time(sec)\n");
     printf("======================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = N;
             n2     = N*lda;
             nb     = magma_get_ssytrd_nb(N);
@@ -138,44 +138,44 @@ int main( int argc, char** argv)
                 if ( opts.itype == 1 || opts.itype == 2 ) {
                     lapackf77_slaset( "A", &N, &N, &d_zero, &c_one, h_S, &lda);
                     blasf77_sgemm("N", "C", &N, &N, &N, &c_one, h_R, &lda, h_R, &lda, &d_zero, h_work, &N);
-                    blasf77_ssymm("R", &opts.uplo, &N, &N, &c_neg_one, h_B, &lda, h_work, &N, &c_one, h_S, &lda);
+                    blasf77_ssymm("R", lapack_uplo_const(opts.uplo), &N, &N, &c_neg_one, h_B, &lda, h_work, &N, &c_one, h_S, &lda);
                     result[1] = lapackf77_slange("1", &N, &N, h_S, &lda, h_work) / N;
                 }
                 else if ( opts.itype == 3 ) {
                     lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_B, &lda, h_S, &lda);
-                    blasf77_ssyrk(&opts.uplo, "N", &N, &N, &d_neg_one, h_R, &lda, &d_one, h_S, &lda);
-                    result[1] = lapackf77_slansy("1", &opts.uplo, &N, h_S, &lda, h_work) / N
-                              / lapackf77_slansy("1", &opts.uplo, &N, h_B, &lda, h_work);
+                    blasf77_ssyrk(lapack_uplo_const(opts.uplo), "N", &N, &N, &d_neg_one, h_R, &lda, &d_one, h_S, &lda);
+                    result[1] = lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_S, &lda, h_work) / N
+                              / lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_B, &lda, h_work);
                 }
                 
                 result[0] = 1.;
-                result[0] /= lapackf77_slansy("1", &opts.uplo, &N, h_A, &lda, h_work);
+                result[0] /= lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_A, &lda, h_work);
                 result[0] /= lapackf77_slange("1", &N, &N, h_R, &lda, h_work);
                 
                 if ( opts.itype == 1 ) {
-                    blasf77_ssymm("L", &opts.uplo, &N, &N, &c_one, h_A, &lda, h_R, &lda, &d_zero, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_R, &lda, &d_zero, h_work, &N);
                     for(int i=0; i<N; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_ssymm("L", &opts.uplo, &N, &N, &c_neg_one, h_B, &lda, h_R, &lda, &c_one, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_neg_one, h_B, &lda, h_R, &lda, &c_one, h_work, &N);
                     result[0] *= lapackf77_slange("1", &N, &N, h_work, &N, &temp1)/N;
                 }
                 else if ( opts.itype == 2 ) {
-                    blasf77_ssymm("L", &opts.uplo, &N, &N, &c_one, h_B, &lda, h_R, &lda, &d_zero, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_B, &lda, h_R, &lda, &d_zero, h_work, &N);
                     for(int i=0; i<N; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_ssymm("L", &opts.uplo, &N, &N, &c_one, h_A, &lda, h_work, &N, &c_neg_one, h_R, &lda);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_work, &N, &c_neg_one, h_R, &lda);
                     result[0] *= lapackf77_slange("1", &N, &N, h_R, &lda, &temp1)/N;
                 }
                 else if ( opts.itype == 3 ) {
-                    blasf77_ssymm("L", &opts.uplo, &N, &N, &c_one, h_A, &lda, h_R, &lda, &d_zero, h_work, &N);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_R, &lda, &d_zero, h_work, &N);
                     for(int i=0; i<N; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_ssymm("L", &opts.uplo, &N, &N, &c_one, h_B, &lda, h_work, &N, &c_neg_one, h_R, &lda);
+                    blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_B, &lda, h_work, &N, &c_neg_one, h_R, &lda);
                     result[0] *= lapackf77_slange("1", &N, &N, h_R, &lda, &temp1)/N;
                 }
                 
                 /*
-                lapackf77_ssyt21(&ione, &opts.uplo, &N, &izero,
+                lapackf77_ssyt21(&ione, lapack_uplo_const(opts.uplo), &N, &izero,
                                  h_A, &lda,
                                  w1, w1,
                                  h_R, &lda,
@@ -209,7 +209,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_ssygvd( &opts.itype, &opts.jobz, &opts.uplo,
+                lapackf77_ssygvd( &opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
                                   &N, h_A, &lda, h_B, &lda, w2,
                                   h_work, &lwork,
                                   iwork, &liwork,
@@ -254,6 +254,7 @@ int main( int argc, char** argv)
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_S    );
             TESTING_FREE_PIN( h_work );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

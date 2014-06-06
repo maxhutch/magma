@@ -1,89 +1,90 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:36 2013
+       @generated from ztrtri.cpp normal z -> d, Fri Apr 25 15:05:36 2014
 
 */
 #include "common_magma.h"
 
-extern "C" magma_int_t
-magma_dtrtri(char uplo, char diag, magma_int_t n,
-              double *A, magma_int_t lda, magma_int_t *info)
-{
-/*  -- MAGMA (version 1.4.1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       December 2013
-
+/**
     Purpose
-    =======
+    -------
     DTRTRI computes the inverse of a real upper or lower triangular
     matrix A.
 
     This is the Level 3 BLAS version of the algorithm.
 
     Arguments
-    =========
-    UPLO    (input) CHARACTER*1
-            = 'U':  A is upper triangular;
-            = 'L':  A is lower triangular.
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  A is upper triangular;
+      -     = MagmaLower:  A is lower triangular.
 
-    DIAG    (input) CHARACTER*1
-            = 'N':  A is non-unit triangular;
-            = 'U':  A is unit triangular.
+    @param[in]
+    diag    magma_diag_t
+      -     = MagmaNonUnit:  A is non-unit triangular;
+      -     = MagmaUnit:     A is unit triangular.
 
-    N       (input) INTEGER
+    @param[in]
+    n       INTEGER
             The order of the matrix A.  N >= 0.
 
-    A       (input/output) DOUBLE_PRECISION array, dimension (LDA,N)
-            On entry, the triangular matrix A.  If UPLO = 'U', the
+    @param[in,out]
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
+            On entry, the triangular matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of the array A contains
             the upper triangular matrix, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of the array A contains
             the lower triangular matrix, and the strictly upper
-            triangular part of A is not referenced.  If DIAG = 'U', the
+            triangular part of A is not referenced.  If DIAG = MagmaUnit, the
             diagonal elements of A are also not referenced and are
             assumed to be 1.
             On exit, the (triangular) inverse of the original matrix, in
             the same storage format.
 
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    INFO    (output) INTEGER
-            = 0: successful exit
-            < 0: if INFO = -i, the i-th argument had an illegal value
-            > 0: if INFO = i, A(i,i) is exactly zero.  The triangular
+    @param[out]
+    info    INTEGER
+      -     = 0: successful exit
+      -     < 0: if INFO = -i, the i-th argument had an illegal value
+      -     > 0: if INFO = i, A(i,i) is exactly zero.  The triangular
                     matrix is singular and its inverse cannot be computed.
 
-    ===================================================================== */
-
+    @ingroup magma_dgesv_aux
+    ********************************************************************/
+extern "C" magma_int_t
+magma_dtrtri(magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
+              double *A, magma_int_t lda, magma_int_t *info)
+{
     #define  A(i, j) ( A + (i) + (j)*lda )
     #define dA(i, j) (dA + (i) + (j)*ldda)
 
     /* Local variables */
-    char uplo_[2] = {uplo, 0};
-    char diag_[2] = {diag, 0};
+    const char* uplo_ = lapack_uplo_const( uplo );
+    const char* diag_ = lapack_diag_const( diag );
     magma_int_t     ldda, nb, nn, j, jb;
     double c_zero     = MAGMA_D_ZERO;
     double c_one      = MAGMA_D_ONE;
     double c_neg_one  = MAGMA_D_NEG_ONE;
     double *dA;
 
-    int upper  = lapackf77_lsame(uplo_, "U");
-    int nounit = lapackf77_lsame(diag_, "N");
+    int upper  = (uplo == MagmaUpper);
+    int nounit = (diag == MagmaNonUnit);
 
     *info = 0;
 
-    if ((! upper) && (! lapackf77_lsame(uplo_, "L")))
+    if (! upper && uplo != MagmaLower)
         *info = -1;
-    else if ((! nounit) && (! lapackf77_lsame(diag_, "U")))
+    else if (! nounit && diag != MagmaUnit)
         *info = -2;
     else if (n < 0)
         *info = -3;
@@ -101,7 +102,7 @@ magma_dtrtri(char uplo, char diag, magma_int_t n,
 
     /* Check for singularity if non-unit */
     if (nounit) {
-        for ( j=0; j<n; ++j ) {
+        for (j=0; j < n; ++j) {
             if ( MAGMA_D_EQUAL( *A(j,j), c_zero )) {
                 *info = j+1;  // Fortran index
                 return *info;
@@ -127,7 +128,7 @@ magma_dtrtri(char uplo, char diag, magma_int_t n,
     else {
         if (upper) {
             /* Compute inverse of upper triangular matrix */
-            for (j=0; j<n; j=j+nb) {
+            for (j=0; j < n; j += nb) {
                 jb = min(nb, (n-j));
                 magma_dsetmatrix( jb, (n-j),
                                   A(j, j),  lda,
@@ -164,10 +165,10 @@ magma_dtrtri(char uplo, char diag, magma_int_t n,
             /* Compute inverse of lower triangular matrix */
             nn=((n-1)/nb)*nb+1;
 
-            for(j=nn-1; j>=0; j=j-nb) {
+            for (j=nn-1; j >= 0; j -= nb) {
                 jb=min(nb,(n-j));
 
-                if((j+jb) < n) {
+                if ((j+jb) < n) {
                     magma_dsetmatrix( (n-j), jb,
                                       A(j, j),  lda,
                                       dA(j, j), ldda );

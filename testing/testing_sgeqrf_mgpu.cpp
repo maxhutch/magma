@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated s Tue Dec 17 13:18:56 2013
+       @generated from testing_zgeqrf_mgpu.cpp normal z -> s, Fri Apr 25 15:06:11 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -57,10 +57,10 @@ int main( int argc, char** argv )
         printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F /(M*||A||_F)\n");
         printf("==========================================================================\n");
     }
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M = opts.msize[i];
-            N = opts.nsize[i];
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
@@ -154,13 +154,13 @@ int main( int argc, char** argv )
 
                 if ( opts.lapack ) {
                     printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e                 %8.2e",
-                           (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, results[0],results[1] );
-                    printf("%s\n", (results[0] < tol ? "" : "  failed"));
+                           (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, results[0], results[1] );
                 } else {
                     printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)    %8.2e                 %8.2e",
-                           (int) M, (int) N, gpu_perf, gpu_time, results[0],results[1] );
-                    printf("%s\n", (results[0] < tol ? "" : "  failed"));
+                           (int) M, (int) N, gpu_perf, gpu_time, results[0], results[1] );
                 }
+                // todo also check results[1] < tol?
+                printf("  %s\n", (results[0] < tol ? "ok" : "failed"));
                 status |= ! (results[0] < tol);
 
                 TESTING_FREE_CPU( h_W1 );
@@ -176,9 +176,9 @@ int main( int argc, char** argv )
                 blasf77_saxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
                 error = lapackf77_slange("f", &M, &N, h_R, &lda, work ) / (min_mn*error);
                 
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e",
-                       (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
-                printf("%s\n", (error < tol ? "" : "  failed"));
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e  %s",
+                       (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
+                       error, (error < tol ? "ok" : "failed"));
                 status |= ! (error < tol);
             }
             else {
@@ -189,7 +189,6 @@ int main( int argc, char** argv )
                     printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
                            (int) M, (int) N, gpu_perf, gpu_time);
                 }
-
             }
             
             TESTING_FREE_CPU( tau    );
@@ -202,6 +201,7 @@ int main( int argc, char** argv )
                 magma_setdevice( dev );
                 TESTING_FREE_DEV( d_lA[dev] );
             }
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

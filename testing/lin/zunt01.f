@@ -61,9 +61,10 @@
 *  WORK    (workspace) COMPLEX*16 array, dimension (LWORK)
 *
 *  LWORK   (input) INTEGER
-*          The length of the array WORK.  For best performance, LWORK
-*          should be at least N*N if ROWCOL = 'C' or M*M if
-*          ROWCOL = 'R', but the test will be done even if LWORK is 0.
+*          The length of the array WORK.  For best performance,
+*          if ROWCOL = 'C', LWORK >= N*(N+1),
+*          if ROWCOL = 'R', LWORK >= M*(M+1),
+*          but the test will be done even if LWORK is 0.
 *
 *  RWORK   (workspace) DOUBLE PRECISION array, dimension (min(M,N))
 *          Used only if LWORK is large enough to use the Level 3 BLAS
@@ -121,6 +122,9 @@
          K = M
       END IF
       MNMIN = MIN( M, N )
+*
+*     Only need M*M, not (M+1)*M, for complex case, but this matches
+*     real cases and LAPACK's version
 *
       IF( ( MNMIN+1 )*MNMIN.LE.LWORK ) THEN
          LDWORK = MNMIN

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.4.1) --
+    -- MAGMA (version 1.5.0-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       December 2013
+       @date April 2014
 
-       @generated d Tue Dec 17 13:18:56 2013
+       @generated from testing_zswap.cpp normal z -> d, Fri Apr 25 15:06:09 2014
        @author Mark Gates
 */
 // includes, system
@@ -85,13 +85,13 @@ int main( int argc, char** argv)
     printf("            cublasDswap       dswap             dswapblk          dlaswp   dpermute dlaswp2  dlaswpx           dcopymatrix      CPU      (all in )\n");
     printf("    N   nb  row-maj/col-maj   row-maj/col-maj   row-maj/col-maj   row-maj  row-maj  row-maj  row-maj/col-maj   row-blk/col-blk  dlaswp   (GByte/s)\n");
     printf("==================================================================================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             // each test is assigned one bit in the check bitmask, bit=1 is failure.
             // shift keeps track of which bit is for current test
             int shift = 1;
             int check = 0;
-            N = opts.nsize[i];
+            N = opts.nsize[itest];
             lda    = N;
             ldda   = ((N+31)/32)*32;
             nb     = (opts.nb > 0 ? opts.nb : magma_get_dgetrf_nb( N ));
@@ -237,7 +237,7 @@ int main( int argc, char** argv)
             magma_dsetmatrix( N, N, h_A2, lda, d_A2, ldda );
             
             time = magma_sync_wtime( queue );
-            magmablas_dswapblk( 'R', N, d_A1, ldda, d_A2, ldda, 1, nb, ipiv, 1, 0);
+            magmablas_dswapblk( MagmaRowMajor, N, d_A1, ldda, d_A2, ldda, 1, nb, ipiv, 1, 0);
             time = magma_sync_wtime( queue ) - time;
             row_perf2 = gbytes / time;
             
@@ -259,7 +259,7 @@ int main( int argc, char** argv)
             magma_dsetmatrix( N, N, h_A2, lda, d_A2, ldda );
             
             time = magma_sync_wtime( queue );
-            magmablas_dswapblk( 'C', N, d_A1, ldda, d_A2, ldda, 1, nb, ipiv, 1, 0);
+            magmablas_dswapblk( MagmaColMajor, N, d_A1, ldda, d_A2, ldda, 1, nb, ipiv, 1, 0);
             time = magma_sync_wtime( queue ) - time;
             col_perf2 = gbytes / time;
             
@@ -426,6 +426,7 @@ int main( int argc, char** argv)
             TESTING_FREE_DEV( d_ipiv );
             TESTING_FREE_DEV( d_A1 );
             TESTING_FREE_DEV( d_A2 );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

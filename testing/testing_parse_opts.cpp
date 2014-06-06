@@ -5,9 +5,9 @@ int main( int argc, char** argv )
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
-    for( int i = 0; i < opts.ntest; ++i ) {
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
         printf( "m %5d, n %5d, k %5d\n",
-                (int) opts.msize[i], (int) opts.nsize[i], (int) opts.ksize[i] );
+                (int) opts.msize[itest], (int) opts.nsize[itest], (int) opts.ksize[itest] );
     }
     printf( "\n" );
     
@@ -33,16 +33,16 @@ int main( int argc, char** argv )
     printf( "all      %s\n", (opts.all    ? "true" : "false") );
     printf( "\n" );
     
-    printf( "uplo     %c\n", opts.uplo   );
-    printf( "transA   %c\n", opts.transA );
-    printf( "transB   %c\n", opts.transB );
-    printf( "side     %c\n", opts.side   );
-    printf( "diag     %c\n", opts.diag   );
-    printf( "jobu     %c\n", opts.jobu   );
-    printf( "jobvt    %c\n", opts.jobvt  );
-    printf( "jobz     %c\n", opts.jobz   );
-    printf( "jobvr    %c\n", opts.jobvr  );
-    printf( "jobvl    %c\n", opts.jobvl  );
+    printf( "uplo     %3d (%s)\n", opts.uplo,   lapack_uplo_const(  opts.uplo   ));
+    printf( "transA   %3d (%s)\n", opts.transA, lapack_trans_const( opts.transA ));
+    printf( "transB   %3d (%s)\n", opts.transB, lapack_trans_const( opts.transB ));
+    printf( "side     %3d (%s)\n", opts.side,   lapack_side_const(  opts.side   ));
+    printf( "diag     %3d (%s)\n", opts.diag,   lapack_diag_const(  opts.diag   ));
+    printf( "jobu     %3d (%s)\n", opts.jobu,   lapack_vec_const(   opts.jobu   ));
+    printf( "jobvt    %3d (%s)\n", opts.jobvt,  lapack_vec_const(   opts.jobvt  ));
+    printf( "jobz     %3d (%s)\n", opts.jobz,   lapack_vec_const(   opts.jobz   ));
+    printf( "jobvr    %3d (%s)\n", opts.jobvr,  lapack_vec_const(   opts.jobvr  ));
+    printf( "jobvl    %3d (%s)\n", opts.jobvl,  lapack_vec_const(   opts.jobvl  ));
     
     return 0;
 }
