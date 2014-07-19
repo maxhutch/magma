@@ -39,6 +39,9 @@ extern "C" void magma_zbulge_applyQ(
     //%===========================
     //%   local variables
     //%===========================
+    magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
+    magmaDoubleComplex c_one  = MAGMA_Z_ONE;
+    
     magma_int_t LDT, LDV, blklen, firstcolj;
     magma_int_t bg, nbGblk, rownbm, k, m, n;
     magma_int_t st, ed, fst, vlen, vnb, colj, len;
@@ -93,7 +96,7 @@ extern "C" void magma_zbulge_applyQ(
         versionL=113;
         SIDE = MagmaLeft;
         //set the matrix to Identity here to avoid copying it from the CPU
-        magmablas_zlaset_identity(N, N, dE, N);
+        magmablas_zlaset( MagmaFull, N, N, c_zero, c_one, dE, N );
     }
     
 

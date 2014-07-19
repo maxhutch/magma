@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -58,30 +58,31 @@
     @ingroup magma_zgesv_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *A,
-                   magma_int_t *lda, magma_int_t *info)
+magma_zgetf2_nopiv(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda, magma_int_t *info)
 {
-    magmaDoubleComplex c_one = MAGMA_Z_ONE;
-    magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
+    #define A(i_,j_) (A + (i_) + (j_)*lda)
+    
+    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magma_int_t ione = 1;
 
-    magma_int_t a_dim1, a_offset, i__1, i__2, i__3;
+    magma_int_t min_mn, i__2, i__3;
     magmaDoubleComplex z__1;
-    magma_int_t i__, j;
+    magma_int_t i, j;
     double sfmin;
 
-    a_dim1 = *lda;
-    a_offset = 1 + a_dim1;
-    A -= a_offset;
+    A -= 1 + lda;
 
     /* Function Body */
     *info = 0;
-    if (*m < 0) {
+    if (m < 0) {
         *info = -1;
-    } else if (*n < 0) {
+    } else if (n < 0) {
         *info = -2;
-    } else if (*lda < max(1,*m)) {
+    } else if (lda < max(1,m)) {
         *info = -4;
     }
     if (*info != 0) {
@@ -90,29 +91,27 @@ magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *A,
     }
 
     /* Quick return if possible */
-    if (*m == 0 || *n == 0)
+    if (m == 0 || n == 0)
         return *info;
 
     /* Compute machine safe minimum */
     sfmin = lapackf77_dlamch("S");
 
-    i__1 = min(*m,*n);
-    for (j = 1; j <= i__1; ++j) {
+    min_mn = min(m,n);
+    for (j = 1; j <= min_mn; ++j) {
         /* Test for singularity. */
-        i__2 = j + j * a_dim1;
-        if ( ! MAGMA_Z_EQUAL(A[i__2], c_zero)) {
+        if ( ! MAGMA_Z_EQUAL( *A(j,j), c_zero)) {
             /* Compute elements J+1:M of J-th column. */
-            if (j < *m) {
-                if (MAGMA_Z_ABS(A[j + j * a_dim1]) >= sfmin) {
-                    i__2 = *m - j;
-                    z__1 = MAGMA_Z_DIV(c_one, A[j + j * a_dim1]);
-                    blasf77_zscal(&i__2, &z__1, &A[j + 1 + j * a_dim1], &ione);
+            if (j < m) {
+                if (MAGMA_Z_ABS( *A(j,j) ) >= sfmin) {
+                    i__2 = m - j;
+                    z__1 = MAGMA_Z_DIV(c_one, *A(j,j));
+                    blasf77_zscal(&i__2, &z__1, A(j+1,j), &ione);
                 }
                 else {
-                    i__2 = *m - j;
-                    for (i__ = 1; i__ <= i__2; ++i__) {
-                        i__3 = j + i__ + j * a_dim1;
-                        A[i__3] = MAGMA_Z_DIV(A[j + i__ + j * a_dim1], A[j + j*a_dim1]);
+                    i__2 = m - j;
+                    for (i = 1; i <= i__2; ++i) {
+                        *A(j+i,j) = MAGMA_Z_DIV( *A(j+i,j), *A(j,j) );
                     }
                 }
             }
@@ -121,14 +120,14 @@ magma_zgetf2_nopiv(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *A,
             *info = j;
         }
 
-        if (j < min(*m,*n)) {
+        if (j < min_mn) {
             /* Update trailing submatrix. */
-            i__2 = *m - j;
-            i__3 = *n - j;
+            i__2 = m - j;
+            i__3 = n - j;
             blasf77_zgeru( &i__2, &i__3, &c_neg_one,
-                           &A[j + 1 + j * a_dim1], &ione,
-                           &A[j + (j+1) * a_dim1], lda,
-                           &A[j + 1 + (j+1) * a_dim1], lda);
+                           A(j+1,j),   &ione,
+                           A(j,j+1),   &lda,
+                           A(j+1,j+1), &lda);
         }
     }
 

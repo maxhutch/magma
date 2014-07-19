@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zbajac_csr.cu normal z -> s, Fri May 30 10:41:37 2014
+       @generated from zbajac_csr.cu normal z -> s, Fri Jul 18 17:34:28 2014
 
 */
 
@@ -135,29 +135,41 @@ magma_sbajac_csr_kernel(    int n,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine is a block-asynchronous Jacobi iteration performing s
     local Jacobi-updates within the block. Input format is two CSR matrices,
     one containing the diagonal blocks, one containing the rest.
 
     Arguments
-    =========
+    ---------
 
-    magma_int_t localiters              number of local Jacobi-like updates
-    magma_s_sparse_matrix D             input matrix with diagonal blocks
-    magma_s_sparse_matrix R             input matrix with non-diagonal parts
-    magma_s_vector b                    RHS
-    magma_s_vector *x                   iterate/solution
+    @param
+    localiters  magma_int_t
+                number of local Jacobi-like updates
+
+    @param
+    D           magma_s_sparse_matrix
+                input matrix with diagonal blocks
+
+    @param
+    R           magma_s_sparse_matrix
+                input matrix with non-diagonal parts
+
+    @param
+    b           magma_s_vector
+                RHS
+
+    @param
+    x           magma_s_vector*
+                iterate/solution
+
     
-    ======================================================================    */
+
+    @ingroup magmasparse_sgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_sbajac_csr(   magma_int_t localiters,

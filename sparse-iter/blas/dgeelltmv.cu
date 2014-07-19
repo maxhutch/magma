@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeelltmv.cu normal z -> d, Fri May 30 10:41:36 2014
+       @generated from zgeelltmv.cu normal z -> d, Fri Jul 18 17:34:27 2014
 
 */
 
@@ -82,31 +82,59 @@ dgeelltmv_kernel_shift( int num_rows,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes y = alpha *  A^t *  x + beta * y on the GPU.
     Input format is ELL.
     
     Arguments
-    =========
+    ---------
+    
+    @param
+    transA      magma_trans_t
+                transposition parameter for A
+                
+    @param
+    m           magma_int_t
+                number of rows in A
 
-    magma_int_t m                   number of rows in A
-    magma_int_t n                   number of columns in A 
-    double alpha        scalar multiplier
-    double *d_val       array containing values of A in ELL
-    magma_int_t *d_colind           columnindices of A in ELL
-    double *d_x         input vector x
-    double beta         scalar multiplier
-    double *d_y         input/output vector y
+    @param
+    n           magma_int_t
+                number of columns in A 
+                
+    @param
+    nnz_per_row magma_int_t
+                number of elements in the longest row 
 
-    ======================================================================    */
+    @param
+    alpha       double
+                scalar multiplier
+
+    @param
+    d_val       double*
+                array containing values of A in ELL
+
+    @param
+    d_colind    magma_int_t*
+                columnindices of A in ELL
+
+    @param
+    d_x         double*
+                input vector x
+
+    @param
+    beta        double
+                scalar multiplier
+
+    @param
+    d_y         double*
+                input/output vector y
+
+
+    @ingroup magmasparse_d
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_dgeelltmv(   magma_trans_t transA,
@@ -131,32 +159,75 @@ magma_dgeelltmv(   magma_trans_t transA,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes y = alpha *( A - lambda I ) * x + beta * y on the GPU.
     Input format is ELL.
     
     Arguments
-    =========
+    ---------
 
-    magma_int_t m                   number of rows in A
-    magma_int_t n                   number of columns in A 
-    double alpha        scalar multiplier
-    double lambda       scalar multiplier
-    double *d_val       array containing values of A in ELL
-    magma_int_t *d_colind           columnindices of A in ELL
-    double *d_x         input vector x
-    double beta         scalar multiplier
-    double *d_y         input/output vector y
+    @param
+    transA      magma_trans_t
+                transposition parameter for A    
 
-    ======================================================================    */
+    @param
+    m           magma_int_t
+                number of rows in A
+
+    @param
+    n           magma_int_t
+                number of columns in A 
+                
+    @param
+    nnz_per_row magma_int_t
+                number of elements in the longest row 
+
+    @param
+    alpha       double
+                scalar multiplier
+
+    @param
+    lambda      double
+                scalar multiplier
+
+    @param
+    d_val       double*
+                array containing values of A in ELL
+
+    @param
+    d_colind    magma_int_t*
+                columnindices of A in ELL
+
+    @param
+    d_x         double*
+                input vector x
+
+    @param
+    beta        double
+                scalar multiplier
+                
+    @param
+    offset      magma_int_t 
+                in case not the main diagonal is scaled
+                
+    @param
+    blocksize   magma_int_t 
+                in case of processing multiple vectors  
+                
+    @param
+    add_rows    magma_int_t*
+                in case the matrixpowerskernel is used
+
+    @param
+    d_y         double*
+                input/output vector y
+
+
+    @ingroup magmasparse_dblas
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_dgeelltmv_shift( magma_trans_t transA,

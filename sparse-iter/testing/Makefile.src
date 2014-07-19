@@ -8,10 +8,10 @@ SHDR = \
 
 
 CSRC = \
-run_ccg.cpp run_cbicgstab.cpp run_citerref.cpp run_cgmres.cpp run_cjacobi.cpp run_cbaiter.cpp run_clobpcg.cpp run_cpcg.cpp run_cpbicgstab.cpp run_cpgmres.cpp run_claplacesolver.cpp run_cbcsrlu.cpp
+run_ccg.cpp run_cbicgstab.cpp run_citerref.cpp run_cgmres.cpp run_cjacobi.cpp run_cbaiter.cpp run_clobpcg.cpp run_cpcg.cpp run_cpbicgstab.cpp run_cpgmres.cpp run_claplacesolver.cpp run_calltests.cpp run_cbcsrlu.cpp
 
 DSRC = \
-run_dcg.cpp run_dbicgstab.cpp run_diterref.cpp run_dgmres.cpp run_djacobi.cpp run_dbaiter.cpp run_dlobpcg.cpp run_dpcg.cpp run_dpbicgstab.cpp run_dpgmres.cpp run_dlaplacesolver.cpp run_dbcsrlu.cpp
+run_dcg.cpp run_dbicgstab.cpp run_diterref.cpp run_dgmres.cpp run_djacobi.cpp run_dbaiter.cpp run_dlobpcg.cpp run_dpcg.cpp run_dpbicgstab.cpp run_dpgmres.cpp run_dlaplacesolver.cpp run_dalltests.cpp run_dbcsrlu.cpp
 
 SSRC = \
-run_scg.cpp run_sbicgstab.cpp run_siterref.cpp run_sgmres.cpp run_sjacobi.cpp run_sbaiter.cpp run_slobpcg.cpp run_spcg.cpp run_spbicgstab.cpp run_spgmres.cpp run_slaplacesolver.cpp run_sbcsrlu.cpp
+run_scg.cpp run_sbicgstab.cpp run_siterref.cpp run_sgmres.cpp run_sjacobi.cpp run_sbaiter.cpp run_slobpcg.cpp run_spcg.cpp run_spbicgstab.cpp run_spgmres.cpp run_slaplacesolver.cpp run_salltests.cpp run_sbcsrlu.cpp

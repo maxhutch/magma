@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
-       @generated from magma_zcsrsplit.cpp normal z -> d, Fri May 30 10:41:45 2014
+       @generated from magma_zcsrsplit.cpp normal z -> d, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 
 */
@@ -24,31 +24,40 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
+/** -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
     Purpose
-    =======
+    -------
 
     Splits a CSR matrix into two matrices, one containing the diagonal blocks
     with the diagonal element stored first, one containing the rest of the 
     original matrix.
 
     Arguments
-    =========
+    ---------
 
-    magma_int_t blocksize               size of the diagonal blocks
-    magma_d_sparse_matrix A             CSR input matrix
-    magma_d_sparse_matrix *D            CSR matrix containing diagonal blocks
-    magma_d_sparse_matrix *R            CSR matrix containing rest
+    @param
+    bsize       magma_int_t
+                size of the diagonal blocks
 
-    ========================================================================  */
+    @param
+    A           magma_d_sparse_matrix
+                CSR input matrix
 
+    @param
+    D           magma_d_sparse_matrix*
+                CSR matrix containing diagonal blocks
 
+    @param
+    R           magma_d_sparse_matrix*
+                CSR matrix containing rest
 
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 magma_int_t
 magma_dcsrsplit(    magma_int_t bsize,
@@ -89,12 +98,12 @@ magma_dcsrsplit(    magma_int_t bsize,
         R->nnz = nnz_offd;
 
         magma_dmalloc_cpu( &D->val, nnz_diag );
-        magma_indexmalloc_cpu( &D->row, A.num_rows+1 );
-        magma_indexmalloc_cpu( &D->col, nnz_diag );
+        magma_index_malloc_cpu( &D->row, A.num_rows+1 );
+        magma_index_malloc_cpu( &D->col, nnz_diag );
 
         magma_dmalloc_cpu( &R->val, nnz_offd );
-        magma_indexmalloc_cpu( &R->row, A.num_rows+1 );
-        magma_indexmalloc_cpu( &R->col, nnz_offd );
+        magma_index_malloc_cpu( &R->row, A.num_rows+1 );
+        magma_index_malloc_cpu( &R->col, nnz_offd );
 
         // Fill up the new sparse matrices  
         D->row[0] = 0;

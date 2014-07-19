@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
     magma_index_t *diag_offset;
     magmaDoubleComplex *diag_vals;
     magma_zmalloc_cpu( &diag_vals, offdiags+1 );
-    magma_indexmalloc_cpu( &diag_offset, offdiags+1 );
+    magma_index_malloc_cpu( &diag_offset, offdiags+1 );
     diag_offset[0] = 0;
     diag_offset[1] = 1;
     diag_offset[2] = n;
@@ -68,11 +68,17 @@ int main( int argc, char** argv)
     B.storage_type = Magma_SELLC;
     B.blocksize = 8;
     B.alignment = 8;
+    // scale matrix
+    magma_zmscale( &A, Magma_UNITDIAG );
+
     magma_z_mconvert( A, &B, Magma_CSR, B.storage_type );
     magma_z_mtransfer( B, &B_d, Magma_CPU, Magma_DEV );
 
-    // vectors
+    // vectors and initial guess
     magma_z_vinit( &b, Magma_DEV, A.num_cols, one );
+    magma_z_vinit( &x, Magma_DEV, A.num_cols, one );
+    magma_z_spmv( one, B_d, x, zero, b );                 //  b = A x
+    magma_z_vfree(&x);
     magma_z_vinit( &x, Magma_DEV, A.num_cols, zero );
 
     // solver

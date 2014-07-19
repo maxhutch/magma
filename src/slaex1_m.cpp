@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex1_m.cpp normal d -> s, Fri May 30 10:41:06 2014
+       @generated from dlaex1_m.cpp normal d -> s, Fri Jul 18 17:34:18 2014
 */
 #include "common_magma.h"
 
@@ -162,7 +162,7 @@ magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* Q, magma_int_t
                magma_range_t range, float vl, float vu,
                magma_int_t il, magma_int_t iu, magma_int_t* info)
 {
-#define Q(ix, iy) (Q + (ix) + ldq*(iy))
+#define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
     magma_int_t coltyp, i, idlmda;
     magma_int_t indx, indxc, indxp;

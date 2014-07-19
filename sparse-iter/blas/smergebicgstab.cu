@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zmergebicgstab.cu normal z -> s, Fri May 30 10:41:37 2014
+       @generated from zmergebicgstab.cu normal z -> s, Fri Jul 18 17:34:28 2014
        @author Hartwig Anzt
 
 */
@@ -39,14 +39,9 @@ magma_sbicgmerge1_kernel(
 
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Mergels multiple operations into one kernel:
 
@@ -57,16 +52,31 @@ magma_sbicgmerge1_kernel(
     -> p = r + beta * ( p - omega * v ) 
 
     Arguments
-    =========
+    ---------
 
-    int n                               dimension n
-    float beta             scalar 
-    float omega            scalar
-    float *v               input v
-    float *r               input r
-    float *p               input/output p
+    @param
+    n           int
+                dimension n
 
-    ========================================================================  */
+    @param
+    skp         float*
+                set of scalar parameters
+
+    @param
+    v           float*
+                input v
+
+    @param
+    r           float*
+                input r
+
+    @param
+    p           float*
+                input/output p
+
+
+    @ingroup magmasparse_sgegpuk
+    ********************************************************************/
 
 extern "C" int
 magma_sbicgmerge1(  int n, 
@@ -100,14 +110,9 @@ magma_sbicgmerge2_kernel(
 
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Mergels multiple operations into one kernel:
 
@@ -117,15 +122,31 @@ magma_sbicgmerge2_kernel(
     -> s = r - alpha * v
 
     Arguments
-    =========
+    ---------
 
-    int n                               dimension n
-    float alpha            scalar 
-    float *r               input r
-    float *v               input v
-    float *s               input/output s
+    @param
+    n           int
+                dimension n
 
-    ========================================================================  */
+    @param
+    skp         float*
+                set of scalar parameters
+
+    @param
+    r           float*
+                input r
+
+    @param
+    v           float*
+                input v
+
+    @param
+    s           float*
+                input/output s
+
+
+    @ingroup magmasparse_sgegpuk
+    ********************************************************************/
 
 extern "C" int
 magma_sbicgmerge2(  int n, 
@@ -166,14 +187,9 @@ magma_sbicgmerge3_kernel(
 
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Mergels multiple operations into one kernel:
 
@@ -186,18 +202,39 @@ magma_sbicgmerge3_kernel(
     -> r = s - omega * t
 
     Arguments
-    =========
+    ---------
 
-    int n                               dimension n
-    float alpha            scalar 
-    float omega            scalar 
-    float *p               input p
-    float *s               input s
-    float *t               input t
-    float *x               input/output x
-    float *r               input/output r
+    @param
+    n           int
+                dimension n
 
-    ========================================================================  */
+    @param
+    skp         float*
+                set of scalar parameters
+
+    @param
+    p           float*
+                input p
+
+    @param
+    s           float*
+                input s
+
+    @param
+    t           float*
+                input t
+
+    @param
+    x           float*
+                input/output x
+
+    @param
+    r           float*
+                input/output r
+
+
+    @ingroup magmasparse_sgegpuk
+    ********************************************************************/
 
 extern "C" int
 magma_sbicgmerge3(  int n, 
@@ -254,24 +291,26 @@ magma_sbicgmerge4_kernel_3(
     }
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Performs some parameter operations for the BiCGSTAB with scalars on GPU.
 
     Arguments
-    =========
+    ---------
 
-    int type                            kernel type
-    float *skp             vector with parameters
+    @param
+    type        int
+                kernel type
 
-    ========================================================================  */
+    @param
+    skp         float*
+                vector with parameters
+
+
+    @ingroup magmasparse_sgegpuk
+    ********************************************************************/
 
 extern "C" int
 magma_sbicgmerge4(  int type, 

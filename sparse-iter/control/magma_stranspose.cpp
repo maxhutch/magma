@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
-       @generated from magma_ztranspose.cpp normal z -> s, Fri May 30 10:41:45 2014
+       @generated from magma_ztranspose.cpp normal z -> s, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 
 */
@@ -23,35 +23,67 @@
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Transposes a matrix stored in CSR format.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_int_t n_rows                  number of rows in input matrix
-    magma_int_t n_cols                  number of columns in input matrix
-    magma_int_t nnz                     number of nonzeros in input matrix
-    float *val              value array of input matrix 
-    magma_index_t *row                     row pointer of input matrix
-    magma_index_t *col                     column indices of input matrix 
-    magma_index_t *new_n_rows              number of rows in transposed matrix
-    magma_index_t *new_n_cols              number of columns in transposed matrix
-    magma_index_t *new_nnz                 number of nonzeros in transposed matrix
-    float **new_val         value array of transposed matrix 
-    magma_index_t **new_row                row pointer of transposed matrix
-    magma_index_t **new_col                column indices of transposed matrix
+    @param
+    n_rows      magma_int_t
+                number of rows in input matrix
 
-    ========================================================================  */
+    @param
+    n_cols      magma_int_t
+                number of columns in input matrix
+
+    @param
+    nnz         magma_int_t
+                number of nonzeros in input matrix
+
+    @param
+    val         float*
+                value array of input matrix 
+
+    @param
+    row         magma_index_t*
+                row pointer of input matrix
+
+    @param
+    col         magma_index_t*
+                column indices of input matrix 
+
+    @param
+    new_n_rows  magma_index_t*
+                number of rows in transposed matrix
+
+    @param
+    new_n_cols  magma_index_t*
+                number of columns in transposed matrix
+
+    @param
+    new_nnz     magma_index_t*
+                number of nonzeros in transposed matrix
+
+    @param
+    new_val     float**
+                value array of transposed matrix 
+
+    @param
+    new_row     magma_index_t**
+                row pointer of transposed matrix
+
+    @param
+    new_col     magma_index_t**
+                column indices of transposed matrix
+
+
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 magma_int_t s_transpose_csr(    magma_int_t n_rows, 
                                 magma_int_t n_cols, 
@@ -81,7 +113,7 @@ magma_int_t s_transpose_csr(    magma_int_t n_rows,
   // temporary 2-dimensional arrays valtemp/coltemp 
   // where val[i] is the array with the values of the i-th column of the matrix
   magma_index_t *nnztemp;
-  magma_indexmalloc_cpu( &nnztemp, n_rows );
+  magma_index_malloc_cpu( &nnztemp, n_rows );
   
   for( magma_int_t i=0; i<n_rows; i++ )
     nnztemp[i]=0;
@@ -175,28 +207,26 @@ magma_s_mtranspose( magma_s_sparse_matrix A, magma_s_sparse_matrix *B ){
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Helper function to transpose CSR matrix.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix A             input matrix (CSR)
-    magma_s_sparse_matrix *B            output matrix (CSR)
+    @param
+    A           magma_s_sparse_matrix
+                input matrix (CSR)
 
+    @param
+    B           magma_s_sparse_matrix*
+                output matrix (CSR)
 
-
-    ========================================================================  */
-
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 magma_int_t 
 magma_s_csrtranspose( magma_s_sparse_matrix A, magma_s_sparse_matrix *B ){
@@ -223,8 +253,8 @@ magma_s_csrtranspose( magma_s_sparse_matrix A, magma_s_sparse_matrix *B ){
         B->diameter = A.diameter;
 
         magma_smalloc_cpu( &B->val, A.nnz );
-        magma_indexmalloc_cpu( &B->row, A.num_rows+1 );
-        magma_indexmalloc_cpu( &B->col, A.nnz );
+        magma_index_malloc_cpu( &B->row, A.num_rows+1 );
+        magma_index_malloc_cpu( &B->col, A.nnz );
 
         for( magma_int_t i=0; i<A.nnz; i++){
             B->val[i] = A.val[i];
@@ -254,28 +284,27 @@ magma_s_csrtranspose( magma_s_sparse_matrix A, magma_s_sparse_matrix *B ){
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Helper function to transpose CSR matrix. 
     Using the CUSPARSE CSR2CSC function.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix A             input matrix (CSR)
-    magma_s_sparse_matrix *B            output matrix (CSR)
+    @param
+    A           magma_s_sparse_matrix
+                input matrix (CSR)
 
+    @param
+    B           magma_s_sparse_matrix*
+                output matrix (CSR)
 
-
-    ========================================================================  */
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 magma_int_t 
 magma_s_cucsrtranspose( magma_s_sparse_matrix A, magma_s_sparse_matrix *B ){
@@ -345,7 +374,7 @@ magma_s_cucsrtranspose( magma_s_sparse_matrix A, magma_s_sparse_matrix *B ){
 
         // end CUSPARSE context //
 
-        magma_s_mtransfer( B_d, B, Magma_DEV, Magma_CPU );
+        magma_s_mtransfer( B_d, B, Magma_DEV, A.memory_location );
         magma_s_mfree( &A_d );
         magma_s_mfree( &B_d );
 

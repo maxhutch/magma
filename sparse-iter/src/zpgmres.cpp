@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Hartwig Anzt
@@ -31,14 +31,9 @@
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -47,15 +42,30 @@
     This is a GPU implementation of the right-preconditioned GMRES method.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A                   descriptor for matrix A
-    magma_z_vector b                          RHS b vector
-    magma_z_vector *x                         solution approximation
-    magma_z_solver_par *solver_par            solver parameters
-    magma_z_preconditioner *precond_par       preconditioner
+    @param
+    A           magma_z_sparse_matrix
+                descriptor for matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_z_vector
+                RHS b vector
+
+    @param
+    x           magma_z_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_z_solver_par*
+                solver parameters
+
+    @param
+    precond_par magma_z_preconditioner*
+                preconditioner
+
+    @ingroup magmasparse_zgesv
+    ********************************************************************/
 
 magma_int_t
 magma_zpgmres( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,  
@@ -285,6 +295,7 @@ magma_zpgmres( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     double residual;
     magma_zresidual( A, b, *x, &residual );
+    solver_par->iter_res = betanom;
     solver_par->final_res = residual;
 
     if( solver_par->numiter < solver_par->maxiter){
@@ -326,8 +337,8 @@ magma_zpgmres( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
     magma_z_vfree(&z_t);
 
     // free GPU streams and events
-    //magma_queue_destroy( stream[0] );
-    //magma_queue_destroy( stream[1] );
+    magma_queue_destroy( stream[0] );
+    magma_queue_destroy( stream[1] );
     magma_event_destroy( event[0] );
     magmablasSetKernelStream(NULL);
 

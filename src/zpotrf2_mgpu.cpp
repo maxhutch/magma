@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -11,9 +11,9 @@
 #include "common_magma.h"
 #include "trace.h"
 
-/* === Define what BLAS to use ============================================ */
 #define PRECISION_z
 
+/* === Define what BLAS to use ============================================ */
 #if defined(PRECISION_s) || defined(PRECISION_d)
 //#define ZTRSM_WORK
 #endif

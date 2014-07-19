@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal d -> s
 */
@@ -125,6 +125,29 @@ magmablas_dgemm_tesla(
     double beta,
     double *C, magma_int_t ldc )
 {
+    magma_int_t info = 0;
+    if      ( transA != MagmaNoTrans && transA != MagmaTrans && transA != Magma_ConjTrans )
+        info = -1;
+    else if ( transB != MagmaNoTrans && transB != MagmaTrans && transB != Magma_ConjTrans )
+        info = -2;
+    else if ( m < 0 )
+        info = -3;
+    else if ( n < 0 )
+        info = -4;
+    else if ( k < 0 )
+        info = -5;
+    else if ( transA == MagmaNoTrans ? lda < m : lda < k )
+        info = -8;
+    else if ( transB == MagmaNoTrans ? ldb < k : lda < n )
+        info = -10;
+    else if ( ldc < m )
+        info = -13;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     if ( m == 0 || n == 0 || ((alpha == 0.0 || k == 0) && beta == 1.0) ) {
         return;
     }
@@ -141,11 +164,8 @@ magmablas_dgemm_tesla(
         }
     }
     
-    if ( ldc < m ) return;  /* TODO: error */
     if ( transA == MagmaNoTrans ) {
         if ( transB == MagmaNoTrans ) {
-            if ( lda < m ) return;  /* TODO: error */
-            if ( ldb < k ) return;  /* TODO: error */
             /*=======================================================================
               ===================C = alpha * A * B + beta * C =======================
               =======================================================================*/
@@ -163,8 +183,6 @@ magmablas_dgemm_tesla(
             }
         }
         else {
-            if ( lda < m ) return;  /* TODO: error */
-            if ( ldb < n ) return;  /* TODO: error */
             /*=======================================================================
               ===================C = alpha * A * B^T + beta * C======================
               =======================================================================*/
@@ -184,8 +202,6 @@ magmablas_dgemm_tesla(
     }
     else {
         if ( transB == MagmaNoTrans ) {
-            if ( lda < k ) return;  /* TODO: error */
-            if ( ldb < k ) return;  /* TODO: error */
             /*=======================================================================
               ===================C = alpha * A^T * B + beta * C======================
               =======================================================================*/
@@ -203,8 +219,6 @@ magmablas_dgemm_tesla(
             }
         }
         else {
-            if ( lda < k ) return;  /* TODO: error */
-            if ( ldb < n ) return;  /* TODO: error */
             /*=======================================================================
               ===================C = alpha * A^T * B^T + beta * C====================
               =======================================================================*/

@@ -1,21 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgetrf_nopiv.cpp normal z -> d, Fri May 30 10:40:56 2014
+       @generated from zgetrf_nopiv.cpp normal z -> d, Fri Jul 18 17:34:16 2014
 
 */
 #include "common_magma.h"
 
 #define PRECISION_d
-
-extern "C" magma_int_t
-magma_dgetf2_nopiv(magma_int_t *m, magma_int_t *n, double *A,
-                   magma_int_t *lda, magma_int_t *info);
-
 
 /**
     Purpose
@@ -63,26 +58,27 @@ magma_dgetf2_nopiv(magma_int_t *m, magma_int_t *n, double *A,
     @ingroup magma_dgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dgetrf_nopiv(magma_int_t *m, magma_int_t *n, double *A,
-                   magma_int_t *lda, magma_int_t *info)
+magma_dgetrf_nopiv(
+    magma_int_t m, magma_int_t n,
+    double *A, magma_int_t lda, magma_int_t *info)
 {
+    #define A(i_,j_) (A + (i_) + (j_)*lda)
+    
     double c_one = MAGMA_D_ONE;
     double c_neg_one = MAGMA_D_NEG_ONE;
     
-    magma_int_t a_dim1, a_offset, min_mn, i__3, i__4;
+    magma_int_t min_mn, i__3, i__4;
     magma_int_t j, jb, nb, iinfo;
 
-    a_dim1 = *lda;
-    a_offset = 1 + a_dim1;
-    A -= a_offset;
+    A -= 1 + lda;
 
     /* Function Body */
     *info = 0;
-    if (*m < 0) {
+    if (m < 0) {
         *info = -1;
-    } else if (*n < 0) {
+    } else if (n < 0) {
         *info = -2;
-    } else if (*lda < max(1,*m)) {
+    } else if (lda < max(1,m)) {
         *info = -4;
     }
     if (*info != 0) {
@@ -91,52 +87,53 @@ magma_dgetrf_nopiv(magma_int_t *m, magma_int_t *n, double *A,
     }
 
     /* Quick return if possible */
-    if (*m == 0 || *n == 0) {
+    if (m == 0 || n == 0) {
         return *info;
     }
 
     /* Determine the block size for this environment. */
     nb = 128;
-    min_mn = min(*m,*n);
+    min_mn = min(m,n);
     if (nb <= 1 || nb >= min_mn) {
         /* Use unblocked code. */
-        magma_dgetf2_nopiv(m, n, &A[a_offset], lda, info);
+        magma_dgetf2_nopiv( m, n, A(1,1), lda, info );
     }
     else {
         /* Use blocked code. */
         for (j = 1; j <= min_mn; j += nb) {
-            /* Computing MIN */
-            i__3 = min_mn - j + 1;
-            jb = min(i__3,nb);
+            jb = min( min_mn - j + 1, nb );
             
             /* Factor diagonal and subdiagonal blocks and test for exact
                singularity. */
-            i__3 = *m - j + 1;
-            //magma_dgetf2_nopiv(&i__3, &jb, &A[j + j * a_dim1], lda, &iinfo);
+            i__3 = m - j + 1;
+            //magma_dgetf2_nopiv( i__3, jb, A(j,j), lda, &iinfo );
 
             i__3 -= jb;
-            magma_dgetf2_nopiv(&jb, &jb, &A[j + j * a_dim1], lda, &iinfo);
-            blasf77_dtrsm("R", "U", "N", "N", &i__3, &jb, &c_one,
-                          &A[j + j * a_dim1], lda,
-                          &A[j + jb + j * a_dim1], lda);
+            magma_dgetf2_nopiv( jb, jb, A(j,j), lda, &iinfo );
+            blasf77_dtrsm( "R", "U", "N", "N", &i__3, &jb, &c_one,
+                           A(j,j),    &lda,
+                           A(j+jb,j), &lda );
             
             /* Adjust INFO */
             if (*info == 0 && iinfo > 0)
                 *info = iinfo + j - 1;
 
-            if (j + jb <= *n) {
+            if (j + jb <= n) {
                 /* Compute block row of U. */
-                i__3 = *n - j - jb + 1;
-                blasf77_dtrsm("Left", "Lower", "No transpose", "Unit", &jb, &i__3,
-                       &c_one, &A[j + j * a_dim1], lda, &A[j + (j+jb)*a_dim1], lda);
-                if (j + jb <= *m) {
+                i__3 = n - j - jb + 1;
+                blasf77_dtrsm( "Left", "Lower", "No transpose", "Unit",
+                               &jb, &i__3, &c_one,
+                               A(j,j),    &lda,
+                               A(j,j+jb), &lda );
+                if (j + jb <= m) {
                     /* Update trailing submatrix. */
-                    i__3 = *m - j - jb + 1;
-                    i__4 = *n - j - jb + 1;
-                    blasf77_dgemm("No transpose", "No transpose", &i__3, &i__4, &jb,
-                           &c_neg_one, &A[j + jb + j * a_dim1], lda,
-                           &A[j + (j + jb) * a_dim1], lda, &c_one,
-                           &A[j + jb + (j + jb) * a_dim1], lda);
+                    i__3 = m - j - jb + 1;
+                    i__4 = n - j - jb + 1;
+                    blasf77_dgemm( "No transpose", "No transpose",
+                                   &i__3, &i__4, &jb, &c_neg_one,
+                                   A(j+jb,j),    &lda,
+                                   A(j,j+jb),    &lda, &c_one,
+                                   A(j+jb,j+jb), &lda );
                 }
             }
         }

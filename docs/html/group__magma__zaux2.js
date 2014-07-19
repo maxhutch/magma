@@ -1,5 +1,9 @@
 var group__magma__zaux2 =
 [
+    [ "magma_znan_inf", "group__magma__zaux2.html#gad351b2169417f306a799527912359938", null ],
+    [ "magma_znan_inf_gpu", "group__magma__zaux2.html#ga23fc3bd46d3202435f60c35afb63cb85", null ],
+    [ "magma_zprint", "group__magma__zaux2.html#ga25213dc387e79c91e338be7964630b9f", null ],
+    [ "magma_zprint_gpu", "group__magma__zaux2.html#gae2dc4f074ef16c3d9b3684965c141bc8", null ],
     [ "magmablas_zclaswp", "group__magma__zaux2.html#gab548c5ed2245ca2c1af40af1f68aa262", null ],
     [ "magmablas_zgeadd", "group__magma__zaux2.html#ga8500601cdf08727c4c4c0471a8621ce6", null ],
     [ "magmablas_zgeadd_batched", "group__magma__zaux2.html#ga21428400892b439a6ca8f48aa21ef408", null ],
@@ -8,7 +12,15 @@ var group__magma__zaux2 =
     [ "magmablas_zlag2c", "group__magma__zaux2.html#ga5ecbe1fcb27adf157b294268fc7203bc", null ],
     [ "magmablas_zlange", "group__magma__zaux2.html#ga6068de0261037b29a75e2fb80e70f79f", null ],
     [ "magmablas_zlanhe", "group__magma__zaux2.html#gac0d37b00c6ce4f9e04cca87b9d065695", null ],
+    [ "magmablas_zlaset", "group__magma__zaux2.html#ga8223d1816f141314c973dea6072a47ed", null ],
+    [ "magmablas_zlaset_band", "group__magma__zaux2.html#gaa271dafe2579a506f15947e55c44c3ec", null ],
+    [ "magmablas_zlaset_band_stream", "group__magma__zaux2.html#ga673ce05e715d964048919665c4c22942", null ],
+    [ "magmablas_zlaset_stream", "group__magma__zaux2.html#ga9845b17d5a96800f7eb92d8ac95dfbe8", null ],
     [ "magmablas_zswapdblk", "group__magma__zaux2.html#ga46bda44d89874467d3dee078b685b8fc", null ],
     [ "magmablas_zsymmetrize", "group__magma__zaux2.html#gabb77a399d0f8b59dc02996882141584a", null ],
-    [ "magmablas_zsymmetrize_tiles", "group__magma__zaux2.html#gaf21e7cfcf2cfb2972eee9cb506db38dd", null ]
+    [ "magmablas_zsymmetrize_tiles", "group__magma__zaux2.html#gaf21e7cfcf2cfb2972eee9cb506db38dd", null ],
+    [ "magmablas_ztranspose", "group__magma__zaux2.html#gade141ea89cba98fcfec5fbd94075428c", null ],
+    [ "magmablas_ztranspose_inplace", "group__magma__zaux2.html#ga8516855dde067e4b65ef7900561f7497", null ],
+    [ "magmablas_ztranspose_inplace_stream", "group__magma__zaux2.html#gaad4fdc8c3de4682dbb507ca9148c3985", null ],
+    [ "magmablas_ztranspose_stream", "group__magma__zaux2.html#ga71d04e8e1330af7eb62b677ee77086e4", null ]
 ];

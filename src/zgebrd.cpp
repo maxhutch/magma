@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -203,7 +203,7 @@ magma_zgebrd(magma_int_t m, magma_int_t n,
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-    dwork = dA + (n)*ldda;
+    dwork = dA + n*ldda;
 
     ldwrkx = m;
     ldwrky = n;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -172,30 +172,47 @@ magma_zbicgstab_alphakernel(
     }
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Merges the first SpmV using CSR with the dot product 
     and the computation of alpha
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A             system matrix
-    magmaDoubleComplex *d1              temporary vector
-    magmaDoubleComplex *d2              temporary vector
-    magmaDoubleComplex *d_p             input vector p
-    magmaDoubleComplex *d_r             input vector r
-    magmaDoubleComplex *d_v             output vector v
-    magmaDoubleComplex *skp             array for parameters ( skp[0]=alpha )
+    @param
+    A           magma_z_sparse_matrix
+                system matrix
 
-    ========================================================================  */
+    @param
+    d1          magmaDoubleComplex*
+                temporary vector
+
+    @param
+    d2          magmaDoubleComplex*
+                temporary vector
+
+    @param
+    d_p         magmaDoubleComplex*
+                input vector p
+
+    @param
+    d_r         magmaDoubleComplex*
+                input vector r
+
+    @param
+    d_v         magmaDoubleComplex*
+                output vector v
+
+    @param
+    skp         magmaDoubleComplex*
+                array for parameters ( skp[0]=alpha )
+
+
+    @ingroup magmasparse_zgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_zbicgmerge_spmv1(  magma_z_sparse_matrix A,
@@ -234,8 +251,7 @@ magma_zbicgmerge_spmv1(  magma_z_sparse_matrix A,
     }
 
 
-    cudaMemcpy( skp, aux1, sizeof( magmaDoubleComplex ), 
-                                        cudaMemcpyDeviceToDevice );
+    magma_zcopyvector( 1, aux1, 1, skp, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_zbicgstab_alphakernel<<<Gs2, Bs2, 0>>>( skp );
@@ -447,33 +463,43 @@ magma_zbicgstab_omegakernel(
     }
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Merges the second SpmV using CSR with the dot product 
     and the computation of omega
 
     Arguments
-    =========
+    ---------
 
-    int n                               dimension n
-    int n                               dimension n
-    magmaDoubleComplex *d1              temporary vector
-    magmaDoubleComplex *d2              temporary vector
-    magmaDoubleComplex *d_val           matrix values
-    int *d_rowptr                       matrix row pointer
-    int *d_colind                       matrix column indices
-    magmaDoubleComplex *d_s             input vector s
-    magmaDoubleComplex *d_t             output vector t
-    magmaDoubleComplex *skp             array for parameters
+    @param
+    A           magma_z_sparse_matrix
+                input matrix 
 
-    ========================================================================  */
+    @param
+    d1          magmaDoubleComplex*
+                temporary vector
+
+    @param
+    d2          magmaDoubleComplex*
+                temporary vector
+
+    @param
+    d_s         magmaDoubleComplex*
+                input vector s
+
+    @param
+    d_t         magmaDoubleComplex*
+                output vector t
+
+    @param
+    skp         magmaDoubleComplex*
+                array for parameters
+
+
+    @ingroup magmasparse_zgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_zbicgmerge_spmv2(  
@@ -511,10 +537,8 @@ magma_zbicgmerge_spmv2(
     }
 
 
-    cudaMemcpy( skp+6, aux1, sizeof( magmaDoubleComplex ), 
-                                    cudaMemcpyDeviceToDevice );
-    cudaMemcpy( skp+7, aux1+n, sizeof( magmaDoubleComplex ), 
-                                    cudaMemcpyDeviceToDevice );
+    magma_zcopyvector( 1, aux1, 1, skp+6, 1 );
+    magma_zcopyvector( 1, aux1+n, 1, skp+7, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_zbicgstab_omegakernel<<<Gs2, Bs2, 0>>>( skp );
@@ -644,34 +668,59 @@ magma_zbicgstab_betakernel(
     }
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Merges the second SpmV using CSR with the dot product 
     and the computation of omega
 
     Arguments
-    =========
+    ---------
 
-    int n                               dimension n
-    int n                               dimension n
-    magmaDoubleComplex *d1              temporary vector
-    magmaDoubleComplex *d2              temporary vector
-    magmaDoubleComplex *d_rr            input vector rr
-    magmaDoubleComplex *d_r             input/output vector r
-    magmaDoubleComplex *d_p             input vector p
-    magmaDoubleComplex *d_s             input vector s
-    magmaDoubleComplex *d_t             input vector t
-    magmaDoubleComplex *d_x             output vector x
-    magmaDoubleComplex *skp             array for parameters
+    @param
+    n           int
+                dimension n
 
-    ========================================================================  */
+    @param
+    d1          magmaDoubleComplex*
+                temporary vector
+
+    @param
+    d2          magmaDoubleComplex*
+                temporary vector
+
+    @param
+    rr        magmaDoubleComplex*
+                input vector rr
+
+    @param
+    r         magmaDoubleComplex*
+                input/output vector r
+
+    @param
+    p         magmaDoubleComplex*
+                input vector p
+
+    @param
+    s         magmaDoubleComplex*
+                input vector s
+
+    @param
+    t         magmaDoubleComplex*
+                input vector t
+
+    @param
+    x         magmaDoubleComplex*
+                output vector x
+
+    @param
+    skp         magmaDoubleComplex*
+                array for parameters
+
+
+    @ingroup magmasparse_zgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_zbicgmerge_xrbeta(  
@@ -709,10 +758,8 @@ magma_zbicgmerge_xrbeta(
     }
 
 
-    cudaMemcpy( skp+4, aux1, sizeof( magmaDoubleComplex ), 
-                                        cudaMemcpyDeviceToDevice );
-    cudaMemcpy( skp+5, aux1+n, sizeof( magmaDoubleComplex ), 
-                                        cudaMemcpyDeviceToDevice );
+    magma_zcopyvector( 1, aux1, 1, skp+4, 1 );
+    magma_zcopyvector( 1, aux1+n, 1, skp+5, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_zbicgstab_betakernel<<<Gs2, Bs2, 0>>>( skp );

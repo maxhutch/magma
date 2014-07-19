@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zssssm_gpu.cpp normal z -> s, Fri May 30 10:40:56 2014
+       @generated from zssssm_gpu.cpp normal z -> s, Fri Jul 18 17:34:16 2014
 
 */
 #include "common_magma.h"

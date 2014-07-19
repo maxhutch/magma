@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_zlapack.h normal z -> d, Fri May 30 10:40:33 2014
+       @generated from magma_zlapack.h normal z -> d, Fri Jul 18 17:34:10 2014
 */
 
 #ifndef MAGMA_DLAPACK_H
@@ -98,6 +98,7 @@ extern "C" {
 #define lapackf77_dlansy   FORTRAN_NAME( dlansy, DLANSY )
 #define lapackf77_dlanst   FORTRAN_NAME( dlanst, DLANST )
 #define lapackf77_dlansy   FORTRAN_NAME( dlansy, DLANSY )
+#define lapackf77_dlantr   FORTRAN_NAME( dlantr, DLANTR )
 #define lapackf77_dlapy3   FORTRAN_NAME( dlapy3, DLAPY3 )
 #define lapackf77_dlaqp2   FORTRAN_NAME( dlaqp2, DLAQP2 )
 #define lapackf77_dlarcm   FORTRAN_NAME( dlarcm, DLARCM )
@@ -638,6 +639,11 @@ double lapackf77_dlanst( const char *norm, const magma_int_t *n,
 
 double lapackf77_dlansy( const char *norm, const char *uplo,
                          const magma_int_t *n,
+                         const double *A, const magma_int_t *lda,
+                         double *work );
+
+double lapackf77_dlantr( const char *norm, const char *uplo, const char *diag,
+                         const magma_int_t *m, const magma_int_t *n,
                          const double *A, const magma_int_t *lda,
                          double *work );
 

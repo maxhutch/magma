@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
@@ -28,38 +28,60 @@ prefix ?= /usr/local/magma
 
 #
 # NVCC options for the different cards
+# First, add smXX for architecture names
+#
+ifneq ($(findstring Tesla, $(GPU_TARGET)),)
+    GPU_TARGET += sm10 sm13
+endif
+ifneq ($(findstring Fermi, $(GPU_TARGET)),)
+    GPU_TARGET += sm20
+endif
+ifneq ($(findstring Kepler, $(GPU_TARGET)),)
+    GPU_TARGET += sm30 sm35
+endif
+
+#
+# Next, add compile options for specific smXX
 # sm_xx is binary, compute_xx is PTX for forward compatability
 # MIN_ARCH is lowest requested version 
 # NV_SM    accumulates sm_xx for all requested versions
 # NV_COMP  is compute_xx for highest requested version
 #
+# See also $(info compile for ...) in Makefile
+#
 NV_SM    :=
 NV_COMP  :=
-ifneq ($(findstring Tesla, $(GPU_TARGET)),)
+
+ifneq ($(findstring sm10, $(GPU_TARGET)),)
     MIN_ARCH ?= 100
-    NV_SM    += -gencode arch=compute_13,code=sm_13 \
-                -gencode arch=compute_10,code=compute_10
-    NV_COMP  := -gencode arch=compute_13,code=compute_13
-    #$(info compile for CUDA arch 1.x (Tesla))
+    NV_SM    += -gencode arch=compute_10,code=sm_10
+    NV_COMP  := -gencode arch=compute_10,code=compute_10
 endif
-ifneq ($(findstring Fermi, $(GPU_TARGET)),)
+ifneq ($(findstring sm13, $(GPU_TARGET)),)
+    MIN_ARCH ?= 130
+    NV_SM    += -gencode arch=compute_13,code=sm_13
+    NV_COMP  := -gencode arch=compute_13,code=compute_13
+endif
+ifneq ($(findstring sm20, $(GPU_TARGET)),)
     MIN_ARCH ?= 200
     NV_SM    += -gencode arch=compute_20,code=sm_20
     NV_COMP  := -gencode arch=compute_20,code=compute_20
-    #$(info compile for CUDA arch 2.x (Fermi))
 endif
-ifneq ($(findstring Kepler, $(GPU_TARGET)),)
+ifneq ($(findstring sm30, $(GPU_TARGET)),)
     MIN_ARCH ?= 300
-    NV_SM    += -gencode arch=compute_30,code=sm_30 \
-                -gencode arch=compute_35,code=sm_35
+    NV_SM    += -gencode arch=compute_30,code=sm_30
+    NV_COMP  := -gencode arch=compute_30,code=compute_30
+endif
+ifneq ($(findstring sm35, $(GPU_TARGET)),)
+    MIN_ARCH ?= 350
+    NV_SM    += -gencode arch=compute_35,code=sm_35
     NV_COMP  := -gencode arch=compute_35,code=compute_35
-    #$(info compile for CUDA arch 3.x (Kepler))
 endif
 ifeq ($(NV_COMP),)
-    $(error GPU_TARGET, currently $(GPU_TARGET), must contain one or more of Tesla, Fermi, or Kepler. Please edit your make.inc file)
+    $(error GPU_TARGET, currently $(GPU_TARGET), must contain one or more of Tesla, Fermi, Kepler, or sm{10,13,20,30,35}. Please edit your make.inc file)
 endif
-NVOPTS += -DHAVE_CUBLAS $(NV_SM) $(NV_COMP)
-OPTS   += -DHAVE_CUBLAS -DMIN_CUDA_ARCH=$(MIN_ARCH)
+NVOPTS += $(NV_SM) $(NV_COMP)
+OPTS   += -DMIN_CUDA_ARCH=$(MIN_ARCH)
 
 
 LIBEXT = $(LIBDIR) $(LIB)

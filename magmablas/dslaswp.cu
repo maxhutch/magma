@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zclaswp.cu mixed zc -> ds, Fri May 30 10:40:40 2014
+       @generated from zclaswp.cu mixed zc -> ds, Fri Jul 18 17:34:12 2014
 
 */
 #include "common_magma.h"
 
-#define num_threadds 64
+#define NB 64
 
 __global__ void
 dslaswp_kernel(int n, double *a, int lda, float *sa, int m, const magma_int_t *ipiv)
 {
-    int ind = blockIdx.x*num_threadds + threadIdx.x;
+    int ind = blockIdx.x*NB + threadIdx.x;
     int newind;
     float res;
     
@@ -36,7 +36,7 @@ dslaswp_kernel(int n, double *a, int lda, float *sa, int m, const magma_int_t *i
 __global__ void
 dslaswp_inv_kernel(int n, double *a, int lda, float *sa, int m, const magma_int_t *ipiv)
 {
-    int ind = blockIdx.x*num_threadds + threadIdx.x;
+    int ind = blockIdx.x*NB + threadIdx.x;
     int newind;
     double res;
 
@@ -89,14 +89,12 @@ magmablas_dslaswp( magma_int_t n, double *a, magma_int_t lda,
                    float *sa, magma_int_t m,
                    const magma_int_t *ipiv, magma_int_t incx )
 {
-    int blocks = (m - 1)/num_threadds + 1;
+    int blocks = (m - 1)/NB + 1;
     dim3 grid(blocks, 1, 1);
-    dim3 threads(num_threadds, 1, 1);
+    dim3 threads(NB, 1, 1);
 
     if (incx >= 0)
         dslaswp_kernel<<< grid, threads, 0, magma_stream >>>(n, a, lda, sa, m, ipiv);
     else
         dslaswp_inv_kernel<<< grid, threads, 0, magma_stream >>>(n, a, lda, sa, m, ipiv);
 }
-
-#undef num_threadds

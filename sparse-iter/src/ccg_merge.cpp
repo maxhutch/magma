@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
-       @generated from zcg_merge.cpp normal z -> c, Fri May 30 10:41:41 2014
+       @generated from zcg_merge.cpp normal z -> c, Fri Jul 18 17:34:29 2014
 */
 
 #include "common_magma.h"
@@ -19,14 +19,9 @@
 #define ATOLERANCE     lapackf77_slamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -35,14 +30,26 @@
     where multiple operations are merged into one compute kernel.    
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix A                   input matrix A
-    magma_c_vector b                          RHS b
-    magma_c_vector *x                         solution approximation
-    magma_c_solver_par *solver_par       solver parameters
+    @param
+    A           magma_c_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_c_vector
+                RHS b
+
+    @param
+    x           magma_c_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_c_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_cposv
+    ********************************************************************/
 
 magma_int_t
 magma_ccg_merge( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,  
@@ -103,8 +110,7 @@ magma_ccg_merge( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
     skp_h[4]=tmp1; 
     skp_h[5]=MAGMA_C_MAKE(nom, 0.0);
 
-    cudaMemcpy( skp, skp_h, 6*sizeof( magmaFloatComplex ), 
-                                            cudaMemcpyHostToDevice );
+    magma_csetvector( 6, skp_h, 1, skp, 1 );
     
     if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE ) 
         r0 = ATOLERANCE;
@@ -137,7 +143,7 @@ magma_ccg_merge( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
         magma_ccgmerge_xrbeta( dofs, d1, d2, x->val, r.val, d.val, z.val, skp ); 
 
         // check stopping criterion (asynchronous copy)
-        cublasGetVectorAsync(1 , sizeof( magmaFloatComplex ), skp+1, 1, 
+        magma_cgetvector_async( 1 , skp+1, 1, 
                                                     skp_h+1, 1, stream[1] );
         betanom = sqrt(MAGMA_C_REAL(skp_h[1]));
 
@@ -160,6 +166,7 @@ magma_ccg_merge( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     float residual;
     magma_cresidual( A, b, *x, &residual );
+    solver_par->iter_res = betanom;
     solver_par->final_res = residual;
 
     if( solver_par->numiter < solver_par->maxiter){

@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = control
@@ -11,6 +11,7 @@ MAGMA_DIR = ..
 include $(MAGMA_DIR)/Makefile.internal
 
 ZSRC := \
+	magma_znan_inf.cpp	\
 	zpanel_to_q.cpp	\
 	zprint.cpp	\
 

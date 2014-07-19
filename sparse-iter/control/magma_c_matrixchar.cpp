@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_z_matrixchar.cpp normal z -> c, Fri May 30 10:41:45 2014
+       @generated from magma_z_matrixchar.cpp normal z -> c, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 */
 
@@ -27,35 +27,33 @@
 using namespace std;
 
 
-magma_int_t 
-magma_crowentries( magma_c_sparse_matrix *A ){
-
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Checks the maximal number of nonzeros in a row of matrix A. 
     Inserts the data into max_nnz_row.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix *A              sparse matrix     
+    @param
+    A           magma_c_sparse_matrix*
+                sparse matrix     
 
-    ========================================================================  */
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
+magma_int_t 
+magma_crowentries( magma_c_sparse_matrix *A )
+{
     // check whether matrix on CPU
     if( A->memory_location == Magma_CPU ){
         // CSR  
         if( A->storage_type == Magma_CSR ){
             magma_index_t i, *length, maxrowlength=0;
-            magma_indexmalloc_cpu( &length, A->num_rows);
+            magma_index_malloc_cpu( &length, A->num_rows);
 
             for( i=0; i<A->num_rows; i++ ){
                 length[i] = A->row[i+1]-A->row[i];
@@ -70,7 +68,7 @@ magma_crowentries( magma_c_sparse_matrix *A ){
         else if( A->storage_type == Magma_DENSE ){
             magma_int_t i, j, maxrowlength=0;
             magma_index_t *length;
-            magma_indexmalloc_cpu( &length, A->num_rows);
+            magma_index_malloc_cpu( &length, A->num_rows);
 
             for( i=0; i<A->num_rows; i++ ){
                 length[i] = 0;
@@ -95,35 +93,31 @@ magma_crowentries( magma_c_sparse_matrix *A ){
 }
 
 
-
-magma_int_t 
-magma_cdiameter( magma_c_sparse_matrix *A ){
-
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Computes the diameter of a sparse matrix and stores the value in diameter.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix *A              sparse matrix     
+    @param
+    A           magma_c_sparse_matrix*
+                sparse matrix     
 
-    ========================================================================  */
-
+    @ingroup magmasparse_caux
+    ********************************************************************/
+magma_int_t 
+magma_cdiameter( magma_c_sparse_matrix *A )
+{
     // check whether matrix on CPU
     if( A->memory_location == Magma_CPU ){
         // CSR  
         if( A->storage_type == Magma_CSR ){
             magma_index_t i, j, tmp,  *dim, maxdim=0;
-            magma_indexmalloc_cpu( &dim, A->num_rows);
+            magma_index_malloc_cpu( &dim, A->num_rows);
             for( i=0; i<A->num_rows; i++ ){
                 dim[i] = 0;
                 for( j=A->row[i]; j<A->row[i+1]; j++ ){
@@ -143,7 +137,7 @@ magma_cdiameter( magma_c_sparse_matrix *A ){
         // Dense
         else if( A->storage_type == Magma_DENSE ){
             magma_index_t i, j, tmp,  *dim, maxdim=0;
-            magma_indexmalloc_cpu( &dim, A->num_rows);
+            magma_index_malloc_cpu( &dim, A->num_rows);
             for( i=0; i<A->num_rows; i++ ){
                 dim[i] = 0;
                 for( j=0; j<A->num_cols; j++ ){
@@ -163,7 +157,7 @@ magma_cdiameter( magma_c_sparse_matrix *A ){
         // ELLPACK
         else if( A->storage_type == Magma_ELLPACK ){
             magma_index_t i, j, tmp,  *dim, maxdim=0;
-            magma_indexmalloc_cpu( &dim, A->num_rows);
+            magma_index_malloc_cpu( &dim, A->num_rows);
             for( i=0; i<A->num_rows; i++ ){
                 dim[i] = 0;
                 for( j=i*A->max_nnz_row; j<(i+1)*A->max_nnz_row; j++ ){

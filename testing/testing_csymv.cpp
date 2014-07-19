@@ -1,11 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_zsymv.cpp normal z -> c, Fri May 30 10:41:18 2014
+       Note: [ds] precisions generated from testing_chemv.cu
+       
+       @generated from testing_zsymv.cpp normal z -> c, Fri Jul 18 17:34:22 2014
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,41 +31,50 @@ int main(int argc, char **argv)
     float          magma_error, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t N, lda, sizeA, sizeX, sizeY;
+    magma_int_t N, lda, ldda, sizeA, sizeX, sizeY, blocks, ldwork;
     magma_int_t incx = 1;
     magma_int_t incy = 1;
+    magma_int_t nb   = 64;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex alpha = MAGMA_C_MAKE(  1.5, -2.3 );
     magmaFloatComplex beta  = MAGMA_C_MAKE( -0.6,  0.8 );
     magmaFloatComplex *A, *X, *Y, *Ymagma;
-    magmaFloatComplex *dA, *dX, *dY;
+    magmaFloatComplex *dA, *dX, *dY, *dwork;
     magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
-    
+
     printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
     printf("    N   MAGMA Gflop/s (ms)  CPU Gflop/s (ms)  MAGMA error\n");
     printf("=========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
-            lda    = ((N+31)/32)*32;
+            lda    = N;
+            ldda   = ((N + 31)/32)*32;
             sizeA  = N*lda;
             sizeX  = N*incx;
             sizeY  = N*incy;
             gflops = FLOPS_CSYMV( N ) / 1e9;
             
-            TESTING_MALLOC_CPU( A,      magmaFloatComplex, sizeA );
-            TESTING_MALLOC_CPU( X,      magmaFloatComplex, sizeX );
-            TESTING_MALLOC_CPU( Y,      magmaFloatComplex, sizeY );
-            TESTING_MALLOC_CPU( Ymagma, magmaFloatComplex, sizeY );
+            TESTING_MALLOC_CPU( A,       magmaFloatComplex, sizeA );
+            TESTING_MALLOC_CPU( X,       magmaFloatComplex, sizeX );
+            TESTING_MALLOC_CPU( Y,       magmaFloatComplex, sizeY );
+            TESTING_MALLOC_CPU( Ymagma,  magmaFloatComplex, sizeY );
             
-            TESTING_MALLOC_DEV( dA, magmaFloatComplex, sizeA );
+            TESTING_MALLOC_DEV( dA, magmaFloatComplex, ldda*N );
             TESTING_MALLOC_DEV( dX, magmaFloatComplex, sizeX );
             TESTING_MALLOC_DEV( dY, magmaFloatComplex, sizeY );
+            
+            blocks = (N + nb - 1) / nb;
+            ldwork = ldda*blocks;
+            TESTING_MALLOC_DEV( dwork, magmaFloatComplex, ldwork );
+            
+            magmablas_claset( MagmaFull, ldwork, 1, MAGMA_C_NAN, MAGMA_C_NAN, dwork, ldwork );
+            magmablas_claset( MagmaFull, ldda,   N, MAGMA_C_NAN, MAGMA_C_NAN, dA,    ldda   );
             
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &sizeA, A );
@@ -76,14 +87,22 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
+            magma_csetmatrix( N, N, A, lda, dA, ldda );
+            magma_csetvector( N, X, incx, dX, incx );
             magma_csetvector( N, Y, incy, dY, incy );
             
+            //magma_cprint_gpu( ldda, blocks, dwork, ldda );
+            
             magma_time = magma_sync_wtime( 0 );
-            magmablas_csymv( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy );
+            magmablas_csymv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork );
+            // TODO provide option to test non-work interface
+            //magmablas_csymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
             magma_time = magma_sync_wtime( 0 ) - magma_time;
             magma_perf = gflops / magma_time;
             
             magma_cgetvector( N, dY, incy, Ymagma, incy );
+            
+            //magma_cprint_gpu( ldda, blocks, dwork, ldda );
             
             /* =====================================================================
                Performs operation using CPU BLAS
@@ -96,7 +115,7 @@ int main(int argc, char **argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            blasf77_caxpy( &N, &c_neg_one, Y, &incy, Ymagma, &incy);
+            blasf77_caxpy( &N, &c_neg_one, Y, &incy, Ymagma, &incy );
             magma_error = lapackf77_clange( "M", &N, &ione, Ymagma, &N, work ) / N;
             
             printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
@@ -109,11 +128,12 @@ int main(int argc, char **argv)
             TESTING_FREE_CPU( A );
             TESTING_FREE_CPU( X );
             TESTING_FREE_CPU( Y );
-            TESTING_FREE_CPU( Ymagma );
+            TESTING_FREE_CPU( Ymagma  );
             
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dX );
             TESTING_FREE_DEV( dY );
+            TESTING_FREE_DEV( dwork );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {

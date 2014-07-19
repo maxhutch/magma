@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
        
        @author Raffaele Solca
        
@@ -216,7 +216,7 @@ magma_dlaex3(magma_int_t k, magma_int_t n, magma_int_t n1, double* d,
              magma_range_t range, double vl, double vu, magma_int_t il, magma_int_t iu,
              magma_int_t* info )
 {
-#define Q(ix, iy) (Q + (ix) + ldq*(iy))
+#define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
     double d_one  = 1.;
     double d_zero = 0.;

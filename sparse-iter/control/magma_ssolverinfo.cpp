@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
-       @generated from magma_zsolverinfo.cpp normal z -> s, Fri May 30 10:41:46 2014
+       @generated from magma_zsolverinfo.cpp normal z -> s, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 
 */
@@ -24,24 +24,29 @@
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
 
-/*  -- MAGMA (version 1.5.0-beta2) --
+/** -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
     Purpose
-    =======
+    -------
 
     Prints information about a previously called solver.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_solver_par *solver_par    structure containing all information
+    @param
+    solver_par  magma_s_solver_par*
+                structure containing all solver information
+    @param
+    precond_par magma_s_preconditioner*
+                structure containing all preconditioner information
 
-    ========================================================================  */
-
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 magma_int_t
 magma_ssolverinfo( magma_s_solver_par *solver_par, 
@@ -77,8 +82,9 @@ magma_ssolverinfo( magma_s_solver_par *solver_par,
         printf("# CG solver summary:\n");
         printf("#    initial residual: %e\n", solver_par->init_res );
         printf("#    iterations: %4d\n", (int)(solver_par->numiter) );
+        printf("#    iterative residual: %e\n", solver_par->iter_res );
         printf("#    exact final residual: %e\n#    runtime: %.4f sec\n", 
-                    solver_par->final_res, solver_par->runtime);
+                     solver_par->final_res, solver_par->runtime);
         printf("#======================================================="
                 "======#\n");
     }else if( solver_par->solver == Magma_CGMERGE ){
@@ -101,6 +107,7 @@ magma_ssolverinfo( magma_s_solver_par *solver_par,
         printf("# CG (merged) solver summary:\n");
         printf("#    initial residual: %e\n", solver_par->init_res );
         printf("#    iterations: %4d\n", (int)(solver_par->numiter) );
+        printf("#    iterative residual: %e\n", solver_par->iter_res );
         printf("#    exact final residual: %e\n#    runtime: %.4f sec\n", 
                     solver_par->final_res, solver_par->runtime);
         printf("#======================================================="
@@ -135,6 +142,7 @@ magma_ssolverinfo( magma_s_solver_par *solver_par,
         printf("# BiCGStab solver summary:\n");
         printf("#    initial residual: %e\n", solver_par->init_res );
         printf("#    iterations: %4d\n", (int) (solver_par->numiter) );
+        printf("#    iterative residual: %e\n", solver_par->iter_res );
         printf("#    exact final residual: %e\n#    runtime: %.4f sec\n", 
                     solver_par->final_res, solver_par->runtime);
         printf("#======================================================="
@@ -159,6 +167,7 @@ magma_ssolverinfo( magma_s_solver_par *solver_par,
         printf("# BiCGStab (merged) solver summary:\n");
         printf("#    initial residual: %e\n", solver_par->init_res );
         printf("#    iterations: %4d\n", (int) (solver_par->numiter) );
+        printf("#    iterative residual: %e\n", solver_par->iter_res );
         printf("#    exact final residual: %e\n#    runtime: %.4f sec\n", 
                     solver_par->final_res, solver_par->runtime);
         printf("#======================================================="
@@ -183,6 +192,7 @@ magma_ssolverinfo( magma_s_solver_par *solver_par,
         printf("# BiCGStab (merged2) solver summary:\n");
         printf("#    initial residual: %e\n", solver_par->init_res );
         printf("#    iterations: %4d\n", (int) (solver_par->numiter) );
+        printf("#    iterative residual: %e\n", solver_par->iter_res );
         printf("#    exact final residual: %e\n#    runtime: %.4f sec\n", 
                     solver_par->final_res, solver_par->runtime);
         printf("#======================================================="
@@ -217,6 +227,7 @@ magma_ssolverinfo( magma_s_solver_par *solver_par,
         printf("# GMRES-(%d) solver summary:\n", (int) solver_par->restart);
         printf("#    initial residual: %e\n", solver_par->init_res );
         printf("#    iterations: %4d\n", (int) (solver_par->numiter) );
+        printf("#    iterative residual: %e\n", solver_par->iter_res );
         printf("#    exact final residual: %e\n#    runtime: %.4f sec\n", 
                     solver_par->final_res, solver_par->runtime);
         printf("#======================================================="
@@ -285,45 +296,39 @@ magma_ssolverinfo( magma_s_solver_par *solver_par,
 }
 
 
-/*
-    -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
-
-       @generated from magma_zsolverinfo.cpp normal z -> s, Fri May 30 10:41:46 2014
-       @author Hartwig Anzt
-
-*/
-#include "common_magma.h"
-#include "../include/magmasparse.h"
-
-#include <assert.h>
-
-/*  -- MAGMA (version 1.5.0-beta2) --
+/** -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
     Purpose
-    =======
+    -------
 
     Frees any memory assocoiated with the verbose mode of solver_par. The
     other values are set to default.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_solver_par *solver_par    structure containing all information
+    @param
+    solver_par  magma_s_solver_par*
+                structure containing all solver information
+    @param
+    precond_par magma_s_preconditioner*
+                structure containing all preconditioner information                
+                
 
-    ========================================================================  */
-
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 magma_int_t
 magma_ssolverinfo_free( magma_s_solver_par *solver_par, 
-                        magma_s_preconditioner *precond ){
+                        magma_s_preconditioner *precond_par ){
+
+    solver_par->init_res = 0.0;
+    solver_par->iter_res = 0.0;
+    solver_par->final_res = 0.0;
 
     if( solver_par->res_vec != NULL ){
         magma_free_cpu( solver_par->res_vec );
@@ -342,156 +347,181 @@ magma_ssolverinfo_free( magma_s_solver_par *solver_par,
         solver_par->eigenvalues = NULL;
     }
 
-    if( precond->d.val != NULL ){
-        magma_free( precond->d.val );
-        precond->d.val = NULL;
+    if( precond_par->d.val != NULL ){
+        magma_free( precond_par->d.val );
+        precond_par->d.val = NULL;
     }
-    if( precond->M.val != NULL ){
-        if ( precond->M.memory_location == Magma_DEV )
-            magma_free( precond->M.val );
+    if( precond_par->M.val != NULL ){
+        if ( precond_par->M.memory_location == Magma_DEV )
+            magma_free( precond_par->M.val );
         else
-            magma_free_cpu( precond->M.val );
-        precond->M.val = NULL;
+            magma_free_cpu( precond_par->M.val );
+        precond_par->M.val = NULL;
     }
-    if( precond->M.col != NULL ){
-        if ( precond->M.memory_location == Magma_DEV )
-            magma_free( precond->M.col );
+    if( precond_par->M.col != NULL ){
+        if ( precond_par->M.memory_location == Magma_DEV )
+            magma_free( precond_par->M.col );
         else
-            magma_free_cpu( precond->M.col );
-        precond->M.col = NULL;
+            magma_free_cpu( precond_par->M.col );
+        precond_par->M.col = NULL;
     }
-    if( precond->M.row != NULL ){
-        if ( precond->M.memory_location == Magma_DEV )
-            magma_free( precond->M.row );
+    if( precond_par->M.row != NULL ){
+        if ( precond_par->M.memory_location == Magma_DEV )
+            magma_free( precond_par->M.row );
         else
-            magma_free_cpu( precond->M.row );
-        precond->M.row = NULL;
+            magma_free_cpu( precond_par->M.row );
+        precond_par->M.row = NULL;
     }
-    if( precond->M.blockinfo != NULL ){
-        magma_free_cpu( precond->M.blockinfo );
-        precond->M.blockinfo = NULL;
+    if( precond_par->M.blockinfo != NULL ){
+        magma_free_cpu( precond_par->M.blockinfo );
+        precond_par->M.blockinfo = NULL;
     }
-    if( precond->L.val != NULL ){
-        if ( precond->L.memory_location == Magma_DEV )
-            magma_free( precond->L.val );
+    if( precond_par->L.val != NULL ){
+        if ( precond_par->L.memory_location == Magma_DEV )
+            magma_free( precond_par->L.val );
         else
-            magma_free_cpu( precond->L.val );
-        precond->L.val = NULL;
+            magma_free_cpu( precond_par->L.val );
+        precond_par->L.val = NULL;
     }
-    if( precond->L.col != NULL ){
-        if ( precond->L.memory_location == Magma_DEV )
-            magma_free( precond->L.col );
+    if( precond_par->L.col != NULL ){
+        if ( precond_par->L.memory_location == Magma_DEV )
+            magma_free( precond_par->L.col );
         else
-            magma_free_cpu( precond->L.col );
-        precond->L.col = NULL;
+            magma_free_cpu( precond_par->L.col );
+        precond_par->L.col = NULL;
     }
-    if( precond->L.row != NULL ){
-        if ( precond->L.memory_location == Magma_DEV )
-            magma_free( precond->L.row );
+    if( precond_par->L.row != NULL ){
+        if ( precond_par->L.memory_location == Magma_DEV )
+            magma_free( precond_par->L.row );
         else
-            magma_free_cpu( precond->L.row );
-        precond->L.row = NULL;
+            magma_free_cpu( precond_par->L.row );
+        precond_par->L.row = NULL;
     }
-    if( precond->L.blockinfo != NULL ){
-        magma_free_cpu( precond->L.blockinfo );
-        precond->L.blockinfo = NULL;
+    if( precond_par->L.blockinfo != NULL ){
+        magma_free_cpu( precond_par->L.blockinfo );
+        precond_par->L.blockinfo = NULL;
     }
-    if( precond->U.val != NULL ){
-        if ( precond->U.memory_location == Magma_DEV )
-            magma_free( precond->U.val );
+    if( precond_par->U.val != NULL ){
+        if ( precond_par->U.memory_location == Magma_DEV )
+            magma_free( precond_par->U.val );
         else
-            magma_free_cpu( precond->U.val );
-        precond->U.val = NULL;
+            magma_free_cpu( precond_par->U.val );
+        precond_par->U.val = NULL;
     }
-    if( precond->U.col != NULL ){
-        if ( precond->U.memory_location == Magma_DEV )
-            magma_free( precond->U.col );
+    if( precond_par->U.col != NULL ){
+        if ( precond_par->U.memory_location == Magma_DEV )
+            magma_free( precond_par->U.col );
         else
-            magma_free_cpu( precond->U.col );
-        precond->U.col = NULL;
+            magma_free_cpu( precond_par->U.col );
+        precond_par->U.col = NULL;
     }
-    if( precond->U.row != NULL ){
-        if ( precond->U.memory_location == Magma_DEV )
-            magma_free( precond->U.row );
+    if( precond_par->U.row != NULL ){
+        if ( precond_par->U.memory_location == Magma_DEV )
+            magma_free( precond_par->U.row );
         else
-            magma_free_cpu( precond->U.row );
-        precond->U.row = NULL;
+            magma_free_cpu( precond_par->U.row );
+        precond_par->U.row = NULL;
     }
-    if( precond->U.blockinfo != NULL ){
-        magma_free_cpu( precond->U.blockinfo );
-        precond->U.blockinfo = NULL;
+    if( precond_par->U.blockinfo != NULL ){
+        magma_free_cpu( precond_par->U.blockinfo );
+        precond_par->U.blockinfo = NULL;
     }
-
-    if( precond->solver == Magma_ILU ){
+    if( precond_par->solver == Magma_ILU ||
+        precond_par->solver == Magma_AILU ||
+        precond_par->solver == Magma_ICC||
+        precond_par->solver == Magma_AICC ){
         cusparseStatus_t cusparseStatus;
         cusparseStatus =
-        cusparseDestroySolveAnalysisInfo( precond->cuinfo );
+        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoL );
          if(cusparseStatus != 0)    printf("error in info-free.\n");
         cusparseStatus =
-        cusparseDestroySolveAnalysisInfo( precond->cuinfoL );
-         if(cusparseStatus != 0)    printf("error in info-free.\n");
-        cusparseStatus =
-        cusparseDestroySolveAnalysisInfo( precond->cuinfoU );
+        cusparseDestroySolveAnalysisInfo( precond_par->cuinfoU );
          if(cusparseStatus != 0)    printf("error in info-free.\n");
 
     }
-    if( precond->LD.val != NULL ){
-        if ( precond->LD.memory_location == Magma_DEV )
-            magma_free( precond->LD.val );
+    if( precond_par->LD.val != NULL ){
+        if ( precond_par->LD.memory_location == Magma_DEV )
+            magma_free( precond_par->LD.val );
         else
-            magma_free_cpu( precond->LD.val );
-        precond->LD.val = NULL;
+            magma_free_cpu( precond_par->LD.val );
+        precond_par->LD.val = NULL;
     }
-    if( precond->LD.col != NULL ){
-        if ( precond->LD.memory_location == Magma_DEV )
-            magma_free( precond->LD.col );
+    if( precond_par->LD.col != NULL ){
+        if ( precond_par->LD.memory_location == Magma_DEV )
+            magma_free( precond_par->LD.col );
         else
-            magma_free_cpu( precond->LD.col );
-        precond->LD.col = NULL;
+            magma_free_cpu( precond_par->LD.col );
+        precond_par->LD.col = NULL;
     }
-    if( precond->LD.row != NULL ){
-        if ( precond->LD.memory_location == Magma_DEV )
-            magma_free( precond->LD.row );
+    if( precond_par->LD.row != NULL ){
+        if ( precond_par->LD.memory_location == Magma_DEV )
+            magma_free( precond_par->LD.row );
         else
-            magma_free_cpu( precond->LD.row );
-        precond->LD.row = NULL;
+            magma_free_cpu( precond_par->LD.row );
+        precond_par->LD.row = NULL;
     }
-    if( precond->LD.blockinfo != NULL ){
-        magma_free_cpu( precond->LD.blockinfo );
-        precond->LD.blockinfo = NULL;
+    if( precond_par->LD.blockinfo != NULL ){
+        magma_free_cpu( precond_par->LD.blockinfo );
+        precond_par->LD.blockinfo = NULL;
     }
-    if( precond->UD.val != NULL ){
-        if ( precond->UD.memory_location == Magma_DEV )
-            magma_free( precond->UD.val );
+    if( precond_par->UD.val != NULL ){
+        if ( precond_par->UD.memory_location == Magma_DEV )
+            magma_free( precond_par->UD.val );
         else
-            magma_free_cpu( precond->UD.val );
-        precond->UD.val = NULL;
+            magma_free_cpu( precond_par->UD.val );
+        precond_par->UD.val = NULL;
     }
-    if( precond->UD.col != NULL ){
-        if ( precond->UD.memory_location == Magma_DEV )
-            magma_free( precond->UD.col );
+    if( precond_par->UD.col != NULL ){
+        if ( precond_par->UD.memory_location == Magma_DEV )
+            magma_free( precond_par->UD.col );
         else
-            magma_free_cpu( precond->UD.col );
-        precond->UD.col = NULL;
+            magma_free_cpu( precond_par->UD.col );
+        precond_par->UD.col = NULL;
     }
-    if( precond->UD.row != NULL ){
-        if ( precond->UD.memory_location == Magma_DEV )
-            magma_free( precond->UD.row );
+    if( precond_par->UD.row != NULL ){
+        if ( precond_par->UD.memory_location == Magma_DEV )
+            magma_free( precond_par->UD.row );
         else
-            magma_free_cpu( precond->UD.row );
-        precond->UD.row = NULL;
+            magma_free_cpu( precond_par->UD.row );
+        precond_par->UD.row = NULL;
     }
-    if( precond->UD.blockinfo != NULL ){
-        magma_free_cpu( precond->UD.blockinfo );
-        precond->UD.blockinfo = NULL;
+    if( precond_par->UD.blockinfo != NULL ){
+        magma_free_cpu( precond_par->UD.blockinfo );
+        precond_par->UD.blockinfo = NULL;
     }
+
+    precond_par->solver = Magma_NONE;
     return MAGMA_SUCCESS;
 }
 
+/** -- MAGMA (version 1.5.0-beta3) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       November 2011
+
+    Purpose
+    -------
+
+    Initializes all solver and preconditioner parameters.
+
+    Arguments
+    ---------
+
+    @param
+    solver_par  magma_s_solver_par*
+                structure containing all solver information
+    @param
+    precond_par magma_s_preconditioner*
+                structure containing all preconditioner information                
+                
+
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 magma_int_t
 magma_ssolverinfo_init( magma_s_solver_par *solver_par, 
-                        magma_s_preconditioner *precond ){
+                        magma_s_preconditioner *precond_par ){
 
 /*
     solver_par->solver = Magma_CG;
@@ -516,7 +546,7 @@ magma_ssolverinfo_init( magma_s_solver_par *solver_par,
         solver_par->timing = NULL;
     }  
 
-    if( solver_par->num_eigenvalues > 0 ){
+    if( solver_par->solver == Magma_LOBPCG ){
         magma_smalloc_cpu( &solver_par->eigenvalues , 
                                 3*solver_par->num_eigenvalues );
 
@@ -538,32 +568,33 @@ magma_ssolverinfo_init( magma_s_solver_par *solver_par,
         solver_par->eigenvalues = NULL;
     }  
 
-    precond->d.val = NULL;
-    precond->M.val = NULL;
-    precond->M.col = NULL;
-    precond->M.row = NULL;
-    precond->M.blockinfo = NULL;
+    precond_par->d.val = NULL;
 
-    precond->L.val = NULL;
-    precond->L.col = NULL;
-    precond->L.row = NULL;
-    precond->L.blockinfo = NULL;
+    precond_par->M.val = NULL;
+    precond_par->M.col = NULL;
+    precond_par->M.row = NULL;
+    precond_par->M.blockinfo = NULL;
 
-    precond->U.val = NULL;
-    precond->U.col = NULL;
-    precond->U.row = NULL;
-    precond->U.blockinfo = NULL;
+    precond_par->L.val = NULL;
+    precond_par->L.col = NULL;
+    precond_par->L.row = NULL;
+    precond_par->L.blockinfo = NULL;
 
-    precond->LD.val = NULL;
-    precond->LD.col = NULL;
-    precond->LD.row = NULL;
-    precond->LD.blockinfo = NULL;
+    precond_par->U.val = NULL;
+    precond_par->U.col = NULL;
+    precond_par->U.row = NULL;
+    precond_par->U.blockinfo = NULL;
+
+    precond_par->LD.val = NULL;
+    precond_par->LD.col = NULL;
+    precond_par->LD.row = NULL;
+    precond_par->LD.blockinfo = NULL;
 
 
-    precond->UD.val = NULL;
-    precond->UD.col = NULL;
-    precond->UD.row = NULL;
-    precond->UD.blockinfo = NULL;
+    precond_par->UD.val = NULL;
+    precond_par->UD.col = NULL;
+    precond_par->UD.row = NULL;
+    precond_par->UD.blockinfo = NULL;
 
 
     return MAGMA_SUCCESS;

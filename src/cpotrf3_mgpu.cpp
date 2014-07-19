@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zpotrf3_mgpu.cpp normal z -> c, Fri May 30 10:40:56 2014
+       @generated from zpotrf3_mgpu.cpp normal z -> c, Fri Jul 18 17:34:15 2014
 
 */
 #include "common_magma.h"
 #include "trace.h"
 
-/* === Define what BLAS to use ============================================ */
 #define PRECISION_c
 
+/* === Define what BLAS to use ============================================ */
 #if defined(PRECISION_s) || defined(PRECISION_d)
 #define CTRSM_WORK
 //#define magma_ctrsm magmablas_ctrsm
@@ -102,6 +102,7 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
     const magma_int_t stream1 = 0, stream2 = 1, stream3 = 2;
 #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(CTRSM_WORK)
     /* used by ctrsm_work */
+    magmaFloatComplex c_zero    = MAGMA_C_ZERO;
     int trsm_nb = 128;
     int trsm_n = trsm_nb*((nb+trsm_nb-1)/trsm_nb);
     magmaFloatComplex *d_dinvA[MagmaMaxGPUs];
@@ -291,8 +292,8 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                         magma_queue_wait_event( stream[d][stream1], event[d][2] ); // wait for gemm update
                         trace_gpu_start( d, stream1, "trsm", "trsm" );
 #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(CTRSM_WORK)
-                        magmablas_claset( MagmaUpperLower, trsm_nb, trsm_n, dinvA(d,0),trsm_nb );
-                        magmablas_claset( MagmaUpperLower, nb0,jb, dx(d,0),nb0 );
+                        magmablas_claset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                        magmablas_claset( MagmaFull, nb0,     jb,     c_zero, c_zero, dx(d,0), nb0 );
                         magmablas_ctrsm_work( MagmaLeft, MagmaUpper,
                                               MagmaConjTrans, MagmaNonUnit,
                                               jb, nb0, c_one,
@@ -314,8 +315,8 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                         trace_gpu_start( d, stream2, "trsm", "trsm" );
                         magmablasSetKernelStream(stream[d][stream2]);
 #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(CTRSM_WORK)
-                        magmablas_claset( MagmaUpperLower, trsm_nb,trsm_n, dinvA(d,0),trsm_nb );
-                        magmablas_claset( MagmaUpperLower, nb2,jb, dx(d,0),nb2 );
+                        magmablas_claset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                        magmablas_claset( MagmaFull, nb2,     jb,     c_zero, c_zero, dx(d,0), nb2 );
                         magmablas_ctrsm_work( MagmaLeft, MagmaUpper,
                                               MagmaConjTrans, MagmaNonUnit,
                                               jb, nb2, c_one,
@@ -395,10 +396,10 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                         if (flag == 0) {
                             magma_queue_wait_event( stream[d][stream2], event[d][4] ); // lookahead -> diagonal inversion
                         } else {
-                            magmablas_claset( MagmaUpperLower, trsm_nb,trsm_n, dinvA(d,flag),trsm_nb );
+                            magmablas_claset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,flag), trsm_nb );
                             magma_queue_wait_event( stream[d][stream2], event[d][1] ); // panel received
                         }
-                        magmablas_claset( MagmaUpperLower, nb2,jb, dx(d,1),nb2 );
+                        magmablas_claset( MagmaFull, nb2, jb, c_zero, c_zero, dx(d,1), nb2 );
                         magmablas_ctrsm_work( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
                                               jb, nb2, c_one,
                                               dlpanel, ldpanel,
@@ -534,8 +535,8 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                         if ( j > 0 ) magma_queue_wait_event( stream[d][stream1], event[d][2] ); // wait for gemm update
                         magmablasSetKernelStream(stream[d][stream1]);
 #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(CTRSM_WORK)
-                        magmablas_claset( MagmaUpperLower, trsm_nb, trsm_n, dinvA(d,0),trsm_nb );
-                        magmablas_claset( MagmaUpperLower, nb0,jb, dx(d,0),nb0 );
+                        magmablas_claset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                        magmablas_claset( MagmaFull, nb0,     jb,     c_zero, c_zero, dx(d,0), nb0 );
                         magmablas_ctrsm_work( MagmaRight, MagmaLower,
                                               MagmaConjTrans, MagmaNonUnit,
                                               nb0, jb, c_one,
@@ -555,8 +556,8 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                         magma_queue_wait_event( stream[d][stream2], event[d][1] ); // wait for the cholesky factor
                         magmablasSetKernelStream(stream[d][stream2]);
 #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(CTRSM_WORK)
-                        magmablas_claset( MagmaUpperLower, trsm_nb,trsm_n, dinvA(d,0),trsm_nb );
-                        magmablas_claset( MagmaUpperLower, nb2,jb, dx(d,0),nb2 );
+                        magmablas_claset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                        magmablas_claset( MagmaFull, nb2,     jb,     c_zero, c_zero, dx(d,0), nb2 );
                         magmablas_ctrsm_work( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                                               nb2, jb, c_one,
                                               dlpanel,                ldpanel,
@@ -650,10 +651,10 @@ magma_cpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                         if (flag == 0) {
                             magma_queue_wait_event( stream[d][stream2], event[d][4] ); // lookahead -> diagonal inversion
                         } else {
-                            magmablas_claset( MagmaUpperLower, trsm_nb,trsm_n, dinvA(d,flag),trsm_nb );
+                            magmablas_claset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,flag), trsm_nb );
                             magma_queue_wait_event( stream[d][stream2], event[d][1] ); // panel received
                         }
-                        magmablas_claset( MagmaUpperLower, nb2,jb, dx(d,1),nb2 );
+                        magmablas_claset( MagmaFull, nb2, jb, c_zero, c_zero, dx(d,1), nb2 );
                         magmablas_ctrsm_work( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                                               nb2, jb, c_one,
                                               dlpanel,                    ldpanel,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgetrf_m.cpp normal z -> c, Fri May 30 10:40:56 2014
+       @generated from zgetrf_m.cpp normal z -> c, Fri Jul 18 17:34:16 2014
 
 */
 
@@ -34,6 +34,10 @@
 
     Arguments
     ---------
+    @param[in]
+    num_gpus INTEGER
+             The number of GPUs.  num_gpus > 0.
+
     @param[in]
     m       INTEGER
             The number of rows of the matrix A.  M >= 0.
@@ -73,7 +77,7 @@
     @ingroup magma_cgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgetrf_m(magma_int_t num_gpus0, magma_int_t m, magma_int_t n,
+magma_cgetrf_m(magma_int_t num_gpus, magma_int_t m, magma_int_t n,
                magmaFloatComplex *A, magma_int_t lda,
                magma_int_t *ipiv, magma_int_t *info)
 {
@@ -89,7 +93,7 @@ magma_cgetrf_m(magma_int_t num_gpus0, magma_int_t m, magma_int_t n,
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex *dAT[MagmaMaxGPUs], *dA[MagmaMaxGPUs], *dPT[MagmaMaxGPUs];
     magma_int_t        iinfo = 0, nb, nbi, maxm, n_local[MagmaMaxGPUs], ldn_local;
-    magma_int_t        N, M, NB, NBk, I, d, num_gpus;
+    magma_int_t        N, M, NB, NBk, I, d, num_gpus0 = num_gpus;
     magma_int_t        ii, jj, h, offset, ib, rows, s;
     
     magma_queue_t stream[MagmaMaxGPUs][2];
@@ -235,7 +239,7 @@ magma_cgetrf_m(magma_int_t num_gpus0, magma_int_t m, magma_int_t n,
                 magma_queue_wait_event( stream[d][0], event[d][0] );
                 
                 /* transpose */
-                magmablas_ctranspose2( dPT(d,0,0), nb, dA[d], maxm-offset, M-offset, nbi);
+                magmablas_ctranspose( M-offset, nbi, dA[d], maxm-offset, dPT(d,0,0), nb );
             }
             
             /* applying the pivot from the previous big-panel */
@@ -268,7 +272,7 @@ magma_cgetrf_m(magma_int_t num_gpus0, magma_int_t m, magma_int_t n,
                         magma_queue_wait_event( stream[d][0], event[d][(1+jj/nb)%2] );
                         
                         /* transpose next column */
-                        magmablas_ctranspose2( dPT(d,0,(1+jj/nb)%2), nb, dA[d], rows-nb, M-ii-nb, nb);
+                        magmablas_ctranspose( M-ii-nb, nb, dA[d], rows-nb, dPT(d,0,(1+jj/nb)%2), nb );
                     }
                     
                     /* update with the block column */
@@ -294,7 +298,7 @@ magma_cgetrf_m(magma_int_t num_gpus0, magma_int_t m, magma_int_t n,
 
         /* calling magma-gpu interface to panel-factorize the big panel */
         if ( M > I ) {
-            //magma_cgetrf1_mgpu(num_gpus, M-I, N, nb, I, dAT, ldn_local, ipiv+I, dA, &A[I*lda], lda,
+            //magma_cgetrf1_mgpu(num_gpus, M-I, N, nb, I, dAT, ldn_local, ipiv+I, dA, A(0,I), lda,
             //                   (magma_queue_t **)stream, &iinfo);
             magma_cgetrf2_mgpu(num_gpus, M-I, N, nb, I, dAT, ldn_local, ipiv+I, dA, A(0,I), lda,
                                stream, &iinfo);
@@ -378,7 +382,7 @@ magma_cgetrf_piv(magma_int_t m, magma_int_t n, magma_int_t NB,
         k1 = 1+I+NB;
         k2 = minmn;
         incx = 1;
-        lapackf77_claswp(&NB, &A[I*lda], &lda, &k1, &k2, ipiv, &incx);
+        lapackf77_claswp(&NB, A(0,I), &lda, &k1, &k2, ipiv, &incx);
     }
 
     return *info;
@@ -415,7 +419,7 @@ magma_cgetrf2_piv(magma_int_t m, magma_int_t n, magma_int_t start, magma_int_t e
         incx = 1;
         k1 = 1+I+nb;
         k2 = minmn;
-        lapackf77_claswp(&nb, &A[I*lda], &lda, &k1, &k2, ipiv, &incx);
+        lapackf77_claswp(&nb, A(0,I), &lda, &k1, &k2, ipiv, &incx);
     }
 
     return MAGMA_SUCCESS;

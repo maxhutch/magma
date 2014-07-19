@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -171,7 +171,7 @@ magma_zungqr2(magma_int_t m, magma_int_t n, magma_int_t k,
                               dA(kk, kk), ldda );
         
             // Set A(1:kk,kk+1:n) to zero.
-            magmablas_zlaset( MagmaUpperLower, kk, n - kk, dA(0, kk), ldda );
+            magmablas_zlaset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk), ldda );
         }
     }
 
@@ -198,8 +198,8 @@ magma_zungqr2(magma_int_t m, magma_int_t n, magma_int_t k,
                                     dT, nb, stream );
 
             // set panel to identity
-            magmablas_zlaset( MagmaUpperLower, i, ib, dA(0, i), ldda );
-            magmablas_zlaset_identity( mi, ib, dA(i, i), ldda );
+            magmablas_zlaset( MagmaFull, i,  ib, c_zero, c_zero, dA(0, i), ldda );
+            magmablas_zlaset( MagmaFull, mi, ib, c_zero, c_one,  dA(i, i), ldda );
             
             magma_queue_sync( stream );
             if (i < n) {

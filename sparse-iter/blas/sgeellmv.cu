@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeellmv.cu normal z -> s, Fri May 30 10:41:36 2014
+       @generated from zgeellmv.cu normal z -> s, Fri Jul 18 17:34:27 2014
 
 */
 
@@ -81,31 +81,59 @@ int row = blockDim.x * blockIdx.x + threadIdx.x ;
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes y = alpha *  A *  x + beta * y on the GPU.
     Input format is ELLPACK.
     
     Arguments
-    =========
+    ---------
+    
+    @param
+    transA      magma_trans_t
+                transposition parameter for A
+                
+    @param
+    m           magma_int_t
+                number of rows in A
 
-    magma_int_t m                   number of rows in A
-    magma_int_t n                   number of columns in A 
-    float alpha        scalar multiplier
-    float *d_val       array containing values of A in ELLPACK
-    magma_int_t *d_colind           columnindices of A in ELLPACK
-    float *d_x         input vector x
-    float beta         scalar multiplier
-    float *d_y         input/output vector y
+    @param
+    n           magma_int_t
+                number of columns in A 
+                
+    @param
+    nnz_per_row magma_int_t
+                number of elements in the longest row 
 
-    ======================================================================    */
+    @param
+    alpha       float
+                scalar multiplier
+
+    @param
+    d_val       float*
+                array containing values of A in ELLPACK
+
+    @param
+    d_colind    magma_int_t*
+                columnindices of A in ELLPACK
+
+    @param
+    d_x         float*
+                input vector x
+
+    @param
+    beta        float
+                scalar multiplier
+
+    @param
+    d_y         float*
+                input/output vector y
+
+
+    @ingroup magmasparse_sblas
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_sgeellmv(magma_trans_t transA,
@@ -131,32 +159,75 @@ magma_sgeellmv(magma_trans_t transA,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes y = alpha *( A - lambda I ) * x + beta * y on the GPU.
     Input format is ELLPACK.
     It is the shifted version of the ELLPACK SpMV.
     
     Arguments
-    =========
+    ---------
+    
+    @param
+    transA      magma_trans_t
+                transposition parameter for A
 
-    magma_int_t m                   number of rows in A
-    magma_int_t n                   number of columns in A 
-    float alpha        scalar multiplier
-    float *d_val       array containing values of A in ELLPACK
-    magma_int_t *d_colind           columnindices of A in ELLPACK
-    float *d_x         input vector x
-    float beta         scalar multiplier
-    float *d_y         input/output vector y
+    @param
+    m           magma_int_t
+                number of rows in A
 
-    ======================================================================    */
+    @param
+    n           magma_int_t
+                number of columns in A 
+    @param
+    nnz_per_row magma_int_t
+                number of elements in the longest row 
+                
+    @param
+    alpha       float
+                scalar multiplier
+                
+    @param
+    lambda      float
+                scalar multiplier
+
+    @param
+    d_val       float*
+                array containing values of A in ELLPACK
+
+    @param
+    d_colind    magma_int_t*
+                columnindices of A in ELLPACK
+
+    @param
+    d_x         float*
+                input vector x
+
+    @param
+    beta        float
+                scalar multiplier
+                
+    @param
+    offset      magma_int_t 
+                in case not the main diagonal is scaled
+                
+    @param
+    blocksize   magma_int_t 
+                in case of processing multiple vectors  
+                
+    @param
+    add_rows    magma_int_t*
+                in case the matrixpowerskernel is used
+
+    @param
+    d_y         float*
+                input/output vector y
+
+
+    @ingroup magmasparse_sblas
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_sgeellmv_shift( magma_trans_t transA,

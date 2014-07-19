@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-    @generated from testing_dsyevd_gpu.cpp normal d -> s, Fri May 30 10:41:28 2014
+    @generated from testing_dsyevd_gpu.cpp normal d -> s, Fri Jul 18 17:34:25 2014
 
 */
 

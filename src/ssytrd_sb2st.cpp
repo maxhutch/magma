@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd_hb2st.cpp normal z -> s, Fri May 30 10:41:07 2014
+       @generated from zhetrd_hb2st.cpp normal z -> s, Fri Jul 18 17:34:19 2014
 
 */
 #include "common_magma.h"
@@ -575,7 +575,7 @@ static void magma_stile_bulge_parallel(magma_int_t my_core_id, magma_int_t cores
                             fin=0;
                             while(fin == 0) {
                                 if (myid == 1) {
-                                    if ( (prog[myid+shift-1] == (sweepid-1)) ) {
+                                    if ( prog[myid+shift-1] == (sweepid-1) ) {
                                         magma_strdtype1cbHLsym_withQ_v2(n, nb, A, lda, V, ldv, TAU, stind, edind, sweepid, Vblksiz, work);
 
                                         fin=1;

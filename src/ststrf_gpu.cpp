@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from ztstrf_gpu.cpp normal z -> s, Fri May 30 10:40:58 2014
+       @generated from ztstrf_gpu.cpp normal z -> s, Fri Jul 18 17:34:16 2014
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -222,10 +222,10 @@ magma_ststrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
 
         if ( order == MagmaRowMajor ) {
             magma_ssetmatrix( m, n, hU, ldhu, dwork, lddwork );
-            magmablas_stranspose( dU, lddu, dwork, lddwork, m, n );
+            magmablas_stranspose( m, n, dwork, lddwork, dU, lddu );
 
             magma_ssetmatrix( m, n, hA, ldha, dwork, lddwork );
-            magmablas_stranspose( dA, ldda, dwork, lddwork, m, n );
+            magmablas_stranspose( m, n, dwork, lddwork, dA, ldda );
         } else {
             magma_ssetmatrix( m, n, hU, ldhu, dU, lddu );
             magma_ssetmatrix( m, n, hA, ldha, dA, ldda );
@@ -253,11 +253,11 @@ magma_ststrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
             
             if ( i > 0 ) {
                 // download i-th panel
-                magmablas_stranspose( dUp, lddu, UT(0, i), lddu, sb, ii );
-                magmablas_stranspose( dAp, ldda, AT(0, i), ldda, sb, m  );
+                magmablas_stranspose( sb, ii, UT(0,i), lddu, dUp, lddu );
+                magmablas_stranspose( sb, m,  AT(0,i), ldda, dAp, ldda );
                 
                 magma_sgetmatrix( ii, sb, dUp, lddu, hU(0, i), ldhu );
-                magma_sgetmatrix( m, sb, dAp, ldda, hA(0, i), ldha );
+                magma_sgetmatrix( m,  sb, dAp, ldda, hA(0, i), ldha );
                 
                 // make sure that gpu queue is empty
                 //magma_device_sync();
@@ -334,8 +334,8 @@ magma_ststrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
             magma_ssetmatrix( sb, sb, hU(i, i), ldhu, dUp, lddu );
             magma_ssetmatrix( m, sb, hA(0, i), ldha, dAp, ldda );
             magma_ssetmatrix( p*ib, sb, hL(i), ldhl, L(i), lddl );
-            magmablas_stranspose( UT(i, i), lddu, dUp, lddu, sb, sb);
-            magmablas_stranspose( AT(0, i), ldda, dAp, ldda, m,  sb);
+            magmablas_stranspose( sb, sb, dUp, lddu, UT(i,i), lddu );
+            magmablas_stranspose( m,  sb, dAp, ldda, AT(0,i), ldda );
             
             // make sure that gpu queue is empty
             //magma_device_sync();

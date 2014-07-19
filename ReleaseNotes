@@ -24,6 +24,7 @@ Sparse routines have recently been added as a beta release, in the sparse-iter
 directory. We would appreciate any feedback that you may have on them.
 
  1.5.0
+       - beta 3: July  18, 2014
        - beta 2: May   30, 2014
        - beta 1: April 25, 2014
     * Added pre-release of sparse routines.
@@ -33,7 +34,11 @@ directory. We would appreciate any feedback that you may have on them.
     * Added unmbr/ormbr, unmlq/ormlq, used in gesdd.
     * Improved performance of geev when computing eigenvectors by using
       multi-threaded trevc.
-    * Fixed memory access bugs in lanhe/lansy, zlag2c, clag2z, dlag2s, slag2d.
+    * Added testing/run_tests.py script for more extensive testing.
+    * Changed laset interface to match LAPACK.
+    * Fixed memory access bug in transpose, and changed interface to match LAPACK.
+    * Fixed memory access bugs in lanhe/lansy, zlag2c, clag2z, dlag2s, slag2d,
+      trsm (trtri_diag).
     * Fixed unmql/ormql for rectangular matrices.
     * Updated documentation to doxygen format.
 

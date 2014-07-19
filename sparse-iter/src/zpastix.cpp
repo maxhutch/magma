@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
@@ -36,28 +36,29 @@
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
-    Prepares the Jacobi Iteration according to
-       x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
-       x^(k+1) =      c     -       M        * x^k.
+    Prepares the PASTIX solver
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A                   input matrix A
-    magma_z_vector b                          RHS b
-    magma_z_sparse_matrix *M                  M = D^(-1) * (L+U)
-    magma_z_vector *c                         c = D^(-1) * b
+    @param
+    A           magma_z_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_z_vector
+                RHS b
+
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameter
+
+    @ingroup magmasparse_zgesv
+    ********************************************************************/
 
 magma_int_t
 magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
@@ -210,28 +211,29 @@ magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
-    Prepares the Jacobi Iteration according to
-       x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
-       x^(k+1) =      c     -       M        * x^k.
-
+    Applies the PASTIX LU
+    
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A                   input matrix A
-    magma_z_vector b                          RHS b
-    magma_z_sparse_matrix *M                  M = D^(-1) * (L+U)
-    magma_z_vector *c                         c = D^(-1) * b
+    @param
+    A           magma_z_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_z_vector
+                RHS b
+
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameter
+
+    @ingroup magmasparse_
+    ********************************************************************/
 
 magma_int_t
 magma_zapplypastix( magma_z_vector b, magma_z_vector *x, 
@@ -283,7 +285,7 @@ magma_zapplypastix( magma_z_vector b, magma_z_vector *x,
 
         // fix that x is not allocated every time
         //  in case of many iterations, it might be faster to use
-        // cublasSetVector( ncol, sizeof( magmaDoubleComplex ), 
+        // magma_zsetvector( ncol, 
         //                                    b_h.val, 1, x->val, 1 );
         magma_z_vfree( x );
         magma_z_vtransfer( b_h, x, Magma_CPU, b.memory_location);

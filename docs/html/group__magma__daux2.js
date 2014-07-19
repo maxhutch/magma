@@ -1,5 +1,9 @@
 var group__magma__daux2 =
 [
+    [ "magma_dnan_inf", "group__magma__daux2.html#gadb1acea03eaa9715c301c09a60c74f45", null ],
+    [ "magma_dnan_inf_gpu", "group__magma__daux2.html#gac7fd03728b54c55d313521e3daf44b19", null ],
+    [ "magma_dprint", "group__magma__daux2.html#gae4f9db9709d260f836c8a2119a36e3d8", null ],
+    [ "magma_dprint_gpu", "group__magma__daux2.html#gaf09fef62b6a44b21036701b6b4cd4456", null ],
     [ "magmablas_dgeadd", "group__magma__daux2.html#ga0145080d26487849812a4d49d3ba69c9", null ],
     [ "magmablas_dgeadd_batched", "group__magma__daux2.html#ga1a3d698383ddede3b11ad08b035054e0", null ],
     [ "magmablas_dlacpy", "group__magma__daux2.html#ga318d552829d9c1e6d13bcaf1c1ac8d32", null ],
@@ -7,8 +11,16 @@ var group__magma__daux2 =
     [ "magmablas_dlag2s", "group__magma__daux2.html#gad88a4ddb57558675c287bd92514c96f3", null ],
     [ "magmablas_dlange", "group__magma__daux2.html#ga7d44cbee0bfd5c56d7f34c1bfbdc1f96", null ],
     [ "magmablas_dlansy", "group__magma__daux2.html#ga71a0d00653fb054eab2ea36df756f448", null ],
+    [ "magmablas_dlaset", "group__magma__daux2.html#ga6bd7bd19c8b447349508c07231edb9b4", null ],
+    [ "magmablas_dlaset_band", "group__magma__daux2.html#ga56369886fd4417476f9017ac8fe55be7", null ],
+    [ "magmablas_dlaset_band_stream", "group__magma__daux2.html#gaa385dab19f9dd0b4e8674986237b5ac9", null ],
+    [ "magmablas_dlaset_stream", "group__magma__daux2.html#gae5392a72ca74cc198a21ff2a2c2ac1b8", null ],
     [ "magmablas_dslaswp", "group__magma__daux2.html#gaeddd1d4646d6067eabb9c833483c56c3", null ],
     [ "magmablas_dswapdblk", "group__magma__daux2.html#ga50dcb2d3cf08ffb95a1be23ffc9345f5", null ],
     [ "magmablas_dsymmetrize", "group__magma__daux2.html#ga4102c2ff9b855d3c1fc4cd78682094d1", null ],
-    [ "magmablas_dsymmetrize_tiles", "group__magma__daux2.html#ga1943f1882cf4a85be907a4d739a0c052", null ]
+    [ "magmablas_dsymmetrize_tiles", "group__magma__daux2.html#ga1943f1882cf4a85be907a4d739a0c052", null ],
+    [ "magmablas_dtranspose", "group__magma__daux2.html#ga124fec8219324cd4c49c24e7bdc2163b", null ],
+    [ "magmablas_dtranspose_inplace", "group__magma__daux2.html#ga73a533538d48a351910272c600849075", null ],
+    [ "magmablas_dtranspose_inplace_stream", "group__magma__daux2.html#gacaea8342f8094b31a54f5754f67a10f5", null ],
+    [ "magmablas_dtranspose_stream", "group__magma__daux2.html#ga560d02a074db3505059e5d70cb1e8392", null ]
 ];

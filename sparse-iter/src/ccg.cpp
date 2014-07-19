@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
-       @generated from zcg.cpp normal z -> c, Fri May 30 10:41:40 2014
+       @generated from zcg.cpp normal z -> c, Fri Jul 18 17:34:29 2014
 */
 
 #include "common_magma.h"
@@ -19,14 +19,9 @@
 #define ATOLERANCE     lapackf77_slamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -34,14 +29,26 @@
     This is a GPU implementation of the Conjugate Gradient method.
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix A                   input matrix A
-    magma_c_vector b                          RHS b
-    magma_c_vector *x                         solution approximation
-    magma_c_solver_par *solver_par       solver parameters
+    @param
+    A           magma_c_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_c_vector
+                RHS b
+
+    @param
+    x           magma_c_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_c_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_cposv
+    ********************************************************************/
 
 magma_int_t
 magma_ccg( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,  

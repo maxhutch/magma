@@ -12,6 +12,8 @@ var group__magma__dblas3 =
     [ "magmablas_dgemm_tesla", "group__magma__dblas3.html#ga66f0e7be692f6cdf0c7cc9a6d85038cc", null ],
     [ "magmablas_dsyr2k_mgpu2", "group__magma__dblas3.html#ga8b1e3c8a1da26ca1a09fb86c3b95303f", null ],
     [ "magmablas_dsyr2k_mgpu_spec", "group__magma__dblas3.html#ga34c19f11193d8b1f4003c635b6c47115", null ],
-    [ "magmablas_dtrsm", "group__magma__dblas3.html#gabb3f7eea84c5593e6f2f3e2e5f8dbd53", null ],
-    [ "magmablas_dtrsm_work", "group__magma__dblas3.html#gaada6f4eb85340a91e3571eaa5b1348f8", null ]
+    [ "magmablas_dtrsm", "group__magma__dblas3.html#ga2fd67e8043170128e705080d2ec2b597", null ],
+    [ "magmablas_dtrsm_work", "group__magma__dblas3.html#gaf6a3bdaf14e52147904650a0b1dd65aa", null ],
+    [ "magmablas_dtrtri_diag", "group__magma__dblas3.html#ga0d8c89a0b5af89e14d78651b213cf669", null ],
+    [ "magmablas_dtrtri_diag_stream", "group__magma__dblas3.html#gafe3dab489fda6664217791d7fd4f47e2", null ]
 ];

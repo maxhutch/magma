@@ -1,116 +1,168 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from dlarfg.cu normal d -> s, Fri May 30 10:40:42 2014
+       @generated from zlarfg.cu normal z -> s, Fri Jul 18 17:34:12 2014
        
        @author Mark Gates
 */
 #include "common_magma.h"
+#include "magma_templates.h"
 
-#define PRECISION_s
+#define REAL
 
 // 512 is maximum number of threads for CUDA capability 1.x
-#define BLOCK_SIZE 512
-
-
-// ----------------------------------------
-// Does sum reduction of array x, leaving total in x[0].
-// Contents of x are destroyed in the process.
-// With k threads, can reduce array up to 2*k in size.
-// Assumes number of threads <= 1024 (which is max number of threads up to CUDA capability 3.0)
-// Having n as template parameter allows compiler to evaluate some conditions at compile time.
-template< int n >
-__device__
-void sum_reduce( /*int n,*/ int i, float* x )
-{
-    __syncthreads();
-    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { x[i] += x[i+1024]; }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { x[i] += x[i+ 512]; }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { x[i] += x[i+ 256]; }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { x[i] += x[i+ 128]; }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { x[i] += x[i+  64]; }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { x[i] += x[i+  32]; }  __syncthreads(); }
-    // probably don't need __syncthreads for < 16 threads
-    // because of implicit warp level synchronization.
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { x[i] += x[i+  16]; }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { x[i] += x[i+   8]; }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { x[i] += x[i+   4]; }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { x[i] += x[i+   2]; }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[i] += x[i+   1]; }  __syncthreads(); }
-}
-// end sum_reduce
+#define NB 512
 
 
 // ----------------------------------------
 // CUDA kernel for magma_slarfg.
-// Uses one block of BLOCK_SIZE (currently 512) threads.
-// Each thread sums dx[ i + k*BLOCK_SIZE ]^2 for k = 0, 1, ...,
+// Uses one block of NB (currently 512) threads.
+// Each thread sums dx[ tx + k*NB ]^2 for k = 0, 1, ...,
 // then does parallel sum reduction to get norm-squared.
 // 
-//
-// Currently setup to use BLOCK_SIZE threads, no matter how small dx is.
-// This was slightly faster (5%) than passing n to sum_reduce.
-// To use number of threads = min( BLOCK_SIZE, max( 1, n-1 )), pass n as
-// argument to sum_reduce, rather than as template parameter.
-__global__
-void magma_slarfg_kernel( int n, float* dx0, float* dx, int incx, float* dtau )
+// Currently setup to use NB threads, no matter how small dx is.
+// This was slightly faster (5%) than passing n to magma_sum_reduce.
+// To use number of threads = min( NB, max( 1, n-1 )), pass n as
+// argument to magma_sum_reduce, rather than as template parameter.
+__global__ void
+slarfg_kernel(
+    int n,
+    float* dalpha, float* dx, int incx,
+    float* dtau )
 {
-    const int i = threadIdx.x;
-    __shared__ float sum[ BLOCK_SIZE ];
-    __shared__ float scale;
+    const int tx = threadIdx.x;
+    __shared__ float swork[ NB ];
+    // TODO is it faster for each thread to have its own scale (register)?
+    // if so, communicate it via swork[0]
+    __shared__ float sscale;
+    __shared__ float sscale2;
+    float tmp;
     
-    // get norm of x
-    // dx has length n-1
-    sum[i] = 0;
-    for( int j = i; j < n-1; j += BLOCK_SIZE ) {
-        sum[i] += dx[j*incx] * dx[j*incx];
+    // find max of [dalpha, dx], to use as scaling to avoid unnecesary under- and overflow
+    if ( tx == 0 ) {
+        tmp = *dalpha;
+        #ifdef COMPLEX
+        swork[tx] = max( fabs(real(tmp)), fabs(imag(tmp)) );
+        #else
+        swork[tx] = fabs(tmp);
+        #endif
     }
-    sum_reduce< BLOCK_SIZE >( i, sum );
-    //sum_reduce( blockDim.x, i, sum );
+    else {
+        swork[tx] = 0;
+    }
+    for( int j = tx; j < n-1; j += NB ) {
+        tmp = dx[j*incx];
+        #ifdef COMPLEX
+        swork[tx] = max( swork[tx], max( fabs(real(tmp)), fabs(imag(tmp)) ));
+        #else
+        swork[tx] = max( swork[tx], fabs(tmp) );
+        #endif
+    }
+    magma_max_reduce< NB >( tx, swork );
+    if ( tx == 0 )
+        sscale = swork[0];
+    __syncthreads();
     
-    if ( i == 0 ) {
-        if ( sum[0] == 0 ) {
-            *dtau = 0;
-            scale = 0;
+    // sum norm^2 of dx/sscale
+    // dx has length n-1
+    swork[tx] = 0;
+    if ( sscale > 0 ) {
+        for( int j = tx; j < n-1; j += NB ) {
+            tmp = dx[j*incx] / sscale;
+            swork[tx] += real(tmp)*real(tmp) + imag(tmp)*imag(tmp);
+        }
+        magma_sum_reduce< NB >( tx, swork );
+        //magma_sum_reduce( blockDim.x, tx, swork );
+    }
+    
+    if ( tx == 0 ) {
+        float alpha = *dalpha;
+        if ( swork[0] == 0 && imag(alpha) == 0 ) {
+            // H = I
+            *dtau = MAGMA_S_ZERO;
         }
         else {
-            float alpha = *dx0;
-            float beta  = sqrt( alpha*alpha + sum[0] );
-            beta  = -copysign( beta, alpha );
+            // beta = norm( [dalpha, dx] )
+            float beta;
+            tmp  = alpha / sscale;
+            beta = sscale * sqrt( real(tmp)*real(tmp) + imag(tmp)*imag(tmp) + swork[0] );
+            beta = -copysign( beta, real(alpha) );
             // todo: deal with badly scaled vectors (see lapack's larfg)
-            *dtau = (beta - alpha) / beta;
-            *dx0  = beta;
-            scale = 1 / (alpha - beta);
+            *dtau   = MAGMA_S_MAKE( (beta - real(alpha)) / beta, -imag(alpha) / beta );
+            *dalpha = MAGMA_S_MAKE( beta, 0 );
+            sscale2 = 1 / (alpha - beta);
         }
     }
     
-    // scale x
+    // scale x (if norm was not 0)
     __syncthreads();
-    if ( scale != 0 ) {
-        for( int j = i; j < n-1; j += BLOCK_SIZE ) {
-            dx[j*incx] *= scale;
+    if ( swork[0] != 0 ) {
+        for( int j = tx; j < n-1; j += NB ) {
+            dx[j*incx] *= sscale2;
         }
     }
 }
 
 
-// ----------------------------------------
-// Generates Householder elementary reflector H = I - tau v v^T to reduce
-//   H [ dx0 ] = [ beta ]
-//     [ dx  ]   [ 0    ]
-// with beta = ±norm( [dx0, dx] ).
-// Stores v over dx; first element of v is 1 and is not stored.
-// Stores beta over dx0.
-// Stores tau.
+/**
+    Purpose
+    -------
+    SLARFG generates a real elementary reflector (Householder matrix)
+    H of order n, such that
+
+         H * ( alpha ) = ( beta ),   H**T * H = I.
+             (   x   )   (   0  )
+
+    where alpha and beta are scalars, with beta real and beta = ±norm([alpha, x]),
+    and x is an (n-1)-element real vector. H is represented in the form
+
+         H = I - tau * ( 1 ) * ( 1 v**T ),
+                       ( v )
+
+    where tau is a real scalar and v is a real (n-1)-element vector.
+    Note that H is not symmetric.
+
+    If the elements of x are all zero and dalpha is real, then tau = 0
+    and H is taken to be the unit matrix.
+
+    Otherwise  1 <= real(tau) <= 2  and  abs(tau-1) <= 1.
+
+    Arguments
+    ---------
+    @param[in]
+    n       INTEGER
+            The order of the elementary reflector.
+
+    @param[in,out]
+    dalpha  REAL* on the GPU.
+            On entry, pointer to the value alpha, i.e., the first entry of the vector.
+            On exit, it is overwritten with the value beta.
+
+    @param[in,out]
+    dx      REAL array, dimension (1+(N-2)*abs(INCX)), on the GPU
+            On entry, the (n-1)-element vector x.
+            On exit, it is overwritten with the vector v.
+
+    @param[in]
+    incx    INTEGER
+            The increment between elements of X. INCX > 0.
+
+    @param[out]
+    dtau    REAL* on the GPU.
+            Pointer to the value tau.
+    ********************************************************************/
 extern "C"
-void magma_slarfg( magma_int_t n, float* dx0, float* dx, magma_int_t incx, float* dtau )
+void magmablas_slarfg(
+    magma_int_t n,
+    float* dalpha, float* dx, magma_int_t incx,
+    float* dtau )
 {
     dim3 blocks( 1 );
-    dim3 threads( BLOCK_SIZE );
-    //dim3 threads( min( BLOCK_SIZE, max( n-1, 1 )));
-    magma_slarfg_kernel<<< blocks, threads >>>( n, dx0, dx, incx, dtau );
+    dim3 threads( NB );
+    //dim3 threads( min( NB, max( n-1, 1 )));
+    slarfg_kernel<<< blocks, threads >>>( n, dalpha, dx, incx, dtau );
 }

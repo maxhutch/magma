@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zsetmatrix_transpose.cu normal z -> c, Fri May 30 10:40:43 2014
+       @generated from zsetmatrix_transpose.cu normal z -> c, Fri Jul 18 17:34:12 2014
 
 */
 #include "common_magma.h"
@@ -43,15 +43,15 @@ magmablas_csetmatrix_transpose( magma_int_t m, magma_int_t n,
     magma_queue_create( &stream[1] );
    
     /* Move data from CPU to GPU in the first panel in the dB buffer */
-    ib   = min(n-i, nb);
+    ib = min(n-i, nb);
     magma_csetmatrix_async( m, ib,
                             ha + i*lda,             lda,
                             dB + (j%2) * nb * lddb, lddb, stream[j%2] );
     j++;
 
-    for(i=nb; i<n; i+=nb){
+    for(i=nb; i < n; i += nb) {
        /* Move data from CPU to GPU in the second panel in the dB buffer */
-       ib   = min(n-i, nb);
+       ib = min(n-i, nb);
        magma_csetmatrix_async( m, ib,
                                ha+i*lda,               lda,
                                dB + (j%2) * nb * lddb, lddb, stream[j%2] );
@@ -59,14 +59,13 @@ magmablas_csetmatrix_transpose( magma_int_t m, magma_int_t n,
   
        /* Note that the previous panel (i.e., j%2) comes through the stream
           for the kernel so there is no need to synchronize.             */
-       // magmablas_ctranspose2( dat+i-nb, ldda, dB + (j%2)*nb*lddb, lddb, m, nb);
-       magmablas_ctranspose2s( dat+i-nb, ldda, dB + (j%2)*nb*lddb, lddb, m, nb, stream[j%2]);
+       // TODO should this be ib not nb?
+       magmablas_ctranspose_stream( m, nb, dB+(j%2)*nb*lddb, lddb, dat+i-nb, ldda, stream[j%2] );
     }
 
     /* Transpose the last part of the matrix.                            */
     j++;
-    // magmablas_ctranspose2( dat+i-nb, ldda, dB + (j%2)*nb*lddb, lddb, m, ib);
-    magmablas_ctranspose2s( dat+i-nb, ldda, dB + (j%2)*nb*lddb, lddb, m, ib, stream[j%2]);
+    magmablas_ctranspose_stream( m, ib, dB+(j%2)*nb*lddb, lddb, dat+i-nb, ldda, stream[j%2] );
 
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );

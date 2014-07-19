@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zunmqr_m.cpp normal z -> c, Fri May 30 10:41:03 2014
+       @generated from zunmqr_m.cpp normal z -> c, Fri Jul 18 17:34:18 2014
 
 */
 #include "common_magma.h"
@@ -133,7 +133,8 @@ magma_cunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
 #define    dT(gpui, ind)       (dw[gpui] + maxnlocal*lddc + 2*lddac*lddar + (ind)*((nb+1)*nb))
 #define dwork(gpui, ind)       (dw[gpui] + maxnlocal*lddc + 2*lddac*lddar + 2*((nb+1)*nb) + (ind)*(lddwork*nb))
 
-    magmaFloatComplex c_one = MAGMA_C_ONE;
+    magmaFloatComplex c_zero = MAGMA_C_ZERO;
+    magmaFloatComplex c_one  = MAGMA_C_ONE;
 
     const char* side_  = lapack_side_const( side );
     const char* trans_ = lapack_trans_const( trans );
@@ -280,8 +281,8 @@ magma_cunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
                 magma_csetmatrix_async(nq-i, kb,
                                        A(i, i),                 lda,
                                        dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0] );
-                // Put 0s in the upper triangular part of dA;
-                magmablas_csetdiag1subdiag0_stream( MagmaLower, kb, kb, dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0]);
+                // set upper triangular part of dA to identity
+                magmablas_claset_band_stream( MagmaUpper, kb, kb, kb, c_zero, c_one, dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0] );
             }
 
             /* Form the triangular factor of the block reflector
@@ -361,10 +362,9 @@ magma_cunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
             &tau[i], T, &ib);
             
             // 1) copy the panel from A to the GPU, and
-            // 2) Put 0s in the upper triangular part of dA;
+            // 2) set upper triangular part of dA to identity
             magma_csetmatrix( i__4, ib, A(i, i), lda, dA(i, 0), ldda );
-            magmablas_csetdiag1subdiag0(MagmaLower, ib, ib, dA(i, 0), ldda);
-            
+            magmablas_claset_band( MagmaUpper, ib, ib, ib, c_zero, c_one, dA(i, 0), ldda );
             
             // H or H' is applied to C(1:m,i:n)
             ni = n - i;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zpipelinedgmres.cu normal z -> c, Fri May 30 10:41:37 2014
+       @generated from zpipelinedgmres.cu normal z -> c, Fri Jul 18 17:34:28 2014
        @author Hartwig Anzt
 
 */
@@ -142,14 +142,9 @@ magma_cpipelined_scale( int n,
     }
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Computes the correction term of the pipelined GMRES according to P. Ghysels 
     and scales and copies the new search direction
@@ -157,14 +152,31 @@ magma_cpipelined_scale( int n,
     Returns the vector v = r/ ( skp[k] - (sum_i=1^k skp[i]^2) ) .
 
     Arguments
-    =========
+    ---------
 
-    int n                             legth of v_i
-    int k                             # skp entries <v_i,r> ( without <r> )
-    magmaFloatComplex *r             vector of length n
-    magmaFloatComplex *v             vector of length n
+    @param
+    n           int
+                length of v_i
 
-    ========================================================================  */
+    @param
+    k           int
+                # skp entries v_i^T * r ( without r )
+
+    @param
+    r           magmaFloatComplex*
+                vector of length n
+
+    @param
+    v           magmaFloatComplex*
+                vector of length n
+                
+    @param  
+    skp         magmaFloatComplex*
+                array of parameters
+
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_ccopyscale(   int n, 

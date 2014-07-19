@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeqrf-v4.cpp normal z -> d, Fri May 30 10:41:00 2014
+       @generated from zgeqrf-v4.cpp normal z -> d, Fri Jul 18 17:34:17 2014
 
 */
 #include "common_magma.h"

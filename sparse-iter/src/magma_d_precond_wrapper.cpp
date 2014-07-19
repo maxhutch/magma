@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_z_precond_wrapper.cpp normal z -> d, Fri May 30 10:41:42 2014
+       @generated from magma_z_precond_wrapper.cpp normal z -> d, Fri Jul 18 17:34:29 2014
        @author Hartwig Anzt
 
 */
@@ -15,28 +15,35 @@
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     For a given input matrix A and vectors x, y and the
     preconditioner parameters, the respective preconditioner
     is chosen. It approximates x for A x = y.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A         sparse matrix A    
-    magma_d_vector x                input vector x  
-    magma_d_vector y                input vector y      
-    magma_d_preconditioner precond  preconditioner
+    @param
+    A           magma_d_sparse_matrix
+                sparse matrix A    
 
-    ========================================================================  */
+    @param
+    x           magma_d_vector
+                input vector x  
+
+    @param
+    y           magma_d_vector
+                input vector y      
+
+    @param
+    precond     magma_d_preconditioner
+                preconditioner
+
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t
 magma_d_precond( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -93,29 +100,36 @@ magma_d_precond( magma_d_sparse_matrix A, magma_d_vector b,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     For a given input matrix A and vectors x, y and the
     preconditioner parameters, the respective preconditioner
     is preprocessed. 
-    E.g. for Jacobi: the scaling-vetor, for ILU the factorization...
+    E.g. for Jacobi: the scaling-vetor, for ILU the factorization.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A         sparse matrix A    
-    magma_d_vector x                input vector x  
-    magma_d_vector y                input vector y      
-    magma_d_preconditioner precond  preconditioner
+    @param
+    A           magma_d_sparse_matrix
+                sparse matrix A    
 
-    ========================================================================  */
+    @param
+    x           magma_d_vector
+                input vector x  
+
+    @param
+    y           magma_d_vector
+                input vector y      
+
+    @param
+    precond     magma_d_preconditioner
+                preconditioner
+
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t
 magma_d_precondsetup( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -134,6 +148,7 @@ magma_d_precondsetup( magma_d_sparse_matrix A, magma_d_vector b,
         return MAGMA_SUCCESS;
     }
     else if( precond->solver == Magma_ICC ){
+//        magma_dcuilusetup( A, precond );
         magma_dcuiccsetup( A, precond );
         return MAGMA_SUCCESS;
     }
@@ -142,6 +157,7 @@ magma_d_precondsetup( magma_d_sparse_matrix A, magma_d_vector b,
         return MAGMA_SUCCESS;
     }
     else if( precond->solver == Magma_AICC ){
+        //magma_dailusetup( A, precond );
         magma_daiccsetup( A, precond );
         return MAGMA_SUCCESS;
     }
@@ -154,29 +170,36 @@ magma_d_precondsetup( magma_d_sparse_matrix A, magma_d_vector b,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     For a given input matrix A and vectors x, y and the
     preconditioner parameters, the respective preconditioner
     is applied. 
-    E.g. for Jacobi: the scaling-vetor, for ILU the triangular solves...
+    E.g. for Jacobi: the scaling-vetor, for ILU the triangular solves.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A         sparse matrix A    
-    magma_d_vector x                input vector x  
-    magma_d_vector y                input vector y      
-    magma_d_preconditioner precond  preconditioner
+    @param
+    A           magma_d_sparse_matrix
+                sparse matrix A    
 
-    ========================================================================  */
+    @param
+    x           magma_d_vector
+                input vector x  
+
+    @param
+    y           magma_d_vector
+                input vector y      
+
+    @param
+    precond     magma_d_preconditioner
+                preconditioner
+
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t
 magma_d_applyprecond( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -214,29 +237,36 @@ magma_d_applyprecond( magma_d_sparse_matrix A, magma_d_vector b,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     For a given input matrix A and vectors x, y and the
     preconditioner parameters, the respective left preconditioner
     is applied. 
-    E.g. for Jacobi: the scaling-vetor, for ILU the left triangular solve...
+    E.g. for Jacobi: the scaling-vetor, for ILU the left triangular solve.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A         sparse matrix A    
-    magma_d_vector x                input vector x  
-    magma_d_vector y                input vector y      
-    magma_d_preconditioner precond  preconditioner
+    @param
+    A           magma_d_sparse_matrix
+                sparse matrix A    
 
-    ========================================================================  */
+    @param
+    x           magma_d_vector
+                input vector x  
+
+    @param
+    y           magma_d_vector
+                input vector y      
+
+    @param
+    precond     magma_d_preconditioner
+                preconditioner
+
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t
 magma_d_applyprecond_left( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -256,10 +286,12 @@ magma_d_applyprecond_left( magma_d_sparse_matrix A, magma_d_vector b,
         return MAGMA_SUCCESS;
     }
     else if( precond->solver == Magma_ICC ){
+        //magma_dapplycuilu_l( b, x, precond );
         magma_dapplycuicc_l( b, x, precond );
         return MAGMA_SUCCESS;
     }
     else if( precond->solver == Magma_AICC ){
+        //magma_dapplycuilu_l( b, x, precond );
         magma_dapplycuicc_l( b, x, precond );
         return MAGMA_SUCCESS;
     }
@@ -271,29 +303,36 @@ magma_d_applyprecond_left( magma_d_sparse_matrix A, magma_d_vector b,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     For a given input matrix A and vectors x, y and the
     preconditioner parameters, the respective right-preconditioner
     is applied. 
-    E.g. for Jacobi: the scaling-vetor, for ILU the right triangular solve...
+    E.g. for Jacobi: the scaling-vetor, for ILU the right triangular solve.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A         sparse matrix A    
-    magma_d_vector x                input vector x  
-    magma_d_vector y                input vector y      
-    magma_d_preconditioner precond  preconditioner
+    @param
+    A           magma_d_sparse_matrix
+                sparse matrix A    
 
-    ========================================================================  */
+    @param
+    x           magma_d_vector
+                input vector x  
+
+    @param
+    y           magma_d_vector
+                input vector y      
+
+    @param
+    precond     magma_d_preconditioner
+                preconditioner
+
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t
 magma_d_applyprecond_right( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -315,10 +354,12 @@ magma_d_applyprecond_right( magma_d_sparse_matrix A, magma_d_vector b,
     }
     else if( precond->solver == Magma_ICC ){
         magma_dapplycuicc_r( b, x, precond );
+//        magma_dapplycuilu_r( b, x, precond );
         return MAGMA_SUCCESS;
     }
     else if( precond->solver == Magma_AICC ){
         magma_dapplycuicc_r( b, x, precond );
+//        magma_dapplycuilu_r( b, x, precond );
         return MAGMA_SUCCESS;
     }
     else{

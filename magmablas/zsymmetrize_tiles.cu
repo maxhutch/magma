@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -90,7 +90,7 @@ zsymmetrize_tiles_upper( int m, magmaDoubleComplex *dA, int ldda, int mstride, i
             The number of rows & columns of each square block of dA.  M >= 0.
     
     @param[in,out]
-    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    dA      COMPLEX_16 array, dimension (LDDA,N)
             The matrix dA. N = m + nstride*(ntile-1).
     
     @param[in]

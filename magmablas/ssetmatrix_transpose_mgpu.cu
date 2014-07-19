@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zsetmatrix_transpose_mgpu.cu normal z -> s, Fri May 30 10:40:43 2014
+       @generated from zsetmatrix_transpose_mgpu.cu normal z -> s, Fri Jul 18 17:34:13 2014
        @author Ichitaro Yamazaki
 */
 #include "common_magma.h"
@@ -56,10 +56,6 @@ magmablas_ssetmatrix_transpose_mgpu(
                                dB(d, id), lddb, 
                                stream[d][id] );
 
-       magmablasSetKernelStream(stream[d][id]);
-       magmablas_stranspose2(dAT(d, j_local), ldda, 
-                             dB(d, id),       lddb, 
-                             m, ib);
+       magmablas_stranspose_stream( m, ib, dB(d,id), lddb, dAT(d,j_local), ldda, stream[d][id] );
     }
 }
-

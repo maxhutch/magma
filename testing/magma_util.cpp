@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Mark Gates
        
@@ -113,6 +113,7 @@ const char *usage =
 "      --[not]all   Whether to test all combinations of flags, e.g., jobu.\n"
 "  --dev x          GPU device to use, default 0.\n"
 "  --pad n          Pad LDDA on GPU to multiple of pad, default 32.\n"
+"  --verbose        Verbose output.\n"
 "  -x  --exclusive  Lock file for exclusive use (internal ICL functionality).\n"
 "\n"
 "The following options apply to only some routines.\n"
@@ -170,6 +171,7 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
     opts->lapack    = (getenv("MAGMA_RUN_LAPACK")     != NULL);
     opts->warmup    = (getenv("MAGMA_WARMUP")         != NULL);
     opts->all       = (getenv("MAGMA_RUN_ALL")        != NULL);
+    opts->verbose   = false;
     
     opts->uplo      = MagmaLower;      // potrf, etc.
     opts->transA    = MagmaNoTrans;    // gemm, etc.
@@ -361,6 +363,7 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
         else if ( strcmp("--nowarmup", argv[i]) == 0 ) { opts->warmup = false; }
         else if ( strcmp("--all",      argv[i]) == 0 ) { opts->all    = true;  }
         else if ( strcmp("--notall",   argv[i]) == 0 ) { opts->all    = false; }
+        else if ( strcmp("--verbose",  argv[i]) == 0 ) { opts->verbose= true;  }
         
         // ----- lapack flag arguments
         else if ( strcmp("-L",  argv[i]) == 0 ) { opts->uplo = MagmaLower; }

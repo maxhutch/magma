@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zpbicgstab.cpp normal z -> s, Fri May 30 10:41:41 2014
+       @generated from zpbicgstab.cpp normal z -> s, Fri Jul 18 17:34:29 2014
        @author Hartwig Anzt
 
 */
@@ -19,14 +19,9 @@
 #define ATOLERANCE     lapackf77_slamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -35,16 +30,30 @@
     Biconjugate Gradient Stabelized method.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix A                   input matrix A
-    magma_s_vector b                          RHS b
-    magma_s_vector *x                         solution approximation
-    magma_s_solver_par *solver_par            solver parameters
-    magma_s_preconditioner *precond_par       preconditioner parameters
+    @param
+    A           magma_s_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_s_vector
+                RHS b
 
+    @param
+    x           magma_s_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_s_solver_par*
+                solver parameters
+
+    @param
+    precond_par magma_s_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_gesv
+    ********************************************************************/
 
 magma_int_t
 magma_spbicgstab( magma_s_sparse_matrix A, magma_s_vector b, magma_s_vector *x,  
@@ -80,7 +89,7 @@ magma_spbicgstab( magma_s_sparse_matrix A, magma_s_vector b, magma_s_vector *x,
     
     // solver variables
     float alpha, beta, omega, rho_old, rho_new;
-    float nom, betanom, nom0, r0, den;
+    float nom, betanom, nom0, r0, den, res;
 
     // solver setup
     magma_sscal( dofs, c_zero, x->val, 1) ;                    // x = 0
@@ -152,7 +161,7 @@ magma_spbicgstab( magma_s_sparse_matrix A, magma_s_vector b, magma_s_vector *x,
 
         magma_scopy( dofs, s.val, 1 , r.val, 1 );             // r=s
         magma_saxpy( dofs, c_mone * omega, t.val, 1 , r.val, 1 ); // r=r-omega*t
-        betanom = magma_snrm2( dofs, r.val, 1 );
+        res = betanom = magma_snrm2( dofs, r.val, 1 );
 
         nom = betanom*betanom;
 
@@ -161,13 +170,13 @@ magma_spbicgstab( magma_s_sparse_matrix A, magma_s_vector b, magma_s_vector *x,
             magma_device_sync(); tempo2=magma_wtime();
             if( (solver_par->numiter)%solver_par->verbose==0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose] 
-                        = (real_Double_t) betanom;
+                        = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose] 
                         = (real_Double_t) tempo2-tempo1;
             }
         }
 
-        if ( betanom  < r0 ) {
+        if ( res/nom0  < solver_par->epsilon ) {
             break;
         }
     }
@@ -175,7 +184,8 @@ magma_spbicgstab( magma_s_sparse_matrix A, magma_s_vector b, magma_s_vector *x,
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     float residual;
     magma_sresidual( A, b, *x, &residual );
-    solver_par->final_res = (real_Double_t) betanom;//residual;
+    solver_par->final_res = residual;
+    solver_par->iter_res = res;
 
     if( solver_par->numiter < solver_par->maxiter){
         solver_par->info = 0;

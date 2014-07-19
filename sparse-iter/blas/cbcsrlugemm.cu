@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zbcsrlugemm.cu normal z -> c, Fri May 30 10:41:36 2014
+       @generated from zbcsrlugemm.cu normal z -> c, Fri Jul 18 17:34:27 2014
 
 */
 #include <stdio.h>
@@ -329,32 +329,46 @@ cbcsr_gemm_kernel64(
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     For a Block-CSR ILU factorization, this routine updates all blocks in
     the trailing matrix.
     
     Arguments
-    =========
+    ---------
 
-    magma_int_t size_b              blocksize in BCSR
-    magma_int_t num_block_rows      number of block rows
-    magma_int_t kblocks             number of blocks in row
-    magma_int_t *ipiv               array containing pivots
-    float *x           input/output vector x
+    @param
+    size_b      magma_int_t
+                blocksize in BCSR
 
-    ======================================================================    */
+    @param
+    num_brows   magma_int_t
+                number of block rows
+
+    @param
+    kblocks     magma_int_t
+                number of blocks in row
+
+    @param
+    dA          magmaFloatComplex**
+                input blocks of matrix A
+                
+    @param
+    dB          magmaFloatComplex**
+                input blocks of matrix B
+                
+    @param
+    dC          magmaFloatComplex**
+                output blocks of matrix C
+
+    @ingroup magmasparse_cgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_cbcsrluegemm( magma_int_t size_b, 
-                    magma_int_t num_block_rows,
+                    magma_int_t num_brows,
                     magma_int_t kblocks,
                     magmaFloatComplex **dA,  
                     magmaFloatComplex **dB,  
@@ -374,7 +388,7 @@ magma_cbcsrluegemm( magma_int_t size_b,
 
     dim3 threads( 64, 4 );
 
-    dim3 grid(1, 1, num_block_rows);
+    dim3 grid(1, 1, num_brows);
     cbcsr_gemm_kernel64<<< grid, threads, 0, magma_stream >>>( 
                   size_b, size_b, kblocks, dA, dB, dC );
 

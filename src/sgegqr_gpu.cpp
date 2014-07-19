@@ -1,17 +1,23 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgegqr_gpu.cpp normal z -> s, Fri May 30 10:40:57 2014
+       @author Stan Tomov
+       @generated from zgegqr_gpu.cpp normal z -> s, Fri Jul 18 17:34:16 2014
 
 */
 #include "common_magma.h"
 
 #define PRECISION_s
 
+// === Define what BLAS to use ============================================
+//#if defined(PRECISION_s) || defined(PRECISION_d)
+    #define magma_strsm magmablas_strsm
+//#endif
+// === End defining what BLAS to use ======================================
 
 /**
     Purpose
@@ -22,6 +28,7 @@
 
     On exit, if successful, the orthogonal vectors Q overwrite A
     and R is given in work (on the CPU memory).
+    The routine is designed for tall-and-skinny matrices: M >> N, N <= 128.
     
     This version uses normal equations and SVD in an iterative process that
     makes the computation numerically accurate.
@@ -29,29 +36,43 @@
     Arguments
     ---------
     @param[in]
+    ikind   INTEGER
+            Several versions are implemented indiceted by the ikind value:  
+            1:  This version uses normal equations and SVD in an iterative process 
+                that makes the computation numerically accurate.
+            2:  This version uses a standard LAPACK-based orthogonalization through
+                MAGMA's QR panel factorization (magma_sgeqr2x3_gpu) and magma_sorgqr
+            3:  MGS
+            4.  Cholesky QR
+
+    @param[in]
     m       INTEGER
-            The number of rows of the matrix A.  M >= 0.
+            The number of rows of the matrix A.  m >= n >= 0.
 
     @param[in]
     n       INTEGER
-            The number of columns of the matrix A.  N >= 0.
+            The number of columns of the matrix A. 128 >= n >= 0.
 
     @param[in,out]
-    dA      REAL array on the GPU, dimension (LDDA,N)
-            On entry, the M-by-N matrix A.
-            On exit, the M-by-N matrix Q with orthogonal columns.
+    dA      REAL array on the GPU, dimension (ldda,n)
+            On entry, the m-by-n matrix A.
+            On exit, the m-by-n matrix Q with orthogonal columns.
 
     @param[in]
     ldda     INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,M).
+            The leading dimension of the array dA.  LDDA >= max(1,m).
             To benefit from coalescent memory accesses LDDA must be
             divisible by 16.
 
     @param
-    dwork   (GPU workspace) REAL array, dimension (N,N)
+    dwork   (GPU workspace) REAL array, dimension: 
+            n^2                    for ikind = 1
+            3 n^2 + min(m, n)      for ikind = 2 
+            0 (not used)           for ikind = 3
+            n^2                    for ikind = 4           
 
     @param[out]
-    work    (CPU workspace) REAL array, dimension 3n^2.
+    work    (CPU workspace) REAL array, dimension 3 n^2.
             On exit, work(1:n^2) holds the rectangular matrix R.
             Preferably, for higher performance, work should be in pinned memory.
  
@@ -61,8 +82,6 @@
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
 
-    Further Details
-    ---------------
 
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
@@ -72,18 +91,25 @@ magma_sgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
                   float *dwork, float *work,
                   magma_int_t *info )
 {
-    magma_int_t i = 0, j, k, n2 = n*n, ione = 1;
-    float zero = MAGMA_S_ZERO, one = MAGMA_S_ONE;
+    #define work(i_,j_) (work + (i_) + (j_)*n)
+    #define dA(i_,j_)   (dA   + (i_) + (j_)*ldda)
+    
+    magma_int_t i = 0, j, k, n2 = n*n;
+    magma_int_t ione = 1;
+    float c_zero = MAGMA_S_ZERO;
+    float c_one  = MAGMA_S_ONE;
     float cn = 200., mins, maxs;
 
     /* check arguments */
     *info = 0;
-    if (m < 0) {
+    if (ikind < 1 || ikind > 4) {
         *info = -1;
-    } else if (n < 0) {
+    } else if (m < 0 || m < n) {
         *info = -2;
+    } else if (n < 0 || n > 128) {
+        *info = -3;
     } else if (ldda < max(1,m)) {
-        *info = -4;
+        *info = -5;
     }
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
@@ -123,7 +149,7 @@ magma_sgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
         do {
             i++;
             
-            magma_sgemm(MagmaTrans, MagmaNoTrans, n, n, m, one, dA, ldda, dA, ldda, zero, dwork, n );
+            magma_sgemm(MagmaTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
             magma_sgetmatrix(n, n, dwork, n, G, n);
             
 #if defined(PRECISION_s) || defined(PRECISION_d)
@@ -152,10 +178,10 @@ magma_sgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
             if (i == 1)
                 blasf77_scopy(&n2, VT, &ione, R, &ione);
             else
-                blasf77_strmm("l", "u", "n", "n", &n, &n, &one, VT, &n, R, &n);
+                blasf77_strmm("l", "u", "n", "n", &n, &n, &c_one, VT, &n, R, &n);
             
             magma_ssetmatrix(n, n, VT, n, dwork, n);
-            magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit, m, n, one, dwork, n, dA, ldda);
+            magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit, m, n, c_one, dwork, n, dA, ldda);
             if (mins > 0.00001f)
                 cn = maxs/mins;
             
@@ -171,21 +197,21 @@ magma_sgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
     else if (ikind == 2) {
         // ================== LAPACK based      ===================================================
         magma_int_t min_mn = min(m, n);
-        int             nb = n;
+        magma_int_t nb = n;
 
         float *dtau = dwork + 2*n*n, *d_T = dwork, *ddA = dwork + n*n;
-        float *tau  = work;
+        float *tau  = work+n*n;
 
+        magmablas_slaset( MagmaFull, n, n, c_zero, c_zero, d_T, n );
         magma_sgeqr2x3_gpu(&m, &n, dA, &ldda, dtau, d_T, ddA,
                            (float *)(dwork+min_mn+2*n*n), info);
         magma_sgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn);
+        magma_sgetmatrix( n, n, ddA, n, work, n);
         magma_sorgqr_gpu( m, n, n, dA, ldda, tau, d_T, nb, info );
         // ================== end of ikind == 2 ===================================================       
     }
     else if (ikind == 3) {
         // ================== MGS               ===================================================
-        #define work(i,j) (work + (i) + (j)*n)
-        #define dA(  i,j) (dA   + (i) + (j)*ldda)
         for(magma_int_t j = 0; j<n; j++){
             for(magma_int_t i = 0; i<j; i++){
                 *work(i, j) = magma_sdot(m, dA(0,i), 1, dA(0,j), 1);
@@ -202,11 +228,11 @@ magma_sgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
     }
     else if (ikind == 4) {
         // ================== Cholesky QR       ===================================================
-        magma_sgemm(MagmaTrans, MagmaNoTrans, n, n, m, one, dA, ldda, dA, ldda, zero, dwork, n );
+        magma_sgemm(MagmaTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
         magma_sgetmatrix(n, n, dwork, n, work, n);
         lapackf77_spotrf("u", &n, work, &n, info);
         magma_ssetmatrix(n, n, work, n, dwork, n);
-        magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit, m, n, one, dwork, n, dA, ldda);
+        magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit, m, n, c_one, dwork, n, dA, ldda);
         // ================== end of ikind == 4 ===================================================
     }
              

@@ -6,6 +6,5 @@ var group__magma__sgeev__comp =
     [ "magma_sorghr", "group__magma__sgeev__comp.html#gac56623ad5a8ad23c5365f49e9f33df3d", null ],
     [ "magma_sorghr_m", "group__magma__sgeev__comp.html#ga2fc583c1f23240649c66d0632a7e230a", null ],
     [ "magma_strevc3", "group__magma__sgeev__comp.html#ga35122e49f4ef5652ba8fbf526656a041", null ],
-    [ "magma_strevc3_mt", "group__magma__sgeev__comp.html#gaff1854d8ce4fe11d8a2b4ea504648df7", null ],
-    [ "strevc3", "group__magma__sgeev__comp.html#gaa9200e50fb8175f48e4bcecd89cbf009", null ]
+    [ "magma_strevc3_mt", "group__magma__sgeev__comp.html#gaff1854d8ce4fe11d8a2b4ea504648df7", null ]
 ];

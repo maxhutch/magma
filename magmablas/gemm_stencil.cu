@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
        
        @author Jakub Kurzak
        @author Stan Tomov
@@ -138,74 +138,74 @@ void kernel_name(precision) (
         FloatingPoint_t rb[BLK_N/DIM_YB][BLK_K/DIM_XB];
     #endif
 
-      #ifdef TEXTURE_1D
+    #ifdef TEXTURE_1D
         #ifdef TRANS_A
-            int coord_A = offsetA + blx*BLK_M*LDA + idyA*LDA+idxA;
+            int coord_A = offsetA + blx*BLK_M*LDA + idyA*LDA + idxA;
         #else
-            int coord_A = offsetA + blx*BLK_M     + idyA*LDA+idxA;
+            int coord_A = offsetA + blx*BLK_M     + idyA*LDA + idxA;
         #endif
         #ifdef TRANS_B
-            int coord_B = offsetB + bly*BLK_N     + idyB*LDB+idxB;
+            int coord_B = offsetB + bly*BLK_N     + idyB*LDB + idxB;
         #else
-            int coord_B = offsetB + bly*BLK_N*LDB + idyB*LDB+idxB;
+            int coord_B = offsetB + bly*BLK_N*LDB + idyB*LDB + idxB;
         #endif
-      #else
+    #else
         #ifdef TRANS_A
-          FloatingPoint_t *offs_dA = A + blx*BLK_M*LDA + idyA*LDA+idxA;
+            FloatingPoint_t *offs_dA = A + blx*BLK_M*LDA + idyA*LDA + idxA;
         #else
-          FloatingPoint_t *offs_dA = A + blx*BLK_M     + idyA*LDA+idxA;
+            FloatingPoint_t *offs_dA = A + blx*BLK_M     + idyA*LDA + idxA;
         #endif
         #ifdef TRANS_B
-          FloatingPoint_t *offs_dB = B + bly*BLK_N     + idyB*LDB+idxB;
+            FloatingPoint_t *offs_dB = B + bly*BLK_N     + idyB*LDB + idxB;
         #else
-          FloatingPoint_t *offs_dB = B + bly*BLK_N*LDB + idyB*LDB+idxB;
+            FloatingPoint_t *offs_dB = B + bly*BLK_N*LDB + idyB*LDB + idxB;
         #endif
-      #endif
+    #endif
 
     int m, n, k, kk;
 
     // Zero C
     #pragma unroll
     for (n = 0; n < THR_N; n++)
-      #pragma unroll
-      for (m = 0; m < THR_M; m++)
-        rC[n][m] = make_FloatingPoint(0.0, 0.0);
+        #pragma unroll
+        for (m = 0; m < THR_M; m++)
+            rC[n][m] = make_FloatingPoint(0.0, 0.0);
 
     // Load A dev->shmem
     #ifdef TRANS_A
         #pragma unroll
         for (n = 0; n < BLK_M; n += DIM_YA)
-          #pragma unroll
-          for (m = 0; m < BLK_K; m += DIM_XA)
-            sA[m+idxA][n+idyA] = fetch(A, m, n);
+            #pragma unroll
+            for (m = 0; m < BLK_K; m += DIM_XA)
+                sA[m+idxA][n+idyA] = fetch(A, m, n);
     #else
         #pragma unroll
         for (n = 0; n < BLK_K; n += DIM_YA)
-          #pragma unroll
-          for (m = 0; m < BLK_M; m += DIM_XA)
-            sA[n+idyA][m+idxA] = fetch(A, m, n);
+            #pragma unroll
+            for (m = 0; m < BLK_M; m += DIM_XA)
+                sA[n+idyA][m+idxA] = fetch(A, m, n);
     #endif
 
     // Load B dev->shmem
     #ifdef TRANS_B
         #pragma unroll
         for (n = 0; n < BLK_K; n += DIM_YB)
-          #pragma unroll
-          for (m = 0; m < BLK_N; m += DIM_XB)
-            sB[m+idxB][n+idyB] = fetch(B, m, n);
+            #pragma unroll
+            for (m = 0; m < BLK_N; m += DIM_XB)
+                sB[m+idxB][n+idyB] = fetch(B, m, n);
     #else
         #pragma unroll
         for (n = 0; n < BLK_N; n += DIM_YB)
-          #pragma unroll
-          for (m = 0; m < BLK_K; m += DIM_XB)
-            sB[n+idyB][m+idxB] = fetch(B, m, n);
+            #pragma unroll
+            for (m = 0; m < BLK_K; m += DIM_XB)
+                sB[n+idyB][m+idxB] = fetch(B, m, n);
     #endif
 
     __syncthreads();
 
     for (kk = 0; kk < K-BLK_K; kk += BLK_K)
     {
-          #ifdef TEXTURE_1D
+        #ifdef TEXTURE_1D
             #ifdef TRANS_A
                 coord_A += BLK_K;
             #else
@@ -216,7 +216,7 @@ void kernel_name(precision) (
             #else
                 coord_B += BLK_K;
             #endif
-          #else
+        #else
             #ifdef TRANS_A
                 offs_dA += BLK_K;
             #else
@@ -227,36 +227,36 @@ void kernel_name(precision) (
             #else
                 offs_dB += BLK_K;
             #endif
-          #endif
+        #endif
 
         // Load A dev->regs
         #ifdef TRANS_A
             #pragma unroll
             for (n = 0; n < BLK_M/DIM_YA; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_K/DIM_XA; m++)
-                ra[n][m] = fetch(A, m*DIM_XA, n*DIM_YA);
+                #pragma unroll
+                for (m = 0; m < BLK_K/DIM_XA; m++)
+                    ra[n][m] = fetch(A, m*DIM_XA, n*DIM_YA);
         #else
             #pragma unroll
             for (n = 0; n < BLK_K/DIM_YA; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_M/DIM_XA; m++)
-                ra[n][m] = fetch(A, m*DIM_XA, n*DIM_YA);
+                #pragma unroll
+                for (m = 0; m < BLK_M/DIM_XA; m++)
+                    ra[n][m] = fetch(A, m*DIM_XA, n*DIM_YA);
         #endif
 
         // Load B dev->regs
         #ifdef TRANS_B
             #pragma unroll
             for (n = 0; n < BLK_K/DIM_YB; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_N/DIM_XB; m++)
-                rb[n][m] = fetch(B, m*DIM_XB, n*DIM_YB);
+                #pragma unroll
+                for (m = 0; m < BLK_N/DIM_XB; m++)
+                    rb[n][m] = fetch(B, m*DIM_XB, n*DIM_YB);
         #else
             #pragma unroll
             for (n = 0; n < BLK_N/DIM_YB; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_K/DIM_XB; m++)
-                rb[n][m] = fetch(B, m*DIM_XB, n*DIM_YB);
+                #pragma unroll
+                for (m = 0; m < BLK_K/DIM_XB; m++)
+                    rb[n][m] = fetch(B, m*DIM_XB, n*DIM_YB);
         #endif
 
         // Multiply
@@ -275,9 +275,9 @@ void kernel_name(precision) (
 
             // Compute
             #pragma unroll
-            for (n = 0; n < THR_N; n++)
+            for (n = 0; n < THR_N; n++) {
                 #pragma unroll
-                for (m = 0; m < THR_M; m++)
+                for (m = 0; m < THR_M; m++) {
                     #ifdef CONJ_A
                       #ifdef CONJ_B
                         fma(conj(rA[m]), conj(rB[n]), rC[n][m]);
@@ -291,6 +291,8 @@ void kernel_name(precision) (
                         fma(rA[m], rB[n], rC[n][m]);
                       #endif
                     #endif
+                }
+            }
         }
 
         __syncthreads();
@@ -299,38 +301,42 @@ void kernel_name(precision) (
         #ifdef TRANS_A
             #pragma unroll
             for (n = 0; n < BLK_M/DIM_YA; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_K/DIM_XA; m++)
-                sA[m*DIM_XA+idxA][n*DIM_YA+idyA] = ra[n][m];
+                #pragma unroll
+                for (m = 0; m < BLK_K/DIM_XA; m++)
+                    sA[m*DIM_XA+idxA][n*DIM_YA+idyA] = ra[n][m];
         #else
             #pragma unroll
             for (n = 0; n < BLK_K/DIM_YA; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_M/DIM_XA; m++)
-                sA[n*DIM_YA+idyA][m*DIM_XA+idxA] = ra[n][m];
+                #pragma unroll
+                for (m = 0; m < BLK_M/DIM_XA; m++)
+                    sA[n*DIM_YA+idyA][m*DIM_XA+idxA] = ra[n][m];
             #endif
 
         // Load B regs->shmem
         #ifdef TRANS_B
             #pragma unroll
             for (n = 0; n < BLK_K/DIM_YB; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_N/DIM_XB; m++)
-                sB[m*DIM_XB+idxB][n*DIM_YB+idyB] = rb[n][m];
+                #pragma unroll
+                for (m = 0; m < BLK_N/DIM_XB; m++)
+                    sB[m*DIM_XB+idxB][n*DIM_YB+idyB] = rb[n][m];
         #else
             #pragma unroll
             for (n = 0; n < BLK_N/DIM_YB; n++)
-              #pragma unroll
-              for (m = 0; m < BLK_K/DIM_XB; m++)
-                sB[n*DIM_YB+idyB][m*DIM_XB+idxB] = rb[n][m];
+                #pragma unroll
+                for (m = 0; m < BLK_K/DIM_XB; m++)
+                    sB[n*DIM_YB+idyB][m*DIM_XB+idxB] = rb[n][m];
         #endif
 
         __syncthreads();
     }
 
-    // Multiply
+    // Multiply last full (BLK_K) or partial block of
+    // columns of op(A) and rows of op(B).
+    // It's okay that m,n exceed matrix bounds as all work is in registers
+    // or shared memory, and out-of-bounds rC[n][m] will not be saved later.
+    kk = K - kk;
     #pragma unroll
-    for (k = 0; k < BLK_K; k++)
+    for (k = 0; k < kk; k++)
     {
         // Load A shmem->regs
         #pragma unroll
@@ -344,9 +350,9 @@ void kernel_name(precision) (
 
         // Compute
         #pragma unroll
-        for (n = 0; n < THR_N; n++)
+        for (n = 0; n < THR_N; n++) {
             #pragma unroll
-            for (m = 0; m < THR_M; m++)
+            for (m = 0; m < THR_M; m++) {
                 #ifdef CONJ_A
                   #ifdef CONJ_B
                     fma(conj(rA[m]), conj(rB[n]), rC[n][m]);
@@ -360,15 +366,17 @@ void kernel_name(precision) (
                     fma(rA[m], rB[n], rC[n][m]);
                   #endif
                 #endif
+            }
+        }
     }
 
     // Store C regs->dev
     #pragma unroll
     for (n = 0; n < THR_N; n++) {
-        int coord_dCn = bly*BLK_N + n*DIM_Y+idy;
+        int coord_dCn = bly*BLK_N + n*DIM_Y + idy;
         #pragma unroll
         for (m = 0; m < THR_M; m++) {
-            int coord_dCm = blx*BLK_M + m*DIM_X+idx;
+            int coord_dCm = blx*BLK_M + m*DIM_X + idx;
             if (coord_dCm < M && coord_dCn < N) {
                 int offsC = coord_dCn*LDC + coord_dCm;
 

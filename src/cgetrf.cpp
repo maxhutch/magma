@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
-       @generated from zgetrf.cpp normal z -> c, Fri May 30 10:40:56 2014
+       @generated from zgetrf.cpp normal z -> c, Fri Jul 18 17:34:16 2014
 */
 #include "common_magma.h"
 
@@ -178,7 +178,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda
                 return *info;
             }
 
-            magmablas_ctranspose2( dAT, ldda, da, maxm, m, n );
+            magmablas_ctranspose( m, n, da, maxm, dAT, ldda );
         }
         
         lapackf77_cgetrf( &m, &nb, work, &lda, ipiv, &iinfo);
@@ -201,7 +201,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda
             
             if (i > 0) {
                 // download i-th panel
-                magmablas_ctranspose( dA, cols, dAT(i,i), ldda, nb, cols );
+                magmablas_ctranspose( nb, cols, dAT(i,i), ldda, dA, cols );
 
                 // make sure that gpu queue is empty
                 magma_device_sync();
@@ -234,7 +234,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda
             magmablas_cpermute_long2( ldda, dAT, ldda, ipiv, nb, i*nb );
 
             magma_queue_sync( stream[0] );
-            magmablas_ctranspose( dAT(i,i), ldda, dA, cols, cols, nb);
+            magmablas_ctranspose( cols, nb, dA, cols, dAT(i,i), ldda );
 
             // do the small non-parallel computations
             if (s > (i+1)) {
@@ -266,7 +266,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda
             rows = m - s*nb;
             cols = maxm - s*nb;
     
-            magmablas_ctranspose2( dA, cols, dAT(s,s), ldda, nb0, rows);
+            magmablas_ctranspose( nb0, rows, dAT(s,s), ldda, dA, cols );
             magma_cgetmatrix( rows, nb0, dA, cols, work, lda );
     
             // make sure that gpu queue is empty
@@ -279,7 +279,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda
             magmablas_cpermute_long2( ldda, dAT, ldda, ipiv, nb0, s*nb );
     
             magma_csetmatrix( rows, nb0, work, lda, dA, cols );
-            magmablas_ctranspose2( dAT(s,s), ldda, dA, cols, rows, nb0);
+            magmablas_ctranspose( rows, nb0, dA, cols, dAT(s,s), ldda );
     
             magma_ctrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
                          n-s*nb-nb0, nb0,
@@ -291,7 +291,7 @@ magma_cgetrf(magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda
             magmablas_ctranspose_inplace( ldda, dAT, ldda );
             magma_cgetmatrix( m, n, da, ldda, A, lda );
         } else {
-            magmablas_ctranspose2( da, maxm, dAT, ldda, n, m );
+            magmablas_ctranspose( n, m, dAT, ldda, da, maxm );
             magma_cgetmatrix( m, n, da, maxm, A, lda );
             magma_free( dAT );
         }

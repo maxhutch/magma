@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_z.h normal z -> s, Fri May 30 10:40:33 2014
+       @generated from magma_z.h normal z -> s, Fri Jul 18 17:34:10 2014
 */
 
 #ifndef MAGMA_S_H
@@ -89,12 +89,20 @@ magma_int_t magma_sgesv ( magma_int_t n, magma_int_t nrhs,
                           float *A, magma_int_t lda, magma_int_t *ipiv,
                           float *B, magma_int_t ldb, magma_int_t *info);
 
+magma_int_t
+      magma_sgetf2_nopiv( magma_int_t m, magma_int_t n,
+                          float *A, magma_int_t lda, magma_int_t *info);
+
 magma_int_t magma_sgetrf( magma_int_t m, magma_int_t n, float *A,
                           magma_int_t lda, magma_int_t *ipiv,
                           magma_int_t *info);
 
 magma_int_t magma_sgetrf2(magma_int_t m, magma_int_t n, float *a,
                           magma_int_t lda, magma_int_t *ipiv, magma_int_t *info);
+
+magma_int_t
+      magma_sgetrf_nopiv( magma_int_t m, magma_int_t n,
+                          float *A, magma_int_t lda, magma_int_t *info);
 
 #ifdef REAL
 magma_int_t magma_slaln2( magma_int_t trans, magma_int_t na, magma_int_t nw,
@@ -144,14 +152,19 @@ magma_int_t magma_slatrsd(magma_uplo_t uplo, magma_trans_t trans,
 #endif
 
 magma_int_t magma_slahr2( magma_int_t m, magma_int_t n, magma_int_t nb,
-                          float *da, float *dv, float *a,
-                          magma_int_t lda, float *tau, float *t,
-                          magma_int_t ldt, float *y, magma_int_t ldy);
+                          float *dA, magma_int_t ldda,
+                          float *dV, magma_int_t lddv,
+                          float *A,  magma_int_t lda,
+                          float *tau,
+                          float *T,  magma_int_t ldt,
+                          float *Y,  magma_int_t ldy);
 
 magma_int_t magma_slahru( magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
-                          float *a, magma_int_t lda,
-                          float *da, float *y,
-                          float *v, float *t,
+                          float *A,  magma_int_t lda,
+                          float *dA, magma_int_t ldda,
+                          float *dY, magma_int_t lddy,
+                          float *dV, magma_int_t lddv,
+                          float *dT,
                           float *dwork);
 
 magma_int_t magma_sposv ( magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
@@ -1047,6 +1060,21 @@ void magma_sprint_gpu( magma_int_t m, magma_int_t n, const float *dA, magma_int_
 
 void spanel_to_q( magma_uplo_t uplo, magma_int_t ib, float *A, magma_int_t lda, float *work );
 void sq_to_panel( magma_uplo_t uplo, magma_int_t ib, float *A, magma_int_t lda, float *work );
+
+magma_int_t magma_snan_inf(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    const float *A, magma_int_t lda,
+    magma_int_t *cnt_nan,
+    magma_int_t *cnt_inf );
+
+magma_int_t magma_snan_inf_gpu(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    const float *dA, magma_int_t ldda,
+    magma_int_t *cnt_nan,
+    magma_int_t *cnt_inf );
+
+extern const float MAGMA_S_NAN;
+extern const float MAGMA_S_INF;
 
 #ifdef __cplusplus
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlag2c.cu mixed zc -> ds, Fri May 30 10:40:38 2014
+       @generated from zlag2c.cu mixed zc -> ds, Fri Jul 18 17:34:11 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -113,7 +113,7 @@ magmablas_dlag2s( magma_int_t m, magma_int_t n,
     
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        //return *info;
+        return; //*info;
     }
 
     /* quick return */

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeqr2x_gpu.cpp normal z -> s, Fri May 30 10:40:58 2014
+       @generated from zgeqr2x_gpu.cpp normal z -> s, Fri Jul 18 17:34:16 2014
 
 */
 #include "common_magma.h"
@@ -26,6 +26,8 @@
     submatrices of R.
 
     This version implements the right-looking QR.
+    A hard-coded requirement for N is to be <= min(M, 128). For larger N one
+    should use a blocking QR version.
 
     Arguments
     ---------
@@ -35,7 +37,7 @@
 
     @param[in]
     n       INTEGER
-            The number of columns of the matrix A.  N >= 0.
+            The number of columns of the matrix A. 0 <= N <= min(M, 128).
 
     @param[in,out]
     dA      REAL array, dimension (LDA,N)
@@ -108,7 +110,7 @@ magma_sgeqr2x_gpu(magma_int_t *m, magma_int_t *n, float *dA,
     *info = 0;
     if (*m < 0) {
         *info = -1;
-    } else if (*n < 0) {
+    } else if (*n < 0 || *n > min(*m, 128)) {
         *info = -2;
     } else if (*ldda < max(1,*m)) {
         *info = -4;

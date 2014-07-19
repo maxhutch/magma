@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -80,7 +80,7 @@ zsymmetrize_upper( int m, magmaDoubleComplex *dA, int ldda )
             The number of rows of the matrix dA.  M >= 0.
     
     @param[in,out]
-    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    dA      COMPLEX_16 array, dimension (LDDA,N)
             The m by m matrix dA.
     
     @param[in]

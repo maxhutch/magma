@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @date May 2014
+       @date July 2014
             
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from zlobpcg.cpp normal z -> d, Fri May 30 10:41:42 2014
+       @generated from zlobpcg.cpp normal z -> d, Fri Jul 18 17:34:29 2014
 */
 
 #include <sys/time.h>
@@ -44,14 +44,9 @@ magma_dcompactActive(magma_int_t m, magma_int_t n,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     Solves an eigenvalue problem
 
        A * X = evalues X
@@ -66,15 +61,21 @@ magma_dcompactActive(magma_int_t m, magma_int_t n,
     the different blocks. This allows to use texture also for large matrices.
 
     Arguments
-    =========
-    magma_d_sparse_matrix A                 input matrix A
-    magma_d_solver_par *solver_par          solver parameters
+    ---------
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
+
+    @param
+    solver_par  magma_d_solver_par*
+                solver parameters
+
                                             make sure to fill:
                                             num_eigenvalues
                                             length_ev
-    =====================================================================  */
 
-
+    @ingroup magmasparse_dsyev
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_dlobpcg( magma_d_sparse_matrix A, magma_d_solver_par *solver_par ){
@@ -90,12 +91,12 @@ magma_dlobpcg( magma_d_sparse_matrix A, magma_d_solver_par *solver_par ){
 #define h_gramB(  m, n)   (h_gramB   + (m) + (n)*ldgram)
 
 #define magma_d_bspmv_tuned(m, n, alpha, A, X, beta, AX)       {        \
-            magmablas_dtranspose2( blockW, n,      X, m, m, n );        \
+            magmablas_dtranspose( m, n, X, m, blockW, n );        	\
             magma_d_vector x, ax;                                       \
             x.memory_location = Magma_DEV;  x.num_rows = m*n;  x.nnz = m*n;  x.val = blockW; \
             ax.memory_location= Magma_DEV; ax.num_rows = m*n; ax.nnz = m*n; ax.val = AX;     \
             magma_d_spmv(alpha, A, x, beta, ax );                           \
-            magmablas_dtranspose2(      X, m, blockW, n, n, m );            \
+            magmablas_dtranspose( n, m, blockW, n, X, m );            		\
 }
 
 
@@ -104,6 +105,7 @@ magma_dlobpcg( magma_d_sparse_matrix A, magma_d_solver_par *solver_par ){
 //**************************************************************
 
     // Memory allocation for the eigenvectors, eigenvalues, and workspace
+    solver_par->solver = Magma_LOBPCG;
     magma_int_t m = A.num_rows;
     magma_int_t n =(solver_par->num_eigenvalues);
     double *blockX = solver_par->eigenvectors;
@@ -338,7 +340,7 @@ magma_dlobpcg( magma_d_sparse_matrix A, magma_d_solver_par *solver_par ){
                -----------------------------------------------------------------   */
 
             // === assemble GramB; first, set it to I
-            magmablas_dlaset_identity(ldgram, ldgram, gramB, ldgram);
+            magmablas_dlaset(MagmaFull, ldgram, ldgram, c_zero, c_one, gramB, ldgram);  // identity
 
             if (!restart) {
                 magma_dgemm(MagmaTrans, MagmaNoTrans, cBlockSize, n, m,
@@ -367,7 +369,7 @@ magma_dlobpcg( magma_d_sparse_matrix A, magma_d_solver_par *solver_par ){
             }
 
             // === assemble GramA; first, set it to I
-            magmablas_dlaset_identity(ldgram, ldgram, gramA, ldgram);
+            magmablas_dlaset(MagmaFull, ldgram, ldgram, c_zero, c_one, gramA, ldgram);  // identity
 
             magma_dgemm(MagmaTrans, MagmaNoTrans, cBlockSize, n, m,
                         c_one, blockR, m, blockAX, m, c_zero, gramA(n,0), ldgram);

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -26,6 +26,8 @@
     submatrices of R.
 
     This version implements the right-looking QR.
+    A hard-coded requirement for N is to be <= min(M, 128). For larger N one
+    should use a blocking QR version.
 
     Arguments
     ---------
@@ -35,7 +37,7 @@
 
     @param[in]
     n       INTEGER
-            The number of columns of the matrix A.  N >= 0.
+            The number of columns of the matrix A. 0 <= N <= min(M, 128).
 
     @param[in,out]
     dA      COMPLEX_16 array, dimension (LDA,N)
@@ -108,7 +110,7 @@ magma_zgeqr2x_gpu(magma_int_t *m, magma_int_t *n, magmaDoubleComplex *dA,
     *info = 0;
     if (*m < 0) {
         *info = -1;
-    } else if (*n < 0) {
+    } else if (*n < 0 || *n > min(*m, 128)) {
         *info = -2;
     } else if (*ldda < max(1,*m)) {
         *info = -4;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zhemm_mgpu_spec.cpp normal z -> c, Fri May 30 10:40:44 2014
+       @generated from zhemm_mgpu_spec.cpp normal z -> c, Fri Jul 18 17:34:13 2014
        @author Azzam Haidar
 */
 #include "common_magma.h"

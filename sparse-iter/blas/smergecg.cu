@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zmergecg.cu normal z -> s, Fri May 30 10:41:37 2014
+       @generated from zmergecg.cu normal z -> s, Fri Jul 18 17:34:28 2014
        @author Hartwig Anzt
 
 */
@@ -806,34 +806,43 @@ magma_scg_rhokernel(
     }
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Merges the first SpmV using different formats with the dot product 
     and the computation of rho
 
     Arguments
-    =========
+    ---------
 
-    magma_storage_t storage_t           matrix storage type
-    int n                               dimension n
-    int max_nnz_row                     for ELL/ELLRT
-    float *d1              temporary vector
-    float *d2              temporary vector
-    float *d_val           matrix values
-    int *d_rowptr                       matrix row pointer
-    int *d_colind                       matrix column indices
-    float *d_d             input vector d
-    float *d_z             input vector z
-    float *skp             array for parameters ( skp[3]=rho )
+    @param
+    A           magma_s_sparse_matrix
+                input matrix 
 
-    ========================================================================  */
+    @param
+    d1          float*
+                temporary vector
+
+    @param
+    d2          float*
+                temporary vector
+
+    @param
+    d_d         float*
+                input vector d
+
+    @param
+    d_z         float*
+                input vector z
+
+    @param
+    skp         float*
+                array for parameters ( skp[3]=rho )
+
+
+    @ingroup magmasparse_ssygpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_scgmerge_spmv1(  
@@ -979,8 +988,7 @@ magma_scgmerge_spmv1(
     }
 
 
-    cudaMemcpy( skp+4, aux1, sizeof( float ), 
-                                            cudaMemcpyDeviceToDevice );
+    magma_scopyvector( 1, aux1, 1, skp+4, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_scg_rhokernel<<<Gs2, Bs2, 0>>>( skp );
@@ -1099,33 +1107,50 @@ magma_scg_d_kernel(
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Merges the update of r and x with the dot product and performs then 
     the update for the Krylov vector d
 
     Arguments
-    =========
+    ---------
 
-    int n                               dimension n
-    float *d1              temporary vector
-    float *d2              temporary vector
-    float *d_x             input vector x
-    float *d_r             input/output vector r
-    float *d_p             input vector p
-    float *d_s             input vector s
-    float *d_t             input vector t
-    float *d_x             output vector x
-    float *skp             array for parameters
+    @param
+    n           int
+                dimension n
 
-    ========================================================================  */
+    @param
+    d1          float*
+                temporary vector
+
+    @param
+    d2          float*
+                temporary vector
+
+    @param
+    d_x         float*
+                input vector x
+
+    @param
+    d_r         float*
+                input/output vector r
+
+    @param
+    d_d         float*
+                input vector d
+
+    @param
+    d_z         float*
+                input vector z
+    @param
+    skp         float*
+                array for parameters
+
+
+    @ingroup magmasparse_ssygpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_scgmerge_xrbeta(  
@@ -1163,8 +1188,7 @@ magma_scgmerge_xrbeta(
     }
 
 
-    cudaMemcpy( skp+1, aux1, sizeof( float ), 
-                                                cudaMemcpyDeviceToDevice );
+    magma_scopyvector( 1, aux1, 1, skp+1, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
     magma_scg_alphabetakernel<<<Gs2, Bs2, 0>>>( skp );

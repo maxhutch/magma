@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
 */
 #include "common_magma.h"
@@ -64,9 +64,9 @@ magmablas_dgemvt_tesla(
     Purpose
     -------
     This routine computes:
-    1) y =       A   x      if trans == 'N' or 'n', alpha == 1, beta == 0,
+    1) y =       A   x      if trans == MagmaNoTrans, alpha == 1, beta == 0,
                             and incx == incy == 1 (using magmablas code)
-    2) y = alpha A^T x      if trans == 'T' or 't', beta == 0,
+    2) y = alpha A^T x      if trans == MagmaTrans, beta == 0,
                             and incx == incy == 1 (using magmablas code)
     3) y = alpha A^TRANS x + beta y
                             otherwise, using CUBLAS.
@@ -79,6 +79,7 @@ magmablas_dgemvt_tesla(
             follows:
       -     = MagmaNoTrans:    y := alpha*A  *x + beta*y
       -     = MagmaTrans:      y := alpha*A^T*x + beta*y
+      -     = MagmaConjTrans:  y := alpha*A^T*x + beta*y
             
     @param[in]
     m       INTEGER
@@ -133,6 +134,25 @@ magmablas_dgemv_tesla(
     double beta,
     double       *y, magma_int_t incy)
 {
+    magma_int_t info = 0;
+    if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( n < 0 )
+        info = -3;
+    else if ( lda < m )
+        info = -6;
+    else if ( incx == 0 )
+        info = -8;
+    else if ( incy == 0 )
+        info = -11;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     if ( incx == 1 && incy == 1 && beta == 0 ) {
         if ( trans == MagmaNoTrans ) {
             if ( alpha == 1. ) {
@@ -396,7 +416,7 @@ dgemvt_kernel2_tesla(
     y       DOUBLE PRECISION array of dimension n.
             On exit Y = alpha A^T X.
 
-    @ingroup magma_dblas2
+    @ingroup magma_dblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_dgemvt1_tesla(
@@ -445,7 +465,7 @@ magmablas_dgemvt1_tesla(
     y       DOUBLE PRECISION array of dimension n.
             On exit Y = alpha A^T X.
 
-    @ingroup magma_dblas2
+    @ingroup magma_dblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_dgemvt2_tesla(
@@ -493,7 +513,7 @@ magmablas_dgemvt2_tesla(
     y       DOUBLE PRECISION array of dimension n.
             On exit Y = alpha A^T X.
 
-    @ingroup magma_dblas2
+    @ingroup magma_dblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_dgemvt_tesla(

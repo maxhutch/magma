@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
   
-       @generated from testing_zprint.cpp normal z -> c, Fri May 30 10:41:22 2014
+       @generated from testing_zprint.cpp normal z -> c, Fri Jul 18 17:34:23 2014
        @author Mark Gates
 */
 // includes, system
@@ -33,7 +33,6 @@ int main( int argc, char** argv)
     magmaFloatComplex *hA, *dA;
     //magma_int_t ione     = 1;
     //magma_int_t ISEED[4] = {0,0,0,1};
-    //magma_int_t size;
     magma_int_t M, N, lda, ldda, size;
     magma_int_t status = 0;
     
@@ -44,7 +43,7 @@ int main( int argc, char** argv)
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M     = opts.msize[itest];
             N     = opts.nsize[itest];
-            lda   = N;
+            lda   = M;
             ldda  = ((M + 31)/32)*32;
             size  = lda*N;
 

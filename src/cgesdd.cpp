@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Mark Gates
-       @generated from zgesdd.cpp normal z -> c, Fri May 30 10:41:09 2014
+       @generated from zgesdd.cpp normal z -> c, Fri Jul 18 17:34:20 2014
 
 */
 #include "common_magma.h"
@@ -188,7 +188,8 @@ magma_int_t magma_cgesdd(
     float *rwork,
     magma_int_t *iwork, magma_int_t *info)
 {
-#define  A(i_,j_) (A  + (i_) + (j_)*lda)
+    #define A(i_,j_) (A + (i_) + (j_)*lda)
+    #define U(i_,j_) (U + (i_) + (j_)*ldu)
 
     /* Constants */
     const magmaFloatComplex c_zero = MAGMA_C_ZERO;
@@ -494,7 +495,7 @@ magma_int_t magma_cgesdd(
                 lapackf77_cgeqrf(&m, &n, A(1,1), &lda, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Zero out below R */
-                lapackf77_claset("L", &n_1, &n_1, &c_zero, &c_zero, &A[lda + 2], &lda);
+                lapackf77_claset("L", &n_1, &n_1, &c_zero, &c_zero, A(2,1), &lda);
                 ie = 1;
                 itauq = 1;
                 itaup = itauq + n;
@@ -608,8 +609,8 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 for (i = 1; (ldwrkr < 0 ? i >= m : i <= m); i += ldwrkr) {
                     chunk = min(m - i + 1, ldwrkr);
-                    blasf77_cgemm("N", "N", &chunk, &n, &n, &c_one, &A[i + lda], &lda, &work[iu], &ldwrku, &c_zero, &work[ir], &ldwrkr);
-                    lapackf77_clacpy("F", &chunk, &n, &work[ir], &ldwrkr, &A[i + lda], &lda);
+                    blasf77_cgemm("N", "N", &chunk, &n, &n, &c_one, A(i,1), &lda, &work[iu], &ldwrku, &c_zero, &work[ir], &ldwrkr);
+                    lapackf77_clacpy("F", &chunk, &n, &work[ir], &ldwrkr, A(i,1), &lda);
                 }
             }
             else if (wantqs) {
@@ -720,7 +721,7 @@ magma_int_t magma_cgesdd(
                 lapackf77_cungqr(&m, &m, &n, U, &ldu, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Produce R in A, zeroing out below it */
-                lapackf77_claset("L", &n_1, &n_1, &c_zero, &c_zero, &A[lda + 2], &lda);
+                lapackf77_claset("L", &n_1, &n_1, &c_zero, &c_zero, A(2,1), &lda);
                 ie = 1;
                 itauq = itau;
                 itaup = itauq + n;
@@ -862,8 +863,8 @@ magma_int_t magma_cgesdd(
                 nrwork = irvt;
                 for (i = 1; i <= m; i += ldwrku) {
                     chunk = min(m - i + 1, ldwrku);
-                    lapackf77_clacrm(&chunk, &n, &A[i + lda], &lda, &rwork[iru], &n, &work[iu], &ldwrku, &rwork[nrwork]);
-                    lapackf77_clacpy("F", &chunk, &n, &work[iu], &ldwrku, &A[i + lda], &lda);
+                    lapackf77_clacrm(&chunk, &n, A(i,1), &lda, &rwork[iru], &n, &work[iu], &ldwrku, &rwork[nrwork]);
+                    lapackf77_clacpy("F", &chunk, &n, &work[iu], &ldwrku, A(i,1), &lda);
                 }
             }
             else if (wantqs) {
@@ -1046,8 +1047,8 @@ magma_int_t magma_cgesdd(
                     nrwork = irvt;
                     for (i = 1; i <= m; i += ldwrku) {
                         chunk = min(m - i + 1, ldwrku);
-                        lapackf77_clacrm(&chunk, &n, &A[i + lda], &lda, &rwork[iru], &n, &work[iu], &ldwrku, &rwork[nrwork]);
-                        lapackf77_clacpy("F", &chunk, &n, &work[iu], &ldwrku, &A[i + lda], &lda);
+                        lapackf77_clacrm(&chunk, &n, A(i,1), &lda, &rwork[iru], &n, &work[iu], &ldwrku, &rwork[nrwork]);
+                        lapackf77_clacpy("F", &chunk, &n, &work[iu], &ldwrku, A(i,1), &lda);
                     }
                 }
             }
@@ -1104,7 +1105,7 @@ magma_int_t magma_cgesdd(
                 lapackf77_claset("F", &m, &m, &c_zero, &c_zero, U, &ldu);
                 if (m > n) {
                     i__1 = m - n;
-                    lapackf77_claset("F", &i__1, &i__1, &c_zero, &c_one, &U[n + n*ldu], &ldu);
+                    lapackf77_claset("F", &i__1, &i__1, &c_zero, &c_one, U(n,n), &ldu);
                 }
 
                 /* Copy real matrix RWORK[IRU] to complex matrix U */
@@ -1153,7 +1154,7 @@ magma_int_t magma_cgesdd(
                 lapackf77_cgelqf(&m, &n, A(1,1), &lda, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Zero out above L */
-                lapackf77_claset("U", &m_1, &m_1, &c_zero, &c_zero, &A[(2*lda) + 1], &lda);
+                lapackf77_claset("U", &m_1, &m_1, &c_zero, &c_zero, A(1,2), &lda);
                 ie = 1;
                 itauq = 1;
                 itaup = itauq + m;
@@ -1273,8 +1274,8 @@ magma_int_t magma_cgesdd(
                 /* (RWorkspace: need 0) */
                 for (i = 1; (chunk < 0 ? i >= n : i <= n); i += chunk) {
                     blk = min(n - i + 1, chunk);
-                    blasf77_cgemm("N", "N", &m, &blk, &m, &c_one, &work[ivt], &m, &A[i*lda + 1], &lda, &c_zero, &work[il], &ldwrkl);
-                    lapackf77_clacpy("F", &m, &blk, &work[il], &ldwrkl, &A[i*lda + 1], &lda);
+                    blasf77_cgemm("N", "N", &m, &blk, &m, &c_one, &work[ivt], &m, A(1,i), &lda, &c_zero, &work[il], &ldwrkl);
+                    lapackf77_clacpy("F", &m, &blk, &work[il], &ldwrkl, A(1,i), &lda);
                 }
             }
             else if (wantqs) {
@@ -1385,7 +1386,7 @@ magma_int_t magma_cgesdd(
                 lapackf77_cunglq(&n, &n, &m, VT, &ldvt, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Produce L in A, zeroing out above it */
-                lapackf77_claset("U", &m_1, &m_1, &c_zero, &c_zero, &A[(lda*2) + 1], &lda);
+                lapackf77_claset("U", &m_1, &m_1, &c_zero, &c_zero, A(1,2), &lda);
                 ie = 1;
                 itauq = itau;
                 itaup = itauq + m;
@@ -1531,8 +1532,8 @@ magma_int_t magma_cgesdd(
                 nrwork = iru;
                 for (i = 1; (chunk < 0 ? i >= n : i <= n); i += chunk) {
                     blk = min(n - i + 1, chunk);
-                    lapackf77_clarcm(&m, &blk, &rwork[irvt], &m, &A[i*lda + 1], &lda, &work[ivt], &ldwkvt, &rwork[nrwork]);
-                    lapackf77_clacpy("F", &m, &blk, &work[ivt], &ldwkvt, &A[i*lda + 1], &lda);
+                    lapackf77_clarcm(&m, &blk, &rwork[irvt], &m, A(1,i), &lda, &work[ivt], &ldwkvt, &rwork[nrwork]);
+                    lapackf77_clacpy("F", &m, &blk, &work[ivt], &ldwkvt, A(1,i), &lda);
                 }
             }
             else if (wantqs) {
@@ -1717,8 +1718,8 @@ magma_int_t magma_cgesdd(
                     nrwork = iru;
                     for (i = 1; (chunk < 0 ? i >= n : i <= n); i += chunk) {
                         blk = min(n - i + 1, chunk);
-                        lapackf77_clarcm(&m, &blk, &rwork[irvt], &m, &A[i*lda + 1], &lda, &work[ivt], &ldwkvt, &rwork[nrwork]);
-                        lapackf77_clacpy("F", &m, &blk, &work[ivt], &ldwkvt, &A[i*lda + 1], &lda);
+                        lapackf77_clarcm(&m, &blk, &rwork[irvt], &m, A(1,i), &lda, &work[ivt], &ldwkvt, &rwork[nrwork]);
+                        lapackf77_clacpy("F", &m, &blk, &work[ivt], &ldwkvt, A(1,i), &lda);
                     }
                 }
             }

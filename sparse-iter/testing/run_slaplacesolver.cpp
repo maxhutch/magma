@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from run_zlaplacesolver.cpp normal z -> s, Fri May 30 10:41:49 2014
+       @generated from run_zlaplacesolver.cpp normal z -> s, Fri Jul 18 17:34:31 2014
        @author Hartwig Anzt
 */
 
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
     magma_index_t *diag_offset;
     float *diag_vals;
     magma_smalloc_cpu( &diag_vals, offdiags+1 );
-    magma_indexmalloc_cpu( &diag_offset, offdiags+1 );
+    magma_index_malloc_cpu( &diag_offset, offdiags+1 );
     diag_offset[0] = 0;
     diag_offset[1] = 1;
     diag_offset[2] = n;
@@ -68,11 +68,17 @@ int main( int argc, char** argv)
     B.storage_type = Magma_SELLC;
     B.blocksize = 8;
     B.alignment = 8;
+    // scale matrix
+    magma_smscale( &A, Magma_UNITDIAG );
+
     magma_s_mconvert( A, &B, Magma_CSR, B.storage_type );
     magma_s_mtransfer( B, &B_d, Magma_CPU, Magma_DEV );
 
-    // vectors
+    // vectors and initial guess
     magma_s_vinit( &b, Magma_DEV, A.num_cols, one );
+    magma_s_vinit( &x, Magma_DEV, A.num_cols, one );
+    magma_s_spmv( one, B_d, x, zero, b );                 //  b = A x
+    magma_s_vfree(&x);
     magma_s_vinit( &x, Magma_DEV, A.num_cols, zero );
 
     // solver

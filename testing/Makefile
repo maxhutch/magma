@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = testing
@@ -25,6 +25,7 @@ ZSRC := \
 	testing_ztrmv.cpp	\
 	testing_ztrsm.cpp	\
 	testing_ztrsv.cpp	\
+	testing_ztrtri_diag.cpp	\
 	\
 	testing_zhemm_mgpu.cpp	\
 	testing_zhemv_mgpu.cpp	\
@@ -41,12 +42,16 @@ ZSRC := \
 	testing_zlag2c.cpp	\
 	testing_zlange.cpp	\
 	testing_zlanhe.cpp	\
-	testing_dlarfg.cpp	\
+	testing_zlarfg.cpp	\
+	testing_zlaset.cpp	\
+	testing_zlaset_band.cpp	\
+	testing_znan_inf.cpp	\
 	testing_zprint.cpp	\
 	testing_zsymmetrize.cpp	\
 	testing_zsymmetrize_tiles.cpp	\
 	testing_zswap.cpp	\
 	testing_ztranspose.cpp	\
+	testing_veclib.cpp	\
 
 # ----------
 # Cholesky, GPU interface
@@ -100,7 +105,6 @@ ZSRC += \
 	\
 	testing_zgeqrf_mgpu.cpp	\
 	testing_zgegqr_gpu.cpp  \
-
 
 # QR, CPU interface
 ZSRC += \

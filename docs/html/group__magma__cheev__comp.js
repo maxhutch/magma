@@ -6,7 +6,7 @@ var group__magma__cheev__comp =
     [ "magma_chetrd", "group__magma__cheev__comp.html#ga9ea3b36bf46dc73b9640a4336a29ff8c", null ],
     [ "magma_chetrd2_gpu", "group__magma__cheev__comp.html#ga98aead42a23dca930e474112cc4b88ac", null ],
     [ "magma_chetrd_gpu", "group__magma__cheev__comp.html#gaff6be908a12475046006ae937396e0b0", null ],
-    [ "magma_chetrd_mgpu", "group__magma__cheev__comp.html#ga06badd84f461d40dde26ad72413c13dd", null ],
+    [ "magma_chetrd_mgpu", "group__magma__cheev__comp.html#ga1179504c8685366e13f79c1b7ea8b243", null ],
     [ "magma_cstedx", "group__magma__cheev__comp.html#ga1a5823447033e424a0bd4cb2d2793ea3", null ],
     [ "magma_cstedx_m", "group__magma__cheev__comp.html#gae838b37843456f5067e239e622d8e09a", null ],
     [ "magma_cungtr", "group__magma__cheev__comp.html#gae643a52368c8d2afc08891356f019e86", null ],

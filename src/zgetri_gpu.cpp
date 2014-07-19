@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -72,6 +72,7 @@ magma_zgetri_gpu( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda,
     #define dL(i, j)  (dL + (i) + (j)*lddl)
     
     /* Local variables */
+    magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *dL = dwork;
@@ -110,7 +111,7 @@ magma_zgetri_gpu( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda,
         magmablas_zlacpy( MagmaUpperLower, n-j, jb,
                           dA(j,j), ldda,
                           dL(j,0), lddl );
-        magmablas_zlaset( MagmaLower, n-j, jb, dA(j,j), ldda );
+        magmablas_zlaset( MagmaLower, n-j, jb, c_zero, c_zero, dA(j,j), ldda );
         
         // compute current block column of Ainv
         // Ainv(:, j:j+jb-1)

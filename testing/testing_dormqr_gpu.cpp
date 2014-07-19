@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Mark Gates
-       @generated from testing_zunmqr_gpu.cpp normal z -> d, Fri May 30 10:41:27 2014
+       @generated from testing_zunmqr_gpu.cpp normal z -> d, Fri Jul 18 17:34:24 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -44,7 +44,7 @@ int main( int argc, char** argv )
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
-    double tol = opts.tolerance * lapackf77_dlamch("E");
+    double tol = 2. * opts.tolerance * lapackf77_dlamch("E");
     
     // test all combinations of input parameters
     magma_side_t  side [] = { MagmaLeft,      MagmaRight   };
@@ -82,12 +82,12 @@ int main( int argc, char** argv )
             if ( side[iside] == MagmaLeft ) {
                 // side = left
                 lwork_max = (m - k + nb)*(n + nb) + n*nb;
-                dt_size = ( 2*min(m,k) + ((k + 31)/32)*32 )*nb;
+                dt_size = ( 2*min(m,k) + ((max(m,n) + 31)/32)*32 )*nb;
             }
             else {
                 // side = right
                 lwork_max = (n - k + nb)*(m + nb) + m*nb;
-                dt_size = ( 2*min(n,k) + ((k + 31)/32)*32 )*nb;
+                dt_size = ( 2*min(n,k) + ((max(m,n) + 31)/32)*32 )*nb;
             }
             
             TESTING_MALLOC_CPU( C,   double, ldc*n );

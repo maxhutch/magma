@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from ztrsm.cu normal z -> s, Fri May 30 10:40:43 2014
+       @generated from ztrsm.cu normal z -> s, Fri Jul 18 17:34:13 2014
 
        @author Peng Du
        @author Tingxing Dong
@@ -13,15 +13,15 @@
 #include "common_magma.h"
 
 #define BLOCK_SIZE 16 // inner blocking size, <=32
-#define nb 128        // outer blocking size, >BLOCK_SIZE
+#define NB 128        // outer blocking size, >BLOCK_SIZE
 
 __global__ void
-strsm_copy_kernel (int m, int n, float *b, int ldb, float *d_x, int ldx)
+strsm_copy_kernel(int m, int n, float *dB, int lddb, float *dX, int lddx)
 {
     int by = blockIdx.y;
-    int gx = blockIdx.x*blockDim.x + threadIdx.x;
-    if (gx < m)
-        b[by*ldb+gx] = d_x[by*ldx+gx];
+    int ind = blockIdx.x*blockDim.x + threadIdx.x;
+    if (ind < m)
+        dB[by*lddb + ind] = dX[by*lddx + ind];
 }
 
 
@@ -31,45 +31,40 @@ strsm_copy_kernel (int m, int n, float *b, int ldb, float *d_x, int ldx)
 
 #define strsm_copy() \
     do { \
-        dim3 dimBlock( (m >= MAX_THREAD_PER_BLOCK) ? MAX_THREAD_PER_BLOCK : (WARP_SIZE*((m/WARP_SIZE)+(m % WARP_SIZE != 0))), 1 ); \
-        dim3 dimGrid( (m - 1)/dimBlock.x + 1, n ); \
-        strsm_copy_kernel<<< dimGrid, dimBlock, 0, magma_stream >>>(m, n, b, ldb, d_x, m); \
-        magma_device_sync(); \
+        dim3 threads( (m >= MAX_THREAD_PER_BLOCK) ? MAX_THREAD_PER_BLOCK : (WARP_SIZE*((m/WARP_SIZE)+(m % WARP_SIZE != 0))), 1 ); \
+        dim3 grid( (m - 1)/threads.x + 1, n ); \
+        strsm_copy_kernel<<< grid, threads, 0, magma_stream >>>(m, n, dB, lddb, dX, m); \
     } while(0)
 
+// previously strsm_copy had sync -- there's no need; strsm should be async.
+//        magma_device_sync(); \
 
-/*
- * magmablas_strsm
- */
-
-extern "C"
-void diag_strtri (magma_int_t m, magma_uplo_t uplo, magma_diag_t diag, const float *A, float *d_dinvA, magma_int_t lda);
 
 /**
     Purpose
     -------
+    strsm_work solves one of the matrix equations on gpu
 
-    strsm solves one of the matrix equations on gpu
+        op(A)*X = alpha*B,   or   X*op(A) = alpha*B,
 
-        op( A )*x = alpha*b,   or   x*op( A ) = alpha*b,
+    where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+    non-unit, upper or lower triangular matrix and op(A) is one of
 
-    where alpha is a scalar, x and b are m by n matrices, A is a unit, or
-    non-unit, upper or lower triangular matrix and op( A ) is one of
-
-        op( A ) = A   or   op( A ) = A^T.
+        op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
 
     The matrix X is overwritten on B.
 
+    This is an asynchronous version of magmablas_strsm with flag,
+    d_dinvA and dX workspaces as arguments.
 
     Arguments
     ----------
-
     @param[in]
     side    magma_side_t.
-            On entry, side specifies whether op( A ) appears on the left
+            On entry, side specifies whether op(A) appears on the left
             or right of X as follows:
-      -     = MagmaLeft:       op( A )*X = alpha*B.
-      -     = MagmaRight:      X*op( A ) = alpha*B.
+      -     = MagmaLeft:       op(A)*X = alpha*B.
+      -     = MagmaRight:      X*op(A) = alpha*B.
 
     @param[in]
     uplo    magma_uplo_t.
@@ -80,11 +75,11 @@ void diag_strtri (magma_int_t m, magma_uplo_t uplo, magma_diag_t diag, const flo
 
     @param[in]
     transA  magma_trans_t.
-            On entry, transA specifies the form of op( A ) to be used in
+            On entry, transA specifies the form of op(A) to be used in
             the matrix multiplication as follows:
-      -     = MagmaNoTrans:    op( A ) = A.
-      -     = MagmaTrans:      op( A ) = A^T.
-      -     = MagmaTrans:  op( A ) = A^T.
+      -     = MagmaNoTrans:    op(A) = A.
+      -     = MagmaTrans:      op(A) = A^T.
+      -     = MagmaTrans:  op(A) = A^H.
 
     @param[in]
     diag    magma_diag_t.
@@ -104,13 +99,13 @@ void diag_strtri (magma_int_t m, magma_uplo_t uplo, magma_diag_t diag, const flo
             at least zero.
 
     @param[in]
-    alpha   COMPLEX.
+    alpha   REAL.
             On entry, alpha specifies the scalar alpha. When alpha is
             zero then A is not referenced and B need not be set before
             entry.
 
     @param[in]
-    A       COMPLEX array of DIMENSION ( lda, k ), where k is m
+    dA      REAL array of DIMENSION ( ldda, k ), where k is m
             when side = MagmaLeft and is n when side = MagmaRight.
             Before entry with uplo = MagmaUpper, the leading k by k
             upper triangular part of the array A must contain the upper
@@ -124,410 +119,472 @@ void diag_strtri (magma_int_t m, magma_uplo_t uplo, magma_diag_t diag, const flo
             A are not referenced either, but are assumed to be unity.
 
     @param[in]
-    lda     INTEGER.
-            On entry, lda specifies the first dimension of A as declared
+    ldda    INTEGER.
+            On entry, ldda specifies the first dimension of A as declared
             in the calling (sub) program. When side = MagmaLeft then
-            lda must be at least max( 1, m ), when side = MagmaRight
-            then lda must be at least max( 1, n ).
+            ldda must be at least max( 1, m ), when side = MagmaRight
+            then ldda must be at least max( 1, n ).
 
     @param[in,out]
-    b       COMPLEX array of DIMENSION ( ldb, n ).
+    dB      REAL array of DIMENSION ( lddb, n ).
             Before entry, the leading m by n part of the array B must
             contain the right-hand side matrix B, and on exit is
             overwritten by the solution matrix X.
 
     @param[in]
-    ldb     INTEGER.
-            On entry, ldb specifies the first dimension of B as declared
-            in the calling (sub) program. ldb must be at least
+    lddb    INTEGER.
+            On entry, lddb specifies the first dimension of B as declared
+            in the calling (sub) program. lddb must be at least
             max( 1, m ).
 
-    Level 3 Blas routine.
+    @param[in]
+    flag    BOOLEAN.
+            If flag is true, invert diagonal blocks.
+            If flag is false, assume diagonal blocks are already inverted.
+
+    @param
+    d_dinvA (workspace) on device.
+            If side == MagmaLeft,  d_dinvA must be of size >= ((m+NB-1)/NB)*NB*NB,
+            If side == MagmaRight, d_dinvA must be of size >= ((n+NB-1)/NB)*NB*NB,
+            where NB = 128.
+
+    @param
+    dX      (workspace) size m*n, on device.
+
+    @param[in]
+    stream  magma_queue_t
+            Stream to execute in.
 
     @ingroup magma_sblas3
     ********************************************************************/
 extern "C"
-void magmablas_strsm(
-    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, magma_int_t m, magma_int_t n,
+void magmablas_strsm_work(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t m, magma_int_t n,
     float alpha,
-    const float* A, magma_int_t lda,
-    float* b, magma_int_t ldb )
+    const float* dA, magma_int_t ldda,
+    float* dB, magma_int_t lddb,
+    magma_int_t flag,
+    float* d_dinvA, float *dX)
 {
-    int i;
-    float *d_dinvA, *d_x;
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #define dB(i_, j_) (dB + (i_) + (j_)*lddb)
+    #define dX(i_, j_) (dX + (i_) + (j_)*m)
+    #define d_dinvA(i_) (d_dinvA + (i_)*NB)
 
-    /* quick return on wrong size */
-    if (m <= 0 || n <= 0)
-        return;
+    const float c_neg_one = MAGMA_S_NEG_ONE;
+    const float c_one     = MAGMA_S_ONE;
+    const float c_zero    = MAGMA_S_ZERO;
+
+    magma_int_t i, jb;
+    magma_int_t nrowA = (side == MagmaLeft ? m : n);
     
-    magma_trans_t Notrans   = MagmaNoTrans;
-    magma_trans_t Trans     = MagmaTrans;
-    magma_trans_t Conjtrans = MagmaTrans;
+    magma_int_t info = 0;
+    if ( side != MagmaLeft && side != MagmaRight ) {
+        info = -1;
+    } else if ( uplo != MagmaUpper && uplo != MagmaLower ) {
+        info = -2;
+    } else if ( transA != MagmaNoTrans && transA != MagmaTrans && transA != Magma_ConjTrans ) {
+        info = -3;
+    } else if ( diag != MagmaUnit && diag != MagmaNonUnit ) {
+        info = -4;
+    } else if (m < 0) {
+        info = -5;
+    } else if (n < 0) {
+        info = -6;
+    } else if (ldda < max(1,nrowA)) {
+        info = -9;
+    } else if (lddb < max(1,m)) {
+        info = -11;
+    }
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;
+    }
 
-    float neg_one = MAGMA_S_NEG_ONE;
-    float one = MAGMA_S_ONE;
-    float zero = MAGMA_S_ZERO;
+    // quick return if possible.
+    if (m == 0 || n == 0)
+        return;
 
     if (side == MagmaLeft) {
-        // side=L
-        /* invert the diagonals
-         * Allocate device memory for the inverted diagonal blocks, size=m*nb
-         */
-        magma_smalloc( &d_dinvA, nb*((m/nb)+(m % nb != 0))*nb );
-        magma_smalloc( &d_x,     n*m );
-
-        cudaMemset(d_x,     0, n*m*sizeof(float));
-        cudaMemset(d_dinvA, 0, nb*((m/nb)+(m % nb != 0))*nb*sizeof(float));
-        diag_strtri (m, uplo, diag, A, d_dinvA, lda);
+        // invert diagonal blocks
+        if (flag)
+            magmablas_strtri_diag( uplo, diag, m, dA, ldda, d_dinvA );
 
         if (transA == MagmaNoTrans) {
-            /* the non-transpose case */
             if (uplo == MagmaLower) {
+                // left, lower no-transpose
+                // handle first block seperately with alpha
+                jb = min(NB, m);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(0), NB, dB, lddb, c_zero, dX, m );
 
-                /* the lower case */
-                /* handle the first block seperately with alpha */
-                int mm = min(nb, m);
-                magma_sgemm(Notrans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
-
-                if (nb >= m) {
+                if (NB >= m) {
                     strsm_copy();
-                    magma_free( d_dinvA );
-                    magma_free( d_x );
                     return;
                 }
 
-                magma_sgemm(Notrans, Notrans, m-nb, n, nb, neg_one, A+nb, lda, d_x, m, alpha, b+nb, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, m-NB, n, NB, c_neg_one, dA(NB,0), ldda, dX, m, alpha, dB(NB,0), lddb );
 
-                /* the rest blocks */
-                for( i=nb; i < m; i += nb ) {
-                    mm = min(m-i, nb);
-                    magma_sgemm(Notrans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // remaining blocks
+                for( i=NB; i < m; i += NB ) {
+                    jb = min(m-i, NB);
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                    if (i+nb >= m)
+                    if (i+NB >= m)
                         break;
-
-                    magma_sgemm(Notrans, Notrans, m-i-nb, n, nb, neg_one, A+i*lda+i+nb, lda, d_x+i, m, one, b+i+nb, ldb);
+                    
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, m-i-NB, n, NB, c_neg_one, dA(i+NB,i), ldda, dX(i,0), m, c_one, dB(i+NB,0), lddb );
                 }
             }
             else {
-                /* the upper case */
-                /* handle the first block seperately with alpha */
-                int mm = (m % nb == 0) ? nb : (m % nb);
-                i = m-mm;
-                magma_sgemm(Notrans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // left, upper no-transpose
+                // handle first block seperately with alpha
+                jb = (m % NB == 0) ? NB : (m % NB);
+                i = m-jb;
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                if (i-nb < 0) {
+                if (i-NB < 0) {
                     strsm_copy();
-                    magma_free( d_dinvA );
-                    magma_free( d_x );
                     return;
                 }
 
-                magma_sgemm(Notrans, Notrans, i, n, mm, neg_one, A+i*lda, lda, d_x+i, m, alpha, b, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, i, n, jb, c_neg_one, dA(0,i), ldda, dX(i,0), m, alpha, dB, lddb );
 
-                /* the rest blocks */
-                for( i=m-mm-nb; i >= 0; i -= nb ) {
-                    magma_sgemm(Notrans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // remaining blocks
+                for( i=m-jb-NB; i >= 0; i -= NB ) {
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, NB, n, NB, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                    if (i-nb < 0)
+                    if (i-NB < 0)
                         break;
 
-                    magma_sgemm(Notrans, Notrans, i, n, nb, neg_one, A+i*lda, lda, d_x+i, m, one, b, ldb);
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, i, n, NB, c_neg_one, dA(0,i), ldda, dX(i,0), m, c_one, dB, lddb );
                 }
             }
         }
         else if( transA == MagmaTrans) {
-            /* the transpose case */
             if (uplo == MagmaLower) {
-                /* the lower case */
-                /* handle the first block seperately with alpha */
-                int mm = (m % nb == 0) ? nb : (m % nb);
-                i = m-mm;
-                magma_sgemm(Trans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // left, lower transpose
+                // handle first block seperately with alpha
+                jb = (m % NB == 0) ? NB : (m % NB);
+                i = m-jb;
+                magma_sgemm( MagmaTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                if (i-nb < 0) {
+                if (i-NB < 0) {
                     strsm_copy();
-                    magma_free( d_dinvA );
-                    magma_free( d_x );
                     return;
                 }
 
-                magma_sgemm(Trans, Notrans, i, n, mm, neg_one, A+i, lda, d_x+i, m, alpha, b, ldb);
+                magma_sgemm( MagmaTrans, MagmaNoTrans, i, n, jb, c_neg_one, dA(i,0), ldda, dX(i,0), m, alpha, dB, lddb );
 
-                /* the rest blocks */
-                for( i=m-mm-nb; i >= 0; i -= nb ) {
-                    magma_sgemm(Trans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // remaining blocks
+                for( i=m-jb-NB; i >= 0; i -= NB ) {
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, NB, n, NB, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                    if (i-nb < 0)
+                    if (i-NB < 0)
                         break;
 
-                    magma_sgemm(Trans, Notrans, i, n, nb, neg_one, A+i, lda, d_x+i, m, one, b, ldb);
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, i, n, NB, c_neg_one, dA(i,0), ldda, dX(i,0), m, c_one, dB, lddb );
                 }
             }
             else {
-                /* the upper case */
-                /* handle the first block seperately with alpha */
-                int mm = min(nb, m);
-                magma_sgemm(Trans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
+                // left, upper transpose
+                // handle first block seperately with alpha
+                jb = min(NB, m);
+                magma_sgemm( MagmaTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(0), NB, dB, lddb, c_zero, dX, m );
 
-                if (nb >= m) {
+                if (NB >= m) {
                     strsm_copy();
-                    magma_free( d_dinvA );
-                    magma_free( d_x );
                     return;
                 }
 
-                magma_sgemm(Trans, Notrans, m-nb, n, nb, neg_one, A+(nb)*lda, lda, d_x, m, alpha, b+nb, ldb);
+                magma_sgemm( MagmaTrans, MagmaNoTrans, m-NB, n, NB, c_neg_one, dA(0,NB), ldda, dX, m, alpha, dB(NB,0), lddb );
 
-                /* the rest blocks */
-                for( i=nb; i < m; i += nb ) {
-                    mm = min(m-i, nb);
-                    magma_sgemm(Trans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // remaining blocks
+                for( i=NB; i < m; i += NB ) {
+                    jb = min(m-i, NB);
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, jb, n, jb, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                    if (i+nb >= m)
+                    if (i+NB >= m)
                         break;
 
-                    magma_sgemm(Trans, Notrans, m-i-nb, n, nb, neg_one, A+(i+nb)*lda+i, lda, d_x+i, m, one, b+i+nb, ldb);
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, m-i-NB, n, NB, c_neg_one, dA(i,i+NB), ldda, dX(i,0), m, c_one, dB(i+NB,0), lddb );
                 }
             }
         }
-        else{
-            /* the  transpose case */
+        else {  // transA == MagmaConjTras
             if (uplo == MagmaLower) {
-                /* the lower case */
-                /* handle the first block seperately with alpha */
-                int mm = (m % nb == 0) ? nb : (m % nb);
-                i = m-mm;
-                magma_sgemm(Conjtrans, Notrans, mm, n, mm, alpha, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // left, lower conjugate-transpose
+                // handle first block seperately with alpha
+                jb = (m % NB == 0) ? NB : (m % NB);
+                i = m-jb;
+                magma_sgemm( MagmaTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                if (i-nb < 0) {
+                if (i-NB < 0) {
                     strsm_copy();
-                    magma_free( d_dinvA );
-                    magma_free( d_x );
                     return;
                 }
 
-                magma_sgemm(Conjtrans, Notrans, i, n, mm, neg_one, A+i, lda, d_x+i, m, alpha, b, ldb);
+                magma_sgemm( MagmaTrans, MagmaNoTrans, i, n, jb, c_neg_one, dA(i,0), ldda, dX(i,0), m, alpha, dB, lddb );
 
-                /* the rest blocks */
-                for( i=m-mm-nb; i >= 0; i -= nb ) {
-                    magma_sgemm(Conjtrans, Notrans, nb, n, nb, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // remaining blocks
+                for( i=m-jb-NB; i >= 0; i -= NB ) {
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, NB, n, NB, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                    if (i-nb < 0)
+                    if (i-NB < 0)
                         break;
 
-                    magma_sgemm(Conjtrans, Notrans, i, n, nb, neg_one, A+i, lda, d_x+i, m, one, b, ldb);
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, i, n, NB, c_neg_one, dA(i,0), ldda, dX(i,0), m, c_one, dB, lddb );
                 }
             }
             else {
-                /* the upper case */
-                /* handle the first block seperately with alpha */
-                int mm = min(nb, m);
-                magma_sgemm(Conjtrans, Notrans, mm, n, mm, alpha, d_dinvA, nb, b, ldb, zero, d_x, m);
+                // left, upper conjugate-transpose
+                // handle first block seperately with alpha
+                jb = min(NB, m);
+                magma_sgemm( MagmaTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(0), NB, dB, lddb, c_zero, dX, m );
 
-                if (nb >= m) {
+                if (NB >= m) {
                     strsm_copy();
-                    magma_free( d_dinvA );
-                    magma_free( d_x );
                     return;
                 }
 
-                magma_sgemm(Conjtrans, Notrans, m-nb, n, nb, neg_one, A+(nb)*lda, lda, d_x, m, alpha, b+nb, ldb);
+                magma_sgemm( MagmaTrans, MagmaNoTrans, m-NB, n, NB, c_neg_one, dA(0,NB), ldda, dX, m, alpha, dB(NB,0), lddb );
 
-                /* the rest blocks */
-                for( i=nb; i < m; i += nb ) {
-                    mm = min(m-i, nb);
-                    magma_sgemm(Conjtrans, Notrans, mm, n, mm, one, d_dinvA+i*nb, nb, b+i, ldb, zero, d_x+i, m);
+                // remaining blocks
+                for( i=NB; i < m; i += NB ) {
+                    jb = min(m-i, NB);
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, jb, n, jb, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), m );
 
-                    if (i+nb >= m)
+                    if (i+NB >= m)
                         break;
 
-                    magma_sgemm(Conjtrans, Notrans, m-i-nb, n, nb, neg_one, A+(i+nb)*lda+i, lda, d_x+i, m, one, b+i+nb, ldb);
+                    magma_sgemm( MagmaTrans, MagmaNoTrans, m-i-NB, n, NB, c_neg_one, dA(i,i+NB), ldda, dX(i,0), m, c_one, dB(i+NB,0), lddb );
                 }
             }
         }
     }
-    else {
-        // side=R
-        /* invert the diagonals
-         * Allocate device memory for the inverted diagonal blocks, size=n*BLOCK_SIZE
-         */
-        magma_smalloc( &d_dinvA, nb*((n/nb) + (n % nb != 0))*nb );
-        magma_smalloc( &d_x,     n*m );
-        cudaMemset(d_x,     0, n*m*sizeof(float));
-        cudaMemset(d_dinvA, 0, nb*((n/nb)+(n % nb != 0))*nb*sizeof(float));
-        diag_strtri (n, uplo, diag, A, d_dinvA, lda);
+    else {  // side == MagmaRight
+        // invert diagonal blocks
+        if (flag)
+            magmablas_strtri_diag( uplo, diag, n, dA, ldda, d_dinvA );
 
         if (transA == MagmaNoTrans) {
-            /* the non-transpose case */
             if (uplo == MagmaLower) {
-                /* the lower case */
-                /* handle the first block seperately with alpha */
-                int nn = (n % nb == 0) ? nb : (n % nb);
+                // right, lower no-transpose
+                // handle first block seperately with alpha
+                int nn = (n % NB == 0) ? NB : (n % NB);
                 i = n-nn;
-                magma_sgemm(Notrans, Notrans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, nn, nn, alpha, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                if (i-nb < 0) {
+                if (i-NB < 0) {
                     strsm_copy();
-                    magma_free( d_x );
-                    magma_free( d_dinvA );
                     return;
                 }
 
-                magma_sgemm(Notrans, Notrans, m, i, nn, neg_one, d_x+i*m, m, A+i, lda, alpha, b, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, i, nn, c_neg_one, dX(0,i), m, dA(i,0), ldda, alpha, dB, lddb );
 
-                /* the rest blocks */
-                for( i=n-nn-nb; i >= 0; i -= nb ) {
-                    magma_sgemm(Notrans, Notrans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                // remaining blocks
+                for( i=n-nn-NB; i >= 0; i -= NB ) {
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, NB, NB, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                    if (i-nb < 0)
+                    if (i-NB < 0)
                         break;
 
-                    magma_sgemm(Notrans, Notrans, m, i, nb, neg_one, d_x+i*m, m, A+i, lda, one, b, ldb);
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, i, NB, c_neg_one, dX(0,i), m, dA(i,0), ldda, c_one, dB, lddb );
                 }
             }
             else {
-                /* the upper case */
-                /* handle the first block seperately with alpha */
-                int nn = min(nb, n);
-                magma_sgemm(Notrans, Notrans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
+                // right, upper no-transpose
+                // handle first block seperately with alpha
+                int nn = min(NB, n);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, nn, nn, alpha, dB, lddb, d_dinvA(0), NB, c_zero, dX, m );
 
-                if (nb >= n) {
+                if (NB >= n) {
                     strsm_copy();
-                    magma_free( d_x );
-                    magma_free( d_dinvA );
                     return;
                 }
 
-                magma_sgemm(Notrans, Notrans, m, n-nb, nb, neg_one, d_x, m, A+nb*lda, lda, alpha, b+nb*ldb, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, n-NB, NB, c_neg_one, dX, m, dA(0,NB), ldda, alpha, dB(0,NB), lddb );
 
-                /* the rest blocks */
-                for( i=nb; i < n; i += nb ) {
-                    nn = min(nb, n-i);
-                    magma_sgemm(Notrans, Notrans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                // remaining blocks
+                for( i=NB; i < n; i += NB ) {
+                    nn = min(NB, n-i);
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, nn, nn, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                    if (i+nb >= n)
+                    if (i+NB >= n)
                         break;
 
-                    magma_sgemm(Notrans, Notrans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   A+(i+nb)*lda+i, lda, one, b+(i+nb)*ldb, ldb);
+                    magma_sgemm( MagmaNoTrans, MagmaNoTrans, m, n-i-NB, NB, c_neg_one, dX(0,i), m, dA(i,i+NB), ldda, c_one, dB(0,i+NB), lddb );
                 }
             }
         }
         else if (transA == MagmaTrans) {
-            /* the transpose case */
             if (uplo == MagmaLower) {
-                /* the lower case */
-                /* handle the first block seperately with alpha */
-                int nn = min(nb, n);
-                magma_sgemm(Notrans, Trans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
+                // right, lower transpose
+                // handle first block seperately with alpha
+                int nn = min(NB, n);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, nn, nn, alpha, dB, lddb, d_dinvA(0), NB, c_zero, dX, m );
 
-                if (nb >= n) {
+                if (NB >= n) {
                     strsm_copy();
-                    magma_free( d_x );
-                    magma_free( d_dinvA );
                     return;
                 }
 
-                magma_sgemm(Notrans, Trans, m, n-nb, nb, neg_one, d_x, m, A+nb, lda, alpha, b+nb*ldb, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, n-NB, NB, c_neg_one, dX, m, dA(NB,0), ldda, alpha, dB(0,NB), lddb );
 
-                /* the rest blocks */
-                for( i=nb; i < n; i += nb ) {
-                    nn = min(nb, n-i);
-                    magma_sgemm(Notrans, Trans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                // remaining blocks
+                for( i=NB; i < n; i += NB ) {
+                    nn = min(NB, n-i);
+                    magma_sgemm( MagmaNoTrans, MagmaTrans, m, nn, nn, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                    if (i+nb >= n)
+                    if (i+NB >= n)
                         break;
 
-                    magma_sgemm(Notrans, Trans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   A+i*lda+nb+i, lda, one, b+(i+nb)*ldb, ldb);
+                    magma_sgemm( MagmaNoTrans, MagmaTrans, m, n-i-NB, NB, c_neg_one, dX(0,i), m, dA(NB+i,i), ldda, c_one, dB(0,i+NB), lddb );
                 }
             }
             else {
-                /* the upper case */
-                /* handle the first block seperately with alpha */
-                int nn = (n % nb == 0) ? nb : (n % nb);
+                // right, upper transpose
+                // handle first block seperately with alpha
+                int nn = (n % NB == 0) ? NB : (n % NB);
                 i = n-nn;
-                magma_sgemm(Notrans, Trans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, nn, nn, alpha, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                if (i-nb < 0) {
+                if (i-NB < 0) {
                     strsm_copy();
-                    magma_free( d_x );
-                    magma_free( d_dinvA );
                     return;
                 }
 
-                magma_sgemm(Notrans, Trans, m, i, nn, neg_one, d_x+i*m, m, A+i*lda, lda, alpha, b, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, i, nn, c_neg_one, dX(0,i), m, dA(0,i), ldda, alpha, dB, lddb );
 
-                /* the rest blocks */
-                for( i=n-nn-nb; i >= 0; i -= nb ) {
-                    magma_sgemm(Notrans, Trans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                // remaining blocks
+                for( i=n-nn-NB; i >= 0; i -= NB ) {
+                    magma_sgemm( MagmaNoTrans, MagmaTrans, m, NB, NB, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                    if (i-nb < 0)
+                    if (i-NB < 0)
                         break;
 
-                    magma_sgemm(Notrans, Trans, m, i, nb, neg_one, d_x+i*m, m, A+i*lda, lda, one, b, ldb);
+                    magma_sgemm( MagmaNoTrans, MagmaTrans, m, i, NB, c_neg_one, dX(0,i), m, dA(0,i), ldda, c_one, dB, lddb );
                 }
             }
         }
-        else{
-            /* the Conj transpose case */
+        else {  // TransA == MagmaTrans
             if (uplo == MagmaLower) {
-                /* the lower case */
-                /* handle the first block seperately with alpha */
-                int nn = min(nb, n);
-                magma_sgemm(Notrans, Conjtrans, m, nn, nn, alpha, b, ldb, d_dinvA, nb, zero, d_x, m);
+                // right, lower conjugate-transpose
+                // handle first block seperately with alpha
+                int nn = min(NB, n);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, nn, nn, alpha, dB, lddb, d_dinvA(0), NB, c_zero, dX, m );
 
-                if (nb >= n) {
+                if (NB >= n) {
                     strsm_copy();
-                    magma_free( d_x );
-                    magma_free( d_dinvA );
                     return;
                 }
 
-                magma_sgemm(Notrans, Conjtrans, m, n-nb, nb, neg_one, d_x, m, A+nb, lda, alpha, b+nb*ldb, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, n-NB, NB, c_neg_one, dX, m, dA(NB,0), ldda, alpha, dB(0,NB), lddb );
 
-                /* the rest blocks */
-                for( i=nb; i < n; i += nb ) {
-                    nn = min(nb, n-i);
-                    magma_sgemm(Notrans, Conjtrans, m, nn, nn, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                // remaining blocks
+                for( i=NB; i < n; i += NB ) {
+                    nn = min(NB, n-i);
+                    magma_sgemm( MagmaNoTrans, MagmaTrans, m, nn, nn, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                    if (i+nb >= n)
+                    if (i+NB >= n)
                         break;
 
-                    magma_sgemm(Notrans, Conjtrans, m, n-i-nb, nb, neg_one, d_x+i*m, m,   
-                                                A+i*lda+nb+i, lda, one, b+(i+nb)*ldb, ldb);
+                    magma_sgemm(MagmaNoTrans, MagmaTrans, m, n-i-NB, NB, c_neg_one, dX(0,i), m,
+                                                dA(NB+i,i), ldda, c_one, dB(0,i+NB), lddb);
                 }
             }
             else {
-                /* the upper case */
-                /* handle the first block seperately with alpha */
-                int nn = (n % nb == 0) ? nb : (n % nb);
+                // right, upper conjugate-transpose
+                // handle first block seperately with alpha
+                int nn = (n % NB == 0) ? NB : (n % NB);
                 i = n-nn;
-                magma_sgemm(Notrans, Conjtrans, m, nn, nn, alpha, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, nn, nn, alpha, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                if (i-nb < 0) {
+                if (i-NB < 0) {
                     strsm_copy();
-                    magma_free( d_x );
-                    magma_free( d_dinvA );
                     return;
                 }
 
-                magma_sgemm(Notrans, Conjtrans, m, i, nn, neg_one, d_x+i*m, m, A+i*lda, lda, alpha, b, ldb);
+                magma_sgemm( MagmaNoTrans, MagmaTrans, m, i, nn, c_neg_one, dX(0,i), m, dA(0,i), ldda, alpha, dB, lddb );
 
-                /* the rest blocks */
-                for( i=n-nn-nb; i >= 0; i -= nb ) {
-                    magma_sgemm(Notrans, Conjtrans, m, nb, nb, one, b+ldb*i, ldb, d_dinvA+i*nb, nb, zero, d_x+i*m, m);
+                // remaining blocks
+                for( i=n-nn-NB; i >= 0; i -= NB ) {
+                    magma_sgemm( MagmaNoTrans, MagmaTrans, m, NB, NB, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), m );
 
-                    if (i-nb < 0)
+                    if (i-NB < 0)
                         break;
 
-                    magma_sgemm(Notrans, Conjtrans, m, i, nb, neg_one, d_x+i*m, m, A+i*lda, lda, one, b, ldb);
+                    magma_sgemm( MagmaNoTrans, MagmaTrans, m, i, NB, c_neg_one, dX(0,i), m, dA(0,i), ldda, c_one, dB, lddb );
                 }
             }
         }
-
     }
 
     strsm_copy();
+}
+
+
+/**
+    @see magmablas_strsm_work
+    @ingroup magma_sblas3
+    ********************************************************************/
+extern "C"
+void magmablas_strsm(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t m, magma_int_t n,
+    float alpha,
+    const float* dA, magma_int_t ldda,
+    float* dB, magma_int_t lddb )
+{
+    magma_int_t nrowA = (side == MagmaLeft ? m : n);
+    
+    magma_int_t info = 0;
+    if ( side != MagmaLeft && side != MagmaRight ) {
+        info = -1;
+    } else if ( uplo != MagmaUpper && uplo != MagmaLower ) {
+        info = -2;
+    } else if ( transA != MagmaNoTrans && transA != MagmaTrans && transA != Magma_ConjTrans ) {
+        info = -3;
+    } else if ( diag != MagmaUnit && diag != MagmaNonUnit ) {
+        info = -4;
+    } else if (m < 0) {
+        info = -5;
+    } else if (n < 0) {
+        info = -6;
+    } else if (ldda < max(1,nrowA)) {
+        info = -9;
+    } else if (lddb < max(1,m)) {
+        info = -11;
+    }
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;
+    }
+    
+    float *d_dinvA, *dX;
+    magma_int_t size_dinvA;
+    magma_int_t size_x = m*n;
+    if ( side == MagmaLeft ) {
+        size_dinvA = ((m+NB-1)/NB)*NB*NB;
+    }
+    else {
+        size_dinvA = ((n+NB-1)/NB)*NB*NB;
+    }
+    
+    magma_smalloc( &d_dinvA, size_dinvA );
+    magma_smalloc( &dX,     size_x    );
+    if ( d_dinvA == NULL || dX == NULL ) {
+        info = MAGMA_ERR_DEVICE_ALLOC;
+        magma_xerbla( __func__, -(info) );
+        goto cleanup;
+    }
+    
+    magmablas_strsm_work( side, uplo, transA, diag, m, n, alpha,
+                          dA, ldda, dB, lddb, 1, d_dinvA, dX );
+    
+cleanup:
     magma_free( d_dinvA );
-    magma_free( d_x );
+    magma_free( dX );
 }

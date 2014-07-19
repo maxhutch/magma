@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from zbcyclic.cu normal z -> c, Fri May 30 10:40:43 2014
+       @generated from zbcyclic.cu normal z -> c, Fri Jul 18 17:34:13 2014
 */
 #include "common_magma.h"
 #include "commonblas.h"
@@ -25,6 +25,25 @@ magma_csetmatrix_1D_col_bcyclic(
     magmaFloatComplex       *dA[], magma_int_t ldda,
     magma_int_t num_gpus, magma_int_t nb )
 {
+    magma_int_t info = 0;
+    if ( m < 0 )
+        info = -1;
+    else if ( n < 0 )
+        info = -2;
+    else if ( lda < m )
+        info = -4;
+    else if ( ldda < m )
+        info = -6;
+    else if ( num_gpus < 1 )
+        info = -7;
+    else if ( nb < 1 )
+        info = -8;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     magma_int_t j, dev, jb;
     magma_device_t cdevice;
 
@@ -54,6 +73,25 @@ magma_cgetmatrix_1D_col_bcyclic(
     magmaFloatComplex  *hA,   magma_int_t lda,
     magma_int_t num_gpus, magma_int_t nb )
 {
+    magma_int_t info = 0;
+    if ( m < 0 )
+        info = -1;
+    else if ( n < 0 )
+        info = -2;
+    else if ( ldda < m )
+        info = -4;
+    else if ( lda < m )
+        info = -6;
+    else if ( num_gpus < 1 )
+        info = -7;
+    else if ( nb < 1 )
+        info = -8;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     magma_int_t j, dev, jb;
     magma_device_t cdevice;
 
@@ -83,6 +121,25 @@ magma_csetmatrix_1D_row_bcyclic(
     magmaFloatComplex       *dA[], magma_int_t ldda,
     magma_int_t num_gpus, magma_int_t nb )
 {
+    magma_int_t info = 0;
+    if ( m < 0 )
+        info = -1;
+    else if ( n < 0 )
+        info = -2;
+    else if ( lda < m )
+        info = -4;
+    else if ( ldda < m )
+        info = -6;
+    else if ( num_gpus < 1 )
+        info = -7;
+    else if ( nb < 1 )
+        info = -8;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     magma_int_t i, dev, jb;
     magma_device_t cdevice;
 
@@ -112,6 +169,25 @@ magma_cgetmatrix_1D_row_bcyclic(
     magmaFloatComplex  *hA,   magma_int_t lda,
     magma_int_t num_gpus, magma_int_t nb )
 {
+    magma_int_t info = 0;
+    if ( m < 0 )
+        info = -1;
+    else if ( n < 0 )
+        info = -2;
+    else if ( ldda < m )
+        info = -4;
+    else if ( lda < m )
+        info = -6;
+    else if ( num_gpus < 1 )
+        info = -7;
+    else if ( nb < 1 )
+        info = -8;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     magma_int_t i, dev, jb;
     magma_device_t cdevice;
 

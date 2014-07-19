@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zbcsrtrsv.cu normal z -> d, Fri May 30 10:41:36 2014
+       @generated from zbcsrtrsv.cu normal z -> d, Fri Jul 18 17:34:27 2014
 
 */
 
@@ -17,27 +17,47 @@
 #define x(i) x+(i*size_b)
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     For a Block-CSR ILU factorization, this routine performs the triangular 
     solves.
     
     Arguments
-    =========
+    ---------
 
-    magma_int_t r_blocks            number of blocks
-    magma_int_t size_b              blocksize in BCSR
-    magma_int_t *ipiv               array containing pivots
-    double *x           input/output vector x
+    @param
+    uplo        magma_uplo_t
+                upper/lower fill structure
 
-    ======================================================================    */
+    @param
+    r_blocks    magma_int_t
+                number of blocks in row
+                
+    @param
+    c_blocks    magma_int_t
+                number of blocks in column    
+                
+    @param
+    size_b      magma_int_t
+                blocksize in BCSR
+ 
+    @param
+    A           double*
+                upper/lower factor
+
+    @param
+    blockinfo   magma_int_t*
+                array containing matrix information
+
+    @param
+    x           double*
+                input/output vector x
+
+
+    @ingroup magmasparse_dgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_dbcsrtrsv( magma_uplo_t uplo,

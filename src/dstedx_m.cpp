@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
        
        @author Raffaele Solca
        
@@ -145,7 +145,7 @@ magma_dstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, double vl,
                double* work, magma_int_t lwork, magma_int_t* iwork, magma_int_t liwork,
                magma_int_t* info)
 {
-#define Z(ix, iy) (Z + (ix) + ldz*(iy))
+#define Z(i_,j_) (Z + (i_) + (j_)*ldz)
 
     double d_zero = 0.;
     double d_one  = 1.;

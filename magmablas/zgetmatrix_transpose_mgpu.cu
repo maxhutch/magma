@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
        @author Ichitaro Yamazaki
@@ -51,16 +51,10 @@ magmablas_zgetmatrix_transpose_mgpu(
        magma_setdevice(d);
 
        ib = min(n-j, nb);
-       magmablasSetKernelStream(stream[d][id]);
-       magmablas_ztranspose2(  dB(d, id),      lddb, 
-                              dAT(d, j_local), ldda, 
-                              ib, m);
+       magmablas_ztranspose_stream( ib, m, dAT(d,j_local), ldda, dB(d,id), lddb, stream[d][id] );
        magma_zgetmatrix_async( m, ib,
                                dB(d, id), lddb,
                                A(j),      lda, 
                                stream[d][id] );
     }
 }
-
-
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
@@ -29,31 +29,36 @@
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the ILU preconditioner via the asynchronous ILU iteration.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A                   input matrix A
-    magma_z_preconditioner *precond           preconditioner parameters
+    @param
+    A           magma_z_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_zgepr
+    ********************************************************************/
 
 magma_int_t
 magma_zcuilusetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
 
         // copy matrix into preconditioner parameter
-            magma_z_mtransfer(A, &(precond->M), A.memory_location, Magma_DEV);
-
+        magma_z_sparse_matrix hA, hACSR;
+        magma_z_mtransfer( A, &hA, A.memory_location, Magma_CPU );
+        magma_z_mconvert( hA, &hACSR, hA.storage_type, Magma_CSR);
+        magma_z_mtransfer(hACSR, &(precond->M), Magma_CPU, Magma_DEV);
+        magma_z_mfree( &hA );
+        magma_z_mfree( &hACSR );
 
 
             // CUSPARSE context //
@@ -91,7 +96,7 @@ magma_zcuilusetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
                         precond->M.num_rows, precond->M.nnz, descrA,
                         precond->M.val, precond->M.row, precond->M.col, 
                         precond->cuinfo); 
-             if(cusparseStatus != 0)    printf("error in analysis.\n");
+             if(cusparseStatus != 0)    printf("error in analysis:%d\n", precond->cuinfo);
 
             cusparseStatus =
             cusparseZcsrilu0( cusparseHandle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
@@ -100,12 +105,16 @@ magma_zcuilusetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
                               precond->M.row, 
                               precond->M.col, 
                               precond->cuinfo);
-             if(cusparseStatus != 0)    printf("error in ILU.\n");
+             if(cusparseStatus != 0)    printf("error in ILU:%d\n", precond->cuinfo);
 
 
+            cusparseStatus =
+            cusparseDestroySolveAnalysisInfo( precond->cuinfo );
+             if(cusparseStatus != 0)    printf("error in info-free.\n");
 
+    cusparseDestroyMatDescr( descrA );
 
-    magma_z_sparse_matrix hA, hL, hU;
+    magma_z_sparse_matrix hL, hU;
 
     magma_z_mtransfer( precond->M, &hA, Magma_DEV, Magma_CPU );
 
@@ -186,9 +195,8 @@ magma_zcuilusetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
     magma_z_mfree(&hL);
     magma_z_mfree(&hU);
 
-
-    cusparseDestroyMatDescr( descrA );
     cusparseDestroy( cusparseHandle );
+
     return MAGMA_SUCCESS;
 
 }
@@ -200,25 +208,29 @@ magma_zcuilusetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Performs the left triangular solves using the ILU preconditioner.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_vector b                        RHS
-    magma_z_vector *x                       vector to precondition
-    magma_z_preconditioner *precond         preconditioner parameters
+    @param
+    b           magma_z_vector
+                RHS
 
-    ========================================================================  */
+    @param
+    x           magma_z_vector*
+                vector to precondition
+
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_zgepr
+    ********************************************************************/
 
 magma_int_t
 magma_zapplycuilu_l( magma_z_vector b, magma_z_vector *x, 
@@ -279,25 +291,29 @@ magma_zapplycuilu_l( magma_z_vector b, magma_z_vector *x,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Performs the right triangular solves using the ILU preconditioner.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_vector b                        RHS
-    magma_z_vector *x                       vector to precondition
-    magma_z_preconditioner *precond         preconditioner parameters
+    @param
+    b           magma_z_vector
+                RHS
 
-    ========================================================================  */
+    @param
+    x           magma_z_vector*
+                vector to precondition
+
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_zgepr
+    ********************************************************************/
 
 magma_int_t
 magma_zapplycuilu_r( magma_z_vector b, magma_z_vector *x, 
@@ -357,32 +373,35 @@ magma_zapplycuilu_r( magma_z_vector b, magma_z_vector *x,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the IC preconditioner via the asynchronous ILU iteration.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A                   input matrix A
-    magma_z_preconditioner *precond           preconditioner parameters
+    @param
+    A           magma_z_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_zsypr
+    ********************************************************************/
 
 magma_int_t
 magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
 
-    magma_z_sparse_matrix hA, U, hD, hR, hAt;
+    magma_z_sparse_matrix hA, hACSR, U, hD, hR, hAt;
     magma_z_mtransfer( A, &hA, A.memory_location, Magma_CPU );
     U.diagorder_type = Magma_VALUE;
-    magma_z_mconvert( hA, &U, Magma_CSR, Magma_CSRL);
+    magma_z_mconvert( hA, &hACSR, hA.storage_type, Magma_CSR);
+    magma_z_mconvert( hACSR, &U, Magma_CSR, Magma_CSRL);
+    magma_z_mfree( &hACSR );
 
     magma_z_mtransfer(U, &(precond->M), Magma_CPU, Magma_DEV);
 
@@ -391,7 +410,6 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
     cusparseStatus_t cusparseStatus;
     cusparseStatus = cusparseCreate(&cusparseHandle);
      if(cusparseStatus != 0)    printf("error in Handle.\n");
-
 
     cusparseMatDescr_t descrA;
     cusparseStatus = cusparseCreateMatDescr(&descrA);
@@ -435,9 +453,12 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
                       precond->M.row, 
                       precond->M.col, 
                       precond->cuinfo);
+
+    cusparseStatus =
+    cusparseDestroySolveAnalysisInfo( precond->cuinfo );
+     if(cusparseStatus != 0)    printf("error in info-free.\n");
+
      if(cusparseStatus != 0)    printf("error in ICC.\n");
-
-
 
     cusparseMatDescr_t descrL;
     cusparseStatus = cusparseCreateMatDescr(&descrL);
@@ -448,7 +469,7 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
      if(cusparseStatus != 0)    printf("error in MatrType.\n");
 
     cusparseStatus =
-    cusparseSetMatDiagType (descrL, CUSPARSE_DIAG_TYPE_UNIT);
+    cusparseSetMatDiagType (descrL, CUSPARSE_DIAG_TYPE_NON_UNIT);
      if(cusparseStatus != 0)    printf("error in DiagType.\n");
 
     cusparseStatus =
@@ -465,7 +486,7 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
 
     cusparseStatus =
     cusparseZcsrsv_analysis(cusparseHandle, 
-        CUSPARSE_OPERATION_TRANSPOSE, precond->M.num_rows, 
+        CUSPARSE_OPERATION_NON_TRANSPOSE, precond->M.num_rows, 
         precond->M.nnz, descrL, 
         precond->M.val, precond->M.row, precond->M.col, precond->cuinfoL );
      if(cusparseStatus != 0)    printf("error in analysis L.\n");
@@ -497,7 +518,7 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
 
     cusparseStatus =
     cusparseZcsrsv_analysis(cusparseHandle, 
-        CUSPARSE_OPERATION_NON_TRANSPOSE, precond->M.num_rows, 
+        CUSPARSE_OPERATION_TRANSPOSE, precond->M.num_rows, 
         precond->M.nnz, descrU, 
         precond->M.val, precond->M.row, precond->M.col, precond->cuinfoU );
      if(cusparseStatus != 0)    printf("error in analysis U.\n");
@@ -509,7 +530,7 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
     magma_z_mfree(&U);
     magma_z_mfree(&hA);
 
-
+/*
     // to enable also the block-asynchronous iteration for the triangular solves
     magma_z_mtransfer( precond->M, &hA, Magma_DEV, Magma_CPU );
     hA.storage_type = Magma_CSR;
@@ -533,7 +554,7 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
     magma_z_mfree(&hR);
     magma_z_mfree(&hA);
     magma_z_mfree(&hAt);
-
+*/
 
     return MAGMA_SUCCESS;
 
@@ -541,25 +562,29 @@ magma_zcuiccsetup( magma_z_sparse_matrix A, magma_z_preconditioner *precond ){
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Performs the left triangular solves using the ICC preconditioner.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_vector b                        RHS
-    magma_z_vector *x                       vector to precondition
-    magma_z_preconditioner *precond         preconditioner parameters
+    @param
+    b           magma_z_vector
+                RHS
 
-    ========================================================================  */
+    @param
+    x           magma_z_vector*
+                vector to precondition
+
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_zsypr
+    ********************************************************************/
 
 magma_int_t
 magma_zapplycuicc_l( magma_z_vector b, magma_z_vector *x, 
@@ -599,7 +624,7 @@ magma_zapplycuicc_l( magma_z_vector b, magma_z_vector *x,
 
             cusparseStatus =
             cusparseZcsrsv_solve(   cusparseHandle, 
-                                    CUSPARSE_OPERATION_TRANSPOSE, 
+                                    CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                     precond->M.num_rows, &one, 
                                     descrL,
                                     precond->M.val,
@@ -608,7 +633,7 @@ magma_zapplycuicc_l( magma_z_vector b, magma_z_vector *x,
                                     precond->cuinfoL,
                                     b.val,
                                     x->val );
-             if(cusparseStatus != 0)   printf("error in L triangular solve.\n");
+             if(cusparseStatus != 0)   printf("error in L triangular solve:%d.\n", precond->cuinfoL );
 
 
     cusparseDestroyMatDescr( descrL );
@@ -619,25 +644,29 @@ magma_zapplycuicc_l( magma_z_vector b, magma_z_vector *x,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Performs the right triangular solves using the ICC preconditioner.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_vector b                        RHS
-    magma_z_vector *x                       vector to precondition
-    magma_z_preconditioner *precond         preconditioner parameters
+    @param
+    b           magma_z_vector
+                RHS
 
-    ========================================================================  */
+    @param
+    x           magma_z_vector*
+                vector to precondition
+
+    @param
+    precond     magma_z_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_zsypr
+    ********************************************************************/
 
 magma_int_t
 magma_zapplycuicc_r( magma_z_vector b, magma_z_vector *x, 
@@ -678,7 +707,7 @@ magma_zapplycuicc_r( magma_z_vector b, magma_z_vector *x,
 
             cusparseStatus =
             cusparseZcsrsv_solve(   cusparseHandle, 
-                                    CUSPARSE_OPERATION_NON_TRANSPOSE, 
+                                    CUSPARSE_OPERATION_TRANSPOSE, 
                                     precond->M.num_rows, &one, 
                                     descrU,
                                     precond->M.val,
@@ -687,7 +716,7 @@ magma_zapplycuicc_r( magma_z_vector b, magma_z_vector *x,
                                     precond->cuinfoU,
                                     b.val,
                                     x->val );
-             if(cusparseStatus != 0)   printf("error in U triangular solve.\n");
+             if(cusparseStatus != 0)   printf("error in U triangular solve:%d.\n", precond->cuinfoU );
 
     cusparseDestroyMatDescr( descrU );
     cusparseDestroy( cusparseHandle );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_z_vio.cpp normal z -> c, Fri May 30 10:41:45 2014
+       @generated from magma_z_vio.cpp normal z -> c, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 */
 
@@ -27,40 +27,45 @@
 using namespace std;
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Visualizes part of a vector of type magma_c_vector.
-    With input vector x , offset, displaylength the entries 
-    offset - (offset + displaylength) of x are visualized.
+    With input vector x , offset, visulen, the entries 
+    offset - (offset +  visulen) of x are visualized.
 
     Arguments
-    =========
+    ---------
 
-    magma_c_vector x                     vector to visualize
-    magma_int_t offset                   start inex of visualization
-    magma_int_t displaylength            number of entries to visualize       
+    @param
+    x           magma_c_vector
+                vector to visualize
 
-    ========================================================================  */
+    @param
+    offset      magma_int_t
+                start inex of visualization
+
+    @param
+    visulen     magma_int_t
+                number of entries to visualize       
+
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t
 magma_c_vvisu(      magma_c_vector x, 
                     magma_int_t offset, 
-                    magma_int_t displaylength ){
+                    magma_int_t  visulen ){
 
     printf("visualize entries %d - %d of vector ", 
-                    (int) offset, (int) (offset+displaylength) );
+                    (int) offset, (int) (offset + visulen) );
     fflush(stdout);  
     if( x.memory_location == Magma_CPU ){
         printf("located on CPU:\n");
-        for( magma_int_t i=offset; i<offset+displaylength; i++ )
+        for( magma_int_t i=offset; i<offset + visulen; i++ )
             printf("%f\n", MAGMA_C_REAL(x.val[i]));
     return MAGMA_SUCCESS;
     }
@@ -68,7 +73,7 @@ magma_c_vvisu(      magma_c_vector x,
         printf("located on DEV:\n");
         magma_c_vector y;
         magma_c_vtransfer( x, &y, Magma_DEV, Magma_CPU);
-        for( magma_int_t i=offset; i<offset+displaylength; i++ )
+        for( magma_int_t i=offset; i<offset +  visulen; i++ )
             printf("%f\n", MAGMA_C_REAL(y.val[i]));
     free(y.val);
     return MAGMA_SUCCESS;
@@ -77,27 +82,6 @@ magma_c_vvisu(      magma_c_vector x,
 }   
 
 
-
-
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
-    Purpose
-    =======
-
-    Reads in a float vector of length "length".
-
-    Arguments
-    =========
-
-    magma_c_vector x                     vector to read in
-    magma_int_t length                   length of vector
-    char filename                        file where vector is stored
-
-    ========================================================================  */
 
 
 // small helper function
@@ -112,6 +96,29 @@ float magma_cstring_to_float( const std::string& s )
 } 
 
 
+
+/**
+    Purpose
+    -------
+
+    Reads in a float vector of length "length".
+
+    Arguments
+    ---------
+
+    @param
+    x           magma_c_vector
+                vector to read in
+
+    @param
+    length      magma_int_t
+                length of vector
+    @param
+    filename    char*
+                file where vector is stored
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t

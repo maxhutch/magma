@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd_mgpu.cpp normal z -> s, Fri May 30 10:41:06 2014
+       @generated from zhetrd_mgpu.cpp normal z -> s, Fri Jul 18 17:34:18 2014
 
 */
 #include "common_magma.h"
@@ -24,72 +24,80 @@
     Arguments
     ---------
     @param[in]
-    uplo    magma_uplo_t
-      -     = MagmaUpper:  Upper triangle of A is stored;
-      -     = MagmaLower:  Lower triangle of A is stored.
+    num_gpus INTEGER
+             The number of GPUs.  num_gpus > 0.
 
     @param[in]
-    n       INTEGER
-            The order of the matrix A.  N >= 0.
+    num_streams INTEGER
+             The number of GPU streams used for update.  10 >= num_streams > 0.
+
+    @param[in]
+    uplo     magma_uplo_t
+      -      = MagmaUpper:  Upper triangle of A is stored;
+      -      = MagmaLower:  Lower triangle of A is stored.
+
+    @param[in]
+    n        INTEGER
+             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       REAL array, dimension (LDA,N)
-            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
-            N-by-N upper triangular part of A contains the upper
-            triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = MagmaLower, the
-            leading N-by-N lower triangular part of A contains the lower
-            triangular part of the matrix A, and the strictly upper
-            triangular part of A is not referenced.
-            On exit, if UPLO = MagmaUpper, the diagonal and first superdiagonal
-            of A are overwritten by the corresponding elements of the
-            tridiagonal matrix T, and the elements above the first
-            superdiagonal, with the array TAU, represent the orthogonal
-            matrix Q as a product of elementary reflectors; if UPLO
-            = MagmaLower, the diagonal and first subdiagonal of A are over-
-            written by the corresponding elements of the tridiagonal
-            matrix T, and the elements below the first subdiagonal, with
-            the array TAU, represent the orthogonal matrix Q as a product
-            of elementary reflectors. See Further Details.
+    A        REAL array, dimension (LDA,N)
+             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
+             N-by-N upper triangular part of A contains the upper
+             triangular part of the matrix A, and the strictly lower
+             triangular part of A is not referenced.  If UPLO = MagmaLower, the
+             leading N-by-N lower triangular part of A contains the lower
+             triangular part of the matrix A, and the strictly upper
+             triangular part of A is not referenced.
+             On exit, if UPLO = MagmaUpper, the diagonal and first superdiagonal
+             of A are overwritten by the corresponding elements of the
+             tridiagonal matrix T, and the elements above the first
+             superdiagonal, with the array TAU, represent the orthogonal
+             matrix Q as a product of elementary reflectors; if UPLO
+             = MagmaLower, the diagonal and first subdiagonal of A are over-
+             written by the corresponding elements of the tridiagonal
+             matrix T, and the elements below the first subdiagonal, with
+             the array TAU, represent the orthogonal matrix Q as a product
+             of elementary reflectors. See Further Details.
 
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+    lda      INTEGER
+             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    d       REAL array, dimension (N)
-            The diagonal elements of the tridiagonal matrix T:
-            D(i) = A(i,i).
+    d        REAL array, dimension (N)
+             The diagonal elements of the tridiagonal matrix T:
+             D(i) = A(i,i).
+ 
+    @param[out]
+    e        REAL array, dimension (N-1)
+             The off-diagonal elements of the tridiagonal matrix T:
+             E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.
 
     @param[out]
-    e       REAL array, dimension (N-1)
-            The off-diagonal elements of the tridiagonal matrix T:
-            E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.
+    tau      REAL array, dimension (N-1)
+             The scalar factors of the elementary reflectors (see Further
+             Details).
 
     @param[out]
-    tau     REAL array, dimension (N-1)
-            The scalar factors of the elementary reflectors (see Further
-            Details).
-
-    @param[out]
-    work    (workspace) REAL array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+    work     (workspace) REAL array, dimension (MAX(1,LWORK))
+             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
 
     @param[in]
-    lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= 1.
-            For optimum performance LWORK >= N*NB, where NB is the
-            optimal blocksize.
+    lwork    INTEGER
+             The dimension of the array WORK.  LWORK >= 1.
+             For optimum performance LWORK >= N*NB, where NB is the
+             optimal blocksize.
     \n
-            If LWORK = -1, then a workspace query is assumed; the routine
-            only calculates the optimal size of the WORK array, returns
-            this value as the first entry of the WORK array, and no error
-            message related to LWORK is issued by XERBLA.
+             If LWORK = -1, then a workspace query is assumed; the routine
+             only calculates the optimal size of the WORK array, returns
+             this value as the first entry of the WORK array, and no error
+             message related to LWORK is issued by XERBLA.
 
     @param[out]
-    info    INTEGER
-      -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+    info     INTEGER
+      -      = 0:  successful exit
+      -      < 0:  if INFO = -i, the i-th argument had an illegal value
 
     Further Details
     ---------------
@@ -137,7 +145,7 @@
     ********************************************************************/
 extern "C" magma_int_t
 magma_ssytrd_mgpu(
-    magma_int_t num_gpus, magma_int_t k, magma_uplo_t uplo, magma_int_t n,
+    magma_int_t num_gpus, magma_int_t num_streams, magma_uplo_t uplo, magma_int_t n,
     float *A, magma_int_t lda,
     float *d, float *e, float *tau,
     float *work, magma_int_t lwork,
@@ -181,7 +189,7 @@ magma_ssytrd_mgpu(
         *info = -4;
     } else if (lwork < nb*n && ! lquery) {
         *info = -9;
-    } else if ( k > 2 ) {
+    } else if ( num_streams > 2 ) {
         *info = 2;
     }
 
@@ -226,8 +234,8 @@ magma_ssytrd_mgpu(
         magma_setdevice(did);
         // TODO fix memory leak
         if ( MAGMA_SUCCESS != magma_smalloc(&dA[did],     ln*ldda+3*lddwork*nb) ||
-             MAGMA_SUCCESS != magma_smalloc(&dx[did],     k*n     ) ||
-             MAGMA_SUCCESS != magma_smalloc(&dy[did],     k*n     ) ||
+             MAGMA_SUCCESS != magma_smalloc(&dx[did],     num_streams*n) ||
+             MAGMA_SUCCESS != magma_smalloc(&dy[did],     num_streams*n) ||
              MAGMA_SUCCESS != magma_smalloc(&dwork2[did], ldwork2 ) ) {
             for( i=0; i < did; i++ ) {
                 magma_setdevice(i);
@@ -240,12 +248,12 @@ magma_ssytrd_mgpu(
         }
         dwork[did] = dA[did] + ln*ldda;
         
-        for( kk=0; kk < k; kk++ )
+        for( kk=0; kk < num_streams; kk++ )
             magma_queue_create(&stream[did][kk]);
     }
     magma_setdevice(0);
     // TODO fix memory leak dwork2
-    if ( MAGMA_SUCCESS != magma_smalloc_pinned( &hwork, k*num_gpus*n ) ) {
+    if ( MAGMA_SUCCESS != magma_smalloc_pinned( &hwork, num_streams*num_gpus*n ) ) {
         for( i=0; i < num_gpus; i++ ) {
             magma_setdevice(i);
             magma_free(dA[i]);
@@ -293,7 +301,7 @@ magma_ssytrd_mgpu(
             magma_ssyr2k_mgpu(num_gpus, MagmaUpper, MagmaNoTrans, nb, i, ib,
                          c_neg_one, dwork, i+ib, 0,
                          d_one,     dA,    ldda, 0,
-                         k, stream);
+                         num_streams, stream);
 
             /* get the next panel */
             if (i-nb >= nx ) {
@@ -343,7 +351,7 @@ magma_ssytrd_mgpu(
         }
     }
     else {
-        trace_init( 1, num_gpus, k, (CUstream_st**)stream );
+        trace_init( 1, num_gpus, num_streams, (CUstream_st**)stream );
         /* Copy the matrix to the GPU */
         if (1 <= n-nx) {
             magma_shtodhe(num_gpus, uplo, n, nb, A, lda, dA, ldda, stream, &iinfo );
@@ -393,7 +401,7 @@ magma_ssytrd_mgpu(
 #endif
             magma_ssyr2k_mgpu(num_gpus, MagmaLower, MagmaNoTrans, nb, n-i-ib, ib,
                          c_neg_one, dwork, n-i, ib,
-                         d_one, dA, ldda, i+ib, k, stream);
+                         d_one, dA, ldda, i+ib, num_streams, stream);
 #ifdef PROFILE_SY2RK
             magma_setdevice(0);
             magma_event_record(stop, 0);
@@ -447,9 +455,9 @@ magma_ssytrd_mgpu(
     trace_finalize( "ssytrd.svg", "trace.css" );
     for( did=0; did < num_gpus; did++ ) {
         magma_setdevice(did);
-        for( kk=0; kk < k; kk++ )
+        for( kk=0; kk < num_streams; kk++ )
             magma_queue_sync(stream[did][kk]);
-        for( kk=0; kk < k; kk++ )
+        for( kk=0; kk < num_streams; kk++ )
             magma_queue_destroy(stream[did][kk]);
         magma_free(dA[did]);
         magma_free(dx[did]);

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlaqps_gpu.cpp normal z -> d, Fri May 30 10:41:00 2014
+       @generated from zlaqps_gpu.cpp normal z -> d, Fri Jul 18 17:34:17 2014
 
 */
 #include "common_magma.h"
@@ -433,7 +433,7 @@ magma_dlaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
     }
     /* Recomputation of difficult columns. */
     if ( lsticc > 0 ) {
-        printf( " -- recompute dnorms --\n" );
+        // printf( " -- recompute dnorms --\n" );
         magmablas_dnrm2_check(m-rk-1, n-*kb, A(rk+1,*kb), lda,
                                &vn1[*kb], lsticcs);
 #if defined(PRECISION_d) || defined(PRECISION_z)

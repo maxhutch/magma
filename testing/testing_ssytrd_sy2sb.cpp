@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Azzam Haidar
 
-       @generated from testing_zhetrd_he2hb.cpp normal z -> s, Fri May 30 10:41:28 2014
+       @generated from testing_zhetrd_he2hb.cpp normal z -> s, Fri Jul 18 17:34:25 2014
 
 */
 
@@ -84,7 +84,7 @@ int main( int argc, char** argv)
 
     // what is NE ?
     if (NE < 1)
-        NE  = N; //64; //magma_get_ssytrd_sy2sb_nb(N);
+        NE  = 64; //N;  //magma_get_ssytrd_sy2sb_nb(N);  // N not yet initialized
 
     printf("  N    GPU GFlop/s   \n");
     printf("=====================\n");

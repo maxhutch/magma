@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmqr_gpu_2stage.cpp normal z -> c, Fri May 30 10:41:07 2014
+       @generated from zunmqr_gpu_2stage.cpp normal z -> c, Fri Jul 18 17:34:19 2014
 
 */
 #include "common_magma.h"
@@ -106,9 +106,12 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
                          magmaFloatComplex *dT,    magma_int_t nb,
                          magma_int_t *info)
 {
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
+    #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
+    
     magmaFloatComplex *dwork;
 
-    magma_int_t i1, i2, i3, ib, ic, jc, mi, ni, nq, nw, ret;
+    magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw, ret;
     int left, notran;
     //magma_int_t lwkopt;
 
@@ -140,6 +143,7 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
         *info = -10;
     }
 
+    // TODO alloc after xerbla & quick return, else memory leak
     if (MAGMA_SUCCESS != magma_cmalloc( &dwork, n*nb )) {
         printf ("!!!! cungqr_2stage magma_alloc failed for: dwork\n" );
         exit(-1);
@@ -158,11 +162,11 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
     if ( (left && (! notran)) || ( (! left) && notran ) ) {
         i1 = 0;
         i2 = k;
-        i3 = nb;
+        step = nb;
     } else {
         i1 = (k - 1) / nb * nb;
         i2 = 0;
-        i3 = -nb;
+        step = -nb;
     }
 
     // silence "uninitialized" warnings
@@ -177,7 +181,7 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
         ic = 0;
     }
 
-    for (magma_int_t i=i1; (i3 < 0 ? i >= i2 : i < i2); i += i3) {
+    for (i=i1; (step < 0 ? i >= i2 : i < i2); i += step) {
         ib = min(nb, k - i);
         if (left) {
             mi = m - i;
@@ -187,15 +191,18 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
             ni = n - i;
             jc = i;
         }
+        // TODO use info instead of ret, so info & return value always agree.
         ret = magma_clarfb_gpu( MagmaLeft, trans, MagmaForward, MagmaColumnwise,
-                               mi, ni, ib, dA+i+i*ldda, ldda, dT+i*nb, nb,
-                               dC+ic+jc*lddc, lddc, dwork, nw);
+                               mi, ni, ib, dA(i,i), ldda, dT+i*nb, nb,
+                               dC(ic,jc), lddc, dwork, nw);
 
         if ( ret != MAGMA_SUCCESS ) {
             magma_free(dwork);
             return ret;
         }
     }
+    
+    // TODO fix free(dwork) memory leak
 
     return MAGMA_SUCCESS;
 } /* magma_cunmqr_gpu_2stages */

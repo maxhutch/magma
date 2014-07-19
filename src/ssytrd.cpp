@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd.cpp normal z -> s, Fri May 30 10:41:04 2014
+       @generated from zhetrd.cpp normal z -> s, Fri Jul 18 17:34:18 2014
 
 */
 #include "common_magma.h"
@@ -197,7 +197,7 @@ magma_ssytrd(magma_uplo_t uplo, magma_int_t n,
         return *info;
     }
 
-    float *dwork = dA + (n)*ldda;
+    float *dwork = dA + n*ldda;
 
     if (n < 2048)
         nx = n;

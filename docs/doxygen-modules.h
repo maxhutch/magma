@@ -290,74 +290,195 @@
     @{
         @defgroup magma_blas1   Level-1 BLAS
         @brief    Level-1, vector operations: \f$ O(n) \f$ operations on \f$ O(n) \f$ data; memory bound
-            @{
-                @defgroup magma_sblas1 single precision
-                @defgroup magma_dblas1 double precision
-                @defgroup magma_cblas1 single-complex precision
-                @defgroup magma_zblas1 double-complex precision
-            @}
+        @{
+            @defgroup magma_sblas1 single precision
+            @defgroup magma_dblas1 double precision
+            @defgroup magma_cblas1 single-complex precision
+            @defgroup magma_zblas1 double-complex precision
+        @}
 
         @defgroup magma_blas2   Level-2 BLAS
         @brief    Level-2, matrix–vector operations: \f$ O(n^2) \f$ operations on \f$ O(n^2) \f$ data; memory bound
-            @{
-                @defgroup magma_sblas2 single precision
-                @defgroup magma_dblas2 double precision
-                @defgroup magma_cblas2 single-complex precision
-                @defgroup magma_zblas2 double-complex precision
-            @}
+        @{
+            @defgroup magma_sblas2 single precision
+            @defgroup magma_dblas2 double precision
+            @defgroup magma_cblas2 single-complex precision
+            @defgroup magma_zblas2 double-complex precision
+        @}
 
         @defgroup magma_blas3   Level-3 BLAS
         @brief    Level-3, matrix–matrix operations: \f$ O(n^3) \f$ operations on \f$ O(n^2) \f$ data; compute bound
-            @{
-                @defgroup magma_sblas3 single precision
-                @defgroup magma_dblas3 double precision
-                @defgroup magma_cblas3 single-complex precision
-                @defgroup magma_zblas3 double-complex precision
-            @}
+        @{
+            @defgroup magma_sblas3 single precision
+            @defgroup magma_dblas3 double precision
+            @defgroup magma_cblas3 single-complex precision
+            @defgroup magma_zblas3 double-complex precision
+        @}
 
         @defgroup magma_aux0    Math auxiliary
         @brief    Element operations, \f$ O(1) \f$ operations on \f$ O(1) \f$ data
-            @{
-                @defgroup magma_saux0 single precision
-                @defgroup magma_daux0 double precision
-                @defgroup magma_caux0 single-complex precision
-                @defgroup magma_zaux0 double-complex precision
-            @}
+        @{
+            @defgroup magma_saux0 single precision
+            @defgroup magma_daux0 double precision
+            @defgroup magma_caux0 single-complex precision
+            @defgroup magma_zaux0 double-complex precision
+        @}
 
         @defgroup magma_aux1    Level-1 auxiliary
         @brief    Additional auxiliary Level-1 functions
-            @{
-                @defgroup magma_saux1 single precision
-                @defgroup magma_daux1 double precision
-                @defgroup magma_caux1 single-complex precision
-                @defgroup magma_zaux1 double-complex precision
-            @}
+        @{
+            @defgroup magma_saux1 single precision
+            @defgroup magma_daux1 double precision
+            @defgroup magma_caux1 single-complex precision
+            @defgroup magma_zaux1 double-complex precision
+        @}
 
         @defgroup magma_aux2    Level-2 auxiliary
         @brief    Additional auxiliary Level-2 functions
-            @{
-                @defgroup magma_saux2 single precision
-                @defgroup magma_daux2 double precision
-                @defgroup magma_caux2 single-complex precision
-                @defgroup magma_zaux2 double-complex precision
-            @}
+        @{
+            @defgroup magma_saux2 single precision
+            @defgroup magma_daux2 double precision
+            @defgroup magma_caux2 single-complex precision
+            @defgroup magma_zaux2 double-complex precision
+        @}
 
         @defgroup magma_aux3    Level-3 auxiliary
         @brief    Additional auxiliary Level-3 functions
-            @{
-                @defgroup magma_saux3 single precision
-                @defgroup magma_daux3 double precision
-                @defgroup magma_caux3 single-complex precision
-                @defgroup magma_zaux3 double-complex precision
-            @}
+        @{
+            @defgroup magma_saux3 single precision
+            @defgroup magma_daux3 double precision
+            @defgroup magma_caux3 single-complex precision
+            @defgroup magma_zaux3 double-complex precision
+        @}
+
+        @defgroup magma_aux     General auxiliary
+        @brief    General (non-matrix) auxiliary functions
 
         @defgroup magma_comm    Communication
         @brief    CPU to GPU communication
+        @{
+            @defgroup magma_scommunication single precision
+            @defgroup magma_dcommunication double precision
+            @defgroup magma_ccommunication single-complex precision
+            @defgroup magma_zcommunication double-complex precision
+        @}
+    @}
+    
+    ------------------------------------------------------------
+    @defgroup sparse  Sparse
+    @brief
+    @{
+        @defgroup sparse_solvers       Sparse Linear Systems
+        @brief    Solve \f$ Ax = b \f$
+        @{
+            @defgroup sparse_gesv      General solver
+            @brief    Solve \f$ Ax = b \f$, for general \f$ A \f$
             @{
-                @defgroup magma_scommunication single precision
-                @defgroup magma_dcommunication double precision
-                @defgroup magma_ccommunication single-complex precision
-                @defgroup magma_zcommunication double-complex precision
+                @defgroup magmasparse_sgesv single precision
+                @defgroup magmasparse_dgesv double precision
+                @defgroup magmasparse_cgesv single-complex precision
+                @defgroup magmasparse_zgesv double-complex precision
+            @}
+            
+            @defgroup sparse_posv      Symmetric (SPD) solver
+            @brief    Solve \f$ Ax = b \f$,
+                      for symmetric positive definite (SPD) \f$ A \f$
+            @{
+                @defgroup magmasparse_sposv single precision
+                @defgroup magmasparse_dposv double precision
+                @defgroup magmasparse_cposv single-complex precision
+                @defgroup magmasparse_zposv double-complex precision
+            @}
+        @}
+        
+        @defgroup sparse_eigenvalue    Sparse eigenvalue
+        @brief    Solve \f$ Ax = \lambda x \f$
+        @{
+            @defgroup sparse_geev      Non-symmetric eigenvalue
+            @brief    Solve \f$ Ax = \lambda x \f$ for non-symmetric \f$ A \f$
+            @{
+                @defgroup magmasparse_sgeev single precision
+                @defgroup magmasparse_dgeev double precision
+                @defgroup magmasparse_cgeev single-complex precision
+                @defgroup magmasparse_zgeev double-complex precision
+            @}
+            
+            @defgroup sparse_syev      Symmetric eigenvalue
+            @brief    Solve \f$ Ax = \lambda x \f$ for symmetric \f$ A \f$
+            @{
+                @defgroup magmasparse_ssyev single precision
+                @defgroup magmasparse_dsyev double precision
+                @defgroup magmasparse_csyev single-complex precision
+                @defgroup magmasparse_zsyev double-complex precision
+            @}
+        @}
+
+        @defgroup sparse_precond    Sparse preconditioner
+        @brief    Preconditioner for solving \f$ Ax = \lambda x \f$
+        @{
+            @defgroup sparse_gepr      Non-symmetric preconditioner
+            @brief    Preconditioner for \f$ Ax = \lambda x \f$ for non-symmetric \f$ A \f$
+            @{
+                @defgroup magmasparse_sgepr single precision
+                @defgroup magmasparse_dgepr double precision
+                @defgroup magmasparse_cgepr single-complex precision
+                @defgroup magmasparse_zgepr double-complex precision
+            @}
+            
+            @defgroup sparse_sypr      Symmetric preconditioner
+            @brief    Preconditioner for \f$ Ax = \lambda x \f$ for symmetric \f$ A \f$
+            @{
+                @defgroup magmasparse_ssypr single precision
+                @defgroup magmasparse_dsypr double precision
+                @defgroup magmasparse_csypr single-complex precision
+                @defgroup magmasparse_zsypr double-complex precision
+            @}
+        @}
+
+        @defgroup sparse_gpukernels    GPU kernels for sparse LA
+        @brief    Preconditioner for solving \f$ Ax = \lambda x \f$
+        @{
+            @defgroup sparse_gegpuk  GPU kernels for non-symmetric sparse LA  
+            @brief    GPU kernels for Non-symmetric sparse LA
+            @{
+                @defgroup magmasparse_sgegpuk single precision
+                @defgroup magmasparse_dgegpuk double precision
+                @defgroup magmasparse_cgegpuk single-complex precision
+                @defgroup magmasparse_zgegpuk double-complex precision
+            @}
+            
+            @defgroup sparse_sygpuk  GPU kernels for symmetric sparse LA
+            @brief    GPU kernels for symmetric sparse LA
+            @{
+                @defgroup magmasparse_ssgpuk single precision
+                @defgroup magmasparse_dsgpuk double precision
+                @defgroup magmasparse_csgpuk single-complex precision
+                @defgroup magmasparse_zsgpuk double-complex precision
+            @}
+        @}
+        
+        @defgroup sparse_blas          Sparse BLAS
+            @{
+                @defgroup magmasparse_sblas single precision
+                @defgroup magmasparse_dblas double precision
+                @defgroup magmasparse_cblas single-complex precision
+                @defgroup magmasparse_zblas double-complex precision
+            @}
+
+        @defgroup sparse_aux           Sparse auxiliary
+            @{
+                @defgroup magmasparse_saux single precision
+                @defgroup magmasparse_daux double precision
+                @defgroup magmasparse_caux single-complex precision
+                @defgroup magmasparse_zaux double-complex precision
+            @}
+
+        @defgroup unfiled              Sparse ** unfiled **
+            @{
+                @defgroup magmasparse_s single precision
+                @defgroup magmasparse_d double precision
+                @defgroup magmasparse_c single-complex precision
+                @defgroup magmasparse_z double-complex precision
             @}
     @}
 */

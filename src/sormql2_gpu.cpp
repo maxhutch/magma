@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Raffaele Solca
 
-       @generated from zunmql2_gpu.cpp normal z -> s, Fri May 30 10:40:59 2014
+       @generated from zunmql2_gpu.cpp normal z -> s, Fri Jul 18 17:34:17 2014
 
 */
 #include "common_magma.h"
@@ -41,7 +41,7 @@
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaTrans:  Transpose, apply Q**T.
+      -     = MagmaTrans:  Conjugate transpose, apply Q**T.
 
     @param[in]
     m       INTEGER
@@ -69,7 +69,8 @@
     @param[in]
     ldda    INTEGER
             The leading dimension of the array DA.
-            LDDA >= max(1,M) if SIDE = MagmaLeft; LDDA >= max(1,N) if SIDE = MagmaRight.
+            LDDA >= max(1,M) if SIDE = MagmaLeft;
+            LDDA >= max(1,N) if SIDE = MagmaRight.
 
     @param[in]
     tau     REAL array, dimension (K)
@@ -113,23 +114,26 @@ magma_sormql2_gpu(magma_side_t side, magma_trans_t trans,
                   float *wA, magma_int_t ldwa,
                   magma_int_t *info)
 {
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
+    #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
+    #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
+    
     /* Allocate work space on the GPU */
     float *dwork;
     magma_smalloc( &dwork, 2*(m + 64)*64 );
 
-    magma_int_t wa_offset, dc_offset, i__4;
+    float c_zero = MAGMA_S_ZERO;
+    float c_one  = MAGMA_S_ONE;
     
-    magma_int_t i__;
-    float t[2*4160]        /* was [65][64] */;
-    magma_int_t i1, i2, i3, ib, nb, mi, ni, nq, nw;
+    magma_int_t i, i__4;
+    float T[2*4160]        /* was [65][64] */;
+    magma_int_t i1, i2, step, ib, nb, mi, ni, nq, nw;
     magma_int_t ldwork;
     int left, notran;
 
-    wa_offset = 1 + ldwa;
-    wA -= wa_offset;
+    wA -= 1 + ldwa;
+    dC -= 1 + lddc;
     --tau;
-    dc_offset = 1 + lddc;
-    dC -= dc_offset;
 
     *info  = 0;
     left   = (side == MagmaLeft);
@@ -180,11 +184,11 @@ magma_sormql2_gpu(magma_side_t side, magma_trans_t trans,
     if ((left && notran) || (! left && ! notran)) {
         i1 = 1;
         i2 = k;
-        i3 = nb;
+        step = nb;
     } else {
         i1 = (k - 1) / nb * nb + 1;
         i2 = 1;
-        i3 = -nb;
+        step = -nb;
     }
     
     // silence "uninitialized" warnings
@@ -197,32 +201,35 @@ magma_sormql2_gpu(magma_side_t side, magma_trans_t trans,
         mi = m;
     }
     
-    magmablas_ssetdiag1subdiag0( MagmaUpper, k, nb, dA, ldda);
+    // set nb-1 sub-diagonals to 0, and diagonal to 1.
+    // This way we can copy V directly to the GPU,
+    // already with the lower triangle parts already set to identity.
+    magmablas_slaset_band( MagmaLower, k, k, nb, c_zero, c_one, dA, ldda );
     
-    for (i__ = i1; (i3 < 0 ? i__ >= i2 : i__ <= i2); i__ += i3) {
-        ib = min(nb, k - i__ + 1);
+    for (i = i1; (step < 0 ? i >= i2 : i <= i2); i += step) {
+        ib = min(nb, k - i + 1);
         
         /* Form the triangular factor of the block reflector
            H = H(i+ib-1) . . . H(i+1) H(i) */
-        i__4 = nq - k + i__ + ib - 1;
+        i__4 = nq - k + i + ib - 1;
         lapackf77_slarft("Backward", "Columnwise", &i__4, &ib,
-                         &wA[i__ * ldwa + 1], &ldwa, &tau[i__], t, &ib);
+                         wA(1,i), &ldwa, &tau[i], T, &ib);
     
         if (left) {
             /* H or H' is applied to C(1:m-k+i+ib-1,1:n) */
-            mi = m - k + i__ + ib - 1;
+            mi = m - k + i + ib - 1;
         }
         else {
             /* H or H' is applied to C(1:m,1:n-k+i+ib-1) */
-            ni = n - k + i__ + ib - 1;
+            ni = n - k + i + ib - 1;
         }
         
         /* Apply H or H'; First copy T to the GPU */
-        magma_ssetmatrix( ib, ib, t, ib, dwork+i__4*ib, ib );
+        magma_ssetmatrix( ib, ib, T, ib, dwork+i__4*ib, ib );
         magma_slarfb_gpu(side, trans, MagmaBackward, MagmaColumnwise,
                          mi, ni, ib,
-                         &dA[(i__-1) * ldda], ldda, dwork+i__4*ib, ib,
-                         &dC[1+lddc], lddc,
+                         dA(0,i-1), ldda, dwork+i__4*ib, ib,  // dA using 0-based indices here
+                         dC(1,1), lddc,
                          dwork+i__4*ib + ib*ib, ldwork);
     }
 

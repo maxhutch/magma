@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmtr.cpp normal z -> d, Fri May 30 10:41:04 2014
+       @generated from zunmtr.cpp normal z -> d, Fri Jul 18 17:34:18 2014
 
 */
 #include "common_magma.h"
@@ -119,6 +119,9 @@ magma_dormtr(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
              double *work, magma_int_t lwork,
              magma_int_t *info)
 {
+    #define A(i_,j_) (A + (i_) + (j_)*lda)
+    #define C(i_,j_) (C + (i_) + (j_)*ldc)
+    
     double c_one = MAGMA_D_ONE;
 
     magma_int_t  i__2;
@@ -190,9 +193,9 @@ magma_dormtr(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
     if (upper) {
         /* Q was determined by a call to SSYTRD with UPLO = 'U' */
         i__2 = nq - 1;
-        //lapackf77_dormql(side_, trans_, &mi, &ni, &i__2, &A[lda], &lda,
+        //lapackf77_dormql(side_, trans_, &mi, &ni, &i__2, A(0,1), &lda,
         //                 tau, C, &ldc, work, &lwork, &iinfo);
-        magma_dormql(side, trans, mi, ni, i__2, &A[lda], lda, tau,
+        magma_dormql(side, trans, mi, ni, i__2, A(0,1), lda, tau,
                      C, ldc, work, lwork, &iinfo);
     }
     else {
@@ -205,8 +208,8 @@ magma_dormtr(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
             i2 = 1;
         }
         i__2 = nq - 1;
-        magma_dormqr(side, trans, mi, ni, i__2, &A[1], lda, tau,
-                     &C[i1 + i2 * ldc], ldc, work, lwork, &iinfo);
+        magma_dormqr(side, trans, mi, ni, i__2, A(1,0), lda, tau,
+                     C(i1,i2), ldc, work, lwork, &iinfo);
     }
 
     work[0] = MAGMA_D_MAKE( lwkopt, 0 );

@@ -68,10 +68,11 @@ void flops_init();
     cublasHandle_t handle;                                                 \
     cudaSetDevice( 0 );                                                    \
     cublasCreate( &handle );                                               \
+    magma_print_devices();
 
 #define TESTING_FINALIZE()                                                 \
     cublasDestroy( handle );                                               \
-    magma_finalize();                                                      \
+    magma_finalize();
 
 #else // not CUBLAS_V2_H_
 
@@ -210,6 +211,7 @@ typedef struct magma_opts
     int lapack;
     int warmup;
     int all;
+    int verbose;
     
     // lapack flags
     magma_uplo_t    uplo;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_z_free.cpp normal z -> c, Fri May 30 10:41:44 2014
+       @generated from magma_z_free.cpp normal z -> c, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 */
 
@@ -32,24 +32,22 @@ using namespace std;
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Free the memory of a magma_c_vector.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_c_vector *x                     vector to free    
+    @param
+    x           magma_c_vector*
+                vector to free    
 
-    ========================================================================  */
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 magma_int_t 
 magma_c_vfree( magma_c_vector *x ){
@@ -79,24 +77,22 @@ magma_c_vfree( magma_c_vector *x ){
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Free the memory of a magma_c_sparse_matrix.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix *A                     matrix to free    
+    @param
+    A           magma_c_sparse_matrix*
+                matrix to free    
 
-    ========================================================================  */
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 magma_int_t 
 magma_c_mfree( magma_c_sparse_matrix *A ){

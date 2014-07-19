@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeellrtmv.cu normal z -> s, Fri May 30 10:41:37 2014
+       @generated from zgeellrtmv.cu normal z -> s, Fri Jul 18 17:34:27 2014
 
 */
 
@@ -172,14 +172,9 @@ extern __shared__ float shared[];
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes y = alpha *  A *  x + beta * y on the GPU.
     Input format is ELLRT. The ideas are taken from 
@@ -189,22 +184,62 @@ extern __shared__ float shared[];
 
     
     Arguments
-    =========
-    const char *transA                  transpose info for matrix (not needed)
-    magma_int_t m                       number of rows 
-    magma_int_t n                       number of columns
-    magma_int_t nnz_per_row             max number of nonzeros in a row
-    float alpha            scalar alpha
-    float *d_val           val array
-    magma_int_t *d_colind               col indices  
-    magma_int_t *d_rowlength            number of elements in each row
-    float *d_x             input vector x
-    float beta             scalar beta
-    float *d_y             output vector y
-    magma_int_t blocksize               threads per block
-    magma_int_t alignment               threads assigned to each row
+    ---------
 
-    =====================================================================    */
+    @param
+    transA      magma_trans_t
+                transposition parameter for A
+    @param
+    m           magma_int_t
+                number of rows 
+
+    @param
+    n           magma_int_t
+                number of columns
+
+    @param
+    nnz_per_row magma_int_t
+                max number of nonzeros in a row
+
+    @param
+    alpha       float
+                scalar alpha
+
+    @param
+    d_val       float*
+                val array
+
+    @param
+    d_colind    magma_int_t*
+                col indices  
+
+    @param
+    d_rowlength magma_int_t*
+                number of elements in each row
+
+    @param
+    d_x         float*
+                input vector x
+
+    @param
+    beta        float
+                scalar beta
+
+    @param
+    d_y         float*
+                output vector y
+
+    @param
+    blocksize   magma_int_t
+                threads per block
+
+    @param
+    alignment   magma_int_t
+                threads assigned to each row
+
+
+    @ingroup magmasparse_sblas
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_sgeellrtmv(  magma_trans_t transA,

@@ -1,53 +1,26 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlaqps3_gpu.cu normal z -> d, Fri May 30 10:40:42 2014
+       @generated from zlaqps3_gpu.cu normal z -> d, Fri Jul 18 17:34:12 2014
 
 */
 
 #include "common_magma.h"
-#include <cblas.h>
-#include "magma.h"
+#include "magma_templates.h"
 
 #define PRECISION_d
 
-
-//#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 512
-//#else
-//   #define BLOCK_SIZE 768
-//#endif
+#define BLOCK_SIZE 512
 
 
 __global__ void magma_dgemv_kernel3(int m, const double * __restrict__ V, int ldv,
                                     double *c, double *dwork,
                                     double *tau);
 
-/* --------------------------------------------------------------------------- */
-
-template< int n >
-__device__ void sum_reduce( /*int n,*/ int i, double* x )
-{
-    __syncthreads();
-   // if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { x[i] += x[i+1024]; }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { x[i] += x[i+ 512]; }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { x[i] += x[i+ 256]; }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { x[i] += x[i+ 128]; }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { x[i] += x[i+  64]; }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { x[i] += x[i+  32]; }  __syncthreads(); }
-    // probably don't need __syncthreads for < 16 threads
-    // because of implicit warp level synchronization.
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { x[i] += x[i+  16]; }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { x[i] += x[i+   8]; }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { x[i] += x[i+   4]; }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { x[i] += x[i+   2]; }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[i] += x[i+   1]; }  __syncthreads(); }
-}
-// end sum_reduce
 
 /* --------------------------------------------------------------------------- */
 
@@ -121,7 +94,7 @@ void magma_dscale_kernel(int n, double* dx0,
         #endif
    }
    sum[i] = lsum;
-   sum_reduce< BLOCK_SIZE >( i, sum );
+   magma_sum_reduce< BLOCK_SIZE >( i, sum );
 
    /* === Compute the scaling factor === */
    if (i==0){
@@ -165,24 +138,6 @@ void magma_dscale_kernel(int n, double* dx0,
 }
 
 
-template< int n >
-__device__ void zsum_reduce( /*int n,*/ int i, double* x )
-{
-    __syncthreads();
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { x[i] += x[i+ 512]; }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { x[i] += x[i+ 256]; }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { x[i] += x[i+ 128]; }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { x[i] += x[i+  64]; }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { x[i] += x[i+  32]; }  __syncthreads(); }
-    // probably don't need __syncthreads for < 16 threads
-    // because of implicit warp level synchronization.
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { x[i] += x[i+  16]; }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { x[i] += x[i+   8]; }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { x[i] += x[i+   4]; }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { x[i] += x[i+   2]; }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[i] += x[i+   1]; }  __syncthreads(); }
-}
-
 __global__ void
 magma_dgemv_kernel1(int m, double *tau, const double * __restrict__ V, int ldv,
                     const double * __restrict__ c,
@@ -200,7 +155,7 @@ magma_dgemv_kernel1(int m, double *tau, const double * __restrict__ V, int ldv,
            lsum += MAGMA_D_MUL( MAGMA_D_CNJG( dV[j] ), c[j] );
 
         sum[i] = lsum;
-        zsum_reduce< BLOCK_SIZE >( i, sum );
+        magma_sum_reduce< BLOCK_SIZE >( i, sum );
 
         __syncthreads();
         if (i==0)
@@ -277,7 +232,7 @@ magma_dgemv_kernel_adjust(int n, int k, double * A, int lda,
                #endif
            }
            sum[i] = lsum;
-           sum_reduce< BLOCK_SIZE2 >( i, sum );
+           magma_sum_reduce< BLOCK_SIZE2 >( i, sum );
 
            if (i==0){
              printf("adjusted = %f recomputed = %f\n", xnorm[blockIdx.x], sqrt(sum[0])); 
@@ -322,7 +277,7 @@ magmablas_dnrm2_check_kernel(int m, double *da, int ldda,
 
     }
     sum[i] = lsum;
-    sum_reduce< BLOCK_SIZE >( i, sum );
+    magma_sum_reduce< BLOCK_SIZE >( i, sum );
 
     if (i==0){
       dxnorm[blockIdx.x]  = sqrt(sum[0]);
@@ -373,7 +328,7 @@ magmablas_dnrm2_check_kernel(int m, double *da, int ldda,
             The number of columns actually factorized.
 
     @param[in,out]
-    A       DOUBLE PRECISION array, dimension (LDA,N)
+    A       DOUBLE_PRECISION array, dimension (LDA,N)
             On entry, the M-by-N matrix A.
             On exit, block A(OFFSET+1:M,1:KB) is the triangular
             factor obtained and block A(1:OFFSET,1:N) has been
@@ -391,7 +346,7 @@ magmablas_dnrm2_check_kernel(int m, double *da, int ldda,
             permuted into position I in AP.
 
     @param[out]
-    tau     DOUBLE PRECISION array, dimension (KB)
+    tau     DOUBLE_PRECISION array, dimension (KB)
             The scalar factors of the elementary reflectors.
 
     @param[in,out]
@@ -403,11 +358,11 @@ magmablas_dnrm2_check_kernel(int m, double *da, int ldda,
             The vector with the exact column norms.
 
     @param[in,out]
-    AUXV    DOUBLE PRECISION array, dimension (NB)
+    AUXV    DOUBLE_PRECISION array, dimension (NB)
             Auxiliar vector.
 
     @param[in,out]
-    F       DOUBLE PRECISION array, dimension (LDF,NB)
+    F       DOUBLE_PRECISION array, dimension (LDF,NB)
             Matrix F' = L*Y'*A.
 
     @param[in]
@@ -569,7 +524,7 @@ magma_dlaqps3_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
 
     /* Recomputation of difficult columns. */
     if( lsticc > 0 ) {
-        printf( " -- recompute dnorms --\n" );
+        // printf( " -- recompute dnorms --\n" );
         //magmablas_dnrm2_check(m-rk-1, n-*kb, A(rk+1,rk+1), lda,
         //                       &vn1[rk+1], &vn2[rk+1], dlsticcs);
        

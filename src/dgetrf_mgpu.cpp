@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgetrf_mgpu.cpp normal z -> d, Fri May 30 10:40:54 2014
+       @generated from zgetrf_mgpu.cpp normal z -> d, Fri Jul 18 17:34:15 2014
 
 */
 #include "common_magma.h"
@@ -170,7 +170,7 @@ magma_dgetrf_mgpu(magma_int_t num_gpus,
             magma_queue_create( &streaml[i][1] );
             
             magmablasSetKernelStream(streaml[i][1]);
-            magmablas_dtranspose2( d_lAT[i], lddat, d_lA[i], ldda, m, n_local[i] );
+            magmablas_dtranspose( m, n_local[i], d_lA[i], ldda, d_lAT[i], lddat );
         }
         for (i=0; i < num_gpus; i++) {
             magma_setdevice(i);
@@ -202,7 +202,7 @@ magma_dgetrf_mgpu(magma_int_t num_gpus,
             magma_setdevice(d);
             
             /* save on output */
-            magmablas_dtranspose2( d_lA[d], ldda, d_lAT[d], lddat, n_local[d], m );
+            magmablas_dtranspose( n_local[d], m, d_lAT[d], lddat, d_lA[d], ldda );
             magma_device_sync();
             magma_free( d_lAT[d]   );
             magma_free( d_panel[d] );

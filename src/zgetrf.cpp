@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -178,7 +178,7 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
                 return *info;
             }
 
-            magmablas_ztranspose2( dAT, ldda, da, maxm, m, n );
+            magmablas_ztranspose( m, n, da, maxm, dAT, ldda );
         }
         
         lapackf77_zgetrf( &m, &nb, work, &lda, ipiv, &iinfo);
@@ -201,7 +201,7 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
             
             if (i > 0) {
                 // download i-th panel
-                magmablas_ztranspose( dA, cols, dAT(i,i), ldda, nb, cols );
+                magmablas_ztranspose( nb, cols, dAT(i,i), ldda, dA, cols );
 
                 // make sure that gpu queue is empty
                 magma_device_sync();
@@ -234,7 +234,7 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
             magmablas_zpermute_long2( ldda, dAT, ldda, ipiv, nb, i*nb );
 
             magma_queue_sync( stream[0] );
-            magmablas_ztranspose( dAT(i,i), ldda, dA, cols, cols, nb);
+            magmablas_ztranspose( cols, nb, dA, cols, dAT(i,i), ldda );
 
             // do the small non-parallel computations
             if (s > (i+1)) {
@@ -266,7 +266,7 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
             rows = m - s*nb;
             cols = maxm - s*nb;
     
-            magmablas_ztranspose2( dA, cols, dAT(s,s), ldda, nb0, rows);
+            magmablas_ztranspose( nb0, rows, dAT(s,s), ldda, dA, cols );
             magma_zgetmatrix( rows, nb0, dA, cols, work, lda );
     
             // make sure that gpu queue is empty
@@ -279,7 +279,7 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
             magmablas_zpermute_long2( ldda, dAT, ldda, ipiv, nb0, s*nb );
     
             magma_zsetmatrix( rows, nb0, work, lda, dA, cols );
-            magmablas_ztranspose2( dAT(s,s), ldda, dA, cols, rows, nb0);
+            magmablas_ztranspose( rows, nb0, dA, cols, dAT(s,s), ldda );
     
             magma_ztrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
                          n-s*nb-nb0, nb0,
@@ -291,7 +291,7 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
             magmablas_ztranspose_inplace( ldda, dAT, ldda );
             magma_zgetmatrix( m, n, da, ldda, A, lda );
         } else {
-            magmablas_ztranspose2( da, maxm, dAT, ldda, n, m );
+            magmablas_ztranspose( n, m, dAT, ldda, da, maxm );
             magma_zgetmatrix( m, n, da, maxm, A, lda );
             magma_free( dAT );
         }

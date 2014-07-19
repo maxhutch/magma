@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zmdot.cu normal z -> s, Fri May 30 10:41:37 2014
+       @generated from zmdot.cu normal z -> s, Fri Jul 18 17:34:28 2014
        @author Hartwig Anzt
 
 */
@@ -410,14 +410,9 @@ magma_sblockreduce_kernel_fast( int Gs,
     }
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Computes the scalar product of a set of vectors v_i such that
 
@@ -426,19 +421,41 @@ magma_sblockreduce_kernel_fast( int Gs,
     Returns the vector skp.
 
     Arguments
-    =========
+    ---------
 
-    int n                           length of v_i and r
-    int k                           # vectors v_i
-    float *v           v = (v_0 .. v_i.. v_k)
-    float *r           r
-    float *d1          workspace
-    float *d2          workspace
-    float *skp         vector[k] of scalar products (<v_i,r>...)
+    @param
+    n           int
+                length of v_i and r
 
-    ========================================================================  */
+    @param
+    k           int
+                # vectors v_i
 
-extern "C" int
+    @param
+    v           float*
+                v = (v_0 .. v_i.. v_k)
+
+    @param
+    r           float*
+                r
+
+    @param
+    d1          float*
+                workspace
+
+    @param
+    d2          float*
+                workspace
+
+    @param
+    skp         float*
+                vector[k] of scalar products (<v_i,r>...)
+
+
+    @ingroup magmasparse_sblas
+    ********************************************************************/
+
+extern "C" magma_int_t
 magma_smdotc(       int n, 
                     int k, 
                     float *v, 
@@ -476,8 +493,7 @@ magma_smdotc(       int n,
         else   { aux2 = d1; aux1 = d2; }
     }
     for( int j=0; j<k; j++){
-            cudaMemcpy( skp+j, aux1+j*n, sizeof( float ), 
-                                    cudaMemcpyDeviceToDevice );
+            magma_scopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
 */
    
@@ -510,24 +526,15 @@ magma_smdotc(       int n,
 
 
     for( int j=0; j<k; j++){
-            cudaMemcpy( skp+j, aux1+j*n, sizeof( float ), 
-                            cudaMemcpyDeviceToDevice );
+            magma_scopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
-
-    
-
 
    return MAGMA_SUCCESS;
 }
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     This is an extension of the merged dot product above by chunking
     the set of vectors v_i such that the data always fits into cache.
@@ -539,19 +546,41 @@ magma_smdotc(       int n,
     Returns the vector skp.
 
     Arguments
-    =========
+    ---------
 
-    int n                           length of v_i and r
-    int k                           # vectors v_i
-    float *v           v = (v_0 .. v_i.. v_k)
-    float *r           r
-    float *d1          workspace
-    float *d2          workspace
-    float *skp         vector[k] of scalar products (<v_i,r>...)
+    @param
+    n           int
+                length of v_i and r
 
-    ========================================================================  */
+    @param
+    k           int
+                # vectors v_i
 
-extern "C" int
+    @param
+    v           float*
+                v = (v_0 .. v_i.. v_k)
+
+    @param
+    r           float*
+                r
+
+    @param
+    d1          float*
+                workspace
+
+    @param
+    d2          float*
+                workspace
+
+    @param
+    skp         float*
+                vector[k] of scalar products (<v_i,r>...)
+
+
+    @ingroup magmasparse_s
+    ********************************************************************/
+
+extern "C" magma_int_t
 magma_sgemvmdot(    int n, 
                     int k, 
                     float *v, 

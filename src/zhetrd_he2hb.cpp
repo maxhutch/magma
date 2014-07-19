@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -206,7 +206,7 @@ magma_zhetrd_he2hb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     magma_set_lapack_numthreads(mklth);
 
     /* Use the first panel of dA as work space */
-    magmaDoubleComplex *dwork = dA+n*ldda;
+    magmaDoubleComplex *dwork = dA + n*ldda;
     magmaDoubleComplex *dW    = dwork + nb*ldda;
 
     #ifdef TRACING

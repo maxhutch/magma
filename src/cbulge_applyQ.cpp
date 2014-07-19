@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_applyQ.cpp normal z -> c, Fri May 30 10:41:06 2014
+ *     @generated from zbulge_applyQ.cpp normal z -> c, Fri Jul 18 17:34:19 2014
  *
  */
 
@@ -39,6 +39,9 @@ extern "C" void magma_cbulge_applyQ(
     //%===========================
     //%   local variables
     //%===========================
+    magmaFloatComplex c_zero = MAGMA_C_ZERO;
+    magmaFloatComplex c_one  = MAGMA_C_ONE;
+    
     magma_int_t LDT, LDV, blklen, firstcolj;
     magma_int_t bg, nbGblk, rownbm, k, m, n;
     magma_int_t st, ed, fst, vlen, vnb, colj, len;
@@ -93,7 +96,7 @@ extern "C" void magma_cbulge_applyQ(
         versionL=113;
         SIDE = MagmaLeft;
         //set the matrix to Identity here to avoid copying it from the CPU
-        magmablas_claset_identity(N, N, dE, N);
+        magmablas_claset( MagmaFull, N, N, c_zero, c_one, dE, N );
     }
     
 

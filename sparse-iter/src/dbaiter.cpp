@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
-       @generated from zbaiter.cpp normal z -> d, Fri May 30 10:41:41 2014
+       @generated from zbaiter.cpp normal z -> d, Fri Jul 18 17:34:29 2014
 */
 
 #include "common_magma.h"
@@ -19,29 +19,35 @@
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * x = b
     via the block asynchronous iteration method on GPU.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector b                          RHS b
-    magma_d_vector *x                         solution approximation
-    magma_d_solver_par *solver_par       solver parameters
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b
 
+    @param
+    x           magma_d_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_d_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_dgesv
+    ********************************************************************/
 
 magma_int_t
 magma_dbaiter( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,  

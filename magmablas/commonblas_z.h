@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 */
@@ -51,37 +51,6 @@ void magmablas_zgemv_tesla(
     const magmaDoubleComplex *x, magma_int_t incx,
     magmaDoubleComplex beta,
     magmaDoubleComplex *y, magma_int_t incy );
-
-// for tesla, z is not available, and chemv doesn't have _work interface
-void magmablas_zhemv_tesla(
-    magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t lda,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex *dy, magma_int_t incy );
-
-//void magmablas_zhemv_tesla_work(
-//    magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex alpha,
-//    const magmaDoubleComplex *dA, magma_int_t lda,
-//    const magmaDoubleComplex *dx, magma_int_t incx,
-//    magmaDoubleComplex beta,
-//    magmaDoubleComplex *dy, magma_int_t incy,
-//    magmaDoubleComplex *dwork, magma_int_t lwork );
-
-void magmablas_zsymv_tesla(
-    magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t lda,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex *dy, magma_int_t incy );
-
-void magmablas_zsymv_tesla_work(
-    magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t lda,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex *dy, magma_int_t incy,
-    magmaDoubleComplex *dwork, magma_int_t lwork );
 
 #ifdef __cplusplus
 }

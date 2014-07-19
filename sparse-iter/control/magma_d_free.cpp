@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_z_free.cpp normal z -> d, Fri May 30 10:41:45 2014
+       @generated from magma_z_free.cpp normal z -> d, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 */
 
@@ -32,24 +32,22 @@ using namespace std;
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Free the memory of a magma_d_vector.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_d_vector *x                     vector to free    
+    @param
+    x           magma_d_vector*
+                vector to free    
 
-    ========================================================================  */
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t 
 magma_d_vfree( magma_d_vector *x ){
@@ -79,24 +77,22 @@ magma_d_vfree( magma_d_vector *x ){
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Free the memory of a magma_d_sparse_matrix.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix *A                     matrix to free    
+    @param
+    A           magma_d_sparse_matrix*
+                matrix to free    
 
-    ========================================================================  */
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t 
 magma_d_mfree( magma_d_sparse_matrix *A ){

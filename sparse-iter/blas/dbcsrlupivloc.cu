@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zbcsrlupivloc.cu normal z -> d, Fri May 30 10:41:36 2014
+       @generated from zbcsrlupivloc.cu normal z -> d, Fri Jul 18 17:34:27 2014
 
 */
 
@@ -74,27 +74,34 @@ dbcsrlupivloc_kernel(
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     For a Block-CSR ILU factorization, this routine updates all blocks in
     the trailing matrix.
     
     Arguments
-    =========
+    ---------
 
-    magma_int_t r_blocks            number of blocks
-    magma_int_t size_b              blocksize in BCSR
-    magma_int_t *ipiv               array containing pivots
-    double *x                       input/output vector x
+    @param
+    size_b      magma_int_t
+                blocksize in BCSR
+    
+    @param
+    kblocks     magma_int_t
+                number of blocks
+                
+    @param
+    dA          double**
+                matrix in BCSR
 
-    ======================================================================    */
+    @param
+    ipiv        magma_int_t*
+                array containing pivots
+
+    @ingroup magmasparse_dgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_dbcsrlupivloc( magma_int_t size_b, 

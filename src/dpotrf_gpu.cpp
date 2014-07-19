@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
-       @generated from zpotrf_gpu.cpp normal z -> d, Fri May 30 10:40:51 2014
+       @generated from zpotrf_gpu.cpp normal z -> d, Fri Jul 18 17:34:14 2014
 */
 #include "common_magma.h"
 
-// === Define what BLAS to use ============================================
 #define PRECISION_d
 
-#if (defined(PRECISION_s) || defined(PRECISION_d))
+// === Define what BLAS to use ============================================
+//#if (defined(PRECISION_s) || defined(PRECISION_d))
     #define magma_dtrsm magmablas_dtrsm
-#endif
+//#endif
 // === End defining what BLAS to use =======================================
 
 /**

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgelqf.cpp normal z -> d, Fri May 30 10:41:00 2014
+       @generated from zgelqf.cpp normal z -> d, Fri Jul 18 17:34:17 2014
 
 */
 #include "common_magma.h"
@@ -154,7 +154,7 @@ magma_dgelqf( magma_int_t m, magma_int_t n,
         magma_dsetmatrix( m, n, A, lda, dA, maxm );
 
         dAT = dA + maxn * maxm;
-        magmablas_dtranspose2( dAT, ldda, dA, maxm, m, n );
+        magmablas_dtranspose( m, n, dA, maxm, dAT, ldda );
     }
 
     magma_dgeqrf2_gpu(n, m, dAT, ldda, tau, &iinfo);
@@ -163,7 +163,7 @@ magma_dgelqf( magma_int_t m, magma_int_t n,
         magmablas_dtranspose_inplace( ldda, dAT, ldda );
         magma_dgetmatrix( m, n, dA, ldda, A, lda );
     } else {
-        magmablas_dtranspose2( dA, maxm, dAT, ldda, n, m );
+        magmablas_dtranspose( n, m, dAT, ldda, dA, maxm );
         magma_dgetmatrix( m, n, dA, maxm, A, lda );
     }
 

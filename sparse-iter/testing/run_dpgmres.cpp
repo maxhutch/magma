@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from run_zpgmres.cpp normal z -> d, Fri May 30 10:41:49 2014
+       @generated from run_zpgmres.cpp normal z -> d, Fri Jul 18 17:34:31 2014
        @author Hartwig Anzt
 */
 
@@ -39,6 +39,7 @@ int main( int argc, char** argv)
     magma_d_preconditioner precond_par;
     precond_par.solver = Magma_JACOBI;
     precond_par.levels = 0;
+    precond_par.sweeps = 10;
     int precond = 0;
     int format = 0;
     solver_par.restart = 30;
@@ -102,6 +103,8 @@ int main( int argc, char** argv)
             solver_par.restart = atoi( argv[++i] );
         } else if ( strcmp("--levels", argv[i]) == 0 ) {
             precond_par.levels = atoi( argv[++i] );
+        }else if ( strcmp("--sweeps", argv[i]) == 0 ) {
+            precond_par.sweeps = atoi( argv[++i] );
         } else
             break;
     }
@@ -111,7 +114,7 @@ int main( int argc, char** argv)
         " --mscale %d (0=no, 1=unitdiag, 2=unitrownrm)"
         " --verbose %d (0=summary, k=details every k iterations)"
         " --maxiter %d --tol %.2e"
-        " --precond %d (0=Jacobi, 1=ILU, 2=AILU [ --levels %d ])" 
+        " --precond %d (0=Jacobi, 1=ILU, 2=AILU [ --levels %d --sweeps %d])" 
         " --ortho %d (0=CGS, 1=MGS, 2=FUSED_CGS) ]"
         " --restart %d"
         " ]"
@@ -119,7 +122,7 @@ int main( int argc, char** argv)
         (int) scale,
         (int) solver_par.verbose,
         (int) solver_par.maxiter, solver_par.epsilon,
-        precond, (int) precond_par.levels, ortho, 
+        precond, (int) precond_par.levels, (int) precond_par.sweeps, ortho, 
         (int) solver_par.restart );
 
     magma_dsolverinfo_init( &solver_par, &precond_par );
@@ -131,14 +134,18 @@ int main( int argc, char** argv)
         printf( "\n# matrix info: %d-by-%d with %d nonzeros\n\n",
                             (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
 
-        // scale initial guess
+        // scale matrix
         magma_dmscale( &A, scaling );
-
-        magma_d_vinit( &b, Magma_DEV, A.num_cols, one );
-        magma_d_vinit( &x, Magma_DEV, A.num_cols, zero );
 
         magma_d_mconvert( A, &B, Magma_CSR, B.storage_type );
         magma_d_mtransfer( B, &B_d, Magma_CPU, Magma_DEV );
+
+        // vectors and initial guess
+        magma_d_vinit( &b, Magma_DEV, A.num_cols, one );
+        magma_d_vinit( &x, Magma_DEV, A.num_cols, one );
+        magma_d_spmv( one, B_d, x, zero, b );                 //  b = A x
+        magma_d_vfree(&x);
+        magma_d_vinit( &x, Magma_DEV, A.num_cols, zero );
 
         magma_d_precondsetup( B_d, b, &precond_par );
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
  
        @author Mark Gates
        @precisions normal z -> s d c
@@ -82,6 +82,53 @@ void magma_zgetvector_async_internal(
         dx_src, incx,
         hy_dst, incy, stream );
     check_xerror( status, func, file, line );
+}
+
+// --------------------
+// TODO compare performance with cublasZcopy BLAS function.
+// But this implementation can handle any element size, not just [sdcz] precisions.
+extern "C"
+void magma_zcopyvector_internal(
+    magma_int_t n,
+    magmaDoubleComplex const* dx_src, magma_int_t incx,
+    magmaDoubleComplex*       dy_dst, magma_int_t incy,
+    const char* func, const char* file, int line )
+{
+    if ( incx == 1 && incy == 1 ) {
+        cudaError_t status;
+        status = cudaMemcpy(
+            dy_dst,
+            dx_src,
+            n*sizeof(magmaDoubleComplex), cudaMemcpyDeviceToDevice );
+        check_xerror( status, func, file, line );
+    }
+    else {
+        magma_zcopymatrix_internal(
+            1, n, dx_src, incx, dy_dst, incy, func, file, line );
+    }
+}
+
+// --------------------
+extern "C"
+void magma_zcopyvector_async_internal(
+    magma_int_t n,
+    magmaDoubleComplex const* dx_src, magma_int_t incx,
+    magmaDoubleComplex*       dy_dst, magma_int_t incy,
+    cudaStream_t stream,
+    const char* func, const char* file, int line )
+{
+    if ( incx == 1 && incy == 1 ) {
+        cudaError_t status;
+        status = cudaMemcpyAsync(
+            dy_dst,
+            dx_src,
+            n*sizeof(magmaDoubleComplex), cudaMemcpyDeviceToDevice, stream );
+        check_xerror( status, func, file, line );
+    }
+    else {
+        magma_zcopymatrix_async_internal(
+            1, n, dx_src, incx, dy_dst, incy, stream, func, file, line );
+    }
 }
 
 

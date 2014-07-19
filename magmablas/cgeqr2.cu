@@ -1,11 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeqr2.cu normal z -> c, Fri May 30 10:40:44 2014
+       @author Stan Tomov
+       @generated from zgeqr2.cu normal z -> c, Fri Jul 18 17:34:13 2014
 
 */
 #include "common_magma.h"
@@ -15,7 +16,8 @@
     Purpose
     -------
     CGEQR2 computes a QR factorization of a complex m by n matrix A:
-    A = Q * R.
+    A = Q * R
+    using the non-blocking Householder QR.
 
     Arguments
     ---------
@@ -28,7 +30,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX array, dimension (LDA,N)
+    dA      COMPLEX array, dimension (LDA,N)
             On entry, the m by n matrix A.
             On exit, the elements on and above the diagonal of the array
             contain the min(m,n) by n upper trapezoidal matrix R (R is
@@ -37,16 +39,16 @@
             product of elementary reflectors (see Further Details).
 
     @param[in]
-    lda     INTEGER
+    ldda    INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
 
     @param[out]
-    tau     COMPLEX array, dimension (min(M,N))
+    dtau    COMPLEX array, dimension (min(M,N))
             The scalar factors of the elementary reflectors (see Further
             Details).
 
     @param
-    work    (workspace) DOUBLE_PRECISION array, dimension (N)
+    dwork   (workspace) DOUBLE_PRECISION array, dimension (N)
 
     @param[out]
     info    INTEGER
@@ -96,6 +98,7 @@ magma_cgeqr2_gpu(
     /* Compute the norms of the trailing columns */
     k = min(m,n);
 
+    /* Workspace for diagonal entries - restored at the end */  
     magmaFloatComplex *Aks;
     magma_cmalloc( &Aks, k );    
 

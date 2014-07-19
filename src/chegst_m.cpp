@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegst_m.cpp normal z -> c, Fri May 30 10:41:09 2014
+       @generated from zhegst_m.cpp normal z -> c, Fri Jul 18 17:34:19 2014
 */
 #include "common_magma.h"
 #include <cblas.h>

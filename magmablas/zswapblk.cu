@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -47,8 +47,8 @@ __global__ void magmagpu_zswapblkrm( magmagpu_zswapblk_params_t params )
 __global__ void magmagpu_zswapblkcm( magmagpu_zswapblk_params_t params )
 {
     unsigned int y = threadIdx.x + blockDim.x*blockIdx.x;
-    unsigned int offset1 = __mul24( y, params.lda1);
-    unsigned int offset2 = __mul24( y, params.lda2);
+    unsigned int offset1 = y*params.lda1;
+    unsigned int offset2 = y*params.lda2;
     if( y < params.n )
     {
         magmaDoubleComplex *A1 = params.A1 + offset1 - 1;

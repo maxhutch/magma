@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
-       @generated from zjacobi.cpp normal z -> d, Fri May 30 10:41:41 2014
+       @generated from zjacobi.cpp normal z -> d, Fri Jul 18 17:34:29 2014
 */
 
 #include "common_magma.h"
@@ -19,14 +19,9 @@
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -34,15 +29,26 @@
     This is a GPU implementation of the Jacobi method.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector b                          RHS b
-    magma_d_vector *x                         solution approximation
-    magma_d_solver_par *solver_par       solver parameters
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b
 
+    @param
+    x           magma_d_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_d_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_dgesv
+    ********************************************************************/
 
 magma_int_t
 magma_djacobi( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,  
@@ -106,14 +112,9 @@ magma_djacobi( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the Matrix M for the Jacobi Iteration according to
        x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
@@ -123,14 +124,26 @@ magma_djacobi( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
     containing the diagonal elements. 
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector b                          RHS b
-    magma_d_sparse_matrix *M                  M = D^(-1) * (L+U)
-    magma_d_vector *d                         vector with diagonal elements
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b
+
+    @param
+    m           magma_d_sparse_matrix*
+                M = D^(-1) * (L+U)
+
+    @param
+    d           magma_d_vector*
+                vector with diagonal elements
+
+    @ingroup magmasparse_d
+    ********************************************************************/
 
 magma_int_t
 magma_djacobisetup_matrix( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -169,7 +182,7 @@ magma_djacobisetup_matrix( magma_d_sparse_matrix A, magma_d_vector b,
         }
     }
     magma_d_csr_compressor(&B.val, &B.row, &B.col, 
-                           &C.val, &C.row, &C.col, &B.num_rows, &B.num_rows);  
+                           &C.val, &C.row, &C.col, &B.num_rows );  
     C.num_rows = B.num_rows;
     C.num_cols = B.num_cols;
     C.memory_location = B.memory_location;
@@ -199,26 +212,27 @@ magma_djacobisetup_matrix( magma_d_sparse_matrix A, magma_d_vector b,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
 
     It returns a vector d
     containing the inverse diagonal elements. 
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector *d                         vector with diagonal elements
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    d           magma_d_vector*
+                vector with diagonal elements
+
+    @ingroup magmasparse_d
+    ********************************************************************/
 
 magma_int_t
 magma_djacobisetup_diagscal( magma_d_sparse_matrix A, magma_d_vector *d ){
@@ -261,14 +275,9 @@ magma_djacobisetup_diagscal( magma_d_sparse_matrix A, magma_d_vector *d ){
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the Jacobi Iteration according to
        x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
@@ -277,13 +286,22 @@ magma_djacobisetup_diagscal( magma_d_sparse_matrix A, magma_d_vector *d ){
     Returns the vector c
 
     Arguments
-    =========
+    ---------
 
-    magma_d_vector b                          RHS b
-    magma_d_vector d                          vector with diagonal entries
-    magma_d_vector *c                         c = D^(-1) * b
+    @param
+    b           magma_d_vector
+                RHS b
 
-    ========================================================================  */
+    @param
+    d           magma_d_vector
+                vector with diagonal entries
+
+    @param
+    c           magma_d_vector*
+                c = D^(-1) * b
+
+    @ingroup magmasparse_d
+    ********************************************************************/
 
 magma_int_t
 magma_djacobisetup_vector( magma_d_vector b, magma_d_vector d, 
@@ -318,28 +336,35 @@ magma_djacobisetup_vector( magma_d_vector b, magma_d_vector d,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the Jacobi Iteration according to
        x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
        x^(k+1) =      c     -       M        * x^k.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector b                          RHS b
-    magma_d_sparse_matrix *M                  M = D^(-1) * (L+U)
-    magma_d_vector *c                         c = D^(-1) * b
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b
+
+    @param
+    m           magma_d_sparse_matrix*
+                M = D^(-1) * (L+U)
+
+    @param
+    c           magma_d_vector*
+                c = D^(-1) * b
+
+    @ingroup magmasparse_d
+    ********************************************************************/
 
 magma_int_t
 magma_djacobisetup( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -382,7 +407,7 @@ magma_djacobisetup( magma_d_sparse_matrix A, magma_d_vector b,
     }
 
     magma_d_csr_compressor(&B.val, &B.row, &B.col, 
-                           &C.val, &C.row, &C.col, &B.num_rows, &B.num_rows);  
+                           &C.val, &C.row, &C.col, &B.num_rows );  
 
     C.num_rows = B.num_rows;
     C.num_cols = B.num_cols;
@@ -417,29 +442,35 @@ magma_djacobisetup( magma_d_sparse_matrix A, magma_d_vector b,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Iterates the solution approximation according to
        x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
        x^(k+1) =      c     -       M        * x^k.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix M                   input matrix M = D^(-1) * (L+U)
-    magma_d_vector c                          c = D^(-1) * b
-    magma_d_vector *x                         iteration vector x
-    magma_d_solver_par *solver_par       solver parameters
+    @param
+    m           magma_d_sparse_matrix
+                input matrix M = D^(-1) * (L+U)
 
-    ========================================================================  */
+    @param
+    c           magma_d_vector
+                c = D^(-1) * b
 
+    @param
+    x           magma_d_vector*
+                iteration vector x
+
+    @param
+    solver_par  magma_d_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_d
+    ********************************************************************/
 
 magma_int_t
 magma_djacobiiter( magma_d_sparse_matrix M, magma_d_vector c, magma_d_vector *x,  

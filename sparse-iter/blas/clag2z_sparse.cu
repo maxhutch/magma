@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions mixed zc -> ds
 
@@ -43,17 +43,9 @@ magmaint_clag2z_sparse(  int M, int N,
     } 
 }
 
-/*
-    Note
-    ====
-          - We have to provide INFO at the end that zlag2c isn't doable now. 
-          - Transfer a single value TO/FROM CPU/GPU
-          - SLAMCH that's needed is called from underlying BLAS
-          - Only used in iterative refinement
-          - Do we want to provide this in the release?
-    
+/**
     Purpose
-    =======
+    -------
     CLAG2Z converts a COMPLEX matrix SA to a COMPLEX_16
     matrix A.
     
@@ -62,41 +54,60 @@ magmaint_clag2z_sparse(  int M, int N,
     RMAX. If not the convertion is aborted and a flag is raised.
         
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    M       INTEGER
             The number of lines of the matrix A.  M >= 0.
     
-    N       (input) INTEGER
+    @param[in]
+    N       INTEGER
             The number of columns of the matrix A.  N >= 0.
     
-    SA      (input) COMPLEX array, dimension (LDSA,N)
+    @param[in]
+    SA      COMPLEX array, dimension (LDSA,N)
             On entry, the M-by-N coefficient matrix SA.
     
-    LDSA    (input) INTEGER
+    @param[in]
+    ldsa    INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
     
-    A       (output) COMPLEX_16 array, dimension (LDA,N)
+    @param[out]
+    A       COMPLEX_16 array, dimension (LDA,N)
             On exit, if INFO=0, the M-by-N coefficient matrix A; if
             INFO>0, the content of A is unspecified.
     
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array SA.  LDSA >= max(1,M).
     
-    INFO    (output) INTEGER
-            = 0:  successful exit.
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            = 1:  an entry of the matrix A is greater than the COMPLEX
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit.
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     = 1:  an entry of the matrix A is greater than the COMPLEX
                   overflow threshold, in this case, the content
                   of SA in exit is unspecified.
-    ======================================================================    */
 
-extern "C" void 
+    @ingroup magmasparse_caux
+    ********************************************************************/
+
+extern "C" void
 magmablas_clag2z_sparse( magma_int_t M, magma_int_t N , 
                   const magmaFloatComplex *SA, magma_int_t ldsa, 
                   magmaDoubleComplex *A,       magma_int_t lda, 
                   magma_int_t *info ){    
-
-
+    /*
+    (TODO note from original dense source)
+    
+    Note
+    ----
+          - We have to provide INFO at the end that zlag2c isn't doable now. 
+          - Transfer a single value TO/FROM CPU/GPU
+          - SLAMCH that's needed is called from underlying BLAS
+          - Only used in iterative refinement
+          - Do we want to provide this in the release?
+    */
+    
     *info = 0;
     if ( M < 0 )
         *info = -1;
@@ -127,4 +138,5 @@ magmablas_clag2z_sparse( magma_int_t M, magma_int_t N ,
     magmaint_clag2z_sparse<<< dimGrid , dimBlock, 0, magma_stream >>>
                                         ( M, N, SA, lda, A, ldsa, RMAX ) ; 
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
+     
 }

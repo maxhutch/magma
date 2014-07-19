@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
  
        @author Mark Gates
-       @generated from zset_get.cpp normal z -> d, Fri May 30 10:41:12 2014
+       @generated from zset_get.cpp normal z -> d, Fri Jul 18 17:34:21 2014
 */
 
 #include <stdlib.h>
@@ -82,6 +82,53 @@ void magma_dgetvector_async_internal(
         dx_src, incx,
         hy_dst, incy, stream );
     check_xerror( status, func, file, line );
+}
+
+// --------------------
+// TODO compare performance with cublasDcopy BLAS function.
+// But this implementation can handle any element size, not just [sdcz] precisions.
+extern "C"
+void magma_dcopyvector_internal(
+    magma_int_t n,
+    double const* dx_src, magma_int_t incx,
+    double*       dy_dst, magma_int_t incy,
+    const char* func, const char* file, int line )
+{
+    if ( incx == 1 && incy == 1 ) {
+        cudaError_t status;
+        status = cudaMemcpy(
+            dy_dst,
+            dx_src,
+            n*sizeof(double), cudaMemcpyDeviceToDevice );
+        check_xerror( status, func, file, line );
+    }
+    else {
+        magma_dcopymatrix_internal(
+            1, n, dx_src, incx, dy_dst, incy, func, file, line );
+    }
+}
+
+// --------------------
+extern "C"
+void magma_dcopyvector_async_internal(
+    magma_int_t n,
+    double const* dx_src, magma_int_t incx,
+    double*       dy_dst, magma_int_t incy,
+    cudaStream_t stream,
+    const char* func, const char* file, int line )
+{
+    if ( incx == 1 && incy == 1 ) {
+        cudaError_t status;
+        status = cudaMemcpyAsync(
+            dy_dst,
+            dx_src,
+            n*sizeof(double), cudaMemcpyDeviceToDevice, stream );
+        check_xerror( status, func, file, line );
+    }
+    else {
+        magma_dcopymatrix_async_internal(
+            1, n, dx_src, incx, dy_dst, incy, stream, func, file, line );
+    }
 }
 
 

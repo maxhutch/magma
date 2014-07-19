@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlarfg-v2.cu normal z -> d, Fri May 30 10:40:42 2014
+       @generated from zlarfg-v2.cu normal z -> d, Fri Jul 18 17:34:12 2014
 
 */
 #include "common_magma.h"
@@ -33,6 +33,7 @@ void magma_dlarfg_gpu_kernel( int n, double* dx0, double* dx,
     if( n <= 0 ) {
 #endif
         *dtau = MAGMA_D_ZERO;
+        *dAkk = *dx0;
         return;
     }
 
@@ -76,9 +77,11 @@ void magma_dlarfg_gpu_kernel( int n, double* dx0, double* dx,
         if ( xnorm != 0 && j < n-1)
             dx[j] = MAGMA_D_MUL(dxi, scale);
 
-    } else
+    } else {
         *dtau = MAGMA_D_ZERO;
+        *dAkk = *dx0; 
     }
+}
 
 
 /*

@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex3.cpp normal d -> s, Fri May 30 10:41:06 2014
+       @generated from dlaex3.cpp normal d -> s, Fri Jul 18 17:34:19 2014
 */
 
 #ifdef _OPENMP
@@ -216,7 +216,7 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
              magma_range_t range, float vl, float vu, magma_int_t il, magma_int_t iu,
              magma_int_t* info )
 {
-#define Q(ix, iy) (Q + (ix) + ldq*(iy))
+#define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
     float d_one  = 1.;
     float d_zero = 0.;

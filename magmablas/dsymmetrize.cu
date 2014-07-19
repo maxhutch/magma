@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zsymmetrize.cu normal z -> d, Fri May 30 10:40:42 2014
+       @generated from zsymmetrize.cu normal z -> d, Fri Jul 18 17:34:12 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -80,7 +80,7 @@ dsymmetrize_upper( int m, double *dA, int ldda )
             The number of rows of the matrix dA.  M >= 0.
     
     @param[in,out]
-    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
             The m by m matrix dA.
     
     @param[in]

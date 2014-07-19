@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 */
@@ -98,6 +98,7 @@ extern "C" {
 #define lapackf77_zlanhe   FORTRAN_NAME( zlanhe, ZLANHE )
 #define lapackf77_zlanht   FORTRAN_NAME( zlanht, ZLANHT )
 #define lapackf77_zlansy   FORTRAN_NAME( zlansy, ZLANSY )
+#define lapackf77_zlantr   FORTRAN_NAME( zlantr, ZLANTR )
 #define lapackf77_dlapy3   FORTRAN_NAME( dlapy3, DLAPY3 )
 #define lapackf77_zlaqp2   FORTRAN_NAME( zlaqp2, ZLAQP2 )
 #define lapackf77_zlarcm   FORTRAN_NAME( zlarcm, ZLARCM )
@@ -638,6 +639,11 @@ double lapackf77_zlanht( const char *norm, const magma_int_t *n,
 
 double lapackf77_zlansy( const char *norm, const char *uplo,
                          const magma_int_t *n,
+                         const magmaDoubleComplex *A, const magma_int_t *lda,
+                         double *work );
+
+double lapackf77_zlantr( const char *norm, const char *uplo, const char *diag,
+                         const magma_int_t *m, const magma_int_t *n,
                          const magmaDoubleComplex *A, const magma_int_t *lda,
                          double *work );
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zungqr_2stage_gpu.cpp normal z -> c, Fri May 30 10:41:06 2014
+       @generated from zungqr_2stage_gpu.cpp normal z -> c, Fri Jul 18 17:34:19 2014
 
 */
 #include "common_magma.h"
@@ -83,6 +83,9 @@ magma_cungqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
     #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
     #define dT(a_1)     (dT + (a_1)*nb)
 
+    magmaFloatComplex c_zero = MAGMA_C_ZERO;
+    magmaFloatComplex c_one  = MAGMA_C_ONE;
+    
     magma_int_t  i__1, i__2, i__3;
     //magma_int_t lwork;
     magma_int_t i, ib, ki, kk;  //, iinfo;
@@ -123,9 +126,9 @@ magma_cungqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
         kk = min(k, ki + nb);
 
         /* Set A(1:kk,kk+1:n) to zero. */
-        magmablas_claset(MagmaUpperLower, kk, n-kk, dA(0,kk), ldda);
-        /* A(kk+1:m, kk+1:n) = I */
-        magmablas_claset_identity(m-kk, n-kk, dA(kk,kk), ldda);
+        /* and A(kk+1:m, kk+1:n) = I */
+        magmablas_claset( MagmaFull, kk,   n-kk, c_zero, c_zero, dA(0, kk), ldda );
+        magmablas_claset( MagmaFull, m-kk, n-kk, c_zero, c_one,  dA(kk,kk), ldda );
     }
     else {
         ki = 0;
@@ -163,8 +166,8 @@ magma_cungqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
                           dA(kk, kk-nb), ldda, dT(kk-nb), ldt,
                           dA(kk, kk), ldda, dwork, i__2);
         
-        //magmablas_claset(MagmaUpperLower, kk-nb, nb, dA(0,kk-nb), ldda);
-        //magmablas_claset_identity(m-(kk-nb), nb, dA(kk-nb,kk-nb), ldda);
+        //magmablas_claset(MagmaFull, kk-nb,     nb, c_zero, c_zero, dA(0,kk-nb),     ldda);
+        //magmablas_claset(MagmaFull, m-(kk-nb), nb, c_zero, c_one,  dA(kk-nb,kk-nb), ldda);
     }
 
     if (kk > 0) {
@@ -181,8 +184,8 @@ magma_cungqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
                 /* Apply H to A(i:m,i+ib:n) from the left */
                 i__3 = n - i;
 
-                magmablas_claset(MagmaUpperLower, i, ib, dA(0,i), ldda);
-                magmablas_claset_identity(m-i, ib, dA(i,i), ldda);
+                magmablas_claset( MagmaFull, i,   ib, c_zero, c_zero, dA(0,i), ldda );
+                magmablas_claset( MagmaFull, m-i, ib, c_zero, c_one,  dA(i,i), ldda );
 
                 magma_clarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise,
                                   i__2, i__3, ib,
@@ -201,12 +204,12 @@ magma_cungqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
 
             /* Set rows 1:i-1 of current block to zero */
             i__2 = i + ib;
-            //magmablas_claset(MagmaUpperLower, i-ib, ib, dA(0,i-ib), ldda);
-            //magmablas_claset_identity(m-(i-ib), ib, dA(i-ib,i-ib), ldda);
+            //magmablas_claset(MagmaFull, i-ib,     ib, c_zero, c_zero, dA(0,i-ib),    ldda);
+            //magmablas_claset(MagmaFull, m-(i-ib), ib, c_zero, c_one,  dA(i-ib,i-ib), ldda);
         }
     }
 
-    magmablas_claset_identity(m, nb, dA(0,0), ldda);
+    magmablas_claset( MagmaFull, m, nb, c_zero, c_one, dA(0,0), ldda );
 
     magma_free( dwork );
     //magma_free_pinned( work );

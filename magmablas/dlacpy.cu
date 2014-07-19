@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlacpy.cu normal z -> d, Fri May 30 10:40:40 2014
+       @generated from zlacpy.cu normal z -> d, Fri Jul 18 17:34:12 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -72,7 +72,7 @@ dlacpy_kernel(
             The number of columns of the matrix dA.  N >= 0.
     
     @param[in]
-    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
             The m by n matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
@@ -82,7 +82,7 @@ dlacpy_kernel(
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
     @param[out]
-    dB      COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+    dB      DOUBLE_PRECISION array, dimension (LDDB,N)
             The m by n matrix dB.
             On exit, dB = dA in the locations specified by UPLO.
     

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions mixed zc -> ds
        @author Hartwig Anzt
@@ -24,24 +24,25 @@
 #include "common_magma.h"
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     convertes magma_z_vector from Z to C
 
     Arguments
-    =========
+    ---------
 
-    magma_z_vector x        input vector descriptor
-    magma_c_vector *y       output vector descriptor
+    @param
+    x           magma_z_vector
+                input vector descriptor
 
-    ========================================================================  */
+    @param
+    y           magma_c_vector*
+                output vector descriptor
+
+    @ingroup magmasparse_zaux
+    ********************************************************************/
 
 magma_int_t
 magma_vector_zlag2c( magma_z_vector x, magma_c_vector *y )
@@ -76,24 +77,25 @@ magma_vector_zlag2c( magma_z_vector x, magma_c_vector *y )
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     convertes magma_z_sparse_matrix from Z to C
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A         input matrix descriptor
-    magma_c_sparse_matrix *B        output matrix descriptor
+    @param
+    A           magma_z_sparse_matrix
+                input matrix descriptor
 
-    ========================================================================  */
+    @param
+    B           magma_c_sparse_matrix*
+                output matrix descriptor
+
+    @ingroup magmasparse_z
+    ********************************************************************/
 
 magma_int_t
 magma_sparse_matrix_zlag2c( magma_z_sparse_matrix A, magma_c_sparse_matrix *B )
@@ -142,6 +144,6 @@ magma_sparse_matrix_zlag2c( magma_z_sparse_matrix A, magma_c_sparse_matrix *B )
     else{
         return MAGMA_ERR_NOT_SUPPORTED;
         printf("error:matrix not on GPU\n");
-        }
+    }
 }
 

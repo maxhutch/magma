@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegvdx_2stage_m.cpp normal z -> c, Fri May 30 10:41:08 2014
+       @generated from zhegvdx_2stage_m.cpp normal z -> c, Fri Jul 18 17:34:19 2014
 
 */
 #include "common_magma.h"
@@ -295,7 +295,9 @@ magma_chegvdx_2stage_m(magma_int_t nrgpu,
         liwmin = 1;
     }
 
-    float one_eps = 1. + lapackf77_slamch("Epsilon");
+    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
+    // if it cannot be exactly represented in floating point.
+    real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
     work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);  // round up
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;

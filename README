@@ -37,8 +37,8 @@ MAGMA README FILE
       setenv ATLASDIR  /opt/atlas
       setenv LAPACKDIR /opt/LAPACK
   
-  Creating a shared library requires adding the -fPIC option. This is
-  demonstrated in make.inc.mkl-shared.
+  Creating a shared library requires adding the -fPIC option in make.inc to
+  OPTS, FOPTS, F77OPTS, and NVOPTS. This is demonstrated in make.inc.mkl-shared.
   
   After proper modification of the make.inc file, running:
   
@@ -63,13 +63,21 @@ MAGMA README FILE
   $VECLIB_MAXIMUM_THREADS to set the number of CPU threads, depending on your
   BLAS library.
 
+* A short standalone EXAMPLE is provided in directory 'example'. This is
+  intended to show the minimum needed to start using MAGMA, without all the
+  extra Makefiles, headers, and libraries used in testing. You must edit
+  example/Makefile to reflect your make.inc, or use pkg-config, as described in
+  example/README.txt.
+
 * To TEST MAGMA, go to directory 'testing'. Provided are a number of
   drivers testing different routines. These drivers are also useful
   as examples on how to use MAGMA, as well as to benchmark the performance.
 
   The testers print "ok" or "failed" for whether the error passes the tolerance.
   In some cases, the tolerance may be too strict, so a test may "fail" even
-  though it is only slightly above the tolerance.
+  though it is only slightly above the tolerance. Error values around 1e-15 for
+  double and double-complex, and 1e-7 for single and single-complex, are
+  generally acceptable. Values larger than 1e-4 are very suspicious.
 
 * To TUNE MAGMA, you can modify the blocking factors for the algorithms of
   interest in file 'control/get_nb.cpp'. The default values are tuned for

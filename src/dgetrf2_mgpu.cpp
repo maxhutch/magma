@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgetrf2_mgpu.cpp normal z -> d, Fri May 30 10:40:56 2014
+       @generated from zgetrf2_mgpu.cpp normal z -> d, Fri Jul 18 17:34:16 2014
 
 */
 #include "common_magma.h"
@@ -137,7 +137,7 @@ magma_dgetrf2_mgpu(magma_int_t num_gpus,
     magma_setdevice(0);
     magmablasSetKernelStream(streaml[0][1]);
     trace_gpu_start( 0, 1, "comm", "get" );
-    magmablas_dtranspose2( d_lAP[0], maxm, dAT(0,0,0), lddat, nb0, m );
+    magmablas_dtranspose( nb0, m, dAT(0,0,0), lddat, d_lAP[0], maxm );
     magma_dgetmatrix_async( m, nb0,
                             d_lAP[0], maxm,
                             W(0),     ldw, streaml[0][1] );
@@ -234,7 +234,7 @@ magma_dgetrf2_mgpu(magma_int_t num_gpus,
                 magma_queue_sync(streaml[d][0]);
                 trace_gpu_start( d, 1, "gemm", "gemm" );
                 /* transpose panel on GPU */
-                magmablas_dtranspose2(panel_local[d], ldpan[d], &d_lAP[d][(i%h)*nb*maxm], cols, rows, nb);
+                magmablas_dtranspose( rows, nb, &d_lAP[d][(i%h)*nb*maxm], cols, panel_local[d], ldpan[d] );
                 /* synch for remaining update */
                 magma_queue_sync(streaml[d][1]);
             } else {
@@ -246,7 +246,7 @@ magma_dgetrf2_mgpu(magma_int_t num_gpus,
                 magma_queue_sync(streaml[d][1]);
                 trace_gpu_start( d, 0, "gemm", "gemm" );
                 /* transpose panel on GPU */
-                magmablas_dtranspose2(panel_local[d], ldpan[d], &d_lAP[d][(i%h)*nb*maxm], cols, rows, nb);
+                magmablas_dtranspose( rows, nb, &d_lAP[d][(i%h)*nb*maxm], cols, panel_local[d], ldpan[d] );
             }
             
             /* gpu updating the trailing matrix */
@@ -272,7 +272,7 @@ magma_dgetrf2_mgpu(magma_int_t num_gpus,
                 if ( nb0 > 0 ) {
                     /* transpose the panel for sending it to cpu */
                     trace_gpu_start( d, 1, "comm", "get" );
-                    magmablas_dtranspose2( &d_lAP[d][((i+1)%h)*nb*maxm], ldda, dAT(d,loff,i_local), lddat, nb0, m-(i+1)*nb );
+                    magmablas_dtranspose( nb0, m-(i+1)*nb, dAT(d,loff,i_local), lddat, &d_lAP[d][((i+1)%h)*nb*maxm], ldda );
              
                     /* send the panel to cpu */
                     magma_dgetmatrix_async( cols, nb0,
@@ -373,7 +373,7 @@ magma_dgetrf2_mgpu(magma_int_t num_gpus,
                 /* next column */
                 nb1 = n_local[d] - i_local*nb-nb0;
                 
-                magmablas_dtranspose2( panel_local[d], lddat, &d_lAP[d][(s%h)*nb*maxm], cols, rows, nb0);
+                magmablas_dtranspose( rows, nb0, &d_lAP[d][(s%h)*nb*maxm], cols, panel_local[d], lddat );
                 
                 if ( nb1 > 0 ) {
                     magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
@@ -388,7 +388,7 @@ magma_dgetrf2_mgpu(magma_int_t num_gpus,
                 /* next column */
                 nb1 = n_local[d] - i_local2*nb;
                 
-                magmablas_dtranspose2( panel_local[d], nb, &d_lAP[d][(s%h)*nb*maxm], cols, rows, nb0);
+                magmablas_dtranspose( rows, nb0, &d_lAP[d][(s%h)*nb*maxm], cols, panel_local[d], nb );
                 magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
                              nb1, nb0, c_one,
                              panel_local[d],     nb,

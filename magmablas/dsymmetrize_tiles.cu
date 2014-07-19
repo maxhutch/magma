@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zsymmetrize_tiles.cu normal z -> d, Fri May 30 10:40:43 2014
+       @generated from zsymmetrize_tiles.cu normal z -> d, Fri Jul 18 17:34:12 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -90,7 +90,7 @@ dsymmetrize_tiles_upper( int m, double *dA, int ldda, int mstride, int nstride )
             The number of rows & columns of each square block of dA.  M >= 0.
     
     @param[in,out]
-    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
             The matrix dA. N = m + nstride*(ntile-1).
     
     @param[in]

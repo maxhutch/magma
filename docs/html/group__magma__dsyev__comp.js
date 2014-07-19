@@ -12,5 +12,5 @@ var group__magma__dsyev__comp =
     [ "magma_dsytrd", "group__magma__dsyev__comp.html#ga46c485cec62267b9f24ffc3eb4305c69", null ],
     [ "magma_dsytrd2_gpu", "group__magma__dsyev__comp.html#ga2ab5847e342b9f5a49182af3f7114aa1", null ],
     [ "magma_dsytrd_gpu", "group__magma__dsyev__comp.html#gacf7412210473e5b65539291e603124f8", null ],
-    [ "magma_dsytrd_mgpu", "group__magma__dsyev__comp.html#gadd2774f9fcf7624a4787ae9d0b9517d0", null ]
+    [ "magma_dsytrd_mgpu", "group__magma__dsyev__comp.html#ga2b33ea1967706029d337b8de8226aa57", null ]
 ];

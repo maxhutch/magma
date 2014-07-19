@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Mark Gates
-       @generated from testing_zunmbr.cpp normal z -> d, Fri May 30 10:41:29 2014
+       @generated from testing_zunmbr.cpp normal z -> d, Fri Jul 18 17:34:25 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -197,7 +197,7 @@ int main( int argc, char** argv )
                     lapacke_trans_const( trans[itran] ),
                     cpu_perf, cpu_time, gpu_perf, gpu_time,
                     error, (error < tol ? "ok" : "failed") );
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( C );
             TESTING_FREE_CPU( R );

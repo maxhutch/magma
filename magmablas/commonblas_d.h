@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from commonblas_z.h normal z -> d, Fri May 30 10:40:43 2014
+       @generated from commonblas_z.h normal z -> d, Fri Jul 18 17:34:13 2014
 */
 
 #ifndef COMMONBLAS_D_H
@@ -51,37 +51,6 @@ void magmablas_dgemv_tesla(
     const double *x, magma_int_t incx,
     double beta,
     double *y, magma_int_t incy );
-
-// for tesla, z is not available, and chemv doesn't have _work interface
-void magmablas_dsymv_tesla(
-    magma_uplo_t uplo, magma_int_t n, double alpha,
-    const double *dA, magma_int_t lda,
-    const double *dx, magma_int_t incx,
-    double beta,
-    double *dy, magma_int_t incy );
-
-//void magmablas_dsymv_tesla_work(
-//    magma_uplo_t uplo, magma_int_t n, double alpha,
-//    const double *dA, magma_int_t lda,
-//    const double *dx, magma_int_t incx,
-//    double beta,
-//    double *dy, magma_int_t incy,
-//    double *dwork, magma_int_t lwork );
-
-void magmablas_dsymv_tesla(
-    magma_uplo_t uplo, magma_int_t n, double alpha,
-    const double *dA, magma_int_t lda,
-    const double *dx, magma_int_t incx,
-    double beta,
-    double *dy, magma_int_t incy );
-
-void magmablas_dsymv_tesla_work(
-    magma_uplo_t uplo, magma_int_t n, double alpha,
-    const double *dA, magma_int_t lda,
-    const double *dx, magma_int_t incx,
-    double beta,
-    double *dy, magma_int_t incy,
-    double *dwork, magma_int_t lwork );
 
 #ifdef __cplusplus
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> c d s
 
@@ -102,38 +102,54 @@ magmablas_dznrm2_kernel( int m, magmaDoubleComplex *da, int ldda, double *dxnorm
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes for Block-LOBPCG, the set of residuals. 
                             R = Ax - x evalues
     It replaces:
-    for(int i=0; i<n; i++){
+    for(int i=0; i < n; i++){
         magma_zaxpy(m, MAGMA_Z_MAKE(-evalues[i],0),blockX+i*m,1,blockR+i*m,1);
     }
     The memory layout of x is:
 
         / x1[0] x2[0] x3[0] \
         | x1[1] x2[1] x3[1] |
-    x = | x1[2] x2[2] x3[2] | = x1[0] x1[1] x1[2] x1[3] x1[4] x2[0] x2[1] ..
+    x = | x1[2] x2[2] x3[2] | = x1[0] x1[1] x1[2] x1[3] x1[4] x2[0] x2[1] .
         | x1[3] x2[3] x3[3] |
         \ x1[4] x2[4] x3[4] /
     
     Arguments
-    =========
+    ---------
 
-    magma_int_t num_rows            number of rows
-    magma_int_t num_vecs            number of vectors
-    magma_int_t shift               shift number
-    magmaDoubleComplex *x           input/output vector x
+    @param
+    num_rows    magma_int_t
+                number of rows
 
-    ======================================================================    */
+    @param
+    num_vecs    magma_int_t
+                number of vectors
+                
+    @param
+    evalues     double*
+                array of eigenvalues/approximations
+
+    @param
+    X           magmaDoubleComplex*
+                block of eigenvector approximations
+                
+    @param
+    R           magmaDoubleComplex*
+                block of residuals
+
+    @param
+    res         double*
+                array of residuals
+
+
+    @ingroup magmasparse_zaux
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_zlobpcg_res(      magma_int_t num_rows,

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zjacobisetup.cu normal z -> c, Fri May 30 10:41:37 2014
+       @generated from zjacobisetup.cu normal z -> c, Fri Jul 18 17:34:27 2014
        @author Hartwig Anzt
 
 */
@@ -36,14 +36,9 @@ cvjacobisetup_gpu(  int num_rows,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the Jacobi Iteration according to
        x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
@@ -52,13 +47,26 @@ cvjacobisetup_gpu(  int num_rows,
     Returns the vector c. It calls a GPU kernel
 
     Arguments
-    =========
+    ---------
 
-    magma_c_vector b                          RHS b
-    magma_c_vector d                          vector with diagonal entries
-    magma_c_vector *c                         c = D^(-1) * b
+    @param
+    num_rows    magma_int_t
+                number of rows
+                
+    @param
+    b           magma_c_vector
+                RHS b
 
-    ========================================================================  */
+    @param
+    d           magma_c_vector
+                vector with diagonal entries
+
+    @param
+    c           magma_c_vector*
+                c = D^(-1) * b
+
+    @ingroup magmasparse_cgegpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_cjacobisetup_vector_gpu(  int num_rows, 
@@ -96,14 +104,9 @@ cjacobidiagscal_kernel(  int num_rows,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the Jacobi Iteration according to
        x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
@@ -112,13 +115,26 @@ cjacobidiagscal_kernel(  int num_rows,
     Returns the vector c. It calls a GPU kernel
 
     Arguments
-    =========
+    ---------
 
-    magma_c_vector b                          RHS b
-    magma_c_vector d                          vector with diagonal entries
-    magma_c_vector *c                         c = D^(-1) * b
+    @param
+    num_rows    magma_int_t
+                number of rows
+                
+    @param
+    b           magma_c_vector
+                RHS b
 
-    ========================================================================  */
+    @param
+    d           magma_c_vector
+                vector with diagonal entries
+
+    @param
+    c           magma_c_vector*
+                c = D^(-1) * b
+
+    @ingroup magmasparse_c
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_cjacobi_diagscal(         int num_rows, 

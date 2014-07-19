@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
@@ -38,27 +38,34 @@
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     LU decomposition and solution via triangular solves for a BCSR matrix A. 
     We assume all diagonal blocks to be nonzero.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A                   descriptor for matrix A
-    magma_z_vector b                          RHS b vector
-    magma_z_vector *x                         solution approximation
-    magma_z_solver_par *solver_par       solver parameters
+    @param
+    A           magma_z_sparse_matrix
+                descriptor for matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_z_vector
+                RHS b vector
+
+    @param
+    x           magma_z_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_z_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_zgesv
+    ********************************************************************/
 
 magma_int_t
 magma_zbcsrlu( magma_z_sparse_matrix A, magma_z_vector b, 
@@ -142,26 +149,31 @@ magma_zbcsrlu( magma_z_sparse_matrix A, magma_z_vector b,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     LU decomposition for a BCSR matrix A. 
     We assume all diagonal blocks to be nonzero.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A           input matrix A (on DEV)
-    magma_z_sparse_matrix *M          output matrix containing LU decomposition
-    magma_int_t *ipiv                 pivot vector
+    @param
+    A           magma_z_sparse_matrix
+                input matrix A (on DEV)
 
-    ========================================================================  */
+    @param
+    m           magma_z_sparse_matrix*
+                output matrix containing LU decomposition
+
+    @param
+    ipiv        magma_int_t*
+                pivot vector
+
+
+    @ingroup magmasparse_zgesv
+    ********************************************************************/
 
 magma_int_t
 magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, 
@@ -196,7 +208,7 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
                 // max number of blocks per column
 
     //complete fill-in
-    magma_indexmalloc_cpu( &M->blockinfo, r_blocks * c_blocks );
+    magma_index_malloc_cpu( &M->blockinfo, r_blocks * c_blocks );
 
     for( k=0; k<r_blocks; k++){
         for( j=0; j<c_blocks; j++ ){
@@ -223,43 +235,43 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
     }
     M->numblocks = num_blocks_tmp;
     magma_zmalloc( &M->val, size_b*size_b*(M->numblocks) );
-    magma_indexmalloc( &M->row, r_blocks+1 );
-    magma_indexmalloc( &M->col, M->numblocks );
+    magma_index_malloc( &M->row, r_blocks+1 );
+    magma_index_malloc( &M->col, M->numblocks );
 
     // Prepare A 
     magmaDoubleComplex **hA, **dA,  **hB, **dB, **hBL, **dBL, **hC, **dC;
     int rowt=0, rowt2=0;
     magma_malloc_cpu((void **)& hA, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
     magma_malloc(    (void **)&dA, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
     magma_malloc_cpu((void **)& hB, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
     magma_malloc(    (void **)&dB, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
     magma_malloc_cpu((void **)& hBL, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
     magma_malloc(    (void **)&dBL, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
     magma_malloc_cpu((void **)& hC, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
     magma_malloc(    (void **)&dC, (M->numblocks)
-                            *sizeof(magmaDoubleComplex *) );
+                            *sizeof(magmaDoubleComplex*) );
 
     magmaDoubleComplex **AIs, **AIIs, **dAIs, **dAIIs, **BIs, **dBIs;
 
     magma_malloc_cpu((void **)&AIs, r_blocks*c_blocks
-                        *sizeof(magmaDoubleComplex *));
+                        *sizeof(magmaDoubleComplex*));
     magma_malloc_cpu((void **)&BIs, r_blocks*c_blocks
-                        *sizeof(magmaDoubleComplex *));
+                        *sizeof(magmaDoubleComplex*));
     magma_malloc((void **)&dAIs, r_blocks*c_blocks
-                        *sizeof(magmaDoubleComplex *));
+                        *sizeof(magmaDoubleComplex*));
     magma_malloc((void **)&dBIs, r_blocks*c_blocks
-                        *sizeof(magmaDoubleComplex *));
+                        *sizeof(magmaDoubleComplex*));
     magma_malloc_cpu((void **)&AIIs, r_blocks*c_blocks
-                        *sizeof(magmaDoubleComplex *));
+                        *sizeof(magmaDoubleComplex*));
     magma_malloc((void **)&dAIIs, r_blocks*c_blocks
-                        *sizeof(magmaDoubleComplex *));
+                        *sizeof(magmaDoubleComplex*));
 
     magma_int_t *ipiv_d;
     magma_imalloc( &ipiv_d, size_b);
@@ -276,20 +288,19 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
            }
         }
     }
-    cublasSetVector(  A.numblocks, sizeof(magmaDoubleComplex *), 
+    magma_setvector( A.numblocks, sizeof(magmaDoubleComplex*), 
                                                         hA, 1, dA, 1 );
-    cublasSetVector(  A.numblocks, sizeof(magmaDoubleComplex *), 
+    magma_setvector( A.numblocks, sizeof(magmaDoubleComplex*), 
                                                         hB, 1, dB, 1 );
-    cublasSetVector(  (M->numblocks-A.numblocks), 
-                        sizeof(magmaDoubleComplex *), hC, 1, dC, 1 );
+    magma_setvector( (M->numblocks-A.numblocks), sizeof(magmaDoubleComplex*), hC, 1, dC, 1 );
 
     magma_zbcsrvalcpy(  size_b, A.numblocks, (M->numblocks-A.numblocks), 
                                                         dA, dB, dC );
 
     num_blocks_tmp=0;
     magma_index_t *cpu_row, *cpu_col;
-    magma_indexmalloc_cpu( &cpu_row, r_blocks+1 );
-    magma_indexmalloc_cpu( &cpu_col, M->numblocks );
+    magma_index_malloc_cpu( &cpu_row, r_blocks+1 );
+    magma_index_malloc_cpu( &cpu_col, M->numblocks );
 
     num_blocks_tmp=0;
     for( i=0; i<c_blocks * r_blocks; i++ ){
@@ -308,9 +319,8 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
     cpu_row[r_blocks] = num_blocks_tmp;
     M->nnz = num_blocks_tmp;
 
-    cublasSetVector( r_blocks+1, sizeof( magma_int_t ), cpu_row, 1, M->row, 1 );            
-    cublasSetVector(  M->numblocks, sizeof( magma_int_t ), cpu_col, 
-                                                               1, M->col, 1 );
+    magma_index_setvector( r_blocks+1,   cpu_row, 1, M->row, 1 );            
+    magma_index_setvector( M->numblocks, cpu_col, 1, M->col, 1 );
     magma_free_cpu( cpu_row );
     magma_free_cpu( cpu_col );
 
@@ -338,7 +348,7 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
                 row3++;
             }
         }
-        cublasSetVector( klblocks, sizeof(magmaDoubleComplex *), hBL, 1, 
+        magma_setvector( klblocks, sizeof(magmaDoubleComplex*), hBL, 1, 
                                                                     dBL, 1 );
 
         for( i = k+1; i< c_blocks; i++){
@@ -354,9 +364,9 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
                 row2++;
             }
         }
-        cublasSetVector( num_block_rows, sizeof(magmaDoubleComplex *), hA, 1, 
+        magma_setvector( num_block_rows, sizeof(magmaDoubleComplex*), hA, 1, 
                                                         dA, 1 );
-        cublasSetVector( kblocks, sizeof(magmaDoubleComplex *), hB, 1, dB, 1 );
+        magma_setvector( kblocks, sizeof(magmaDoubleComplex*), hB, 1, dB, 1 );
             
         for( i = k+1; i< r_blocks; i++){
            if ( Mblockinfo(i, k) != 0 ){
@@ -368,7 +378,7 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
               }
            }
         }
-        cublasSetVector( kblocks*num_block_rows, sizeof(magmaDoubleComplex *), 
+        magma_setvector( kblocks*num_block_rows, sizeof(magmaDoubleComplex*), 
                                                                 hC, 1, dC, 1 );
 
         if( version==0 ){ 
@@ -379,23 +389,21 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
                   BIs[j+i*kblocks] = hB[j];
                 }
             }
-            cublasSetVector( kblocks*num_block_rows, 
-                        sizeof(magmaDoubleComplex *), AIs, 1, dAIs, 1 );
-            cublasSetVector( kblocks*num_block_rows, 
-                        sizeof(magmaDoubleComplex *), BIs, 1, dBIs, 1 );
+            magma_setvector( kblocks*num_block_rows, sizeof(magmaDoubleComplex*), AIs, 1, dAIs, 1 );
+            magma_setvector( kblocks*num_block_rows, sizeof(magmaDoubleComplex*), BIs, 1, dBIs, 1 );
         }  
         // AIIs for the batched TRSMs under the factorized block
         for(i=0; i<max(num_block_rows, kblocks); i++){
            AIIs[i] = M(k,k);
         }
-        cublasSetVector( max(num_block_rows, kblocks), 
-                sizeof(magmaDoubleComplex *), AIIs, 1, dAIIs, 1 );
+        magma_setvector( max(num_block_rows, kblocks), 
+                sizeof(magmaDoubleComplex*), AIIs, 1, dAIIs, 1 );
         
         magma_zgetrf_gpu( size_b, size_b, M(k,k), ldda, ipiv+k*size_b, &info );
 
 
         // Swap elements on the right before update
-        cublasSetVector( size_b, sizeof( int ), ipiv+k*size_b, 1, ipiv_d, 1 ); 
+        magma_isetvector( size_b, ipiv+k*size_b, 1, ipiv_d, 1 ); 
         magma_zbcsrlupivloc( size_b, kblocks, dB, ipiv_d );
 
 
@@ -458,7 +466,38 @@ magma_zbcsrlutrf( magma_z_sparse_matrix A, magma_z_sparse_matrix *M,
 }   /* magma_zbcsrlusv */
 
 
+/**
+    Purpose
+    -------
 
+    LU solve for a BCSR matrix A. 
+
+    Arguments
+    ---------
+
+    @param
+    A           magma_z_sparse_matrix
+                input matrix A (on DEV)
+                
+    @param
+    b           magma_z_vector
+                RHS (on DEV)
+                
+    @param
+    x           magma_z_vector
+                solution (on DEV)
+
+    @param
+    solver_par  magma_z_solver_par*
+                solver parameters
+
+    @param
+    ipiv        magma_int_t*
+                pivot vector
+
+
+    @ingroup magmasparse_zgesv
+    ********************************************************************/
 
 magma_int_t
 magma_zbcsrlusv( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,  
@@ -472,8 +511,7 @@ magma_zbcsrlusv( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
                                         // max number of blocks per column
 
     // set x = b
-    cudaMemcpy( x->val, b.val, A.num_rows*sizeof( magmaDoubleComplex ), 
-                                            cudaMemcpyDeviceToDevice );
+    magma_zcopyvector( A.num_rows, b.val, 1, x->val, 1 );
 
     // First pivot the RHS
     magma_zbcsrswp( r_blocks, size_b, ipiv, x->val );

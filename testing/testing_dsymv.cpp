@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_zhemv.cpp normal z -> d, Fri May 30 10:41:19 2014
+       @generated from testing_zhemv.cpp normal z -> d, Fri Jul 18 17:34:22 2014
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     double          magma_error, cublas_error, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t N, lda, sizeA, sizeX, sizeY, blocks, ldwork;
+    magma_int_t N, lda, ldda, sizeA, sizeX, sizeY, blocks, ldwork;
     magma_int_t incx = 1;
     magma_int_t incy = 1;
     magma_int_t nb   = 64;
@@ -46,12 +46,16 @@ int main(int argc, char **argv)
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
     printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
+    if ( opts.uplo == MagmaUpper ) {
+        printf("** for uplo=MagmaUpper, magmablas_dsymv simply calls cublas_dsymv.\n");
+    }
     printf("    N   MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  CUBLAS error\n");
     printf("=============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
-            lda    = ((N + 31)/32)*32;
+            lda    = N;
+            ldda   = ((N + 31)/32)*32;
             sizeA  = N*lda;
             sizeX  = N*incx;
             sizeY  = N*incy;
@@ -63,13 +67,16 @@ int main(int argc, char **argv)
             TESTING_MALLOC_CPU( Ycublas, double, sizeY );
             TESTING_MALLOC_CPU( Ymagma,  double, sizeY );
             
-            TESTING_MALLOC_DEV( dA, double, sizeA );
+            TESTING_MALLOC_DEV( dA, double, ldda*N );
             TESTING_MALLOC_DEV( dX, double, sizeX );
             TESTING_MALLOC_DEV( dY, double, sizeY );
             
             blocks = (N + nb - 1) / nb;
-            ldwork = lda * (blocks + 1);
+            ldwork = ldda*blocks;
             TESTING_MALLOC_DEV( dwork, double, ldwork );
+            
+            magmablas_dlaset( MagmaFull, ldwork, 1, MAGMA_D_NAN, MAGMA_D_NAN, dwork, ldwork );
+            magmablas_dlaset( MagmaFull, ldda,   N, MAGMA_D_NAN, MAGMA_D_NAN, dA,    ldda   );
             
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &sizeA, A );
@@ -80,13 +87,13 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_dsetmatrix( N, N, A, lda, dA, lda );
+            magma_dsetmatrix( N, N, A, lda, dA, ldda );
             magma_dsetvector( N, X, incx, dX, incx );
             magma_dsetvector( N, Y, incy, dY, incy );
             
             cublas_time = magma_sync_wtime( 0 );
             cublasDsymv( handle, cublas_uplo_const(opts.uplo),
-                         N, &alpha, dA, lda, dX, incx, &beta, dY, incy );
+                         N, &alpha, dA, ldda, dX, incx, &beta, dY, incy );
             cublas_time = magma_sync_wtime( 0 ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
@@ -97,14 +104,18 @@ int main(int argc, char **argv)
                =================================================================== */
             magma_dsetvector( N, Y, incy, dY, incy );
             
+            //magma_dprint_gpu( ldda, blocks, dwork, ldda );
+            
             magma_time = magma_sync_wtime( 0 );
-            magmablas_dsymv_work( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy, dwork, ldwork );
+            magmablas_dsymv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork );
             // TODO provide option to test non-work interface
-            //magmablas_dsymv( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy );
+            //magmablas_dsymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
             magma_time = magma_sync_wtime( 0 ) - magma_time;
             magma_perf = gflops / magma_time;
             
             magma_dgetvector( N, dY, incy, Ymagma, incy );
+            
+            //magma_dprint_gpu( ldda, blocks, dwork, ldda );
             
             /* =====================================================================
                Performs operation using CPU BLAS

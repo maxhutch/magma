@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from run_zjacobi.cpp normal z -> s, Fri May 30 10:41:49 2014
+       @generated from run_zjacobi.cpp normal z -> s, Fri Jul 18 17:34:31 2014
        @author Hartwig Anzt
 */
 
@@ -95,15 +95,18 @@ int main( int argc, char** argv)
         printf( "\n# matrix info: %d-by-%d with %d nonzeros\n\n",
                             (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
 
-        // scale initial guess
+        // scale matrix
         magma_smscale( &A, scaling );
-
-        magma_s_vinit( &b, Magma_DEV, A.num_cols, one );
-        magma_s_vinit( &x, Magma_DEV, A.num_cols, zero );
 
         magma_s_mconvert( A, &B, Magma_CSR, B.storage_type );
         magma_s_mtransfer( B, &B_d, Magma_CPU, Magma_DEV );
 
+        // vectors and initial guess
+        magma_s_vinit( &b, Magma_DEV, A.num_cols, one );
+        magma_s_vinit( &x, Magma_DEV, A.num_cols, one );
+        magma_s_spmv( one, B_d, x, zero, b );                 //  b = A x
+        magma_s_vfree(&x);
+        magma_s_vinit( &x, Magma_DEV, A.num_cols, zero );
 
         magma_sjacobi( B_d, b, &x, &solver_par );
 

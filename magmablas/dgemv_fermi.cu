@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
 */
 #include "common_magma.h"
@@ -104,7 +104,7 @@ dgemvn_kernel_fermi(
             On entry, INCY specifies the increment for the elements of Y.
             INCY must not be zero.
 
-    @ingroup magma_dblas2
+    @ingroup magma_dblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_dgemvn_fermi(
@@ -222,7 +222,7 @@ dgemvt_kernel_fermi(
             On entry, INCY specifies the increment for the elements of Y.
             INCY must not be zero.
 
-    @ingroup magma_dblas2
+    @ingroup magma_dblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_dgemvt_fermi(
@@ -242,9 +242,9 @@ magmablas_dgemvt_fermi(
     Purpose
     -------
     This routine computes:
-    1) y =       A   x      if trans == 'N' or 'n', alpha == 1, beta == 0,
+    1) y =       A   x      if trans == MagmaNoTrans, alpha == 1, beta == 0,
                             and incx == incy == 1 (using magmablas code)
-    2) y = alpha A^T x      if trans == 'T' or 't', beta == 0,
+    2) y = alpha A^T x      if trans == MagmaTrans, beta == 0,
                             and incx == incy == 1 (using magmablas code)
     3) y = alpha A^trans x + beta y
                             otherwise, using CUBLAS.
@@ -257,6 +257,7 @@ magmablas_dgemvt_fermi(
             follows:
       -     = MagmaNoTrans:    y := alpha*A  *x + beta*y
       -     = MagmaTrans:      y := alpha*A^T*x + beta*y
+      -     = MagmaConjTrans:  y := alpha*A^T*x + beta*y
 
     @param[in]
     m       INTEGER
@@ -279,8 +280,8 @@ magmablas_dgemvt_fermi(
 
     @param[in]
     x       DOUBLE PRECISION array of dimension
-            n if trans == 'n'
-            m if trans == 't'
+            n if trans == MagmaNoTrans
+            m if trans == MagmaTrans or MagmaConjTrans
      
     @param[in]
     incx    Specifies the increment for the elements of X.
@@ -293,8 +294,8 @@ magmablas_dgemvt_fermi(
 
     @param[out]
     y       DOUBLE PRECISION array of dimension
-            m if trans == 'n'
-            n if trans == 't'
+            m if trans == MagmaNoTrans
+            n if trans == MagmaTrans or MagmaConjTrans
 
     @param[in]
     incy    Specifies the increment for the elements of Y.
@@ -311,6 +312,25 @@ void magmablas_dgemv(
     double beta,
     double       *y, magma_int_t incy)
 {
+    magma_int_t info = 0;
+    if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( n < 0 )
+        info = -3;
+    else if ( lda < m )
+        info = -6;
+    else if ( incx == 0 )
+        info = -8;
+    else if ( incy == 0 )
+        info = -11;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
         // --------------------
@@ -335,10 +355,9 @@ void magmablas_dgemv(
         //else
             magmablas_dgemvn_fermi(m, n, alpha, A, lda, x, incx, beta, y, incy);
     }
-    else if ( trans == MagmaTrans || trans == MagmaConjTrans )
+    else {
         magmablas_dgemvt_fermi(m, n, alpha, A, lda, x, incx, beta, y, incy);
-    else
-        fprintf( stderr, "trans = %c is invalid\n", trans );
+    }
 }
 
 #undef gemv_bs

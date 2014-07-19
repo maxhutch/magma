@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = src
@@ -232,8 +232,10 @@ ZSRC += \
 	ztrevc3.cpp		\
 	ztrevc3_mt.cpp		\
 	zunghr.cpp		\
-	lapack_dtrevc3.f	\
-	lapack_ztrevc3.f	\
+
+# use ztrevc3 and ztrevc3_mt instead
+	#lapack_dtrevc3.f	\
+	#lapack_ztrevc3.f	\
 
 # non-symmetric eigenvalues, multi-GPU
 ZSRC += \

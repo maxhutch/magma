@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date July 2014
 
        @author Mark Gates
-       @generated from dlaqtrsd.cpp normal d -> s, Fri May 30 10:41:09 2014
+       @generated from dlaqtrsd.cpp normal d -> s, Fri Jul 18 17:34:20 2014
 */
 #include "common_magma.h"
 #include <cblas.h>

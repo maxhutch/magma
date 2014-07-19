@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeadd.cu normal z -> c, Fri May 30 10:40:39 2014
+       @generated from zgeadd.cu normal z -> c, Fri Jul 18 17:34:11 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -63,11 +63,11 @@ cgeadd_kernel(
             The number of columns of the matrix dA.  N >= 0.
     
     @param[in]
-    alpha   COMPLEX REAL
+    alpha   COMPLEX
             The scalar alpha.
             
     @param[in]
-    dA      COMPLEX REAL array, dimension (LDDA,N)
+    dA      COMPLEX array, dimension (LDDA,N)
             The m by n matrix dA.
     
     @param[in]
@@ -75,7 +75,7 @@ cgeadd_kernel(
             The leading dimension of the array dA.  LDDA >= max(1,M).
             
     @param[in,out]
-    dB      COMPLEX REAL array, dimension (LDDB,N)
+    dB      COMPLEX array, dimension (LDDB,N)
             The m by n matrix dB.
     
     @param[in]

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zaicc_chow_csr_s.cu normal z -> d, Fri May 30 10:41:37 2014
+       @generated from zaicc_chow_csr_s.cu normal z -> d, Fri Jul 18 17:34:28 2014
 
 */
 
@@ -36,7 +36,8 @@ magma_daic_csr_s_kernel( magma_int_t num_rows,
                          double *val,
                          magma_index_t *rowptr,
                          magma_index_t *rowidx, 
-                         magma_index_t *colidx ){
+                         magma_index_t *colidx,
+                         double *A2 ){
 
     int i, j;
     int k = (blockDim.x * blockIdx.x + threadIdx.x);// % nnz;
@@ -90,9 +91,9 @@ magma_daic_csr_s_kernel( magma_int_t num_rows,
 
         // modify entry
         if (i == j)
-            val[k] = MAGMA_D_MAKE(sqrt(abs(MAGMA_D_REAL(s))), 0.0);
+            A2[k] = MAGMA_D_MAKE(sqrt(abs(MAGMA_D_REAL(s))), 0.0);
         else
-            val[k] =  s / val[rowptr[j+1]-1];
+            A2[k] =  s / val[rowptr[j+1]-1];
     }
 
 }// kernel 
@@ -106,28 +107,27 @@ magma_daic_csr_s_kernel( magma_int_t num_rows,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes the IC approximation of a matrix iteratively. 
     The idea is according to Edmond Chow's presentation at SIAM 2014.
     The input format of the matrix is Magma_CSRCOO. 
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A_L               input matrix L
-    magma_d_sparse_matrix A_U               input matrix U
-    magma_d_sparse_matrix L                 input/output matrix L
-    magma_d_sparse_matrix U                 input/output matrix U
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A - initial guess (lower triangular)
 
-    ======================================================================    */
+    @param
+    A_CSR       magma_d_sparse_matrix
+                input/output matrix containing the IC approximation
+
+    @ingroup magmasparse_dsygpuk
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_daic_csr_s( magma_d_sparse_matrix A,
@@ -136,18 +136,28 @@ magma_daic_csr_s( magma_d_sparse_matrix A,
 
 
     
-    int blocksize1 = 256;
+    int blocksize1 = 1;
     int blocksize2 = 1;
 
     int dimgrid1 = ( A.nnz + blocksize1 -1 ) / blocksize1;
     int dimgrid2 = 1;
     int dimgrid3 = 1;
 
+    magma_d_vector A2;
+
+
+            // init DEV vectors
+    magma_d_vinit( &A2, Magma_DEV, A.nnz, MAGMA_D_ONE );    
+
     dim3 grid( dimgrid1, dimgrid2, dimgrid3 );
     dim3 block( blocksize1, blocksize2, 1 );
     magma_daic_csr_s_kernel<<< grid, block, 0, magma_stream >>>
             ( A.num_rows, A.nnz,  A.val, A_CSR.val, A_CSR.row, 
-                                    A_CSR.rowidx,  A_CSR.col );
+                                    A_CSR.rowidx,  A_CSR.col, A2.val );
+
+    magma_dcopy( A.nnz, A2.val, 1, A_CSR.val, 1 );                            // rr = b
+
+    magma_d_vfree(&A2);
 
     return MAGMA_SUCCESS;
 }

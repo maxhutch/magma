@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlobpcg_shift.cu normal z -> c, Fri May 30 10:41:36 2014
+       @generated from zlobpcg_shift.cu normal z -> c, Fri Jul 18 17:34:27 2014
 
 */
 
@@ -34,14 +34,9 @@ magma_clobpcg_shift_kernel( magma_int_t num_rows, magma_int_t num_vecs,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     For a Block-LOBPCG, the set of residuals (entries consecutive in memory)  
     shrinks and the vectors are shifted in case shift residuals drop below 
@@ -49,19 +44,32 @@ magma_clobpcg_shift_kernel( magma_int_t num_rows, magma_int_t num_vecs,
 
         / x1[0] x2[0] x3[0] \
         | x1[1] x2[1] x3[1] |
-    x = | x1[2] x2[2] x3[2] | = x1[0] x2[0] x3[0] x1[1] x2[1] x3[1] x1[2] ..
+    x = | x1[2] x2[2] x3[2] | = x1[0] x2[0] x3[0] x1[1] x2[1] x3[1] x1[2] .
         | x1[3] x2[3] x3[3] |
         \ x1[4] x2[4] x3[4] /
     
     Arguments
-    =========
+    ---------
 
-    magma_int_t num_rows            number of rows
-    magma_int_t num_vecs            number of vectors
-    magma_int_t shift               shift number
-    magmaFloatComplex *x           input/output vector x
+    @param
+    num_rows    magma_int_t
+                number of rows
 
-    ======================================================================    */
+    @param
+    num_vecs    magma_int_t
+                number of vectors
+
+    @param
+    shift       magma_int_t
+                shift number
+
+    @param
+    x           magmaFloatComplex*
+                input/output vector x
+
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_clobpcg_shift(    magma_int_t num_rows,

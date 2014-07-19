@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -33,14 +33,11 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    magmaDoubleComplex *h_A, *h_Q, *h_PT, *h_work, *chkwork;
+    magmaDoubleComplex *h_A, *h_Q, *h_PT, *h_work;
     magmaDoubleComplex *taup, *tauq;
-    #if defined(PRECISION_z) || defined(PRECISION_c)
-    double      *rwork;
-    #endif
     double      *diag, *offdiag;
     double      eps, result[3] = {0., 0., 0.};
-    magma_int_t M, N, n2, lda, lhwork, lchkwork, info, minmn, nb;
+    magma_int_t M, N, n2, lda, lhwork, info, minmn, nb;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
 
@@ -95,23 +92,31 @@ int main( int argc, char** argv)
                Check the factorization
                =================================================================== */
             if ( opts.check ) {
-                lchkwork = max( minmn * nb, M+N );
-                /* For optimal performance in zunt01 */
-                lchkwork = max( lchkwork, minmn*minmn );
-                TESTING_MALLOC_CPU( h_PT,    magmaDoubleComplex, lda*N   );
-                TESTING_MALLOC_CPU( chkwork, magmaDoubleComplex, lchkwork );
+                // zungbr prefers minmn*NB
+                // zbdt01 needs M+N
+                // zunt01 prefers minmn*(minmn+1) to check Q and P
+                magma_int_t lwork_err;
+                magmaDoubleComplex *h_work_err;
+                lwork_err = max( minmn * nb, M+N );
+                lwork_err = max( lwork_err, minmn*(minmn+1) );
+                TESTING_MALLOC_CPU( h_PT,       magmaDoubleComplex, lda*N     );
+                TESTING_MALLOC_CPU( h_work_err, magmaDoubleComplex, lwork_err );
+                
+                // zbdt01 needs M
+                // zunt01 needs minmn
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_MALLOC_CPU( rwork, double, 5*minmn );
+                double *rwork_err;
+                TESTING_MALLOC_CPU( rwork_err, double, M );
                 #endif
 
                 lapackf77_zlacpy(MagmaUpperLowerStr, &M, &N, h_Q, &lda, h_PT, &lda);
                 
                 // generate Q & P'
-                lapackf77_zungbr("Q", &M, &minmn, &N, h_Q,  &lda, tauq, chkwork, &lchkwork, &info);
+                lapackf77_zungbr("Q", &M, &minmn, &N, h_Q,  &lda, tauq, h_work_err, &lwork_err, &info);
                 if (info != 0)
                     printf("lapackf77_zungbr #1 returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                lapackf77_zungbr("P", &minmn, &N, &M, h_PT, &lda, taup, chkwork, &lchkwork, &info);
+                lapackf77_zungbr("P", &minmn, &N, &M, h_PT, &lda, taup, h_work_err, &lwork_err, &info);
                 if (info != 0)
                     printf("lapackf77_zungbr #2 returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
@@ -123,22 +128,22 @@ int main( int argc, char** argv)
                 lapackf77_zbdt01(&M, &N, &ione,
                                  h_A, &lda, h_Q, &lda,
                                  diag, offdiag, h_PT, &lda,
-                                 chkwork, rwork, &result[0]);
-                lapackf77_zunt01("Columns", &M, &minmn, h_Q,  &lda, chkwork, &lchkwork, rwork, &result[1]);
-                lapackf77_zunt01("Rows",    &minmn, &N, h_PT, &lda, chkwork, &lchkwork, rwork, &result[2]);
+                                 h_work_err, rwork_err, &result[0]);
+                lapackf77_zunt01("Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err, rwork_err, &result[1]);
+                lapackf77_zunt01("Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err, rwork_err, &result[2]);
                 #else
                 lapackf77_zbdt01(&M, &N, &ione,
                                  h_A, &lda, h_Q, &lda,
                                  diag, offdiag, h_PT, &lda,
-                                 chkwork, &result[0]);
-                lapackf77_zunt01("Columns", &M, &minmn, h_Q,  &lda, chkwork, &lchkwork, &result[1]);
-                lapackf77_zunt01("Rows",    &minmn, &N, h_PT, &lda, chkwork, &lchkwork, &result[2]);
+                                 h_work_err, &result[0]);
+                lapackf77_zunt01("Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err, &result[1]);
+                lapackf77_zunt01("Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err, &result[2]);
                 #endif
                 
                 TESTING_FREE_CPU( h_PT );
-                TESTING_FREE_CPU( chkwork );
+                TESTING_FREE_CPU( h_work_err );
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_FREE_CPU( rwork );
+                TESTING_FREE_CPU( rwork_err );
                 #endif
             }
             

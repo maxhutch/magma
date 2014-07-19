@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
+#include "magma_templates.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE  512
@@ -17,60 +18,13 @@
 
 #define PRECISION_z
 
-// ----------------------------------------
-// Does sum reduction of array x, leaving total in x[0].
-// Contents of x are destroyed in the process.
-// With k threads, can reduce array up to 2*k in size.
-// Assumes number of threads <= 1024 (which is max number of threads up to CUDA capability 3.0)
-// Having n as template parameter allows compiler to evaluate some conditions at compile time.
-template< int n >
-__device__ void sum_reduce( /*int n,*/ int i, double* x )
-{
-    __syncthreads();
-    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { x[i] += x[i+1024]; }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { x[i] += x[i+ 512]; }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { x[i] += x[i+ 256]; }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { x[i] += x[i+ 128]; }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { x[i] += x[i+  64]; }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { x[i] += x[i+  32]; }  __syncthreads(); }
-    // probably don't need __syncthreads for < 16 threads
-    // because of implicit warp level synchronization.
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { x[i] += x[i+  16]; }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { x[i] += x[i+   8]; }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { x[i] += x[i+   4]; }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { x[i] += x[i+   2]; }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[i] += x[i+   1]; }  __syncthreads(); }
-}
-// end sum_reduce
-
-
-template< int n >
-__device__ void sum_reduce_2d( /*int n,*/ int i, int c, double x[][BLOCK_SIZEy+1] )
-{
-    __syncthreads();
-    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { x[i][c] += x[i+1024][c]; }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { x[i][c] += x[i+ 512][c]; }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { x[i][c] += x[i+ 256][c]; }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { x[i][c] += x[i+ 128][c]; }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { x[i][c] += x[i+  64][c]; }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { x[i][c] += x[i+  32][c]; }  __syncthreads(); }
-    // probably don't need __syncthreads for < 16 threads
-    // because of implicit warp level synchronization.
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { x[i][c] += x[i+  16][c]; }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { x[i][c] += x[i+   8][c]; }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { x[i][c] += x[i+   4][c]; }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { x[i][c] += x[i+   2][c]; }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[i][c] += x[i+   1][c]; }  __syncthreads(); }
-}
-// end sum_reduce
-
 
 //==============================================================================
 
 __global__ void
 magmablas_dznrm2_kernel( int m, magmaDoubleComplex *da, int ldda, double *dxnorm )
 {
-    const int i = threadIdx.x;
+    const int tx = threadIdx.x;
     magmaDoubleComplex *dx = da + blockIdx.x * ldda;
 
     __shared__ double sum[ BLOCK_SIZE ];
@@ -78,22 +32,20 @@ magmablas_dznrm2_kernel( int m, magmaDoubleComplex *da, int ldda, double *dxnorm
 
     // get norm of dx
     lsum = 0;
-    for( int j = i; j < m; j += BLOCK_SIZE ) {
-
-#if (defined(PRECISION_s) || defined(PRECISION_d))
+    for( int j = tx; j < m; j += BLOCK_SIZE ) {
+        #if (defined(PRECISION_s) || defined(PRECISION_d))
         re = dx[j];
         lsum += re*re;
-#else
+        #else
         re = MAGMA_Z_REAL( dx[j] );
         double im = MAGMA_Z_IMAG( dx[j] );
         lsum += re*re + im*im;
-#endif
-
+        #endif
     }
-    sum[i] = lsum;
-    sum_reduce< BLOCK_SIZE >( i, sum );
+    sum[tx] = lsum;
+    magma_sum_reduce< BLOCK_SIZE >( tx, sum );
     
-    if (i==0)
+    if (tx==0)
         dxnorm[blockIdx.x] = sqrt(sum[0]);
 }
 
@@ -103,32 +55,31 @@ __global__ void
 magmablas_dznrm2_check_kernel( int m, magmaDoubleComplex *da, int ldda, double *dxnorm, 
                                double *lsticc )
 {
-    const int i = threadIdx.x;
+    const int tx = threadIdx.x;
     magmaDoubleComplex *dx = da + blockIdx.x * ldda;
 
     __shared__ double sum[ BLOCK_SIZE ];
     double re, lsum;
 
     // get norm of dx only if lsticc[blockIdx+1] != 0
-    if( lsticc[blockIdx.x + 1] == 0 ) return;
+    if ( lsticc[blockIdx.x + 1] == 0 )
+        return;
 
     lsum = 0;
-    for( int j = i; j < m; j += BLOCK_SIZE ) {
-
-#if (defined(PRECISION_s) || defined(PRECISION_d))
+    for( int j = tx; j < m; j += BLOCK_SIZE ) {
+        #if (defined(PRECISION_s) || defined(PRECISION_d))
         re = dx[j];
         lsum += re*re;
-#else
+        #else
         re = MAGMA_Z_REAL( dx[j] );
         double im = MAGMA_Z_IMAG( dx[j] );
         lsum += re*re + im*im;
-#endif
-
+        #endif
     }
-    sum[i] = lsum;
-    sum_reduce< BLOCK_SIZE >( i, sum );
+    sum[tx] = lsum;
+    magma_sum_reduce< BLOCK_SIZE >( tx, sum );
     
-    if (i==0)
+    if (tx==0)
         dxnorm[blockIdx.x] = sqrt(sum[0]);
 }
 
@@ -149,33 +100,31 @@ __global__ void
 magmablas_dznrm2_smkernel( int m, int n, magmaDoubleComplex *da, int ldda,
                            double *dxnorm )
 {
-    const int i = threadIdx.x, c= threadIdx.y;
+    const int tx = threadIdx.x;
+    const int ty = threadIdx.y;
     __shared__ double sum[ BLOCK_SIZEx ][ BLOCK_SIZEy + 1];
     double re, lsum;
 
-    for( int k = c; k < n; k+= BLOCK_SIZEy) 
-    {
+    for( int k = ty; k < n; k += BLOCK_SIZEy ) {
         magmaDoubleComplex *dx = da + k * ldda;
 
         // get norm of dx
         lsum = 0;
-        for( int j = i; j < m; j += BLOCK_SIZEx ) {
-
-#if (defined(PRECISION_s) || defined(PRECISION_d))
-                re = dx[j];
-                lsum += re*re;
-#else
-                re = MAGMA_Z_REAL( dx[j] );
-                double im = MAGMA_Z_IMAG( dx[j] );
-                lsum += re*re + im*im;
-#endif
-
+        for( int j = tx; j < m; j += BLOCK_SIZEx ) {
+            #if (defined(PRECISION_s) || defined(PRECISION_d))
+            re = dx[j];
+            lsum += re*re;
+            #else
+            re = MAGMA_Z_REAL( dx[j] );
+            double im = MAGMA_Z_IMAG( dx[j] );
+            lsum += re*re + im*im;
+            #endif
         }
-        sum[i][c] = lsum;
-        sum_reduce_2d< BLOCK_SIZEx >( i, c, sum );
+        sum[tx][ty] = lsum;
+        magma_sum_reduce_2d< BLOCK_SIZEx, BLOCK_SIZEy+1 >( tx, ty, sum );
 
-        if (i==0)
-                dxnorm[k] = sqrt(sum[0][c]);
+        if (tx == 0)
+            dxnorm[k] = sqrt(sum[0][ty]);
         __syncthreads();
     }
 }
@@ -200,40 +149,20 @@ magmablas_dznrm2_sm(
 
 //==============================================================================
 
-static
-__device__ void dsum_reduce( int n, int i, double* x )
-{
-    __syncthreads();
-    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { x[i] += x[i+1024]; }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { x[i] += x[i+ 512]; }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { x[i] += x[i+ 256]; }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { x[i] += x[i+ 128]; }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { x[i] += x[i+  64]; }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { x[i] += x[i+  32]; }  __syncthreads(); }
-    // probably don't need __syncthreads for < 16 threads
-    // because of implicit warp level synchronization.
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { x[i] += x[i+  16]; }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { x[i] += x[i+   8]; }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { x[i] += x[i+   4]; }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { x[i] += x[i+   2]; }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[i] += x[i+   1]; }  __syncthreads(); }
-}
-// end sum_reduce
-
 __global__ void
 magma_dznrm2_adjust_kernel(double *xnorm, magmaDoubleComplex *c)
 {
-    const int i = threadIdx.x;
+    const int tx = threadIdx.x;
 
     __shared__ double sum[ BLOCK_SIZE ];
     double temp;
 
-    temp = MAGMA_Z_ABS( c[i] ) / xnorm[0];
-    sum[i] = -temp * temp;
-    dsum_reduce( blockDim.x, i, sum );
+    temp = MAGMA_Z_ABS( c[tx] ) / xnorm[0];
+    sum[tx] = -temp * temp;
+    magma_sum_reduce_n( blockDim.x, tx, sum );
 
     __syncthreads();
-    if (i==0)
+    if (tx == 0)
         xnorm[0] = xnorm[0] * sqrt(1+sum[0]);
 }
 
@@ -256,25 +185,26 @@ __global__ void
 magma_dznrm2_row_check_adjust_kernel(int n, double tol, double *xnorm, double *xnorm2, 
                                      magmaDoubleComplex *c, int ldc, double *lsticc)
 {
-    const int i = threadIdx.x + blockIdx.x*BS;
-    lsticc[i+1] = 0;
+    const int tx = threadIdx.x + blockIdx.x*BS;
+    lsticc[tx+1] = 0;
 
-    if (i<n){
-        double temp = MAGMA_Z_ABS( c[i*ldc] ) / xnorm[i];
+    if (tx < n) {
+        double temp = MAGMA_Z_ABS( c[tx*ldc] ) / xnorm[tx];
         temp = max( 0.0, ((1.0 + temp) * (1.0 - temp)) );
         
         
-        double temp2 = xnorm[i] / xnorm2[i];
+        double temp2 = xnorm[tx] / xnorm2[tx];
         temp2 = temp * (temp2 * temp2);
         
         if (temp2 <= tol) {
-            lsticc[i+1] = 1;
+            lsticc[tx+1] = 1;
         } else {
-            xnorm[i] *= sqrt(temp);
+            xnorm[tx] *= sqrt(temp);
         }
     }
-    if( i==0 ) lsticc[0] = 0;
-    dsum_reduce( blockDim.x, i, lsticc );
+    if (tx == 0)
+        lsticc[0] = 0;
+    magma_sum_reduce_n( blockDim.x, tx, lsticc );
 }
 
 /*

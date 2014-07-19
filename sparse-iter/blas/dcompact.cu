@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zcompact.cu normal z -> d, Fri May 30 10:41:37 2014
+       @generated from zcompact.cu normal z -> d, Fri Jul 18 17:34:28 2014
        @author Stan Tomov
 */
 #include "common_magma.h"
@@ -68,6 +68,50 @@ dcompactactive_kernel(
 
 
 /* ===================================================================== */
+/**
+    Purpose
+    -------
+    ZCOMPACT takes a set of n vectors of size m (in dA) and their norms and
+    compacts them into the cBlock size<=n vectors that have norms > tol.
+    The active mask array has 1 or 0, showing if a vector remained or not
+    in the compacted resulting set of vectors.
+    
+    Arguments
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix dA.  M >= 0.
+    
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix dA.  N >= 0.
+    
+    @param[in,out]
+    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+            The m by n matrix dA.
+    
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1,M).
+    
+    @param[in]
+    dnorms  DOUBLE PRECISION array, dimension N
+            The norms of the N vectors in dA
+
+    @param[in]
+    tol     DOUBLE PRECISON
+            The tolerance value used in the criteria to compact or not.
+
+    @param[out]
+    active  INTEGER array, dimension N
+            A mask of 1s and 0s showing if a vector remains or has been removed
+            
+    @param[out]
+    cBlock  magma_index_t*
+            The number of vectors that remain in dA (i.e., with norms > tol).
+
+    @ingroup magmasparse_dgegpuk
+    ********************************************************************/
 
 extern "C" void
 magma_dcompact(
@@ -76,41 +120,6 @@ magma_dcompact(
     double *dnorms, double tol, 
     magma_index_t *active, magma_index_t *cBlock)
 {
-/*
-    Purpose
-    =======
-    ZCOMPACT takes a set of n vectors of size m (in dA) and their norms and
-    compacts them into the cBlock size<=n vectors that have norms > tol.
-    The active mask array has 1 or 0, showing if a vector remained or not
-    in the compacted resulting set of vectors.
-    
-    Arguments
-    =========    
-    M       (input) INTEGER
-            The number of rows of the matrix dA.  M >= 0.
-    
-    N       (input) INTEGER
-            The number of columns of the matrix dA.  N >= 0.
-    
-    dA      (input/output) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
-            The m by n matrix dA.
-    
-    LDDA    (input) INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,M).
-    
-    DNORMS  (input) DOUBLE PRECISION array, dimension N
-            The norms of the N vectors in dA
-
-    TOL     (input) DOUBLE PRECISON
-            The tolerance value used in the criteria to compact or not.
-
-    ACTIVE  (output) INTEGER array, dimension N
-            A mask of 1s and 0s showing if a vector remains or has been removed
-
-    CBLOCK  (output)
-            The number of vectors that remain in dA (i.e., with norms > tol).
-    =====================================================================   */
-
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;
@@ -133,10 +142,42 @@ magma_dcompact(
     dcompact_kernel<<< grid, threads, 0, magma_stream >>>(
             m, n, dA, ldda, dnorms, tol, active, active+n );
 
-    cublasGetMatrix( 1, 1, sizeof( magma_int_t ), active+n, 1, cBlock, 1 ) ;
+    magma_index_getvector( 1, active+n, 1, cBlock, 1 );
 }
 
+
 /* ===================================================================== */
+/**
+    Purpose
+    -------
+    ZCOMPACTACTIVE takes a set of n vectors of size m (in dA) and an
+    array of 1s and 0sindicating which vectors to compact (for 1s) and
+    which to disregard (for 0s).
+
+    Arguments
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix dA.  M >= 0.
+
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix dA.  N >= 0.
+
+    @param[in,out]
+    dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+            The m by n matrix dA.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1,M).
+
+    @param[in]
+    active  INTEGER array, dimension N
+            A mask of 1s and 0s showing if a vector remains or has been removed
+
+    @ingroup magmasparse_d
+    ********************************************************************/
 
 extern "C" void
 magma_dcompactActive(
@@ -144,31 +185,6 @@ magma_dcompactActive(
     double *dA, magma_int_t ldda,
     magma_index_t *active)
 {
-/*
-    Purpose
-    =======
-    ZCOMPACTACTIVE takes a set of n vectors of size m (in dA) and an
-    array of 1s and 0sindicating which vectors to compact (for 1s) and
-    which to disregard (for 0s).
-
-    Arguments
-    =========
-    M       (input) INTEGER
-            The number of rows of the matrix dA.  M >= 0.
-
-    N       (input) INTEGER
-            The number of columns of the matrix dA.  N >= 0.
-
-    dA      (input/output) COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
-            The m by n matrix dA.
-
-    LDDA    (input) INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,M).
-
-    ACTIVE  (input) INTEGER array, dimension N
-            A mask of 1s and 0s showing if a vector remains or has been removed
-    =====================================================================     */
-
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;

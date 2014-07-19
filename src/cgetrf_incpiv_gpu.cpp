@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgetrf_incpiv_gpu.cpp normal z -> c, Fri May 30 10:40:56 2014
+       @generated from zgetrf_incpiv_gpu.cpp normal z -> c, Fri Jul 18 17:34:16 2014
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -176,7 +176,7 @@ magma_cgetrf_incpiv_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magm
 
         if ( order == MagmaRowMajor ) {
             magma_csetmatrix( m, n, hA, ldha, dwork, lddwork );
-            magmablas_ctranspose( dA, ldda, dwork, lddwork, m, n );
+            magmablas_ctranspose( m, n, dwork, lddwork, dA, ldda );
         } else {
             magma_csetmatrix( m, n, hA, ldha, dA, ldda );
         }
@@ -198,7 +198,7 @@ magma_cgetrf_incpiv_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magm
 
             if ( i > 0 ) {
                 // download i-th panel
-                magmablas_ctranspose( dwork, maxm, AT(0, i), ldda, sb, m );
+                magmablas_ctranspose( sb, m, AT(0,i), ldda, dwork, maxm );
                 magma_cgetmatrix( m, sb, dwork, maxm, hA(0, i), ldha );
 
                 // make sure that gpu queue is empty
@@ -250,7 +250,7 @@ magma_cgetrf_incpiv_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magm
 #endif
             // upload i-th panel
             magma_csetmatrix( rows, sb, hA(i, i), ldha, dwork, cols );
-            magmablas_ctranspose( AT(i,i), ldda, dwork, cols, rows, sb);
+            magmablas_ctranspose( rows, sb, dwork, cols, AT(i,i), ldda );
 
             // do the small non-parallel computations
             if ( s > (i+1) ) {

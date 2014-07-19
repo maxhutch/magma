@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/blas
@@ -47,7 +47,9 @@ ZSRC := \
 # asynchronous iterations
 ZSRC += \
 	zaicc_chow_csr_s.cu	\
+	zaicc_chow_csr_a.cu	\
 	zailu_chow_csr_s.cu	\
+	zailu_chow_csr_a.cu	\
 	zbajac_csr.cu		\
 
 

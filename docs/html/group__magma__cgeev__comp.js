@@ -1,6 +1,5 @@
 var group__magma__cgeev__comp =
 [
-    [ "ctrevc3", "group__magma__cgeev__comp.html#ga29fbeb04ad832c2b415ad0640cc2c8b0", null ],
     [ "magma_cgehrd", "group__magma__cgeev__comp.html#ga0ccc60f77449ee6f3aba056e345d15c8", null ],
     [ "magma_cgehrd2", "group__magma__cgeev__comp.html#ga1ef7dda30b2691ad6f37ec76082dc641", null ],
     [ "magma_cgehrd_m", "group__magma__cgeev__comp.html#ga99a6ce9ed9c039351a24148bd635efd5", null ],

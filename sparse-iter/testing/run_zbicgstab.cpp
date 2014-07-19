@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -105,20 +105,24 @@ int main( int argc, char** argv)
         printf( "\n# matrix info: %d-by-%d with %d nonzeros\n\n",
                             (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
 
-        // scale initial guess
+        // scale matrix
         magma_zmscale( &A, scaling );
-
-        magma_z_vinit( &b, Magma_DEV, A.num_cols, one );
-        magma_z_vinit( &x, Magma_DEV, A.num_cols, zero );
 
         magma_z_mconvert( A, &B, Magma_CSR, B.storage_type );
         magma_z_mtransfer( B, &B_d, Magma_CPU, Magma_DEV );
 
-        if( version == 0 )
+        // vectors and initial guess
+        magma_z_vinit( &b, Magma_DEV, A.num_cols, one );
+        magma_z_vinit( &x, Magma_DEV, A.num_cols, one );
+        magma_z_spmv( one, B_d, x, zero, b );                 //  b = A x
+        magma_z_vfree(&x);
+        magma_z_vinit( &x, Magma_DEV, A.num_cols, zero );
+
+        if( version == 0 )  // standard
             magma_zbicgstab( B_d, b, &x, &solver_par );
-        else if ( version == 1 )
+        else if ( version == 1 )    // merged with SpMV isolated
             magma_zbicgstab_merge( B_d, b, &x, &solver_par );
-        else if ( version == 2 )
+        else if ( version == 2 ) // merged SpMV (works only for CSR)
             magma_zbicgstab_merge2( B_d, b, &x, &solver_par );
 
         magma_zsolverinfo( &solver_par, &precond_par );

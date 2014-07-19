@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
-       @generated from zpcg.cpp normal z -> c, Fri May 30 10:41:41 2014
+       @generated from zpcg.cpp normal z -> c, Fri Jul 18 17:34:29 2014
 */
 
 #include "common_magma.h"
@@ -19,14 +19,9 @@
 #define ATOLERANCE     lapackf77_slamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -34,15 +29,30 @@
     This is a GPU implementation of the Conjugate Gradient method.
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix A                   input matrix A
-    magma_c_vector b                          RHS b
-    magma_c_vector *x                         solution approximation
-    magma_c_solver_par *solver_par            solver parameters
-    magma_c_preconditioner *precond_par       preconditioner
+    @param
+    A           magma_c_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_c_vector
+                RHS b
+
+    @param
+    x           magma_c_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_c_solver_par*
+                solver parameters
+
+    @param
+    precond_par magma_c_preconditioner*
+                preconditioner
+
+    @ingroup magmasparse_cposv
+    ********************************************************************/
 
 magma_int_t
 magma_cpcg( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,  
@@ -69,7 +79,7 @@ magma_cpcg( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
     
     // solver variables
     magmaFloatComplex alpha, beta;
-    float nom, nom0, r0, betanom, betanomsq, den;
+    float nom, nom0, r0, gammaold, gammanew, den, res;
 
     // solver setup
     magma_cscal( dofs, c_zero, x->val, 1) ;                     // x = 0
@@ -80,7 +90,7 @@ magma_cpcg( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
     magma_c_applyprecond_right( A, rt, &h, precond_par );
 
     magma_ccopy( dofs, h.val, 1, p.val, 1 );                    // p = h
-    nom =  betanom = MAGMA_C_REAL( magma_cdotc(dofs, r.val, 1, h.val, 1) );          
+    nom = MAGMA_C_REAL( magma_cdotc(dofs, r.val, 1, h.val, 1) );          
     nom0 = magma_scnrm2( dofs, r.val, 1 );                                                 
     magma_c_spmv( c_one, A, p, c_zero, q );                     // q = A p
     den = MAGMA_C_REAL( magma_cdotc(dofs, p.val, 1, q.val, 1) );// den = p dot q
@@ -107,44 +117,51 @@ magma_cpcg( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
     // start iteration
     for( solver_par->numiter= 1; solver_par->numiter<solver_par->maxiter; 
                                                     solver_par->numiter++ ){
-        alpha = MAGMA_C_MAKE(nom/den, 0.);
-        magma_caxpy(dofs,  alpha, p.val, 1, x->val, 1);     // x = x + alpha p
-        magma_caxpy(dofs, -alpha, q.val, 1, r.val, 1);      // r = r - alpha q
-
         // preconditioner
         magma_c_applyprecond_left( A, r, &rt, precond_par );
         magma_c_applyprecond_right( A, rt, &h, precond_par );
 
-        betanom = sqrt( MAGMA_C_REAL( magma_cdotc(dofs, r.val, 1, h.val, 1) ) );   
-                                                            // betanom = < r,h>
-        betanomsq = betanom * betanom;                      // betanoms = r' * r
+        gammanew = MAGMA_C_REAL( magma_cdotc(dofs, r.val, 1, h.val, 1) );   
+                                                            // gn = < r,h>
 
+        if( solver_par->numiter==1 ){
+            magma_ccopy( dofs, h.val, 1, p.val, 1 );                    // p = h            
+        }else{
+            beta = MAGMA_C_MAKE(gammanew/gammaold, 0.);       // beta = gn/go
+            magma_cscal(dofs, beta, p.val, 1);            // p = beta*p
+            magma_caxpy(dofs, c_one, h.val, 1, p.val, 1); // p = p + h 
+        }
+
+        magma_c_spmv( c_one, A, p, c_zero, q );           // q = A p
+        den = MAGMA_C_REAL(magma_cdotc(dofs, p.val, 1, q.val, 1));    
+                // den = p dot q 
+
+        alpha = MAGMA_C_MAKE(gammanew/den, 0.);
+        magma_caxpy(dofs,  alpha, p.val, 1, x->val, 1);     // x = x + alpha p
+        magma_caxpy(dofs, -alpha, q.val, 1, r.val, 1);      // r = r - alpha q
+        gammaold = gammanew;
+
+        res = magma_scnrm2( dofs, r.val, 1 );
         if( solver_par->verbose > 0 ){
             magma_device_sync(); tempo2=magma_wtime();
             if( (solver_par->numiter)%solver_par->verbose==0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose] 
-                        = (real_Double_t) betanom;
+                        = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose] 
                         = (real_Double_t) tempo2-tempo1;
             }
         }
 
-        if (  betanom  < r0 ) {
+
+        if (  res/nom0  < solver_par->epsilon ) {
             break;
         }
-
-        beta = MAGMA_C_MAKE(betanomsq/nom, 0.);           // beta = betanoms/nom
-        magma_cscal(dofs, beta, p.val, 1);                // p = beta*p
-        magma_caxpy(dofs, c_one, h.val, 1, p.val, 1);     // p = p + r 
-        magma_c_spmv( c_one, A, p, c_zero, q );           // q = A p
-        den = MAGMA_C_REAL(magma_cdotc(dofs, p.val, 1, q.val, 1));    
-                // den = p dot q
-        nom = betanomsq;
     } 
     magma_device_sync(); tempo2=magma_wtime();
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     float residual;
     magma_cresidual( A, b, *x, &residual );
+    solver_par->iter_res = res;
     solver_par->final_res = residual;
 
     if( solver_par->numiter < solver_par->maxiter){
@@ -153,7 +170,7 @@ magma_cpcg( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
         if( solver_par->verbose > 0 ){
             if( (solver_par->numiter)%solver_par->verbose==0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose] 
-                        = (real_Double_t) betanom;
+                        = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose] 
                         = (real_Double_t) tempo2-tempo1;
             }
@@ -164,7 +181,7 @@ magma_cpcg( magma_c_sparse_matrix A, magma_c_vector b, magma_c_vector *x,
         if( solver_par->verbose > 0 ){
             if( (solver_par->numiter)%solver_par->verbose==0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose] 
-                        = (real_Double_t) betanom;
+                        = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose] 
                         = (real_Double_t) tempo2-tempo1;
             }

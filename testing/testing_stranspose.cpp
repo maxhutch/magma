@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_ztranspose.cpp normal z -> s, Fri May 30 10:41:23 2014
+       @generated from testing_ztranspose.cpp normal z -> s, Fri Jul 18 17:34:23 2014
        @author Mark Gates
 
 */
@@ -99,8 +99,8 @@ int main( int argc, char** argv)
             magma_ssetmatrix( N, M, h_B, ldb, d_B, lddb );
             
             gpu_time = magma_sync_wtime( 0 );
-            //magmablas_stranspose2( d_B+1+lddb, lddb, d_A+1+ldda, ldda, M-2, N-2 );  // inset by 1 row & col
-            magmablas_stranspose2( d_B, lddb, d_A, ldda, M, N );
+            //magmablas_stranspose( M-2, N-2, d_A+1+ldda, ldda, d_B+1+lddb, lddb );  // inset by 1 row & col
+            magmablas_stranspose( M, N, d_A, ldda, d_B, lddb );
             gpu_time = magma_sync_wtime( 0 ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
@@ -132,7 +132,7 @@ int main( int argc, char** argv)
                 blasf77_saxpy( &size, &c_neg_one, h_B, &ione, h_R, &ione );
                 error2 = lapackf77_slange("f", &N, &M, h_R, &ldb, work );
     
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %4s    %7.2f (%7.2f)  %4s\n",
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %6s  %7.2f (%7.2f)  %s\n",
                        (int) M, (int) N,
                        cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                        (error  == 0. ? "ok" : "failed"),
@@ -141,7 +141,7 @@ int main( int argc, char** argv)
                 status += ! (error == 0. && error2 == 0.);
             }
             else {
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %4s      ---   (  ---  )\n",
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)  %6s    ---   (  ---  )\n",
                        (int) M, (int) N,
                        cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                        (error  == 0. ? "ok" : "failed") );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_zcposv_gpu.cpp mixed zc -> ds, Fri May 30 10:41:20 2014
+       @generated from testing_zcposv_gpu.cpp mixed zc -> ds, Fri Jul 18 17:34:23 2014
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
                    (int) N, (int) nrhs,
                    gpu_perfdf, gpu_perfds, gpu_perfsf, gpu_perfss, gpu_perf,
                    (int) posv_iter, error, (error < tol ? "ok" : "failed"));
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_B );

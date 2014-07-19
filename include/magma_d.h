@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_z.h normal z -> d, Fri May 30 10:40:33 2014
+       @generated from magma_z.h normal z -> d, Fri Jul 18 17:34:10 2014
 */
 
 #ifndef MAGMA_D_H
@@ -89,12 +89,20 @@ magma_int_t magma_dgesv ( magma_int_t n, magma_int_t nrhs,
                           double *A, magma_int_t lda, magma_int_t *ipiv,
                           double *B, magma_int_t ldb, magma_int_t *info);
 
+magma_int_t
+      magma_dgetf2_nopiv( magma_int_t m, magma_int_t n,
+                          double *A, magma_int_t lda, magma_int_t *info);
+
 magma_int_t magma_dgetrf( magma_int_t m, magma_int_t n, double *A,
                           magma_int_t lda, magma_int_t *ipiv,
                           magma_int_t *info);
 
 magma_int_t magma_dgetrf2(magma_int_t m, magma_int_t n, double *a,
                           magma_int_t lda, magma_int_t *ipiv, magma_int_t *info);
+
+magma_int_t
+      magma_dgetrf_nopiv( magma_int_t m, magma_int_t n,
+                          double *A, magma_int_t lda, magma_int_t *info);
 
 #ifdef REAL
 magma_int_t magma_dlaln2( magma_int_t trans, magma_int_t na, magma_int_t nw,
@@ -144,14 +152,19 @@ magma_int_t magma_dlatrsd(magma_uplo_t uplo, magma_trans_t trans,
 #endif
 
 magma_int_t magma_dlahr2( magma_int_t m, magma_int_t n, magma_int_t nb,
-                          double *da, double *dv, double *a,
-                          magma_int_t lda, double *tau, double *t,
-                          magma_int_t ldt, double *y, magma_int_t ldy);
+                          double *dA, magma_int_t ldda,
+                          double *dV, magma_int_t lddv,
+                          double *A,  magma_int_t lda,
+                          double *tau,
+                          double *T,  magma_int_t ldt,
+                          double *Y,  magma_int_t ldy);
 
 magma_int_t magma_dlahru( magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
-                          double *a, magma_int_t lda,
-                          double *da, double *y,
-                          double *v, double *t,
+                          double *A,  magma_int_t lda,
+                          double *dA, magma_int_t ldda,
+                          double *dY, magma_int_t lddy,
+                          double *dV, magma_int_t lddv,
+                          double *dT,
                           double *dwork);
 
 magma_int_t magma_dposv ( magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
@@ -1047,6 +1060,21 @@ void magma_dprint_gpu( magma_int_t m, magma_int_t n, const double *dA, magma_int
 
 void dpanel_to_q( magma_uplo_t uplo, magma_int_t ib, double *A, magma_int_t lda, double *work );
 void dq_to_panel( magma_uplo_t uplo, magma_int_t ib, double *A, magma_int_t lda, double *work );
+
+magma_int_t magma_dnan_inf(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    const double *A, magma_int_t lda,
+    magma_int_t *cnt_nan,
+    magma_int_t *cnt_inf );
+
+magma_int_t magma_dnan_inf_gpu(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    const double *dA, magma_int_t ldda,
+    magma_int_t *cnt_nan,
+    magma_int_t *cnt_inf );
+
+extern const double MAGMA_D_NAN;
+extern const double MAGMA_D_INF;
 
 #ifdef __cplusplus
 }

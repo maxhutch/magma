@@ -5,6 +5,8 @@ var group__magma__cblas3 =
     [ "magmablas_cgemm_reduce", "group__magma__cblas3.html#ga502d3eae41095bd1335266094f1fe0e7", null ],
     [ "magmablas_cher2k_mgpu2", "group__magma__cblas3.html#ga3a3945bb897bb43bf23f29a7166079f7", null ],
     [ "magmablas_cher2k_mgpu_spec", "group__magma__cblas3.html#gadd6bb82074817c95cc554931d9d50372", null ],
-    [ "magmablas_ctrsm", "group__magma__cblas3.html#gaea57fc100f1ef57af125374773b8f986", null ],
-    [ "magmablas_ctrsm_work", "group__magma__cblas3.html#gaf25a6d235afdafb8b01066159d38ea73", null ]
+    [ "magmablas_ctrsm", "group__magma__cblas3.html#ga4b11c3b63a6081413b98c775c8e615d0", null ],
+    [ "magmablas_ctrsm_work", "group__magma__cblas3.html#ga50eba1eddbe51d7b87384be46e6b8cd9", null ],
+    [ "magmablas_ctrtri_diag", "group__magma__cblas3.html#gabbb386fa93e71d105fade27481ff60af", null ],
+    [ "magmablas_ctrtri_diag_stream", "group__magma__cblas3.html#ga926068c86ca3b9ea1b667a5cbf84e7a7", null ]
 ];

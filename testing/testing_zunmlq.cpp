@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -159,7 +159,7 @@ int main( int argc, char** argv )
                     lapacke_trans_const( trans[itran] ),
                     cpu_perf, cpu_time, gpu_perf, gpu_time,
                     error, (error < tol ? "ok" : "failed") );
-            status |= ! (error < tol);
+            status += ! (error < tol);
             
             TESTING_FREE_CPU( C );
             TESTING_FREE_CPU( R );

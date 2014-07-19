@@ -1,19 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgetrf_nopiv_gpu.cpp normal z -> c, Fri May 30 10:40:54 2014
+       @generated from zgetrf_nopiv_gpu.cpp normal z -> c, Fri Jul 18 17:34:15 2014
 
 */
 #include "common_magma.h"
-
-
-extern "C" magma_int_t
-magma_cgetrf_nopiv(magma_int_t *m, magma_int_t *n, magmaFloatComplex *A,
-                   magma_int_t *lda, magma_int_t *info);
 
 /**
     Purpose
@@ -107,7 +102,7 @@ magma_cgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
             return *info;
         }
         magma_cgetmatrix( m, n, dA, ldda, work, m );
-        magma_cgetrf_nopiv(&m, &n, work, &m, info);
+        magma_cgetrf_nopiv( m, n, work, m, info);
         magma_csetmatrix( m, n, work, m, dA, ldda );
         magma_free_cpu(work);
     }
@@ -157,7 +152,7 @@ magma_cgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
             // do the cpu part
             rows = m - i*nb;
             magma_queue_sync( stream[0] );
-            magma_cgetrf_nopiv(&rows, &nb, work, &lddwork, &iinfo);
+            magma_cgetrf_nopiv( rows, nb, work, lddwork, &iinfo );
             if ( (*info == 0) && (iinfo > 0) )
                 *info = iinfo + i*nb;
 
@@ -197,7 +192,7 @@ magma_cgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
         magma_device_sync();
 
         // do the cpu part
-        magma_cgetrf_nopiv( &rows, &nb0, work, &lddwork, &iinfo);
+        magma_cgetrf_nopiv( rows, nb0, work, lddwork, &iinfo );
         if ( (*info == 0) && (iinfo > 0) )
             *info = iinfo + s*nb;
 

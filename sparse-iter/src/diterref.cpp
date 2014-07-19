@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
-       @generated from ziterref.cpp normal z -> d, Fri May 30 10:41:41 2014
+       @generated from ziterref.cpp normal z -> d, Fri Jul 18 17:34:29 2014
 */
 
 #include "common_magma.h"
@@ -19,14 +19,9 @@
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -35,15 +30,30 @@
     The inner solver is passed via the preconditioner argument.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector b                          RHS b
-    magma_d_vector *x                         solution approximation
-    magma_d_solver_par *solver_par       solver parameters
-    magma_d_preconditioner *precond_par       inner solver
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b
+
+    @param
+    x           magma_d_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_d_solver_par*
+                solver parameters
+
+    @param
+    precond_par magma_d_preconditioner*
+                inner solver
+
+    @ingroup magmasparse_dgesv
+    ********************************************************************/
 
 magma_int_t
 magma_diterref( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,  
@@ -123,6 +133,7 @@ magma_diterref( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     magma_dresidual( A, b, *x, &residual );
     solver_par->final_res = residual;
+    solver_par->iter_res = nom;
 
     if( solver_par->numiter < solver_par->maxiter){
         solver_par->info = 0;

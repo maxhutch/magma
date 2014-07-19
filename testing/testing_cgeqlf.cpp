@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_zgeqlf.cpp normal z -> c, Fri May 30 10:41:27 2014
+       @generated from testing_zgeqlf.cpp normal z -> c, Fri Jul 18 17:34:25 2014
 
 */
 
@@ -44,7 +44,7 @@ int main( int argc, char** argv)
     magma_opts opts;
     parse_opts( argc, argv, &opts );
 
-    float tol = opts.tolerance * lapackf77_slamch("E");
+    float tol = 2. * opts.tolerance * lapackf77_slamch("E");
     
     printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||A||_F\n");
     printf("=======================================================================\n");
@@ -64,6 +64,7 @@ int main( int argc, char** argv)
             lapackf77_cgeqlf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
             lwork = (magma_int_t)MAGMA_C_REAL( tmp[0] );
             lwork = max( lwork, N*nb );
+            lwork = max( lwork, 2*nb*nb);
             
             TESTING_MALLOC_CPU( tau,    magmaFloatComplex, min_mn );
             TESTING_MALLOC_CPU( h_A,    magmaFloatComplex, n2     );

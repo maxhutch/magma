@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
-       @generated from magma_zmscale.cpp normal z -> s, Fri May 30 10:41:45 2014
+       @generated from magma_zmscale.cpp normal z -> s, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 
 */
@@ -26,27 +26,31 @@
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
-/*  -- MAGMA (version 1.5.0-beta2) --
+/** -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
     Purpose
-    =======
+    -------
 
     Scales a matrix.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix *A         input/output matrix 
-    magma_scale_t scaling            scaling type (unit rownorm / unit diagonal)
+    @param
+    A           magma_s_sparse_matrix*
+                input/output matrix 
 
-    ========================================================================  */
+    @param
+    scaling     magma_scale_t
+                scaling type (unit rownorm / unit diagonal)
 
 
-
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_smscale( magma_s_sparse_matrix *A, magma_scale_t scaling ){
@@ -78,8 +82,11 @@ magma_smscale( magma_s_sparse_matrix *A, magma_scale_t scaling ){
             for( magma_int_t z=0; z<A->num_rows; z++ ){
                 float s = MAGMA_S_MAKE( 0.0, 0.0 );
                 for( magma_int_t f=A->row[z]; f<A->row[z+1]; f++ ){
-                    if( A->col[f]== z )
+                    if( A->col[f]== z ){
+                        // add some identity matrix
+                        //A->val[f] = A->val[f] +  MAGMA_S_MAKE( 100000.0, 0.0 );
                         s = A->val[f];
+                    }
                 }
                 if( s == MAGMA_S_MAKE( 0.0, 0.0 ) )
                     printf("error: zero diagonal element.\n");
@@ -104,6 +111,65 @@ magma_smscale( magma_s_sparse_matrix *A, magma_scale_t scaling ){
         magma_s_mconvert( hA, &CSRA, hA.storage_type, Magma_CSRCOO );
 
         magma_smscale( &CSRA, scaling );
+
+        magma_s_mfree( &hA );
+        magma_s_mfree( A );
+        magma_s_mconvert( CSRA, &hA, Magma_CSRCOO, A_storage );
+        magma_s_mtransfer( hA, A, Magma_CPU, A_location );
+        magma_s_mfree( &hA );
+        magma_s_mfree( &CSRA );    
+
+        return MAGMA_SUCCESS; 
+    }
+}
+
+
+/** -- MAGMA (version 1.5.0-beta3) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       November 2011
+
+    Purpose
+    -------
+
+    Adds a multiple of the Identity matrix to a matrix: A = A+add * I
+
+    Arguments
+    ---------
+
+    @param
+    A           magma_s_sparse_matrix*
+                input/output matrix 
+
+    @param
+    add         float
+                scaling for the identity matrix
+
+    @ingroup magmasparse_saux
+    ********************************************************************/
+
+extern "C" magma_int_t
+magma_smdiagadd( magma_s_sparse_matrix *A, float add ){
+
+    if( A->memory_location == Magma_CPU && A->storage_type == Magma_CSRCOO ){
+        for( magma_int_t z=0; z<A->nnz; z++ ){
+            if( A->col[z]== A->rowidx[z] ){
+                // add some identity matrix
+                A->val[z] = A->val[z] +  add;
+            }
+        }
+        return MAGMA_SUCCESS; 
+    }
+    else{
+
+        magma_s_sparse_matrix hA, CSRA;
+        magma_storage_t A_storage = A->storage_type;
+        magma_location_t A_location = A->memory_location;
+        magma_s_mtransfer( *A, &hA, A->memory_location, Magma_CPU );
+        magma_s_mconvert( hA, &CSRA, hA.storage_type, Magma_CSRCOO );
+
+        magma_smdiagadd( &CSRA, add );
 
         magma_s_mfree( &hA );
         magma_s_mfree( A );

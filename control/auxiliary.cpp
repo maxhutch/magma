@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 */
 
 #include "common_magma.h"
@@ -24,14 +24,28 @@ void magma_version( magma_int_t* major, magma_int_t* minor, magma_int_t* micro )
 }
 
 
-// -------------------------
-// Returns:
-//  1 if A is a device pointer (definitely),
-//  0 if A is a host   pointer (definitely or inferred from error),
-// -1 if unknown.
-// On 2.0 cards with unified addressing, CUDA can tell if this is a device pointer.
-// For malloc'd host pointers, cudaPointerGetAttributes returns error.
-// @author Mark Gates
+/**
+    Purpose
+    -------
+    For debugging purposes, determines whether a pointer points to CPU or GPU memory.
+    
+    On CUDA architecture 2.0 cards with unified addressing, CUDA can tell if
+    it is a device pointer or pinned host pointer.
+    For malloc'd host pointers, cudaPointerGetAttributes returns error,
+    implying it is a (non-pinned) host pointer.
+    
+    On older cards, this cannot determine if it is CPU or GPU memory.
+    
+    @param A   pointer to test
+    
+    @return
+      -         1:  if A is a device pointer (definitely),
+      -         0:  if A is a host   pointer (definitely or inferred from error),
+      -        -1:  if unknown.
+
+    @author Mark Gates
+    @ingroup magma_aux
+    ********************************************************************/
 extern "C"
 magma_int_t magma_is_devptr( const void* A )
 {

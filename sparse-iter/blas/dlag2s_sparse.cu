@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlag2c_sparse.cu mixed zc -> ds, Fri May 30 10:41:35 2014
+       @generated from zlag2c_sparse.cu mixed zc -> ds, Fri Jul 18 17:34:27 2014
 
 */
 #include "common_magma.h"
@@ -41,23 +41,9 @@ magmaint_dlag2s_sparse(  int M, int N,
 }
 
 
-extern "C" void 
-magmablas_dlag2s_sparse( magma_int_t M, magma_int_t N , 
-                  const double *A, magma_int_t lda, 
-                  float *SA,       magma_int_t ldsa, 
-                  magma_int_t *info ) 
-{    
-/*
-    Note
-    ====
-          - We have to provide INFO at the end that dlag2s isn't doable now. 
-          - Transfer a single value TO/FROM CPU/GPU
-          - SLAMCH that's needed is called from underlying BLAS
-          - Only used in iterative refinement
-          - Do we want to provide this in the release?
-    
+/** 
     Purpose
-    =======
+    -------
     DLAG2S converts a DOUBLE PRECISION matrix A to a SINGLE PRECISION
     matrix SA.
     
@@ -66,34 +52,60 @@ magmablas_dlag2s_sparse( magma_int_t M, magma_int_t N ,
     RMAX. If not the convertion is aborted and a flag is raised.
         
     Arguments
-    =========
-    M       (input) INTEGER
+    ---------
+    @param[in]
+    M       INTEGER
             The number of lines of the matrix A.  M >= 0.
     
-    N       (input) INTEGER
+    @param[in]
+    N       INTEGER
             The number of columns of the matrix A.  N >= 0.
     
-    A       (input) DOUBLE PRECISION array, dimension (LDA,N)
+    @param[in]
+    A       DOUBLE PRECISION array, dimension (LDA,N)
             On entry, the M-by-N coefficient matrix A.
     
-    LDA     (input) INTEGER
+    @param[in]
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
     
-    SA      (output) SINGLE PRECISION array, dimension (LDSA,N)
+    @param[out]
+    SA      SINGLE PRECISION array, dimension (LDSA,N)
             On exit, if INFO=0, the M-by-N coefficient matrix SA; if
             INFO>0, the content of SA is unspecified.
     
-    LDSA    (input) INTEGER
+    @param[in]
+    ldsa    INTEGER
             The leading dimension of the array SA.  LDSA >= max(1,M).
     
-    INFO    (output) INTEGER
-            = 0:  successful exit.
-            < 0:  if INFO = -i, the i-th argument had an illegal value
-            = 1:  an entry of the matrix A is greater than the SINGLE PRECISION
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit.
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     = 1:  an entry of the matrix A is greater than the SINGLE PRECISION
                   overflow threshold, in this case, the content
                   of SA in exit is unspecified.
-    ======================================================================    */
 
+    @ingroup magmasparse_zaux
+    ********************************************************************/
+extern "C" void
+magmablas_dlag2s_sparse( magma_int_t M, magma_int_t N, 
+                  const double *A, magma_int_t lda, 
+                  float *SA,       magma_int_t ldsa, 
+                  magma_int_t *info ) 
+{
+    /*
+    (TODO note from original dense source)
+    
+    Note
+    ----
+          - We have to provide INFO at the end that dlag2s isn't doable now. 
+          - Transfer a single value TO/FROM CPU/GPU
+          - SLAMCH that's needed is called from underlying BLAS
+          - Only used in iterative refinement
+          - Do we want to provide this in the release?
+    */
+    
     *info = 0;
     if ( M < 0 )
         *info = -1;
@@ -117,6 +129,7 @@ magmablas_dlag2s_sparse( magma_int_t M, magma_int_t N ,
     magmaint_dlag2s_sparse<<< grid, BLOCKSIZE, 0, magma_stream >>>
                                         ( M, N, A, SA ) ; 
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
+    
 }
 
 
@@ -175,7 +188,7 @@ extern "C" void
 magma_dlag2s_CSR_DENSE(       magma_d_sparse_matrix A, 
                               magma_s_sparse_matrix *B ){
 
-    cublasStatus stat;
+    magma_int_t stat;
 
     if( A.memory_location == Magma_DEV && A.storage_type == Magma_CSR){
         B->storage_type = Magma_DENSE;
@@ -183,9 +196,8 @@ magma_dlag2s_CSR_DENSE(       magma_d_sparse_matrix A,
         B->num_rows = A.num_rows;
         B->num_cols = A.num_cols;
         B->nnz = A.nnz;
-        stat = cublasAlloc( A.num_rows* A.num_cols, 
-                sizeof( float ), ( void** )&B->val );
-        if( ( int )stat != 0 ) 
+        stat = magma_smalloc( &B->val, A.num_rows* A.num_cols );
+        if( stat != 0 ) 
         {printf("Memory Allocation Error converting matrix\n"); exit(0); }
         
         dim3 Bs( BLOCKSIZE );
@@ -202,7 +214,7 @@ extern "C" void
 magma_dlag2s_CSR_DENSE_alloc( magma_d_sparse_matrix A, 
                               magma_s_sparse_matrix *B ){
 
-    cublasStatus stat;
+    magma_int_t stat;
 
     if( A.memory_location == Magma_DEV && A.storage_type == Magma_CSR){
         B->storage_type = Magma_DENSE;
@@ -210,9 +222,8 @@ magma_dlag2s_CSR_DENSE_alloc( magma_d_sparse_matrix A,
         B->num_rows = A.num_rows;
         B->num_cols = A.num_cols;
         B->nnz = A.nnz;
-        stat = cublasAlloc( A.num_rows* A.num_cols, 
-                sizeof( float ), ( void** )&B->val );
-        if( ( int )stat != 0 ) 
+        stat = magma_smalloc( &B->val, A.num_rows* A.num_cols );
+        if( stat != 0 ) 
         {printf("Memory Allocation Error converting matrix\n"); exit(0); }
         
         dim3 Bs( BLOCKSIZE );

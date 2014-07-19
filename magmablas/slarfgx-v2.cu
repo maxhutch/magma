@@ -1,21 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlarfgx-v2.cu normal z -> s, Fri May 30 10:40:42 2014
+       @generated from zlarfgx-v2.cu normal z -> s, Fri Jul 18 17:34:12 2014
 
 */
 #include "common_magma.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
-//#if (GPUSHMEM < 200)
-    #define BLOCK_SIZE 512
-//#else
-//   #define BLOCK_SIZE 768
-//#endif
+#define BLOCK_SIZE 512
 
 #define PRECISION_s
 
@@ -45,8 +41,9 @@ void magma_slarfgx_gpu_kernel( int n, float* dx0, float* dx,
   
     if ( i == 0 ) {
         xnorm = *dxnorm;
-        if ( xnorm == 0 ) {
+        if ( xnorm == 0 || n == 1) {
             *dtau = MAGMA_S_ZERO;
+            *dA   = *dx0;
         }
         else {
 

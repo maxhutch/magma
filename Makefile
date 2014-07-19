@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = .
@@ -13,14 +13,20 @@ include $(MAGMA_DIR)/Makefile.internal
 
 # print CUDA architectures being compiled
 # (if this goes in Makefile.internal, it gets printed for each sub-dir)
-ifneq ($(findstring Tesla, $(GPU_TARGET)),)
-    $(info compile for CUDA arch 1.x (Tesla))
+ifneq ($(findstring sm10, $(GPU_TARGET)),)
+    $(info compile for CUDA arch 1.0 (Tesla))
 endif
-ifneq ($(findstring Fermi, $(GPU_TARGET)),)
+ifneq ($(findstring sm13, $(GPU_TARGET)),)
+    $(info compile for CUDA arch 1.3 (Tesla))
+endif
+ifneq ($(findstring sm20, $(GPU_TARGET)),)
     $(info compile for CUDA arch 2.x (Fermi))
 endif
-ifneq ($(findstring Kepler, $(GPU_TARGET)),)
-    $(info compile for CUDA arch 3.x (Kepler))
+ifneq ($(findstring sm30, $(GPU_TARGET)),)
+    $(info compile for CUDA arch 3.0 (Kepler))
+endif
+ifneq ($(findstring sm35, $(GPU_TARGET)),)
+    $(info compile for CUDA arch 3.5 (Kepler))
 endif
 
 
@@ -80,17 +86,28 @@ cleanall:
 cleanall2:
 	@echo
 
-dir:
+# filter out MAGMA-specific options for pkg-config
+INSTALL_OPTS := $(filter-out \
+	-DMAGMA_SETAFFINITY -DMAGMA_WITH_ACML -DMAGMA_WITH_MKL -DUSE_FLOCK \
+	-DMIN_CUDA_ARCH=100 -DMIN_CUDA_ARCH=200 -DMIN_CUDA_ARCH=300 \
+	-fno-strict-aliasing -fPIC -O0 -O1 -O2 -O3 -pedantic -stdc++98 \
+	-Wall -Wno-long-long, $(OPTS))
+
+INSTALL_LDOPTS := $(filter-out \
+	-fPIC -Wall -Xlinker -zmuldefs, $(LDOPTS))
+
+install_dirs:
 	mkdir -p $(prefix)
 	mkdir -p $(prefix)/include
 	mkdir -p $(prefix)/lib
 	mkdir -p $(prefix)/lib/pkgconfig
 
-install: lib dir
+install: lib install_dirs
 	# MAGMA
 	cp $(MAGMA_DIR)/include/*.h  $(prefix)/include
 	cp $(LIBMAGMA)               $(prefix)/lib
 	-cp $(LIBMAGMA_SO)           $(prefix)/lib
+	-cp $(BLAS_FIX)              $(prefix)/lib
 	# QUARK
 	# cp $(QUARKDIR)/include/quark.h             $(prefix)/include
 	# cp $(QUARKDIR)/include/quark_unpack_args.h $(prefix)/include
@@ -98,11 +115,11 @@ install: lib dir
 	# cp $(QUARKDIR)/include/icl_list.h          $(prefix)/include
 	# cp $(QUARKDIR)/lib/libquark.a              $(prefix)/lib
 	# pkgconfig
-	cat $(MAGMA_DIR)/lib/pkgconfig/magma.pc.in | \
-	    sed -e s:@INSTALL_PREFIX@:"$(prefix)": | \
-	    sed -e s:@INCLUDES@:"$(INC)":          | \
-	    sed -e s:@LIBEXT@:"$(LIBEXT)":         | \
-	    sed -e s:@MAGMA_REQUIRED@::              \
+	cat $(MAGMA_DIR)/lib/pkgconfig/magma.pc.in         | \
+	    sed -e s:@INSTALL_PREFIX@:"$(prefix)":         | \
+	    sed -e s:@CFLAGS@:"$(INSTALL_OPTS) $(INC)":    | \
+	    sed -e s:@LIBS@:"$(INSTALL_LDOPTS) $(LIBEXT)": | \
+	    sed -e s:@MAGMA_REQUIRED@::                      \
 	    > $(prefix)/lib/pkgconfig/magma.pc
 
 # ========================================
@@ -112,7 +129,15 @@ install: lib dir
 # Better solution would be to use non-recursive make, so make knows all the
 # objects in each subdirectory, or use libtool, or put rules for, e.g., the
 # control directory in src/Makefile (as done in src/CMakeLists.txt)
+
+fpic = $(and $(findstring -fPIC, $(OPTS)), \
+             $(findstring -fPIC, $(FOPTS)), \
+             $(findstring -fPIC, $(F77OPTS)), \
+             $(findstring -fPIC, $(NVOPTS)))
+
 LIBMAGMA_SO = $(LIBMAGMA:.a=.so)
+
+ifneq ($(fpic),)
 
 shared: lib
 	$(MAKE) $(LIBMAGMA_SO)
@@ -122,3 +147,10 @@ $(LIBMAGMA_SO): src/*.o control/*.o interface_cuda/*.o magmablas/*.o
 	$(CC) $(LDOPTS) -shared -o $(LIBMAGMA_SO) $^ \
 	$(LIBDIR) \
 	$(LIB)
+
+else
+shared:
+	@echo "Error: 'make shared' requires OPTS, F77OPTS, FOPTS, and NVOPTS to have -fPIC."
+	@echo "Please edit your make.inc file. See make.inc.mkl-shared for an example."
+	@echo "After updating make.inc, please 'make clean', then 'make shared', then 'make testing'."
+endif

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -174,6 +174,9 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
                        magma_int_t *iwork, magma_int_t liwork,
                        magma_int_t *info)
 {
+    #define A(i_,j_)  (A  + (i_) + (j_)*lda)
+    #define A2(i_,j_) (A2 + (i_) + (j_)*lda2)
+    
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
     double d_one  = 1.;
@@ -250,7 +253,9 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
         liwmin = 1;
     }
 
-    double one_eps = 1. + lapackf77_dlamch("Epsilon");
+    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
+    // if it cannot be exactly represented in floating point.
+    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
     work[0]  = lwmin * one_eps;
     iwork[0] = liwmin;
 
@@ -406,13 +411,13 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
     memset(A2, 0, n*lda2*sizeof(double));
 
     for (magma_int_t j = 0; j < n-nb; j++) {
-        cblas_dcopy(nb+1, &A[j*(lda+1)], 1, &A2[j*lda2], 1);
-        memset(&A[j*(lda+1)], 0, (nb+1)*sizeof(double));
-        A[nb + j*(lda+1)] = d_one;
+        cblas_dcopy(nb+1, A(j,j), 1, A2(0,j), 1);
+        memset(A(j,j), 0, (nb+1)*sizeof(double));
+        *A(nb+j,j) = d_one;
     }
     for (magma_int_t j = 0; j < nb; j++) {
-        cblas_dcopy(nb-j, &A[(j+n-nb)*(lda+1)], 1, &A2[(j+n-nb)*lda2], 1);
-        memset(&A[(j+n-nb)*(lda+1)], 0, (nb-j)*sizeof(double));
+        cblas_dcopy(nb-j, A(j+n-nb,j+n-nb), 1, A2(0,j+n-nb), 1);
+        memset(A(j+n-nb,j+n-nb), 0, (nb-j)*sizeof(double));
     }
 
     timer_stop( time );

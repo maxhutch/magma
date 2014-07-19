@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = magmablas
@@ -11,7 +11,14 @@ MAGMA_DIR = ..
 include $(MAGMA_DIR)/Makefile.internal
 
 ZHDR := \
-	commonblas_z.h
+	commonblas_z.h		\
+	ztrtri.h		\
+
+# additional dependencies
+strtri_diag.o: strtri.h
+dtrtri_diag.o: dtrtri.h
+ctrtri_diag.o: ctrtri.h
+ztrtri_diag.o: ztrtri.h
 
 # alphabetic order by base name (ignoring precision)
 ZSRC := \
@@ -20,6 +27,7 @@ ZSRC := \
 	zgeadd_batched.cu	\
 	zgemm_reduce.cu		\
 	dgemv_MLU.cu		\
+	zhemv.cu                \
 	zlacpy.cu		\
 	zlacpy_batched.cu	\
 	zlag2c.cu		\
@@ -31,7 +39,7 @@ ZSRC := \
 	zlarf.cu		\
 	zlarfbx.cu		\
 	zlarfx.cu		\
-	dlarfg.cu		\
+	zlarfg.cu		\
 	zlarfg-v2.cu		\
 	zlarfgx-v2.cu		\
 	zlascl.cu		\
@@ -44,17 +52,17 @@ ZSRC := \
 	zswap.cu		\
 	zswapblk.cu		\
 	zswapdblk.cu		\
+	zsymv.cu                \
 	zsymmetrize.cu		\
 	zsymmetrize_tiles.cu	\
-	ssyr2k.cu		\
 	ztranspose.cu		\
-	ztranspose-v2.cu	\
 	ztranspose_inplace.cu	\
 	zgetmatrix_transpose.cu	\
 	zsetmatrix_transpose.cu	\
 	ztrsm.cu		\
-	ztrsm_work.cu		\
-	ztrtri_kernel.cu	\
+	ztrtri_diag.cu		\
+	ztrtri_lower.cu		\
+	ztrtri_upper.cu		\
 
 # Tesla-specific (CUDA arch 1.x) codes
 ZSRC += \
@@ -70,9 +78,6 @@ ZSRC += \
 	\
 	sgemv_tesla.cu		\
 	dgemv_tesla.cu		\
-	\
-	chemv_tesla.cu		\
-	csymv_tesla.cu		\
 
 # Fermi-specific (CUDA arch 2.x) codes
 ZSRC += \
@@ -81,10 +86,6 @@ ZSRC += \
 	sgemv_fermi.cu		\
 	dgemv_fermi.cu		\
 	zgemv_fermi.cu		\
-	\
-	zhemv_fermi.cu		\
-	zsymv_fermi.cu		\
-	#cgemv_fermi.cu		\
 
 # multi-GPU
 ZSRC += \

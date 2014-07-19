@@ -2,15 +2,15 @@
  *
  * @file common_magma.h
  *
- *  MAGMA (version 1.5.0-beta2) --
+ *  MAGMA (version 1.5.0-beta3) --
  *  Univ. of Tennessee, Knoxville
  *  Univ. of California, Berkeley
  *  Univ. of Colorado, Denver
- *  @date May 2014
+ *  @date July 2014
  *
  * @version 1.0.0
  * @author Mathieu Faverge
- * @date May 2014
+ * @date July 2014
  *
  * Based on PLASMA common.h
  *

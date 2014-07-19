@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -142,6 +142,28 @@ magmablas_zgemm(
     magmaDoubleComplex beta,
     magmaDoubleComplex *d_C, magma_int_t ldc )
 {
+    magma_int_t info = 0;
+    if      ( TRANSA != MagmaNoTrans && TRANSA != MagmaTrans && TRANSA != Magma_ConjTrans )
+        info = -1;
+    else if ( TRANSB != MagmaNoTrans && TRANSB != MagmaTrans && TRANSB != Magma_ConjTrans )
+        info = -2;
+    else if ( m < 0 )
+        info = -3;
+    else if ( n < 0 )
+        info = -4;
+    else if ( k < 0 )
+        info = -5;
+    else if ( TRANSA == MagmaNoTrans ? lda < m : lda < k )
+        info = -8;
+    else if ( TRANSB == MagmaNoTrans ? ldb < k : ldb < n )
+        info = -10;
+    else if ( ldc < m )
+        info = -13;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
     
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {

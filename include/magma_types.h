@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 */
 
 #ifndef MAGMA_TYPES_H
@@ -11,6 +11,12 @@
 
 #include <stdint.h>
 #include <assert.h>
+
+
+// each implementation of MAGMA defines HAVE_* appropriately.
+#if ! defined(HAVE_CUBLAS) && ! defined(HAVE_clAmdBlas) && ! defined(HAVE_MIC)
+#define HAVE_CUBLAS
+#endif
 
 
 // ========================================
@@ -157,7 +163,7 @@ typedef double real_Double_t;
     #define MAGMA_C_CNJG(a)       conj(a)
     #define MAGMA_C_SSCALE(v,t,s) ((v) = (t)/(s))
 #else
-    #error "One of HAVE_CUBLAS, HAVE_clAmdBlas, or HAVE_MIC must be defined. This typically happens in Makefile.internal."
+    #error "One of HAVE_CUBLAS, HAVE_clAmdBlas, or HAVE_MIC must be defined. For example, add -DHAVE_CUBLAS to CFLAGS, or #define HAVE_CUBLAS before #include <magma.h>. In MAGMA, this happens in Makefile.internal."
 #endif
 
 #define MAGMA_Z_EQUAL(a,b)        (MAGMA_Z_REAL(a)==MAGMA_Z_REAL(b) && MAGMA_Z_IMAG(a)==MAGMA_Z_IMAG(b))
@@ -268,7 +274,7 @@ typedef double real_Double_t;
 #define MAGMA_VERSION_MICRO 0
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
-#define MAGMA_VERSION_STAGE "beta2"
+#define MAGMA_VERSION_STAGE "beta3"
 
 #define MagmaMaxGPUs 8
 
@@ -315,7 +321,8 @@ typedef enum {
 typedef enum {
     MagmaNoTrans       = 111,
     MagmaTrans         = 112,
-    MagmaConjTrans     = 113
+    MagmaConjTrans     = 113,
+    Magma_ConjTrans    = MagmaConjTrans   /* for those rare occasions where we don't want MagmaConjTrans to convert to MagmaTrans in precision generation */
 } magma_trans_t;
 
 typedef enum {
@@ -446,7 +453,9 @@ typedef enum {
     Magma_ICC          = 446,
     Magma_AILU         = 447,
     Magma_AICC         = 448,
-    Magma_BAITER       = 449
+    Magma_BAITER       = 449,
+    Magma_LOBPCG       = 450,
+    Magma_NONE         = 451
 } magma_solver_type;
 
 typedef enum {

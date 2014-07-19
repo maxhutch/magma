@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_ztrsm.cpp normal z -> d, Fri May 30 10:41:21 2014
+       @generated from testing_ztrsm.cpp normal z -> d, Fri Jul 18 17:34:22 2014
        @author Chongxiao Cao
 */
 // includes, system
@@ -169,7 +169,6 @@ int main( int argc, char** argv)
             double normx =  lapackf77_dlange( "M", &M, &N, h_Bmagma, &ldb, work );
             double normA =  lapackf77_dlange( "M", &Ak, &Ak, h_A, &lda, work );
 
-
             magma_error = norm1/(normx*normA);
 
             memcpy(h_X2, h_Bcublas, sizeB*sizeof(double));
@@ -196,7 +195,7 @@ int main( int argc, char** argv)
                 status += ! (magma_error < tol && cublas_error < tol);
             }
             else {
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)     ---   (  ---  )   %8.2f     %8.2e   %s\n",
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)     ---   (  ---  )   %8.2e     %8.2e   %s\n",
                         (int) M, (int) N,
                         magma_perf,  1000.*magma_time,
                         cublas_perf, 1000.*cublas_time,

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmtr_gpu.cpp normal z -> s, Fri May 30 10:41:03 2014
+       @generated from zunmtr_gpu.cpp normal z -> s, Fri Jul 18 17:34:18 2014
 
 */
 #include "common_magma.h"
@@ -114,6 +114,10 @@ magma_sormtr_gpu(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
                  float *wA,    magma_int_t ldwa,
                  magma_int_t *info)
 {
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
+    #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
+    #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
+    
     magma_int_t i1, i2, mi, ni, nq, nw;
     int left, upper;
     magma_int_t iinfo;
@@ -168,8 +172,8 @@ magma_sormtr_gpu(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
     }
 
     if (upper) {
-        magma_sormql2_gpu(side, trans, mi, ni, nq-1, &dA[ldda], ldda, tau,
-                          dC, lddc, &wA[ldwa], ldwa, &iinfo);
+        magma_sormql2_gpu(side, trans, mi, ni, nq-1, dA(0,1), ldda, tau,
+                          dC, lddc, wA(0,1), ldwa, &iinfo);
     }
     else {
         /* Q was determined by a call to SSYTRD with UPLO = 'L' */
@@ -180,8 +184,8 @@ magma_sormtr_gpu(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
             i1 = 0;
             i2 = 1;
         }
-        magma_sormqr2_gpu(side, trans, mi, ni, nq-1, &dA[1], ldda, tau,
-                          &dC[i1 + i2*lddc], lddc, &wA[1], ldwa, &iinfo);
+        magma_sormqr2_gpu(side, trans, mi, ni, nq-1, dA(1,0), ldda, tau,
+                          dC(i1,i2), lddc, wA(1,0), ldwa, &iinfo);
     }
 
     return *info;

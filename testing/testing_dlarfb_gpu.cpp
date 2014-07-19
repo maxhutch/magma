@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Mark Gates
-       @generated from testing_zlarfb_gpu.cpp normal z -> d, Fri May 30 10:41:26 2014
+       @generated from testing_zlarfb_gpu.cpp normal z -> d, Fri Jul 18 17:34:24 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -58,7 +58,8 @@ int main( int argc, char** argv )
       N = opts.nsize[itest];
       K = opts.ksize[itest];
       if ( M < K || N < K || K <= 0 ) {
-          printf( "%5d %5d %5d   skipping because it requires M >= K, N >= K, K >= 0\n", (int) M, (int) N, (int) K );
+          printf( "%5d %5d %5d   skipping because dlarfb requires M >= K, N >= K, K >= 0\n",
+                  (int) M, (int) N, (int) K );
           continue;
       }
       for( int istor = 0; istor < 2; ++istor ) {

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
  
        @author Mark Gates
 */
@@ -138,7 +138,7 @@ void magma_print_devices()
         if ( prop.major*100 + prop.minor*10 < MIN_CUDA_ARCH ) {
             printf("\n"
                    "==============================================================================\n"
-                   "WARNING: MAGMA was compiled only for higher CUDA capability %.1f and higher;\n"
+                   "WARNING: MAGMA was compiled only for CUDA capability %.1f and higher;\n"
                    "some routines will not run correctly!\n"
                    "==============================================================================\n\n",
                    MIN_CUDA_ARCH/100. );

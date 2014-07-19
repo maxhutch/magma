@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from matrix_zio.cpp normal z -> c, Fri May 30 10:41:46 2014
+       @generated from matrix_zio.cpp normal z -> c, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 */
 
@@ -28,14 +28,9 @@
 
 using namespace std;
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Reads in a matrix stored in coo format from a binary and converts it
     into CSR format. It duplicates the off-diagonal entries in the 
@@ -43,17 +38,38 @@ using namespace std;
 
 
     Arguments
-    =========
+    ---------
+    
+    @param
+    n_row       magma_int_t*     
+                number of rows in matrix
+                
+    @param
+    n_col       magma_int_t*     
+                number of columns in matrix
+                
+    @param
+    nnz         magma_int_t*     
+                number of nonzeros in matrix
+                
+    @param
+    val         magmaFloatComplex**
+                value array of CSR output 
 
-    magma_int_t* n_row                   number of rows in matrix
-    magma_int_t* n_col                   number of columns in matrix
-    magma_int_t* nnz                     number of nonzeros 
-    magmaFloatComplex **val             value array of CSR output 
-    magma_index_t **row                  row pointer of CSR output
-    magma_index_t **col                  column indices of CSR output
-    const char * filename                filname of the binary matrix
+    @param
+    row         magma_index_t**
+                row pointer of CSR output
 
-    ========================================================================  */
+    @param
+    col         magma_index_t**
+                column indices of CSR output
+
+    @param
+    filename    const char*
+                filname of the mtx matrix
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t read_c_csr_from_binary( magma_int_t* n_row, 
@@ -122,32 +138,55 @@ magma_int_t read_c_csr_from_binary( magma_int_t* n_row,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Reads in a matrix stored in coo format from a Matrix Market (.mtx)
     file and converts it into CSR format. It duplicates the off-diagonal
     entries in the symmetric case.
 
     Arguments
-    =========
+    ---------
+    
+    @param
+    type        magma_storage_t* 
+                storage type of matrix
+                
+    @param
+    location    magma_location_t*     
+                location of matrix
+                
+    @param
+    n_row       magma_int_t*     
+                number of rows in matrix
+                
+    @param
+    n_col       magma_int_t*     
+                number of columns in matrix
+                
+    @param
+    nnz         magma_int_t*     
+                number of nonzeros in matrix
+                
+    @param
+    val         magmaFloatComplex**
+                value array of CSR output 
 
-    magma_int_t* n_row                   number of rows in matrix
-    magma_int_t* n_col                   number of columns in matrix
-    magma_int_t* nnz                     number of nonzeros 
-    magmaFloatComplex **val             value array of CSR output 
-    magma_index_t **row                  row pointer of CSR output
-    magma_index_t **col                  column indices of CSR output
-    const char * filename                filname of the mtx matrix
+    @param
+    row         magma_index_t**
+                row pointer of CSR output
 
-    ========================================================================  */
+    @param
+    col         magma_index_t**
+                column indices of CSR output
 
+    @param
+    filename    const char*
+                filname of the mtx matrix
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t read_c_csr_from_mtx(    magma_storage_t *type, 
@@ -426,31 +465,50 @@ magma_int_t write_c_csrtomtx( magma_c_sparse_matrix B, const char *filename){
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Writes a CSR matrix to a file using Matrix Market format.
 
     Arguments
-    =========
+    ---------
 
-    magma_int_t* n_row                   number of rows in matrix
-    magma_int_t* n_col                   number of columns in matrix
-    magma_int_t* nnz                     number of nonzeros 
-    magmaFloatComplex **val             value array of CSR  
-    magma_index_t **row                  row pointer of CSR 
-    magma_index_t **col                  column indices of CSR 
-    magma_index_t MajorType                Row or Column sort
-                                         default: 0 = RowMajor, 1 = ColMajor
-    const char * filename                output filename for the matrix
+    @param
+    n_row       magma_int_t*     
+                number of rows in matrix
+                
+    @param
+    n_col       magma_int_t*     
+                number of columns in matrix
+                
+    @param
+    nnz         magma_int_t*     
+                number of nonzeros in matrix
+                
+    @param
+    val         magmaFloatComplex**
+                value array of CSR  
 
-    ========================================================================  */
+    @param
+    row         magma_index_t**
+                row pointer of CSR 
+
+    @param
+    col         magma_index_t**
+                column indices of CSR 
+
+    @param
+    MajorType   magma_index_t
+                Row or Column sort
+                default: 0 = RowMajor, 1 = ColMajor
+
+    @param
+    filename    const char*
+                output-filname of the mtx matrix
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t write_c_csr_mtx(    magma_int_t n_row, 
@@ -523,30 +581,46 @@ magma_int_t write_c_csr_mtx(    magma_int_t n_row,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prints a CSR matrix in Matrix Market format.
 
     Arguments
-    =========
+    ---------
 
-    magma_int_t* n_row                   number of rows in matrix
-    magma_int_t* n_col                   number of columns in matrix
-    magma_int_t* nnz                     number of nonzeros 
-    magmaFloatComplex **val             value array of CSR  
-    magma_index_t **row                    row pointer of CSR 
-    magma_index_t **col                    column indices of CSR
-    magma_index_t MajorType                Row or Column sort
-                                         default: 0 = RowMajor, 1 = ColMajor
+    @param
+    n_row       magma_int_t*     
+                number of rows in matrix
+                
+    @param
+    n_col       magma_int_t*     
+                number of columns in matrix
+                
+    @param
+    nnz         magma_int_t*     
+                number of nonzeros in matrix
+                
+    @param
+    val         magmaFloatComplex**
+                value array of CSR  
 
-    ========================================================================  */
+    @param
+    row         magma_index_t**
+                row pointer of CSR 
+
+    @param
+    col         magma_index_t**
+                column indices of CSR
+
+    @param
+    MajorType   magma_index_t
+                Row or Column sort
+                default: 0 = RowMajor, 1 = ColMajor
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t print_c_csr_mtx(    magma_int_t n_row, 
@@ -605,28 +679,42 @@ magma_int_t print_c_csr_mtx(    magma_int_t n_row,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prints a CSR matrix in CSR format.
 
     Arguments
-    =========
+    ---------
+    
+    @param
+    n_row       magma_int_t*     
+                number of rows in matrix
+                
+    @param
+    n_col       magma_int_t*     
+                number of columns in matrix
+                
+    @param
+    nnz         magma_int_t*     
+                number of nonzeros in matrix
+                
+    @param
+    val         magmaFloatComplex**
+                value array of CSR  
 
-    magma_int_t* n_row                   number of rows in matrix
-    magma_int_t* n_col                   number of columns in matrix
-    magma_int_t* nnz                     number of nonzeros 
-    magmaFloatComplex **val             value array of CSR  
-    magma_index_t **row                  row pointer of CSR 
-    magma_index_t **col                  column indices of CSR 
+    @param
+    row         magma_index_t**
+                row pointer of CSR 
 
-    ========================================================================  */
+    @param
+    col         magma_index_t**
+                column indices of CSR 
+
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t print_c_csr(    magma_int_t n_row, 
@@ -653,23 +741,21 @@ magma_int_t print_c_csr(    magma_int_t n_row,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prints a sparse matrix in CSR format.
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix A              sparse matrix in Magma_CSR format
+    @param
+    A           magma_c_sparse_matrix
+                sparse matrix in Magma_CSR format
 
-    ========================================================================  */
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t magma_c_mvisu( magma_c_sparse_matrix A )
@@ -710,26 +796,27 @@ magma_int_t magma_c_mvisu( magma_c_sparse_matrix A )
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Reads in a matrix stored in coo format from a Matrix Market (.mtx)
     file and converts it into CSR format. It duplicates the off-diagonal
     entries in the symmetric case.
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix *A             matrix in magma sparse matrix format
-    const char * filename                filname of the mtx matrix
+    @param
+    A           magma_c_sparse_matrix*
+                matrix in magma sparse matrix format
 
-    ========================================================================  */
+    @param
+    filename    const char*
+                filname of the mtx matrix
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t magma_c_csr_mtx( magma_c_sparse_matrix *A, const char *filename ){
@@ -829,8 +916,8 @@ magma_int_t magma_c_csr_mtx( magma_c_sparse_matrix *A, const char *filename ){
     magma_index_t* new_row;
     magma_index_t* new_col;
     magma_cmalloc_cpu( &new_val, true_nonzeros );
-    magma_indexmalloc_cpu( &new_row, true_nonzeros );
-    magma_indexmalloc_cpu( &new_col, true_nonzeros );
+    magma_index_malloc_cpu( &new_row, true_nonzeros );
+    magma_index_malloc_cpu( &new_col, true_nonzeros );
 
     magma_index_t ptr = 0;
     for(magma_int_t i = 0; i < A->nnz; ++i) {
@@ -918,10 +1005,10 @@ magma_int_t magma_c_csr_mtx( magma_c_sparse_matrix *A, const char *filename ){
   magma_cmalloc_cpu( &A->val, A->nnz );
   assert((A->val) != NULL);
   
-  magma_indexmalloc_cpu( &A->col, A->nnz );
+  magma_index_malloc_cpu( &A->col, A->nnz );
   assert((A->col) != NULL);
   
-  magma_indexmalloc_cpu( &A->row, A->num_rows+1 );
+  magma_index_malloc_cpu( &A->row, A->num_rows+1 );
   assert((A->row) != NULL);
   
 
@@ -991,7 +1078,7 @@ magma_int_t magma_c_csr_mtx( magma_c_sparse_matrix *A, const char *filename ){
       magma_c_csr_compressor(&(A->val), 
                         &(A->row),
                          &(A->col), 
-                       &B.val, &B.row, &B.col, &B.num_rows, &B.num_rows); 
+                       &B.val, &B.row, &B.col, &B.num_rows ); 
       B.nnz = B.row[num_rows];
      // printf(" remaining nonzeros:%d ", B.nnz); 
       magma_free_cpu( A->val ); 
@@ -1005,26 +1092,32 @@ magma_int_t magma_c_csr_mtx( magma_c_sparse_matrix *A, const char *filename ){
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
+/** -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
     Purpose
-    =======
+    -------
 
     Reads in a SYMMETRIC matrix stored in coo format from a Matrix Market (.mtx)
     file and converts it into CSR format. It does not duplicate the off-diagonal
     entries!
 
     Arguments
-    =========
+    ---------
 
-    magma_c_sparse_matrix *A             matrix in magma sparse matrix format
-    const char * filename                filname of the mtx matrix
+    @param
+    A           magma_c_sparse_matrix*
+                matrix in magma sparse matrix format
 
-    =====================================================================  */
+    @param
+    filename    const char*
+                filname of the mtx matrix
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 extern "C"
 magma_int_t magma_c_csr_mtxsymm( magma_c_sparse_matrix *A, 
@@ -1169,10 +1262,10 @@ magma_int_t magma_c_csr_mtxsymm( magma_c_sparse_matrix *A,
   magma_cmalloc_cpu( &A->val, A->nnz );
   assert((A->val) != NULL);
   
-  magma_indexmalloc_cpu( &A->col, A->nnz );
+  magma_index_malloc_cpu( &A->col, A->nnz );
   assert((A->col) != NULL);
   
-  magma_indexmalloc_cpu( &A->row, A->num_rows+1 );
+  magma_index_malloc_cpu( &A->row, A->num_rows+1 );
   assert((A->row) != NULL);
   
 
@@ -1242,7 +1335,7 @@ magma_int_t magma_c_csr_mtxsymm( magma_c_sparse_matrix *A,
       magma_c_csr_compressor(&(A->val), 
                         &(A->row),
                          &(A->col), 
-                       &B.val, &B.row, &B.col, &B.num_rows, &B.num_rows); 
+                       &B.val, &B.row, &B.col, &B.num_rows ); 
       B.nnz = B.row[num_rows];
      // printf(" remaining nonzeros:%d ", B.nnz); 
       magma_free_cpu( A->val ); 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -222,10 +222,10 @@ magma_ztstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
 
         if ( order == MagmaRowMajor ) {
             magma_zsetmatrix( m, n, hU, ldhu, dwork, lddwork );
-            magmablas_ztranspose( dU, lddu, dwork, lddwork, m, n );
+            magmablas_ztranspose( m, n, dwork, lddwork, dU, lddu );
 
             magma_zsetmatrix( m, n, hA, ldha, dwork, lddwork );
-            magmablas_ztranspose( dA, ldda, dwork, lddwork, m, n );
+            magmablas_ztranspose( m, n, dwork, lddwork, dA, ldda );
         } else {
             magma_zsetmatrix( m, n, hU, ldhu, dU, lddu );
             magma_zsetmatrix( m, n, hA, ldha, dA, ldda );
@@ -253,11 +253,11 @@ magma_ztstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
             
             if ( i > 0 ) {
                 // download i-th panel
-                magmablas_ztranspose( dUp, lddu, UT(0, i), lddu, sb, ii );
-                magmablas_ztranspose( dAp, ldda, AT(0, i), ldda, sb, m  );
+                magmablas_ztranspose( sb, ii, UT(0,i), lddu, dUp, lddu );
+                magmablas_ztranspose( sb, m,  AT(0,i), ldda, dAp, ldda );
                 
                 magma_zgetmatrix( ii, sb, dUp, lddu, hU(0, i), ldhu );
-                magma_zgetmatrix( m, sb, dAp, ldda, hA(0, i), ldha );
+                magma_zgetmatrix( m,  sb, dAp, ldda, hA(0, i), ldha );
                 
                 // make sure that gpu queue is empty
                 //magma_device_sync();
@@ -334,8 +334,8 @@ magma_ztstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
             magma_zsetmatrix( sb, sb, hU(i, i), ldhu, dUp, lddu );
             magma_zsetmatrix( m, sb, hA(0, i), ldha, dAp, ldda );
             magma_zsetmatrix( p*ib, sb, hL(i), ldhl, L(i), lddl );
-            magmablas_ztranspose( UT(i, i), lddu, dUp, lddu, sb, sb);
-            magmablas_ztranspose( AT(0, i), ldda, dAp, ldda, m,  sb);
+            magmablas_ztranspose( sb, sb, dUp, lddu, UT(i,i), lddu );
+            magmablas_ztranspose( m,  sb, dAp, ldda, AT(0,i), ldda );
             
             // make sure that gpu queue is empty
             //magma_device_sync();

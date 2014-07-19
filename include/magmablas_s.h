@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magmablas_z.h normal z -> s, Fri May 30 10:40:33 2014
+       @generated from magmablas_z.h normal z -> s, Fri Jul 18 17:34:10 2014
 */
 
 #ifndef MAGMABLAS_S_H
@@ -22,26 +22,6 @@ extern "C" {
   /*
    * Interface to clean
    */
-float cpu_gpu_sdiff(
-    magma_int_t m, magma_int_t n,
-    const float    *hA, magma_int_t lda,
-    magmaFloat_const_ptr dA, magma_int_t ldda );
-
-// see also slaset
-void szero_32x32_block(
-    magmaFloat_ptr dA, magma_int_t ldda );
-
-void szero_nbxnb_block(
-    magma_int_t nb,
-    magmaFloat_ptr dA, magma_int_t ldda );
-
-void magmablas_ssetdiag1subdiag0_stream(
-    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
-    float *A, magma_int_t lda, magma_queue_t stream);
-
-void magmablas_ssetdiag1subdiag0(
-    magma_uplo_t uplo, magma_int_t k, magma_int_t nb,
-    float *A, magma_int_t lda);
 
 // see also slaswp
 // ipiv gets updated
@@ -63,20 +43,20 @@ void magmablas_stranspose_inplace(
     magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda );
 
+void magmablas_stranspose_inplace_stream(
+    magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magma_queue_t stream );
+
 void magmablas_stranspose(
-    magmaFloat_ptr       odata, magma_int_t ldo,
-    magmaFloat_const_ptr idata, magma_int_t ldi,
-    magma_int_t m, magma_int_t n );
-
-void magmablas_stranspose2(
-    magmaFloat_ptr       odata, magma_int_t ldo,
-    magmaFloat_const_ptr idata, magma_int_t ldi,
-    magma_int_t m, magma_int_t n );
-
-void magmablas_stranspose2s(
-    magmaFloat_ptr       odata, magma_int_t ldo,
-    magmaFloat_const_ptr idata, magma_int_t ldi,
     magma_int_t m, magma_int_t n,
+    magmaFloat_const_ptr dA,  magma_int_t ldda,
+    magmaFloat_ptr       dAT, magma_int_t lddat );
+
+void magmablas_stranspose_stream(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_const_ptr dA,  magma_int_t ldda,
+    magmaFloat_ptr       dAT, magma_int_t lddat,
     magma_queue_t stream );
 
 void magmablas_sgetmatrix_transpose(
@@ -404,6 +384,11 @@ float magmablas_slansy(
     magmaFloat_const_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dwork );
 
+void magmablas_slarfg(
+    magma_int_t n,
+    float *dalpha, float *dx, magma_int_t incx,
+    float *dtau );
+
 void magmablas_slascl(
     magma_type_t type, magma_int_t kl, magma_int_t ku,
     float cfrom, float cto,
@@ -412,11 +397,25 @@ void magmablas_slascl(
 
 void magmablas_slaset(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    float offdiag, float diag,
     magmaFloat_ptr dA, magma_int_t ldda );
 
-void magmablas_slaset_identity(
-    magma_int_t m, magma_int_t n,
-    magmaFloat_ptr dA, magma_int_t ldda );
+void magmablas_slaset_stream(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    float offdiag, float diag,
+    float *dA, magma_int_t ldda,
+    magma_queue_t stream);
+
+void magmablas_slaset_band(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
+    float offdiag, float diag,
+    float *A, magma_int_t lda);
+
+void magmablas_slaset_band_stream(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
+    float offdiag, float diag,
+    float *A, magma_int_t lda,
+    magma_queue_t stream);
 
 void magmablas_slaswp(
     magma_int_t n,
@@ -445,10 +444,20 @@ void magmablas_ssymmetrize_tiles(
     magmaFloat_ptr dA, magma_int_t ldda,
     magma_int_t ntile, magma_int_t mstride, magma_int_t nstride );
 
-void magma_slarfg(
-    magma_int_t n, float *alpha,
-    float *x, magma_int_t incx, float *tau );
+void magmablas_strtri_diag(
+    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
+    const float *dA, magma_int_t ldda,
+    float *d_invA);
 
+void magmablas_strtri_diag_stream(
+    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
+    const float *dA, magma_int_t ldda,
+    float *d_invA,
+    magma_queue_t stream);
+
+  /*
+   * to cleanup
+   */
 void magma_slarfg_gpu(
     magma_int_t n, float *dx0, float *dx,
     float *dtau, float *dxnorm, float *dAkk );
@@ -523,6 +532,15 @@ void magmablas_sgemv(
     magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
     magmaFloat_ptr       dy, magma_int_t incy );
+
+void magmablas_sgemv_batched(
+    magma_trans_t trans, magma_int_t m, magma_int_t n,
+    float alpha,
+    float **A_array, magma_int_t ldda,
+    float **dx_array, magma_int_t incx,
+    float beta,
+    float **dy_array, magma_int_t incy,
+    magma_int_t batchCount);
 
 magma_int_t magmablas_ssymv(
     magma_uplo_t uplo, magma_int_t n,
@@ -665,17 +683,17 @@ void magmablas_strsm_work(
 #define magma_sgetvector(           n, dx_src, incx, hy_dst, incy ) \
         magma_sgetvector_internal(  n, dx_src, incx, hy_dst, incy, __func__, __FILE__, __LINE__ )
 
+#define magma_scopyvector(          n, dx_src, incx, dy_dst, incy ) \
+        magma_scopyvector_internal( n, dx_src, incx, dy_dst, incy, __func__, __FILE__, __LINE__ )
+
 #define magma_ssetvector_async(           n, hx_src, incx, dy_dst, incy, queue ) \
         magma_ssetvector_async_internal(  n, hx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
 #define magma_sgetvector_async(           n, dx_src, incx, hy_dst, incy, queue ) \
         magma_sgetvector_async_internal(  n, dx_src, incx, hy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
-#define magma_scopyvector_async(           n, dx_src, incx, dy_dst, incy, queue ) \
-        magma_scopyvector_async_internal(  n, dx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
-
-#define magma_scopyvector_async(           n, dx_src, incx, dy_dst, incy, queue ) \
-        magma_scopyvector_async_internal(  n, dx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
+#define magma_scopyvector_async(          n, dx_src, incx, dy_dst, incy, queue ) \
+        magma_scopyvector_async_internal( n, dx_src, incx, dy_dst, incy, queue, __func__, __FILE__, __LINE__ )
 
 void magma_ssetvector_internal(
     magma_int_t n,
@@ -689,9 +707,8 @@ void magma_sgetvector_internal(
     float*          hy_dst, magma_int_t incy,
     const char* func, const char* file, int line );
 
-magma_int_t
-magma_scopyvector_internal(
-    magma_int_t m, magma_int_t n,
+void magma_scopyvector_internal(
+    magma_int_t n,
     magmaFloat_const_ptr dx_src, magma_int_t incx,
     magmaFloat_ptr       dy_dst, magma_int_t incy,
     const char* func, const char* file, int line );
@@ -710,9 +727,8 @@ void magma_sgetvector_async_internal(
     magma_queue_t queue,
     const char* func, const char* file, int line );
 
-magma_int_t
-magma_scopyvector_async_internal(
-    magma_int_t m, magma_int_t n,
+void magma_scopyvector_async_internal(
+    magma_int_t n,
     magmaFloat_const_ptr dx_src, magma_int_t incx,
     magmaFloat_ptr       dy_dst, magma_int_t incy,
     magma_queue_t queue,

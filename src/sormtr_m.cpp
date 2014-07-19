@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmtr_m.cpp normal z -> s, Fri May 30 10:41:06 2014
+       @generated from zunmtr_m.cpp normal z -> s, Fri Jul 18 17:34:18 2014
 
 */
 #include "common_magma.h"
@@ -123,6 +123,9 @@ magma_sormtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
                float *work, magma_int_t lwork,
                magma_int_t *info)
 {
+    #define A(i_,j_) (A + (i_) + (j_)*lda)
+    #define C(i_,j_) (C + (i_) + (j_)*ldc)
+    
     float c_one = MAGMA_S_ONE;
 
     magma_int_t  i__2;
@@ -196,9 +199,9 @@ magma_sormtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
         i__2 = nq - 1;
         printf("sormtr_m upper case not implemented");
         exit(-1);
-        //lapackf77_sormql(side_, trans_, &mi, &ni, &i__2, &A[lda], &lda,
+        //lapackf77_sormql(side_, trans_, &mi, &ni, &i__2, A(0,1), &lda,
         //                 tau, C, &ldc, work, &lwork, &iinfo);
-        //magma_sormql_m(nrgpu, side, trans, mi, ni, i__2, &A[lda], lda, tau,
+        //magma_sormql_m(nrgpu, side, trans, mi, ni, i__2, A(0,1), lda, tau,
         //               C, ldc, work, lwork, &iinfo);
     }
     else {
@@ -211,8 +214,8 @@ magma_sormtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
             i2 = 1;
         }
         i__2 = nq - 1;
-        magma_sormqr_m(nrgpu, side, trans, mi, ni, i__2, &A[1], lda, tau,
-                       &C[i1 + i2 * ldc], ldc, work, lwork, &iinfo);
+        magma_sormqr_m(nrgpu, side, trans, mi, ni, i__2, A(1,0), lda, tau,
+                       C(i1,i2), ldc, work, lwork, &iinfo);
     }
 
     work[0] = MAGMA_S_MAKE( lwkopt, 0 );

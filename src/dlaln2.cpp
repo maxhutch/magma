@@ -105,7 +105,7 @@
             The imaginary part of the scalar "w".  Not used if NW=1.
 
     @param[out]
-    x       DOUBLE PRECISION array, dimension (LDX,NW)
+    X       DOUBLE PRECISION array, dimension (LDX,NW)
             The NA x NW matrix X (unknowns), as computed by DLALN2.
             If NW=2 ("w" is complex), on exit, column 1 will contain
             the real part of X and column 2 will contain the imaginary
@@ -147,16 +147,21 @@ magma_int_t magma_dlaln2(
     magma_int_t trans, magma_int_t na, magma_int_t nw,
     double smin, double ca, const double *A, magma_int_t lda,
     double d1, double d2, const double *B, magma_int_t ldb,
-    double wr, double wi, double *x, magma_int_t ldx,
+    double wr, double wi, double *X, magma_int_t ldx,
     double *scale, double *xnorm, magma_int_t *info)
 {
+    // normally, we use A(i,j) to be a pointer, A + i + j*lda, but
+    // in this function it is more convenient to be an element, A[i + j*lda].
+    #define A(i_,j_) (A[ (i_) + (j_)*lda ])
+    #define B(i_,j_) (B[ (i_) + (j_)*ldb ])
+    #define X(i_,j_) (X[ (i_) + (j_)*ldx ])
+    
     /* Initialized data */
     magma_int_t zswap[4] = { false, false, true, true };
     magma_int_t rswap[4] = { false, true, false, true };
     magma_int_t ipivot[16] = { 1, 2, 3, 4, 2, 1, 4, 3, 3, 4, 1, 2, 4, 3, 2, 1 };    /* was [4][4] */
 
     /* System generated locals */
-    magma_int_t a_offset, b_offset, x_offset;
     double d__1, d__2;
 
     /* Local variables */
@@ -177,14 +182,9 @@ magma_int_t magma_dlaln2(
 #define crv (equiv_1)
     
     /* Parameter adjustments */
-    a_offset = 1 + lda;
-    A -= a_offset;
-    
-    b_offset = 1 + ldb;
-    B -= b_offset;
-    
-    x_offset = 1 + ldx;
-    x -= x_offset;
+    A -= 1 + lda;
+    B -= 1 + ldb;
+    X -= 1 + ldx;
     
     /* Compute BIGNUM */
     smlnum = 2. * lapackf77_dlamch("Safe minimum");
@@ -202,7 +202,7 @@ magma_int_t magma_dlaln2(
         if (nw == 1) {
             /* Real 1x1 system. */
             /* C = ca A - w D   */
-            csr = ca * A[lda + 1] - wr * d1;
+            csr = ca * A(1,1) - wr * d1;
             cnorm = fabs(csr);
             
             /* If | C | < SMINI, use C = SMINI */
@@ -213,7 +213,7 @@ magma_int_t magma_dlaln2(
             }
             
             /* Check scaling for  X = B / C */
-            bnorm = fabs( B[ldb + 1] );
+            bnorm = fabs( B(1,1) );
             if (cnorm < 1. && bnorm > 1.) {
                 if (bnorm > bignum * cnorm) {
                     *scale = 1. / bnorm;
@@ -221,13 +221,13 @@ magma_int_t magma_dlaln2(
             }
             
             /* Compute X */
-            x[ldx + 1] = B[ldb + 1] * *scale / csr;
-            *xnorm = fabs( x[ldx + 1] );
+            X(1,1) = B(1,1) * *scale / csr;
+            *xnorm = fabs( X(1,1) );
         }
         else {
             /* Complex 1x1 system (w is complex) */
             /* C = ca A - w D */
-            csr = ca * A[lda + 1] - wr * d1;
+            csr = ca * A(1,1) - wr * d1;
             csi = -(wi) * d1;
             cnorm = fabs(csr) + fabs(csi);
             
@@ -240,7 +240,7 @@ magma_int_t magma_dlaln2(
             }
             
             /* Check scaling for  X = B / C */
-            bnorm = fabs( B[ldb   + 1] ) + fabs( B[ldb*2 + 1] );
+            bnorm = fabs( B(1,1) ) + fabs( B(1,2) );
             if (cnorm < 1. && bnorm > 1.) {
                 if (bnorm > bignum * cnorm) {
                     *scale = 1. / bnorm;
@@ -248,24 +248,24 @@ magma_int_t magma_dlaln2(
             }
             
             /* Compute X */
-            d__1 = *scale * B[ldb   + 1];
-            d__2 = *scale * B[ldb*2 + 1];
-            lapackf77_dladiv( &d__1, &d__2, &csr, &csi, &x[ldx + 1], &x[ldx*2 + 1] );
-            *xnorm = fabs( x[ldx   + 1] ) + fabs( x[ldx*2 + 1] );
+            d__1 = *scale * B(1,1);
+            d__2 = *scale * B(1,2);
+            lapackf77_dladiv( &d__1, &d__2, &csr, &csi, &X(1,1), &X(1,2) );
+            *xnorm = fabs( X(1,1) ) + fabs( X(1,2) );
         }
     }
     else {
         /* 2x2 System */
         /* Compute the real part of  C = ca A - w D  (or  ca A**T - w D ) */
-        cr[0] = ca * A[lda   + 1] - wr * d1;
-        cr[3] = ca * A[lda*2 + 2] - wr * d2;
+        cr[0] = ca * A(1,1) - wr * d1;
+        cr[3] = ca * A(2,2) - wr * d2;
         if (trans) {
-            cr[2] = ca * A[lda   + 2];
-            cr[1] = ca * A[lda*2 + 1];
+            cr[2] = ca * A(2,1);
+            cr[1] = ca * A(1,2);
         }
         else {
-            cr[1] = ca * A[lda   + 2];
-            cr[2] = ca * A[lda*2 + 1];
+            cr[1] = ca * A(2,1);
+            cr[2] = ca * A(1,2);
         }
         
         if (nw == 1) {
@@ -284,15 +284,15 @@ magma_int_t magma_dlaln2(
             
             /* If norm(C) < SMINI, use SMINI*identity. */
             if (cmax < smini) {
-                bnorm = max( fabs( B[ldb + 1] ), fabs( B[ldb + 2] ) );
+                bnorm = max( fabs( B(1,1) ), fabs( B(2,1) ) );
                 if (smini < 1. && bnorm > 1.) {
                     if (bnorm > bignum * smini) {
                         *scale = 1. / bnorm;
                     }
                 }
                 temp = *scale / smini;
-                x[ldx + 1] = temp * B[ldb + 1];
-                x[ldx + 2] = temp * B[ldb + 2];
+                X(1,1) = temp * B(1,1);
+                X(2,1) = temp * B(2,1);
                 *xnorm = temp * bnorm;
                 *info = 1;
                 return 0;
@@ -313,12 +313,12 @@ magma_int_t magma_dlaln2(
                 *info = 1;
             }
             if (rswap[icmax - 1]) {
-                br1 = B[ldb + 2];
-                br2 = B[ldb + 1];
+                br1 = B(2,1);
+                br2 = B(1,1);
             }
             else {
-                br1 = B[ldb + 1];
-                br2 = B[ldb + 2];
+                br1 = B(1,1);
+                br2 = B(2,1);
             }
             br2 -= lr21 * br1;
             bbnd = max( fabs( br1 * (ur22 * ur11r) ), fabs(br2) );
@@ -331,12 +331,12 @@ magma_int_t magma_dlaln2(
             xr2 = br2 * *scale / ur22;
             xr1 = *scale * br1 * ur11r - xr2 * (ur11r * ur12);
             if (zswap[icmax - 1]) {
-                x[ldx + 1] = xr2;
-                x[ldx + 2] = xr1;
+                X(1,1) = xr2;
+                X(2,1) = xr1;
             }
             else {
-                x[ldx + 1] = xr1;
-                x[ldx + 2] = xr2;
+                X(1,1) = xr1;
+                X(2,1) = xr2;
             }
             *xnorm = max( fabs(xr1), fabs(xr2) );
         
@@ -344,8 +344,8 @@ magma_int_t magma_dlaln2(
             if (*xnorm > 1. && cmax > 1.) {
                 if (*xnorm > bignum / cmax) {
                     temp = cmax / bignum;
-                    x[ldx + 1] = temp * x[ldx + 1];
-                    x[ldx + 2] = temp * x[ldx + 2];
+                    X(1,1) = temp * X(1,1);
+                    X(2,1) = temp * X(2,1);
                     *xnorm = temp * *xnorm;
                     *scale = temp * *scale;
                 }
@@ -372,18 +372,18 @@ magma_int_t magma_dlaln2(
             /* If norm(C) < SMINI, use SMINI*identity. */
         
             if (cmax < smini) {
-                bnorm = max( fabs( B[ldb + 1] ) + fabs( B[ldb*2 + 1] ),
-                             fabs( B[ldb + 2] ) + fabs( B[ldb*2 + 2] ) );
+                bnorm = max( fabs( B(1,1) ) + fabs( B(1,2) ),
+                             fabs( B(2,1) ) + fabs( B(2,2) ) );
                 if (smini < 1. && bnorm > 1.) {
                     if (bnorm > bignum * smini) {
                         *scale = 1. / bnorm;
                     }
                 }
                 temp = *scale / smini;
-                x[ldx   + 1] = temp * B[ldb   + 1];
-                x[ldx   + 2] = temp * B[ldb   + 2];
-                x[ldx*2 + 1] = temp * B[ldb*2 + 1];
-                x[ldx*2 + 2] = temp * B[ldb*2 + 2];
+                X(1,1) = temp * B(1,1);
+                X(2,1) = temp * B(2,1);
+                X(1,2) = temp * B(1,2);
+                X(2,2) = temp * B(2,2);
                 *xnorm = temp * bnorm;
                 *info = 1;
                 return 0;
@@ -438,16 +438,16 @@ magma_int_t magma_dlaln2(
                 *info = 1;
             }
             if (rswap[icmax - 1]) {
-                br2 = B[ldb + 1];
-                br1 = B[ldb + 2];
-                bi2 = B[ldb*2 + 1];
-                bi1 = B[ldb*2 + 2];
+                br2 = B(1,1);
+                br1 = B(2,1);
+                bi2 = B(1,2);
+                bi1 = B(2,2);
             }
             else {
-                br1 = B[ldb + 1];
-                br2 = B[ldb + 2];
-                bi1 = B[ldb*2 + 1];
-                bi2 = B[ldb*2 + 2];
+                br1 = B(1,1);
+                br2 = B(2,1);
+                bi1 = B(1,2);
+                bi2 = B(2,2);
             }
             br2 = br2 - lr21 * br1 + li21 * bi1;
             bi2 = bi2 - li21 * br1 - lr21 * bi1;
@@ -467,16 +467,16 @@ magma_int_t magma_dlaln2(
             xr1 = ur11r * br1 - ui11r * bi1 - ur12s * xr2 + ui12s * xi2;
             xi1 = ui11r * br1 + ur11r * bi1 - ui12s * xr2 - ur12s * xi2;
             if (zswap[icmax - 1]) {
-                x[ldx   + 1] = xr2;
-                x[ldx   + 2] = xr1;
-                x[ldx*2 + 1] = xi2;
-                x[ldx*2 + 2] = xi1;
+                X(1,1) = xr2;
+                X(2,1) = xr1;
+                X(1,2) = xi2;
+                X(2,2) = xi1;
             }
             else {
-                x[ldx   + 1] = xr1;
-                x[ldx   + 2] = xr2;
-                x[ldx*2 + 1] = xi1;
-                x[ldx*2 + 2] = xi2;
+                X(1,1) = xr1;
+                X(2,1) = xr2;
+                X(1,2) = xi1;
+                X(2,2) = xi2;
             }
             *xnorm = max( fabs(xr1) + fabs(xi1), fabs(xr2) + fabs(xi2) );
         
@@ -484,10 +484,10 @@ magma_int_t magma_dlaln2(
             if (*xnorm > 1. && cmax > 1.) {
                 if (*xnorm > bignum / cmax) {
                     temp = cmax / bignum;
-                    x[ldx   + 1] = temp * x[ldx + 1];
-                    x[ldx   + 2] = temp * x[ldx + 2];
-                    x[ldx*2 + 1] = temp * x[ldx*2 + 1];
-                    x[ldx*2 + 2] = temp * x[ldx*2 + 2];
+                    X(1,1) = temp * X(1,1);
+                    X(2,1) = temp * X(2,1);
+                    X(1,2) = temp * X(1,2);
+                    X(2,2) = temp * X(2,2);
                     *xnorm = temp * *xnorm;
                     *scale = temp * *scale;
                 }
@@ -496,9 +496,6 @@ magma_int_t magma_dlaln2(
     }
 
     return 0;
-
-  /* End of DLALN2 */
-
 } /* dlaln2_ */
 
 #undef crv

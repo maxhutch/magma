@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgetri_gpu.cpp normal z -> c, Fri May 30 10:40:55 2014
+       @generated from zgetri_gpu.cpp normal z -> c, Fri Jul 18 17:34:15 2014
 
 */
 #include "common_magma.h"
@@ -72,6 +72,7 @@ magma_cgetri_gpu( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
     #define dL(i, j)  (dL + (i) + (j)*lddl)
     
     /* Local variables */
+    magmaFloatComplex c_zero    = MAGMA_C_ZERO;
     magmaFloatComplex c_one     = MAGMA_C_ONE;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex *dL = dwork;
@@ -110,7 +111,7 @@ magma_cgetri_gpu( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
         magmablas_clacpy( MagmaUpperLower, n-j, jb,
                           dA(j,j), ldda,
                           dL(j,0), lddl );
-        magmablas_claset( MagmaLower, n-j, jb, dA(j,j), ldda );
+        magmablas_claset( MagmaLower, n-j, jb, c_zero, c_zero, dA(j,j), ldda );
         
         // compute current block column of Ainv
         // Ainv(:, j:j+jb-1)

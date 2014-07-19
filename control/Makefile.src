@@ -8,10 +8,10 @@ SHDR = \
 
 
 CSRC = \
-cpanel_to_q.cpp cprint.cpp
+magma_cnan_inf.cpp cpanel_to_q.cpp cprint.cpp
 
 DSRC = \
-dpanel_to_q.cpp dprint.cpp
+magma_dnan_inf.cpp dpanel_to_q.cpp dprint.cpp
 
 SSRC = \
-spanel_to_q.cpp sprint.cpp
+magma_snan_inf.cpp spanel_to_q.cpp sprint.cpp

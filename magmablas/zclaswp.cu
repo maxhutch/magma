@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions mixed zc -> ds
 
 */
 #include "common_magma.h"
 
-#define num_threadzc 64
+#define NB 64
 
 __global__ void
 zclaswp_kernel(int n, magmaDoubleComplex *a, int lda, magmaFloatComplex *sa, int m, const magma_int_t *ipiv)
 {
-    int ind = blockIdx.x*num_threadzc + threadIdx.x;
+    int ind = blockIdx.x*NB + threadIdx.x;
     int newind;
     magmaFloatComplex res;
     
@@ -36,7 +36,7 @@ zclaswp_kernel(int n, magmaDoubleComplex *a, int lda, magmaFloatComplex *sa, int
 __global__ void
 zclaswp_inv_kernel(int n, magmaDoubleComplex *a, int lda, magmaFloatComplex *sa, int m, const magma_int_t *ipiv)
 {
-    int ind = blockIdx.x*num_threadzc + threadIdx.x;
+    int ind = blockIdx.x*NB + threadIdx.x;
     int newind;
     magmaDoubleComplex res;
 
@@ -89,14 +89,12 @@ magmablas_zclaswp( magma_int_t n, magmaDoubleComplex *a, magma_int_t lda,
                    magmaFloatComplex *sa, magma_int_t m,
                    const magma_int_t *ipiv, magma_int_t incx )
 {
-    int blocks = (m - 1)/num_threadzc + 1;
+    int blocks = (m - 1)/NB + 1;
     dim3 grid(blocks, 1, 1);
-    dim3 threazc(num_threadzc, 1, 1);
+    dim3 threads(NB, 1, 1);
 
     if (incx >= 0)
-        zclaswp_kernel<<< grid, threazc, 0, magma_stream >>>(n, a, lda, sa, m, ipiv);
+        zclaswp_kernel<<< grid, threads, 0, magma_stream >>>(n, a, lda, sa, m, ipiv);
     else
-        zclaswp_inv_kernel<<< grid, threazc, 0, magma_stream >>>(n, a, lda, sa, m, ipiv);
+        zclaswp_inv_kernel<<< grid, threads, 0, magma_stream >>>(n, a, lda, sa, m, ipiv);
 }
-
-#undef num_threadzc

@@ -63,15 +63,15 @@ when executing "./run_xsolver".
 "--format k"
     k = 0 : CSR
     k = 1 : ELLPACK
-    k = 2 : ELLPACKT
-    k = 3 : ELLPACKRT
+    k = 2 : ELLPACKRT
+    k = 3 : SELLP
 
 "--blocksize k"
     for Magma_ELLPACKRT: denotes the number of rows in one slice of the matrix
                       and the number of rows assigned to one multiprocessor
-    for Magma_SELLC: k denotes the number of rows in one slice of the matrix
+    for Magma_SELLP: k denotes the number of rows in one slice of the matrix
                       and the number of rows assigned to one multiprocessor
-    for Magma_SELLCM: k denotes the number of rows in one slice of the matrix
+    for Magma_SELLP: k denotes the number of rows in one slice of the matrix
                       and the number of rows assigned to one multiprocessor
 
 "--alignment k"
@@ -102,11 +102,14 @@ when executing "./run_xsolver".
         For BCSRLU, version allows to select either CUBLAS-batched GEMM or
         a custom-designed kernel suitable for block-size 64.
 
+"--scale k"
+   k = 1 scale symmetrically to unit diagonal
+   k = 2 scale to unit rownorm
+
 "--preconditioner k"
     k = 0 : Jacobi
-    k = 1 : CG
-    k = 2 : BiCGStab
-    k = 3 : GMRES
+    k = 1 : ILU/IC
+    k = 2 : iterative ILU/IC
 
 "--precond-maxiter/tol/restart" similar like above. The preconditioner types for
     the iterative refinement are set to the default classical implementations. 

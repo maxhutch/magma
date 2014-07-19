@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -58,8 +58,8 @@
 
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= max(1,N).
-            For optimum performance LWORK >= N*NB, where NB can be obtained
+            The dimension of the array WORK.  LWORK >= max(1,N,2*NB^2).
+            For optimum performance LWORK >= max(N*NB, 2*NB^2) where NB can be obtained
             through magma_get_zgeqlf_nb(M).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
@@ -125,10 +125,10 @@ magma_zgeqlf(magma_int_t m, magma_int_t n,
         if (k == 0)
             work[0] = c_one;
         else {
-            work[0] = MAGMA_Z_MAKE( n*nb, 0 );
+            work[0] = MAGMA_Z_MAKE( max(n*nb, 2*nb*nb), 0 );
         }
 
-        if (lwork < max(1,n) && ! lquery)
+        if (lwork < max(max(1,n), 2*nb*nb) && ! lquery)
             *info = -7;
     }
 

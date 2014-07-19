@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from commonblas_z.h normal z -> c, Fri May 30 10:40:44 2014
+       @generated from commonblas_z.h normal z -> c, Fri Jul 18 17:34:13 2014
 */
 
 #ifndef COMMONBLAS_C_H
@@ -51,37 +51,6 @@ void magmablas_cgemv_tesla(
     const magmaFloatComplex *x, magma_int_t incx,
     magmaFloatComplex beta,
     magmaFloatComplex *y, magma_int_t incy );
-
-// for tesla, z is not available, and chemv doesn't have _work interface
-void magmablas_chemv_tesla(
-    magma_uplo_t uplo, magma_int_t n, magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t lda,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex beta,
-    magmaFloatComplex *dy, magma_int_t incy );
-
-//void magmablas_chemv_tesla_work(
-//    magma_uplo_t uplo, magma_int_t n, magmaFloatComplex alpha,
-//    const magmaFloatComplex *dA, magma_int_t lda,
-//    const magmaFloatComplex *dx, magma_int_t incx,
-//    magmaFloatComplex beta,
-//    magmaFloatComplex *dy, magma_int_t incy,
-//    magmaFloatComplex *dwork, magma_int_t lwork );
-
-void magmablas_csymv_tesla(
-    magma_uplo_t uplo, magma_int_t n, magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t lda,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex beta,
-    magmaFloatComplex *dy, magma_int_t incy );
-
-void magmablas_csymv_tesla_work(
-    magma_uplo_t uplo, magma_int_t n, magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t lda,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex beta,
-    magmaFloatComplex *dy, magma_int_t incy,
-    magmaFloatComplex *dwork, magma_int_t lwork );
 
 #ifdef __cplusplus
 }

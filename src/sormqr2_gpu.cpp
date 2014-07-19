@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmqr2_gpu.cpp normal z -> s, Fri May 30 10:40:59 2014
+       @generated from zunmqr2_gpu.cpp normal z -> s, Fri Jul 18 17:34:16 2014
 
 */
 #include "common_magma.h"
@@ -114,20 +114,24 @@ magma_sormqr2_gpu(magma_side_t side, magma_trans_t trans,
                   float *wA, magma_int_t ldwa,
                   magma_int_t *info)
 {
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
+    #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
+    #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
+    
     /* Allocate work space on the GPU */
     float *dwork;
 
-    magma_int_t wa_offset, dc_offset, i__4, lddwork;
-    magma_int_t i;
-    float t[2*4160]        /* was [65][64] */;
+    float c_zero = MAGMA_S_ZERO;
+    float c_one  = MAGMA_S_ONE;
+    
+    magma_int_t i, i__4, lddwork;
+    float T[2*4160]        /* was [65][64] */;
     magma_int_t i1, i2, step, ib, ic, jc, nb, mi, ni, nq, nw;
     int left, notran;
 
-    wa_offset = 1 + ldwa;
-    wA -= wa_offset;
+    wA -= 1 + ldwa;
+    dC -= 1 + lddc;
     --tau;
-    dc_offset = 1 + lddc;
-    dC -= dc_offset;
 
     *info = 0;
     left   = (side == MagmaLeft);
@@ -137,11 +141,11 @@ magma_sormqr2_gpu(magma_side_t side, magma_trans_t trans,
     if (left) {
         nq = m;
         nw = n;
-        magma_smalloc( &dwork, (n + 64)*64 );
+        magma_smalloc( &dwork, (n + 64)*64 );  // TODO after checking args, else memory leak!
     } else {
         nq = n;
         nw = m;
-        magma_smalloc( &dwork, (m + 64)*64 );
+        magma_smalloc( &dwork, (m + 64)*64 );  // TODO after checking args, else memory leak!
     }
     if (! left && side != MagmaRight) {
         *info = -1;
@@ -197,7 +201,10 @@ magma_sormqr2_gpu(magma_side_t side, magma_trans_t trans,
         ic = 1;
     }
 
-    magmablas_ssetdiag1subdiag0(MagmaLower, k, nb, dA, ldda);
+    // set nb-1 super-diagonals to 0, and diagonal to 1.
+    // This way we can copy V directly to the GPU,
+    // with the upper triangle parts already set to identity.
+    magmablas_slaset_band( MagmaUpper, k, k, nb, c_zero, c_one, dA, ldda );
 
     // for i=i1 to i2 by step
     for (i = i1; (step < 0 ? i >= i2 : i <= i2); i += step) {
@@ -206,9 +213,8 @@ magma_sormqr2_gpu(magma_side_t side, magma_trans_t trans,
         /* Form the triangular factor of the block reflector
            H = H(i) H(i+1) . . . H(i+ib-1) */
         i__4 = nq - i + 1;
-        lapackf77_slarft("F", "C", &i__4, &ib, &wA[i + i*ldwa], &ldwa,
-                         &tau[i], t, &ib);
-
+        lapackf77_slarft("Forward", "Columnwise", &i__4, &ib,
+                         wA(i,i), &ldwa, &tau[i], T, &ib);
 
         if (left) {
             /* H or H' is applied to C(i:m,1:n) */
@@ -227,11 +233,11 @@ magma_sormqr2_gpu(magma_side_t side, magma_trans_t trans,
             lddwork = mi;
 
         /* Apply H or H'; First copy T to the GPU */
-        magma_ssetmatrix( ib, ib, t, ib, dwork, ib );
+        magma_ssetmatrix( ib, ib, T, ib, dwork, ib );
         magma_slarfb_gpu( side, trans, MagmaForward, MagmaColumnwise,
                           mi, ni, ib,
-                          dA + (i - 1) + (i - 1)*ldda, ldda, dwork, ib,
-                          &dC[ic + jc*lddc], lddc,
+                          dA(i-1,i-1), ldda, dwork, ib,  // dA using 0-based indices here
+                          dC(ic,jc), lddc,
                           dwork + ib*ib, lddwork);
     }
 

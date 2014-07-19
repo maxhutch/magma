@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -20,31 +20,40 @@
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     For a given input matrix A and vectors x, y and scalars alpha, beta
     the wrapper determines the suitable SpMV computing
               y = alpha * A * x + beta * y.  
     Arguments
-    =========
+    ---------
 
-    magmaDoubleComplex alpha      scalar alpha
-    magma_z_sparse_matrix A       sparse matrix A    
-    magma_z_vector x              input vector x  
-    magmaDoublComplex beta        scalar beta
-    magma_z_vector y              input vector y      
+    @param
+    alpha       magmaDoubleComplex
+                scalar alpha
 
-    ========================================================================  */
+    @param
+    A           magma_z_sparse_matrix
+                sparse matrix A    
+
+    @param
+    x           magma_z_vector
+                input vector x  
+                
+    @param
+    beta        magmaDoubleComplex
+                scalar beta
+    @param
+    y           magma_z_vector
+                output vector y      
+
+    @ingroup magmasparse_z
+    ********************************************************************/
 
 magma_int_t
-magma_z_spmv(     magmaDoubleComplex alpha, magma_z_sparse_matrix A, 
+magma_z_spmv(   magmaDoubleComplex alpha, magma_z_sparse_matrix A, 
                 magma_z_vector x, magmaDoubleComplex beta, magma_z_vector y )
 {
     if( A.memory_location != x.memory_location || 
@@ -196,30 +205,54 @@ magma_z_spmv(     magmaDoubleComplex alpha, magma_z_sparse_matrix A,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     For a given input matrix A and vectors x, y and scalars alpha, beta
     the wrapper determines the suitable SpMV computing
               y = alpha * ( A - lambda I ) * x + beta * y.  
     Arguments
-    =========
+    ---------
 
-    magmaDoubleComplex alpha      scalar alpha
-    magma_z_sparse_matrix A       sparse matrix A   
-    magmaDoubleComplex alpha      scalar lambda 
-    magma_z_vector x              input vector x  
-    magmaDoublComplex beta        scalar beta
-    magma_z_vector y              input vector y      
+    @param
+    alpha       magmaDoubleComplex
+                scalar alpha
 
-    ========================================================================  */
+    @param
+    A           magma_z_sparse_matrix
+                sparse matrix A   
 
+    @param
+    lambda      magmaDoubleComplex
+                scalar lambda 
+
+    @param
+    x           magma_z_vector
+                input vector x  
+
+    @param
+    beta        magmaDoubleComplex
+                scalar beta   
+                
+    @param
+    offset      magma_int_t 
+                in case not the main diagonal is scaled
+                
+    @param
+    blocksize   magma_int_t 
+                in case of processing multiple vectors  
+                
+    @param
+    add_rows    magma_int_t*
+                in case the matrixpowerskernel is used
+                
+    @param
+    y           magma_z_vector
+                output vector y    
+
+    @ingroup magmasparse_zaux
+    ********************************************************************/
 
 magma_int_t
 magma_z_spmv_shift( magmaDoubleComplex alpha, 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlacpy_batched.cu normal z -> d, Fri May 30 10:40:41 2014
+       @generated from zlacpy_batched.cu normal z -> d, Fri Jul 18 17:34:12 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -78,7 +78,7 @@ dlacpy_batched_kernel(
     
     @param[in]
     dAarray array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
+            with each array a DOUBLE_PRECISION array, dimension (LDDA,N)
             The m by n matrices dAarray[i].
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
@@ -89,7 +89,7 @@ dlacpy_batched_kernel(
     
     @param[out]
     dBarray array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX DOUBLE PRECISION array, dimension (LDDB,N)
+            with each array a DOUBLE_PRECISION array, dimension (LDDB,N)
             The m by n matrices dBarray[i].
             On exit, matrix dBarray[i] = matrix dAarray[i] in the locations
             specified by UPLO.

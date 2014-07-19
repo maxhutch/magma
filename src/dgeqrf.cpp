@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
-       @generated from zgeqrf.cpp normal z -> d, Fri May 30 10:41:01 2014
+       @generated from zgeqrf.cpp normal z -> d, Fri Jul 18 17:34:17 2014
 
 */
 #include "common_magma.h"
@@ -154,11 +154,10 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
     }
 
     /* Define user stream if current stream is NULL */
-    magma_queue_t stream[3], current_stream;
+    magma_queue_t stream[2], current_stream;
     magmablasGetKernelStream(&current_stream);
 
     magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[2] );
     if (current_stream == NULL) {
         magma_queue_create( &stream[1] );
         magmablasSetKernelStream(stream[1]);
@@ -175,7 +174,7 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
            Asynchronously send the matrix to the GPU except the first panel. */
         magma_dsetmatrix_async( m, n-nb,
                                 A(0,nb),  lda,
-                                dA(0,nb), ldda, stream[2] );
+                                dA(0,nb), ldda, stream[0] );
 
         old_i = 0;
         old_ib = nb;
@@ -196,7 +195,7 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
 
                 magma_dgetmatrix_async( i, ib,
                                         dA(0,i), ldda,
-                                        A(0,i),  lda, stream[2] );
+                                        A(0,i),  lda, stream[1] );
                 magma_queue_sync( stream[0] );
             }
 
@@ -249,14 +248,14 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
     if (i < k) {
         ib = n-i;
         if (i != 0) {
-            magma_dgetmatrix( m, ib, dA(0,i), ldda, A(0,i), lda );
+            magma_dgetmatrix_async( m, ib, dA(0,i), ldda, A(0,i), lda, stream[1] );
+            magma_queue_sync( stream[1] );
         }
         magma_int_t rows = m-i;
         lapackf77_dgeqrf(&rows, &ib, A(i,i), &lda, tau+i, work, &lwork, info);
     }
 
     magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[2] );
     if (current_stream == NULL) {
         magma_queue_destroy( stream[1] );
         magmablasSetKernelStream(NULL);

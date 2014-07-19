@@ -1,20 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeqr2x_gpu-v4.cu normal z -> s, Fri May 30 10:40:44 2014
+       @generated from zgeqr2x_gpu-v4.cu normal z -> s, Fri Jul 18 17:34:13 2014
 
 */
 #include "common_magma.h"
 
-//#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 512
-//#else
-//   #define BLOCK_SIZE 768
-//#endif
+// 512 is maximum number of threads for CUDA capability 1.x
+#define BLOCK_SIZE 512
 
 __global__ void 
 magma_strmv_kernel2(const float *T, int ldt,

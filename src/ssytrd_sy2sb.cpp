@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zhetrd_he2hb.cpp normal z -> s, Fri May 30 10:41:06 2014
+       @generated from zhetrd_he2hb.cpp normal z -> s, Fri Jul 18 17:34:19 2014
 
 */
 #include "common_magma.h"
@@ -206,7 +206,7 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     magma_set_lapack_numthreads(mklth);
 
     /* Use the first panel of dA as work space */
-    float *dwork = dA+n*ldda;
+    float *dwork = dA + n*ldda;
     float *dW    = dwork + nb*ldda;
 
     #ifdef TRACING

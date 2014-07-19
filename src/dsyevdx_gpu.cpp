@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -251,9 +251,10 @@ magma_dsyevdx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
         lwmin  = 2*n + n*nb;
         liwmin = 1;
     }
-    // multiply by 1+eps to ensure length gets rounded up,
+    
+    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
     // if it cannot be exactly represented in floating point.
-    double one_eps = 1. + lapackf77_dlamch("Epsilon");
+    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
     work[0]  = lwmin * one_eps;
     iwork[0] = liwmin;
 

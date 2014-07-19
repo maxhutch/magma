@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zpotrf_m.cpp normal z -> c, Fri May 30 10:40:55 2014
+       @generated from zpotrf_m.cpp normal z -> c, Fri Jul 18 17:34:15 2014
 
 */
 #include "common_magma.h"
@@ -30,47 +30,51 @@
     Arguments
     ---------
     @param[in]
-    uplo    magma_uplo_t
-      -     = MagmaUpper:  Upper triangle of A is stored;
-      -     = MagmaLower:  Lower triangle of A is stored.
+    num_gpus INTEGER
+             The number of GPUs.  num_gpus > 0.
 
     @param[in]
-    n       INTEGER
-            The order of the matrix A.  N >= 0.
+    uplo     magma_uplo_t
+      -      = MagmaUpper:  Upper triangle of A is stored;
+      -      = MagmaLower:  Lower triangle of A is stored.
+
+    @param[in]
+    n        INTEGER
+             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX array, dimension (LDA,N)
-            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
-            N-by-N upper triangular part of A contains the upper
-            triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = MagmaLower, the
-            leading N-by-N lower triangular part of A contains the lower
-            triangular part of the matrix A, and the strictly upper
-            triangular part of A is not referenced.
+    A        COMPLEX array, dimension (LDA,N)
+             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
+             N-by-N upper triangular part of A contains the upper
+             triangular part of the matrix A, and the strictly lower
+             triangular part of A is not referenced.  If UPLO = MagmaLower, the
+             leading N-by-N lower triangular part of A contains the lower
+             triangular part of the matrix A, and the strictly upper
+             triangular part of A is not referenced.
     \n
-            On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization A = U**H * U or A = L * L**H.
+             On exit, if INFO = 0, the factor U or L from the Cholesky
+             factorization A = U**H * U or A = L * L**H.
     \n
-            Higher performance is achieved if A is in pinned memory, e.g.
-            allocated using magma_malloc_pinned.
+             Higher performance is achieved if A is in pinned memory, e.g.
+             allocated using magma_malloc_pinned.
 
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+    lda      INTEGER
+             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    info    INTEGER
-      -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument had an illegal value
-                  or another error occured, such as memory allocation failed.
-      -     > 0:  if INFO = i, the leading minor of order i is not
-                  positive definite, and the factorization could not be
-                  completed.
+    info     INTEGER
+      -      = 0:  successful exit
+      -      < 0:  if INFO = -i, the i-th argument had an illegal value
+                   or another error occured, such as memory allocation failed.
+      -      > 0:  if INFO = i, the leading minor of order i is not
+                   positive definite, and the factorization could not be
+                   completed.
 
     @ingroup magma_cposv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cpotrf_m(magma_int_t num_gpus0, magma_uplo_t uplo, magma_int_t n,
+magma_cpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
                magmaFloatComplex *A, magma_int_t lda, magma_int_t *info)
 {
 #define    A(i, j)    (    A      + (j)*lda   + (i))
@@ -88,7 +92,7 @@ magma_cpotrf_m(magma_int_t num_gpus0, magma_uplo_t uplo, magma_int_t n,
     int upper = (uplo == MagmaUpper);
 
     magmaFloatComplex *dwork[MagmaMaxGPUs], *dt[MagmaMaxGPUs];
-    magma_int_t     ldda, lddla, nb, iinfo, n_local[MagmaMaxGPUs], J2, d, num_gpus;
+    magma_int_t     ldda, lddla, nb, iinfo, n_local[MagmaMaxGPUs], J2, d, num_gpus0 = num_gpus;
     magma_int_t     j, jj, jb, J, JB, NB, MB, h;
     magma_queue_t   stream[MagmaMaxGPUs][3];
     magma_event_t   event[MagmaMaxGPUs][5];

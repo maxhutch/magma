@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlahr2.cpp normal z -> s, Fri May 30 10:41:08 2014
+       @generated from zlahr2.cpp normal z -> s, Fri Jul 18 17:34:19 2014
        @author Stan Tomov
        @author Mark Gates
 */
@@ -42,14 +42,22 @@
             The number of columns to be reduced.
 
     @param[in,out]
-    dA      REAL array on the GPU, dimension (LDA,N-K+1)
+    dA      REAL array on the GPU, dimension (LDDA,N-K+1)
             On entry, the n-by-(n-k+1) general matrix A.
             On exit, the elements in rows K:N of the first NB columns are
             overwritten with the matrix Y.
 
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1,N).
+
     @param[out]
-    dV      REAL array on the GPU, dimension (N, NB)
-            On exit this contains the Householder vectors of the transformation.
+    dV      REAL array on the GPU, dimension (LDDV, NB)
+            On exit this n-by-nb array contains the Householder vectors of the transformation.
+
+    @param[in]
+    lddv    INTEGER
+            The leading dimension of the array dV.  LDDV >= max(1,N).
 
     @param[in,out]
     A       REAL array, dimension (LDA,N-K+1)
@@ -134,24 +142,23 @@
 extern "C" magma_int_t
 magma_slahr2(
     magma_int_t n, magma_int_t k, magma_int_t nb,
-    float *dA,
-    float *dV,
-    float *A, magma_int_t lda,
+    float *dA, magma_int_t ldda,
+    float *dV, magma_int_t lddv,
+    float *A,  magma_int_t lda,
     float *tau,
     float *T, magma_int_t ldt,
     float *Y, magma_int_t ldy )
 {
-    #define  A( i, j ) ( A + (i) + (j)*lda)
-    #define  Y( i, j ) ( Y + (i) + (j)*ldy)
-    #define  T( i, j ) ( T + (i) + (j)*ldt)
-    #define dA( i, j ) (dA + (i) + (j)*ldda)
-    #define dV( i, j ) (dV + (i) + (j)*ldda)
+    #define  A(i_,j_) ( A + (i_) + (j_)*lda)
+    #define  Y(i_,j_) ( Y + (i_) + (j_)*ldy)
+    #define  T(i_,j_) ( T + (i_) + (j_)*ldt)
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
+    #define dV(i_,j_) (dV + (i_) + (j_)*lddv)
     
     float c_zero    = MAGMA_S_ZERO;
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
 
-    magma_int_t ldda = lda;
     magma_int_t ione = 1;
     
     magma_int_t n_k_i_1, n_k;
@@ -159,6 +166,29 @@ magma_slahr2(
 
     magma_int_t i;
     float ei = MAGMA_S_ZERO;
+
+    magma_int_t info = 0;
+    if (n < 0) {
+        info = -1;
+    } else if (k < 0 || k > n) {
+        info = -2;
+    } else if (nb < 1 || nb > n) {
+        info = -3;
+    } else if (ldda < max(1,n)) {
+        info = -5;
+    } else if (lddv < max(1,n)) {
+        info = -7;
+    } else if (lda < max(1,n)) {
+        info = -9;
+    } else if (ldt < max(1,nb)) {
+        info = -12;
+    } else if (ldy < max(1,n)) {
+        info = -13;
+    }
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;
+    }
 
     // adjust from 1-based indexing
     k -= 1;
@@ -237,7 +267,7 @@ magma_slahr2(
             // b1 := b1 - w = A(k+1:k+i-1, i) - w
             blasf77_saxpy( &i,
                            &c_neg_one, T(0,nb-1), &ione,
-                                       A(k+1,i),    &ione );
+                                       A(k+1,i),  &ione );
             
             // Restore diagonal element, saved below during previous iteration
             *A(k+i,i-1) = ei;
@@ -260,8 +290,8 @@ magma_slahr2(
         // dA(k:n-1, i) = dA(k:n-1, i+1:n-k-1) * dV(i+1:n-k-1, i)
         magma_sgemv( MagmaNoTrans, n_k, n_k_i_1,
                      c_one,  dA(k,i+1), ldda,
-                             dV(i+1,i),   ione,
-                     c_zero, dA(k,i),     ione );
+                             dV(i+1,i), ione,
+                     c_zero, dA(k,i),   ione );
         
         // Compute T(0:i,i) = [ -tau T V' vi ]
         //                    [  tau         ]

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_zilustruct.cpp normal z -> s, Fri May 30 10:41:46 2014
+       @generated from magma_zilustruct.cpp normal z -> s, Fri Jul 18 17:34:30 2014
        @author Hartwig Anzt
 */
 
@@ -36,26 +36,28 @@ using namespace std;
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     This routine computes the fill-in structure of an ILU(levels) factorization
     based on the successive multiplication of upper and lower triangular factors
     using the CUSPARSE library.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix *A             matrix in magma sparse matrix format
-    magma_int_t levels                   fill in level
+    @param
+    A           magma_s_sparse_matrix*
+                matrix in magma sparse matrix format
 
-    ========================================================================  */
+    @param
+    levels      magma_int_t
+                fill in level
+
+
+    @ingroup magmasparse_saux
+    ********************************************************************/
 
 extern "C"
 magma_int_t 
@@ -117,7 +119,7 @@ magma_silustruct( magma_s_sparse_matrix *A, magma_int_t levels ){
             // nnzTotalDevHostPtr points to host memory
             magma_index_t *nnzTotalDevHostPtr = (magma_index_t*) &LU_d.nnz;
             cusparseSetPointerMode(handle, CUSPARSE_POINTER_MODE_HOST);
-            cudaMalloc((void**)&LU_d.row, sizeof(magma_index_t)*(L_d.num_rows+1));
+            magma_index_malloc( &LU_d.row, (L_d.num_rows + 1) );
             cusparseXcsrgemmNnz(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         L_d.num_rows, L_d.num_rows, L_d.num_rows, 
@@ -127,14 +129,16 @@ magma_silustruct( magma_s_sparse_matrix *A, magma_int_t levels ){
             if (NULL != nnzTotalDevHostPtr){
                 LU_d.nnz = *nnzTotalDevHostPtr;
             }else{
-                cudaMemcpy(&LU_d.nnz, LU_d.row+m, sizeof(magma_index_t), 
-                                                    cudaMemcpyDeviceToHost);
-                cudaMemcpy(&baseC, LU_d.row, sizeof(magma_index_t), 
-                                                    cudaMemcpyDeviceToHost);
+                // workaround as nnz and base C are magma_int_t 
+                magma_index_t base_t, nnz_t; 
+                magma_index_getvector( 1, LU_d.row+m, 1, &nnz_t, 1 );
+                magma_index_getvector( 1, LU_d.row,   1, &base_t,    1 );
+                LU_d.nnz = (magma_int_t) nnz_t;
+                baseC = (magma_int_t) base_t;
                 LU_d.nnz -= baseC;
             }
-            cudaMalloc((void**)&LU_d.col, sizeof(magma_index_t)*LU_d.nnz);
-            cudaMalloc((void**)&LU_d.val, sizeof(float)*LU_d.nnz);
+            magma_index_malloc( &LU_d.col, LU_d.nnz );
+            magma_smalloc( &LU_d.val, LU_d.nnz );
             cusparseScsrgemm(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, 
                             L_d.num_rows, L_d.num_rows, L_d.num_rows,
@@ -199,3 +203,4 @@ magma_silustruct( magma_s_sparse_matrix *A, magma_int_t levels ){
         return MAGMA_SUCCESS; 
     }
 }
+

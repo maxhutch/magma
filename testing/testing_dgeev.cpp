@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal d -> s
 
@@ -31,7 +31,7 @@
 
 
 // comparison operator for sorting
-bool compare( magmaDoubleComplex a, magmaDoubleComplex b )
+bool lessthan( magmaDoubleComplex a, magmaDoubleComplex b )
 {
     return (MAGMA_Z_REAL(a) < MAGMA_Z_REAL(b)) ||
         (MAGMA_Z_REAL(a) == MAGMA_Z_REAL(b) && MAGMA_Z_IMAG(a) < MAGMA_Z_IMAG(b));
@@ -144,7 +144,7 @@ int main( int argc, char** argv)
             if (info != 0)
                 printf("magma_dgeev returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
-            
+
             /* =====================================================================
                Check the result
                =================================================================== */
@@ -391,8 +391,8 @@ int main( int argc, char** argv)
                     w1copy[j] = MAGMA_Z_MAKE( w1[j], w1i[j] );
                     w2copy[j] = MAGMA_Z_MAKE( w2[j], w2i[j] );
                 }
-                std::sort( w1copy, &w1copy[N], compare );
-                std::sort( w2copy, &w2copy[N], compare );
+                std::sort( w1copy, &w1copy[N], lessthan );
+                std::sort( w2copy, &w2copy[N], lessthan );
                 
                 // adjust sorting to deal with numerical inaccuracy
                 // search down w2 for eigenvalue that matches w1's eigenvalue

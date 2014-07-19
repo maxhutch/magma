@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -23,8 +23,7 @@
 #include "testings.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing ztranspose
-   Code is very similar to testing_zsymmetrize.cpp
+   -- Testing zlacpy
 */
 int main( int argc, char** argv)
 {

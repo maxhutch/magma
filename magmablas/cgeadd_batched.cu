@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgeadd_batched.cu normal z -> c, Fri May 30 10:40:40 2014
+       @generated from zgeadd_batched.cu normal z -> c, Fri Jul 18 17:34:11 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -69,12 +69,12 @@ cgeadd_batched_kernel(
             The number of columns of each matrix dAarray[i].  N >= 0.
     
     @param[in]
-    alpha   COMPLEX REAL
+    alpha   COMPLEX
             The scalar alpha.
             
     @param[in]
     dAarray array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX REAL array, dimension (LDDA,N)
+            with each array a COMPLEX array, dimension (LDDA,N)
             The m by n matrices dAarray[i].
     
     @param[in]
@@ -83,7 +83,7 @@ cgeadd_batched_kernel(
             
     @param[in,out]
     dBarray array on GPU, dimension(batchCount), of pointers to arrays,
-            with each array a COMPLEX REAL array, dimension (LDDB,N)
+            with each array a COMPLEX array, dimension (LDDB,N)
             The m by n matrices dBarray[i].
     
     @param[in]

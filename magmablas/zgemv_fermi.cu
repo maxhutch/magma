@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> c
 */
@@ -131,7 +131,7 @@ zgemvn_kernel2_fermi(
     y       COMPLEX*16 array of dimension n.
             On exit Y = alpha A X + beta Y.
 
-    @ingroup magma_zblas2
+    @ingroup magma_zblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_zgemvn_fermi(
@@ -246,7 +246,7 @@ zgemvt_kernel_fermi(
     y       COMPLEX*16 array of dimension n.
             On exit Y = alpha A^T X + beta Y.
 
-    @ingroup magma_zblas2
+    @ingroup magma_zblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_zgemvt_fermi(
@@ -359,7 +359,7 @@ zgemvc_kernel_fermi(
     y       COMPLEX*16 array of dimension n.
             On exit Y = alpha A^H X + beta y.
 
-    @ingroup magma_zblas2
+    @ingroup magma_zblas2_internal
     ********************************************************************/
 extern "C" void
 magmablas_zgemvc_fermi(
@@ -375,6 +375,73 @@ magmablas_zgemvc_fermi(
         (m, n, alpha, (m / threadSize) * threadSize, A, lda, x, beta, y);
 }
 
+
+/**
+    Purpose
+    -------
+    ZGEMV performs one of the matrix-vector operations
+    
+        y := alpha*A*x    + beta*y,   or
+        y := alpha*A**T*x + beta*y,   or
+        y := alpha*A**H*x + beta*y,
+    
+    where alpha and beta are scalars, x and y are vectors and A is an
+    m by n matrix.
+
+    Arguments
+    ----------
+    @param[in]
+    trans   magma_trans_t
+            On entry, TRANS specifies the operation to be performed as
+            follows:
+      -     = MagmaNoTrans:    y := alpha*A  *x + beta*y
+      -     = MagmaTrans:      y := alpha*A^T*x + beta*y
+      -     = MagmaConjTrans:  y := alpha*A^H*x + beta*y
+
+    @param[in]
+    m       INTEGER
+            On entry, m specifies the number of rows of the matrix A.
+
+    @param[in]
+    n       INTEGER
+            On entry, n specifies the number of columns of the matrix A
+ 
+    @param[in]
+    alpha   COMPLEX_16
+            On entry, ALPHA specifies the scalar alpha.
+
+    @param[in]
+    A       COMPLEX_16 array of dimension ( LDA, n ) on the GPU.
+   
+    @param[in]
+    lda     INTEGER
+            LDA specifies the leading dimension of A.
+
+    @param[in]
+    x       COMPLEX_16 array of dimension
+            n if trans == MagmaNoTrans
+            m if trans == MagmaTrans or MagmaConjTrans
+     
+    @param[in]
+    incx    Specifies the increment for the elements of X.
+            INCX must not be zero.
+  
+    @param[in]
+    beta    DOUBLE REAL
+            On entry, BETA specifies the scalar beta. When BETA is
+            supplied as zero then Y need not be set on input.
+
+    @param[out]
+    y       DOUBLE PRECISION array of dimension
+            m if trans == MagmaNoTrans
+            n if trans == MagmaTrans or MagmaConjTrans
+
+    @param[in]
+    incy    Specifies the increment for the elements of Y.
+            INCY must not be zero.
+
+    @ingroup magma_dblas2
+    ********************************************************************/
 extern "C" void
 magmablas_zgemv(
     magma_trans_t trans, magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
@@ -383,6 +450,25 @@ magmablas_zgemv(
     magmaDoubleComplex beta,
     magmaDoubleComplex *y, magma_int_t incy)
 {
+    magma_int_t info = 0;
+    if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( n < 0 )
+        info = -3;
+    else if ( lda < m )
+        info = -6;
+    else if ( incx == 0 )
+        info = -8;
+    else if ( incy == 0 )
+        info = -11;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
         // --------------------
@@ -414,7 +500,7 @@ magmablas_zgemv(
             magmablas_zgemvc_fermi(m, n, alpha, A, lda, x, beta, y);
         }
         else {
-            fprintf( stderr, "trans = %c is invalid\n", trans );
+            fprintf( stderr, "trans = %c is invalid\n", lapacke_trans_const(trans) );
         }
     }
     else {

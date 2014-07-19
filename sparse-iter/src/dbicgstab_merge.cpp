@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zbicgstab_merge.cpp normal z -> d, Fri May 30 10:41:41 2014
+       @generated from zbicgstab_merge.cpp normal z -> d, Fri Jul 18 17:34:29 2014
        @author Hartwig Anzt
 
 */
@@ -19,14 +19,9 @@
 
 #define  q(i)     (q.val + (i)*dofs)
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -36,15 +31,26 @@
     kernels merging multiple operations into one kernel.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector b                          RHS b
-    magma_d_vector *x                         solution approximation
-    magma_d_solver_par *solver_par       solver parameters
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    =====================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b
 
+    @param
+    x           magma_d_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_d_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_dgesv
+    ********************************************************************/
 
 magma_int_t
 magma_dbicgstab_merge( magma_d_sparse_matrix A, magma_d_vector b, 
@@ -115,8 +121,7 @@ magma_dbicgstab_merge( magma_d_sparse_matrix A, magma_d_vector b,
     skp_h[3]=rho_old; 
     skp_h[4]=rho_new; 
     skp_h[5]=MAGMA_D_MAKE(nom, 0.0);
-    cudaMemcpy( skp, skp_h, 8*sizeof( double ), 
-                                            cudaMemcpyHostToDevice );
+    magma_dsetvector( 8, skp_h, 1, skp, 1 );
     magma_d_spmv( c_one, A, r, c_zero, v );                     // z = A r
     den = MAGMA_D_REAL( magma_ddot(dofs, v.val, 1, r.val, 1) );// den = z dot r
 
@@ -163,7 +168,7 @@ magma_dbicgstab_merge( magma_d_sparse_matrix A, magma_d_vector b,
         magma_dbicgmerge4(  3, skp );
 
         // check stopping criterion (asynchronous copy)
-        cublasGetVectorAsync(1 , sizeof( double ), skp+5, 1, 
+        magma_dgetvector_async( 1 , skp+5, 1, 
                                                         skp_h+5, 1, stream[1] );
         betanom = sqrt(MAGMA_D_REAL(skp_h[5]));
 
@@ -185,6 +190,7 @@ magma_dbicgstab_merge( magma_d_sparse_matrix A, magma_d_vector b,
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     double residual;
     magma_dresidual( A, b, *x, &residual );
+    solver_par->iter_res = betanom;
     solver_par->final_res = residual;
 
     if( solver_par->numiter < solver_par->maxiter){

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_zlapack.h normal z -> c, Fri May 30 10:40:33 2014
+       @generated from magma_zlapack.h normal z -> c, Fri Jul 18 17:34:10 2014
 */
 
 #ifndef MAGMA_CLAPACK_H
@@ -98,6 +98,7 @@ extern "C" {
 #define lapackf77_clanhe   FORTRAN_NAME( clanhe, CLANHE )
 #define lapackf77_clanht   FORTRAN_NAME( clanht, CLANHT )
 #define lapackf77_clansy   FORTRAN_NAME( clansy, CLANSY )
+#define lapackf77_clantr   FORTRAN_NAME( clantr, CLANTR )
 #define lapackf77_slapy3   FORTRAN_NAME( slapy3, SLAPY3 )
 #define lapackf77_claqp2   FORTRAN_NAME( claqp2, CLAQP2 )
 #define lapackf77_clarcm   FORTRAN_NAME( clarcm, CLARCM )
@@ -638,6 +639,11 @@ float lapackf77_clanht( const char *norm, const magma_int_t *n,
 
 float lapackf77_clansy( const char *norm, const char *uplo,
                          const magma_int_t *n,
+                         const magmaFloatComplex *A, const magma_int_t *lda,
+                         float *work );
+
+float lapackf77_clantr( const char *norm, const char *uplo, const char *diag,
+                         const magma_int_t *m, const magma_int_t *n,
                          const magmaFloatComplex *A, const magma_int_t *lda,
                          float *work );
 

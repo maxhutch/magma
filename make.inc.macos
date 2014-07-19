@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta2) --
+#   -- MAGMA (version 1.5.0-beta3) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2014
+#      @date July 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
@@ -26,13 +26,20 @@ RANLIB    = ranlib
 
 # use -m32 to compile with 32-bit long & pointers.
 # use -m64 to compile with 64-bit long & pointers (lp64). int is still 32-bit.
-# currently, there are RUNTIME ERRORS with 64-bit on MacOS!
 # add -DNDEBUG to disable asserts and certain error checks.
-OPTS      = -Wall -m32 -O3 -DADD_
-F77OPTS   = -Wall -m32 -O3 -DADD_
-FOPTS     = -Wall -m32 -O3 -DADD_ -x f95-cpp-input
-NVOPTS    =       -m32 -O3 -DADD_ -Xcompiler -fno-strict-aliasing
-LDOPTS    = -Wall -m32
+#
+# MacOS veclib has a bug where some single precision functions return
+# a double precision result, for instance slange.
+# This is observed with -m64, but oddly not with -m32.
+# The easiest fix is to replace those routines with correct ones from LAPACK.
+# See BLAS_FIX below.
+# Alternatively, don't link with the veclib/accelerate framework;
+# use a different BLAS and LAPACK library.
+OPTS      = -Wall -m64 -O3 -DADD_
+F77OPTS   = -Wall -m64 -O3 -DADD_
+FOPTS     = -Wall -m64 -O3 -DADD_ -x f95-cpp-input
+NVOPTS    =       -m64 -O3 -DADD_ -Xcompiler -fno-strict-aliasing
+LDOPTS    = -Wall -m64
 
 LIB       = -framework Accelerate -lcublas -lcudart -lstdc++ -lm
 
@@ -43,3 +50,19 @@ LIB       = -framework Accelerate -lcublas -lcudart -lstdc++ -lm
 LIBDIR    = -L$(CUDADIR)/lib
 
 INC       = -I$(CUDADIR)/include
+
+
+# ========================================
+# replace single & single-complex BLAS functions with reference versions.
+# (i.e., functions that return float; subroutines do not need a fix.)
+LIB      := -lblas_fix $(LIB)
+
+BLAS_FIX  = $(MAGMA_DIR)/lib/libblas_fix.a
+
+.PHONY: blas_fix
+
+blas_fix:
+	@echo "======================================== BLAS fix for MacOS"
+	( cd $(MAGMA_DIR)/blas_fix && $(MAKE) )
+
+lib: blas_fix

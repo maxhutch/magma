@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zungqr_m.cpp normal z -> d, Fri May 30 10:41:03 2014
+       @generated from zungqr_m.cpp normal z -> d, Fri Jul 18 17:34:18 2014
 
        @author Mark Gates
 */
@@ -206,7 +206,7 @@ magma_dorgqr_m(
                           dA(dpanel, kk, di), ldda );
         
         // Set A(1:kk,kk+1:n) to zero.
-        magmablas_dlaset( MagmaUpperLower, kk, n - kk, dA(dpanel, 0, di), ldda );
+        magmablas_dlaset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(dpanel, 0, di), ldda );
         trace_cpu_end( 0 );
     }
 
@@ -243,8 +243,8 @@ magma_dorgqr_m(
             magma_setdevice( dpanel );
             magmablasSetKernelStream( stream[dpanel] );
             trace_gpu_start( dpanel, 0, "laset", "laset" );
-            magmablas_dlaset( MagmaUpperLower, i, ib, dA(dpanel, 0, di), ldda );
-            magmablas_dlaset_identity( mi, ib, dA(dpanel, i, di), ldda );
+            magmablas_dlaset( MagmaFull, i,  ib, c_zero, c_zero, dA(dpanel, 0, di), ldda );
+            magmablas_dlaset( MagmaFull, mi, ib, c_zero, c_one,  dA(dpanel, i, di), ldda );
             trace_gpu_end( dpanel, 0 );
             
             if (i < n) {

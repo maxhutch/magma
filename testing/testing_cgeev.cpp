@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_zgeev.cpp normal z -> c, Fri May 30 10:41:29 2014
+       @generated from testing_zgeev.cpp normal z -> c, Fri Jul 18 17:34:25 2014
 
 */
 
@@ -31,7 +31,7 @@
 
 
 // comparison operator for sorting
-bool compare( magmaFloatComplex a, magmaFloatComplex b )
+bool lessthan( magmaFloatComplex a, magmaFloatComplex b )
 {
     return (MAGMA_C_REAL(a) < MAGMA_C_REAL(b)) ||
         (MAGMA_C_REAL(a) == MAGMA_C_REAL(b) && MAGMA_C_IMAG(a) < MAGMA_C_IMAG(b));
@@ -371,8 +371,8 @@ int main( int argc, char** argv)
                 // need to sort eigenvalues first
                 blasf77_ccopy( &N, w1, &ione, w1copy, &ione );
                 blasf77_ccopy( &N, w2, &ione, w2copy, &ione );
-                std::sort( w1copy, &w1copy[N], compare );
-                std::sort( w2copy, &w2copy[N], compare );
+                std::sort( w1copy, &w1copy[N], lessthan );
+                std::sort( w2copy, &w2copy[N], lessthan );
                 
                 // adjust sorting to deal with numerical inaccuracy
                 // search down w2 for eigenvalue that matches w1's eigenvalue

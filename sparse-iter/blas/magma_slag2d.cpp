@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from magma_clag2z.cpp mixed zc -> ds, Fri May 30 10:41:34 2014
+       @generated from magma_clag2z.cpp mixed zc -> ds, Fri Jul 18 17:34:27 2014
        @author Hartwig Anzt
 */
 
@@ -28,24 +28,25 @@
 using namespace std;
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     convertes magma_s_vector from C to Z
 
     Arguments
-    =========
+    ---------
 
-    magma_s_vector x        input vector descriptor
-    magma_d_vector *y       output vector descriptor
+    @param
+    x           magma_s_vector
+                input vector descriptor
 
-    ========================================================================  */
+    @param
+    y           magma_d_vector*
+                output vector descriptor
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 magma_int_t
 magma_vector_slag2d( magma_s_vector x, magma_d_vector *y )
@@ -80,24 +81,25 @@ magma_vector_slag2d( magma_s_vector x, magma_d_vector *y )
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     convertes magma_s_sparse_matrix from C to Z
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix A         input matrix descriptor
-    magma_d_sparse_matrix *B        output matrix descriptor
+    @param
+    A           magma_s_sparse_matrix
+                input matrix descriptor
 
-    ========================================================================  */
+    @param
+    B           magma_d_sparse_matrix*
+                output matrix descriptor
+
+    @ingroup magmasparse_caux
+    ********************************************************************/
 
 magma_int_t
 magma_sparse_matrix_slag2d( magma_s_sparse_matrix A, magma_d_sparse_matrix *B )

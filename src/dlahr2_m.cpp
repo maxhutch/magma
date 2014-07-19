@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zlahr2_m.cpp normal z -> d, Fri May 30 10:41:09 2014
+       @generated from zlahr2_m.cpp normal z -> d, Fri Jul 18 17:34:19 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -192,7 +192,7 @@ magma_dlahr2_m(
     for( d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
         magmablasSetKernelStream( data->streams[d] );
-        magmablas_dlaset( MagmaUpperLower, nb, nb, dV(d,k,0), ldv );
+        magmablas_dlaset( MagmaFull, nb, nb, c_zero, c_zero, dV(d,k,0), ldv );
     }
     
     // set all Y=0

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Mark Gates
-       @generated from dgesdd.cpp normal d -> s, Fri May 30 10:41:09 2014
+       @generated from dgesdd.cpp normal d -> s, Fri Jul 18 17:34:20 2014
 
 */
 #include "common_magma.h"
@@ -173,7 +173,9 @@ magma_int_t magma_sgesdd(
     float *work, magma_int_t lwork,
     magma_int_t *iwork, magma_int_t *info)
 {
-#define  A(i_,j_) (A  + (i_) + (j_)*lda)
+    #define A(i_,j_)  (A  + (i_) + (j_)*lda)
+    #define U(i_,j_)  (U  + (i_) + (j_)*ldu)
+    #define VT(i_,j_) (VT + (i_) + (j_)*ldvt)
 
     /* Constants */
     const float c_zero = MAGMA_S_ZERO;
@@ -458,7 +460,7 @@ magma_int_t magma_sgesdd(
                 lapackf77_sgeqrf(&m, &n, A(1,1), &lda, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Zero out below R */
-                lapackf77_slaset("L", &n_1, &n_1, &c_zero, &c_zero, &A[lda + 2], &lda);
+                lapackf77_slaset("L", &n_1, &n_1, &c_zero, &c_zero, A(2,1), &lda);
                 ie    = 1;
                 itauq = ie    + n;
                 itaup = itauq + n;
@@ -550,8 +552,8 @@ magma_int_t magma_sgesdd(
                 /* (Workspace: need 2*N*N + [3*N], prefer M*N + N*N + [3*N]) */
                 for (i = 1; i <= m; i += ldwrkr) {
                     blk = min(m - i + 1, ldwrkr);
-                    blasf77_sgemm("N", "N", &blk, &n, &n, &c_one, &A[i + lda], &lda, &work[iu], &n, &c_zero, &work[ir], &ldwrkr);
-                    lapackf77_slacpy("F", &blk, &n, &work[ir], &ldwrkr, &A[i + lda], &lda);
+                    blasf77_sgemm("N", "N", &blk, &n, &n, &c_one, A(i,1), &lda, &work[iu], &n, &c_zero, &work[ir], &ldwrkr);
+                    lapackf77_slacpy("F", &blk, &n, &work[ir], &ldwrkr, A(i,1), &lda);
                 }
             }
             else if (wantqs) {
@@ -641,7 +643,7 @@ magma_int_t magma_sgesdd(
                 lapackf77_sorgqr(&m, &m, &n, U, &ldu, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Produce R in A, zeroing out other entries */
-                lapackf77_slaset("L", &n_1, &n_1, &c_zero, &c_zero, &A[lda + 2], &lda);
+                lapackf77_slaset("L", &n_1, &n_1, &c_zero, &c_zero, A(2,1), &lda);
                 ie    = itau;
                 itauq = ie    + n;
                 itaup = itauq + n;
@@ -772,8 +774,8 @@ magma_int_t magma_sgesdd(
                     /* (Workspace: need 2*N*N + [3*N], prefer N*N + M*N + [3*N]) */
                     for (i = 1; i <= m; i += ldwrkr) {
                         blk = min(m - i + 1, ldwrkr);
-                        blasf77_sgemm("N", "N", &blk, &n, &n, &c_one, &A[i + lda], &lda, &work[iu], &ldwrku, &c_zero, &work[ir], &ldwrkr);
-                        lapackf77_slacpy("F", &blk, &n, &work[ir], &ldwrkr, &A[i + lda], &lda);
+                        blasf77_sgemm("N", "N", &blk, &n, &n, &c_one, A(i,1), &lda, &work[iu], &ldwrku, &c_zero, &work[ir], &ldwrkr);
+                        lapackf77_slacpy("F", &blk, &n, &work[ir], &ldwrkr, A(i,1), &lda);
                     }
                 }
             }
@@ -810,7 +812,7 @@ magma_int_t magma_sgesdd(
                 /* Set the right corner of U to identity matrix */
                 if (m > n) {
                     i__1 = m - n;
-                    lapackf77_slaset("F", &i__1, &i__1, &c_zero, &c_one, &U[n + n*ldu], &ldu);
+                    lapackf77_slaset("F", &i__1, &i__1, &c_zero, &c_one, U(n,n), &ldu);
                 }
 
                 /* Overwrite U  by left  singular vectors of A, and */
@@ -845,7 +847,7 @@ magma_int_t magma_sgesdd(
                 lapackf77_sgelqf(&m, &n, A(1,1), &lda, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Zero out above L */
-                lapackf77_slaset("U", &m_1, &m_1, &c_zero, &c_zero, &A[(2*lda) + 1], &lda);
+                lapackf77_slaset("U", &m_1, &m_1, &c_zero, &c_zero, A(1,2), &lda);
                 ie    = 1;
                 itauq = ie    + m;
                 itaup = itauq + m;
@@ -942,8 +944,8 @@ magma_int_t magma_sgesdd(
                 /* (Workspace: need 2*M*M + [3*M], prefer M*N + M*M + [3*M]) */
                 for (i = 1; i <= n; i += chunk) {
                     blk = min(n - i + 1, chunk);
-                    blasf77_sgemm("N", "N", &m, &blk, &m, &c_one, &work[ivt], &m, &A[i*lda + 1], &lda, &c_zero, &work[il], &ldwrkl);
-                    lapackf77_slacpy("F", &m, &blk, &work[il], &ldwrkl, &A[i*lda + 1], &lda);
+                    blasf77_sgemm("N", "N", &m, &blk, &m, &c_one, &work[ivt], &m, A(1,i), &lda, &c_zero, &work[il], &ldwrkl);
+                    lapackf77_slacpy("F", &m, &blk, &work[il], &ldwrkl, A(1,i), &lda);
                 }
             }
             else if (wantqs) {
@@ -1033,7 +1035,7 @@ magma_int_t magma_sgesdd(
                 lapackf77_sorglq(&n, &n, &m, VT, &ldvt, &work[itau], &work[nwork], &lnwork, &ierr);
 
                 /* Produce L in A, zeroing out other entries */
-                lapackf77_slaset("U", &m_1, &m_1, &c_zero, &c_zero, &A[(2*lda) + 1], &lda);
+                lapackf77_slaset("U", &m_1, &m_1, &c_zero, &c_zero, A(1,2), &lda);
                 ie    = itau;
                 itauq = ie    + m;
                 itaup = itauq + m;
@@ -1163,8 +1165,8 @@ magma_int_t magma_sgesdd(
                     /* (Workspace: need 2*M*M + [3*M], prefer M*M + M*N + [3*M]) */
                     for (i = 1; i <= n; i += chunk) {
                         blk = min(n - i + 1, chunk);
-                        blasf77_sgemm("N", "N", &m, &blk, &m, &c_one, &work[ivt], &ldwkvt, &A[i*lda + 1], &lda, &c_zero, &work[il], &m);
-                        lapackf77_slacpy("F", &m, &blk, &work[il], &m, &A[i*lda + 1], &lda);
+                        blasf77_sgemm("N", "N", &m, &blk, &m, &c_one, &work[ivt], &ldwkvt, A(1,i), &lda, &c_zero, &work[il], &m);
+                        lapackf77_slacpy("F", &m, &blk, &work[il], &m, A(1,i), &lda);
                     }
                 }
             }
@@ -1201,7 +1203,7 @@ magma_int_t magma_sgesdd(
                 /* Set the right corner of VT to identity matrix */
                 if (n > m) {
                     i__1 = n - m;
-                    lapackf77_slaset("F", &i__1, &i__1, &c_zero, &c_one, &VT[m + m*ldvt], &ldvt);
+                    lapackf77_slaset("F", &i__1, &i__1, &c_zero, &c_one, VT(m,m), &ldvt);
                 }
 
                 /* Overwrite U  by left  singular vectors of A, and */

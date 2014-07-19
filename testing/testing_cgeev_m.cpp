@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_zgeev_m.cpp normal z -> c, Fri May 30 10:41:29 2014
+       @generated from testing_zgeev_m.cpp normal z -> c, Fri Jul 18 17:34:25 2014
 
 */
 
@@ -36,7 +36,6 @@ int main( int argc, char** argv)
 
     real_Double_t   gpu_time, cpu_time;
     magmaFloatComplex *h_A, *h_R, *VL, *VR, *h_work, *w1, *w2;
-    magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
     float *rwork;
     float tnrm, result[8];
     magma_int_t N, n2, lda, nb, lwork, info;

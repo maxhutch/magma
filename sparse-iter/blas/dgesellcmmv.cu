@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zgesellcmmv.cu normal z -> d, Fri May 30 10:41:37 2014
+       @generated from zgesellcmmv.cu normal z -> d, Fri Jul 18 17:34:28 2014
 
 */
 #include "cuda_runtime.h"
@@ -721,36 +721,71 @@ zgesellptmv2d_kernel_32_tex( int num_rows,
 
 /*********************     end of texture versions   **************************/
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes y = alpha *  A^t *  x + beta * y on the GPU.
     Input format is SELLP.
     
     Arguments
-    =========
+    ---------
 
-    magma_trans_t transA            transpose A?
-    magma_int_t m                   number of rows in A
-    magma_int_t n                   number of columns in A 
-    magma_int_t blocksize           number of rows in one ELL-slice
-    magma_int_t slices              number of slices in matrix
-    magma_int_t alignment           number of threads assigned to one row
-    double alpha        scalar multiplier
-    double *d_val       array containing values of A in SELLP
-    magma_int_t *d_colind           columnindices of A in SELLP
-    magma_int_t *d_rowptr           rowpointer of SELLP
-    double *d_x         input vector x
-    double beta         scalar multiplier
-    double *d_y         input/output vector y
+    @param
+    transA      magma_trans_t
+                transposition parameter for A
 
-    ======================================================================    */
+    @param
+    m           magma_int_t
+                number of rows in A
+
+    @param
+    n           magma_int_t
+                number of columns in A 
+
+    @param
+    blocksize   magma_int_t
+                number of rows in one ELL-slice
+
+    @param
+    slices      magma_int_t
+                number of slices in matrix
+
+    @param
+    alignment   magma_int_t
+                number of threads assigned to one row
+
+    @param
+    alpha       double
+                scalar multiplier
+
+    @param
+    d_val       double*
+                array containing values of A in SELLP
+
+    @param
+    d_colind    magma_int_t*
+                columnindices of A in SELLP
+
+    @param
+    d_rowptr    magma_int_t*
+                rowpointer of SELLP
+
+    @param
+    d_x         double*
+                input vector x
+
+    @param
+    beta        double
+                scalar multiplier
+
+    @param
+    d_y         double*
+                input/output vector y
+
+
+    @ingroup magmasparse_dblas
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_dgesellpmv(  magma_trans_t transA,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -32,24 +32,22 @@ using namespace std;
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Free the memory of a magma_z_vector.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_z_vector *x                     vector to free    
+    @param
+    x           magma_z_vector*
+                vector to free    
 
-    ========================================================================  */
+    @ingroup magmasparse_zaux
+    ********************************************************************/
 
 magma_int_t 
 magma_z_vfree( magma_z_vector *x ){
@@ -79,24 +77,22 @@ magma_z_vfree( magma_z_vector *x ){
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Free the memory of a magma_z_sparse_matrix.
 
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix *A                     matrix to free    
+    @param
+    A           magma_z_sparse_matrix*
+                matrix to free    
 
-    ========================================================================  */
+    @ingroup magmasparse_zaux
+    ********************************************************************/
 
 magma_int_t 
 magma_z_mfree( magma_z_sparse_matrix *A ){

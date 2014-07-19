@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
-       @generated from zbailu.cpp normal z -> s, Fri May 30 10:41:41 2014
+       @generated from zbailu.cpp normal z -> s, Fri Jul 18 17:34:29 2014
 */
 // includes CUDA
 #include <cuda_runtime_api.h>
@@ -25,33 +25,36 @@
 #define PRECISION_s
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the ILU preconditioner via the asynchronous ILU iteration.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix A                   input matrix A
-    magma_s_preconditioner *precond           preconditioner parameters
+    @param
+    A           magma_s_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    precond     magma_s_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_sgepr
+    ********************************************************************/
 
 magma_int_t
 magma_ialusetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
 
-    magma_s_sparse_matrix hA, hAL, hALCOO, hAU, hAUT, hAUCOO, dAL, dAU, hL, hU, 
-                                        dL, dU, DL, RL, DU, RU;
+    magma_s_sparse_matrix hAh, hA, hAL, hALCOO, hAU, hAUT, hAUCOO, dAL, dAU, 
+                                        hL, hU, dL, dU, DL, RL, DU, RU;
 
     // copy original matrix as CSRCOO to device
-    magma_s_mtransfer(A, &hA, A.memory_location, Magma_CPU);
+    magma_s_mtransfer(A, &hAh, A.memory_location, Magma_CPU);
+    magma_s_mconvert( hAh, &hA, hAh.storage_type, Magma_CSR );
+    magma_s_mfree(&hAh);
 
     // in case using fill-in
     magma_silustruct( &hA, precond->levels);
@@ -76,7 +79,7 @@ magma_ialusetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
     magma_s_mfree(&hAUT);
     magma_s_mfree(&hAU);
 
-    for(int i=0; i<20; i++){
+    for(int i=0; i<precond->sweeps; i++){
         magma_ialu_csr_s( dAL, dAU, dL, dU );
 
     }
@@ -220,25 +223,29 @@ magma_ialusetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Performs the left triangular solves using the ILU preconditioner.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_vector b                        RHS
-    magma_s_vector *x                       vector to precondition
-    magma_s_preconditioner *precond         preconditioner parameters
+    @param
+    b           magma_s_vector
+                RHS
 
-    ========================================================================  */
+    @param
+    x           magma_s_vector*
+                vector to precondition
+
+    @param
+    precond     magma_s_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_sgepr
+    ********************************************************************/
 
 magma_int_t
 magma_sapplyailu_l( magma_s_vector b, magma_s_vector *x, 
@@ -253,25 +260,29 @@ magma_sapplyailu_l( magma_s_vector b, magma_s_vector *x,
 }
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Performs the right triangular solves using the ILU preconditioner.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_vector b                        RHS
-    magma_s_vector *x                       vector to precondition
-    magma_s_preconditioner *precond         preconditioner parameters
+    @param
+    b           magma_s_vector
+                RHS
 
-    ========================================================================  */
+    @param
+    x           magma_s_vector*
+                vector to precondition
+
+    @param
+    precond     magma_s_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_sgepr
+    ********************************************************************/
 
 magma_int_t
 magma_sapplyailu_r( magma_s_vector b, magma_s_vector *x, 
@@ -289,35 +300,38 @@ magma_sapplyailu_r( magma_s_vector b, magma_s_vector *x,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Prepares the IC preconditioner via the asynchronous IC iteration.
 
     Arguments
-    =========
+    ---------
 
-    magma_s_sparse_matrix A                   input matrix A
-    magma_s_preconditioner *precond           preconditioner parameters
+    @param
+    A           magma_s_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    precond     magma_s_preconditioner*
+                preconditioner parameters
+
+    @ingroup magmasparse_ssypr
+    ********************************************************************/
 
 magma_int_t
 magma_saiccsetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
 
 
-    magma_s_sparse_matrix hA, hAL, hALCOO, dAL, hL, dL, DL, RL;
+    magma_s_sparse_matrix hAh, hA, hAL, hALCOO, dAL, hL, dL, DL, RL;
 
 
 
     // copy original matrix as CSRCOO to device
-    magma_s_mtransfer(A, &hA, A.memory_location, Magma_CPU);
+    magma_s_mtransfer(A, &hAh, A.memory_location, Magma_CPU);
+    magma_s_mconvert( hAh, &hA, hAh.storage_type, Magma_CSR );
+    magma_s_mfree(&hAh);
 
     // in case using fill-in
     magma_silustruct( &hA, precond->levels);
@@ -331,7 +345,7 @@ magma_saiccsetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
     magma_s_mfree(&hAL);
     magma_s_mfree(&hA);
 
-    for(int i=0; i<25; i++){
+    for(int i=0; i<precond->sweeps; i++){
         magma_saic_csr_s( dAL, dL );
 
     }
@@ -342,6 +356,7 @@ magma_saiccsetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
 
     magma_s_mconvert(hL, &hAL, hL.storage_type, Magma_CSR);
 
+    // for CUSPARSE
     magma_s_mtransfer( hAL, &precond->M, Magma_CPU, Magma_DEV );
 
     magma_scsrsplit( 256, hAL, &DL, &RL );
@@ -380,7 +395,7 @@ magma_saiccsetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
      if(cusparseStatus != 0)    printf("error in MatrType.\n");
 
     cusparseStatus =
-    cusparseSetMatDiagType (descrL, CUSPARSE_DIAG_TYPE_UNIT);
+    cusparseSetMatDiagType (descrL, CUSPARSE_DIAG_TYPE_NON_UNIT);
      if(cusparseStatus != 0)    printf("error in DiagType.\n");
 
     cusparseStatus =
@@ -397,7 +412,7 @@ magma_saiccsetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
 
     cusparseStatus =
     cusparseScsrsv_analysis(cusparseHandle, 
-        CUSPARSE_OPERATION_TRANSPOSE, precond->M.num_rows, 
+        CUSPARSE_OPERATION_NON_TRANSPOSE, precond->M.num_rows, 
         precond->M.nnz, descrL, 
         precond->M.val, precond->M.row, precond->M.col, precond->cuinfoL );
      if(cusparseStatus != 0)    printf("error in analysis L.\n");
@@ -429,7 +444,7 @@ magma_saiccsetup( magma_s_sparse_matrix A, magma_s_preconditioner *precond ){
 
     cusparseStatus =
     cusparseScsrsv_analysis(cusparseHandle, 
-        CUSPARSE_OPERATION_NON_TRANSPOSE, precond->M.num_rows, 
+        CUSPARSE_OPERATION_TRANSPOSE, precond->M.num_rows, 
         precond->M.nnz, descrU, 
         precond->M.val, precond->M.row, precond->M.col, precond->cuinfoU );
      if(cusparseStatus != 0)    printf("error in analysis U.\n");

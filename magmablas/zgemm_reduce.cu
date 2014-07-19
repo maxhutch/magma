@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
+#include "magma_templates.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,37 +19,6 @@
 
 // BLK_K gets defined in magmablas_zgemm_reduce,
 // because it depends on the CUDA architecture at runtime.
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// ----------------------------------------
-// Does sum reduction of array x, leaving total in x[0].
-// Contents of x are destroyed in the process.
-// With k threads, can reduce array up to 2*k in size.
-// Assumes number of threads <= 1024 (which is max number of threads up to CUDA capability 3.0)
-// Having n as template parameter allows compiler to evaluate some conditions at compile time.
-
-template< int n >
-__device__ void sum_reduce2( /*int n,*/ int j, int k, int i, magmaDoubleComplex x[][ BLK_N+1 ][ n+1 ] )
-{
-    __syncthreads();
-/*
-    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { x[j][k][i] += x[j][k][i+1024]; }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { x[j][k][i] += x[j][k][i+ 512]; }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { x[j][k][i] += x[j][k][i+ 256]; }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { x[j][k][i] += x[j][k][i+ 128]; }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { x[j][k][i] += x[j][k][i+  64]; }  __syncthreads(); }
-*/
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { x[j][k][i] += x[j][k][i+  32]; }  __syncthreads(); }
-    // probably don't need __syncthreads for < 16 threads
-    // because of implicit warp level synchronization.
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { x[j][k][i] += x[j][k][i+  16]; }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { x[j][k][i] += x[j][k][i+   8]; }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { x[j][k][i] += x[j][k][i+   4]; }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { x[j][k][i] += x[j][k][i+   2]; }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[j][k][i] += x[j][k][i+   1]; }  __syncthreads(); }
-}
-// end sum_reduce
 
 
 //==============================================================================
@@ -66,7 +36,7 @@ void zgemm_reduce_kernel(
     magmaDoubleComplex      * __restrict__ d_C, int ldc)
 {
 #if (__CUDA_ARCH__ >= 200)
-    const int i = threadIdx.x;
+    const int tx = threadIdx.x;
     
     if (blockIdx.x*BLK_M + threadIdx.y < m && blockIdx.y*BLK_N + threadIdx.z < n){
     
@@ -74,25 +44,27 @@ void zgemm_reduce_kernel(
         const magmaDoubleComplex *dB = d_B + (blockIdx.y*BLK_N + threadIdx.z) * ldb;
         magmaDoubleComplex       *dC = d_C +  blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
         
-        __shared__ magmaDoubleComplex sum[BLK_M][BLK_N+1][BLK_K+1];
+        // was: sum[BLK_M][BLK_N+1][BLK_K+1];
+        // moved 3rd dimension to 1st dimension to make magma_sum_reduce_3d interface nicer.
+        __shared__ magmaDoubleComplex sum[BLK_K][BLK_M+1][BLK_N+1];
         magmaDoubleComplex lsum;
         
         /*  w := v' * C  */
         lsum = MAGMA_Z_ZERO;
-        for( int j = i; j < k; j += BLK_K )
+        for( int j = tx; j < k; j += BLK_K )
             lsum += MAGMA_Z_CNJG( dA[j] )* dB[j];
         
-        sum[threadIdx.y][threadIdx.z][i] = lsum;
-        sum_reduce2< BLK_K >( threadIdx.y, threadIdx.z, i, sum );
+        sum[tx][threadIdx.y][threadIdx.z] = lsum;
+        magma_sum_reduce_3d< BLK_K, BLK_M+1, BLK_N+1 >( tx, threadIdx.y, threadIdx.z, sum );
         
         /*  C := C - v * w  */
         __syncthreads();
         if (threadIdx.x == 0) {
             if (MAGMA_Z_EQUAL(beta, MAGMA_Z_ZERO))
-                dC[threadIdx.y + threadIdx.z*ldc] = alpha*sum[threadIdx.y][threadIdx.z][0];
+                dC[threadIdx.y + threadIdx.z*ldc] = alpha*sum[0][threadIdx.y][threadIdx.z];
             else
                 dC[threadIdx.y + threadIdx.z*ldc] = beta* dC[threadIdx.y + threadIdx.z*ldc] +
-                                                    alpha*sum[threadIdx.y][threadIdx.z][0];
+                                                    alpha*sum[0][threadIdx.y][threadIdx.z];
         }
     }
 #endif
@@ -124,12 +96,31 @@ magmablas_zgemm_reduce(
     magmaDoubleComplex beta,
     magmaDoubleComplex *d_C, magma_int_t ldc )
 {
+    magma_int_t info = 0;
+    if ( m < 0 )
+        info = -1;
+    else if ( n < 0 )
+        info = -2;
+    else if ( k < 0 )
+        info = -3;
+    else if ( lda < m )
+        info = -6;
+    else if ( ldb < k )
+        info = -8;
+    else if ( ldc < m )
+        info = -11;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200  ) {
         // --------------------
         // call CUDA ARCH 1.x -- maximum 512 threads
         const int NUM_THREADS = 512;
-        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N));
+        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N)); // == 2
         dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
         dim3 threads( BLK_K, BLK_M, BLK_N );
         zgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
@@ -139,7 +130,7 @@ magmablas_zgemm_reduce(
         // --------------------
         // call CUDA ARCH 2.x -- maximum 1024 threads
         const int NUM_THREADS = 1024;
-        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N));
+        const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N)); // == 4
         dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
         dim3 threads( BLK_K, BLK_M, BLK_N );
         zgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>

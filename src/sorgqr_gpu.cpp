@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zungqr_gpu.cpp normal z -> s, Fri May 30 10:40:59 2014
+       @generated from zungqr_gpu.cpp normal z -> s, Fri Jul 18 17:34:16 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -88,6 +88,9 @@ magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
 #define dA(i,j) (dA + (i) + (j)*ldda)
 #define dT(j)   (dT + (j)*nb)
 
+    float c_zero = MAGMA_S_ZERO;
+    float c_one  = MAGMA_S_ONE;
+    
     magma_int_t m_kk, n_kk, k_kk, mi;
     magma_int_t lwork, lpanel;
     magma_int_t i, ib, ki, kk, iinfo;
@@ -168,7 +171,7 @@ magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
                           panel, m_kk, dA(kk, kk), ldda );
         
         // Set A(1:kk,kk+1:n) to zero.
-        magmablas_slaset( MagmaUpperLower, kk, n - kk, dA(0, kk), ldda );
+        magmablas_slaset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk), ldda );
     }
 
     if (kk > 0) {
@@ -187,8 +190,8 @@ magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
                                      dV,      ldda, stream );
 
             // set panel to identity
-            magmablas_slaset( MagmaUpperLower, i, ib, dA(0, i), ldda );
-            magmablas_slaset_identity( mi, ib, dA(i, i), ldda );
+            magmablas_slaset( MagmaFull, i,  ib, c_zero, c_zero, dA(0, i), ldda );
+            magmablas_slaset( MagmaFull, mi, ib, c_zero, c_one,  dA(i, i), ldda );
             
             if (i < n) {
                 // Apply H to A(i:m,i:n) from the left

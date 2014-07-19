@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from testing_zlacpy.cpp normal z -> d, Fri May 30 10:41:22 2014
+       @generated from testing_zlacpy.cpp normal z -> d, Fri Jul 18 17:34:23 2014
        @author Mark Gates
 */
 
@@ -23,8 +23,7 @@
 #include "testings.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing dtranspose
-   Code is very similar to testing_dsymmetrize.cpp
+   -- Testing dlacpy
 */
 int main( int argc, char** argv)
 {

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dsyevdx_2stage.cpp normal d -> s, Fri May 30 10:41:08 2014
+       @generated from dsyevdx_2stage.cpp normal d -> s, Fri Jul 18 17:34:19 2014
 
 */
 #include "common_magma.h"
@@ -170,6 +170,9 @@ magma_ssyevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
                      magma_int_t *iwork, magma_int_t liwork,
                      magma_int_t *info)
 {
+    #define A(i_,j_)  (A  + (i_) + (j_)*lda)
+    #define A2(i_,j_) (A2 + (i_) + (j_)*lda2)
+    
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
     float d_one  = 1.;
@@ -248,7 +251,9 @@ magma_ssyevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
         liwmin = 1;
     }
 
-    float one_eps = 1. + lapackf77_slamch("Epsilon");
+    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
+    // if it cannot be exactly represented in floating point.
+    real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
     work[0]  = lwmin * one_eps;
     iwork[0] = liwmin;
 
@@ -355,13 +360,13 @@ magma_ssyevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     memset(A2, 0, n*lda2*sizeof(float));
 
     for (magma_int_t j = 0; j < n-nb; j++) {
-        cblas_scopy(nb+1, &A[j*(lda+1)], 1, &A2[j*lda2], 1);
-        memset(&A[j*(lda+1)], 0, (nb+1)*sizeof(float));
-        A[nb + j*(lda+1)] = d_one;
+        cblas_scopy(nb+1, A(j,j), 1, A2(0,j), 1);
+        memset(A(j,j), 0, (nb+1)*sizeof(float));
+        *A(nb+j,j) = d_one;
     }
     for (magma_int_t j = 0; j < nb; j++) {
-        cblas_scopy(nb-j, &A[(j+n-nb)*(lda+1)], 1, &A2[(j+n-nb)*lda2], 1);
-        memset(&A[(j+n-nb)*(lda+1)], 0, (nb-j)*sizeof(float));
+        cblas_scopy(nb-j, A(j+n-nb,j+n-nb), 1, A2(0,j+n-nb), 1);
+        memset(A(j+n-nb,j+n-nb), 0, (nb-j)*sizeof(float));
     }
 
     timer_stop( time );

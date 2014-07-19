@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> c d s
 
@@ -53,33 +53,62 @@ zmgecsrmv_kernel( int num_rows, int num_cols,
 
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
     
     This routine computes Y = alpha *  A *  X + beta * Y for X and Y sets of 
     num_vec vectors on the GPU. Input format is CSR. 
     
     Arguments
-    =========
+    ---------
+    
+    @param
+    transA      magma_trans_t
+                transposition parameter for A
 
-    magma_int_t m                   number of rows in A
-    magma_int_t n                   number of columns in A 
-    mama_int_t num_vecs             number of vectors
-    magmaDoubleComplex alpha        scalar multiplier
-    magmaDoubleComplex *d_val       array containing values of A in CSR
-    magma_int_t *d_rowptr           rowpointer of A in CSR
-    magma_int_t *d_colind           columnindices of A in CSR
-    magmaDoubleComplex *d_x         input vector x
-    magmaDoubleComplex beta         scalar multiplier
-    magmaDoubleComplex *d_y         input/output vector y
+    @param
+    m           magma_int_t
+                number of rows in A
 
-    ======================================================================    */
+    @param
+    n           magma_int_t
+                number of columns in A 
+                
+    @param
+    num_vecs    mama_int_t
+                number of vectors
+    @param
+    alpha       magmaDoubleComplex
+                scalar multiplier
+
+    @param
+    d_val       magmaDoubleComplex*
+                array containing values of A in CSR
+
+    @param
+    d_rowptr    magma_int_t*
+                rowpointer of A in CSR
+
+    @param
+    d_colind    magma_int_t*
+                columnindices of A in CSR
+
+    @param
+    d_x         magmaDoubleComplex*
+                input vector x
+
+    @param
+    beta        magmaDoubleComplex
+                scalar multiplier
+
+    @param
+    d_y         magmaDoubleComplex*
+                input/output vector y
+
+
+    @ingroup magmasparse_zblas
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_zmgecsrmv(    magma_trans_t transA,

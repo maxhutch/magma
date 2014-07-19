@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
-       @generated from zresidual.cpp normal z -> d, Fri May 30 10:41:41 2014
+       @generated from zresidual.cpp normal z -> d, Fri Jul 18 17:34:29 2014
        @author Hartwig Anzt
 
 */
@@ -14,27 +14,34 @@
 
 #include <assert.h>
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Computes the residual ||b-Ax|| for a solution approximation x.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   input matrix A
-    magma_d_vector b                          RHS b
-    magma_d_vector x                          solution approximation
-    double *res                   return residual
+    @param
+    A           magma_d_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b
 
+    @param
+    x           magma_d_vector
+                solution approximation
+
+    @param
+    res         double*
+                return residual
+
+
+    @ingroup magmasparse_daux
+    ********************************************************************/
 
 magma_int_t
 magma_dresidual( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector x, 

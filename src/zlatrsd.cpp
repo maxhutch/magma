@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date July 2014
 
        @author Mark Gates
        @precisions normal z -> c
@@ -221,9 +221,9 @@ magma_int_t magma_zlatrsd(
 
     /* Function Body */
     *info = 0;
-    magma_int_t upper  = (uplo == MagmaUpper);
+    magma_int_t upper  = (uplo  == MagmaUpper);
     magma_int_t notran = (trans == MagmaNoTrans);
-    magma_int_t nounit = (diag == MagmaNonUnit);
+    magma_int_t nounit = (diag  == MagmaNonUnit);
 
     /* Test the input parameters. */
     if ( ! upper && uplo != MagmaLower ) {
@@ -265,7 +265,7 @@ magma_int_t magma_zlatrsd(
     bignum = 1. / smlnum;
     *scale = 1.;
 
-    if ( (normin == MagmaFalse) ) {
+    if ( normin == MagmaFalse ) {
         /* Compute the 1-norm of each column, not including the diagonal. */
         if ( upper ) {
             /* A is upper triangular. */

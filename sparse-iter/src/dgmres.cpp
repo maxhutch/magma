@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from zgmres.cpp normal z -> d, Fri May 30 10:41:41 2014
+       @generated from zgmres.cpp normal z -> d, Fri Jul 18 17:34:29 2014
 */
 #include <sys/time.h>
 #include <time.h>
@@ -30,14 +30,9 @@
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -46,14 +41,26 @@
     This is a GPU implementation of the right-preconditioned GMRES method.
 
     Arguments
-    =========
+    ---------
 
-    magma_d_sparse_matrix A                   descriptor for matrix A
-    magma_d_vector b                          RHS b vector
-    magma_d_vector *x                         solution approximation
-    magma_d_solver_par *solver_par            solver parameters
+    @param
+    A           magma_d_sparse_matrix
+                descriptor for matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_d_vector
+                RHS b vector
+
+    @param
+    x           magma_d_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_d_solver_par*
+                solver parameters
+
+    @ingroup magmasparse_dgesv
+    ********************************************************************/
 
 magma_int_t
 magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,  
@@ -270,6 +277,7 @@ magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     double residual;
     magma_dresidual( A, b, *x, &residual );
+    solver_par->iter_res = betanom;
     solver_par->final_res = residual;
 
     if( solver_par->numiter < solver_par->maxiter){

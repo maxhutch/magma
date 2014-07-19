@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -24,30 +24,39 @@
 
 using namespace std;
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Generate a symmetric n x n CSR matrix for a stencil.
 
     Arguments
-    =========
+    ---------
 
-    magma_int_t n                        number of rows
-    magma_int_t offdiags                 number of offdiagonals 
-    magma_int_t *diag_offsets            array containing the offsets 
+    @param
+    n           magma_int_t
+                number of rows
+
+    @param
+    offdiags    magma_int_t
+                number of offdiagonals 
+
+    @param
+    diag_offset magma_int_t*
+                array containing the offsets 
+
                                                 (length offsets+1)
-    magmaDoubleComplex  *diag_vals       array containing the values
+    @param
+    diag_vals   magmaDoubleComplex*
+                array containing the values
+
                                                 (length offsets+1)
-    magma_z_sparse matrix *A             matrix to generate   
+    @param
+    A           magma_z_sparse_matrix*
+                matrix to generate   
 
-    ========================================================================  */
-
+    @ingroup magmasparse_zaux
+    ********************************************************************/
 
 extern "C"
 magma_int_t
@@ -66,7 +75,7 @@ magma_zmgenerator(  magma_int_t n,
     B.max_nnz_row = (2*offdiags+1);
 
     magma_zmalloc_cpu( &B.val, B.max_nnz_row*n );
-    magma_indexmalloc_cpu( &B.col, B.max_nnz_row*n );
+    magma_index_malloc_cpu( &B.col, B.max_nnz_row*n );
 
     for( int i=0; i<n; i++ ){ // stride over rows
         // stride over the number of nonzeros in each row

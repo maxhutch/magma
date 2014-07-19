@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -136,10 +136,50 @@ __global__ void ztranspose_inplace_even( int n, magmaDoubleComplex *matrix, int 
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
+/**
+    Purpose
+    -------
+    ztranspose_inplace_stream transposes a square N-by-N matrix in-place.
+    
+    Same as ztranspose_inplace, but adds stream argument.
+    
+    Arguments
+    ---------
+    @param[in]
+    n       INTEGER
+            The number of rows & columns of the matrix dA.  N >= 0.
+    
+    @param[in]
+    dA      COMPLEX_16 array, dimension (LDDA,N)
+            The N-by-N matrix dA.
+            On exit, dA(j,i) = dA_original(i,j), for 0 <= i,j < N.
+    
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= N.
+    
+    @param[in]
+    stream  magma_queue_t
+            Stream to execute in.
+    
+    @ingroup magma_zaux2
+    ********************************************************************/
 extern "C" void
-magmablas_ztranspose_inplace( magma_int_t n, magmaDoubleComplex *A, magma_int_t lda )
+magmablas_ztranspose_inplace_stream(
+    magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda,
+    magma_queue_t stream )
 {
+    magma_int_t info = 0;
+    if ( n < 0 )
+        info = -1;
+    else if ( ldda < n )
+        info = -3;
+    
+    if ( info != 0 ) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
     dim3 threads( NB, NB );
     int nblock = (n + NB - 1)/NB;
     
@@ -147,10 +187,21 @@ magmablas_ztranspose_inplace( magma_int_t n, magmaDoubleComplex *A, magma_int_t 
     // block assignment differs depending on whether nblock is odd or even.
     if( nblock % 2 == 1 ) {
         dim3 grid( nblock, (nblock+1)/2 );
-        ztranspose_inplace_odd<<< grid, threads, 0, magma_stream >>>( n, A, lda );
+        ztranspose_inplace_odd<<< grid, threads, 0, stream >>>( n, dA, ldda );
     }
     else {
         dim3 grid( nblock+1, nblock/2 );
-        ztranspose_inplace_even<<< grid, threads, 0, magma_stream >>>( n, A, lda );
+        ztranspose_inplace_even<<< grid, threads, 0, stream >>>( n, dA, ldda );
     }
+}
+
+
+/**
+    @see magmablas_ztranspose_inplace_stream
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_ztranspose_inplace( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda )
+{
+    magmablas_ztranspose_inplace_stream( n, dA, ldda, magma_stream );
 }

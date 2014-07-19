@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @author Hartwig Anzt 
 
@@ -19,14 +19,9 @@
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
 
-/*  -- MAGMA (version 1.5.0-beta2) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date May 2014
-
+/**
     Purpose
-    =======
+    -------
 
     Solves a system of linear equations
        A * X = B
@@ -35,15 +30,30 @@
     The inner solver is passed via the preconditioner argument.
 
     Arguments
-    =========
+    ---------
 
-    magma_z_sparse_matrix A                   input matrix A
-    magma_z_vector b                          RHS b
-    magma_z_vector *x                         solution approximation
-    magma_z_solver_par *solver_par       solver parameters
-    magma_z_preconditioner *precond_par       inner solver
+    @param
+    A           magma_z_sparse_matrix
+                input matrix A
 
-    ========================================================================  */
+    @param
+    b           magma_z_vector
+                RHS b
+
+    @param
+    x           magma_z_vector*
+                solution approximation
+
+    @param
+    solver_par  magma_z_solver_par*
+                solver parameters
+
+    @param
+    precond_par magma_z_preconditioner*
+                inner solver
+
+    @ingroup magmasparse_zgesv
+    ********************************************************************/
 
 magma_int_t
 magma_ziterref( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,  
@@ -123,6 +133,7 @@ magma_ziterref( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     magma_zresidual( A, b, *x, &residual );
     solver_par->final_res = residual;
+    solver_par->iter_res = nom;
 
     if( solver_par->numiter < solver_par->maxiter){
         solver_par->info = 0;

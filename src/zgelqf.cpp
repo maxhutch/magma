@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
        @precisions normal z -> s d c
 
@@ -154,7 +154,7 @@ magma_zgelqf( magma_int_t m, magma_int_t n,
         magma_zsetmatrix( m, n, A, lda, dA, maxm );
 
         dAT = dA + maxn * maxm;
-        magmablas_ztranspose2( dAT, ldda, dA, maxm, m, n );
+        magmablas_ztranspose( m, n, dA, maxm, dAT, ldda );
     }
 
     magma_zgeqrf2_gpu(n, m, dAT, ldda, tau, &iinfo);
@@ -163,7 +163,7 @@ magma_zgelqf( magma_int_t m, magma_int_t n,
         magmablas_ztranspose_inplace( ldda, dAT, ldda );
         magma_zgetmatrix( m, n, dA, ldda, A, lda );
     } else {
-        magmablas_ztranspose2( dA, maxm, dAT, ldda, n, m );
+        magmablas_ztranspose( n, m, dAT, ldda, dA, maxm );
         magma_zgetmatrix( m, n, dA, maxm, A, lda );
     }
 

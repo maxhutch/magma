@@ -1,10 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta2) --
+    -- MAGMA (version 1.5.0-beta3) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2014
+       @date July 2014
 
+       Note: [ds] precisions generated from testing_zhemv.cu
+       
        @precisions normal z -> c
 */
 #include <stdlib.h>
@@ -29,41 +31,50 @@ int main(int argc, char **argv)
     double          magma_error, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t N, lda, sizeA, sizeX, sizeY;
+    magma_int_t N, lda, ldda, sizeA, sizeX, sizeY, blocks, ldwork;
     magma_int_t incx = 1;
     magma_int_t incy = 1;
+    magma_int_t nb   = 64;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex alpha = MAGMA_Z_MAKE(  1.5, -2.3 );
     magmaDoubleComplex beta  = MAGMA_Z_MAKE( -0.6,  0.8 );
     magmaDoubleComplex *A, *X, *Y, *Ymagma;
-    magmaDoubleComplex *dA, *dX, *dY;
+    magmaDoubleComplex *dA, *dX, *dY, *dwork;
     magma_int_t status = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
-    
+
     printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
     printf("    N   MAGMA Gflop/s (ms)  CPU Gflop/s (ms)  MAGMA error\n");
     printf("=========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
-            lda    = ((N+31)/32)*32;
+            lda    = N;
+            ldda   = ((N + 31)/32)*32;
             sizeA  = N*lda;
             sizeX  = N*incx;
             sizeY  = N*incy;
             gflops = FLOPS_ZSYMV( N ) / 1e9;
             
-            TESTING_MALLOC_CPU( A,      magmaDoubleComplex, sizeA );
-            TESTING_MALLOC_CPU( X,      magmaDoubleComplex, sizeX );
-            TESTING_MALLOC_CPU( Y,      magmaDoubleComplex, sizeY );
-            TESTING_MALLOC_CPU( Ymagma, magmaDoubleComplex, sizeY );
+            TESTING_MALLOC_CPU( A,       magmaDoubleComplex, sizeA );
+            TESTING_MALLOC_CPU( X,       magmaDoubleComplex, sizeX );
+            TESTING_MALLOC_CPU( Y,       magmaDoubleComplex, sizeY );
+            TESTING_MALLOC_CPU( Ymagma,  magmaDoubleComplex, sizeY );
             
-            TESTING_MALLOC_DEV( dA, magmaDoubleComplex, sizeA );
+            TESTING_MALLOC_DEV( dA, magmaDoubleComplex, ldda*N );
             TESTING_MALLOC_DEV( dX, magmaDoubleComplex, sizeX );
             TESTING_MALLOC_DEV( dY, magmaDoubleComplex, sizeY );
+            
+            blocks = (N + nb - 1) / nb;
+            ldwork = ldda*blocks;
+            TESTING_MALLOC_DEV( dwork, magmaDoubleComplex, ldwork );
+            
+            magmablas_zlaset( MagmaFull, ldwork, 1, MAGMA_Z_NAN, MAGMA_Z_NAN, dwork, ldwork );
+            magmablas_zlaset( MagmaFull, ldda,   N, MAGMA_Z_NAN, MAGMA_Z_NAN, dA,    ldda   );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, A );
@@ -76,14 +87,22 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
+            magma_zsetmatrix( N, N, A, lda, dA, ldda );
+            magma_zsetvector( N, X, incx, dX, incx );
             magma_zsetvector( N, Y, incy, dY, incy );
             
+            //magma_zprint_gpu( ldda, blocks, dwork, ldda );
+            
             magma_time = magma_sync_wtime( 0 );
-            magmablas_zsymv( opts.uplo, N, alpha, dA, lda, dX, incx, beta, dY, incy );
+            magmablas_zsymv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork );
+            // TODO provide option to test non-work interface
+            //magmablas_zsymv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
             magma_time = magma_sync_wtime( 0 ) - magma_time;
             magma_perf = gflops / magma_time;
             
             magma_zgetvector( N, dY, incy, Ymagma, incy );
+            
+            //magma_zprint_gpu( ldda, blocks, dwork, ldda );
             
             /* =====================================================================
                Performs operation using CPU BLAS
@@ -96,7 +115,7 @@ int main(int argc, char **argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            blasf77_zaxpy( &N, &c_neg_one, Y, &incy, Ymagma, &incy);
+            blasf77_zaxpy( &N, &c_neg_one, Y, &incy, Ymagma, &incy );
             magma_error = lapackf77_zlange( "M", &N, &ione, Ymagma, &N, work ) / N;
             
             printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
@@ -109,11 +128,12 @@ int main(int argc, char **argv)
             TESTING_FREE_CPU( A );
             TESTING_FREE_CPU( X );
             TESTING_FREE_CPU( Y );
-            TESTING_FREE_CPU( Ymagma );
+            TESTING_FREE_CPU( Ymagma  );
             
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dX );
             TESTING_FREE_DEV( dY );
+            TESTING_FREE_DEV( dwork );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
