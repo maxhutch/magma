@@ -13,7 +13,6 @@
 
 #include "common_magma.h"
 #include "magma_zbulgeinc.h"
-#include <cblas.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +51,9 @@ extern "C" void magma_zbulge_applyQ(
     magma_int_t  nbgr, colst, coled, versionL, versionR;
     magma_int_t blkcnt=-1;
 
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     *INFO=0;
     versionL = 113;
     versionR = 92;
@@ -263,10 +265,10 @@ extern "C" void magma_zbulge_applyQ(
     }
 
 #if defined(USESTREAM)
-    magmablasSetKernelStream(NULL);
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
 #endif
+    magmablasSetKernelStream( orig_stream );
 }
 
 #undef E

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
-       @generated from zgeqr2.cu normal z -> c, Fri Jul 18 17:34:13 2014
+       @generated from zgeqr2.cu normal z -> c, Tue Sep  2 12:38:17 2014
 
 */
 #include "common_magma.h"
@@ -78,7 +78,7 @@ magma_cgeqr2_gpu(
     magmaFloatComplex *dtau, float *dwork,
     magma_int_t *info)
 {
-    #define  da_ref(a_1,a_2) ( dA+(a_2)*(ldda) + (a_1))
+    #define dA(i_,j_) (dA + (i_) + (j_)*(ldda))
     
     magma_int_t i, k;
 
@@ -98,26 +98,27 @@ magma_cgeqr2_gpu(
     /* Compute the norms of the trailing columns */
     k = min(m,n);
 
-    /* Workspace for diagonal entries - restored at the end */  
+    /* Workspace for diagonal entries - restored at the end */
     magmaFloatComplex *Aks;
-    magma_cmalloc( &Aks, k );    
-
-    for (i = 0; i < k; ++i) {
-
-        /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
-        magma_clarfg_gpu(m-i, da_ref(i, i), da_ref(min(i+1,m), i), dtau+i, dwork, &Aks[i]);
-
-        if (n-i-1>0)
-           /* Apply H(i)' to A(i:m,i+1:n) from the left */
-           magma_clarf_gpu(m-i, n-i-1, da_ref(i, i), dtau+i, da_ref(i, i+1), ldda,
-                           dwork);
+    magma_cmalloc( &Aks, k );
+    if ( Aks == NULL ) {
+        *info = MAGMA_ERR_DEVICE_ALLOC;
+        magma_xerbla( __func__, -(*info) );
     }
+    else {
+        for (i = 0; i < k; ++i) {
+            /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
+            magma_clarfg_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dwork, &Aks[i]);
 
-    if (n >= m)
-       magma_ccopymatrix( 1, k-1, Aks, 1, da_ref(0, 0), ldda+1 );
-    else
-       magma_ccopymatrix( 1, k, Aks, 1, da_ref(0, 0), ldda+1 );
+            if (n-i-1 > 0) {
+               /* Apply H(i)' to A(i:m,i+1:n) from the left */
+               magma_clarf_gpu(m-i, n-i-1, dA(i, i), dtau+i, dA(i, i+1), ldda);
+            }
+        }
 
+        magma_ccopymatrix( 1, k, Aks, 1, dA(0, 0), ldda+1 );
+    }
+    
     magma_free(Aks);
     return *info;
 } /* magma_cgeqr2 */

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zgeqp3_gpu.cpp normal z -> d, Fri Jul 18 17:34:25 2014
+       @generated from testing_zgeqp3_gpu.cpp normal z -> d, Tue Sep  2 12:38:29 2014
 
 */
 
@@ -36,7 +36,7 @@ int main( int argc, char** argv)
     double *h_A, *h_R, *tau, *h_work;
     double *d_A, *dtau, *d_work;
     magma_int_t *jpvt;
-    magma_int_t M, N, n2, lda, lwork, j, info, min_mn, nb;
+    magma_int_t M, N, K, n2, lda, lwork, j, info, min_mn, nb;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
@@ -52,6 +52,13 @@ int main( int argc, char** argv)
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
+            K = opts.ksize[itest];
+            if ( M < K || N < K || K <= 0 ) {
+                printf( "%5d %5d %5d   skipping because dgeqp3 requires M >= K, N >= K, K(the rank) >= 0\n",
+                        (int) M, (int) N, (int) K );
+                continue;
+            }           
+ 
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
@@ -82,7 +89,14 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_work, double, lwork  );
             
             /* Initialize the matrix */
-            lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
+            lapackf77_dlarnv( &ione, ISEED, &n2, h_R );
+
+            /* Make h_A of rank K */
+            double alpha = MAGMA_D_MAKE(  1., 0. );
+            double beta  = MAGMA_D_MAKE(  0., 0. );
+            blasf77_dgemm("N", "N", &M, &N, &K, &alpha, h_R, &lda, h_R, &lda, 
+                          &beta, h_A, &lda); 
+
             lapackf77_dlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             
             /* =====================================================================

@@ -13,7 +13,6 @@
 
 #include "common_magma.h"
 #include "magma_bulge.h"
-#include <cblas.h>
 
 #define PRECISION_z
 
@@ -44,15 +43,7 @@ magma_zlarfxsym_v2(magma_int_t n,
     blasf77_zhemv("L",&n, TAU, A, &lda, V, &ione, &c_zero, work, &ione);
 
     /* compute dtmp= X'*V */
-#if defined(PRECISION_z) || defined(PRECISION_c)
-    dtmp = c_zero;
-    for (magma_int_t j = 0; j < n; j++)
-        dtmp = dtmp + MAGMA_Z_CNJG(work[j]) * V[j];
-    //cblas_zdotc_sub(n, work, ione, V, ione, &dtmp);
-#else
-    dtmp = cblas_zdotc(n, work, ione, V, ione);
-#endif
-
+    dtmp = magma_cblas_zdotc(n, work, ione, V, ione);
 
     /* compute 1/2 X'*V*t = 1/2*dtmp*tau  */
     dtmp = -dtmp * c_half * (*TAU);
@@ -85,7 +76,7 @@ magma_ztrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 */
 
     magma_int_t ione = 1;
-    magma_int_t vpos, taupos, len;
+    magma_int_t vpos, taupos, len, len2;
 
     magmaDoubleComplex c_one    =  MAGMA_Z_ONE;
 
@@ -95,7 +86,8 @@ magma_ztrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
     len     = ed-st+1;
     *V(vpos)  = c_one;
 
-    cblas_zcopy(len-1, A(st+1, st-1), ione, V(vpos+1), ione);
+    len2 = len-1;
+    blasf77_zcopy( &len2, A(st+1, st-1), &ione, V(vpos+1), &ione );
     //memcpy(V(vpos+1), A(st+1, st-1), (len-1)*sizeof(magmaDoubleComplex));
     memset(A(st+1, st-1), 0, (len-1)*sizeof(magmaDoubleComplex));
 
@@ -139,7 +131,8 @@ magma_ztrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
     magma_int_t ldx = lda-1;
     magma_int_t len = ed - st + 1;
     magma_int_t lem = min(ed+nb, n) - ed;
-
+    magma_int_t lem2;
+    
     if (lem > 0) {
         magma_bulge_findVTAUpos(n, nb, Vblksiz, sweep-1, st-1, ldv, &vpos, &taupos);
         /* apply remaining right coming from the top block */
@@ -151,7 +144,8 @@ magma_ztrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
         /* remove the first column of the created bulge */
         *V(vpos)  = c_one;
         //memcpy(V(vpos+1), A(ed+2, st), (lem-1)*sizeof(magmaDoubleComplex));
-        cblas_zcopy(lem-1, A(ed+2, st), ione, V(vpos+1), ione);
+        lem2 = lem-1;
+        blasf77_zcopy( &lem2, A(ed+2, st), &ione, V(vpos+1), &ione );
         memset(A(ed+2, st),0,(lem-1)*sizeof(magmaDoubleComplex));
 
         /* Eliminate the col at st */

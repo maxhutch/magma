@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgeqrf_ooc.cpp normal z -> s, Fri Jul 18 17:34:17 2014
+       @generated from zgeqrf_ooc.cpp normal z -> s, Tue Sep  2 12:38:21 2014
 
 */
 #include "common_magma.h"
@@ -54,7 +54,7 @@
 
     @param[out]
     work    (workspace) REAL array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
@@ -124,9 +124,13 @@ magma_sgeqrf_ooc(magma_int_t m, magma_int_t n,
         magma_xerbla( __func__, -(*info) );
         return *info;
     }
-    else if (lquery)
+    else if (lquery) {
         return *info;
+    }
 
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     /* Check how much memory do we have */
     size_t freeMem, totalMem;
     cudaMemGetInfo( &freeMem, &totalMem );
@@ -196,7 +200,7 @@ magma_sgeqrf_ooc(magma_int_t m, magma_int_t n,
                                     ptr,        rows, stream[1] );
             magma_queue_sync( stream[1] );
 
-            magma_slarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+            magma_slarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                               rows, IB, ib,
                               ptr, rows, dwork,    lddwork,
                               dA(j, 0), ldda, dwork+ib, lddwork);
@@ -220,5 +224,7 @@ magma_sgeqrf_ooc(magma_int_t m, magma_int_t n,
     magma_queue_destroy( stream[1] );
     magma_free( dA );
 
+    magmablasSetKernelStream( orig_stream );
+    
     return *info;
 } /* magma_sgeqrf_ooc */

@@ -61,7 +61,9 @@
 *  WORK    (workspace) REAL array, dimension (LWORK)
 *
 *  LWORK   (input) INTEGER
-*          The dimension of the array WORK.
+*          The dimension of the array WORK. LWORK >= max(1,N).
+*          For optimum performance LWORK >= N*NB, where NB is the
+*          optimal blocksize.
 *
 *  RWORK   (workspace) REAL array, dimension (M)
 *
@@ -87,7 +89,7 @@
       EXTERNAL           SLAMCH, SLANGE, SLANSY
 *     ..
 *     .. External Subroutines ..
-      EXTERNAL           SGEMM, SLACPY, SLASET, SORGQR, SSYRK
+      EXTERNAL           XERBLA, SGEMM, SLACPY, SLASET, SORGQR, SSYRK
 *     ..
 *     .. Intrinsic Functions ..
       INTRINSIC          MAX, REAL
@@ -100,6 +102,26 @@
 *     ..
 *     .. Executable Statements ..
 *
+*
+*     Test the input arguments
+*
+      INFO = 0
+      IF( M.LT.0 ) THEN
+         INFO = -1
+      ELSE IF( N.LT.0 .OR. N.GT.M ) THEN
+         INFO = -2
+      ELSE IF( K.LT.0 .OR. K.GT.N ) THEN
+         INFO = -3
+      ELSE IF( LDA.LT.MAX( 1, M ) ) THEN
+         INFO = -8
+      ELSE IF( LWORK.LT.MAX( 1, N )) THEN
+         INFO = -11
+      END IF
+      IF( INFO.NE.0 ) THEN
+         CALL XERBLA( 'SQRT02', -INFO )
+         RETURN
+      END IF
+*
       EPS = SLAMCH( 'Epsilon' )
 *
 *     Copy the first k columns of the factorization to the array Q
@@ -109,7 +131,7 @@
 *
 *     Generate the first n columns of the matrix Q
 *
-      SRNAMT = 'SORGQR'
+**      SRNAMT = 'SORGQR'
       CALL SORGQR( M, N, K, Q, LDA, TAU, WORK, LWORK, INFO )
 *
 *     Copy R(1:n,1:k)

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -146,7 +146,7 @@
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
     @param[out]
-    rwork   (workspace) DOUBLE PRECISION array, dimension (LRWORK)
+    rwork   (workspace) DOUBLE PRECISION array, dimension (MAX(1,LRWORK))
             On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
 
     @param[in]
@@ -221,8 +221,7 @@ magma_zhegvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
 
     magmaDoubleComplex c_one = MAGMA_Z_ONE;
 
-    magmaDoubleComplex *dA;
-    magmaDoubleComplex *dB;
+    magmaDoubleComplex *dA=NULL, *dB=NULL;
     magma_int_t ldda = n;
     magma_int_t lddb = n;
 
@@ -338,9 +337,10 @@ magma_zhegvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
         return *info;
     }
 
-    // TODO: fix memory leak
     if (MAGMA_SUCCESS != magma_zmalloc( &dA, n*ldda ) ||
         MAGMA_SUCCESS != magma_zmalloc( &dB, n*lddb )) {
+        magma_free( dA );
+        magma_free( dB );
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }

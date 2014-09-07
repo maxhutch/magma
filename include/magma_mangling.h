@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 */
 
 #ifndef MAGMA_MANGLING_H
@@ -29,7 +29,7 @@
     #elif defined(UPCASE)
         #define FORTRAN_NAME(lcname, UCNAME)  UCNAME
     #else
-        #error "One of ADD_, NOCHANGE, or UPCASE must be defined to set how Fortran functions are name mangled. For example, in MAGMA, add -DADD_ to OPTS in make.inc. If using CMake, it defines MAGMA_GLOBAL instead."
+        #error "One of ADD_, NOCHANGE, or UPCASE must be defined to set how Fortran functions are name mangled. For example, in MAGMA, add -DADD_ to CFLAGS, FFLAGS, etc. in make.inc. If using CMake, it defines MAGMA_GLOBAL instead."
     #endif
 #endif
 

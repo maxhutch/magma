@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
-       @generated from zgegqr_gpu.cpp normal z -> d, Fri Jul 18 17:34:16 2014
+       @generated from zgegqr_gpu.cpp normal z -> d, Tue Sep  2 12:38:20 2014
 
 */
 #include "common_magma.h"
@@ -43,7 +43,9 @@
             2:  This version uses a standard LAPACK-based orthogonalization through
                 MAGMA's QR panel factorization (magma_dgeqr2x3_gpu) and magma_dorgqr
             3:  MGS
-            4.  Cholesky QR
+            4.  Cholesky QR [ Note: this method uses the normal equations which 
+                                    squares the condition number of A, therefore 
+                                    ||I - Q'Q|| < O(eps cond(A)^2)               ]
 
     @param[in]
     m       INTEGER
@@ -67,7 +69,7 @@
     @param
     dwork   (GPU workspace) DOUBLE_PRECISION array, dimension: 
             n^2                    for ikind = 1
-            3 n^2 + min(m, n)      for ikind = 2 
+            3 n^2 + min(m, n) + 2  for ikind = 2 
             0 (not used)           for ikind = 3
             n^2                    for ikind = 4           
 
@@ -149,7 +151,7 @@ magma_dgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
         do {
             i++;
             
-            magma_dgemm(MagmaTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
+            magma_dgemm(MagmaConjTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
             magma_dgetmatrix(n, n, dwork, n, G, n);
             
 #if defined(PRECISION_s) || defined(PRECISION_d)
@@ -203,7 +205,7 @@ magma_dgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
         double *tau  = work+n*n;
 
         magmablas_dlaset( MagmaFull, n, n, c_zero, c_zero, d_T, n );
-        magma_dgeqr2x3_gpu(&m, &n, dA, &ldda, dtau, d_T, ddA,
+        magma_dgeqr2x3_gpu(m, n, dA, ldda, dtau, d_T, ddA,
                            (double *)(dwork+min_mn+2*n*n), info);
         magma_dgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn);
         magma_dgetmatrix( n, n, ddA, n, work, n);
@@ -228,7 +230,7 @@ magma_dgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
     }
     else if (ikind == 4) {
         // ================== Cholesky QR       ===================================================
-        magma_dgemm(MagmaTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
+        magma_dgemm(MagmaConjTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
         magma_dgetmatrix(n, n, dwork, n, work, n);
         lapackf77_dpotrf("u", &n, work, &n, info);
         magma_dsetmatrix(n, n, work, n, dwork, n);

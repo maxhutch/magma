@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zbajac_csr.cu normal z -> d, Fri Jul 18 17:34:28 2014
+       @generated from zbajac_csr.cu normal z -> d, Tue Sep  2 12:38:32 2014
 
 */
 
 #include "common_magma.h"
-#include "../include/magmasparse_d.h"
-#include "../../include/magma.h"
+#include "magmasparse_d.h"
+#include "magma.h"
 
 
 #define PRECISION_d

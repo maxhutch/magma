@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlaqps.cpp normal z -> s, Fri Jul 18 17:34:18 2014
+       @generated from zlaqps.cpp normal z -> s, Tue Sep  2 12:38:21 2014
 
+       @author Mitch Horton
 */
 
 #include "common_magma.h"
-#include <cblas.h>
 
 #define PRECISION_s
 
@@ -140,9 +140,9 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
         rk = offset + k;
         
         /* Determine ith pivot column and swap if necessary */
-        // Fortran: pvt, k, isamax are all 1-based; subtract 1 from k.
-        // C:       pvt, k, isamax are all 0-based; don't subtract 1.
-        pvt = k + cblas_isamax( n-k, &vn1[k], ione );
+        // subtract 1 from Fortran isamax; pvt, k are 0-based.
+        i__1 = n-k;
+        pvt = k + blasf77_isamax( &i__1, &vn1[k], &ione ) - 1;
         
         if (pvt != k) {
             if (pvt >= nb) {
@@ -231,7 +231,7 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
             magma_int_t i__3 = nb-k-1;
             magma_int_t i__4 = i__2 - i__3;
             magma_int_t i__5 = nb-k;
-            magma_sgemv( MagmaTrans, i__1 - i__5, i__2 - i__3,
+            magma_sgemv( MagmaConjTrans, i__1 - i__5, i__2 - i__3,
                          tau[k], dA(rk +i__5, k+1+i__3), ldda,
                                  dA(rk +i__5, k       ), ione,
                          c_zero, dF(k+1+i__3, k       ), ione );
@@ -240,13 +240,13 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
                                     dF(k + 1 +i__3, k), i__2,
                                     F (k + 1 +i__3, k), i__2, stream );
             
-            blasf77_sgemv( MagmaTransStr, &i__1, &i__3,
+            blasf77_sgemv( MagmaConjTransStr, &i__1, &i__3,
                            &tau[k], A(rk,  k+1), &lda,
                                     A(rk,  k  ), &ione,
                            &c_zero, F(k+1, k  ), &ione );
             
             magma_queue_sync( stream );
-            blasf77_sgemv( MagmaTransStr, &i__5, &i__4,
+            blasf77_sgemv( MagmaConjTransStr, &i__5, &i__4,
                            &tau[k], A(rk, k+1+i__3), &lda,
                                     A(rk, k       ), &ione,
                            &c_one,  F(k+1+i__3, k ), &ione );
@@ -263,7 +263,7 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
             i__1 = m - rk;
             i__2 = k;
             z__1 = MAGMA_S_NEGATE( tau[k] );
-            blasf77_sgemv( MagmaTransStr, &i__1, &i__2,
+            blasf77_sgemv( MagmaConjTransStr, &i__1, &i__2,
                            &z__1,   A(rk, 0), &lda,
                                     A(rk, k), &ione,
                            &c_zero, auxv, &ione );
@@ -282,7 +282,7 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
         if (k < n-1) {
             i__1 = n - k - 1;
             i__2 = k + 1;
-            blasf77_sgemm( MagmaNoTransStr, MagmaTransStr, &ione, &i__1, &i__2,
+            blasf77_sgemm( MagmaNoTransStr, MagmaConjTransStr, &ione, &i__1, &i__2,
                            &c_neg_one, A(rk, 0  ), &lda,
                                        F(k+1,0  ), &ldf,
                            &c_one,     A(rk, k+1), &lda );
@@ -330,7 +330,7 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
                           F (*kb, 0), ldf,
                           dF(*kb, 0), i__2 );
 
-        magma_sgemm( MagmaNoTrans, MagmaTrans, i__1, i__2, *kb,
+        magma_sgemm( MagmaNoTrans, MagmaConjTrans, i__1, i__2, *kb,
                      c_neg_one, dA(rk+1, 0  ), ldda,
                                 dF(*kb,  0  ), i__2,
                      c_one,     dA(rk+1, *kb), ldda );
@@ -341,16 +341,16 @@ magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
         itemp = (magma_int_t)(vn2[lsticc] >= 0. ? floor(vn2[lsticc] + .5) : -floor(.5 - vn2[lsticc]));
         i__1 = m - rk - 1;
         if (lsticc <= nb)
-            vn1[lsticc] = cblas_snrm2(i__1, A(rk + 1, lsticc), ione);
+            vn1[lsticc] = magma_cblas_snrm2( i__1, A(rk+1,lsticc), ione );
         else {
             /* Where is the data, CPU or GPU ? */
             float r1, r2;
             
-            r1 = cblas_snrm2(nb-k, A(rk + 1, lsticc), ione);
+            r1 = magma_cblas_snrm2( nb-k, A(rk+1,lsticc), ione );
             r2 = magma_snrm2(m-offset-nb, dA(offset + nb + 1, lsticc), ione);
             
             //vn1[lsticc] = magma_snrm2(i__1, dA(rk + 1, lsticc), ione);
-            vn1[lsticc] = magma_ssqrt(r1*r1+r2*r2);
+            vn1[lsticc] = magma_ssqrt(r1*r1 + r2*r2);
         }
         
         /* NOTE: The computation of VN1( LSTICC ) relies on the fact that

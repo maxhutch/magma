@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -32,7 +32,7 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double           e1, e2, e3, e4, e5, *work;
+    double           e, e1, e2, e3, e4, e5, *work;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
@@ -50,13 +50,13 @@ int main( int argc, char** argv)
     
     // versions 1...4 are valid
     if (opts.version < 1 || opts.version > 4) {
-        printf("Unknown version %d; exiting\n", opts.version );
+        printf("Unknown version %d; exiting\n", (int) opts.version );
         return -1;
     }
     
-    double tol, eps = lapackf77_dlamch("E");
-    tol = 10* opts.tolerance * eps;
+    double tol = 10. * opts.tolerance * lapackf77_dlamch("E");
     
+    printf("version %d\n", (int) opts.version );
     printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)      ||I-Q'Q||_F / M     ||I-Q'Q||_I / M    ||A-Q R||_I\n");
     printf("                                                        MAGMA  /  LAPACK    MAGMA  /  LAPACK\n");
     printf("==========================================================================================================\n");
@@ -90,7 +90,7 @@ int main( int argc, char** argv)
             
             ldwork = N*N;
             if (opts.version == 2) {
-                ldwork = 3*N*N + min_mn;
+                ldwork = 3*N*N + min_mn + 2;
             }
 
             TESTING_MALLOC_PIN( tau,    magmaDoubleComplex, min_mn );
@@ -112,8 +112,10 @@ int main( int argc, char** argv)
             magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
             
             // warmup
-            magma_zgegqr_gpu( 1, M, N, d_A, ldda, dwork, h_work, &info );
-            magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
+            if ( opts.warmup ) {
+                magma_zgegqr_gpu( 1, M, N, d_A, ldda, dwork, h_work, &info );
+                magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
+            }
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -157,25 +159,30 @@ int main( int argc, char** argv)
                 /* =====================================================================
                    Check the result compared to LAPACK
                    =================================================================== */
-                blasf77_zgemm("t", "n", &N, &N, &M, &c_one, h_R, &M, h_R, &M, &c_zero, h_work, &N);
+                blasf77_zgemm("c", "n", &N, &N, &M, &c_one, h_R, &M, h_R, &M, &c_zero, h_work, &N);
                 for(int ii = 0; ii < N*N; ii += N+1 ) {
                     h_work[ii] = MAGMA_Z_SUB(h_work[ii], c_one);
                 }
                 e1 = lapackf77_zlange("f", &N, &N, h_work, &N, work) / N;
                 e3 = lapackf77_zlange("i", &N, &N, h_work, &N, work) / N;
 
-                blasf77_zgemm("t", "n", &N, &N, &M, &c_one, h_A, &M, h_A, &M, &c_zero, h_work, &N);
+                blasf77_zgemm("c", "n", &N, &N, &M, &c_one, h_A, &M, h_A, &M, &c_zero, h_work, &N);
                 for(int ii = 0; ii < N*N; ii += N+1 ) {
                     h_work[ii] = MAGMA_Z_SUB(h_work[ii], c_one);
                 }
                 e2 = lapackf77_zlange("f", &N, &N, h_work, &N, work) / N;
                 e4 = lapackf77_zlange("i", &N, &N, h_work, &N, work) / N;
 
+                if (opts.version != 4)
+                    e = e1;
+                else 
+                    e = e1 / (10.*max(M,N));
+
                 printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e / %8.2e   %8.2e / %8.2e   %8.2e  %s\n",
                        (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
                        e1, e2, e3, e4, e5,
-                       (e1 < tol ? "ok" : "failed"));
-                status += ! (e1 < tol); 
+                       (e < tol ? "ok" : "failed"));
+                status += ! (e < tol); 
             }
             else {
                 printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",

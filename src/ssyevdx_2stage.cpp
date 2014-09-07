@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dsyevdx_2stage.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dsyevdx_2stage.cpp normal d -> s, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -17,7 +17,6 @@
 #include "magma_bulge.h"
 #include "magma_sbulge.h"
 
-#include <cblas.h>
 
 #define PRECISION_z
 
@@ -59,7 +58,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX_16 array, dimension (LDA, N)
+    A       REAL array, dimension (LDA, N)
             On entry, the Hermitian matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
@@ -103,14 +102,14 @@
             If INFO = 0, the required m eigenvalues in ascending order.
 
     @param[out]
-    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+    work    (workspace) REAL array, dimension (MAX(1,LWORK))
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N * (NB + 2).
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + 2*N + N*NB.
             If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 1 + 6*N + 2*N**2.
             where LQ2 is the size needed to store the Q2 matrix
             and is returned by magma_bulge_get_lq2.
@@ -123,7 +122,7 @@
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -195,6 +194,7 @@ magma_ssyevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     float smlnum;
     magma_int_t lquery;
     magma_int_t alleig, valeig, indeig;
+    magma_int_t len;
 
     float* dwork;
 
@@ -247,7 +247,7 @@ magma_ssyevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
         lwmin  = lq2 + 1 + 6*n + 2*n*n;
         liwmin = 5*n + 3;
     } else {
-        lwmin  = lq2 + n*(nb + 1);
+        lwmin  = lq2 + 2*n + n*nb;
         liwmin = 1;
     }
 
@@ -360,12 +360,14 @@ magma_ssyevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     memset(A2, 0, n*lda2*sizeof(float));
 
     for (magma_int_t j = 0; j < n-nb; j++) {
-        cblas_scopy(nb+1, A(j,j), 1, A2(0,j), 1);
+        len = nb+1;
+        blasf77_scopy( &len, A(j,j), &ione, A2(0,j), &ione );
         memset(A(j,j), 0, (nb+1)*sizeof(float));
         *A(nb+j,j) = d_one;
     }
     for (magma_int_t j = 0; j < nb; j++) {
-        cblas_scopy(nb-j, A(j+n-nb,j+n-nb), 1, A2(0,j+n-nb), 1);
+        len = nb-j;
+        blasf77_scopy( &len, A(j+n-nb,j+n-nb), &ione, A2(0,j+n-nb), &ione );
         memset(A(j+n-nb,j+n-nb), 0, (nb-j)*sizeof(float));
     }
 

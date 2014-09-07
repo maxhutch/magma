@@ -1,22 +1,22 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @date July 2014
+       @date September 2014
             
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from zlobpcg.cpp normal z -> c, Fri Jul 18 17:34:29 2014
+       @generated from zlobpcg.cpp normal z -> c, Tue Sep  2 12:38:34 2014
 */
 
 #include <sys/time.h>
 #include <time.h>
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 #include "trace.h"
 #include "magmablas.h"     
 

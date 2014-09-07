@@ -60,6 +60,7 @@ void flops_init();
  * Macros to handle error checking.
  */
 
+// ----------------------------------------
 #ifdef CUBLAS_V2_H_
 
 #define TESTING_INIT()                                                     \
@@ -68,12 +69,13 @@ void flops_init();
     cublasHandle_t handle;                                                 \
     cudaSetDevice( 0 );                                                    \
     cublasCreate( &handle );                                               \
-    magma_print_devices();
+    magma_print_environment();
 
 #define TESTING_FINALIZE()                                                 \
     cublasDestroy( handle );                                               \
     magma_finalize();
 
+// ----------------------------------------
 #else // not CUBLAS_V2_H_
 
 #define TESTING_INIT()                                                     \
@@ -84,7 +86,7 @@ void flops_init();
         magma_finalize();                                                  \
         exit(-1);                                                          \
     }                                                                      \
-    magma_print_devices();
+    magma_print_environment();
 
 
 #define TESTING_FINALIZE()                                                 \
@@ -92,6 +94,7 @@ void flops_init();
     cublasShutdown();
 
 #endif // not CUBLAS_V2_H_
+// ----------------------------------------
 
 
 #define TESTING_INIT_MGPU()                                                \
@@ -109,7 +112,7 @@ void flops_init();
         }                                                                  \
     }                                                                      \
     magma_setdevice(0);                                                    \
-    magma_print_devices();                                                 \
+    magma_print_environment();                                             \
 }
 
 
@@ -175,6 +178,8 @@ void magma_dmake_hpd( magma_int_t N, double*             A, magma_int_t lda );
 void magma_smake_hpd( magma_int_t N, float*              A, magma_int_t lda );
 
 void magma_assert( bool condition, const char* msg, ... );
+
+void magma_assert_warn( bool condition, const char* msg, ... );
 
 #define MAX_NTEST 1000
 

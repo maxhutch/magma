@@ -1,1034 +1,253 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlat2c.cu mixed zc -> ds, Fri Jul 18 17:34:12 2014
-
+       @generated from zlat2c.cu mixed zc -> ds, Tue Sep  2 12:38:16 2014
+       @author Mark Gates
 */
 #include "common_magma.h"
+
 #define PRECISION_d
 
-#define BLOCK_SIZE 32
-//#define num_threads 64
-#define dgemv_bs 32
+#define BLK_X 64
+#define BLK_Y 32
 
-#if (!defined(PRECISION_z)) || (GPUSHMEM >= 200)
+// TODO get rid of global variable!
+static __device__ int flag = 0;
 
-/*------------------------------------------ UPLO = 'L' ----------------------------------*/
-static __device__ int flag = 0; 
 
-__global__ void
-l_dlat2s_special(
+/*
+    Divides matrix into ceil( n/BLK_X ) x ceil( n/BLK_Y ) blocks.
+    Each block has BLK_X threads.
+    Each thread loops across one row, updating BLK_Y entries.
+    Updates only the diagonal and below.
+    Blocks that are fully above the diagonal exit immediately.
+    
+    Code similar to dlag2s and zlaset.
+*/
+__global__
+void dlat2s_lower(
     int n,
     const double *A, int lda,
-    float        *SA,
-    magma_int_t *info, double RMAX, int ldsa )
+    float *SA,       int ldsa,
+    double rmax )
 {
-    double mRMAX = - RMAX;
-    int tx  = threadIdx.x ;
-    int ty  = threadIdx.y ;
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-    __shared__ double la[dgemv_bs][dgemv_bs+1];
-
-    A  += ind;
-    SA += ind;
-    A  += ty * lda;
-    SA += ty * ldsa;
-
-    int break_d  =   blockIdx.x* dgemv_bs ;
-    double temp ;
-    for(int  i=0; i<break_d; i += dgemv_bs ) {
-        #pragma unroll 8
-        for(int j=0; j < dgemv_bs; j+=4) {
-            temp = A[j*lda] ;
-            if ( ((temp) < mRMAX) || ((temp) > RMAX)
+    double tmp;
+    double neg_rmax = - rmax;
+    
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
+    int iby = blockIdx.y*BLK_Y;
+    /* check if full block-column && (below diag) */
+    bool full = (iby + BLK_Y <= n && (ind >= iby + BLK_Y));
+    /* do only rows inside matrix, and blocks not above diag */
+    if ( ind < n && ind + BLK_X > iby ) {
+        A  += ind + iby*lda;
+        SA += ind + iby*ldsa;
+        if ( full ) {
+            // full block-column, off-diagonal block
+            #pragma unroll
+            for( int j=0; j < BLK_Y; ++j ) {
+                tmp = A[j*lda];
+                if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
 #if defined(PRECISION_z) || defined(PRECISION_c)
-                || ((temp) < mRMAX) || ((temp) > RMAX) 
+                    || ((tmp) < neg_rmax) || ((tmp) > rmax)
 #endif
-                )
+                    )
                 {
                     flag = 1;
                 }
-            SA[j*ldsa] = (float)(temp);
-        }
-        A  += lda *dgemv_bs ;
-        SA += ldsa*dgemv_bs ;
-    }
-
-#pragma unroll 8
-    for(int j =0; j<dgemv_bs; j+=4)
-        la[ty+j][tx] = A[j*lda];
-
-    __syncthreads();
-
-    A += dgemv_bs ;
-#pragma unroll 8
-    for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
-        if ( i < tx )   {
-            la[tx][i] = la[i][tx] ;
-        }
-        else
-            la[tx][i] = la[tx][i]  ;
-    }
-
-    __syncthreads();
-#pragma unroll 8
-    for(int j =0; j<dgemv_bs; j+=4) {
-        temp =  la[ty+j][tx] ;
-        if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-            || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-            )
-            {
-                flag = 1;
-            }
-        SA[j*ldsa] = (float)(temp);
-    }
-
-    __syncthreads();
-    //la[tx][ty] = flag ;
-    //__syncthreads();
-    //if ( ty == 0 ) {
-    //    //  info[0] = flag+ la[tx] [1] +  la[tx] [2] + la[tx] [3] ;
-    //}
-}
-
-__global__ void
-l_dlat2s_generic(
-    int n,
-    const double *A, int lda,
-    float        *SA,
-    int m_full_block, int m_mod_32, magma_int_t *info, double RMAX, int ldsa)
-{
-    double mRMAX = - RMAX;
-    int tx = threadIdx.x ;
-    int ty = threadIdx.y ;
-
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-
-    __shared__ double la   [dgemv_bs][dgemv_bs+1];
-
-    double temp ;
-
-    if ( blockIdx.x == m_full_block ) {
-        /************************************************************************
-        -- Last block --
-        -- We will do something unusual here
-        -- For sufficiently large matrix the overhead will be very low
-        *************************************************************************/
-        if  ( tx < m_mod_32 ) {
-            A+= ( blockIdx.x * dgemv_bs + tx ) ;
-            SA+= ( blockIdx.x * dgemv_bs + tx ) ;
-        }
-        else {
-            A+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
-            SA+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
-        }
-        A+= ty * lda  ;
-        SA+= ty * ldsa  ;
-        int break_d  =   blockIdx.x* dgemv_bs ;
-
-        /*----------------------------
-          Go Right
-          -------------------------------*/
-
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-#pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4) {
-                temp = A[j*lda] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                    )
-                    {
-                        flag = 1;
-                    }
-                SA[j*ldsa] = (float)(temp);
-            }
-            A  += lda *dgemv_bs ;
-            SA += ldsa*dgemv_bs ;
-        }
-        /*
-          we don't need to make zero, as those computation will be discarded.
-        */
-        if ( ty==0  ) {
-            /*--------------------------------------------
-              he will compute the triangular parts
-              others will be waiting with values.
-              -----------------------------------------------*/
-            int j ;
-            int count = 1 ;
-            if ( tx < m_mod_32 )
-                count = tx ;
-            else
-                count = m_mod_32 ;
-            for(j =0; j<=count; j++) {
-                temp =  A[j*lda] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                    )
-                    {
-                        flag = 1;
-                    }
-                SA[j*ldsa] = (float)(temp);
-            }
-            A  += (tx)*lda;
-            SA += (tx)*ldsa;
-            count = 1 ;
-            for(; j<m_mod_32; j++) {
-                temp= A[count] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                    )
-                    {
-                        flag = 1;
-                    }
-                SA[count] = (float)(temp);
-                count++;
+                SA[j*ldsa] = (float)( tmp );
             }
         }
         else {
-        }
-
-        //la[tx][ty] = flag ;
-
-        __syncthreads();
-        /*--------------------------------------------------------
-          The leader accumulates all the results from his peer.
-          ----------------------------------------------------------*/
-        //if ( ty == 0 ) {
-            //  info[ind] = ld[tx][0] +  ld[tx][1] + ld[tx][2] + ld[tx][3] ;
-        //}
-
-    }
-    else {
-        /***************************************
-        -----------------------------------
-        -- All the blocks but the last one --
-        ****************************************
-        -------------------------------------*/
-        A += ind;
-        SA += ind;
-        A+= ty * lda  ;
-        SA+= ty * ldsa  ;
-        int break_d  =   blockIdx.x* dgemv_bs ;
-
-        /*----------------------------
-          Go Right
-          -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-#pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4) {
-                temp = A[j*lda] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
+            // either partial block-column or diagonal block
+            for( int j=0; j < BLK_Y && iby+j < n && ind >= iby+j; ++j ) {
+                tmp = A[j*lda];
+                if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
 #if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
+                    || ((tmp) < neg_rmax) || ((tmp) > rmax)
 #endif
                     )
-                    {
-                        flag = 1;
-                    }
-                SA[j*ldsa] = (float)(temp);
-            }
-            A  += lda *dgemv_bs ;
-            SA += ldsa*dgemv_bs ;
-        }
-
-
-        /*------------------------------------
-          Diagonal
-          Copy + Transpose lower triangle
-          --------------------------------------*/
-#pragma unroll 8
-        for(int j =0; j<dgemv_bs; j+=4)
-            la[ty+j][tx] = A[ j * lda];
-
-
-        A+= dgemv_bs ;
-        __syncthreads();
-
-        /*--------------------------------------------
-          Mirror Upper Triangle to Lower triangle
-          ---------------------------------------------*/
-#pragma unroll 8
-        for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
-            if ( i < tx )   {
-                la[tx][i] = la[i][tx] ;
-            }
-            else
-                la[tx][i] = la[tx][i]  ;
-
-        }
-        __syncthreads();
-
-        /*--------------------------------
-          Do diagonal Computation
-          -----------------------------------*/
-
-#pragma unroll 8
-        for(int j =0; j<dgemv_bs; j+=4) {
-            temp =  la[ty+j][tx] ;
-            if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                )
                 {
                     flag = 1;
                 }
-            SA[j*ldsa] = (float)(temp);
-        }
-        __syncthreads();
-        //la[tx] [ty ] = flag ;
-        //__syncthreads();
-        /*--------------------------------------------------------
-          The leader accumulates all the results from his peer.
-          ----------------------------------------------------------*/
-        //if ( ty == 0 )
-        //    {
-                //  info [ind] =  flag + la[tx][1]+ la[tx][2]+ la[tx][3] ;
-        //    }
-    }
-}
-
-
-/*- ---------------------------------------------- UPLO = 'U' ----------------------------------*/
-/* Generic Case*/
-
-__global__ void
-u_dlat2s_generic(
-    int n,
-    const double *A, int lda,
-    float        *SA,
-    int m_full_block, int m_mod_32, magma_int_t *info, double RMAX, int ldsa)
-{
-    double mRMAX = - RMAX;
-    int tx = threadIdx.x ;
-    int ty = threadIdx.y ;
-
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-
-    __shared__ double la   [dgemv_bs][dgemv_bs+1];
-    int blockIdxx =  blockIdx.x ;
-    double temp ;
-    if ( blockIdx.x == m_full_block ) {
-
-        /************************************************************************
-        -- Last block --
-        -- We will do something unusual here
-        -- For sufficiently large matrix the overhead will be very low
-        *************************************************************************/
-
-        ind =  tx ;
-        A+= lda*(n-1) ;
-        SA+= ldsa*(n-1) ;
-
-
-        if  ( tx < m_mod_32 ) {
-            A+= (  tx ) ;
-            SA+= (  tx ) ;
-        }
-        else {
-            A+= (  m_mod_32 -1) ;
-            SA+= (  m_mod_32 -1) ;
-        }
-        A-= ty * lda  ;
-        SA-= ty * ldsa  ;
-        int break_d  =   (blockIdx.x)* dgemv_bs ;
-
-        /*----------------------------
-          Go Right
-          -------------------------------*/
-
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-#pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4) {
-                temp  = A[-j*lda] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                    )
-                    {
-                        flag = 1;
-                    }
-                SA[-j*ldsa] = (float)(temp);
+                SA[j*ldsa] = (float)( tmp );
             }
-            A  -= lda *dgemv_bs ;
-            SA -= ldsa*dgemv_bs ;
-        }
-        /*
-          we don't need to make zero, as those computation will be discarded.
-        */
-        if ( ty==0  ) {
-            /*--------------------------------------------
-              he will compute the triangular parts
-              others will be waiting with values.
-              -----------------------------------------------*/
-            int j ;
-            int count = 1 ;
-            if ( tx < m_mod_32 )
-                count =m_mod_32- tx ;
-            else
-                count = m_mod_32 ;
-            for(j =0; j<count; j++) {
-                temp =  A[-j*lda] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                    )
-                    {
-                        flag = 1;
-                    }
-                SA[-j*ldsa] = (float)(temp);
-            }
-            A-=(count-1)*lda;
-            SA-=(count-1)*ldsa;
-            count = 1 ;
-            for(; j<m_mod_32; j++) {
-                temp =  A[-count] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                    )
-                    {
-                        flag = 1;
-                    }
-                SA[-count] = (float)(temp);
-                count++;
-            }
-        }
-        else {
-        }
-
-        /*--------------------------------------------------------
-          The leader accumulates all the results from his peer.
-          ----------------------------------------------------------*/
-        //la[tx][ty] = flag ;
-        //__syncthreads();
-        //if ( ty == 0 ) {
-        //    // info [ind] = flag  + la[tx][1] + la[tx][2] + la[tx][3]  ;
-        //}
-
-    }
-    else {
-        /***************************************
-        -----------------------------------
-        -- All the blocks but the last one --
-        -- By the way this code can be optimized more.
-        ****************************************
-        -------------------------------------*/
-        ind = blockIdx.x *  dgemv_bs + tx + m_mod_32 ;
-        A+= lda*(n-1)  ;
-        SA+= ldsa*(n-1)  ;
-
-
-        A += ind;
-        SA += ind;
-        A-= ty * lda  ;
-        SA-= ty * ldsa  ;
-
-        int break_d  = (n / dgemv_bs -   blockIdxx-1 )* dgemv_bs ;
-        /*----------------------------
-          Go Left
-          -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-#pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4) {
-                temp  = A[-j*lda] ;
-                if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                    )
-                    {
-                        flag = 1;
-                    }
-                SA[-j*ldsa] = (float)(temp);
-            }
-            A-=lda* dgemv_bs ;
-            SA-=ldsa* dgemv_bs ;
-        }
-
-
-        /*------------------------------------
-          Diagonal
-          Copy + Transpose lower triangle
-          --------------------------------------*/
-#pragma unroll 8
-        for(int j =0; j<dgemv_bs; j+=4) {
-            la[tx][31-ty-j] = A[ -j * lda];
-        }
-
-        A-= dgemv_bs ;
-        __syncthreads();
-        /*--------------------------------------------
-          Mirror Upper Triangle to Lower triangle
-          ---------------------------------------------*/
-#pragma unroll 8
-        for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
-            if ( i <tx ) {
-                la[tx][i] = la[i][tx];
-            }
-            else {
-                la[tx][i] = la[tx][i]  ;
-            }
-        }
-        __syncthreads();
-        /*--------------------------------
-          Do diagonal Computation
-          -----------------------------------*/
-#pragma unroll 8
-        for(int j =0; j<dgemv_bs; j+=4) {
-            temp =   la[tx][31-ty-j];
-            // temp =  la[ty+j][tx] ;
-            if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                )
-                {
-                    flag = 1;
-                }
-            SA[- j*ldsa] = (float)(temp);
-        }
-
-        /*--------------------------------------------------------
-          The leader accumulates all the results from his peer.
-          ----------------------------------------------------------*/
-        //la[tx] [ty] = flag ;
-        //__syncthreads();
-        //
-        //if ( ty == 0 ) {
-        //    //  info[ind] = flag +  la[tx] [1] +  la[tx] [2] + la[tx] [3]  ;
-        //}
-
-    }
-}
-
-/*- ---------------------------------------------- UPLO = 'U' ----------------------------------*/
-/*Good Dimension*/
-__global__ void
-u_dlat2s_special (
-    int n,
-    const double *A, int lda,
-    float        *SA,
-    magma_int_t *info, double RMAX, int ldsa )
-{
-    double mRMAX = - RMAX;
-    int tx = threadIdx.x ;
-    int ty = threadIdx.y ;
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-    /*
-      Reverse Computation ...
-      - Left
-      - Triangle
-      - Up
-    */
-    A+= lda*(n-1) ;
-    SA+= ldsa*(n-1) ;
-
-    __shared__ double la   [dgemv_bs][dgemv_bs+1];
-
-    A += ind;
-    SA += ind;
-
-    A-= ty * lda  ;
-    SA-= ty * ldsa  ;
-
-    double temp ;
-    int break_d  = (n / dgemv_bs -   blockIdx.x-1 )* dgemv_bs ;
-
-    for(int  i=0; i<break_d; i += dgemv_bs ) {
-#pragma unroll 8
-        for(int j=0; j < dgemv_bs ; j+=4) {
-            //   la[tx][ty+j] = A[-j*lda] ;
-            temp =  A[-j*lda] ;
-            if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-                )
-                {
-                    flag = 1;
-                }
-            SA[-j*ldsa] = (float)(temp);
-        }
-        A-=lda* dgemv_bs ;
-        SA-=ldsa* dgemv_bs ;
-    }
-
-
-#pragma unroll 8
-    for(int j =0; j<dgemv_bs; j+=4)
-        la[tx][31-ty-j] = A[ -j * lda];
-    /*
-      Look at the indexing changes
-    */
-
-    A-= dgemv_bs ;
-    __syncthreads();
-#pragma unroll 8
-    for(int  i=ty*8; i<(1+ty)* dgemv_bs/4 ; i++) {
-        if ( i <tx ) {
-            la[tx][i] = la[i][tx];
-        }
-        else {
-            la[tx][i] = la[tx][i]  ;
-        }
-
-    }
-    __syncthreads();
-
-#pragma unroll 8
-    for(int j =0; j<dgemv_bs; j+=4) {
-        temp =   la[tx][31-ty-j];
-        if ( ((temp) < mRMAX) || ((temp) > RMAX)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-            || ((temp) < mRMAX) || ((temp) > RMAX) 
-#endif
-            )
-            {
-                flag = 1;
-            }
-        SA[- j*ldsa] = (float)(temp);
-    }
-
-    //la[tx][ty] = flag ;
-    //
-    //__syncthreads();
-    //
-    //if ( ty == 0 ) {
-    //    // info[0] = flag + la[tx][1] + la[tx][2] + la[tx][3] ;
-    //}
-}
-
-
-extern "C" void
-mdlat2s(
-    magma_uplo_t uplo, magma_int_t m,
-    const double *A,  magma_int_t lda,
-    float        *SA, magma_int_t ldsa,
-    magma_int_t *info)
-{
-    /*
-      Note:
-      The UPLO = 'U' Version can be optimized more.
-    */
-    double RMAX = (double)lapackf77_slamch("O");
-    int blocks;
-    if (m % dgemv_bs==0)
-        blocks = m/ dgemv_bs;
-    else
-        blocks = m/ dgemv_bs + 1;
-
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(32, 4, 1);
-
-    if ( m % dgemv_bs == 0 ) {
-        if ( uplo == MagmaLower) {
-            l_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa  );
-        }
-        else {
-            u_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa  );
-        }
-
-    }
-    else {
-        int  m_full_block = (m - m % 32 ) /32 ;
-        int  m_mod_32 = m%32 ;
-        if ( uplo == MagmaLower) {
-            l_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
-        }
-        else {
-            u_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
         }
     }
 }
 
 
 /*
-  Interface ..................................
-  Reproduced from dlansy routines...
-  How to deliver the info.
+    Similar to dlat2s_full, but updates only the diagonal and above.
+    Blocks that are fully below the diagonal exit immediately.
+    
+    Code similar to dlag2s and zlaset.
 */
-extern "C" void
-magmablas_dlat2s(
-    magma_uplo_t uplo, magma_int_t n,
-    const double *A,  magma_int_t lda,
-    float        *SA, magma_int_t ldsa,
-    magma_int_t *info)
-{
-    /*
-      The routine converts a DOUBLE PRECISION triangular
-      matrix A to SINGLE PRECISION triangular matrix SA.
-    */
-    *info = 0;
-    mdlat2s( uplo, n, A, lda, SA, ldsa, info );
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////
-#else
-///////////////////////////////////////////////////////////////////////////////////////////
-/*------------------------------------------ UPLO = 'L' ----------------------------------*/
-
-__global__ void
-l_dlat2s_special (
+__global__
+void dlat2s_upper(
     int n,
     const double *A, int lda,
-    float        *SA,
-    magma_int_t *info, double RMAX, int ldsa )
+    float *SA,       int ldsa,
+    double rmax )
 {
-    int tx  = threadIdx.x ;
-    int ty  = threadIdx.y ;
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-    A  += ind;
-    SA += ind;
-    A  += ty * lda;
-    SA += ty * ldsa;
-
-    int break_d  =   (blockIdx.x+1)* dgemv_bs ;
-    for(int  i=0; i<break_d; i += dgemv_bs ) {
-
-        #pragma unroll 8
-        for(int j=0; j < dgemv_bs ; j+=4)
-            SA[j*ldsa] = (float)(A[j*lda]);
-
-        A  += lda *dgemv_bs ;
-        SA += ldsa*dgemv_bs ;
-    }
-}
-
-
-__global__ void
-l_dlat2s_generic(
-    int n,
-    const double *A, int lda,
-    float        *SA,
-    int m_full_block, int m_mod_32, magma_int_t *info, double RMAX, int ldsa)
-{
-    int tx = threadIdx.x ;
-    int ty = threadIdx.y ;
-
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-    if ( blockIdx.x == m_full_block ) {
-        /************************************************************************
-        -- Last block --
-        -- We will do something unusual here
-        -- For sufficiently large matrix the overhead will be very low
-        *************************************************************************/
-        if  ( tx < m_mod_32 ) {
-            A+= ( blockIdx.x * dgemv_bs + tx ) ;
-            SA+= ( blockIdx.x * dgemv_bs + tx ) ;
-        }
-        else {
-            A+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
-            SA+= ( blockIdx.x * dgemv_bs + m_mod_32 -1) ;
-        }
-        A+= ty * lda  ;
-        SA+= ty * ldsa  ;
-        int break_d  =   blockIdx.x* dgemv_bs ;
-
-        /*----------------------------
-          Go Right
-          -------------------------------*/
-
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4)
-                SA[j*ldsa] = (float)(A[j*lda]);
-            
-            A  += lda *dgemv_bs ;
-            SA += ldsa*dgemv_bs ;
-        }
-        /*
-          we don't need to make zero, as those computation will be discarded.
-        */
-        if ( ty==0  ) {
-            /*--------------------------------------------
-              he will compute the triangular parts
-              others will be waiting with values.
-              -----------------------------------------------*/
-            int j ;
-            int count = 1 ;
-            if ( tx < m_mod_32 )
-                count = tx ;
-            else
-                count = m_mod_32 ;
-            for(j =0; j<=count; j++)
-                SA[j*ldsa] = (float)(A[j*lda]);
-            
-            A  += (tx)*lda;
-            SA += (tx)*ldsa;
-            count = 1 ;
-            for(; j<m_mod_32; j++) {
-                SA[count] = (float)(A[count]);
-                count++;
+    double tmp;
+    double neg_rmax = - rmax;
+    
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
+    int iby = blockIdx.y*BLK_Y;
+    /* check if full block-column && (above diag) */
+    bool full = (iby + BLK_Y <= n && (ind + BLK_X <= iby));
+    /* do only rows inside matrix, and blocks not below diag */
+    if ( ind < n && ind < iby + BLK_Y ) {
+        A  += ind + iby*lda;
+        SA += ind + iby*ldsa;
+        if ( full ) {
+            // full block-column, off-diagonal block
+            #pragma unroll
+            for( int j=0; j < BLK_Y; ++j ) {
+                tmp = A[j*lda];
+                if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
+#if defined(PRECISION_z) || defined(PRECISION_c)
+                    || ((tmp) < neg_rmax) || ((tmp) > rmax)
+#endif
+                    )
+                {
+                    flag = 1;
+                }
+                SA[j*ldsa] = (float)( tmp );
             }
         }
         else {
-        }
-
-        __syncthreads();
-    }
-    else {
-        /* **************************************
-         -- All the blocks but the last one --
-           ************************************** */
-        A += ind;
-        SA += ind;
-        A+= ty * lda  ;
-        SA+= ty * ldsa  ;
-        int break_d  =   (blockIdx.x+1)* dgemv_bs ;
-
-        /*----------------------------
-          Go Right
-          -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4)
-                SA[j*ldsa] = (float)(A[j*lda]);
-            
-            A  += lda *dgemv_bs ;
-            SA += ldsa*dgemv_bs ;
-        }
-   }
-}
-
-/*- ---------------------------------------------- UPLO = 'U' ----------------------------------*/
-/* Generic Case*/
-
-__global__ void
-u_dlat2s_generic(
-    int n,
-    const double *A, int lda,
-    float        *SA,
-    int m_full_block, int m_mod_32, magma_int_t *info, double RMAX, int ldsa)
-{
-    int tx = threadIdx.x ;
-    int ty = threadIdx.y ;
-
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-    int blockIdxx =  blockIdx.x ;
-    if ( blockIdx.x == m_full_block ) {
-
-        /************************************************************************
-        -- Last block --
-        -- We will do something unusual here
-        -- For sufficiently large matrix the overhead will be very low
-        *************************************************************************/
-        ind =  tx ;
-        A+= lda*(n-1) ;
-        SA+= ldsa*(n-1) ;
-
-
-        if  ( tx < m_mod_32 ) {
-            A+= (  tx ) ;
-            SA+= (  tx ) ;
-        }
-        else {
-            A+= (  m_mod_32 -1) ;
-            SA+= (  m_mod_32 -1) ;
-        }
-        A-= ty * lda  ;
-        SA-= ty * ldsa  ;
-        int break_d  =   (blockIdx.x)* dgemv_bs ;
-
-        /*----------------------------
-          Go Right
-          -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4)
-                SA[-j*ldsa] = (float)(A[-j*lda]);
-            
-            A  -= lda *dgemv_bs ;
-            SA -= ldsa*dgemv_bs ;
-        }
-        /*
-          we don't need to make zero, as those computation will be discarded.
-        */
-        if ( ty==0  ) {
-            /*--------------------------------------------
-              he will compute the triangular parts
-              others will be waiting with values.
-              -----------------------------------------------*/
-            int j ;
-            int count = 1 ;
-            if ( tx < m_mod_32 )
-                count =m_mod_32- tx ;
-            else
-                count = m_mod_32 ;
-            for(j =0; j<count; j++)
-                SA[-j*ldsa] = (float)(A[-j*lda]);
-            
-            A-=(count-1)*lda;
-            SA-=(count-1)*ldsa;
-            count = 1 ;
-            for(; j<m_mod_32; j++) {
-                SA[-count] = (float)(A[-count]);
-                count++;
+            // either partial block-column or diagonal block
+            for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
+                if ( ind <= iby+j ) {
+                    tmp = A[j*lda];
+                    if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
+#if defined(PRECISION_z) || defined(PRECISION_c)
+                         || ((tmp) < neg_rmax) || ((tmp) > rmax)
+#endif
+                        )
+                    {
+                        flag = 1;
+                    }
+                    SA[j*ldsa] = (float)( tmp );
+                }
             }
         }
-        else {
-        }
-    }
-    else {
-        /* **************************************
-           -- All the blocks but the last one --
-           -- By the way this code can be optimized more.
-           **************************************        */
-        ind = blockIdx.x *  dgemv_bs + tx + m_mod_32 ;
-        A+= lda*(n-1)  ;
-        SA+= ldsa*(n-1)  ;
-
-        A += ind;
-        SA += ind;
-        A-= ty * lda  ;
-        SA-= ty * ldsa  ;
-
-        int break_d  = (n / dgemv_bs -   blockIdxx )* dgemv_bs ;
-        /*----------------------------
-          Go Left
-          -------------------------------*/
-        for(int  i=0; i<break_d; i += dgemv_bs ) {
-            #pragma unroll 8
-            for(int j=0; j < dgemv_bs ; j+=4)
-                SA[-j*ldsa] = (float)(A[-j*lda]);
-            
-            A-=lda* dgemv_bs ;
-            SA-=ldsa* dgemv_bs ;
-        }
     }
 }
 
 
-/*- ---------------------------------------------- UPLO = 'U' ----------------------------------*/
-/*Good Dimension*/
-__global__ void
-u_dlat2s_special (
-    int n,
-    const double *A, int lda,
-    float        *SA, 
-    magma_int_t *info, double RMAX, int ldsa )
-{
-    int tx = threadIdx.x ;
-    int ty = threadIdx.y ;
-    int ind = blockIdx.x*  dgemv_bs + tx ;
-
-    /*
-      Reverse Computation ...
-      - Left
-      - Triangle
-      - Up
-    */
-    A+= lda*(n-1) ;
-    SA+= ldsa*(n-1) ;
-
-    A += ind;
-    SA += ind;
-
-    A-= ty * lda  ;
-    SA-= ty * ldsa  ;
-
-    int break_d  = (n / dgemv_bs -   blockIdx.x )* dgemv_bs ;
-
-    for(int  i=0; i<break_d; i += dgemv_bs ) {
-        #pragma unroll 8
-        for(int j=0; j < dgemv_bs ; j+=4)
-            SA[-j*ldsa] = (float)(A[-j*lda]);
+/**
+    Purpose
+    -------
+    DLAT2S converts a double-real matrix, A,
+                 to a single-real matrix, SA.
+    
+    RMAX is the overflow for the single-real arithmetic.
+    DLAT2S checks that all the entries of A are between -RMAX and
+    RMAX. If not, the conversion is aborted and a flag is raised.
         
-        A-=lda* dgemv_bs ;
-        SA-=ldsa* dgemv_bs ;
-    }
-}
+    Arguments
+    ---------
+    @param[in]
+    uplo    magma_uplo_t
+            Specifies the part of the matrix A to be converted.
+      -     = MagmaUpper:      Upper triangular part
+      -     = MagmaLower:      Lower triangular part
+    
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix A.  n >= 0.
+    
+    @param[in]
+    A       DOUBLE PRECISION array, dimension (LDA,n)
+            On entry, the n-by-n coefficient matrix A.
+    
+    @param[in]
+    lda     INTEGER
+            The leading dimension of the array A.  LDA >= max(1,n).
+    
+    @param[out]
+    SA      SINGLE PRECISION array, dimension (LDSA,n)
+            On exit, if INFO=0, the n-by-n coefficient matrix SA;
+            if INFO > 0, the content of SA is unspecified.
+    
+    @param[in]
+    ldsa    INTEGER
+            The leading dimension of the array SA.  LDSA >= max(1,n).
+    
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit.
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+      -     = 1:  an entry of the matrix A is greater than the SINGLE PRECISION
+                  overflow threshold, in this case, the content
+                  of SA on exit is unspecified.
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
+    @ingroup magma_daux2
+    ********************************************************************/
 extern "C" void
-mdlat2s(
-    magma_uplo_t uplo, magma_int_t m,
-    const double *A,  magma_int_t lda,
-    float        *SA, magma_int_t ldsa,
-    magma_int_t *info)
+magmablas_dlat2s_q(
+    magma_uplo_t uplo, magma_int_t n,
+    const double *A, magma_int_t lda,
+    float *SA,       magma_int_t ldsa,
+    magma_int_t *info,
+    magma_queue_t queue )
 {
-    /*
-      Note:
-      The UPLO = 'U' Version can be optimized more.
-    */
-    double RMAX = (double)lapackf77_slamch("O");
-    int blocks;
-    if (m % dgemv_bs==0)
-        blocks = m/ dgemv_bs;
-    else
-        blocks = m/ dgemv_bs + 1;
-
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(32, 4, 1);
-
-    if ( m % dgemv_bs == 0 ) {
-        if ( uplo == MagmaLower) {
-            l_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa );
-        }
-        else {
-            u_dlat2s_special <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, info, RMAX, ldsa );
-        }
-
+    *info = 0;
+    if ( uplo != MagmaLower && uplo != MagmaUpper )
+        *info = -1;
+    else if ( n < 0 )
+        *info = -2;
+    else if ( lda < max(1,n) )
+        *info = -4;
+    else if ( ldsa < max(1,n) )
+        *info = -6;
+    
+    if (*info != 0) {
+        magma_xerbla( __func__, -(*info) );
+        return; //*info;
     }
-    else {
-        int  m_full_block = (m - m % 32 ) /32 ;
-        int  m_mod_32 = m%32 ;
-        if ( uplo == MagmaLower) {
-            l_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
-        }
-        else {
-            u_dlat2s_generic <<< grid, threads, 0, magma_stream >>> (m, A, lda, SA, m_full_block, m_mod_32, info, RMAX, ldsa );
-        }
+
+    /* quick return */
+    if ( n == 0 ) {
+        return;
     }
+    
+    double rmax = (double)lapackf77_slamch("O");
+
+    dim3 threads( BLK_X );
+    dim3 grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
+    
+    if (uplo == MagmaLower)
+        dlat2s_lower<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
+    else if (uplo == MagmaUpper)
+        dlat2s_upper<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
+    
+    cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }
 
 
-/*
-  Interface ..................................
-  Reproduced from dlansy routines...
-  How to deliver the info.
-*/
+/**
+    @see magmablas_dlat2s_q
+    @ingroup magma_daux2
+    ********************************************************************/
 extern "C" void
 magmablas_dlat2s(
     magma_uplo_t uplo, magma_int_t n,
-    const double *A,  magma_int_t lda,
-    float        *SA, magma_int_t ldsa,
-    magma_int_t *info)
+    const double *A, magma_int_t lda,
+    float *SA,       magma_int_t ldsa,
+    magma_int_t *info )
 {
-    /*
-      The routine converts a DOUBLE PRECISION triangular
-      matrix A (along with its block diagonal entries) to a SINGLE PRECISION 
-      triangular matrix SA (along with its block diagonal entries).
-    */
-    *info = 0;
-    mdlat2s( uplo, n, A, lda, SA, ldsa, info );
-    /*
-      int val = magma_idamax(n, WORK, 1);
-      double retVal[1];
-      cublasGetMatrix( 1, 1, sizeof( double ), WORK+val-1, 1, retVal, 1 ) ;
-      return retVal[0];
-    */
+    magmablas_dlat2s_q( uplo, n, A, lda, SA, ldsa, info, magma_stream );
 }
-
-#endif /*  (!defined(PRECISION_z)) || (GPUSHMEM >= 200) */

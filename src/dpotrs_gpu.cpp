@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zpotrs_gpu.cpp normal z -> d, Fri Jul 18 17:34:14 2014
+       @generated from zpotrs_gpu.cpp normal z -> d, Tue Sep  2 12:38:19 2014
 
 */
 #include "common_magma.h"
@@ -15,7 +15,7 @@
     -------
     DPOTRS solves a system of linear equations A*X = B with a symmetric
     positive definite matrix A using the Cholesky factorization
-    A = U**T*U or A = L*L**T computed by DPOTRF.
+    A = U**H*U or A = L*L**H computed by DPOTRF.
 
     Arguments
     ---------
@@ -36,7 +36,7 @@
     @param[in]
     dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
             The triangular factor U or L from the Cholesky factorization
-            A = U**T*U or A = L*L**T, as computed by DPOTRF.
+            A = U**H*U or A = L*L**H, as computed by DPOTRF.
 
     @param[in]
     ldda    INTEGER
@@ -88,20 +88,20 @@ magma_dpotrs_gpu(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
 
     if ( uplo == MagmaUpper ) {
         if ( nrhs == 1) {
-            magma_dtrsv(MagmaUpper, MagmaTrans, MagmaNonUnit, n, dA, ldda, dB, 1 );
+            magma_dtrsv(MagmaUpper, MagmaConjTrans, MagmaNonUnit, n, dA, ldda, dB, 1 );
             magma_dtrsv(MagmaUpper, MagmaNoTrans,   MagmaNonUnit, n, dA, ldda, dB, 1 );
         } else {
-            magma_dtrsm(MagmaLeft, MagmaUpper, MagmaTrans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb);
+            magma_dtrsm(MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb);
             magma_dtrsm(MagmaLeft, MagmaUpper, MagmaNoTrans,   MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb);
         }
     }
     else {
         if ( nrhs == 1) {
             magma_dtrsv(MagmaLower, MagmaNoTrans,   MagmaNonUnit, n, dA, ldda, dB, 1 );
-            magma_dtrsv(MagmaLower, MagmaTrans, MagmaNonUnit, n, dA, ldda, dB, 1 );
+            magma_dtrsv(MagmaLower, MagmaConjTrans, MagmaNonUnit, n, dA, ldda, dB, 1 );
         } else {
             magma_dtrsm(MagmaLeft, MagmaLower, MagmaNoTrans,   MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb);
-            magma_dtrsm(MagmaLeft, MagmaLower, MagmaTrans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb);
+            magma_dtrsm(MagmaLeft, MagmaLower, MagmaConjTrans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb);
         }
     }
 

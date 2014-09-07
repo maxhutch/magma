@@ -12,7 +12,6 @@
  */
 
 #include "common_magma.h"
-#include <cblas.h>
 
 #define PRECISION_z
  
@@ -60,14 +59,7 @@ magma_zlarfxsym(magma_int_t N, magmaDoubleComplex *A, magma_int_t LDA, magmaDoub
   /* X = AVtau */
   blasf77_zhemv("L",&N, TAU, A, &LDA, V, &IONE, &Z_ZERO, WORK, &IONE);
   /* je calcul dtmp= X'*V */
-#if defined(PRECISION_z) || defined(PRECISION_c)
-   dtmp = Z_ZERO;
-   for (magma_int_t j = 0; j < N; j++)
-      dtmp = dtmp + MAGMA_Z_CNJG(WORK[j]) * V[j];
-   //cblas_zdotc_sub(N, WORK, IONE, V, IONE, &dtmp);
-#else
-  dtmp = cblas_zdotc(N, WORK, IONE, V, IONE);
-#endif
+  dtmp = magma_cblas_zdotc(N, WORK, IONE, V, IONE);
   /* je calcul 1/2 X'*V*t = 1/2*dtmp*tau  */
   dtmp = -dtmp * Z_HALF * (*TAU);
   /* je calcul W=X-1/2VX'Vt = X - dtmp*V */

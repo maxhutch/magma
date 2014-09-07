@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__zblas.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -112,7 +115,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__zblas.html','');})
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga86577adff935aea09b8ece4a5d3ee630"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#ga86577adff935aea09b8ece4a5d3ee630">magma_zcuspmm</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix B, magma_z_sparse_matrix *AB)</td></tr>
-<tr class="memdesc:ga86577adff935aea09b8ece4a5d3ee630"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga86577adff935aea09b8ece4a5d3ee630">More...</a><br /></td></tr>
+<tr class="memdesc:ga86577adff935aea09b8ece4a5d3ee630"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to the cuSPARSE routine csrmm computing the product of two sparse matrices stored in csr format.  <a href="#ga86577adff935aea09b8ece4a5d3ee630">More...</a><br /></td></tr>
 <tr class="separator:ga86577adff935aea09b8ece4a5d3ee630"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga12bc778483f46edfa1015d3c0c0fc3d4"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#ga12bc778483f46edfa1015d3c0c0fc3d4">magma_zgecsrmv</a> (magma_trans_t transA, magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex *d_val, magma_index_t *d_rowptr, magma_index_t *d_colind, magmaDoubleComplex *d_x, magmaDoubleComplex beta, magmaDoubleComplex *d_y)</td></tr>
 <tr class="memdesc:ga12bc778483f46edfa1015d3c0c0fc3d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes y = alpha * A * x + beta * y on the GPU.  <a href="#ga12bc778483f46edfa1015d3c0c0fc3d4">More...</a><br /></td></tr>
@@ -186,9 +189,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>This is an interface to the cuSPARSE routine csrmm computing the product of two sparse matrices stored in csr format.</p>
+<p>This is an interface to the cuSPARSE routine csrmm computing the product of two sparse matrices stored in csr format. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix input matrix</td></tr>
@@ -1584,7 +1585,7 @@ vector product with GPUs", (CIT 2010), and modified to provide correct values.</
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

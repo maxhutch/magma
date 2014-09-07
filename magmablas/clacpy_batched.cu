@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlacpy_batched.cu normal z -> c, Fri Jul 18 17:34:12 2014
+       @generated from zlacpy_batched.cu normal z -> c, Tue Sep  2 12:38:15 2014
        @author Mark Gates
 */
 #include "common_magma.h"
-#include <assert.h>
 
 #define NB 64
 
@@ -103,15 +102,19 @@ clacpy_batched_kernel(
             The number of matrices to add; length of dAarray and dBarray.
             batchCount >= 0.
     
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_caux2
     ********************************************************************/
 extern "C" void
-magmablas_clacpy_batched(
+magmablas_clacpy_batched_q(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     const magmaFloatComplex * const *dAarray, magma_int_t ldda,
     magmaFloatComplex              **dBarray, magma_int_t lddb,
-    magma_int_t batchCount )
+    magma_int_t batchCount,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -143,7 +146,23 @@ magmablas_clacpy_batched(
         fprintf(stderr, "lacpy lower is not implemented\n");
     }
     else {
-        clacpy_batched_kernel<<< grid, threads, 0, magma_stream >>>(
+        clacpy_batched_kernel<<< grid, threads, 0, queue >>>(
             m, n, dAarray, ldda, dBarray, lddb );
     }
+}
+
+
+/**
+    @see magmablas_clacpy_batched_q
+    @ingroup magma_caux2
+    ********************************************************************/
+extern "C" void
+magmablas_clacpy_batched(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    const magmaFloatComplex * const *dAarray, magma_int_t ldda,
+    magmaFloatComplex              **dBarray, magma_int_t lddb,
+    magma_int_t batchCount )
+{
+    magmablas_clacpy_batched_q(
+        uplo, m, n, dAarray, ldda, dBarray, lddb, batchCount, magma_stream );
 }

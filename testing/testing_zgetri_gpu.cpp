@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -86,6 +86,9 @@ int main( int argc, char** argv )
             magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
             magma_zgetrf_gpu( N, N, d_A, ldda, ipiv, &info );
             magma_zgetmatrix( N, N, d_A, ldda, h_A, lda );
+            if ( info != 0 )
+                printf("magma_zgetrf_gpu returned error %d: %s.\n",
+                       (int) info, magma_strerror( info ));
             
             // check for exact singularity
             //h_A[ 10 + 10*lda ] = MAGMA_Z_MAKE( 0.0, 0.0 );
@@ -95,7 +98,7 @@ int main( int argc, char** argv )
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            magma_zgetri_gpu( N,    d_A, ldda, ipiv, dwork, ldwork, &info );
+            magma_zgetri_gpu( N, d_A, ldda, ipiv, dwork, ldwork, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
@@ -109,7 +112,7 @@ int main( int argc, char** argv )
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_zgetri( &N,     h_A, &lda, ipiv, work, &lwork, &info );
+                lapackf77_zgetri( &N, h_A, &lda, ipiv, work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
-       @generated from zgeqrf.cpp normal z -> d, Fri Jul 18 17:34:17 2014
+       @generated from zgeqrf.cpp normal z -> d, Tue Sep  2 12:38:21 2014
 
 */
 #include "common_magma.h"
@@ -18,7 +18,7 @@
     A = Q * R. This version does not require work space on the GPU
     passed as input. GPU memory is allocated in the routine.
 
-    If the current stream is NULL, this version replaces it with user defined
+    If the current stream is NULL, this version replaces it with a new
     stream to overlap computation with communication.
 
     Arguments
@@ -55,7 +55,7 @@
 
     @param[out]
     work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
@@ -154,16 +154,18 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
     }
 
     /* Define user stream if current stream is NULL */
-    magma_queue_t stream[2], current_stream;
-    magmablasGetKernelStream(&current_stream);
+    magma_queue_t stream[2];
+    
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     magma_queue_create( &stream[0] );
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_create( &stream[1] );
         magmablasSetKernelStream(stream[1]);
     }
     else {
-        stream[1] = current_stream;
+        stream[1] = orig_stream;
     }
 
     dwork = dA + n*ldda;
@@ -188,7 +190,7 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
                                         A(i,i),  lda, stream[0] );
 
                 /* Apply H' to A(i:m,i+2*ib:n) from the left */
-                magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                   m-old_i, n-old_i-2*old_ib, old_ib,
                                   dA(old_i, old_i),          ldda, dT,    nb,
                                   dA(old_i, old_i+2*old_ib), ldda, dwork, lddwork);
@@ -220,7 +222,7 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
             if (i + ib < n) {
                 if (i+ib < k-nb) {
                     /* Apply H' to A(i:m,i+ib:i+2*ib) from the left (look-ahead) */
-                    magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                    magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, ib, ib,
                                       dA(i, i   ), ldda, dT,    nb,
                                       dA(i, i+ib), ldda, dwork, lddwork);
@@ -229,7 +231,7 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
                 else {
                     /* After last panel, update whole trailing matrix. */
                     /* Apply H' to A(i:m,i+ib:n) from the left */
-                    magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                    magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, n-i-ib, ib,
                                       dA(i, i   ), ldda, dT,    nb,
                                       dA(i, i+ib), ldda, dwork, lddwork);
@@ -256,10 +258,10 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
     }
 
     magma_queue_destroy( stream[0] );
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_destroy( stream[1] );
-        magmablasSetKernelStream(NULL);
     }
+    magmablasSetKernelStream( orig_stream );
 
     magma_free( dA );
     

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zhetrd2_gpu.cpp normal z -> d, Fri Jul 18 17:34:18 2014
+       @generated from zhetrd2_gpu.cpp normal z -> d, Tue Sep  2 12:38:22 2014
 
 */
 #include "common_magma.h"
@@ -18,7 +18,7 @@
     -------
     DSYTRD2_GPU reduces a real symmetric matrix A to real symmetric
     tridiagonal form T by an orthogonal similarity transformation:
-    Q**T * A * Q = T.
+    Q**H * A * Q = T.
     This version passes a workspace that is used in an optimized
     GPU matrix-vector product.
 
@@ -83,7 +83,7 @@
 
     @param[out]
     work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER

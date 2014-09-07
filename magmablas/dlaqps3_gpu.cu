@@ -1,25 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlaqps3_gpu.cu normal z -> d, Fri Jul 18 17:34:12 2014
+       @generated from zlaqps3_gpu.cu normal z -> d, Tue Sep  2 12:38:15 2014
 
 */
 
 #include "common_magma.h"
+#include "commonblas_d.h"
 #include "magma_templates.h"
 
 #define PRECISION_d
 
 #define BLOCK_SIZE 512
-
-
-__global__ void magma_dgemv_kernel3(int m, const double * __restrict__ V, int ldv,
-                                    double *c, double *dwork,
-                                    double *tau);
 
 
 /* --------------------------------------------------------------------------- */
@@ -135,31 +131,6 @@ void magma_dscale_kernel(int n, double* dx0,
    /* === Make temporary the first element to 1; value is stored in dAkk === */
    if (i==0)
      dx0[0] = MAGMA_D_ONE;
-}
-
-
-__global__ void
-magma_dgemv_kernel1(int m, double *tau, const double * __restrict__ V, int ldv,
-                    const double * __restrict__ c,
-                    double *dwork)
-{
-        const int i = threadIdx.x;
-        const double *dV = V + (blockIdx.x) * ldv;
-
-        __shared__ double sum[ BLOCK_SIZE ];
-        double lsum;
-
-        /*  lsum := v' * C  */
-        lsum = MAGMA_D_ZERO;
-        for( int j = i; j < m; j += BLOCK_SIZE )
-           lsum += MAGMA_D_MUL( MAGMA_D_CNJG( dV[j] ), c[j] );
-
-        sum[i] = lsum;
-        magma_sum_reduce< BLOCK_SIZE >( i, sum );
-
-        __syncthreads();
-        if (i==0)
-           dwork [blockIdx.x] = (*tau)*sum[0];
 }
 
 
@@ -442,7 +413,7 @@ magma_dlaqps3_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
            Compute  F(K+1:N,K) := tau(K)*A(RK:M,K+1:N)'*A(RK:M,K) on the GPU */
         if (k < n-1) {
             magma_dgetvector( 1, &tau[k], 1, &tauk, 1 );
-            magmablas_dgemv( MagmaTrans, m-rk, n,
+            magma_dgemv( MagmaConjTrans, m-rk, n,
                          tauk,   A( rk,  0 ), lda,
                                  A( rk,  k   ), 1,
                          c_zero, auxv, 1 );
@@ -516,7 +487,7 @@ magma_dlaqps3_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
         i__1 = m - rk - 1;
         i__2 = n - *kb;
         
-        magma_dgemm( MagmaNoTrans, MagmaTrans, i__1, i__2, *kb,
+        magma_dgemm( MagmaNoTrans, MagmaConjTrans, i__1, i__2, *kb,
                      c_neg_one, A(rk+1, 0  ), lda,
                                 F(*kb,  0  ), ldf,
                      c_one,     A(rk+1, *kb), lda );

@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from ztranspose.cu normal z -> d, Fri Jul 18 17:34:12 2014
+       @generated from ztranspose.cu normal z -> d, Tue Sep  2 12:38:16 2014
 
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
-//#include "commonblas.h"
 
 #define PRECISION_d
 
@@ -100,9 +99,9 @@ dtranspose_kernel(
 /**
     Purpose
     -------
-    dtranspose_stream copies and transposes a matrix dA to matrix dAT.
+    dtranspose_q copies and transposes a matrix dA to matrix dAT.
     
-    Same as dtranspose, but adds stream argument.
+    Same as dtranspose, but adds queue argument.
         
     Arguments
     ---------
@@ -131,16 +130,16 @@ dtranspose_kernel(
             The leading dimension of the array dAT.  LDDAT >= N.
     
     @param[in]
-    stream  magma_queue_t
-            Stream to execute in.
+    queue   magma_queue_t
+            Queue to execute in.
     
     @ingroup magma_daux2
     ********************************************************************/
 extern "C" void
-magmablas_dtranspose_stream(
+magmablas_dtranspose_q(
     magma_int_t m, magma_int_t n,
     const double *dA,  magma_int_t ldda,
-    double       *dAT, magma_int_t lddat, magma_queue_t stream )
+    double       *dAT, magma_int_t lddat, magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -163,13 +162,13 @@ magmablas_dtranspose_stream(
 
     dim3 threads( NX, NY );
     dim3 grid( (m+NB-1)/NB, (n+NB-1)/NB );
-    dtranspose_kernel<<< grid, threads, 0, stream >>>
+    dtranspose_kernel<<< grid, threads, 0, queue >>>
         ( m, n, dA, ldda, dAT, lddat );
 }
 
 
 /**
-    @see magmablas_dtranspose_stream
+    @see magmablas_dtranspose_q
     @ingroup magma_daux2
     ********************************************************************/
 extern "C" void
@@ -178,5 +177,5 @@ magmablas_dtranspose(
     const double *dA,  magma_int_t ldda,
     double       *dAT, magma_int_t lddat )
 {
-    magmablas_dtranspose_stream( m, n, dA, ldda, dAT, lddat, magma_stream );
+    magmablas_dtranspose_q( m, n, dA, ldda, dAT, lddat, magma_stream );
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -11,38 +11,69 @@
 #include "common_magma.h"
 
 #define PRECISION_z
-#define blksize 64
+
+#define BLK_X 64
+#define BLK_Y 32
 
 // TODO get rid of global variable!
-static __device__ int flag = 0; 
+static __device__ int flag = 0;
 
-__global__ void 
-zlag2c_kernel( int m, int n, 
-               const magmaDoubleComplex *A, int lda, 
-               magmaFloatComplex *SA,       int ldsa, 
-               double rmax ) 
+
+/*
+    Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
+    Each block has BLK_X threads.
+    Each thread loops across one row, updating BLK_Y entries.
+    
+    Code similar to zlat2c and zlaset.
+*/
+__global__
+void zlag2c_kernel(
+    int m, int n,
+    const magmaDoubleComplex *A, int lda,
+    magmaFloatComplex *SA,       int ldsa,
+    double rmax )
 {
     magmaDoubleComplex tmp;
     double neg_rmax = - rmax;
     
-    int i = blockIdx.x*blksize + threadIdx.x;
-    if ( i < m ) {
-        A  += i;
-        SA += i; 
-        const magmaDoubleComplex *Aend = A + lda*n;
-        while( A < Aend ) {
-            tmp = *A;
-            if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
+    int iby = blockIdx.y*BLK_Y;
+    /* check if full block-column */
+    bool full = (iby + BLK_Y <= n);
+    /* do only rows inside matrix */
+    if ( ind < m ) {
+        A  += ind + iby*lda;
+        SA += ind + iby*ldsa;
+        if ( full ) {
+            // full block-column
+            #pragma unroll
+            for( int j=0; j < BLK_Y; ++j ) {
+                tmp = A[j*lda];
+                if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
 #if defined(PRECISION_z) || defined(PRECISION_c)
-                || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax) 
+                    || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
 #endif
-                )
-            {
-                flag = 1; 
+                    )
+                {
+                    flag = 1;
+                }
+                SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
             }
-            *SA = cuComplexDoubleToFloat( tmp );
-            A  += lda;
-            SA += ldsa;
+        }
+        else {
+            // partial block-column
+            for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
+                tmp = A[j*lda];
+                if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
+#if defined(PRECISION_z) || defined(PRECISION_c)
+                    || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
+#endif
+                    )
+                {
+                    flag = 1;
+                }
+                SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
+            }
         }
     }
 }
@@ -51,12 +82,14 @@ zlag2c_kernel( int m, int n,
 /**
     Purpose
     -------
-    ZLAG2C converts a double-complex matrix, A,
-                 to a single-complex matrix, SA.
+    ZLAG2C_STREAM converts a double-complex matrix, A,
+                        to a single-complex matrix, SA.
     
     RMAX is the overflow for the single-complex arithmetic.
     ZLAG2C checks that all the entries of A are between -RMAX and
     RMAX. If not, the conversion is aborted and a flag is raised.
+    
+    This is the same as ZLAG2C, but adds queue argument.
         
     Arguments
     ---------
@@ -78,8 +111,8 @@ zlag2c_kernel( int m, int n,
     
     @param[out]
     SA      COMPLEX array, dimension (LDSA,n)
-            On exit, if INFO=0, the m-by-n coefficient matrix SA; if
-            INFO>0, the content of SA is unspecified.
+            On exit, if INFO=0, the m-by-n coefficient matrix SA;
+            if INFO > 0, the content of SA is unspecified.
     
     @param[in]
     ldsa    INTEGER
@@ -91,15 +124,21 @@ zlag2c_kernel( int m, int n,
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
       -     = 1:  an entry of the matrix A is greater than the COMPLEX
                   overflow threshold, in this case, the content
-                  of SA in exit is unspecified.
+                  of SA on exit is unspecified.
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zaux2
     ********************************************************************/
-extern "C" void 
-magmablas_zlag2c( magma_int_t m, magma_int_t n, 
-                  const magmaDoubleComplex *A, magma_int_t lda, 
-                  magmaFloatComplex *SA,       magma_int_t ldsa, 
-                  magma_int_t *info ) 
+extern "C" void
+magmablas_zlag2c_q(
+    magma_int_t m, magma_int_t n,
+    const magmaDoubleComplex *A, magma_int_t lda,
+    magmaFloatComplex *SA,       magma_int_t ldsa,
+    magma_int_t *info,
+    magma_queue_t queue )
 {
     *info = 0;
     if ( m < 0 )
@@ -123,9 +162,26 @@ magmablas_zlag2c( magma_int_t m, magma_int_t n,
     
     double rmax = (double)lapackf77_slamch("O");
 
-    dim3 threads( blksize );
-    dim3 grid( (m+blksize-1)/blksize );
+    dim3 threads( BLK_X );
+    dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    zlag2c_kernel<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, SA, ldsa, rmax ); 
+    
+    zlag2c_kernel<<< grid, threads, 0, queue >>>( m, n, A, lda, SA, ldsa, rmax );
+    
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
+}
+
+
+/**
+    @see magmablas_zlag2c_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zlag2c(
+    magma_int_t m, magma_int_t n,
+    const magmaDoubleComplex *A, magma_int_t lda,
+    magmaFloatComplex *SA,       magma_int_t ldsa,
+    magma_int_t *info )
+{
+    magmablas_zlag2c_q( m, n, A, lda, SA, ldsa, info, magma_stream );
 }

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from dsygvdx_m.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dsygvdx_m.cpp normal d -> s, Tue Sep  2 12:38:24 2014
 
 */
 #include "common_magma.h"
@@ -66,7 +66,7 @@
             The order of the matrices A and B.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX_16 array, dimension (LDA, N)
+    A       REAL array, dimension (LDA, N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
@@ -87,7 +87,7 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[in,out]
-    B       COMPLEX_16 array, dimension (LDB, N)
+    B       REAL array, dimension (LDB, N)
             On entry, the symmetric matrix B.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of B contains the
             upper triangular part of the matrix B.  If UPLO = MagmaLower,
@@ -129,25 +129,26 @@
             If INFO = 0, the eigenvalues in ascending order.
 
     @param[out]
-    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+    work    (workspace) REAL array, dimension (MAX(1,LWORK))
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= N + 1.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= 2*N*nb + N**2.
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
+            If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
+            NB can be obtained through magma_get_ssytrd_nb(N).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
-            only calculates the optimal sizes of the WORK, RWORK and
+            only calculates the optimal sizes of the WORK and
             IWORK arrays, returns these values as the first entries of
-            the WORK, RWORK and IWORK arrays, and no error message
-            related to LWORK or LRWORK or LIWORK is issued by XERBLA.
+            the WORK and IWORK arrays, and no error message
+            related to LWORK or LIWORK is issued by XERBLA.
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -157,10 +158,10 @@
             If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
-            routine only calculates the optimal sizes of the WORK, RWORK
+            routine only calculates the optimal sizes of the WORK
             and IWORK arrays, returns these values as the first entries
-            of the WORK, RWORK and IWORK arrays, and no error message
-            related to LWORK or LRWORK or LIWORK is issued by XERBLA.
+            of the WORK and IWORK arrays, and no error message
+            related to LWORK or LIWORK is issued by XERBLA.
 
     @param[out]
     info    INTEGER
@@ -255,7 +256,7 @@ magma_ssygvdx_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_ra
         liwmin = 1;
     }
     else if ( wantz ) {
-        lwmin  = 1 + 6*n + 2*n*n;
+        lwmin  = max( 2*n + n*nb, 1 + 6*n + 2*n*n );
         liwmin = 3 + 5*n;
     }
     else {

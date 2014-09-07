@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgemm_fermi.cu normal z -> s, Fri Jul 18 17:34:13 2014
+       @generated from zgemm_fermi.cu normal z -> s, Tue Sep  2 12:38:17 2014
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -19,7 +19,6 @@
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
-#include <assert.h>
 
 #define PRECISION_s
 
@@ -38,7 +37,7 @@
     
     where op( X ) is one of
     
-        op( X ) = X   or   op( X ) = X**T   or   op( X ) = X**T,
+        op( X ) = X   or   op( X ) = X**T   or   op( X ) = X**H,
     
     alpha and beta are scalars, and A, B and C are matrices, with
     op( A ) an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
@@ -51,7 +50,7 @@
             the matrix multiplication as follows:
       -     = 'N':  op( A ) = A.
       -     = 'T':  op( A ) = A**T.
-      -     = 'C':  op( A ) = A**T.
+      -     = 'C':  op( A ) = A**H.
     
     @param[in]
     TRANSB  CHARACTER*1.
@@ -59,7 +58,7 @@
             the matrix multiplication as follows:
       -     = 'N':  op( B ) = B.
       -     = 'T':  op( B ) = B**T.
-      -     = 'C':  op( B ) = B**T.
+      -     = 'C':  op( B ) = B**H.
     
     @param[in]
     m       INTEGER.
@@ -143,9 +142,9 @@ magmablas_sgemm(
     float *d_C, magma_int_t ldc )
 {
     magma_int_t info = 0;
-    if      ( TRANSA != MagmaNoTrans && TRANSA != MagmaTrans && TRANSA != Magma_ConjTrans )
+    if      ( TRANSA != MagmaNoTrans && TRANSA != MagmaTrans && TRANSA != MagmaConjTrans )
         info = -1;
-    else if ( TRANSB != MagmaNoTrans && TRANSB != MagmaTrans && TRANSB != Magma_ConjTrans )
+    else if ( TRANSB != MagmaNoTrans && TRANSB != MagmaTrans && TRANSB != MagmaConjTrans )
         info = -2;
     else if ( m < 0 )
         info = -3;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgeqrf_mgpu.cpp normal z -> d, Fri Jul 18 17:34:17 2014
+       @generated from zgeqrf_mgpu.cpp normal z -> d, Tue Sep  2 12:38:21 2014
 
 */
 #include "common_magma.h"
@@ -89,12 +89,6 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
     magma_int_t lhwork, lwork;
     magma_int_t panel_dev, i_local, i_nb_local, n_local[MagmaMaxGPUs], la_dev, dpanel_offset;
 
-    magma_queue_t cqueue;
-    magmablasGetKernelStream( &cqueue );
-    
-    magma_device_t cdevice;
-    magma_getdevice( &cdevice );
-
     *info = 0;
     if (m < 0) {
         *info = -1;
@@ -111,6 +105,11 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
     min_mn = min(m,n);
     if (min_mn == 0)
         return *info;
+
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     nb = magma_get_dgeqrf_nb( m );
 
@@ -233,7 +232,7 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
                         // If not last panel,
                         // for look-ahead panel, apply H' to A(i:m,i+ib:i+2*ib)
                         i_nb_local = (i+nb)/(nb*num_gpus)*nb;
-                        magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                        magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                           rows, ib, ib,
                                           dpanel[dev],             ldda,       // V
                                           dwork[dev],              lddwork,    // T
@@ -241,7 +240,7 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
                                           dwork[dev]+ib,           lddwork );  // work
                         magma_event_record( panel_event[dev], stream[dev][0] );
                         // for trailing matrix, apply H' to A(i:m,i+2*ib:n)
-                        magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                        magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                           rows, n_local[dev]-(i_nb_local+ib), ib,
                                           dpanel[dev],                ldda,       // V
                                           dwork[dev],                 lddwork,    // T
@@ -254,7 +253,7 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
                         if (dev <= panel_dev) {
                             i_nb_local += ib;
                         }
-                        magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                        magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                           rows, n_local[dev]-i_nb_local, ib,
                                           dpanel[dev],             ldda,       // V
                                           dwork[dev],              lddwork,    // T
@@ -310,17 +309,16 @@ magma_dgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
 
 CLEANUP:
     // free(NULL) does nothing.
-    // check that queues and events are non-zero before destroying them, though.
     for( dev=0; dev < num_gpus; dev++ ) {
         magma_setdevice( dev );
-        if ( stream[dev][0]   ) { magma_queue_destroy( stream[dev][0]   ); }
-        if ( stream[dev][1]   ) { magma_queue_destroy( stream[dev][1]   ); }
-        if ( panel_event[dev] ) { magma_event_destroy( panel_event[dev] ); }
+        magma_queue_destroy( stream[dev][0]   );
+        magma_queue_destroy( stream[dev][1]   );
+        magma_event_destroy( panel_event[dev] );
         magma_free( dwork[dev] );
     }
     magma_free_pinned( hwork );
-    magma_setdevice( cdevice );
-    magmablasSetKernelStream( cqueue );
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_dgeqrf2_mgpu */

@@ -24,6 +24,7 @@ Sparse routines have recently been added as a beta release, in the sparse-iter
 directory. We would appreciate any feedback that you may have on them.
 
  1.5.0
+       - final:  Aug   30, 2014
        - beta 3: July  18, 2014
        - beta 2: May   30, 2014
        - beta 1: April 25, 2014
@@ -38,8 +39,15 @@ directory. We would appreciate any feedback that you may have on them.
     * Changed laset interface to match LAPACK.
     * Fixed memory access bug in transpose, and changed interface to match LAPACK.
     * Fixed memory access bugs in lanhe/lansy, zlag2c, clag2z, dlag2s, slag2d,
-      trsm (trtri_diag).
+      zlat2c, dlat2s, trsm (trtri_diag).
+    * Added clat2z, slat2d.
+    * Added upper & lower cases in lacpy.
     * Fixed unmql/ormql for rectangular matrices.
+    * Allow compiling without Fortran, but then testers have reduced functionality.
+    * Added wrappers for CPU BLAS asum, nrm2, dotu, dotc, dot. This isolates
+      the dependence on CBLAS to src/cblas*.cpp.
+    * Added queue/stream interfaces for many MAGMABLAS routines, using _q suffix.
+      These take magma_queue_t, which is a wrapper around CUDA stream.
     * Updated documentation to doxygen format.
 
  1.4.1 - final:  December 17, 2013

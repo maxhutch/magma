@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
        @precisions normal d -> s
 */
 #include "common_magma.h"
-#include <cblas.h>
 
 // Version 1 is LAPACK dlaln2. This is not thread safe.
 // Version 2 is MAGMA  dlaln2, which is exactly the same, but thread safe.
@@ -57,7 +56,7 @@
             The order of the matrix T.  N >= 0.
 
     @param[in]
-    T       COMPLEX_16 array, dimension (LDT,N)
+    T       DOUBLE PRECISION array, dimension (LDT,N)
             The triangular matrix T.  The leading n by n
             upper triangular part of the array T contains the upper
             triangular matrix, and the strictly lower triangular part of
@@ -68,7 +67,7 @@
             The leading dimension of the array T.  LDT >= max (1,N).
 
     @param[out]
-    x       COMPLEX_16 array, dimension (LDX,1) or (LDX,2).
+    x       DOUBLE PRECISION array, dimension (LDX,1) or (LDX,2).
             On exit, X is overwritten by the solution vector x.
             If LAMBDAI .EQ. 0, X is real    and has dimension (LDX,1).
             If LAMBDAI .NE. 0, X is complex and has dimension (LDX,2);
@@ -457,7 +456,7 @@ magma_int_t magma_dlaqtrsd(
                     }
 
                     len = j-1;
-                    *x(j,0) -= cblas_ddot( len, T(1,j), ione, x(1,0), ione );
+                    *x(j,0) -= magma_cblas_ddot( len, T(1,j), ione, x(1,0), ione );
 
                     // Solve [ T(j,j)-wr ]**T * x = b
                     #if VERSION == 1
@@ -495,8 +494,8 @@ magma_int_t magma_dlaqtrsd(
                     }
 
                     len = j-1;
-                    *x(j,  0) -= cblas_ddot( len, T(1,j  ), ione, x(1,0), ione );
-                    *x(j+1,0) -= cblas_ddot( len, T(1,j+1), ione, x(1,0), ione );
+                    *x(j,  0) -= magma_cblas_ddot( len, T(1,j),   ione, x(1,0), ione );
+                    *x(j+1,0) -= magma_cblas_ddot( len, T(1,j+1), ione, x(1,0), ione );
 
                     // Solve
                     // [T(j,j)-wr   T(j,j+1)     ]**T * x = scale*( WORK1 )
@@ -583,8 +582,8 @@ magma_int_t magma_dlaqtrsd(
                     }
 
                     len = j-2;
-                    *x(j,0) -= cblas_ddot( len, T(2,j), ione, x(2,0), ione );
-                    *x(j,1) -= cblas_ddot( len, T(2,j), ione, x(2,1), ione );
+                    *x(j,0) -= magma_cblas_ddot( len, T(2,j), ione, x(2, 0), ione );
+                    *x(j,1) -= magma_cblas_ddot( len, T(2,j), ione, x(2, 1), ione );
 
                     // Solve [ T(j,j)-(wr-i*wi) ]*(W11+i*W12)= WK+i*WK2
                     tmp = -wi;
@@ -626,10 +625,10 @@ magma_int_t magma_dlaqtrsd(
                     }
 
                     len = j-2;
-                    *x(j,  0) -= cblas_ddot( len, T(2,j  ), ione, x(2,0), ione );
-                    *x(j,  1) -= cblas_ddot( len, T(2,j  ), ione, x(2,1), ione );
-                    *x(j+1,0) -= cblas_ddot( len, T(2,j+1), ione, x(2,0), ione );
-                    *x(j+1,1) -= cblas_ddot( len, T(2,j+1), ione, x(2,1), ione );
+                    *x(j,  0) -= magma_cblas_ddot( len, T(2,j),   ione, x(2,0), ione );
+                    *x(j,  1) -= magma_cblas_ddot( len, T(2,j),   ione, x(2,1), ione );
+                    *x(j+1,0) -= magma_cblas_ddot( len, T(2,j+1), ione, x(2,0), ione );
+                    *x(j+1,1) -= magma_cblas_ddot( len, T(2,j+1), ione, x(2,1), ione );
 
                     // Solve 2-by-2 complex linear equation
                     // [ (T(j,j)   T(j,j+1)  )**T - (wr-i*wi)*i ]*W = scale*B

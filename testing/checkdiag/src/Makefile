@@ -1,14 +1,13 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
-#MAGMA_DIR = ../../..
-include ../../../make.inc
-#include Makefile.ig2 
+MAGMA_DIR = ../../..
+include $(MAGMA_DIR)/Makefile.internal
 
 LIBNAME = ../lib/libcheck.a
 lib: $(LIBNAME)
@@ -19,20 +18,6 @@ $(LIBNAME): $(ALLOBJ)
 	$(ARCH) $(ARCHFLAGS) $@ $(ALLOBJ)
 	$(RANLIB) $@
 
-
-
-.SUFFIXES: .c .o
-.SUFFIXES: .f .o
-.SUFFIXES: .F .o
-
-.c.o:
-	$(CC) $(OPTS) $(INC) -c $*.c
-
-.f.o:
-	$(FORT) -O3 -m64 -fPIC  $(INC) -c $*.f
-
-.F.o:
-	$(FORT) $(FOPTS) $(INC) -c $*.F
 
 #///////////////////////////////////////////////////////////////////////////////////////////////////
 

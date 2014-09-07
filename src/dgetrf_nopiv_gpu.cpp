@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgetrf_nopiv_gpu.cpp normal z -> d, Fri Jul 18 17:34:15 2014
+       @generated from zgetrf_nopiv_gpu.cpp normal z -> d, Tue Sep  2 12:38:19 2014
 
 */
 #include "common_magma.h"
@@ -119,16 +119,18 @@ magma_dgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
         }
 
         /* Define user stream if current stream is NULL */
-        cudaStream_t stream[2], current_stream;
-        magmablasGetKernelStream(&current_stream);
+        magma_queue_t stream[2];
+        
+        magma_queue_t orig_stream;
+        magmablasGetKernelStream( &orig_stream );
 
         magma_queue_create( &stream[0] );
-        if (current_stream == NULL) {
+        if (orig_stream == NULL) {
             magma_queue_create( &stream[1] );
             magmablasSetKernelStream(stream[1]);
         }
         else {
-            stream[1] = current_stream;
+            stream[1] = orig_stream;
         }
 
         for( i=0; i < s; i++ ) {
@@ -207,10 +209,10 @@ magma_dgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
         magma_free_pinned( work );
 
         magma_queue_destroy( stream[0] );
-        if (current_stream == NULL) {
+        if (orig_stream == NULL) {
             magma_queue_destroy( stream[1] );
-            magmablasSetKernelStream(NULL);
         }
+        magmablasSetKernelStream( orig_stream );
     }
 
     return *info;

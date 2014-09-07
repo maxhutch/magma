@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zcgetrs_gpu.cpp mixed zc -> ds, Fri Jul 18 17:34:14 2014
+       @generated from zcgetrs_gpu.cpp mixed zc -> ds, Tue Sep  2 12:38:19 2014
 
 */
 #include "common_magma.h"
@@ -14,7 +14,7 @@
     Purpose
     -------
     DSGETRS solves a system of linear equations
-       A * X = B,  A**T * X = B,  or  A**T * X = B
+       A * X = B,  A**T * X = B,  or  A**H * X = B
     with a general N-by-N matrix A using the LU factorization computed
     by MAGMA_SGETRF_GPU. B and X are in DOUBLE PRECISION, and A is in SINGLE PRECISION.
     This routine is used in the mixed precision iterative solver
@@ -27,7 +27,7 @@
             Specifies the form of the system of equations:
       -     = MagmaNoTrans:    A * X = B     (No transpose)
       -     = MagmaTrans:      A**T * X = B  (Transpose)
-      -     = MagmaTrans:  A**T * X = B  (Conjugate transpose)
+      -     = MagmaConjTrans:  A**H * X = B  (Conjugate transpose)
 
     @param[in]
     n       INTEGER
@@ -97,7 +97,7 @@ magma_dsgetrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
     *info = 0;
     if ( (! notran) &&
          (trans != MagmaTrans) &&
-         (trans != MagmaTrans) ) {
+         (trans != MagmaConjTrans) ) {
         *info = -1;
     } else if (n < 0) {
         *info = -2;
@@ -148,7 +148,7 @@ magma_dsgetrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
         /* Cast the DOUBLE PRECISION RHS to SINGLE PRECISION */
         magmablas_dlag2s( n, nrhs, dB, lddb, dSX, n, info );
         
-        /* Solve A**T * X = B, or A**T * X = B */
+        /* Solve A**T * X = B, or A**H * X = B */
         magma_strsm( MagmaLeft, MagmaUpper, trans, MagmaNonUnit,
                      n, nrhs, c_one, dA, ldda, dSX, n );
         magma_strsm( MagmaLeft, MagmaLower, trans, MagmaUnit,

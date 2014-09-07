@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -128,13 +128,13 @@
 
     @param[out]
     work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N * (NB + 2).
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + 2*N + N*NB.
             If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 1 + 6*N + 2*N**2.
             where LQ2 is the size needed to store the Q2 matrix
             and is returned by magma_bulge_get_lq2.
@@ -147,7 +147,7 @@
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -264,10 +264,10 @@ magma_dsygvdx_2stage(magma_int_t itype, magma_vec_t jobz, magma_range_t range, m
     magma_int_t lq2 = magma_dbulge_get_lq2(n, parallel_threads);
 
     if (wantz) {
-        lwmin = lq2 + 1 + 6*n + 2*n*n;
+        lwmin  = lq2 + 1 + 6*n + 2*n*n;
         liwmin = 3 + 5*n;
     } else {
-        lwmin = n * (nb + 2);
+        lwmin  = 2*n + n*nb;
         liwmin = 1;
     }
 

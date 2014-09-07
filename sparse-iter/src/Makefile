@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/src
@@ -29,20 +29,13 @@ ZSRC += \
 	zbicgstab_merge.cpp	\
 	zbicgstab_merge2.cpp	\
 	ziterref.cpp		\
-	zgmres.cpp		\
 	zjacobi.cpp		\
 	zbaiter.cpp 	        \
 	zpcg.cpp		\
-        zpbicgstab.cpp		\
-        zpgmres.cpp		\
-#	ziterref.cpp		\
-#	zcg_merge.cpp		\
-#	zgmres.cpp		\
-#	zpbicgstab.cpp		\
-#	zpgmres.cpp		\
-#	zgmres_pipe.cpp		\
-#	zilucg.cpp		\
-#	zilugmres.cpp		\
+ 	zgmres.cpp	\
+	zpgmres.cpp	\
+ 	zpbicgstab.cpp		\
+
 
 # Krylov space eigen-solvers
 ZSRC += \
@@ -67,11 +60,9 @@ ZSRC += \
 
 # ILU and sparse direct
 ZSRC += \
-	zbcsrlu.cpp		\
-    	zcuilu.cpp		\
-    	zbailu.cpp		\
-    	zpastix.cpp     	\
-#	zilu.cpp		\
+    zcuilu.cpp          \
+	zpastix.cpp     	\
+
 
 
 # orthogonalization schemes
@@ -84,6 +75,8 @@ ZSRC += \
 # Wrappers, tools etc
 ZSRC += \
 	magma_z_precond_wrapper.cpp \
+	magma_z_solver_wrapper.cpp \
+    magma_zcuspmm.cpp   \
 	zresidual.cpp		\
 
 
@@ -98,9 +91,13 @@ ALLOBJ := $(ALLSRC:.cpp=.o) $(ALLSRC_F:.f=.o)
 
 all: $(LIBMAGMA_SPARSE)
 
-$(LIBMAGMA_SPARSE): $(ALLOBJ)
+$(LIBMAGMA_SPARSE): $(ALLOBJ) stamp
 	$(ARCH) $(ARCHFLAGS) $@ $(ALLOBJ)
 	$(RANLIB) $@
+
+# this forces LIBMAGMA to be archived
+stamp: $(ALLHDR) $(ALLOBJ)
+	touch $@
 
 clean:
 	rm -f *.o *~ *.linkinfo

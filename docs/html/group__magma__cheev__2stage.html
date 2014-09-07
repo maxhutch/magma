@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__cheev__2stage.html','');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -337,7 +340,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX array, dimension (LDA,N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements above the band diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors; if UPLO = MagmaLower, the the Lower band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements below the band-diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors. See Further Details.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>COMPLEX array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>COMPLEX array on the GPU, dimension N*NB, where NB is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
@@ -494,7 +497,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX array, dimension (LDA,N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements above the band diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors; if UPLO = MagmaLower, the the Lower band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements below the band-diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors. See Further Details.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>COMPLEX array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>COMPLEX array on the GPU, dimension N*NB, where NB is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
@@ -651,7 +654,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX array, dimension (LDA,N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements above the band diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors; if UPLO = MagmaLower, the the Lower band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements below the band-diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors. See Further Details.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>COMPLEX array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>COMPLEX array on the GPU, dimension N*NB, where NB is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
@@ -852,9 +855,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CUNMQR_GPU overwrites the general complex M-by-N matrix C with. </p>
-<pre class="fragment">                SIDE = MagmaLeft     SIDE = MagmaRight
-TRANS = MagmaNoTrans:      Q * C          C * Q
-TRANS = MagmaTrans:      Q**H * C       C * Q**H
+<pre class="fragment">                           SIDE = MagmaLeft    SIDE = MagmaRight
+TRANS = MagmaNoTrans:      Q * C               C * Q
+TRANS = Magma_ConjTrans:   Q**H * C            C * Q**H
 </pre><p>where Q is a complex unitary matrix defined as the product of k elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by CGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -866,7 +869,7 @@ TRANS = MagmaTrans:      Q**H * C       C * Q**H
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Transpose, apply Q**H.</li>
+<li>= Magma_ConjTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -894,7 +897,7 @@ TRANS = MagmaTrans:      Q**H * C       C * Q**H
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:43 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:48 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

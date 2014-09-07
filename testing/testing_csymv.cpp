@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        Note: [ds] precisions generated from testing_chemv.cu
        
-       @generated from testing_zsymv.cpp normal z -> c, Fri Jul 18 17:34:22 2014
+       @generated from testing_zsymv.cpp normal z -> c, Tue Sep  2 12:38:27 2014
 */
 #include <stdlib.h>
 #include <stdio.h>

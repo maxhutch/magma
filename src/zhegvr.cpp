@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
     
        @author Raffaele Solca
     
@@ -204,7 +204,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (LWORK)
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -220,7 +220,7 @@
 
     @param[out]
     rwork   (workspace) DOUBLE PRECISION array, dimension (LRWORK)
-            On exit, if INFO = 0, RWORK(1) returns the optimal
+            On exit, if INFO = 0, RWORK[0] returns the optimal
             (and minimal) LRWORK.
 
     @param[in]
@@ -234,7 +234,7 @@
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (LIWORK)
-            On exit, if INFO = 0, IWORK(1) returns the optimal
+            On exit, if INFO = 0, IWORK[0] returns the optimal
             (and minimal) LIWORK.
 
     @param[in]

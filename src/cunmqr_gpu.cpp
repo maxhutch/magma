@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zunmqr_gpu.cpp normal z -> c, Fri Jul 18 17:34:17 2014
+       @generated from zunmqr_gpu.cpp normal z -> c, Tue Sep  2 12:38:21 2014
 
 */
 #include "common_magma.h"
@@ -19,9 +19,9 @@
     CUNMQR_GPU overwrites the general complex M-by-N matrix C with
 
     @verbatim
-                            SIDE = MagmaLeft     SIDE = MagmaRight
-    TRANS = MagmaNoTrans:   Q * C                C * Q
-    TRANS = MagmaTrans:     Q**H * C             C * Q**H
+                               SIDE = MagmaLeft    SIDE = MagmaRight
+    TRANS = MagmaNoTrans:      Q * C               C * Q
+    TRANS = Magma_ConjTrans:   Q**H * C            C * Q**H
     @endverbatim
 
     where Q is a complex unitary matrix defined as the product of k
@@ -41,8 +41,8 @@
 
     @param[in]
     trans   magma_trans_t
-      -     = MagmaNoTrans:  No transpose, apply Q;
-      -     = MagmaTrans:    Transpose, apply Q**H.
+      -     = MagmaNoTrans:    No transpose, apply Q;
+      -     = Magma_ConjTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -163,7 +163,7 @@ magma_cunmqr_gpu(magma_side_t side, magma_trans_t trans,
     
     if ( ! left && side != MagmaRight ) {
         *info = -1;
-    } else if ( ! notran && trans != MagmaConjTrans ) {
+    } else if ( ! notran && trans != Magma_ConjTrans ) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -325,7 +325,7 @@ magma_cunmqr_gpu(magma_side_t side, magma_trans_t trans,
 
     // TODO: cgeqrs_gpu ASSUMES that hwork contains the last block of A and C.
     // That needs to be fixed, but until then, don't modify hwork[0] here.
-    // In LAPACK: On exit, if INFO = 0, HWORK(1) returns the optimal LWORK.
+    // In LAPACK: On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.
     //hwork[0] = MAGMA_C_MAKE( lwkopt, 0 );
     return *info;
 } /* magma_cunmqr_gpu */

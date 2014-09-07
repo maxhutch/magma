@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 */
@@ -32,6 +32,7 @@ extern "C" {
 #define blasf77_zgeru      FORTRAN_NAME( zgeru,  ZGERU  )
 #define blasf77_zhemm      FORTRAN_NAME( zhemm,  ZHEMM  )
 #define blasf77_zhemv      FORTRAN_NAME( zhemv,  ZHEMV  )
+#define blasf77_zher       FORTRAN_NAME( zher,   ZHER   )
 #define blasf77_zher2      FORTRAN_NAME( zher2,  ZHER2  )
 #define blasf77_zher2k     FORTRAN_NAME( zher2k, ZHER2K )
 #define blasf77_zherk      FORTRAN_NAME( zherk,  ZHERK  )
@@ -41,6 +42,9 @@ extern "C" {
 #define blasf77_zsymm      FORTRAN_NAME( zsymm,  ZSYMM  )
 #define blasf77_zsyr2k     FORTRAN_NAME( zsyr2k, ZSYR2K )
 #define blasf77_zsyrk      FORTRAN_NAME( zsyrk,  ZSYRK  )
+#define blasf77_zrotg      FORTRAN_NAME( zrotg,  ZROTG  )
+#define blasf77_zrot       FORTRAN_NAME( zrot,   ZROT   )
+#define blasf77_zdrot      FORTRAN_NAME( zdrot,  ZDROT  )
 #define blasf77_ztrmm      FORTRAN_NAME( ztrmm,  ZTRMM  )
 #define blasf77_ztrmv      FORTRAN_NAME( ztrmv,  ZTRMV  )
 #define blasf77_ztrsm      FORTRAN_NAME( ztrsm,  ZTRSM  )
@@ -60,6 +64,7 @@ extern "C" {
 #define lapackf77_zgebal   FORTRAN_NAME( zgebal, ZGEBAL )
 #define lapackf77_zgebd2   FORTRAN_NAME( zgebd2, ZGEBD2 )
 #define lapackf77_zgebrd   FORTRAN_NAME( zgebrd, ZGEBRD )
+#define lapackf77_zgbbrd   FORTRAN_NAME( zgbbrd, ZGBBRD )
 #define lapackf77_zgeev    FORTRAN_NAME( zgeev,  ZGEEV  )
 #define lapackf77_zgehd2   FORTRAN_NAME( zgehd2, ZGEHD2 )
 #define lapackf77_zgehrd   FORTRAN_NAME( zgehrd, ZGEHRD )
@@ -214,6 +219,12 @@ void blasf77_zhemv(  const char *uplo,
                      const magmaDoubleComplex *beta,
                            magmaDoubleComplex *y, const magma_int_t *incy );
 
+void blasf77_zher(   const char *uplo,
+                     const magma_int_t *n,
+                     const double *alpha,
+                     const magmaDoubleComplex *x, const magma_int_t *incx,
+                           magmaDoubleComplex *A, const magma_int_t *lda );
+
 void blasf77_zher2(  const char *uplo,
                      const magma_int_t *n,
                      const magmaDoubleComplex *alpha,
@@ -272,6 +283,19 @@ void blasf77_zsyrk(  const char *uplo, const char *trans,
                      const magmaDoubleComplex *beta,
                            magmaDoubleComplex *C, const magma_int_t *ldc );
 
+void blasf77_zrotg(  magmaDoubleComplex* ca, const magmaDoubleComplex* cb,
+                     double* c, magmaDoubleComplex* s );
+                     
+void blasf77_zrot(   const magma_int_t* n,
+                     magmaDoubleComplex* x, const magma_int_t* incx,
+                     magmaDoubleComplex* y, const magma_int_t* incy,
+                     const double* c, const magmaDoubleComplex* s );
+                     
+void blasf77_zdrot(  const magma_int_t* n,
+                     magmaDoubleComplex* x, const magma_int_t* incx,
+                     magmaDoubleComplex* y, const magma_int_t* incy,
+                     const double* c, const double* s );
+
 void blasf77_ztrmm(  const char *side, const char *uplo, const char *transa, const char *diag,
                      const magma_int_t *m, const magma_int_t *n,
                      const magmaDoubleComplex *alpha,
@@ -293,6 +317,31 @@ void blasf77_ztrsv(  const char *uplo, const char *transa, const char *diag,
                      const magma_int_t *n,
                      const magmaDoubleComplex *A, const magma_int_t *lda,
                            magmaDoubleComplex *x, const magma_int_t *incx );
+
+/* ////////////////////////////////////////////////////////////////////////////
+ -- MAGMA wrappers around BLAS functions (alphabetical order)
+    The Fortran interface for these is not portable, so we
+    provide a C interface identical to the Fortran interface.
+*/
+
+double magma_cblas_dzasum(
+    magma_int_t n,
+    const magmaDoubleComplex *x, magma_int_t incx );
+
+double magma_cblas_dznrm2(
+    magma_int_t n,
+    const magmaDoubleComplex *x, magma_int_t incx );
+
+magmaDoubleComplex magma_cblas_zdotc(
+    magma_int_t n,
+    const magmaDoubleComplex *x, magma_int_t incx,
+    const magmaDoubleComplex *y, magma_int_t incy );
+
+magmaDoubleComplex magma_cblas_zdotu(
+    magma_int_t n,
+    const magmaDoubleComplex *x, magma_int_t incx,
+    const magmaDoubleComplex *y, magma_int_t incy );
+
 
 /*
  * LAPACK functions (alphabetical order)
@@ -345,6 +394,20 @@ void   lapackf77_zgebrd( const magma_int_t *m, const magma_int_t *n,
                          magmaDoubleComplex *tauq,
                          magmaDoubleComplex *taup,
                          magmaDoubleComplex *work, const magma_int_t *lwork,
+                         magma_int_t *info );
+
+void   lapackf77_zgbbrd( const char *vect, const magma_int_t *m,
+                         const magma_int_t *n, const magma_int_t *ncc,
+                         const magma_int_t *kl, const magma_int_t *ku,
+                         magmaDoubleComplex *Ab, const magma_int_t *ldab,
+                         double *d, double *e,
+                         magmaDoubleComplex *Q, const magma_int_t *ldq,
+                         magmaDoubleComplex *PT, const magma_int_t *ldpt,
+                         magmaDoubleComplex *C, const magma_int_t *ldc,
+                         magmaDoubleComplex *work,
+                         #ifdef COMPLEX
+                         double *rwork,
+                         #endif
                          magma_int_t *info );
 
 void   lapackf77_zgeev(  const char *jobvl, const char *jobvr,

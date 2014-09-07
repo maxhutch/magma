@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from dsyevdx_m.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dsyevdx_m.cpp normal d -> s, Tue Sep  2 12:38:22 2014
 
 */
 #include "common_magma.h"
@@ -101,14 +101,15 @@
 
     @param[out]
     work    (workspace) REAL array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= N * (NB + 1).
-            If JOBZ = MagmaVec   and N > 1, LWORK >= 2*N + N**2.
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
+            If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
+            NB can be obtained through magma_get_ssytrd_nb(N).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal sizes of the WORK, RWORK and
@@ -118,7 +119,7 @@
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -232,7 +233,7 @@ magma_ssyevdx_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range, magma_
         liwmin = 1;
     }
     else if ( wantz ) {
-        lwmin  = 1 + 6*n + 2*n*n;
+        lwmin  = max( 2*n + n*nb, 1 + 6*n + 2*n*n );
         liwmin = 3 + 5*n;
     }
     else {

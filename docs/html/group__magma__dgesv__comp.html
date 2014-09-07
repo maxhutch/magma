@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__dgesv__comp.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -114,9 +117,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gac9a830bebc3f946a344485de2af56314"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#gac9a830bebc3f946a344485de2af56314">magma_dgetrf</a> (magma_int_t m, magma_int_t n, double *A, magma_int_t lda, magma_int_t *ipiv, magma_int_t *info)</td></tr>
 <tr class="memdesc:gac9a830bebc3f946a344485de2af56314"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#gac9a830bebc3f946a344485de2af56314">More...</a><br /></td></tr>
 <tr class="separator:gac9a830bebc3f946a344485de2af56314"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga184f9708e20446ef9d31ffa6b06845be"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga184f9708e20446ef9d31ffa6b06845be">magma_dgetrf2_mgpu</a> (magma_int_t num_gpus, magma_int_t m, magma_int_t n, magma_int_t nb, magma_int_t offset, double *d_lAT[], magma_int_t lddat, magma_int_t *ipiv, double *d_lAP[], double *w, magma_int_t ldw, magma_queue_t streaml[][2], magma_int_t *info)</td></tr>
-<tr class="memdesc:ga184f9708e20446ef9d31ffa6b06845be"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#ga184f9708e20446ef9d31ffa6b06845be">More...</a><br /></td></tr>
-<tr class="separator:ga184f9708e20446ef9d31ffa6b06845be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga31437e60e645ff293daccc1a48b0db10"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga31437e60e645ff293daccc1a48b0db10">magma_dgetrf2_mgpu</a> (magma_int_t num_gpus, magma_int_t m, magma_int_t n, magma_int_t nb, magma_int_t offset, double *d_lAT[], magma_int_t lddat, magma_int_t *ipiv, double *d_lAP[], double *w, magma_int_t ldw, magma_queue_t stream[][2], magma_int_t *info)</td></tr>
+<tr class="memdesc:ga31437e60e645ff293daccc1a48b0db10"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#ga31437e60e645ff293daccc1a48b0db10">More...</a><br /></td></tr>
+<tr class="separator:ga31437e60e645ff293daccc1a48b0db10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga251c23afbea63cf44885e1e86a98ffeb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga251c23afbea63cf44885e1e86a98ffeb">magma_dgetrf_gpu</a> (magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda, magma_int_t *ipiv, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga251c23afbea63cf44885e1e86a98ffeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#ga251c23afbea63cf44885e1e86a98ffeb">More...</a><br /></td></tr>
 <tr class="separator:ga251c23afbea63cf44885e1e86a98ffeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,10 +139,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga6db67d4c750fbc2eec28b53fa3e9d943"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETRI computes the inverse of a matrix using the LU factorization computed by DGETRF.  <a href="#ga6db67d4c750fbc2eec28b53fa3e9d943">More...</a><br /></td></tr>
 <tr class="separator:ga6db67d4c750fbc2eec28b53fa3e9d943"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9ee2295c2ca46f76098b9afa059bc943"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga9ee2295c2ca46f76098b9afa059bc943">magma_dgetrs_gpu</a> (magma_trans_t trans, magma_int_t n, magma_int_t nrhs, double *dA, magma_int_t ldda, magma_int_t *ipiv, double *dB, magma_int_t lddb, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga9ee2295c2ca46f76098b9afa059bc943"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B, A**T * X = B, or A**T * X = B with a general N-by-N matrix A using the LU factorization computed by DGETRF_GPU.  <a href="#ga9ee2295c2ca46f76098b9afa059bc943">More...</a><br /></td></tr>
+<tr class="memdesc:ga9ee2295c2ca46f76098b9afa059bc943"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B, A**T * X = B, or A**H * X = B with a general N-by-N matrix A using the LU factorization computed by DGETRF_GPU.  <a href="#ga9ee2295c2ca46f76098b9afa059bc943">More...</a><br /></td></tr>
 <tr class="separator:ga9ee2295c2ca46f76098b9afa059bc943"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8b0ce82fa1abda234adf8a582be5cde1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga8b0ce82fa1abda234adf8a582be5cde1">magma_dsgetrs_gpu</a> (magma_trans_t trans, magma_int_t n, magma_int_t nrhs, float *dA, magma_int_t ldda, magma_int_t *dipiv, double *dB, magma_int_t lddb, double *dX, magma_int_t lddx, float *dSX, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga8b0ce82fa1abda234adf8a582be5cde1"><td class="mdescLeft">&#160;</td><td class="mdescRight">DSGETRS solves a system of linear equations A * X = B, A**T * X = B, or A**T * X = B with a general N-by-N matrix A using the LU factorization computed by MAGMA_SGETRF_GPU.  <a href="#ga8b0ce82fa1abda234adf8a582be5cde1">More...</a><br /></td></tr>
+<tr class="memdesc:ga8b0ce82fa1abda234adf8a582be5cde1"><td class="mdescLeft">&#160;</td><td class="mdescRight">DSGETRS solves a system of linear equations A * X = B, A**T * X = B, or A**H * X = B with a general N-by-N matrix A using the LU factorization computed by MAGMA_SGETRF_GPU.  <a href="#ga8b0ce82fa1abda234adf8a582be5cde1">More...</a><br /></td></tr>
 <tr class="separator:ga8b0ce82fa1abda234adf8a582be5cde1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -195,7 +198,8 @@ Functions</h2></td></tr>
 <p>DGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
 <p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine.</p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
-<p>This is the right-looking Level 3 BLAS version of the algorithm. If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -216,7 +220,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga184f9708e20446ef9d31ffa6b06845be"></a>
+<a class="anchor" id="ga31437e60e645ff293daccc1a48b0db10"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -290,7 +294,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>streaml</em>[][2], </td>
+          <td class="paramname"><em>stream</em>[][2], </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -314,9 +318,13 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_gpus</td><td>INTEGER The number of GPUs to be used for the factorization.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDA,N). On entry, the M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lAT</td><td>DOUBLE_PRECISION array of pointers on the GPU, dimension (num_gpus). On entry, the M-by-N matrix A distributed over GPUs (d_lAT[d] points to the local matrix on d-th GPU). It uses a 1D block column cyclic format (with the block size nb), and each local matrix is stored by row. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddat</td><td>INTEGER The leading dimension of the array d_lAT[d]. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">(workspace)</td><td>on device d_lAP DOUBLE_PRECISION array of pointers on the GPU, dimension (num_gpus). d_lAP[d] is the workspace on d-th GPU. Each local workspace must be of size (3+num_gpus)*nb*maxm, where maxm is m rounded up to a multiple of 32 and nb is the block size.</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">(workspace)</td><td>w DOUBLE_PRECISION array, dimension (num_gpus*nb*maxm). It is used to store panel on CPU.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldw</td><td>INTEGER The leading dimension of the workspace w.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>magma_queue_t stream[d] points to the streams for the d-th GPU to execute in. Each GPU require two streams.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
@@ -379,7 +387,8 @@ Functions</h2></td></tr>
 
 <p>DGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
-<p>This is the right-looking Level 3 BLAS version of the algorithm. If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -454,7 +463,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>DGETRF_m computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
-<p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine. The matrix may not fit entirely in the GPU memory.</p>
+<p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine. The matrix may exceed the GPU memory.</p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
 <p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
 <p>Note: The factorization of big panel is done calling multiple-gpu-interface. Pivots are applied on GPU within the big panel.</p>
@@ -541,8 +550,8 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_gpus</td><td>INTEGER The number of GPUs to be used for the factorization.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDA,N). On entry, the M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lA</td><td>DOUBLE_PRECISION array of pointers on the GPU, dimension (num_gpus). On entry, the M-by-N matrix A distributed over GPUs (d_lA[d] points to the local matrix on d-th GPU). It uses 1D block column cyclic format with the block size of nb, and each local matrix is stored by column. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array d_lA. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -826,13 +835,13 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Solves a system of linear equations A * X = B, A**T * X = B, or A**T * X = B with a general N-by-N matrix A using the LU factorization computed by DGETRF_GPU. </p>
+<p>Solves a system of linear equations A * X = B, A**T * X = B, or A**H * X = B with a general N-by-N matrix A using the LU factorization computed by DGETRF_GPU. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t Specifies the form of the system of equations:<ul>
 <li>= MagmaNoTrans: A * X = B (No transpose)</li>
 <li>= MagmaTrans: A**T * X = B (Transpose)</li>
-<li>= MagmaTrans: A**T * X = B (Conjugate transpose)</li>
+<li>= MagmaConjTrans: A**H * X = B (Conjugate transpose)</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
@@ -937,14 +946,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>DSGETRS solves a system of linear equations A * X = B, A**T * X = B, or A**T * X = B with a general N-by-N matrix A using the LU factorization computed by MAGMA_SGETRF_GPU. </p>
+<p>DSGETRS solves a system of linear equations A * X = B, A**T * X = B, or A**H * X = B with a general N-by-N matrix A using the LU factorization computed by MAGMA_SGETRF_GPU. </p>
 <p>B and X are in DOUBLE PRECISION, and A is in SINGLE PRECISION. This routine is used in the mixed precision iterative solver magma_dsgesv.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t Specifies the form of the system of equations:<ul>
 <li>= MagmaNoTrans: A * X = B (No transpose)</li>
 <li>= MagmaTrans: A**T * X = B (Transpose)</li>
-<li>= MagmaTrans: A**T * X = B (Conjugate transpose)</li>
+<li>= MagmaConjTrans: A**H * X = B (Conjugate transpose)</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
@@ -973,7 +982,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:42 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

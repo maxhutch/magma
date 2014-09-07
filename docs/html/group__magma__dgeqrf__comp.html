@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__dgeqrf__comp.html','');}
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -114,15 +117,15 @@ Functions</h2></td></tr>
 <tr class="memitem:ga56af764e2eb5395395107fc01f14cfa1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#ga56af764e2eb5395395107fc01f14cfa1">magma_dgegqr_gpu</a> (magma_int_t ikind, magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda, double *dwork, double *work, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga56af764e2eb5395395107fc01f14cfa1"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEGQR orthogonalizes the N vectors given by a real M-by-N matrix A:  <a href="#ga56af764e2eb5395395107fc01f14cfa1">More...</a><br /></td></tr>
 <tr class="separator:ga56af764e2eb5395395107fc01f14cfa1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga20b77cddb0cfe2ab5e02a2f47885ee63"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#ga20b77cddb0cfe2ab5e02a2f47885ee63">magma_dgeqr2x2_gpu</a> (magma_int_t *m, magma_int_t *n, double *dA, magma_int_t *ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga20b77cddb0cfe2ab5e02a2f47885ee63"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#ga20b77cddb0cfe2ab5e02a2f47885ee63">More...</a><br /></td></tr>
-<tr class="separator:ga20b77cddb0cfe2ab5e02a2f47885ee63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga04b8b114effe1fbe0ad67a81282d602e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#ga04b8b114effe1fbe0ad67a81282d602e">magma_dgeqr2x3_gpu</a> (magma_int_t *m, magma_int_t *n, double *dA, magma_int_t *ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga04b8b114effe1fbe0ad67a81282d602e"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#ga04b8b114effe1fbe0ad67a81282d602e">More...</a><br /></td></tr>
-<tr class="separator:ga04b8b114effe1fbe0ad67a81282d602e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga901ce86d5ec436939573b8e07213b657"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#ga901ce86d5ec436939573b8e07213b657">magma_dgeqr2x_gpu</a> (magma_int_t *m, magma_int_t *n, double *dA, magma_int_t *ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga901ce86d5ec436939573b8e07213b657"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#ga901ce86d5ec436939573b8e07213b657">More...</a><br /></td></tr>
-<tr class="separator:ga901ce86d5ec436939573b8e07213b657"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4f2854066480e174f18eab41a034ca3a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#ga4f2854066480e174f18eab41a034ca3a">magma_dgeqr2x2_gpu</a> (magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga4f2854066480e174f18eab41a034ca3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#ga4f2854066480e174f18eab41a034ca3a">More...</a><br /></td></tr>
+<tr class="separator:ga4f2854066480e174f18eab41a034ca3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa53150f84c45c799baa40466d533b8f1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#gaa53150f84c45c799baa40466d533b8f1">magma_dgeqr2x3_gpu</a> (magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaa53150f84c45c799baa40466d533b8f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#gaa53150f84c45c799baa40466d533b8f1">More...</a><br /></td></tr>
+<tr class="separator:gaa53150f84c45c799baa40466d533b8f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaeb7869944a0a1a3dd4e0388f0a89d3c2"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#gaeb7869944a0a1a3dd4e0388f0a89d3c2">magma_dgeqr2x_gpu</a> (magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaeb7869944a0a1a3dd4e0388f0a89d3c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#gaeb7869944a0a1a3dd4e0388f0a89d3c2">More...</a><br /></td></tr>
+<tr class="separator:gaeb7869944a0a1a3dd4e0388f0a89d3c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf9e9f26519b0da0b7df3a25e7b2699fe"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#gaf9e9f26519b0da0b7df3a25e7b2699fe">magma_dgeqrf4</a> (magma_int_t num_gpus, magma_int_t m, magma_int_t n, double *A, magma_int_t lda, double *tau, double *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:gaf9e9f26519b0da0b7df3a25e7b2699fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQRF4 computes a QR factorization of a DOUBLE_PRECISION M-by-N matrix A: A = Q * R using multiple GPUs.  <a href="#gaf9e9f26519b0da0b7df3a25e7b2699fe">More...</a><br /></td></tr>
 <tr class="separator:gaf9e9f26519b0da0b7df3a25e7b2699fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,9 +171,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga484764ee58ebb0739498c3d918e73241"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#ga484764ee58ebb0739498c3d918e73241">magma_dormqr_m</a> (magma_int_t nrgpu, magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, double *A, magma_int_t lda, double *tau, double *C, magma_int_t ldc, double *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga484764ee58ebb0739498c3d918e73241"><td class="mdescLeft">&#160;</td><td class="mdescRight">DORMQR overwrites the general real M-by-N matrix C with.  <a href="#ga484764ee58ebb0739498c3d918e73241">More...</a><br /></td></tr>
 <tr class="separator:ga484764ee58ebb0739498c3d918e73241"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab2ac66d9f9814997923ee3df0a1232fb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#gab2ac66d9f9814997923ee3df0a1232fb">magma_dgeqr2x4_gpu</a> (magma_int_t *m, magma_int_t *n, double *dA, magma_int_t *ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info, magma_queue_t stream)</td></tr>
-<tr class="memdesc:gab2ac66d9f9814997923ee3df0a1232fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#gab2ac66d9f9814997923ee3df0a1232fb">More...</a><br /></td></tr>
-<tr class="separator:gab2ac66d9f9814997923ee3df0a1232fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad6a56fb0c97061cb66cf68dc5c9dcec6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__comp.html#gad6a56fb0c97061cb66cf68dc5c9dcec6">magma_dgeqr2x4_gpu</a> (magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda, double *dtau, double *dT, double *ddA, double *dwork, magma_int_t *info, magma_queue_t stream)</td></tr>
+<tr class="memdesc:gad6a56fb0c97061cb66cf68dc5c9dcec6"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#gad6a56fb0c97061cb66cf68dc5c9dcec6">More...</a><br /></td></tr>
+<tr class="separator:gad6a56fb0c97061cb66cf68dc5c9dcec6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -241,14 +244,14 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ikind</td><td>INTEGER Several versions are implemented indiceted by the ikind value: 1: This version uses normal equations and SVD in an iterative process that makes the computation numerically accurate. 2: This version uses a standard LAPACK-based orthogonalization through MAGMA's QR panel factorization (magma_dgeqr2x3_gpu) and magma_dorgqr 3: MGS<ol type="1">
-<li>Cholesky QR</li>
+<li>Cholesky QR [ Note: this method uses the normal equations which squares the condition number of A, therefore ||I - Q'Q|| &lt; O(eps cond(A)^2) ]</li>
 </ol>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. m &gt;= n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. 128 &gt;= n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array on the GPU, dimension (ldda,n) On entry, the m-by-n matrix A. On exit, the m-by-n matrix Q with orthogonal columns.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,m). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(GPU workspace) DOUBLE_PRECISION array, dimension: n^2 for ikind = 1 3 n^2 + min(m, n) for ikind = 2 0 (not used) for ikind = 3 n^2 for ikind = 4</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(GPU workspace) DOUBLE_PRECISION array, dimension: n^2 for ikind = 1 3 n^2 + min(m, n) + 2 for ikind = 2 0 (not used) for ikind = 3 n^2 for ikind = 4</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(CPU workspace) DOUBLE_PRECISION array, dimension 3 n^2. On exit, work(1:n^2) holds the rectangular matrix R. Preferably, for higher performance, work should be in pinned memory.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -261,20 +264,20 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga20b77cddb0cfe2ab5e02a2f47885ee63"></a>
+<a class="anchor" id="ga4f2854066480e174f18eab41a034ca3a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_dgeqr2x2_gpu </td>
           <td>(</td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>m</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -286,7 +289,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>ldda</em>, </td>
         </tr>
         <tr>
@@ -358,20 +361,20 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga04b8b114effe1fbe0ad67a81282d602e"></a>
+<a class="anchor" id="gaa53150f84c45c799baa40466d533b8f1"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_dgeqr2x3_gpu </td>
           <td>(</td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>m</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -383,7 +386,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>ldda</em>, </td>
         </tr>
         <tr>
@@ -456,20 +459,20 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gab2ac66d9f9814997923ee3df0a1232fb"></a>
+<a class="anchor" id="gad6a56fb0c97061cb66cf68dc5c9dcec6"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_dgeqr2x4_gpu </td>
           <td>(</td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>m</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -481,7 +484,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>ldda</em>, </td>
         </tr>
         <tr>
@@ -552,28 +555,26 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <h2>Further Details </h2>
-<p>The matrix Q is represented as a product of elementary reflectors</p>
-<p>Q = H(1) H(2) . . . H(k), where k = min(m,n).</p>
-<p>Each H(i) has the form</p>
-<p>H(i) = I - tau * v * v'</p>
-<p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
+<p>The matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(k), where k = min(m,n).
+</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v'
+</pre><p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
 
 </div>
 </div>
-<a class="anchor" id="ga901ce86d5ec436939573b8e07213b657"></a>
+<a class="anchor" id="gaeb7869944a0a1a3dd4e0388f0a89d3c2"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_dgeqr2x_gpu </td>
           <td>(</td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>m</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -585,7 +586,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>ldda</em>, </td>
         </tr>
         <tr>
@@ -720,7 +721,7 @@ Functions</h2></td></tr>
 
 <p>DGEQRF computes a QR factorization of a DOUBLE_PRECISION M-by-N matrix A: A = Q * R. </p>
 <p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine.</p>
-<p>If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -729,7 +730,7 @@ Functions</h2></td></tr>
  Higher performance is achieved if A is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK. <br />
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
  Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= max( N*NB, 2*NB*NB ), where NB can be obtained through magma_get_dgeqrf_nb(M). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
@@ -797,7 +798,8 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>DGEQRF computes a QR factorization of a real M-by-N matrix A: A = Q * R. </p>
-<p>This version has LAPACK-complaint arguments. If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>This version has LAPACK-complaint arguments.</p>
+<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <p>Other versions (magma_dgeqrf_gpu and magma_dgeqrf3_gpu) store the intermediate T matrices.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1059,7 +1061,7 @@ Functions</h2></td></tr>
  Higher performance is achieved if A is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK. <br />
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
  Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB can be obtained through magma_get_dgeqrf_nb(M). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
@@ -1231,7 +1233,7 @@ Functions</h2></td></tr>
  Higher performance is achieved if A is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK. <br />
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
  Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB can be obtained through magma_get_dgeqrf_nb(M). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
@@ -1692,19 +1694,19 @@ Functions</h2></td></tr>
 <p>DORMQR overwrites the general real M-by-N matrix C with. </p>
 <pre class="fragment">                          SIDE = MagmaLeft   SIDE = MagmaRight
 TRANS = MagmaNoTrans:     Q * C              C * Q
-TRANS = MagmaTrans:   Q**T * C           C * Q**T
+TRANS = MagmaTrans:  Q**H * C           C * Q**H
 </pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply Q or Q**T from the Left;</li>
-<li>= MagmaRight: apply Q or Q**T from the Right.</li>
+<li>= MagmaLeft: apply Q or Q**H from the Left;</li>
+<li>= MagmaRight: apply Q or Q**H from the Right.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Conjugate transpose, apply Q**T.</li>
+<li>= MagmaTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -1713,7 +1715,7 @@ TRANS = MagmaTrans:   Q**T * C           C * Q**T
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array, dimension (LDA,K) The i-th column must contain the vector which defines the elementary reflector H(i), for i = 1,2,...,k, as returned by DGEQRF in the first k columns of its array argument A. A is modified by the routine but restored on exit.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. If SIDE = MagmaLeft, LDA &gt;= max(1,M); if SIDE = MagmaRight, LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (K) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by DGEQRF.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>DOUBLE_PRECISION array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**T * C or C * Q**T or C*Q.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>DOUBLE_PRECISION array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldc</td><td>INTEGER The leading dimension of the array C. LDC &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance if SIDE = MagmaLeft, LWORK &gt;= N*NB; if SIDE = MagmaRight, LWORK &gt;= M*NB, where NB is the optimal blocksize. <br />
@@ -1820,21 +1822,21 @@ TRANS = MagmaTrans:   Q**T * C           C * Q**T
 </div><div class="memdoc">
 
 <p>DORMQR overwrites the general real M-by-N matrix C with. </p>
-<pre class="fragment">                        SIDE = MagmaLeft   SIDE = MagmaRight
-TRANS = MagmaNoTrans:   Q * C              C * Q
-TRANS = MagmaTrans:     Q**T * C           C * Q**T
+<pre class="fragment">                           SIDE = MagmaLeft    SIDE = MagmaRight
+TRANS = MagmaNoTrans:      Q * C               C * Q
+TRANS = MagmaTrans:   Q**H * C            C * Q**H
 </pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p><pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply Q or Q**T from the Left;</li>
-<li>= MagmaRight: apply Q or Q**T from the Right.</li>
+<li>= MagmaLeft: apply Q or Q**H from the Left;</li>
+<li>= MagmaRight: apply Q or Q**H from the Right.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Transpose, apply Q**T.</li>
+<li>= MagmaTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -1843,7 +1845,7 @@ TRANS = MagmaTrans:     Q**T * C           C * Q**T
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array, dimension (LDA,K) The i-th column must contain the vector which defines the elementary reflector H(i), for i = 1,2,...,k, as returned by DGEQRF in the first k columns of its array argument A. The diagonal and the upper part are destroyed, the reflectors are not modified.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array DA. LDDA &gt;= max(1,M) if SIDE = MagmaLeft; LDDA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (K) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by DGEQRF.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by (Q*C) or (Q**T * C) or (C * Q**T) or (C*Q).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array C. LDDC &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>(workspace) DOUBLE_PRECISION array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by DSYTRD_GPU.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. LDWA &gt;= max(1,M) if SIDE = MagmaLeft; LDWA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
@@ -1961,21 +1963,21 @@ TRANS = MagmaTrans:     Q**T * C           C * Q**T
 </div><div class="memdoc">
 
 <p>DORMQR_GPU overwrites the general real M-by-N matrix C with. </p>
-<pre class="fragment">                        SIDE = MagmaLeft     SIDE = MagmaRight
-TRANS = MagmaNoTrans:   Q * C                C * Q
-TRANS = MagmaTrans:     Q**T * C             C * Q**T
+<pre class="fragment">                           SIDE = MagmaLeft    SIDE = MagmaRight
+TRANS = MagmaNoTrans:      Q * C               C * Q
+TRANS = MagmaTrans:   Q**H * C            C * Q**H
 </pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p><pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply Q or Q**T from the Left;</li>
-<li>= MagmaRight: apply Q or Q**T from the Right.</li>
+<li>= MagmaLeft: apply Q or Q**H from the Left;</li>
+<li>= MagmaRight: apply Q or Q**H from the Right.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Transpose, apply Q**T.</li>
+<li>= MagmaTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -1984,7 +1986,7 @@ TRANS = MagmaTrans:     Q**T * C             C * Q**T
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDA,K) The i-th column must contain the vector which defines the elementary reflector H(i), for i = 1,2,...,k, as returned by DGEQRF in the first k columns of its array argument DA. DA is modified by the routine but restored on exit.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array DA. If SIDE = MagmaLeft, LDDA &gt;= max(1,M); if SIDE = MagmaRight, LDDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (K) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by DGEQRF.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**T * C or C * Q**T or C*Q.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array DC. LDDC &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) <br />
  Currently, dgetrs_gpu assumes that on exit, hwork contains the last block of A and C. This will change and <em>should not be relied on</em>!</td></tr>
@@ -2100,22 +2102,22 @@ TRANS = MagmaTrans:     Q**T * C             C * Q**T
 </div><div class="memdoc">
 
 <p>DORMQR overwrites the general real M-by-N matrix C with. </p>
-<pre class="fragment">                SIDE = MagmaLeft     SIDE = MagmaRight
-TRANS = MagmaNoTrans:      Q * C          C * Q
-TRANS = MagmaTrans:      Q**T * C       C * Q**T
+<pre class="fragment">                            SIDE = MagmaLeft    SIDE = MagmaRight
+TRANS = MagmaNoTrans:       Q * C               C * Q
+TRANS = MagmaTrans:    Q**H * C            C * Q**H
 </pre><p>where Q is a real unitary matrix defined as the product of k elementary reflectors </p><pre class="fragment">  Q = H(1) H(2) . . . H(k)
 </pre><p>as returned by DGEQRF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">nrgpu</td><td>INTEGER Number of GPUs to use.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply Q or Q**T from the Left;</li>
-<li>= MagmaRight: apply Q or Q**T from the Right.</li>
+<li>= MagmaLeft: apply Q or Q**H from the Left;</li>
+<li>= MagmaRight: apply Q or Q**H from the Right.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Transpose, apply Q**T.</li>
+<li>= MagmaTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -2124,9 +2126,9 @@ TRANS = MagmaTrans:      Q**T * C       C * Q**T
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array, dimension (LDA,K) The i-th column must contain the vector which defines the elementary reflector H(i), for i = 1,2,...,k, as returned by DGEQRF in the first k columns of its array argument A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. If SIDE = MagmaLeft, LDA &gt;= max(1,M); if SIDE = MagmaRight, LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (K) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by DGEQRF.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>DOUBLE_PRECISION array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**T*C or C*Q**T or C*Q.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>DOUBLE_PRECISION array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldc</td><td>INTEGER The leading dimension of the array C. LDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(0) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance LWORK &gt;= N*NB if SIDE = MagmaLeft, and LWORK &gt;= M*NB if SIDE = MagmaRight, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -2145,7 +2147,7 @@ TRANS = MagmaTrans:      Q**T * C       C * Q**T
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:42 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

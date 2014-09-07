@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = src
@@ -17,8 +17,13 @@ include $(MAGMA_DIR)/Makefile.internal
 # in ZSRC, despite the name.
 
 # ----------
-# Cholesky, GPU interface
+# BLAS wrappers
 ZSRC := \
+	cblas_z.cpp		\
+
+# ----------
+# Cholesky, GPU interface
+ZSRC += \
 	zcposv_gpu.cpp		\
 	\
 	zposv_gpu.cpp		\

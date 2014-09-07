@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
 
@@ -23,10 +23,10 @@
 
 
 /*
- * daxpy16 computes c += alpha*b, where b and c are 16-element vectors.
+ * zaxpy16 computes c += alpha*b, where b and c are 16-element vectors.
  */
 static __device__ void
-daxpy16(
+zaxpy16(
     magmaDoubleComplex alpha,
     const magmaDoubleComplex * __restrict__ b,
     magmaDoubleComplex       * __restrict__ c )
@@ -85,25 +85,25 @@ zgemm_kernel_16(
         rA[3] = A[3*lda];
 
         // axpy:  C(id,:) += A(id,k) * B(k,:) for k=0, ..., 15
-        daxpy16( rA[0], &sB[ 0][0], rC );  rA[0] = A[ 4*lda];
-        daxpy16( rA[1], &sB[ 1][0], rC );  rA[1] = A[ 5*lda];
-        daxpy16( rA[2], &sB[ 2][0], rC );  rA[2] = A[ 6*lda];
-        daxpy16( rA[3], &sB[ 3][0], rC );  rA[3] = A[ 7*lda];
+        zaxpy16( rA[0], &sB[ 0][0], rC );  rA[0] = A[ 4*lda];
+        zaxpy16( rA[1], &sB[ 1][0], rC );  rA[1] = A[ 5*lda];
+        zaxpy16( rA[2], &sB[ 2][0], rC );  rA[2] = A[ 6*lda];
+        zaxpy16( rA[3], &sB[ 3][0], rC );  rA[3] = A[ 7*lda];
                                                      
-        daxpy16( rA[0], &sB[ 4][0], rC );  rA[0] = A[ 8*lda];
-        daxpy16( rA[1], &sB[ 5][0], rC );  rA[1] = A[ 9*lda];
-        daxpy16( rA[2], &sB[ 6][0], rC );  rA[2] = A[10*lda];
-        daxpy16( rA[3], &sB[ 7][0], rC );  rA[3] = A[11*lda];
+        zaxpy16( rA[0], &sB[ 4][0], rC );  rA[0] = A[ 8*lda];
+        zaxpy16( rA[1], &sB[ 5][0], rC );  rA[1] = A[ 9*lda];
+        zaxpy16( rA[2], &sB[ 6][0], rC );  rA[2] = A[10*lda];
+        zaxpy16( rA[3], &sB[ 7][0], rC );  rA[3] = A[11*lda];
 
-        daxpy16( rA[0], &sB[ 8][0], rC );  rA[0] = A[12*lda];
-        daxpy16( rA[1], &sB[ 9][0], rC );  rA[1] = A[13*lda];
-        daxpy16( rA[2], &sB[10][0], rC );  rA[2] = A[14*lda];
-        daxpy16( rA[3], &sB[11][0], rC );  rA[3] = A[15*lda];
+        zaxpy16( rA[0], &sB[ 8][0], rC );  rA[0] = A[12*lda];
+        zaxpy16( rA[1], &sB[ 9][0], rC );  rA[1] = A[13*lda];
+        zaxpy16( rA[2], &sB[10][0], rC );  rA[2] = A[14*lda];
+        zaxpy16( rA[3], &sB[11][0], rC );  rA[3] = A[15*lda];
 
-        daxpy16( rA[0], &sB[12][0], rC );
-        daxpy16( rA[1], &sB[13][0], rC );
-        daxpy16( rA[2], &sB[14][0], rC );
-        daxpy16( rA[3], &sB[15][0], rC );
+        zaxpy16( rA[0], &sB[12][0], rC );
+        zaxpy16( rA[1], &sB[13][0], rC );
+        zaxpy16( rA[2], &sB[14][0], rC );
+        zaxpy16( rA[3], &sB[15][0], rC );
 
         // move to next block of A and B
         A += 16*lda;
@@ -166,7 +166,11 @@ ztrtri_diag_kernel_upper(
     magma_diag_t diag, int n, const magmaDoubleComplex *A, int lda, magmaDoubleComplex *d_invA);
 
 __global__ void
-triple_zgemm16_upper(
+triple_zgemm16_part1_upper(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_invA, int jb, int npages);
+
+__global__ void
+triple_zgemm16_part2_upper(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_invA, int jb, int npages);
 
 __global__ void

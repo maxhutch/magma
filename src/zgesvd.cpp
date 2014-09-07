@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -114,7 +114,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the required LWORK.
+            On exit, if INFO = 0, WORK[0] returns the required LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -231,7 +231,7 @@ magma_zgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                      work, &ineg_one, rwork, info);
     maxwrk = (magma_int_t) MAGMA_Z_REAL( work[0] );
     if (*info == 0) {
-        // Return required workspace in WORK(1)
+        // Return required workspace in WORK[0]
         nb = magma_get_zgesvd_nb(n);
         minwrk = (m + n)*nb + 2*minmn;
         

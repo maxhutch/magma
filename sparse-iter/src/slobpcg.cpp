@@ -1,22 +1,22 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @date July 2014
+       @date September 2014
             
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from zlobpcg.cpp normal z -> s, Fri Jul 18 17:34:29 2014
+       @generated from zlobpcg.cpp normal z -> s, Tue Sep  2 12:38:34 2014
 */
 
 #include <sys/time.h>
 #include <time.h>
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 #include "trace.h"
 #include "magmablas.h"     
 
@@ -205,7 +205,7 @@ magma_slobpcg( magma_s_sparse_matrix A, magma_s_solver_par *solver_par ){
     magma_s_bspmv_tuned(m, n, c_one, A, blockX, c_zero, blockAX );
 
     // === Compute the Gram matrix = (X, AX) & its eigenstates ===
-    magma_sgemm(MagmaTrans, MagmaNoTrans, n, n, m,
+    magma_sgemm(MagmaConjTrans, MagmaNoTrans, n, n, m,
                 c_one,  blockX, m, blockAX, m, c_zero, gramM, n);
 
     magma_ssyevd_gpu( MagmaVec, MagmaUpper,
@@ -266,7 +266,7 @@ magma_slobpcg( magma_s_sparse_matrix A, magma_s_solver_par *solver_par ){
 
             /*
             // === make the preconditioned residuals orthogonal to X
-            magma_sgemm(MagmaTrans, MagmaNoTrans, n, cBlockSize, m,
+            magma_sgemm(MagmaConjTrans, MagmaNoTrans, n, cBlockSize, m,
                         c_one, blockX, m, blockR, m, c_zero, gramB(0,0), ldgram);
             magma_sgemm(MagmaNoTrans, MagmaNoTrans, m, cBlockSize, n,
                         c_mone, blockX, m, gramB(0,0), ldgram, c_one, blockR, m);
@@ -286,13 +286,13 @@ magma_slobpcg( magma_s_sparse_matrix A, magma_s_solver_par *solver_par ){
           
                 /*
                 // === make P orthogonal to X ?
-                magma_sgemm(MagmaTrans, MagmaNoTrans, n, cBlockSize, m,
+                magma_sgemm(MagmaConjTrans, MagmaNoTrans, n, cBlockSize, m,
                             c_one, blockX, m, blockP, m, c_zero, gramB(0,0), ldgram);
                 magma_sgemm(MagmaNoTrans, MagmaNoTrans, m, cBlockSize, n,
                             c_mone, blockX, m, gramB(0,0), ldgram, c_one, blockP, m);
 
                 // === make P orthogonal to R ?
-                magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, cBlockSize, m,
+                magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, cBlockSize, m,
                             c_one, blockR, m, blockP, m, c_zero, gramB(0,0), ldgram);
                 magma_sgemm(MagmaNoTrans, MagmaNoTrans, m, cBlockSize, cBlockSize,
                             c_mone, blockR, m, gramB(0,0), ldgram, c_one, blockP, m);
@@ -343,12 +343,12 @@ magma_slobpcg( magma_s_sparse_matrix A, magma_s_solver_par *solver_par ){
             magmablas_slaset(MagmaFull, ldgram, ldgram, c_zero, c_one, gramB, ldgram);  // identity
 
             if (!restart) {
-                magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, n, m,
+                magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, n, m,
                             c_one, blockP, m, blockX, m, c_zero, gramB(n+cBlockSize,0), ldgram);
-                magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, cBlockSize, m,
+                magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, cBlockSize, m,
                             c_one, blockP, m, blockR, m, c_zero, gramB(n+cBlockSize,n), ldgram);
             }
-            magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, n, m,
+            magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, n, m,
                         c_one, blockR, m, blockX, m, c_zero, gramB(n,0), ldgram);
 
             // === get GramB from the GPU to the CPU and compute its eigenvalues only
@@ -371,26 +371,26 @@ magma_slobpcg( magma_s_sparse_matrix A, magma_s_solver_par *solver_par ){
             // === assemble GramA; first, set it to I
             magmablas_slaset(MagmaFull, ldgram, ldgram, c_zero, c_one, gramA, ldgram);  // identity
 
-            magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, n, m,
+            magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, n, m,
                         c_one, blockR, m, blockAX, m, c_zero, gramA(n,0), ldgram);
-            magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, cBlockSize, m,
+            magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, cBlockSize, m,
                         c_one, blockR, m, blockAR, m, c_zero, gramA(n,n), ldgram);
 
             if (!restart) {
-                magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, n, m, 
+                magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, n, m, 
                             c_one, blockP, m, blockAX, m, c_zero, 
                             gramA(n+cBlockSize,0), ldgram);
-                magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, cBlockSize, m, 
+                magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, cBlockSize, m, 
                             c_one, blockP, m, blockAR, m, c_zero, 
                             gramA(n+cBlockSize,n), ldgram);
-                magma_sgemm(MagmaTrans, MagmaNoTrans, cBlockSize, cBlockSize, m, 
+                magma_sgemm(MagmaConjTrans, MagmaNoTrans, cBlockSize, cBlockSize, m, 
                             c_one, blockP, m, blockAP, m, c_zero, 
                             gramA(n+cBlockSize,n+cBlockSize), ldgram);
             }
 
             /*
             // === Compute X' AX or just use the eigenvalues below ?
-            magma_sgemm(MagmaTrans, MagmaNoTrans, n, n, m,
+            magma_sgemm(MagmaConjTrans, MagmaNoTrans, n, n, m,
                         c_one, blockX, m, blockAX, m, c_zero,
                         gramA(0,0), ldgram);
             */
@@ -502,7 +502,7 @@ magma_slobpcg( magma_s_sparse_matrix A, magma_s_solver_par *solver_par ){
 
     // === compute the real AX and corresponding eigenvalues
     magma_s_bspmv_tuned(m, n, c_one, A, blockX, c_zero, blockAX );
-    magma_sgemm(MagmaTrans, MagmaNoTrans, n, n, m,
+    magma_sgemm(MagmaConjTrans, MagmaNoTrans, n, n, m,
                 c_one,  blockX, m, blockAX, m, c_zero, gramM, n);
 
     magma_ssyevd_gpu( MagmaVec, MagmaUpper,

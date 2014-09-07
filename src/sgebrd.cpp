@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgebrd.cpp normal z -> s, Fri Jul 18 17:34:20 2014
+       @generated from zgebrd.cpp normal z -> s, Tue Sep  2 12:38:24 2014
 
 */
 #include "common_magma.h"
@@ -14,7 +14,7 @@
     Purpose
     -------
     SGEBRD reduces a general real M-by-N matrix A to upper or lower
-    bidiagonal form B by an orthogonal transformation: Q**T * A * P = B.
+    bidiagonal form B by an orthogonal transformation: Q**H * A * P = B.
 
     If m >= n, B is upper bidiagonal; if m < n, B is lower bidiagonal.
 
@@ -248,7 +248,7 @@ magma_sgebrd(magma_int_t m, magma_int_t n,
                           work  + (ldwrkx+1)*nb, ldwrky,
                           dwork + (ldwrkx+1)*nb, ldwrky );
 
-        magma_sgemm( MagmaNoTrans, MagmaTrans,
+        magma_sgemm( MagmaNoTrans, MagmaConjTrans,
                      nrow, ncol, nb,
                      c_neg_one, dA(i+nb, i   ),      ldda,
                                 dwork+(ldwrkx+1)*nb, ldwrky,

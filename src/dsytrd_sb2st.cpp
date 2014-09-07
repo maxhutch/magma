@@ -1,21 +1,20 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd_hb2st.cpp normal z -> d, Fri Jul 18 17:34:19 2014
+       @generated from zhetrd_hb2st.cpp normal z -> d, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
 #include "magma_bulge.h"
 #include "magma_dbulge.h"
-#include <cblas.h>
 
 #ifdef MAGMA_SETAFFINITY
 #include "affinity.h"
@@ -33,77 +32,64 @@ static void magma_dtile_bulge_computeT_parallel(magma_int_t my_core_id, magma_in
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class magma_dbulge_data {
-
-public:
-
-    magma_dbulge_data(magma_int_t threads_num_, magma_int_t n_, magma_int_t nb_, magma_int_t nbtiles_,
-                      magma_int_t grsiz_, magma_int_t Vblksiz_, magma_int_t compT_,
-                      double *A_, magma_int_t lda_, double *V_, magma_int_t ldv_, double *TAU_,
-                      double *T_, magma_int_t ldt_, volatile magma_int_t* prog_)
-    :
-    threads_num(threads_num_),
-    n(n_),
-    nb(nb_),
-    nbtiles(nbtiles_),
-    grsiz(grsiz_),
-    Vblksiz(Vblksiz_),
-    compT(compT_),
-    A(A_),
-    lda(lda_),
-    V(V_),
-    ldv(ldv_),
-    TAU(TAU_),
-    T(T_),
-    ldt(ldt_),
-    prog(prog_)
-    {
-        pthread_barrier_init(&barrier, NULL, threads_num);
-    }
-
-    ~magma_dbulge_data()
-    {
-        pthread_barrier_destroy(&barrier);
-    }
-
-    const magma_int_t threads_num;
-    const magma_int_t n;
-    const magma_int_t nb;
-    const magma_int_t nbtiles;
-    const magma_int_t grsiz;
-    const magma_int_t Vblksiz;
-    const magma_int_t compT;
-    double* const A;
-    const magma_int_t lda;
-    double* const V;
-    const magma_int_t ldv;
-    double* const TAU;
-    double* const T;
-    const magma_int_t ldt;
+typedef struct magma_dbulge_data_s {
+    magma_int_t threads_num;
+    magma_int_t n;
+    magma_int_t nb;
+    magma_int_t nbtiles;
+    magma_int_t grsiz;
+    magma_int_t Vblksiz;
+    magma_int_t compT;
+    double* A;
+    magma_int_t lda;
+    double* V;
+    magma_int_t ldv;
+    double* TAU;
+    double* T;
+    magma_int_t ldt;
     volatile magma_int_t *prog;
     pthread_barrier_t barrier;
+} magma_dbulge_data;
 
-private:
+void magma_dbulge_data_init(magma_dbulge_data *dbulge_data_S, 
+        magma_int_t threads_num, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
+        magma_int_t grsiz, magma_int_t Vblksiz, magma_int_t compT,
+        double *A, magma_int_t lda, double *V,
+        magma_int_t ldv, double *TAU, double *T,
+        magma_int_t ldt, volatile magma_int_t* prog)
+{
+    dbulge_data_S->threads_num = threads_num;
+    dbulge_data_S->n = n;
+    dbulge_data_S->nb = nb;
+    dbulge_data_S->nbtiles = nbtiles;
+    dbulge_data_S->grsiz = grsiz;
+    dbulge_data_S->Vblksiz = Vblksiz;
+    dbulge_data_S->compT = compT;
+    dbulge_data_S->A = A;
+    dbulge_data_S->lda = lda;
+    dbulge_data_S->V = V;
+    dbulge_data_S->ldv= ldv;
+    dbulge_data_S->TAU = TAU;
+    dbulge_data_S->T = T;
+    dbulge_data_S->ldt = ldt;
+    dbulge_data_S->prog = prog;
 
-    magma_dbulge_data(magma_dbulge_data& data); // disable copy
-};
-
-class magma_dbulge_id_data {
-
-public:
-
-    magma_dbulge_id_data()
-    : id(-1), data(NULL)
-    {}
-
-    magma_dbulge_id_data(magma_int_t id_, magma_dbulge_data* data_)
-    : id(id_), data(data_)
-    {}
-
+    pthread_barrier_init(&(dbulge_data_S->barrier), NULL, dbulge_data_S->threads_num);
+}
+void magma_dbulge_data_destroy(magma_dbulge_data *dbulge_data_S)
+{
+    pthread_barrier_destroy(&(dbulge_data_S->barrier));
+}
+typedef struct magma_dbulge_id_data_s {
     magma_int_t id;
     magma_dbulge_data* data;
-};
+} magma_dbulge_id_data;
 
+void magma_dbulge_id_data_init(magma_dbulge_id_data *id_data, magma_int_t id, magma_dbulge_data* data)
+{
+    id_data->id = id; 
+    id_data->data = data;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -204,9 +190,9 @@ magma_dsytrd_sb2st(
     memset(TAU, 0, blkcnt*Vblksiz*sizeof(double));
     memset(V,   0, blkcnt*ldv*Vblksiz*sizeof(double));
 
-    magma_int_t* prog;
+    volatile magma_int_t* prog;
     magma_malloc_cpu((void**) &prog, (2*nbtiles+threads+10)*sizeof(magma_int_t));
-    memset(prog, 0, (2*nbtiles+threads+10)*sizeof(magma_int_t));
+    memset((void *) prog, 0, (2*nbtiles+threads+10)*sizeof(magma_int_t));
 
     magma_dbulge_id_data* arg;
     magma_malloc_cpu((void**) &arg, threads*sizeof(magma_dbulge_id_data));
@@ -215,7 +201,8 @@ magma_dsytrd_sb2st(
     magma_malloc_cpu((void**) &thread_id, threads*sizeof(pthread_t));
     pthread_attr_t thread_attr;
 
-    magma_dbulge_data data_bulge(threads, n, nb, nbtiles, INgrsiz, Vblksiz, compT,
+    magma_dbulge_data data_bulge;
+    magma_dbulge_data_init(&data_bulge, threads, n, nb, nbtiles, INgrsiz, Vblksiz, compT,
                                  A, lda, V, ldv, TAU, T, ldt, prog);
 
     // Set one thread per core
@@ -230,10 +217,10 @@ magma_dsytrd_sb2st(
 
     // Launch threads
     for (magma_int_t thread = 1; thread < threads; thread++) {
-        arg[thread] = magma_dbulge_id_data(thread, &data_bulge);
+        magma_dbulge_id_data_init(&(arg[thread]), thread, &data_bulge);
         pthread_create(&thread_id[thread], &thread_attr, magma_dsytrd_sb2st_parallel_section, &arg[thread]);
     }
-    arg[0] = magma_dbulge_id_data(0, &data_bulge);
+    magma_dbulge_id_data_init(&(arg[0]), 0, &data_bulge);
     magma_dsytrd_sb2st_parallel_section(&arg[0]);
 
     // Wait for completion
@@ -250,7 +237,8 @@ magma_dsytrd_sb2st(
 
     magma_free_cpu(thread_id);
     magma_free_cpu(arg);
-    magma_free_cpu(prog);
+    magma_free_cpu((void *) prog);
+    magma_dbulge_data_destroy(&data_bulge);
 
     magma_set_lapack_numthreads(mklth);
     /*================================================

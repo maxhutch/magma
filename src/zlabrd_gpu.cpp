@@ -1,17 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
-
-#include <assert.h>
 
 #define PRECISION_z
 
@@ -211,15 +209,19 @@ magma_zlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
     --taup;
 
     /* Quick return if possible */
+    magma_int_t info = 0;
     if (m <= 0 || n <= 0) {
-        return 0;
+        return info;
     }
 
     magmaDoubleComplex *f;
     magma_queue_t stream;
     magma_queue_create( &stream );
     magma_zmalloc_cpu( &f, max(n,m) );
-    assert( f != NULL );  // TODO return error, or allocate outside zlatrd
+    if ( f == NULL ) {
+        info = MAGMA_ERR_HOST_ALLOC;
+        return info;
+    }
     
     if (m >= n) {
         /* Reduce to upper bidiagonal form */
@@ -604,5 +606,5 @@ magma_zlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
     magma_queue_destroy( stream );
     magma_free_cpu( f );
     
-    return MAGMA_SUCCESS;
+    return info;
 } /* magma_zlabrd_gpu */

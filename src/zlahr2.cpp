@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -194,7 +194,7 @@ magma_zlahr2(
     k -= 1;
 
     if (n <= 1)
-        return MAGMA_SUCCESS;
+        return info;
     
     for (i = 0; i < nb; ++i) {
         n_k_i_1 = n - k - i - 1;
@@ -315,5 +315,5 @@ magma_zlahr2(
     // Restore diagonal element
     *A(k+nb,nb-1) = ei;
 
-    return MAGMA_SUCCESS;
+    return info;
 } /* magma_zlahr2 */

@@ -1,7 +1,3 @@
-MAGMA_DIR = ../..
-include $(MAGMA_DIR)/Makefile.internal
-
-
 #######################################################################
 #  This makefile creates the test programs for the linear equation
 #  routines in LAPACK.  The test files are grouped as follows:
@@ -37,7 +33,22 @@ include $(MAGMA_DIR)/Makefile.internal
 #######################################################################
 
 DIR = testing/lin
+MAGMA_DIR = ../..
+include $(MAGMA_DIR)/Makefile.internal
 
+
+# ----------
+# sources for liblapacktest.a, if Fortran is NOT available -- dummy stub functions.
+ZSRC = magma_z_no_fortran.c
+
+-include Makefile.src
+
+NO_FORT_SRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
+
+NO_FORT_OBJ := $(NO_FORT_SRC:.c=.o)
+
+# ----------
+# sources for liblapacktest.a, if Fortran IS available.
 SRC =   zbdt01.f  \
         zget22.f  \
         zhet21.f  \
@@ -79,7 +90,19 @@ SRC =   zbdt01.f  \
         sstt21.f
 
 OBJ = $(SRC:.f=.o)
-EXE = $(OBJ:.o=)
+
+ifeq ($(FORT),no_fortran)
+liblapacktest.a: $(NO_FORT_OBJ)
+	$(ARCH) $(ARCHFLAGS) $@ $^
+	$(RANLIB) $@
+else
+liblapacktest.a: $(OBJ)
+	$(ARCH) $(ARCHFLAGS) $@ $^
+	$(RANLIB) $@
+endif
+
+
+#######################################################################
 
 ALINTST = \
    aladhd.o alaerh.o alaesm.o alahd.o alareq.o \
@@ -262,36 +285,32 @@ complex16: xlintstz
 $(TMGLIB):
 	cd ../matgen && $(MAKE)
 
-liblapacktest.a: $(OBJ)
-	$(ARCH) $(ARCHFLAGS) $@ $(OBJ)
-	$(RANLIB) $@
-
 xlintsts : $(ALINTST) $(SLINTST) $(SCLNTST) ../fortran.o $(TMGLIB)
 	$(FORT) $(ALINTST) $(SCLNTST) $(SLINTST) \
 	$(TMGLIB) -o xlintsts \
 	../fortran.o \
-	$(LDOPTS) -L$(MAGMA_DIR)/lib -lmagma \
+	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
 
 xlintstc : $(ALINTST) $(CLINTST) $(SCLNTST) ../fortran.o $(TMGLIB)
 	$(FORT) $(ALINTST) $(SCLNTST) $(CLINTST) \
 	$(TMGLIB) -o xlintstc \
 	../fortran.o \
-	$(LDOPTS) -L$(MAGMA_DIR)/lib -lmagma \
+	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
  
 xlintstd : $(ALINTST) $(DLINTST) $(DZLNTST) ../fortran.o $(TMGLIB)
 	$(FORT) $(ALINTST) $(DLINTST) $(DZLNTST) \
 	$(TMGLIB) -o xlintstd \
 	../fortran.o \
-	$(LDOPTS) -L$(MAGMA_DIR)/lib -lmagma \
+	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
  
 xlintstz : $(ALINTST) $(ZLINTST) $(DZLNTST) ../fortran.o $(TMGLIB)
 	$(FORT) $(ALINTST) $(DZLNTST) $(ZLINTST) \
 	$(TMGLIB) -o xlintstz \
 	../fortran.o \
-	$(LDOPTS) -L$(MAGMA_DIR)/lib -lmagma \
+	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
  
 $(ALINTST): $(FRC)
@@ -314,16 +333,16 @@ cleanall: clean
 # These are handled by generic %.o: %.f rule in Makefile.internal
 #schkaa.o: schkaa.f
 #	cp $(MAGMA_DIR)/control/magma.mod . 
-#	$(FORT) $(F77OPTS) -c $< -o $@
+#	$(FORT) $(FFLAGS) -c $< -o $@
 #
 #dchkaa.o: dchkaa.f
-#	$(FORT) $(F77OPTS) -c $< -o $@
+#	$(FORT) $(FFLAGS) -c $< -o $@
 #
 #cchkaa.o: cchkaa.f
-#	$(FORT) $(F77OPTS) -c $< -o $@
+#	$(FORT) $(FFLAGS) -c $< -o $@
 #
 #zchkaa.o: zchkaa.f
-#	$(FORT) $(F77OPTS) -c $< -o $@
+#	$(FORT) $(FFLAGS) -c $< -o $@
 
 ../fortran.o:
 	cd .. && $(MAKE) fortran.o

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -12,9 +12,6 @@
 
 */
 #include "common_magma.h"
-
-#include <cblas.h>
-#include <assert.h>
 
 #define PRECISION_z
 
@@ -179,14 +176,19 @@ magma_zlatrd2(magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     magmaDoubleComplex alpha;
     magmaDoubleComplex *f;
 
+    // TODO check arguments
+    magma_int_t info = 0;
     if (n <= 0) {
-        return 0;
+        return info;
     }
 
     magma_queue_t stream;
     magma_queue_create( &stream );
     magma_zmalloc_cpu( &f, n );
-    assert( f != NULL );  // TODO return error, or allocate outside zlatrd
+    if ( f == NULL ) {
+        info = MAGMA_ERR_HOST_ALLOC;
+        return info;
+    }
     
     if (uplo == MagmaUpper) {
         /* Reduce last NB columns of upper triangle */
@@ -261,11 +263,7 @@ magma_zlatrd2(magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
                 
                 blasf77_zscal(&i, &tau[i - 1], W(0, iw), &ione);
                 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                cblas_zdotc_sub( i, W(0,iw), ione, A(0,i), ione, &value );
-                #else
-                value = cblas_zdotc( i, W(0,iw), ione, A(0,i), ione );
-                #endif
+                value = magma_cblas_zdotc( i, W(0,iw), ione, A(0,i), ione );
                 alpha = tau[i - 1] * -0.5f * value;
                 blasf77_zaxpy(&i, &alpha, A(0, i), &ione,
                               W(0, iw), &ione);
@@ -337,11 +335,7 @@ magma_zlatrd2(magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
                 blasf77_zgemv("No transpose", &i_n, &i, &c_neg_one, W(i+1, 0), &ldw,
                               W(0, i), &ione, &c_one, W(i+1, i), &ione);
                 blasf77_zscal(&i_n, &tau[i], W(i+1,i), &ione);
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                cblas_zdotc_sub( i_n, W(i+1,i), ione, A(i+1,i), ione, &value );
-                #else
-                value = cblas_zdotc( i_n, W(i+1,i), ione, A(i+1,i), ione );
-                #endif
+                value = magma_cblas_zdotc( i_n, W(i+1,i), ione, A(i+1,i), ione );
                 alpha = tau[i] * -0.5f * value;
                 blasf77_zaxpy(&i_n, &alpha, A(i+1, i), &ione, W(i+1,i), &ione);
             }
@@ -351,5 +345,5 @@ magma_zlatrd2(magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     magma_free_cpu(f);
     magma_queue_destroy( stream );
 
-    return 0;
+    return info;
 } /* magma_zlatrd */

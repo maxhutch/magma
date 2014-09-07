@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -47,7 +47,7 @@
              On entry, TRANS specifies the operation to be performed as
              follows:
       -     = MagmaNoTrans:     C := alpha*A*B**H + conj( alpha )*B*A**H + beta*C.
-      -     = MagmaConjTrans:   C := alpha*A**H*B + conj( alpha )*B**H*A + beta*C.
+      -     = Magma_ConjTrans:  C := alpha*A**H*B + conj( alpha )*B**H*A + beta*C.
 
              **** current only NoTrans case is implemented.
 
@@ -60,7 +60,7 @@
     k        INTEGER.
              On entry with TRANS = MagmaNoTrans, K specifies the number
              of columns of the matrices A and B, and on entry with
-             TRANS = MagmaConjTrans, K specifies the number of rows of the
+             TRANS = Magma_ConjTrans, K specifies the number of rows of the
              matrices A and B. K must be at least zero.
 
     @param[in]
@@ -189,13 +189,13 @@ void magmablas_zher2k_mgpu_spec(
         info = -3;
     } else if ( k < 0 ) {
         info = -4;
-    } else if ( ((trans == MagmaNoTrans)   && lda < max(1,n)) ||
-                ((trans == MagmaConjTrans) && lda < max(1,k)) ) {
+    } else if ( ((trans == MagmaNoTrans)    && lda < max(1,n)) ||
+                ((trans == Magma_ConjTrans) && lda < max(1,k)) ) {
         info = -7;
     } else if ( aoffset < 0 || aoffset > lda ) {
         info = -8;
-    } else if ( ((trans == MagmaNoTrans)   && ldb < max(1,n)) ||
-                ((trans == MagmaConjTrans) && ldb < max(1,k)) ) {
+    } else if ( ((trans == MagmaNoTrans)    && ldb < max(1,n)) ||
+                ((trans == Magma_ConjTrans) && ldb < max(1,k)) ) {
         info = -10;
     } else if ( boffset < 0 || boffset > ldb ) {
         info = -11;
@@ -242,7 +242,7 @@ void magmablas_zher2k_mgpu_spec(
         
         // C[i:n,i] = alpha * A[i:n,0] * B[i,0]' + beta*C[i:n,i]
         //printf( "zgemm  n=%4d, ib=%4d, k=%4d, i=%4d\n", n-i, ib, k, i );
-        magma_zgemm( MagmaNoTrans, MagmaConjTrans, n, ib, k,
+        magma_zgemm( MagmaNoTrans, Magma_ConjTrans, n, ib, k,
                      alpha, dA(idev,0,0), lda,
                             dB(idev,i,0), ldb,
                      cbeta, dC(idev,coffset,di), ldc );
@@ -265,7 +265,7 @@ void magmablas_zher2k_mgpu_spec(
         
         // C[i:n,i] += conj(alpha) * B[i:n,0] * A[i,0]'
         //printf( "zgemm  n=%4d, ib=%4d, k=%4d, i=%4d\n", n-i, ib, k, i );
-        magma_zgemm( MagmaNoTrans, MagmaConjTrans, n, ib, k,
+        magma_zgemm( MagmaNoTrans, Magma_ConjTrans, n, ib, k,
                      alpha, dB(idev,0,0), ldb,
                             dA(idev,i,0), lda,
                      c_one, dC(idev,coffset,di), ldc );

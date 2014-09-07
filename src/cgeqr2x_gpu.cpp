@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgeqr2x_gpu.cpp normal z -> c, Fri Jul 18 17:34:16 2014
+       @generated from zgeqr2x_gpu.cpp normal z -> c, Tue Sep  2 12:38:20 2014
 
 */
 #include "common_magma.h"
@@ -95,24 +95,24 @@
     @ingroup magma_cgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgeqr2x_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA,
-                  magma_int_t *ldda, magmaFloatComplex *dtau,
+magma_cgeqr2x_gpu(magma_int_t m, magma_int_t n, magmaFloatComplex *dA,
+                  magma_int_t ldda, magmaFloatComplex *dtau,
                   magmaFloatComplex *dT, magmaFloatComplex *ddA,
                   float *dwork, magma_int_t *info)
 {
-    #define dA(a_1,a_2) (dA + (a_2)*(*ldda) + (a_1))
+    #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
     
     magma_int_t i, k;
 
     float *dnorm = dwork;
-    magmaFloatComplex *work = (magmaFloatComplex *)(dwork+2*(*n));
+    magmaFloatComplex *work = (magmaFloatComplex *)(dwork+2*n);
 
     *info = 0;
-    if (*m < 0) {
+    if (m < 0) {
         *info = -1;
-    } else if (*n < 0 || *n > min(*m, 128)) {
+    } else if (n < 0 || n > min(m, 128)) {
         *info = -2;
-    } else if (*ldda < max(1,*m)) {
+    } else if (ldda < max(1,m)) {
         *info = -4;
     }
     if (*info != 0) {
@@ -121,19 +121,20 @@ magma_cgeqr2x_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA,
     }
 
     /* Compute the norms of the trailing columns */
-    k = min(*m,*n);
-    magmablas_scnrm2_cols(*m, k, dA(0,0), *ldda, dnorm);
+    k = min(m,n);
+    // magmablas_scnrm2_cols(m, k, dA(0,0), ldda, dnorm);
 
     for (i = 0; i < k; ++i) {
         /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
-        magma_clarfgx_gpu(*m-i, dA(i, i), dA(min(i+1,*m), i), dtau+i, dnorm+i,
-                          ddA + i + i*(*n), i);
+        magmablas_scnrm2_cols(m-i, 1, dA(i,i), ldda, dnorm+i);
+        magma_clarfgx_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dnorm+i,
+                          ddA + i + i*n, i);
         
-        if (i < *n) {
+        if (i < n) {
             /* Apply H(i)' to A(i:m,i+1:n) from the left */
-            magma_clarfx_gpu(*m-i, *n-i-1, dA(i, i), dtau+i,
-                             //dA(i, i+1), *ldda, dnorm+i+1,
-                             dA(i, 0), *ldda, dnorm+i+1,
+            magma_clarfx_gpu(m-i, n-i-1, dA(i, i), dtau+i,
+                             //dA(i, i+1), ldda, dnorm+i+1,
+                             dA(i, 0), ldda, dnorm+i+1,
                              dT, i, work );
         }
     }

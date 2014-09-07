@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgeqrf_gpu.cpp normal z -> d, Fri Jul 18 17:34:16 2014
+       @generated from zgeqrf_gpu.cpp normal z -> d, Tue Sep  2 12:38:20 2014
 */
 #include "common_magma.h"
 
@@ -180,7 +180,7 @@ magma_dgeqrf_gpu( magma_int_t m, magma_int_t n,
             if (i > 0) {
                 /* Apply H' to A(i:m,i+2*ib:n) from the left */
                 cols = n-old_i-2*old_ib;
-                magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                   m-old_i, cols, old_ib,
                                   dA(old_i, old_i         ), ldda, dT(old_i), nb,
                                   dA(old_i, old_i+2*old_ib), ldda, dd_ref(0),    lddwork);
@@ -211,14 +211,14 @@ magma_dgeqrf_gpu( magma_int_t m, magma_int_t n,
 
                 if (i+nb < k-nb) {
                     /* Apply H' to A(i:m,i+ib:i+2*ib) from the left */
-                    magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                    magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, ib, ib,
                                       dA(i, i   ), ldda, dT(i),  nb,
                                       dA(i, i+ib), ldda, dd_ref(0), lddwork);
                 }
                 else {
                     cols = n-i-ib;
-                    magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaForward, MagmaColumnwise,
+                    magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, cols, ib,
                                       dA(i, i   ), ldda, dT(i),  nb,
                                       dA(i, i+ib), ldda, dd_ref(0), lddwork);

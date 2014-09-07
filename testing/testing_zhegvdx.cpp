@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
@@ -27,7 +27,6 @@
 
 #define PRECISION_z
 
-#define absv(v1) ((v1)>0? (v1): -(v1))
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zhegvdx
@@ -78,10 +77,10 @@ int main( int argc, char** argv)
             n2     = N*N;
             nb     = magma_get_zhetrd_nb(N);
             #if defined(PRECISION_z) || defined(PRECISION_c)
-            lwork  = 2*N*nb + N*N;
-            lrwork = 1 + 5*N +2*N*N;
+                lwork  = max( N + N*nb, 2*N + N*N );
+                lrwork = 1 + 5*N +2*N*N;
             #else
-            lwork  = 1 + 6*N*nb + 2* N*N;
+                lwork  = max( 2*N + N*nb, 1 + 6*N + 2*N*N );
             #endif
             liwork = 3 + 5*N;
 
@@ -211,9 +210,9 @@ int main( int argc, char** argv)
                 
                 temp1 = temp2 = 0;
                 for(int j=0; j < m2; j++) {
-                    temp1 = max(temp1, absv(w1[j]));
-                    temp1 = max(temp1, absv(w2[j]));
-                    temp2 = max(temp2, absv(w1[j]-w2[j]));
+                    temp1 = max(temp1, fabs(w1[j]));
+                    temp1 = max(temp1, fabs(w2[j]));
+                    temp2 = max(temp2, fabs(w1[j]-w2[j]));
                 }
                 result[1] = temp2 / (((double)m2)*temp1);
             }

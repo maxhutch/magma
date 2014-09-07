@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "../include/mmio.h"
+#include "mmio.h"
 
 #include "magma.h"
 #include "magmasparse.h"

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        
@@ -45,7 +45,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex *hA, *hX, *hB, *hR;
     magmaDoubleComplex *dA[MagmaMaxGPUs], *dX[MagmaMaxGPUs], *dB[MagmaMaxGPUs], *dwork[MagmaMaxGPUs], *hwork[MagmaMaxGPUs+1];
     magmaDoubleComplex *dA2;
-    magma_int_t M, N, size, lda, ldda, msize;
+    magma_int_t M, N, size, lda, ldda, msize, nb, nstream;
     magma_int_t ione     = 1;
     magma_int_t iseed[4] = {0,0,0,1};
     magma_int_t status = 0;
@@ -54,6 +54,10 @@ int main( int argc, char** argv)
     parse_opts( argc, argv, &opts );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
+    
+    // default values
+    nb      = (opts.nb      > 0 ? opts.nb      : 64);
+    nstream = (opts.nstream > 0 ? opts.nstream :  2);
     
     magma_int_t gnode[MagmaMaxGPUs][MagmaMaxGPUs+2];
     magma_int_t nbcmplx = 0;
@@ -73,7 +77,7 @@ int main( int argc, char** argv)
     magma_event_t redevents[MagmaMaxGPUs][20];
     magma_event_t redevents2[MagmaMaxGPUs][MagmaMaxGPUs*MagmaMaxGPUs+10];
     for( int d = 0; d < opts.ngpu; ++d ) {
-        for( magma_int_t i = 0; i < opts.nstream; ++i ) {
+        for( magma_int_t i = 0; i < nstream; ++i ) {
             magma_queue_create( &streams[d][i] );
         }
         for( magma_int_t i = 0; i < nbevents; ++i ) {
@@ -82,19 +86,22 @@ int main( int argc, char** argv)
         }
     }
 
-    printf( "nb %d, ngpu %d, nstream %d version %d\n", (int) opts.nb, (int) opts.ngpu, (int) opts.nstream, (int) opts.version );
+    printf( "nb %d, ngpu %d, nstream %d version %d\n", (int) nb, (int) opts.ngpu, (int) nstream, (int) opts.version );
     printf("    M     N    nb offset  CPU GFlop/s (sec)   GPU GFlop/s (sec)   CUBLAS hemm (sec)   ||R|| / ||A||*||X||\n");
     printf("=========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
-      for( int offset = 0; offset < 1; offset += min(N,opts.nb) ) {
+      M = opts.msize[itest];
+      N = opts.nsize[itest];
+      for( int offset = 0; offset < N; offset += min(N,nb) ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
-            M     = opts.msize[itest];
-            N     = opts.nsize[itest];
             msize = M - offset;
             lda   = M;
             ldda  = ((M + 31)/32)*32;
             size  = lda*M;
             gflops = FLOPS_ZHEMM( MagmaLeft, (double)msize, (double)N ) / 1e9;
+            
+            magma_int_t dworksiz = ldda*N*3;
+            magma_int_t hworksiz = lda*N;
             
             TESTING_MALLOC_CPU( hA, magmaDoubleComplex, lda*M );
             TESTING_MALLOC_CPU( hX, magmaDoubleComplex, lda*N );
@@ -103,14 +110,14 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( hR, magmaDoubleComplex, lda*N );
 
             for( int d = 0; d < opts.ngpu; ++d ) {
-                magma_int_t mlocal = ((M / opts.nb) / opts.ngpu + 1) * opts.nb;
+                magma_int_t mlocal = ((M / nb) / opts.ngpu + 1) * nb;
                 magma_setdevice( d );
                 TESTING_MALLOC_DEV( dA[d],    magmaDoubleComplex, ldda*mlocal );
                 TESTING_MALLOC_DEV( dX[d],    magmaDoubleComplex, ldda*N      );
                 TESTING_MALLOC_DEV( dB[d],    magmaDoubleComplex, ldda*N      );
-                TESTING_MALLOC_DEV( dwork[d], magmaDoubleComplex, ldda*N*3    );
+                TESTING_MALLOC_DEV( dwork[d], magmaDoubleComplex, dworksiz    );
                 
-                TESTING_MALLOC_PIN( hwork[d], magmaDoubleComplex, lda*N       );
+                TESTING_MALLOC_PIN( hwork[d], magmaDoubleComplex, hworksiz    );
             }
             TESTING_MALLOC_PIN( hwork[opts.ngpu], magmaDoubleComplex, lda*N );
         
@@ -130,7 +137,7 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            magma_zsetmatrix_1D_col_bcyclic( M, M, hA, lda, dA, ldda, opts.ngpu, opts.nb );
+            magma_zsetmatrix_1D_col_bcyclic( M, M, hA, lda, dA, ldda, opts.ngpu, nb );
             for( int d = 0; d < opts.ngpu; ++d ) {
                 magma_setdevice( d );
                 //magmablasSetKernelStream( streams[ d ][  0 ] );
@@ -141,40 +148,18 @@ int main( int argc, char** argv)
         
             //memset(hR, 0, lda*N*sizeof(magmaDoubleComplex));
     
-            //trace_init( 1, opts.ngpu, opts.nstream, (magma_queue_t*) streams );
+            //trace_init( 1, opts.ngpu, nstream, (magma_queue_t*) streams );
     
-            //magma_int_t offset = 0; //opts.nb;
+            //magma_int_t offset = 0; //nb;
     
             gpu_time = magma_sync_wtime(0);
-            
-            // 1GPU version light
-            /*
-            magmablas_zhemm_1gpu(
+        
+            magmablas_zhemm_mgpu_com(
                 MagmaLeft, MagmaLower, msize, N,
                 calpha,    dA, ldda, offset,
                            dX, ldda,
-                cbeta,     dB, ldda, hR, lda,
-                opts.ngpu, opts.nb, streams, opts.nstream );
-            */
-            // multi gpu version
-            
-            if (opts.version == 21) {
-                // TODO: not available?
-                //magmablas_zhemm_mgpu(
-                //    MagmaLeft, MagmaLower, msize, N,
-                //    calpha,    dA, ldda, offset,
-                //               dX, ldda,
-                //    cbeta,     dB, ldda, dwork, ldda, hR, lda, hwork, lda,
-                //    opts.ngpu, opts.nb, streams, opts.nstream, redevents, nbevents );
-            }
-            else {
-                magmablas_zhemm_mgpu_com(
-                    MagmaLeft, MagmaLower, msize, N,
-                    calpha,    dA, ldda, offset,
-                               dX, ldda,
-                    cbeta,     dB, ldda, dwork, ldda, hR, lda, hwork, lda,
-                    opts.ngpu, opts.nb, streams, opts.nstream, redevents2, nbevents, gnode, nbcmplx);
-            }
+                cbeta,     dB, ldda, dwork, dworksiz, hR, lda, hwork, hworksiz,
+                opts.ngpu, nb, streams, nstream, redevents2, nbevents, gnode, nbcmplx);
            
             gpu_time = magma_sync_wtime(0) - gpu_time;
             gpu_perf = gflops / gpu_time;
@@ -182,7 +167,7 @@ int main( int argc, char** argv)
             #ifdef TRACING
             char buf[80];
             snprintf( buf, sizeof(buf), "zhemm-m%d-n%d-nb%d-stream%d-ngpu%d-run%d.svg",
-                      (int) M, (int) N, (int) opts.nb, (int) opts.nstream, (int) opts.ngpu, (int) j );
+                      (int) M, (int) N, (int) nb, (int) nstream, (int) opts.ngpu, (int) j );
             trace_finalize( buf, "trace.css" );
             #endif
             
@@ -245,7 +230,7 @@ int main( int argc, char** argv)
                     //printf( "R ="  ); magma_zprint( M, N, hR, lda );
                     if (firstprint == 0) {
                         printf( "%5d %5d %5d %5d   %7.1f (%7.4f)   %7.1f (%7.4f)   %7.1f (%7.4f)   %8.2e   %s\n",
-                                (int) M, (int) N, (int) opts.nb, (int) offset,
+                                (int) M, (int) N, (int) nb, (int) offset,
                                 cpu_perf, cpu_time,
                                 gpu_perf, gpu_time,
                                 gpu_perf2, gpu_time2,
@@ -260,7 +245,7 @@ int main( int argc, char** argv)
                 }
             } else {
                 printf( "%5d %5d %5d %5d     ---   (  ---  )   %7.1f (%7.4f)     ---   (  ---  )   ---\n",
-                        (int) M, (int) N, (int) opts.nb, (int) offset,
+                        (int) M, (int) N, (int) nb, (int) offset,
                         gpu_perf, gpu_time );
             }
     
@@ -291,11 +276,12 @@ int main( int argc, char** argv)
             printf( "\n" );
         }
       }  // offset
+      printf( "\n" );
     }
 
     for( int d = 0; d < opts.ngpu; ++d ) {
         magma_setdevice( d );
-        for( magma_int_t i = 0; i < opts.nstream; ++i ) {
+        for( magma_int_t i = 0; i < nstream; ++i ) {
             magma_queue_destroy( streams[d][i] );
         }
         for( magma_int_t i = 0; i < nbevents; ++i ) {

@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
+#include "commonblas_z.h"
 #include "magma_templates.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
@@ -26,7 +27,7 @@ void magma_zlarfx_kernel( int m, magmaDoubleComplex *v, magmaDoubleComplex *tau,
                          magmaDoubleComplex *T, int it )
 {
     if ( !MAGMA_Z_EQUAL(*tau, MAGMA_Z_ZERO) ) {
-        const int i = threadIdx.x;
+        const int tx = threadIdx.x;
         //magmaDoubleComplex *dc = c + (blockIdx.x-it-1) * ldc;
         magmaDoubleComplex *dc = c + (blockIdx.x) * ldc;
 
@@ -37,7 +38,7 @@ void magma_zlarfx_kernel( int m, magmaDoubleComplex *v, magmaDoubleComplex *tau,
          * if blockIdx.x<it it performs the V(i:n,i)' * V(i:n,1:i-1)' used for computing T
          * if blockIdx.x>it it perform  w := v' * C  */
         lsum = MAGMA_Z_ZERO;
-        for( int j = i; j < m; j += BLOCK_SIZE ){
+        for( int j = tx; j < m; j += BLOCK_SIZE ){
             if (j==0){
                lsum += MAGMA_Z_MUL( MAGMA_Z_ONE, dc[j] );
                v[j] = MAGMA_Z_ONE;
@@ -45,23 +46,25 @@ void magma_zlarfx_kernel( int m, magmaDoubleComplex *v, magmaDoubleComplex *tau,
             else
                lsum += MAGMA_Z_MUL( MAGMA_Z_CNJG( v[j] ), dc[j] );
         }
-        sum[i] = lsum;
-        magma_sum_reduce< BLOCK_SIZE >( i, sum );
+        sum[tx] = lsum;
+        magma_sum_reduce< BLOCK_SIZE >( tx, sum );
 
         /*  C := C - v * w  */
         __syncthreads();
         magmaDoubleComplex z__1 = - MAGMA_Z_CNJG(*tau) * sum[0];
         if (blockIdx.x>it){
-           for( int j = m-i-1; j>=0 ; j -= BLOCK_SIZE )
+           for( int j = m-tx-1; j>=0 ; j -= BLOCK_SIZE )
                  dc[j] += z__1 * v[j];
            __syncthreads();
 
            /* Adjust the rest of the column norms */
-           if (i==0){
+           /*
+           if (tx==0){
              double temp = MAGMA_Z_ABS( dc[0] ) / xnorm[blockIdx.x-it-1];
              temp = (temp + 1.) * (1. - temp);
              xnorm[blockIdx.x-it-1] = xnorm[blockIdx.x-it-1] * sqrt(temp); 
            }
+           */
         }
         else
         {
@@ -71,50 +74,50 @@ void magma_zlarfx_kernel( int m, magmaDoubleComplex *v, magmaDoubleComplex *tau,
               *(T+blockIdx.x) = MAGMA_Z_CNJG(z__1);
         }
     }
-    else // Make last column of T zero
+    else if (blockIdx.x<=it)// in case tau is zero put the corresponding column of T to zero
     {
-       if (blockIdx.x<=it)
-          *(T+blockIdx.x) = MAGMA_Z_ZERO;
+        *(T+blockIdx.x) = MAGMA_Z_ZERO;
     }
 
 }
 
 //==============================================================================
-
+extern "C"
 __global__
 void magma_ztrmv_kernel(const magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t)
 {
-   const int i = threadIdx.x;
-   T += i;
+   const int tx = threadIdx.x;
+   T += tx;
 
    __shared__ magmaDoubleComplex tlocal[ BLOCK_SIZE ];
    magmaDoubleComplex res = MAGMA_Z_MAKE(0., 0.);
 
-   tlocal[i] = t[i];
+   tlocal[tx] = t[tx];
    __syncthreads();
 
    #pragma unroll
    for(int j=0; j<blockDim.x; j++)
       res +=  T[j*ldt]*tlocal[j];
 
-   t[i] = res;
+   t[tx] = res;
 }
 
+extern "C"
 __global__
 void magma_ztrmv_kernel2(const magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
                          magmaDoubleComplex *y, magmaDoubleComplex *tau)
 {
-   const int i = threadIdx.x;
+   const int tx = threadIdx.x;
    T += blockIdx.x;
 
    __shared__ magmaDoubleComplex sum[ 128 ];
 
-   sum[i] = T[i*ldt]*t[i];
-   magma_sum_reduce_n(blockDim.x, i, sum);
+   sum[tx] = T[tx*ldt]*t[tx];
+   magma_sum_reduce_n(blockDim.x, tx, sum);
 
    __syncthreads();
 
-   if (i==0){
+   if (tx==0){
       y[blockIdx.x] = sum[0];
       if (blockIdx.x==0)
          y[gridDim.x] = tau[0];
@@ -122,21 +125,21 @@ void magma_ztrmv_kernel2(const magmaDoubleComplex *T, int ldt, magmaDoubleComple
 }
 
 //==============================================================================
-
+extern "C"
 __global__
 void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, magmaDoubleComplex *y)
 {
-   const int i = threadIdx.x;
+   const int tx = threadIdx.x;
    T += blockIdx.x*ldt;
 
    __shared__ magmaDoubleComplex sum[ 128 ];
 
-   sum[i] = MAGMA_Z_CNJG(T[i])*t[i];
-   magma_sum_reduce_n(blockDim.x, i, sum);
+   sum[tx] = MAGMA_Z_CNJG(T[tx])*t[tx];
+   magma_sum_reduce_n(blockDim.x, tx, sum);
 
    __syncthreads();
 
-   if (i==0)
+   if (tx==0)
       y[blockIdx.x] = sum[0];
 }
 

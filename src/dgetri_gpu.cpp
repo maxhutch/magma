@@ -1,14 +1,20 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgetri_gpu.cpp normal z -> d, Fri Jul 18 17:34:15 2014
+       @generated from zgetri_gpu.cpp normal z -> d, Tue Sep  2 12:38:19 2014
 
 */
 #include "common_magma.h"
+
+#define PRECISION_d
+
+// === Define what BLAS to use ============================================
+#define magma_dtrsm magmablas_dtrsm
+// === End defining what BLAS to use ======================================
 
 /**
     Purpose
@@ -106,12 +112,13 @@ magma_dgetri_gpu( magma_int_t n, double *dA, magma_int_t ldda,
     for( j = jmax; j >= 0; j -= nb ) {
         jb = min( nb, n-j );
         
-        // copy current block column of L to work space,
-        // then replace with zeros in A.
-        magmablas_dlacpy( MagmaUpperLower, n-j, jb,
+        // copy current block column of A to work space dL
+        // (only needs lower trapezoid, but we also copy upper triangle),
+        // then zero the strictly lower trapezoid block column of A.
+        magmablas_dlacpy( MagmaFull, n-j, jb,
                           dA(j,j), ldda,
                           dL(j,0), lddl );
-        magmablas_dlaset( MagmaLower, n-j, jb, c_zero, c_zero, dA(j,j), ldda );
+        magmablas_dlaset( MagmaLower, n-j-1, jb, c_zero, c_zero, dA(j+1,j), ldda );
         
         // compute current block column of Ainv
         // Ainv(:, j:j+jb-1)
@@ -124,6 +131,7 @@ magma_dgetri_gpu( magma_int_t n, double *dA, magma_int_t ldda,
                                     dL(j+jb,0), lddl,
                          c_one,     dA(0,j),    ldda );
         }
+        // TODO use magmablas work interface
         magma_dtrsm( MagmaRight, MagmaLower, MagmaNoTrans, MagmaUnit,
                      n, jb, c_one,
                      dL(j,0), lddl,

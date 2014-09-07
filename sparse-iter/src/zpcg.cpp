@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hartwig Anzt 
 
@@ -11,7 +11,7 @@
 */
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #include <assert.h>
 
@@ -26,7 +26,8 @@
     Solves a system of linear equations
        A * X = B
     where A is a complex Hermitian N-by-N positive definite matrix A.
-    This is a GPU implementation of the Conjugate Gradient method.
+    This is a GPU implementation of the preconditioned Conjugate 
+    Gradient method.
 
     Arguments
     ---------
@@ -51,7 +52,7 @@
     precond_par magma_z_preconditioner*
                 preconditioner
 
-    @ingroup magmasparse_zposv
+    @ingroup magmasparse_zhesv
     ********************************************************************/
 
 magma_int_t

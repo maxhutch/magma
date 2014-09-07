@@ -1,51 +1,57 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
 */
 #include "common_magma.h"
-#include <assert.h>
 
-#define NB 64
+#define BLK_X 64
+#define BLK_Y 32
 
-/* =====================================================================
-    Matrix is m x n, and is divided into block rows, each NB x n.
-    Each CUDA block has NB threads to handle one block row.
-    Each thread adds one row, iterating across all columns.
-    The bottom block of rows may be partially outside the matrix;
-    if so, rows outside the matrix (i >= m) are disabled.
-    
-    TODO. Block in both directions, for large matrices.
-    E.g., each block does 64x64 tile, instead of 64xN tile.
+/*
+    Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
+    Each block has BLK_X threads.
+    Each thread loops across one row, updating BLK_Y entries.
+
+    Code similar to zlaset.
 */
-__global__ void
-zgeadd_kernel(
+__global__
+void zgeadd_full(
     int m, int n,
     magmaDoubleComplex alpha,
     const magmaDoubleComplex *dA, int ldda,
     magmaDoubleComplex       *dB, int lddb )
 {
-    // dA and dB iterate across row i
-    int i = blockIdx.x*blockDim.x + threadIdx.x;
-    if ( i < m ) {
-        dA += i;
-        dB += i;
-        const magmaDoubleComplex *dAend = dA + n*ldda;
-        while( dA < dAend ) {
-            *dB = alpha*(*dA) + (*dB);
-            dA += ldda;
-            dB += lddb;
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
+    int iby = blockIdx.y*BLK_Y;
+    /* check if full block-column */
+    bool full = (iby + BLK_Y <= n);
+    /* do only rows inside matrix */
+    if ( ind < m ) {
+        dA += ind + iby*ldda;
+        dB += ind + iby*lddb;
+        if ( full ) {
+            // full block-column
+            #pragma unroll
+            for( int j=0; j < BLK_Y; ++j ) {
+                dB[j*lddb] = alpha*dA[j*ldda] + dB[j*lddb];
+            }
+        }
+        else {
+            // partial block-column
+            for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
+                dB[j*lddb] = alpha*dA[j*ldda] + dB[j*lddb];
+            }
         }
     }
 }
 
 
-/* ===================================================================== */
 /**
     Purpose
     -------
@@ -82,15 +88,19 @@ zgeadd_kernel(
     lddb    INTEGER
             The leading dimension of the array dB.  LDDB >= max(1,M).
     
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_zgeadd(
+magmablas_zgeadd_q(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
     const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dB, magma_int_t lddb )
+    magmaDoubleComplex       *dB, magma_int_t lddb,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -110,9 +120,24 @@ magmablas_zgeadd(
     if ( m == 0 || n == 0 )
         return;
     
-    dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB );
+    dim3 threads( BLK_X );
+    dim3 grid( (m + BLK_X - 1)/BLK_X, (n + BLK_Y - 1)/BLK_Y );
     
-    zgeadd_kernel<<< grid, threads, 0, magma_stream >>>(
-        m, n, alpha, dA, ldda, dB, lddb );
+    zgeadd_full<<< grid, threads, 0, queue >>>
+        ( m, n, alpha, dA, ldda, dB, lddb );
+}
+
+
+/**
+    @see magmablas_zgeadd_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zgeadd(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex alpha,
+    const magmaDoubleComplex *dA, magma_int_t ldda,
+    magmaDoubleComplex       *dB, magma_int_t lddb )
+{
+    magmablas_zgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magma_stream );
 }

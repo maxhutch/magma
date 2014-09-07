@@ -3,7 +3,7 @@
     Later cleaned up by hand, particularly to be thread-safe (no static variables).
     
     @author Mark Gates
-    @generated from dlaln2.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+    @generated from dlaln2.cpp normal d -> s, Tue Sep  2 12:38:24 2014
 */
 #include "common_magma.h"
 
@@ -295,7 +295,7 @@ magma_int_t magma_slaln2(
                 X(2,1) = temp * B(2,1);
                 *xnorm = temp * bnorm;
                 *info = 1;
-                return 0;
+                return *info;
             }
         
             /* Gaussian elimination with complete pivoting. */
@@ -386,7 +386,7 @@ magma_int_t magma_slaln2(
                 X(2,2) = temp * B(2,2);
                 *xnorm = temp * bnorm;
                 *info = 1;
-                return 0;
+                return *info;
             }
         
             /* Gaussian elimination with complete pivoting. */
@@ -495,7 +495,7 @@ magma_int_t magma_slaln2(
         }
     }
 
-    return 0;
+    return *info;
 } /* slaln2_ */
 
 #undef crv

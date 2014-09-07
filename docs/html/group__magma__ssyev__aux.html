@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__ssyev__aux.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -135,9 +138,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gad6da1dcb28725fa4be9eea8352380ffe"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#gad6da1dcb28725fa4be9eea8352380ffe">magma_slatrd2</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, float *dA, magma_int_t ldda, float *dW, magma_int_t lddw, float *dwork, magma_int_t ldwork)</td></tr>
 <tr class="memdesc:gad6da1dcb28725fa4be9eea8352380ffe"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD2 reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#gad6da1dcb28725fa4be9eea8352380ffe">More...</a><br /></td></tr>
 <tr class="separator:gad6da1dcb28725fa4be9eea8352380ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8b81f6d52e3cb4b958b90966cfa982c6"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#ga8b81f6d52e3cb4b958b90966cfa982c6">magma_slatrd_mgpu</a> (magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n0, magma_int_t n, magma_int_t nb, magma_int_t nb0, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, float **dA, magma_int_t ldda, magma_int_t offset, float **dW, magma_int_t lddw, float *dwork[MagmaMaxGPUs], magma_int_t ldwork, magma_int_t k, float *dx[MagmaMaxGPUs], float *dy[MagmaMaxGPUs], float *work, magma_queue_t stream[][10], float *times)</td></tr>
-<tr class="memdesc:ga8b81f6d52e3cb4b958b90966cfa982c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga8b81f6d52e3cb4b958b90966cfa982c6">More...</a><br /></td></tr>
-<tr class="separator:ga8b81f6d52e3cb4b958b90966cfa982c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6e6d7e5861938a2d60c7aa54e5fedaeb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#ga6e6d7e5861938a2d60c7aa54e5fedaeb">magma_slatrd_mgpu</a> (magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n0, magma_int_t n, magma_int_t nb, magma_int_t nb0, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, float **dA, magma_int_t ldda, magma_int_t offset, float **dW, magma_int_t lddw, float *dwork[MagmaMaxGPUs], magma_int_t ldwork, magma_int_t k, float *dx[MagmaMaxGPUs], float *dy[MagmaMaxGPUs], float *work, magma_queue_t stream[][10], float *times)</td></tr>
+<tr class="memdesc:ga6e6d7e5861938a2d60c7aa54e5fedaeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga6e6d7e5861938a2d60c7aa54e5fedaeb">More...</a><br /></td></tr>
+<tr class="separator:ga6e6d7e5861938a2d60c7aa54e5fedaeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -1378,12 +1381,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga8b81f6d52e3cb4b958b90966cfa982c6"></a>
+<a class="anchor" id="ga6e6d7e5861938a2d60c7aa54e5fedaeb"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float magma_slatrd_mgpu </td>
+          <td class="memname">magma_int_t magma_slatrd_mgpu </td>
           <td>(</td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>num_gpus</em>, </td>
@@ -1589,7 +1592,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:43 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:48 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

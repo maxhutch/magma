@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
     @author Stan Tomov
 
-    @generated from testing_zheevd_gpu.cpp normal z -> c, Fri Jul 18 17:34:25 2014
+    @generated from testing_zheevd_gpu.cpp normal z -> c, Tue Sep  2 12:38:30 2014
 
 */
 
@@ -26,7 +26,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define absv(v1) ((v1)>0? (v1): -(v1))
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing cheevd_gpu
@@ -163,9 +162,9 @@ int main( int argc, char** argv)
                 
                 temp1 = temp2 = 0;
                 for( int j=0; j<N; j++ ) {
-                    temp1 = max(temp1, absv(w1[j]));
-                    temp1 = max(temp1, absv(w2[j]));
-                    temp2 = max(temp2, absv(w1[j]-w2[j]));
+                    temp1 = max(temp1, fabs(w1[j]));
+                    temp1 = max(temp1, fabs(w2[j]));
+                    temp2 = max(temp2, fabs(w1[j]-w2[j]));
                 }
                 result[2] = temp2 / (((float)N)*temp1);
             }

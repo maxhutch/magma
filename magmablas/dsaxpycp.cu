@@ -1,70 +1,91 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zcaxpycp.cu mixed zc -> ds, Fri Jul 18 17:34:11 2014
+       @generated from zcaxpycp.cu mixed zc -> ds, Tue Sep  2 12:38:15 2014
 
 */
 #include "common_magma.h"
 
-#define BLOCK_SIZE 64
+#define NB 64
 
-// adds   X += R (including conversion to double)  --and--
-// copies W = B
-// each thread does one index, X[i] and W[i]
-extern "C" __global__ void
+// adds   x += r (including conversion to double)  --and--
+// copies w = b
+// each thread does one index, x[i] and w[i]
+__global__ void
 dsaxpycp_kernel(
-    int M, float *R, double *X,
-    const double *B, double *W )
+    int m, float *r, double *x,
+    const double *b, double *w )
 {
-    const int i = threadIdx.x + blockIdx.x*BLOCK_SIZE;
-    if ( i < M ) {
-        X[i] = MAGMA_D_ADD( X[i], (double)( R[i] ) );
-        W[i] = B[i];
+    const int i = threadIdx.x + blockIdx.x*NB;
+    if ( i < m ) {
+        x[i] = MAGMA_D_ADD( x[i], (double)( r[i] ) );
+        w[i] = b[i];
     }
 }
 
 
-// adds   X += R  --and--
-// copies R = B
-// each thread does one index, X[i] and R[i]
-extern "C" __global__ void
+// adds   x += r  --and--
+// copies r = b
+// each thread does one index, x[i] and r[i]
+__global__ void
 daxpycp_kernel(
-    int M, double *R, double *X,
-    const double *B)
+    int m, double *r, double *x,
+    const double *b)
 {
-    const int i = threadIdx.x + blockIdx.x*BLOCK_SIZE;
-    if ( i < M ) {
-        X[i] = MAGMA_D_ADD( X[i], R[i] );
-        R[i] = B[i];
+    const int i = threadIdx.x + blockIdx.x*NB;
+    if ( i < m ) {
+        x[i] = MAGMA_D_ADD( x[i], r[i] );
+        r[i] = b[i];
     }
 }
 
 
-// adds   X += R (including conversion to double)  --and--
-// copies W = B
+// ----------------------------------------------------------------------
+// adds   x += r (including conversion to double)  --and--
+// copies w = b
+extern "C" void
+magmablas_dsaxpycp_q(
+    magma_int_t m, float *r, double *x,
+    const double *b, double *w,
+    magma_queue_t queue )
+{
+    dim3 threads( NB );
+    dim3 grid( (m + NB - 1)/NB );
+    dsaxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b, w );
+}
+
+
 extern "C" void
 magmablas_dsaxpycp(
-    magma_int_t M, float *R, double *X,
-    const double *B, double *W)
+    magma_int_t m, float *r, double *x,
+    const double *b, double *w)
 {
-    dim3 threads( BLOCK_SIZE );
-    dim3 grid( (M + BLOCK_SIZE - 1)/BLOCK_SIZE );
-    dsaxpycp_kernel <<< grid, threads, 0, magma_stream >>> ( M, R, X, B, W );
+    magmablas_dsaxpycp_q( m, r, x, b, w, magma_stream );
 }
 
 
-// adds   X += R  --and--
-// copies R = B
+// ----------------------------------------------------------------------
+// adds   x += r  --and--
+// copies r = b
+extern "C" void
+magmablas_daxpycp_q(
+    magma_int_t m, double *r, double *x,
+    const double *b,
+    magma_queue_t queue )
+{
+    dim3 threads( NB );
+    dim3 grid( (m + NB - 1)/NB );
+    daxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b );
+}
+
 extern "C" void
 magmablas_daxpycp(
-    magma_int_t M, double *R, double *X,
-    const double *B)
+    magma_int_t m, double *r, double *x,
+    const double *b)
 {
-    dim3 threads( BLOCK_SIZE );
-    dim3 grid( (M + BLOCK_SIZE - 1)/BLOCK_SIZE );
-    daxpycp_kernel <<< grid, threads, 0, magma_stream >>> ( M, R, X, B );
+    magmablas_daxpycp_q( m, r, x, b, magma_stream );
 }

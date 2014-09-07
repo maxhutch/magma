@@ -1,24 +1,23 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from clag2z_sparse.cu mixed zc -> ds, Fri Jul 18 17:34:27 2014
+       @generated from clag2z_sparse.cu mixed zc -> ds, Tue Sep  2 12:38:32 2014
 
 */
 #include "common_magma.h"
-#include "../include/magmasparse_z.h"
-#include "../include/magmasparse_ds.h"
-#include "../../include/magma.h"
-#include "../include/mmio.h"
+#include "magmasparse_z.h"
+#include "magmasparse_ds.h"
+#include "magma.h"
+#include "mmio.h"
 #include "common_magma.h"
 
 #define PRECISION_d
 #define blksize 512
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
 
 // TODO get rid of global variable!
 __device__ int flag = 0; 

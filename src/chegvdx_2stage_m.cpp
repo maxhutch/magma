@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegvdx_2stage_m.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from zhegvdx_2stage_m.cpp normal z -> c, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -134,13 +134,13 @@
 
     @param[out]
     work    (workspace) COMPLEX array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N * (NB + 1).
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N + N*NB.
             If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 2*N + N**2.
             where LQ2 is the size needed to store the Q2 matrix
             and is returned by magma_bulge_get_lq2.
@@ -153,7 +153,7 @@
 
     @param[out]
     rwork   (workspace) REAL array, dimension (MAX(1,LRWORK))
-            On exit, if INFO = 0, RWORK(1) returns the optimal LRWORK.
+            On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
 
     @param[in]
     lrwork  INTEGER
@@ -170,7 +170,7 @@
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -290,7 +290,7 @@ magma_chegvdx_2stage_m(magma_int_t nrgpu,
         lrwmin = 1 + 5*n + 2*n*n;
         liwmin = 5*n + 3;
     } else {
-        lwmin  = lq2 + n*(nb + 1);
+        lwmin  = lq2 + n + n*nb;
         lrwmin = n;
         liwmin = 1;
     }
@@ -389,6 +389,24 @@ magma_chegvdx_2stage_m(magma_int_t nrgpu,
             } else {
                 trans = MagmaConjTrans;
             }
+            printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            magmaFloatComplex *dA=NULL, *dB=NULL;
+            magma_int_t ldda = n;
+            magma_int_t lddb = n;
+            
+            if (MAGMA_SUCCESS != magma_cmalloc( &dB, n*lddb ) ) {
+                *info = MAGMA_ERR_DEVICE_ALLOC;
+                return *info;
+            }
+            if (MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda ) ) {
+                *info = MAGMA_ERR_DEVICE_ALLOC;
+                return *info;
+            }
+            magma_csetmatrix( n, n, B, ldb, dB, lddb );
+            magma_csetmatrix( n, n, A, lda, dA, ldda );
+            magma_ctrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
+                        n, n, c_one, dB, lddb, dA, ldda);
+            magma_cgetmatrix( n, n, dA, ldda, A, lda );
 
             //magma_ctrmm_m(nrgpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, c_one, B, ldb, A, lda);
         }

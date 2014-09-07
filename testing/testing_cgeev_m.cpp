@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zgeev_m.cpp normal z -> c, Fri Jul 18 17:34:25 2014
+       @generated from testing_zgeev_m.cpp normal z -> c, Tue Sep  2 12:38:30 2014
 
 */
 
@@ -16,7 +16,6 @@
 #include <math.h>
 #include <cuda_runtime_api.h>
 #include <cublas.h>
-#include <cblas.h>
 
 // includes, project
 #include "flops.h"
@@ -191,7 +190,7 @@ int main( int argc, char** argv)
                 // Do test 3
                 result[2] = -1.;
                 for( int j = 0; j < N; ++j ) {
-                    tnrm = cblas_scnrm2(N, &VR[j*lda], ione);
+                    tnrm = magma_cblas_scnrm2( N, &VR[j*lda], ione );
                     result[2] = max( result[2], min( ulpinv, fabs(tnrm-1.)/ulp ));
                     
                     vmx  = vrmx = 0.;
@@ -214,7 +213,7 @@ int main( int argc, char** argv)
                 // Do test 4
                 result[3] = -1.;
                 for( int j = 0; j < N; ++j ) {
-                    tnrm = cblas_scnrm2(N, &VL[j*lda], ione);
+                    tnrm = magma_cblas_scnrm2( N, &VL[j*lda], ione );
                     result[3] = max( result[3], min( ulpinv, fabs(tnrm - 1.)/ ulp ));
                     
                     vmx = vrmx = 0.;

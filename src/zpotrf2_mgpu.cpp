@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -120,6 +120,11 @@ magma_zpotrf2_mgpu(int num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_t n
         return *info;
     }
 
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     for( d=0; d < num_gpus; d++ ) {
         /* local-n and local-ld */
         if (upper) {
@@ -231,7 +236,7 @@ magma_zpotrf2_mgpu(int num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_t n
                 d = (j/nb+1)%num_gpus;
                 for( dd=0; dd < num_gpus; dd++ ) {
                     j_local2 = j_local+1;
-                    if ( d > id ) j_local2 --;
+                    if ( d > id ) j_local2--;
                     nb0 = nb*j_local2;
                 
                     if ( n_local[d] > nb0 ) {
@@ -480,7 +485,7 @@ magma_zpotrf2_mgpu(int num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_t n
                 d = (j/nb+1)%num_gpus;
                 for( dd=0; dd < num_gpus; dd++ ) {
                     j_local2 = j_local+1;
-                    if ( d > id ) j_local2 --;
+                    if ( d > id ) j_local2--;
                     nb0 = nb*j_local2;
             
                     if ( nb0 < n_local[d] ) {
@@ -632,14 +637,13 @@ magma_zpotrf2_mgpu(int num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_t n
         magma_setdevice(d);
         magma_queue_sync( stream[d][0] );
         magma_queue_sync( stream[d][1] );
-        magmablasSetKernelStream(NULL);
-
         //magma_event_destroy( event0[d] );
         //magma_event_destroy( event1[d] );
         //magma_event_destroy( event2[d] );
         //magma_event_destroy( event3[d] );
     }
-    magma_setdevice(0);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_zpotrf_mgpu */

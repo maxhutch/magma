@@ -75,10 +75,10 @@ var searchData=
   ['double_20precision',['double precision',['../group__magmasparse__dgegpuk.html',1,'']]],
   ['double_20precision',['double precision',['../group__magmasparse__dgepr.html',1,'']]],
   ['double_20precision',['double precision',['../group__magmasparse__dgesv.html',1,'']]],
-  ['double_20precision',['double precision',['../group__magmasparse__dposv.html',1,'']]],
+  ['double_20precision',['double precision',['../group__magmasparse__dheev.html',1,'']]],
+  ['double_20precision',['double precision',['../group__magmasparse__dhepr.html',1,'']]],
+  ['double_20precision',['double precision',['../group__magmasparse__dhesv.html',1,'']]],
   ['double_20precision',['double precision',['../group__magmasparse__dsgpuk.html',1,'']]],
-  ['double_20precision',['double precision',['../group__magmasparse__dsyev.html',1,'']]],
-  ['double_20precision',['double precision',['../group__magmasparse__dsypr.html',1,'']]],
   ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__z.html',1,'']]],
   ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zaux.html',1,'']]],
   ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zblas.html',1,'']]],
@@ -86,8 +86,8 @@ var searchData=
   ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zgegpuk.html',1,'']]],
   ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zgepr.html',1,'']]],
   ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zgesv.html',1,'']]],
-  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zposv.html',1,'']]],
-  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zsgpuk.html',1,'']]],
-  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zsyev.html',1,'']]],
-  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zsypr.html',1,'']]]
+  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zheev.html',1,'']]],
+  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zhepr.html',1,'']]],
+  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zhesv.html',1,'']]],
+  ['double_2dcomplex_20precision',['double-complex precision',['../group__magmasparse__zsgpuk.html',1,'']]]
 ];

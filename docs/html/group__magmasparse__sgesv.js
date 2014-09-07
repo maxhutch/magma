@@ -1,9 +1,6 @@
 var group__magmasparse__sgesv =
 [
     [ "magma_sbaiter", "group__magmasparse__sgesv.html#ga0e62044c61203b84d9fc1ab9dc878f0c", null ],
-    [ "magma_sbcsrlu", "group__magmasparse__sgesv.html#ga135066f8e599618015b286a18ba24e60", null ],
-    [ "magma_sbcsrlusv", "group__magmasparse__sgesv.html#ga6f04dc7493ff7f652378a18f7a1b7171", null ],
-    [ "magma_sbcsrlutrf", "group__magmasparse__sgesv.html#ga0a0ab2bdbd4d54ef95ff3ea1ace0e593", null ],
     [ "magma_sbicgstab", "group__magmasparse__sgesv.html#ga8f06bd30449a93564675ad0bf7da71f7", null ],
     [ "magma_sbicgstab_merge", "group__magmasparse__sgesv.html#gac57fdc44a9eead2744700c2841df0897", null ],
     [ "magma_sbicgstab_merge2", "group__magmasparse__sgesv.html#ga3e079ec3a175ec7a7ba4f42a0ec3e87f", null ],

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zhetrd_he2hb.cpp normal z -> s, Fri Jul 18 17:34:19 2014
+       @generated from zhetrd_he2hb.cpp normal z -> s, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -20,7 +20,7 @@
     -------
     SSYTRD_HE2HB reduces a real symmetric matrix A to real symmetric
     band-diagonal form T by an orthogonal similarity transformation:
-    Q**T * A * Q = T.
+    Q**H * A * Q = T.
     This version stores the triangular matrices T used in the accumulated
     Householder transformations (I - V T V').
 
@@ -66,7 +66,7 @@
 
     @param[out]
     work    (workspace) REAL array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -195,15 +195,18 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
         return *info;
     }
 
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     float *dA;
     if (MAGMA_SUCCESS != magma_smalloc( &dA, (n + 2*nb)*ldda )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
-    magma_int_t threads = magma_get_lapack_numthreads();
-    magma_int_t mklth   = min(threads,16);
-    magma_set_lapack_numthreads(mklth);
+    // limit to 16 threads
+    magma_int_t orig_threads = magma_get_lapack_numthreads();
+    magma_set_lapack_numthreads( min(orig_threads,16) );
 
     /* Use the first panel of dA as work space */
     float *dwork = dA + n*ldda;
@@ -226,7 +229,7 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     magmablasSetKernelStream( stream[0] );
     magma_event_t Pupdate_event;
     cudaEventCreateWithFlags(&Pupdate_event,cudaEventDisableTiming);
-    //cudaEventCreate(&Pupdate_event);
+    //magma_event_create(&Pupdate_event);
 
 
     if (upper) {
@@ -262,7 +265,7 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
 
                  trace_gpu_start( 0, 1, "get", "get panel" );
                  //magma_queue_sync( stream[0] );
-                 cudaStreamWaitEvent(stream[1], Pupdate_event, 0);
+                 magma_queue_wait_event(stream[1], Pupdate_event);  //, 0);
                  magma_sgetmatrix_async( (pm+pn), pn,
                                          dA( i, i), ldda,
                                          A ( i, i), lda, stream[1] );
@@ -350,7 +353,7 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
               * compute T'*V'*X ==> dwork'*W ==>
               * dwork + pm*nb = ((T' * V') * X) = dwork' * X = dwork' * W */
              trace_gpu_start( 0, 2, "gemm", "work = T'*V'*X" );
-             magma_sgemm(MagmaTrans, MagmaNoTrans, pk, pk, pm,
+             magma_sgemm(MagmaConjTrans, MagmaNoTrans, pk, pk, pm,
                          c_one, dwork, pm,
                          dW, pm,
                          c_zero, dwork + pm*nb, nb);
@@ -373,19 +376,19 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
                  /* There would be next iteration;
                     do lookahead - update the next panel */
                  trace_gpu_start( 0, 2, "gemm", "gemm 4 next panel left" );
-                 magma_sgemm(MagmaNoTrans, MagmaTrans, pm, pn, pn, c_neg_one,
+                 magma_sgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
                              dA(indi, indj), ldda,
                              dW,                 pm, c_one,
                              dA(indi, indi), ldda);
                  trace_gpu_end( 0, 2 );
              
                  trace_gpu_start( 0, 2, "gemm", "gemm 5 next panel right" );
-                 magma_sgemm(MagmaNoTrans, MagmaTrans, pm, pn, pn, c_neg_one,
+                 magma_sgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
                              dW,                 pm,
                              dA(indi, indj), ldda, c_one,
                              dA(indi, indi), ldda);
                  trace_gpu_end( 0, 2 );
-                 cudaEventRecord(Pupdate_event, stream[0]);
+                 magma_event_record(Pupdate_event, stream[0]);
              }
              else {
                  /* no look-ahead as this is last iteration */
@@ -418,14 +421,14 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     
     trace_finalize( "ssytrd_sy2sb.svg", "trace.css" );
 
-    cudaEventDestroy(Pupdate_event);
+    magma_event_destroy( Pupdate_event );
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
     magma_free( dA );
     work[0] = MAGMA_S_MAKE( lwkopt, 0 );
-    magmablasSetKernelStream( 0 );
-    
-    magma_set_lapack_numthreads(threads);
+
+    magmablasSetKernelStream( orig_stream );    
+    magma_set_lapack_numthreads( orig_threads );
 
     return *info;
 } /* magma_ssytrd_sy2sb */

@@ -1,18 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2014
 
-       @generated from magma_zp2p.cpp normal z -> d, Fri Jul 18 17:34:30 2014
+       @generated from magma_zp2p.cpp normal z -> d, Tue Sep  2 12:38:36 2014
        @author Hartwig Anzt
 
 */
-
-#include "magma_lapack.h"
-#include "common_magma.h"
-#include "../include/magmasparse.h"
 
 #include <assert.h>
 
@@ -24,7 +20,6 @@
 
 
 #include <stdio.h>  
-#include <cuda.h>  
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
@@ -36,9 +31,13 @@
 #include <cuda_runtime.h>
 #include <cublas.h>
 
+#include "magma_lapack.h"
+#include "common_magma.h"
+#include "magmasparse.h"
+
 // includes, project
 #include "magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #define BLOCK_SIZE 512
 #define STREAM_COUNT 4

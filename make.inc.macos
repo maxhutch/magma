@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
@@ -17,6 +17,7 @@
 #GPU_TARGET ?= Tesla Fermi Kepler
 
 CC        = gcc
+CXX       = g++
 NVCC      = nvcc
 FORT      = gfortran
 
@@ -35,11 +36,11 @@ RANLIB    = ranlib
 # See BLAS_FIX below.
 # Alternatively, don't link with the veclib/accelerate framework;
 # use a different BLAS and LAPACK library.
-OPTS      = -Wall -m64 -O3 -DADD_
-F77OPTS   = -Wall -m64 -O3 -DADD_
-FOPTS     = -Wall -m64 -O3 -DADD_ -x f95-cpp-input
-NVOPTS    =       -m64 -O3 -DADD_ -Xcompiler -fno-strict-aliasing
-LDOPTS    = -Wall -m64
+CFLAGS    = -Wall -m64 -O3 -DADD_
+FFLAGS    = -Wall -m64 -O3 -DADD_
+F90FLAGS  = -Wall -m64 -O3 -DADD_ -x f95-cpp-input
+NVCCFLAGS =       -m64 -O3 -DADD_ -Xcompiler -fno-strict-aliasing
+LDFLAGS   = -Wall -m64
 
 LIB       = -framework Accelerate -lcublas -lcudart -lstdc++ -lm
 
@@ -55,7 +56,7 @@ INC       = -I$(CUDADIR)/include
 # ========================================
 # replace single & single-complex BLAS functions with reference versions.
 # (i.e., functions that return float; subroutines do not need a fix.)
-LIB      := -lblas_fix $(LIB)
+LIB      := -L$(MAGMA_DIR)/lib -lblas_fix $(LIB)
 
 BLAS_FIX  = $(MAGMA_DIR)/lib/libblas_fix.a
 

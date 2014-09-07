@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -316,7 +316,7 @@ extern "C" int
 magma_zbicgmerge4(  int type, 
                     magmaDoubleComplex *skp ){
 
-    dim3 Bs( 2 );
+    dim3 Bs( 1 );
     dim3 Gs( 1 );
     if( type == 1 )
         magma_zbicgmerge4_kernel_1<<<Gs, Bs, 0>>>( skp );

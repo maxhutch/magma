@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -18,7 +18,7 @@
     ZPOTRF_OOC computes the Cholesky factorization of a complex Hermitian
     positive definite matrix A. This version does not require work
     space on the GPU passed as input. GPU memory is allocated in the
-    routine. The matrix A may not fit entirely in the GPU memory.
+    routine. The matrix A may exceed the GPU memory.
 
     The factorization has the form
        A = U**H * U,   if UPLO = MagmaUpper, or
@@ -115,6 +115,11 @@ magma_zpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
     if ( n == 0 )
         return *info;
 
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     nb = magma_get_dpotrf_nb(n);
     if ( num_gpus0 > n/nb ) {
         num_gpus = n/nb;
@@ -440,7 +445,7 @@ magma_zpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
         magma_setdevice(d);
 
         for( j=0; j < 3; j++ ) {
-            if ( stream[d][j] != NULL ) magma_queue_destroy( stream[d][j] );
+            magma_queue_destroy( stream[d][j] );
         }
         magma_free( dt[d] );
 
@@ -448,7 +453,8 @@ magma_zpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
             magma_event_destroy( event[d][j] );
         }
     }
-    magma_setdevice(0);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
                  
     timer_printf( "\n n=%d NB=%d nb=%d\n", (int) n, (int) NB, (int) nb );
     timer_printf( " Without memory allocation: %f / %f = %f GFlop/s\n",

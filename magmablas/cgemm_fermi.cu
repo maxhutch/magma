@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgemm_fermi.cu normal z -> c, Fri Jul 18 17:34:13 2014
+       @generated from zgemm_fermi.cu normal z -> c, Tue Sep  2 12:38:17 2014
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -19,7 +19,6 @@
 */
 #include "common_magma.h"
 #include "commonblas_c.h"
-#include <assert.h>
 
 #define PRECISION_c
 
@@ -143,9 +142,9 @@ magmablas_cgemm(
     magmaFloatComplex *d_C, magma_int_t ldc )
 {
     magma_int_t info = 0;
-    if      ( TRANSA != MagmaNoTrans && TRANSA != MagmaTrans && TRANSA != Magma_ConjTrans )
+    if      ( TRANSA != MagmaNoTrans && TRANSA != MagmaTrans && TRANSA != MagmaConjTrans )
         info = -1;
-    else if ( TRANSB != MagmaNoTrans && TRANSB != MagmaTrans && TRANSB != Magma_ConjTrans )
+    else if ( TRANSB != MagmaNoTrans && TRANSB != MagmaTrans && TRANSB != MagmaConjTrans )
         info = -2;
     else if ( m < 0 )
         info = -3;

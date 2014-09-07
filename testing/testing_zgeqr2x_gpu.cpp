@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -56,6 +56,7 @@ int main( int argc, char** argv)
     magma_queue_create( &stream[0] );
     magma_queue_create( &stream[1] );
 
+    printf("version %d\n", (int) opts.version );
     printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||R||_F/||A||_F  ||R_T||\n");
     printf("=============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -64,13 +65,14 @@ int main( int argc, char** argv)
             N     = opts.nsize[itest];
 
             if (N > 128) {
-                printf("This routine requires N <= 128. Setting N = 128\n");
-                N = 128;
+                printf("%5d %5d   skipping because zgeqr2x requires N <= 128\n",
+                        (int) M, (int) N);
+                continue;
             }
-
             if (M < N) {
-                printf("This routine requires M >= N. Setting M = N\n");
-                M = N;
+                printf("%5d %5d   skipping because zgeqr2x requires M >= N\n",
+                        (int) M, (int) N);
+                continue;
             }
 
             min_mn = min(M, N);
@@ -125,24 +127,23 @@ int main( int argc, char** argv)
             gpu_time = magma_sync_wtime(0);
     
             if (opts.version == 1)
-                magma_zgeqr2x_gpu(&M, &N, d_A, &ldda, dtau, d_T, ddA, dwork, &info);
+                magma_zgeqr2x_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info);
             else if (opts.version == 2)
-                magma_zgeqr2x2_gpu(&M, &N, d_A, &ldda, dtau, d_T, ddA, dwork, &info);
+                magma_zgeqr2x2_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info);
             else if (opts.version == 3)
-                magma_zgeqr2x3_gpu(&M, &N, d_A, &ldda, dtau, d_T, ddA, dwork, &info);
+                magma_zgeqr2x3_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info);
             else {
+                printf( "call magma_zgeqr2x4_gpu\n" );
                 /*
                   Going through NULL stream is faster
                   Going through any stream is slower
                   Doing two streams in parallel is slower than doing them sequentially
                   Queuing happens on the NULL stream - user defined buffers are smaller?
                 */
-                magma_zgeqr2x4_gpu(&M, &N,  d_A, &ldda, dtau, d_T, ddA, dwork, &info, NULL);
-                /*
-                magma_zgeqr2x4_gpu(&M, &N,  d_A, &ldda, dtau, d_T, ddA, dwork, &info, stream[1]);
-                magma_zgeqr2x4_gpu(&M, &N, d_A2, &ldda,dtau2,d_T2,ddA2,dwork2, &info, stream[0]);
-                */
-                //magma_zgeqr2x4_gpu(&M, &N, d_A2, &ldda,dtau2,d_T2,ddA2,dwork2, &info, NULL);
+                magma_zgeqr2x4_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info, NULL);
+                //magma_zgeqr2x4_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info, stream[1]);
+                //magma_zgeqr2x4_gpu(M, N, d_A2, ldda, dtau2, d_T2, ddA2, dwork2, &info, stream[0]);
+                //magma_zgeqr2x4_gpu(M, N, d_A2, ldda, dtau2, d_T2, ddA2, dwork2, &info, NULL);
                 //gflops *= 2;
             }
             gpu_time = magma_sync_wtime(0) - gpu_time;

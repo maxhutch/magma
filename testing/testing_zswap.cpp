@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -332,7 +332,7 @@ int main( int argc, char** argv)
             
             time = magma_sync_wtime( queue );
             magma_setvector( nb, sizeof(magma_int_t), ipiv, 1, d_ipiv, 1 );
-            magmablas_zlaswp2( N, d_A1, ldda, 1, nb, d_ipiv );
+            magmablas_zlaswp2( N, d_A1, ldda, 1, nb, d_ipiv, 1 );
             time = magma_sync_wtime( queue ) - time;
             row_perf7 = gbytes / time;
             

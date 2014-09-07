@@ -1,378 +1,198 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
+       
+       @author Mark Gates
 
-       @precisions normal z -> c
+       @precisions normal z -> s d c
 */
 #include "common_magma.h"
 #include "commonblas_z.h"
+#include "magma_templates.h"
 
 #define PRECISION_z
 
-#define num_threads 128
-#define gemv_bs      32
-#define threadSize  128
+#define BLK_X 128
+#define BLK_Y 128
 
+/* Compute y = alpha*A*x + beta*y.
+ * Each thread block does a BLK_X x N block row of A.
+ * Each thread goes across one row, accumulating dot product of row ind and x into res.
+ * This simple implementation loads x directly, relying on the cache,
+ * without using shared memory.
+ */
 __global__ void
 zgemvn_kernel1_fermi(
-    int m, int n, int n1, magmaDoubleComplex alpha,
+    int m, int n, magmaDoubleComplex alpha,
     const magmaDoubleComplex * __restrict__ A, int lda,
-    const magmaDoubleComplex * __restrict__ x, magmaDoubleComplex beta,
-    magmaDoubleComplex       * __restrict__ y)
+    const magmaDoubleComplex * __restrict__ x, int incx, magmaDoubleComplex beta,
+    magmaDoubleComplex       * __restrict__ y, int incy)
 {
 #if (__CUDA_ARCH__ >= 200)
-    int ind = blockIdx.x*num_threads + threadIdx.x;
-    
-    A += ind;
-    
-    magmaDoubleComplex res = MAGMA_Z_ZERO;
-    
-    for( int i=0; i < n1; i += gemv_bs ) {
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
+    if ( ind < m ) {
+        A += ind;
+        
+        magmaDoubleComplex res = MAGMA_Z_ZERO;
+        
         #pragma unroll
-        for(int j=0; j < gemv_bs; j++) {
-            res += A[0] * x[j];
-            A   += lda;
+        for(int j=0; j < n; j++) {
+            res += A[j*lda] * x[j*incx];
         }
-        x += gemv_bs;
+        
+        y[ind*incy] = alpha*res + beta*y[ind*incy];
     }
-    
-    if ( n > n1 ) {
-        for(int j=0; j < (n-n1); j++) {
-            res += A[0] * x[j];
-            A   += lda;
-        }
-    }
-    
-    if ( ind < m )
-        y[ind] = alpha * res + beta * y[ind];
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
 
+
+/* Compute y = alpha*A*x + beta*y.
+ * Each thread block does a BLK_X x N block row of A.
+ * Each thread goes across one row, accumulating dot product of row ind and x into res.
+ * This implementation loads BLK_Y elements into sx, then multiplies
+ * BLK_Y columns of A*sx.
+ */
 __global__ void
 zgemvn_kernel2_fermi(
-    int m, int n, int n1, magmaDoubleComplex alpha,
+    int m, int n, magmaDoubleComplex alpha,
     const magmaDoubleComplex * __restrict__ A, int lda,
-    const magmaDoubleComplex * __restrict__ x, magmaDoubleComplex beta,
-    magmaDoubleComplex       * __restrict__ y)
+    const magmaDoubleComplex * __restrict__ x, int incx, magmaDoubleComplex beta,
+    magmaDoubleComplex       * __restrict__ y, int incy)
 {
 #if (__CUDA_ARCH__ >= 200)
-    int ind = blockIdx.x*num_threads + threadIdx.x;
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
     
-    A += ind;
-    x += threadIdx.x;
+    // threads past last row redundantly work on last row
+    A += min( ind, m-1 );
+    x += threadIdx.x*incx;
     
     magmaDoubleComplex res = MAGMA_Z_ZERO;
     
-    __shared__ magmaDoubleComplex buff[num_threads];
-    for( int i=0; i < n1; i += num_threads ) {
+    __shared__ magmaDoubleComplex sx[BLK_Y];
+    
+    // full block-columns
+    int nfull = (n / BLK_Y) * BLK_Y;
+    for( int j=0; j < nfull; j += BLK_Y ) {
+        // load BLK_Y elements of x into sx
+        sx[threadIdx.x] = x[0];
+        x += BLK_Y*incx;
         __syncthreads();
-        buff[threadIdx.x] = x[i];
         
-        __syncthreads();
+        // multiply A*sx
         #pragma unroll
-        for(int j=0; j < num_threads; j++) {
-            res += A[0]*buff[j];
+        for(int j2=0; j2 < BLK_Y; j2++) {
+            res += A[0] * sx[j2];
             A += lda;
         }
+        __syncthreads();
+    }
+    
+    // last, partial block-column
+    // load remaining npart elements of x into sx
+    int npart = n % BLK_Y;
+    if ( threadIdx.x < npart ) {
+        sx[threadIdx.x] = x[0];
+    }
+    else {
+        sx[threadIdx.x] = MAGMA_Z_ZERO;
     }
     __syncthreads();
-    
-    if ( n > n1 ) {
-        buff[threadIdx.x] = x[n1];
         
-        __syncthreads();
-        for(int j=0; j<(n-n1); j++) {
-            res += A[0]*buff[j];
-            A += lda;
-        }
+    // multiply A*sx
+    #pragma unroll
+    for(int j2=0; j2 < npart; j2++) {
+        res += A[0]*sx[j2];
+        A += lda;
     }
     
-    if ( ind < m )
-        y[ind] = alpha * res + beta * y[ind];
+    if ( ind < m ) {
+        y[ind*incy] = alpha*res + beta*y[ind*incy];
+    }
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
 
-/**
-    Purpose
-    -------
 
-    This routine computes Y = alpha A x + beta y, on the GPU.
-
-    @param[in]
-    m       INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    @param[in]
-    n       INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    @param[in]
-    alpha   COMPLEX*16.
-            On entry, ALPHA specifies the scalar alpha.
-
-    @param[in]
-    A       COMPLEX*16 array of dimension ( LDA, n ) on the GPU.
-   
-    @param[in]
-    lda     INTEGER.
-            LDA specifies the leading dimension of A.
-
-    @param[in]
-    x       COMPLEX*16 array of dimension n.
-
-    @param[in]
-    beta    DOUBLE PRECISION.
-            On entry, BETA specifies the scalar beta.
-
-    @param[out]
-    y       COMPLEX*16 array of dimension n.
-            On exit Y = alpha A X + beta Y.
-
-    @ingroup magma_zblas2_internal
-    ********************************************************************/
-extern "C" void
-magmablas_zgemvn_fermi(
-    magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    const magmaDoubleComplex *x, magmaDoubleComplex beta,
-    magmaDoubleComplex       *y)
-{
-    magma_int_t blocks = (m - 1)/num_threads + 1;
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(num_threads, 1, 1);
-    /*
-    if ( m <= 8500 )
-        zgemvn_kernel1_fermi<<< grid, threads, 0, magma_stream >>>
-            (m, n, (n / gemv_bs)*gemv_bs, alpha, A, lda, x, y);
-    else
-    */
-        zgemvn_kernel2_fermi<<< grid, threads, 0, magma_stream >>>
-            (m, n, (n / num_threads)*num_threads, alpha, A, lda, x, beta, y);
-}
-
+/* Compute y = alpha * A^T * x + beta*y.
+ * Each thread block does one column of A (i.e., one row of A^T).
+ * Each thread does a partial sum, then collectively they do a reduction.
+ */
 __global__ void
 zgemvt_kernel_fermi(
-    int m, int n, magmaDoubleComplex alpha, int n1,
+    int m, int n, magmaDoubleComplex alpha,
     const magmaDoubleComplex * __restrict__ A, int lda,
-    const magmaDoubleComplex * __restrict__ x, magmaDoubleComplex beta,
-    magmaDoubleComplex       * __restrict__ y)
+    const magmaDoubleComplex * __restrict__ x, int incx, magmaDoubleComplex beta,
+    magmaDoubleComplex       * __restrict__ y, int incy)
 {
 #if (__CUDA_ARCH__ >= 200)
-    unsigned int tx = threadIdx.x;
+    int tx = threadIdx.x;
 
-    __shared__ magmaDoubleComplex sdata[threadSize];
+    __shared__ magmaDoubleComplex sdata[BLK_X];
 
     magmaDoubleComplex res = MAGMA_Z_ZERO;
-    magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
+    
+    A += blockIdx.y*lda + threadIdx.x;
  
-    for(int i=0; i < n1; i += threadSize) {
-        res += A[tx + i + lda * blockIdx.y] * x[tx + i];
+    // partial sums
+    int mfull = (m / BLK_X) * BLK_X;
+    for(int i=0; i < mfull; i += BLK_X) {
+        res += A[i] * x[tx + i];
     }
-
-    if ( m > n1 ) {
-        if ( tx + n1 < m ) {
-            res += A[tx + n1 + lda*blockIdx.y] * x[tx + n1];
-        }
-        else {
-            res += c_zero;
-        }
+    if ( tx + mfull < m ) {
+        res += A[mfull] * x[tx + mfull];
     }
-
     sdata[tx] = res;
-    __syncthreads();
 
-    for(int s=blockDim.x/2; s > 32; s /= 2) {
-        if ( tx < s ) {
-            sdata[tx] += sdata[tx+s];
-        }
-        __syncthreads();
-    }
-
-    if ( tx < 32 ) {
-        sdata[tx] += sdata[tx + 32];
-    }
+    // tree reduction of partial sums,
+    // from BLK_X sums to ... 128 to 64 to 32 ... to 1 sum in sdata[0]
+    magma_sum_reduce< BLK_X >( tx, sdata );
 
     if ( tx == 0 ) {
-        for(int i=1; i < 32; i++) {
-            sdata[tx] += sdata[tx + i];
-        }
-    }
-
-    if ( tx == 0 ) {
-        if ( blockIdx.y < n ) {
-            y[blockIdx.y] = sdata[0] * alpha + beta * y[blockIdx.y];
-        }
+        y[blockIdx.y*incy] = alpha*sdata[0] + beta*y[blockIdx.y*incy];
     }
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
 
 
-/**
-    Purpose
-    -------
-
-    This routine computes y = alpha * A^T * x + beta*y, on the GPU.
-
-    @param[in]
-    m       INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    @param[in]
-    n       INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    @param[in]
-    alpha   COMPLEX*16.
-            On entry, ALPHA specifies the scalar alpha.
-
-    @param[in]
-    A       COMPLEX*16 array of dimension ( LDA, n ) on the GPU.
-
-    @param[in]
-    lda     INTEGER.
-            LDA specifies the leading dimension of A.
-
-    @param[in]
-    x       COMPLEX*16 array of dimension m.
-
-    @param[in]
-    beta    COMPLEX*16.
-            On entry, BETA specifies the scalar beta.
-
-    @param[out]
-    y       COMPLEX*16 array of dimension n.
-            On exit Y = alpha A^T X + beta Y.
-
-    @ingroup magma_zblas2_internal
-    ********************************************************************/
-extern "C" void
-magmablas_zgemvt_fermi(
-    magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    const magmaDoubleComplex *x, magmaDoubleComplex beta,
-    magmaDoubleComplex       *y)
-{
-    dim3 grid    ( 1, n, 1 );
-    dim3 threads ( threadSize, 1, 1 );
-    zgemvt_kernel_fermi<<< grid, threads, 0, magma_stream >>>
-        (m, n, alpha, (m / threadSize) * threadSize, A, lda, x, beta, y );
-}
-
+/* Compute y = alpha * A^H * x + beta*y.
+ * Same as zgemvt_kernel_fermi but conjugates entries of A.
+ */
 __global__ void
 zgemvc_kernel_fermi(
-    int m, int n, magmaDoubleComplex alpha, int n1,
+    int m, int n, magmaDoubleComplex alpha,
     const magmaDoubleComplex * __restrict__ A, int lda,
-    const magmaDoubleComplex * __restrict__ x, magmaDoubleComplex beta,
-    magmaDoubleComplex       * __restrict__ y)
+    const magmaDoubleComplex * __restrict__ x, int incx, magmaDoubleComplex beta,
+    magmaDoubleComplex       * __restrict__ y, int incy)
 {
 #if (__CUDA_ARCH__ >= 200)
-    unsigned int tx = threadIdx.x;
+    int tx = threadIdx.x;
 
-    __shared__ magmaDoubleComplex sdata[threadSize];
+    __shared__ magmaDoubleComplex sdata[BLK_X];
 
     magmaDoubleComplex res = MAGMA_Z_ZERO;
-    magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
+    
+    A += blockIdx.y*lda + threadIdx.x;
  
-    for(int i=0; i < n1; i += threadSize) {
-        res += cuConj(A[tx + i + lda * blockIdx.y]) * x[tx + i];
+    // partial sums
+    int mfull = (m / BLK_X) * BLK_X;
+    for(int i=0; i < mfull; i += BLK_X) {
+        res += conj(A[i]) * x[tx + i];
     }
-
-    if ( m > n1 ) {
-        if ( tx + n1 < m ) {
-            res += cuConj(A[tx + n1 + lda*blockIdx.y]) * x[tx + n1];
-        }
-        else {
-            res += c_zero;
-        }
+    if ( tx + mfull < m ) {
+        res += conj(A[mfull]) * x[tx + mfull];
     }
-
     sdata[tx] = res;
-    __syncthreads();
 
-    /*
-    if ( tx < 128 ) {
-        sdata[tx] += sdata[tx + 128];
-    }
-    __syncthreads();
-    */
-
-    if ( tx < 64 ) {
-        sdata[tx] += sdata[tx + 64];
-    }
-    __syncthreads();
-
-    if ( tx < 32 ) {
-        sdata[tx] += sdata[tx + 32];
-    }
+    // tree reduction of partial sums,
+    // from BLK_X sums to ... 128 to 64 to 32 ... to 1 sum in sdata[0]
+    magma_sum_reduce< BLK_X >( tx, sdata );
 
     if ( tx == 0 ) {
-        for(int i=1; i < 32; i++) {
-            sdata[tx] += sdata[tx + i];
-        }
-    }
-
-    if ( tx == 0 ) {
-        if ( blockIdx.y < n ) {
-            y[blockIdx.y] = sdata[0] * alpha + beta * y[blockIdx.y];
-        }
+        y[blockIdx.y*incy] = alpha*sdata[0] + beta*y[blockIdx.y*incy];
     }
 #endif /* (__CUDA_ARCH__ >= 200) */
-}
-
-
-/**
-    Purpose
-    -------
-
-    This routine computes y = alpha * A^H * x + beta*y, on the GPU.
-
-    @param[in]
-    m       INTEGER.
-            On entry, M specifies the number of rows of the matrix A.
-
-    @param[in]
-    n       INTEGER.
-            On entry, N specifies the number of columns of the matrix A
-
-    @param[in]
-    alpha   COMPLEX*16.
-            On entry, ALPHA specifies the scalar alpha.
-
-    @param[in]
-    A       COMPLEX*16 array of dimension ( LDA, n ) on the GPU.
-
-    @param[in]
-    lda     INTEGER.
-            LDA specifies the leading dimension of A.
-
-    @param[in]
-    x       COMPLEX*16 array of dimension m.
-
-    @param[in]
-    beta    COMPLEX*16.
-            On entry, BETA specifies the scalar beta.
-
-    @param[out]
-    y       COMPLEX*16 array of dimension n.
-            On exit Y = alpha A^H X + beta y.
-
-    @ingroup magma_zblas2_internal
-    ********************************************************************/
-extern "C" void
-magmablas_zgemvc_fermi(
-    magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    const magmaDoubleComplex *x,
-    magmaDoubleComplex beta,
-    magmaDoubleComplex *y)
-{
-    dim3 grid    ( 1, n, 1 );
-    dim3 threads ( threadSize, 1, 1 );
-    zgemvc_kernel_fermi<<< grid, threads, 0, magma_stream >>>
-        (m, n, alpha, (m / threadSize) * threadSize, A, lda, x, beta, y);
 }
 
 
@@ -484,30 +304,22 @@ magmablas_zgemv(
     
     // --------------------
     // CUDA ARCH 2.x (Fermi) version
-    if ( incx == 1 && incy == 1 ) {
-        if ( trans == MagmaNoTrans ) {
-            if ( m < 7000 ) {
-                magma_zgemv( trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
-            }
-            else {
-                magmablas_zgemvn_fermi(m, n, alpha, A, lda, x, beta, y);
-            }
-        }
-        else if ( trans == MagmaTrans ) {
-            magmablas_zgemvt_fermi(m, n, alpha, A, lda, x, beta, y);
-        }
-        else if ( trans == MagmaConjTrans ) {
-            magmablas_zgemvc_fermi(m, n, alpha, A, lda, x, beta, y);
-        }
-        else {
-            fprintf( stderr, "trans = %c is invalid\n", lapacke_trans_const(trans) );
-        }
+    if ( trans == MagmaNoTrans ) {
+        dim3 grid( (m - 1)/BLK_X + 1 );
+        dim3 threads( BLK_X, 1, 1 );
+        zgemvn_kernel1_fermi<<< grid, threads, 0, magma_stream >>>
+            ( m, n, alpha, A, lda, x, incx, beta, y, incy );
     }
-    else {
-        magma_zgemv( trans, m, n, alpha, A, lda, x, incx, beta, y, incy);
+    else if ( trans == MagmaTrans ) {
+        dim3 grid    ( 1, n, 1 );
+        dim3 threads ( BLK_X, 1, 1 );
+        zgemvt_kernel_fermi<<< grid, threads, 0, magma_stream >>>
+            ( m, n, alpha, A, lda, x, incx, beta, y, incy );
+    }
+    else if ( trans == MagmaConjTrans ) {
+        dim3 grid    ( 1, n, 1 );
+        dim3 threads ( BLK_X, 1, 1 );
+        zgemvc_kernel_fermi<<< grid, threads, 0, magma_stream >>>
+            ( m, n, alpha, A, lda, x, incx, beta, y, incy );
     }
 }
-
-#undef num_threads
-#undef gemv_bs
-#undef threadSize

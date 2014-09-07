@@ -7,12 +7,11 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+ *     @generated from zbulge_kernel.cpp normal z -> c, Tue Sep  2 12:38:23 2014
  *
  */
 
 #include "common_magma.h"
-#include <cblas.h>
 
 #define PRECISION_c
  
@@ -60,14 +59,7 @@ magma_clarfxsym(magma_int_t N, magmaFloatComplex *A, magma_int_t LDA, magmaFloat
   /* X = AVtau */
   blasf77_chemv("L",&N, TAU, A, &LDA, V, &IONE, &Z_ZERO, WORK, &IONE);
   /* je calcul dtmp= X'*V */
-#if defined(PRECISION_z) || defined(PRECISION_c)
-   dtmp = Z_ZERO;
-   for (magma_int_t j = 0; j < N; j++)
-      dtmp = dtmp + MAGMA_C_CNJG(WORK[j]) * V[j];
-   //cblas_cdotc_sub(N, WORK, IONE, V, IONE, &dtmp);
-#else
-  dtmp = cblas_cdotc(N, WORK, IONE, V, IONE);
-#endif
+  dtmp = magma_cblas_cdotc(N, WORK, IONE, V, IONE);
   /* je calcul 1/2 X'*V*t = 1/2*dtmp*tau  */
   dtmp = -dtmp * Z_HALF * (*TAU);
   /* je calcul W=X-1/2VX'Vt = X - dtmp*V */

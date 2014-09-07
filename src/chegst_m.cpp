@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegst_m.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from zhegst_m.cpp normal z -> c, Tue Sep  2 12:38:24 2014
 */
 #include "common_magma.h"
-#include <cblas.h>
 
 
 static void magma_chegst_m_1_L_col_update(magma_int_t nk, magma_int_t nb, magmaFloatComplex* dA_col, magma_int_t ldda,
@@ -112,9 +111,6 @@ magma_chegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
     magma_queue_t stream [MagmaMaxGPUs][3];
     magma_event_t  event  [MagmaMaxGPUs][2];
 
-    int gpu_b;
-    magma_getdevice(&gpu_b);
-
     int upper = (uplo == MagmaUpper);
 
     magma_int_t nb = magma_get_chegst_nb_m(n);
@@ -140,6 +136,11 @@ magma_chegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
     /* Quick return */
     if ( n == 0 )
         return *info;
+
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     magma_int_t nbl = (n-1)/nb+1; // number of blocks
 
@@ -865,7 +866,6 @@ magma_chegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
     for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
         magma_setdevice(igpu);
-        magmablasSetKernelStream(NULL);
         magma_event_destroy( event[igpu][0] );
         magma_event_destroy( event[igpu][1] );
         magma_queue_destroy( stream[igpu][0] );
@@ -873,19 +873,23 @@ magma_chegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
         magma_queue_destroy( stream[igpu][2] );
         magma_free( dw[igpu] );
     }
-
-    magma_setdevice(gpu_b);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_chegst_gpu */
 
-inline static void magma_chegst_m_1_U_row_update(magma_int_t nk, magma_int_t nb, magmaFloatComplex* dA_row, magma_int_t ldda,
-                                                 magmaFloatComplex* dC1, magma_int_t lddc1, magmaFloatComplex* dC2, magma_int_t lddc2)
+
+inline static void magma_chegst_m_1_U_row_update(
+    magma_int_t nk, magma_int_t nb,
+    magmaFloatComplex* dA_row, magma_int_t ldda,
+    magmaFloatComplex* dC1, magma_int_t lddc1,
+    magmaFloatComplex* dC2, magma_int_t lddc2)
 {
     // update 1 rowblock (rowwise cher2k) for itype=1 Upper case
     float             d_one      = 1.0;
-    magmaFloatComplex    c_one      = MAGMA_C_ONE;
-    magmaFloatComplex    c_neg_one  = MAGMA_C_NEG_ONE;
+    magmaFloatComplex c_one      = MAGMA_C_ONE;
+    magmaFloatComplex c_neg_one  = MAGMA_C_NEG_ONE;
 
     magma_int_t kb = min(nk, nb);
 
@@ -898,16 +902,19 @@ inline static void magma_chegst_m_1_U_row_update(magma_int_t nk, magma_int_t nb,
 
     magma_cgemm(MagmaConjTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dC2, lddc2,
                 dC1+kb*lddc1, lddc1, c_one, dA_row+kb*ldda, ldda );
-    return;
 }
 
-inline static void magma_chegst_m_1_L_col_update(magma_int_t nk, magma_int_t nb, magmaFloatComplex* dA_col, magma_int_t ldda,
-                                                 magmaFloatComplex* dC1, magma_int_t lddc1, magmaFloatComplex* dC2, magma_int_t lddc2)
+
+inline static void magma_chegst_m_1_L_col_update(
+    magma_int_t nk, magma_int_t nb,
+    magmaFloatComplex* dA_col, magma_int_t ldda,
+    magmaFloatComplex* dC1, magma_int_t lddc1,
+    magmaFloatComplex* dC2, magma_int_t lddc2)
 {
     // update 1 columnblock (columnwise cher2k) for itype=1 Lower case
     float             d_one      = 1.0;
-    magmaFloatComplex    c_one      = MAGMA_C_ONE;
-    magmaFloatComplex    c_neg_one  = MAGMA_C_NEG_ONE;
+    magmaFloatComplex c_one      = MAGMA_C_ONE;
+    magmaFloatComplex c_neg_one  = MAGMA_C_NEG_ONE;
 
     magma_int_t kb = min(nk, nb);
 
@@ -920,5 +927,4 @@ inline static void magma_chegst_m_1_L_col_update(magma_int_t nk, magma_int_t nb,
 
     magma_cgemm(MagmaNoTrans, MagmaConjTrans, nk-kb, kb, nb, c_neg_one, dC2+kb, lddc2,
                 dC1, lddc1, c_one, dA_col+kb, ldda );
-    return;
 }

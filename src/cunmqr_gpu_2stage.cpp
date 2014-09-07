@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmqr_gpu_2stage.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from zunmqr_gpu_2stage.cpp normal z -> c, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -20,9 +20,9 @@
     CUNMQR_GPU overwrites the general complex M-by-N matrix C with
 
     @verbatim
-                    SIDE = MagmaLeft     SIDE = MagmaRight
-    TRANS = MagmaNoTrans:      Q * C          C * Q
-    TRANS = MagmaTrans:      Q**H * C       C * Q**H
+                               SIDE = MagmaLeft    SIDE = MagmaRight
+    TRANS = MagmaNoTrans:      Q * C               C * Q
+    TRANS = Magma_ConjTrans:   Q**H * C            C * Q**H
     @endverbatim
 
     where Q is a complex unitary matrix defined as the product of k
@@ -43,7 +43,7 @@
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaTrans:      Transpose, apply Q**H.
+      -     = Magma_ConjTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -111,7 +111,7 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
     
     magmaFloatComplex *dwork;
 
-    magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw, ret;
+    magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw;
     int left, notran;
     //magma_int_t lwkopt;
 
@@ -129,7 +129,7 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
     }
     if ( ! left && side != MagmaRight ) {
         *info = -1;
-    } else if ( ! notran && trans != MagmaConjTrans ) {
+    } else if ( ! notran && trans != Magma_ConjTrans ) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -191,18 +191,11 @@ magma_cunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
             ni = n - i;
             jc = i;
         }
-        // TODO use info instead of ret, so info & return value always agree.
-        ret = magma_clarfb_gpu( MagmaLeft, trans, MagmaForward, MagmaColumnwise,
-                               mi, ni, ib, dA(i,i), ldda, dT+i*nb, nb,
-                               dC(ic,jc), lddc, dwork, nw);
-
-        if ( ret != MAGMA_SUCCESS ) {
-            magma_free(dwork);
-            return ret;
-        }
+        magma_clarfb_gpu( MagmaLeft, trans, MagmaForward, MagmaColumnwise,
+                          mi, ni, ib, dA(i,i), ldda, dT+i*nb, nb,
+                          dC(ic,jc), lddc, dwork, nw );
     }
     
-    // TODO fix free(dwork) memory leak
-
-    return MAGMA_SUCCESS;
+    magma_free( dwork );
+    return *info;
 } /* magma_cunmqr_gpu_2stages */

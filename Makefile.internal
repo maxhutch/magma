@@ -1,13 +1,24 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
 -include $(MAGMA_DIR)/make.icl
+
+#
+# If not set, use deprecated OPTS variable names
+#
+CXX             ?= $(CC)
+CFLAGS          ?= $(OPTS)
+CXXFLAGS        ?= $(CFLAGS)
+FFLAGS          ?= $(F77OPTS)
+F90FLAGS        ?= $(FOPTS)
+NVCCFLAGS       ?= $(NVOPTS)
+LDFLAGS         ?= $(LDOPTS)
 
 #
 # Set default values if they are not set in make.inc
@@ -16,6 +27,7 @@ PGIFORTRAN      ?= 0
 GPU_TARGET      ?= Tesla Fermi Kepler
 LIBMAGMA        ?= $(MAGMA_DIR)/lib/libmagma.a
 LIBMAGMA_SPARSE ?= $(MAGMA_DIR)/lib/libmagma_sparse.a
+FORT            ?= no_fortran
 
 prefix ?= /usr/local/magma
 
@@ -80,25 +92,26 @@ endif
 ifeq ($(NV_COMP),)
     $(error GPU_TARGET, currently $(GPU_TARGET), must contain one or more of Tesla, Fermi, Kepler, or sm{10,13,20,30,35}. Please edit your make.inc file)
 endif
-NVOPTS += $(NV_SM) $(NV_COMP)
-OPTS   += -DMIN_CUDA_ARCH=$(MIN_ARCH)
-
+NVCCFLAGS += $(NV_SM) $(NV_COMP)
+CFLAGS    += -DMIN_CUDA_ARCH=$(MIN_ARCH)
+CXXFLAGS  += -DMIN_CUDA_ARCH=$(MIN_ARCH)
 
 LIBEXT = $(LIBDIR) $(LIB)
 
 # Use Plasma to compile zgetfl and ztstrf
 PLASMA = $(shell pkg-config --libs coreblas 2> /dev/null )
 ifeq (1, $(words $(findstring coreblas, $(PLASMA))))
-    OPTS    := $(OPTS) -DMAGMA_WITH_PLASMA
-    INC     := $(INC) $(shell pkg-config --cflags-only-I coreblas)
-    LIBEXT  := $(LIBEXT) $(shell pkg-config --libs coreblas)
-    require := plasma
+    CFLAGS   += -DMAGMA_WITH_PLASMA
+    CXXFLAGS += -DMAGMA_WITH_PLASMA
+    INC      := $(INC) $(shell pkg-config --cflags-only-I coreblas)
+    LIBEXT   := $(LIBEXT) $(shell pkg-config --libs coreblas)
+    require  := plasma
 endif
 
 # INC is all external include directories (CUDA, MKL, etc.).
 # It is used for external programs that link with MAGMA, e.g., via pkgconfig.
-# INC_MAGMA adds internal magma directories needed to compile magma itself.
-INC_MAGMA = $(INC) -I$(MAGMA_DIR)/include -I$(MAGMA_DIR)/control
+# CPPFLAGS adds internal MAGMA directories needed to compile MAGMA itself.
+CPPFLAGS = $(INC) -I$(MAGMA_DIR)/include -I$(MAGMA_DIR)/control -I$(MAGMA_DIR)/sparse-iter/include
 
 # Define the pointer size for fortran compilation
 PTRFILE = $(MAGMA_DIR)/control/sizeptr.c
@@ -108,10 +121,10 @@ PTRSIZE = $(shell $(PTREXEC))
 PTROPT  = -Dmagma_devptr_t="integer(kind=$(PTRSIZE))"
 
 $(PTREXEC): $(PTROBJ)
-	$(CC) $(LDOPTS) -o $@ $<
+	$(CC) $(LDFLAGS) -o $@ $<
 
-# Add to F90 (FOPTS), not needed in F77OPTS
-FOPTS += $(PTROPT)
+# Add to F90 (F90FLAGS), not needed in F77 FFLAGS
+F90FLAGS += $(PTROPT)
 
 #
 # Rules to compile object files
@@ -119,35 +132,34 @@ FOPTS += $(PTROPT)
 .SUFFIXES:
 
 %.i: %.cpp
-	$(CC) $(OPTS) $(INC_MAGMA) -E $< -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -E $< -o $@
 
 %.i: %.c
-	$(CC) $(OPTS) $(INC_MAGMA) -E $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -E $< -o $@
 
 %.i: %.cu
-	$(NVCC) $(NVOPTS) $(INC_MAGMA) -E $< -o $@
+	$(NVCC) $(NVCCFLAGS) $(CPPFLAGS) -E $< -o $@
 
-# force headers to pre-process as C++
 %.i: %.h
-	$(CXX) $(OPTS) $(INC_MAGMA) -E $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -E $< -o $@
 
 %.o: %.cpp
-	$(CC) $(OPTS) $(INC_MAGMA) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 %.o: %.c
-	$(CC) $(OPTS) $(INC_MAGMA) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 %.o: %.cu
-	$(NVCC) $(NVOPTS) $(INC_MAGMA) -c $< -o $@
+	$(NVCC) $(NVCCFLAGS) $(CPPFLAGS) -c $< -o $@
 
 %.o: %.f90  $(PTREXEC)
-	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@
+	$(FORT) $(F90FLAGS) $(CPPFLAGS) -c $< -o $@
 
 %.o: %.F90  $(PTREXEC)
-	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@
+	$(FORT) $(F90FLAGS) $(CPPFLAGS) -c $< -o $@
 
 %.o: %.f
-	$(FORT) $(F77OPTS) $(INC_MAGMA) -c $< -o $@
+	$(FORT) $(FFLAGS) $(CPPFLAGS) -c $< -o $@
 
 -include $(MAGMA_DIR)/Makefile.gen
 

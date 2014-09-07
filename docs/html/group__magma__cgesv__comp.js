@@ -1,7 +1,7 @@
 var group__magma__cgesv__comp =
 [
     [ "magma_cgetrf", "group__magma__cgesv__comp.html#ga40fcc97d7c5e2f591fa9050a47d59cc7", null ],
-    [ "magma_cgetrf2_mgpu", "group__magma__cgesv__comp.html#ga6865b9bd52dd9376236344812c2377db", null ],
+    [ "magma_cgetrf2_mgpu", "group__magma__cgesv__comp.html#ga41da14c9ed6a05ad78bd71378ae2357c", null ],
     [ "magma_cgetrf_gpu", "group__magma__cgesv__comp.html#ga5f95c7bb60437d31c415b7a3d116dbd0", null ],
     [ "magma_cgetrf_m", "group__magma__cgesv__comp.html#gad3ee2e7ab9cdc22108eba9d84ce0f7d9", null ],
     [ "magma_cgetrf_mgpu", "group__magma__cgesv__comp.html#gaa2aa13d7d008151b2b9cfc7609db60ee", null ],

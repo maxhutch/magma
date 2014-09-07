@@ -7,13 +7,12 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel_v2.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+ *     @generated from zbulge_kernel_v2.cpp normal z -> c, Tue Sep  2 12:38:23 2014
  *
  */
 
 #include "common_magma.h"
 #include "magma_bulge.h"
-#include <cblas.h>
 
 #define PRECISION_c
 
@@ -44,15 +43,7 @@ magma_clarfxsym_v2(magma_int_t n,
     blasf77_chemv("L",&n, TAU, A, &lda, V, &ione, &c_zero, work, &ione);
 
     /* compute dtmp= X'*V */
-#if defined(PRECISION_z) || defined(PRECISION_c)
-    dtmp = c_zero;
-    for (magma_int_t j = 0; j < n; j++)
-        dtmp = dtmp + MAGMA_C_CNJG(work[j]) * V[j];
-    //cblas_cdotc_sub(n, work, ione, V, ione, &dtmp);
-#else
-    dtmp = cblas_cdotc(n, work, ione, V, ione);
-#endif
-
+    dtmp = magma_cblas_cdotc(n, work, ione, V, ione);
 
     /* compute 1/2 X'*V*t = 1/2*dtmp*tau  */
     dtmp = -dtmp * c_half * (*TAU);
@@ -85,7 +76,7 @@ magma_ctrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 */
 
     magma_int_t ione = 1;
-    magma_int_t vpos, taupos, len;
+    magma_int_t vpos, taupos, len, len2;
 
     magmaFloatComplex c_one    =  MAGMA_C_ONE;
 
@@ -95,7 +86,8 @@ magma_ctrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
     len     = ed-st+1;
     *V(vpos)  = c_one;
 
-    cblas_ccopy(len-1, A(st+1, st-1), ione, V(vpos+1), ione);
+    len2 = len-1;
+    blasf77_ccopy( &len2, A(st+1, st-1), &ione, V(vpos+1), &ione );
     //memcpy(V(vpos+1), A(st+1, st-1), (len-1)*sizeof(magmaFloatComplex));
     memset(A(st+1, st-1), 0, (len-1)*sizeof(magmaFloatComplex));
 
@@ -139,7 +131,8 @@ magma_ctrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
     magma_int_t ldx = lda-1;
     magma_int_t len = ed - st + 1;
     magma_int_t lem = min(ed+nb, n) - ed;
-
+    magma_int_t lem2;
+    
     if (lem > 0) {
         magma_bulge_findVTAUpos(n, nb, Vblksiz, sweep-1, st-1, ldv, &vpos, &taupos);
         /* apply remaining right coming from the top block */
@@ -151,7 +144,8 @@ magma_ctrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
         /* remove the first column of the created bulge */
         *V(vpos)  = c_one;
         //memcpy(V(vpos+1), A(ed+2, st), (lem-1)*sizeof(magmaFloatComplex));
-        cblas_ccopy(lem-1, A(ed+2, st), ione, V(vpos+1), ione);
+        lem2 = lem-1;
+        blasf77_ccopy( &lem2, A(ed+2, st), &ione, V(vpos+1), &ione );
         memset(A(ed+2, st),0,(lem-1)*sizeof(magmaFloatComplex));
 
         /* Eliminate the col at st */

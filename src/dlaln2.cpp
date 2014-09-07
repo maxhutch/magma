@@ -295,7 +295,7 @@ magma_int_t magma_dlaln2(
                 X(2,1) = temp * B(2,1);
                 *xnorm = temp * bnorm;
                 *info = 1;
-                return 0;
+                return *info;
             }
         
             /* Gaussian elimination with complete pivoting. */
@@ -386,7 +386,7 @@ magma_int_t magma_dlaln2(
                 X(2,2) = temp * B(2,2);
                 *xnorm = temp * bnorm;
                 *info = 1;
-                return 0;
+                return *info;
             }
         
             /* Gaussian elimination with complete pivoting. */
@@ -495,7 +495,7 @@ magma_int_t magma_dlaln2(
         }
     }
 
-    return 0;
+    return *info;
 } /* dlaln2_ */
 
 #undef crv

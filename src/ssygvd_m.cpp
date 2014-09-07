@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
 
-       @generated from dsygvd_m.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dsygvd_m.cpp normal d -> s, Tue Sep  2 12:38:24 2014
 
 */
 #include "common_magma.h"
@@ -59,7 +59,7 @@
             The order of the matrices A and B.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX_16 array, dimension (LDA, N)
+    A       REAL array, dimension (LDA, N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
@@ -80,7 +80,7 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[in,out]
-    B       COMPLEX_16 array, dimension (LDB, N)
+    B       REAL array, dimension (LDB, N)
             On entry, the symmetric matrix B.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of B contains the
             upper triangular part of the matrix B.  If UPLO = MagmaLower,
@@ -100,25 +100,26 @@
             If INFO = 0, the eigenvalues in ascending order.
 
     @param[out]
-    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+    work    (workspace) REAL array, dimension (MAX(1,LWORK))
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= N + 1.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= 2*N*nb + N**2.
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= 2*N + N*NB.
+            If JOBZ = MagmaVec   and N > 1, LWORK >= max( 2*N + N*NB, 1 + 6*N + 2*N**2 ).
+            NB can be obtained through magma_get_ssytrd_nb(N).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
-            only calculates the optimal sizes of the WORK, RWORK and
-            IWORK arrays, returns these values as the first entries of
-            the WORK, RWORK and IWORK arrays, and no error message
-            related to LWORK or LRWORK or LIWORK is issued by XERBLA.
+            only calculates the optimal sizes of the WORK and IWORK
+            arrays, returns these values as the first entries of the WORK
+            and IWORK arrays, and no error message related to LWORK or
+            LIWORK is issued by XERBLA.
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -128,10 +129,10 @@
             If JOBZ = MagmaVec   and N > 1, LIWORK >= 3 + 5*N.
     \n
             If LIWORK = -1, then a workspace query is assumed; the
-            routine only calculates the optimal sizes of the WORK, RWORK
-            and IWORK arrays, returns these values as the first entries
-            of the WORK, RWORK and IWORK arrays, and no error message
-            related to LWORK or LRWORK or LIWORK is issued by XERBLA.
+            routine only calculates the optimal sizes of the WORK and
+            IWORK arrays, returns these values as the first entries of
+            the WORK and IWORK arrays, and no error message related to
+            LWORK or LIWORK is issued by XERBLA.
 
     @param[out]
     info    INTEGER
@@ -176,11 +177,9 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
 
     magma_int_t lower;
     magma_trans_t trans;
-    magma_int_t wantz;
-    magma_int_t lquery;
+    magma_int_t wantz, lquery;
 
-    magma_int_t lwmin;
-    magma_int_t liwmin;
+    magma_int_t lwmin, liwmin;
 
     magma_queue_t stream;
     magma_queue_create( &stream );
@@ -210,7 +209,7 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
         liwmin = 1;
     }
     else if ( wantz ) {
-        lwmin  = 1 + 6*n + 2*n*n;
+        lwmin  = max( 2*n + n*nb, 1 + 6*n + 2*n*n );
         liwmin = 3 + 5*n;
     }
     else {
@@ -221,7 +220,7 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
     // multiply by 1+eps (in Double!) to ensure length gets rounded up,
     // if it cannot be exactly represented in floating point.
     real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
-    work[0]  = lwmin * one_eps;  // round up
+    work[0]  = lwmin * one_eps;
     iwork[0] = liwmin;
 
     if (lwork < lwmin && ! lquery) {
@@ -242,6 +241,7 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
     if (n == 0) {
         return *info;
     }
+
     /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
         #ifdef ENABLE_DEBUG
@@ -306,8 +306,24 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
                 trans = MagmaTrans;
             }
 
-            //magma_strmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-            //            n, n, c_one, dB, lddb, dA, ldda);
+            printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            float *dA=NULL, *dB=NULL;
+            magma_int_t ldda = n;
+            magma_int_t lddb = n;
+            
+            if (MAGMA_SUCCESS != magma_smalloc( &dB, n*lddb ) ) {
+                *info = MAGMA_ERR_DEVICE_ALLOC;
+                return *info;
+            }
+            if (MAGMA_SUCCESS != magma_smalloc( &dA, n*ldda ) ) {
+                *info = MAGMA_ERR_DEVICE_ALLOC;
+                return *info;
+            }
+            magma_ssetmatrix( n, n, B, ldb, dB, lddb );
+            magma_ssetmatrix( n, n, A, lda, dA, ldda );
+            magma_strmm(MagmaLeft, uplo, trans, MagmaNonUnit,
+                        n, n, d_one, dB, lddb, dA, ldda);
+            magma_sgetmatrix( n, n, dA, ldda, A, lda );
         }
 
         timer_stop( time );

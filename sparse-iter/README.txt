@@ -38,21 +38,34 @@ Collection: http://www.cise.ufl.edu/research/sparse/matrices/
 A suitable test matrix is given by Trefethen_2000:
 http://www.cise.ufl.edu/research/sparse/matrices/JGD_Trefethen/Trefethen_2000.html
 
-To run a example type
+To run a solver:
 
 
             ./run_xsolver [ --options ] matrices
 
 
-Every solver (replace "solver" by cg, gmres, bicgstab, iterref, jacobi, bcsrlu)
-exists in single ("x"=s), double ("x"=d), single-complex and double-complex
-version ("x"=c or z, respectively).
+Every solver exists in single ("x"=s), double ("x"=d), single-complex and 
+double-complex version ("x"=c or z, respectively).
 
 
 For different solvers there exist different options, which are printed 
-when executing "./run_xsolver".
+when executing "./run_xsolver -h".
 
  Some options are:
+
+ --solver      Possibility to choose a solver
+               0   CG
+               1   merged CG
+               2   preconditioned CG
+               3   BiCGSTAB
+               4   merged BiCGSTAB
+               5   preconditioned BiCGSTAB
+               6   GMRES
+               7   preconditioned GMRES
+               8   LOBPCG
+               9   Iterative Refinement
+               10  Jacobi
+               11  Block-asynchronous Iteration
 
 "--verbose k"
     k = 0 : solver is run in production mode, no additional characteristics 
@@ -63,8 +76,7 @@ when executing "./run_xsolver".
 "--format k"
     k = 0 : CSR
     k = 1 : ELLPACK
-    k = 2 : ELLPACKRT
-    k = 3 : SELLP
+    k = 2 : SELLP
 
 "--blocksize k"
     for Magma_ELLPACKRT: denotes the number of rows in one slice of the matrix
@@ -80,11 +92,6 @@ when executing "./run_xsolver".
     for Magma_SELLCM: k denotes the number of threads assigned to one row
                       notice: blocksize * alignment needs to fit into shared mem
 
-"--ortho k"
-    k = 0 : orthogonalization via classical Gram-Schmidt (CGS)
-    k = 1 : orthogonalization via modified Gram-Schmidt (MGS)
-    k = 2 : orthogonalization via fused classical Gram-Schmidt (CGS_FUSED)
-
 "--maxiter k"
     k : upper bound for iterations
 
@@ -94,27 +101,21 @@ when executing "./run_xsolver".
 "--restart k"
     k : Krylov subspace restart number for GMRES-(k)
 
-"--version k"
-    k : for some solvers (CG, BiCGStab) there exist accelerated versions merging
-        multiple numerical operations into one kernel operation. These can be
-        selected via the version number. The default implementations are the
-        classical ones. 
-        For BCSRLU, version allows to select either CUBLAS-batched GEMM or
-        a custom-designed kernel suitable for block-size 64.
 
-"--scale k"
+"--mscale k"
+   k = 0 no scaling
    k = 1 scale symmetrically to unit diagonal
    k = 2 scale to unit rownorm
 
 "--preconditioner k"
     k = 0 : Jacobi
     k = 1 : ILU/IC
-    k = 2 : iterative ILU/IC
+    k = 2 : iterative ILU(0)/IC(0)
+    Other preconditiners are only available for the Iterative Refinement.
 
-"--precond-maxiter/tol/restart" similar like above. The preconditioner types for
-    the iterative refinement are set to the default classical implementations. 
-    If the merged variants are preferred, they have to be called explicitly in 
-    the runfile.
+"--ev k"
+    k : number of egenvalue/eigenvectors to compute
+
 
 The last argument is the traget matrices. These should be stored in MatrixMarket
 format, see http://math.nist.gov/MatrixMarket/formats.html.

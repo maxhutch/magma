@@ -2,15 +2,15 @@
  *
  * @file transpose.h
  *
- *  MAGMA (version 1.5.0-beta3) --
+ *  MAGMA (version 1.5.0) --
  *  Univ. of Tennessee, Knoxville
  *  Univ. of California, Berkeley
  *  Univ. of Colorado, Denver
- *  @date July 2014
+ *  @date September 2014
  *
  * @version 1.0.0
  * @author Mathieu Faverge
- * @date July 2014
+ * @date September 2014
  *
  * Macro to transpose matrices before and after computation
  * in LU kernels

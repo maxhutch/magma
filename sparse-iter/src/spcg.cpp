@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hartwig Anzt 
 
-       @generated from zpcg.cpp normal z -> s, Fri Jul 18 17:34:29 2014
+       @generated from zpcg.cpp normal z -> s, Tue Sep  2 12:38:35 2014
 */
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #include <assert.h>
 
@@ -26,7 +26,8 @@
     Solves a system of linear equations
        A * X = B
     where A is a real symmetric N-by-N positive definite matrix A.
-    This is a GPU implementation of the Conjugate Gradient method.
+    This is a GPU implementation of the preconditioned Conjugate 
+    Gradient method.
 
     Arguments
     ---------
@@ -51,7 +52,7 @@
     precond_par magma_s_preconditioner*
                 preconditioner
 
-    @ingroup magmasparse_sposv
+    @ingroup magmasparse_shesv
     ********************************************************************/
 
 magma_int_t

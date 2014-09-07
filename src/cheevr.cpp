@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
 
-       @generated from zheevr.cpp normal z -> c, Fri Jul 18 17:34:18 2014
+       @generated from zheevr.cpp normal z -> c, Tue Sep  2 12:38:22 2014
 
 */
 #include "common_magma.h"
@@ -176,7 +176,7 @@
 
     @param[out]
     work    (workspace) COMPLEX array, dimension (LWORK)
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -192,7 +192,7 @@
 
     @param[out]
     rwork   (workspace) REAL array, dimension (LRWORK)
-            On exit, if INFO = 0, RWORK(1) returns the optimal
+            On exit, if INFO = 0, RWORK[0] returns the optimal
             (and minimal) LRWORK.
 
     @param[in]
@@ -206,7 +206,7 @@
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (LIWORK)
-            On exit, if INFO = 0, IWORK(1) returns the optimal
+            On exit, if INFO = 0, IWORK[0] returns the optimal
             (and minimal) LIWORK.
 
     @param[in]
@@ -501,7 +501,7 @@ magma_cheevr(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int
         }
     }
     
-    /* Set WORK(1) to optimal complex workspace size. */
+    /* Set WORK[0] to optimal complex workspace size. */
     work[1] = MAGMA_C_MAKE( lopt, 0 );
     rwork[1] = (float) lrwmin;
     iwork[1] = liwmin;

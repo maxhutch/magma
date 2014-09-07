@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
 
@@ -20,10 +20,10 @@
 
 
 /**
-    Inverts the NB x NB diagonal blocks.
+    Inverts the NB x NB diagonal blocks of a triangular matrix.
     This routine is used in ztrsm.
     
-    Same as ztrtri_diag, but adds stream argument.
+    Same as ztrtri_diag, but adds queue argument.
     
     @ingroup magma_zblas3
     ********************************************************************/
@@ -77,25 +77,40 @@
             On exit, contains inverses of the NB-by-NB diagonal blocks of A.
 
     @param[in]
-    stream  magma_queue_t
-            Stream to execute in.
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zblas3
     ********************************************************************/
 extern "C" void
-magmablas_ztrtri_diag_stream(
+magmablas_ztrtri_diag_q(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
     const magmaDoubleComplex *dA, magma_int_t ldda,
     magmaDoubleComplex *d_dinvA,
-    magma_queue_t stream)
+    magma_queue_t queue)
 {
+    magma_int_t info = 0;
+    if (uplo != MagmaLower && uplo != MagmaUpper)
+        info = -1;
+    else if (diag != MagmaNonUnit && diag != MagmaUnit)
+        info = -2;
+    else if (n < 0)
+        info = -3;
+    else if (ldda < n)
+        info = -5;
+
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info
+    }
+    
     int nblocks = (n + IB - 1)/IB;
 
     cudaMemset( d_dinvA, 0, ((n+NB-1)/NB)*NB*NB * sizeof(magmaDoubleComplex) );
     
     if ( uplo == MagmaLower ) {
         // invert diagonal IB x IB inner blocks
-        ztrtri_diag_kernel_lower<<< nblocks, IB, 0, stream >>>( diag, n, dA, ldda, d_dinvA );
+        ztrtri_diag_kernel_lower<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
 
         // build up NB x NB blocks (assuming IB=16 here):
         // use   16 x 16  blocks to build  32 x 32  blocks,  1 x (1 x npages) grid,  4 x 4 threads;
@@ -111,28 +126,28 @@ magmablas_ztrtri_diag_stream(
             //printf( "n %d, jb %d, grid %d x %d (%d x %d)\n", n, jb, grid.x, grid.y, grid.y / npages, npages );
             switch (jb) {
                 case 16:
-                    triple_zgemm16_part1_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm16_part2_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 32:
-                    triple_zgemm32_part1_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm32_part2_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 64:
-                    triple_zgemm64_part1_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm64_part2_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 default:
-                    triple_zgemm_above64_part1_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part2_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part3_lower<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part3_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
             }
             if ( kb >= n ) break;
         }
     }
     else {
-        ztrtri_diag_kernel_upper<<< nblocks, IB, 0, stream >>>( diag, n, dA, ldda, d_dinvA );
+        ztrtri_diag_kernel_upper<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
 
         // update the inverse up to the size of IB
         for( int jb=IB; jb < NB; jb*=2 ) {
@@ -140,23 +155,24 @@ magmablas_ztrtri_diag_stream(
             int npages = (n + kb - 1)/kb;
             dim3 threads( (jb <= 32 ? jb/4 : 16), 4 );
             dim3 grid( jb/(threads.x*threads.y), npages*(jb/16) );  // emulate 3D grid: NX * (NY*npages), for CUDA ARCH 1.x
-        
+            
             switch (jb) {
                 case 16:
-                    triple_zgemm16_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 32:
-                    triple_zgemm32_part1_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm32_part2_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 64:
-                    triple_zgemm64_part1_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm64_part2_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 default:
-                    triple_zgemm_above64_part1_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part2_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part3_upper<<< grid, threads, 0, stream >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part3_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
             }
             if ( kb >= n ) break;
@@ -165,7 +181,7 @@ magmablas_ztrtri_diag_stream(
 }
 
 /**
-    @see magmablas_ztrtri_diag_stream
+    @see magmablas_ztrtri_diag_q
     @ingroup magma_zblas3
     ********************************************************************/
 extern "C" void
@@ -174,5 +190,5 @@ magmablas_ztrtri_diag(
     const magmaDoubleComplex *dA, magma_int_t ldda,
     magmaDoubleComplex *d_dinvA)
 {
-    magmablas_ztrtri_diag_stream( uplo, diag, n, dA, ldda, d_dinvA, magma_stream );
+    magmablas_ztrtri_diag_q( uplo, diag, n, dA, ldda, d_dinvA, magma_stream );
 }

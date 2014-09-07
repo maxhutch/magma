@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
 */
@@ -48,7 +48,7 @@ int main( int argc, char** argv )
 
     check( lapack_uplo_const(   MagmaUpper         )[0] == 'U' );
     check( lapack_uplo_const(   MagmaLower         )[0] == 'L' );
-    check( lapack_uplo_const(   MagmaFull          )[0] == 'F' );
+    check( lapack_uplo_const(   MagmaFull          )[0] == 'G' );
 
     check( lapack_diag_const(   MagmaNonUnit       )[0] == 'N' );
     check( lapack_diag_const(   MagmaUnit          )[0] == 'U' );
@@ -117,7 +117,7 @@ int main( int argc, char** argv )
 
     check( lapacke_uplo_const(   MagmaUpper         ) == 'U' );
     check( lapacke_uplo_const(   MagmaLower         ) == 'L' );
-    check( lapacke_uplo_const(   MagmaFull          ) == 'F' );
+    check( lapacke_uplo_const(   MagmaFull          ) == 'G' );
 
     check( lapacke_diag_const(   MagmaNonUnit       ) == 'N' );
     check( lapacke_diag_const(   MagmaUnit          ) == 'U' );
@@ -186,7 +186,7 @@ int main( int argc, char** argv )
 
     check( lapack_const( MagmaUpper         )[0] == 'U' );
     check( lapack_const( MagmaLower         )[0] == 'L' );
-    check( lapack_const( MagmaFull          )[0] == 'F' );
+    check( lapack_const( MagmaFull          )[0] == 'G' );
 
     check( lapack_const( MagmaNonUnit       )[0] == 'N' );
     check( lapack_const( MagmaUnit          )[0] == 'U' );
@@ -255,7 +255,7 @@ int main( int argc, char** argv )
 
     check( lapacke_const( MagmaUpper         ) == 'U' );
     check( lapacke_const( MagmaLower         ) == 'L' );
-    check( lapacke_const( MagmaFull          ) == 'F' );
+    check( lapacke_const( MagmaFull          ) == 'G' );
 
     check( lapacke_const( MagmaNonUnit       ) == 'N' );
     check( lapacke_const( MagmaUnit          ) == 'U' );

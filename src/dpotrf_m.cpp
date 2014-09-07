@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zpotrf_m.cpp normal z -> d, Fri Jul 18 17:34:15 2014
+       @generated from zpotrf_m.cpp normal z -> d, Tue Sep  2 12:38:19 2014
 
 */
 #include "common_magma.h"
@@ -18,11 +18,11 @@
     DPOTRF_OOC computes the Cholesky factorization of a real symmetric
     positive definite matrix A. This version does not require work
     space on the GPU passed as input. GPU memory is allocated in the
-    routine. The matrix A may not fit entirely in the GPU memory.
+    routine. The matrix A may exceed the GPU memory.
 
     The factorization has the form
-       A = U**T * U,   if UPLO = MagmaUpper, or
-       A = L  * L**T,  if UPLO = MagmaLower,
+       A = U**H * U,   if UPLO = MagmaUpper, or
+       A = L  * L**H,  if UPLO = MagmaLower,
     where U is an upper triangular matrix and L is lower triangular.
 
     This is the block version of the algorithm, calling Level 3 BLAS.
@@ -53,7 +53,7 @@
              triangular part of A is not referenced.
     \n
              On exit, if INFO = 0, the factor U or L from the Cholesky
-             factorization A = U**T * U or A = L * L**T.
+             factorization A = U**H * U or A = L * L**H.
     \n
              Higher performance is achieved if A is in pinned memory, e.g.
              allocated using magma_malloc_pinned.
@@ -115,6 +115,11 @@ magma_dpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
     if ( n == 0 )
         return *info;
 
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     nb = magma_get_dpotrf_nb(n);
     if ( num_gpus0 > n/nb ) {
         num_gpus = n/nb;
@@ -236,13 +241,13 @@ magma_dpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
                     J2 = nb*J2;
 
                     jb = min(nb,JB-jj); // number of columns in this current block-row
-                    magma_dgemm( MagmaTrans, MagmaNoTrans,
+                    magma_dgemm( MagmaConjTrans, MagmaNoTrans,
                                  jj, jb, nb,
                                  c_neg_one, dTup(d, 0, J   ), nb,
                                             dTup(d, 0, J+jj), nb,
                                  c_one,     dAup(d, 0, J2), NB);
                     
-                    magma_dsyrk(MagmaUpper, MagmaTrans, jb, nb,
+                    magma_dsyrk(MagmaUpper, MagmaConjTrans, jb, nb,
                                 d_neg_one, dTup(d, 0,  J+jj), nb,
                                 d_one,     dAup(d, jj, J2), NB);
                 }
@@ -266,7 +271,7 @@ magma_dpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
 
                         n_local[d] -= J2;
                         
-                        magma_dgemm( MagmaTrans, MagmaNoTrans,
+                        magma_dgemm( MagmaConjTrans, MagmaNoTrans,
                                      JB, n_local[d], nb,
                                      c_neg_one, dTup(d, 0, J   ), nb,
                                                 dTup(d, 0, J+JB), nb,
@@ -361,7 +366,7 @@ magma_dpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
                     
                     J2 = nb*J2;
                     jb = min(nb,JB-jj);
-                    magma_dgemm( MagmaNoTrans, MagmaTrans,
+                    magma_dgemm( MagmaNoTrans, MagmaConjTrans,
                                  jb, jj, nb,
                                  c_neg_one, dT(d, J+jj, 0), ldda,
                                             dT(d, J,    0), ldda,
@@ -391,7 +396,7 @@ magma_dpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
 
                         n_local[d] -= J2;
                         
-                        magma_dgemm( MagmaNoTrans, MagmaTrans,
+                        magma_dgemm( MagmaNoTrans, MagmaConjTrans,
                                      n_local[d], JB, nb,
                                      c_neg_one, dT(d, J+JB, 0), ldda,
                                                 dT(d, J,    0), ldda,
@@ -440,7 +445,7 @@ magma_dpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
         magma_setdevice(d);
 
         for( j=0; j < 3; j++ ) {
-            if ( stream[d][j] != NULL ) magma_queue_destroy( stream[d][j] );
+            magma_queue_destroy( stream[d][j] );
         }
         magma_free( dt[d] );
 
@@ -448,7 +453,8 @@ magma_dpotrf_m(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
             magma_event_destroy( event[d][j] );
         }
     }
-    magma_setdevice(0);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
                  
     timer_printf( "\n n=%d NB=%d nb=%d\n", (int) n, (int) NB, (int) nb );
     timer_printf( " Without memory allocation: %f / %f = %f GFlop/s\n",

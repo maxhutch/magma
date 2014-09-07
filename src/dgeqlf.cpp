@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgeqlf.cpp normal z -> d, Fri Jul 18 17:34:17 2014
+       @generated from zgeqlf.cpp normal z -> d, Tue Sep  2 12:38:21 2014
 
 */
 #include "common_magma.h"
@@ -51,7 +51,7 @@
 
     @param[out]
     work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
@@ -187,7 +187,7 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
                    This is the main update from the lookahead techniques. */
                 rows = m - k + old_i + old_ib;
                 cols = n - k + old_i - old_ib;
-                magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaBackward, MagmaColumnwise,
+                magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaBackward, MagmaColumnwise,
                                   rows, cols, old_ib,
                                   dA(0, cols+old_ib), ldda, dwork,        lddwork,
                                   dA(0, 0          ), ldda, dwork+old_ib, lddwork);
@@ -220,12 +220,12 @@ magma_dgeqlf(magma_int_t m, magma_int_t n,
                    two steps - implementing the lookahead techniques.
                    This is the update of first ib columns.                 */
                 if (i-ib >= k -kk)
-                    magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaBackward, MagmaColumnwise,
+                    magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaBackward, MagmaColumnwise,
                                       rows, ib, ib,
                                       dA(0, cols),   ldda, dwork,    lddwork,
                                       dA(0,cols-ib), ldda, dwork+ib, lddwork);
                 else {
-                    magma_dlarfb_gpu( MagmaLeft, MagmaTrans, MagmaBackward, MagmaColumnwise,
+                    magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaBackward, MagmaColumnwise,
                                       rows, cols, ib,
                                       dA(0, cols), ldda, dwork,    lddwork,
                                       dA(0, 0   ), ldda, dwork+ib, lddwork);

@@ -1,25 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
 */
 
 #include "common_magma.h"
+#include "commonblas_z.h"
 #include "magma_templates.h"
 
 #define PRECISION_z
 
 #define BLOCK_SIZE 512
-
-
-__global__ void magma_zgemv_kernel3(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
-                                    magmaDoubleComplex *c, magmaDoubleComplex *dwork,
-                                    magmaDoubleComplex *tau);
 
 
 /* --------------------------------------------------------------------------- */
@@ -135,31 +131,6 @@ void magma_zscale_kernel(int n, magmaDoubleComplex* dx0,
    /* === Make temporary the first element to 1; value is stored in dAkk === */
    if (i==0)
      dx0[0] = MAGMA_Z_ONE;
-}
-
-
-__global__ void
-magma_zgemv_kernel1(int m, magmaDoubleComplex *tau, const magmaDoubleComplex * __restrict__ V, int ldv,
-                    const magmaDoubleComplex * __restrict__ c,
-                    magmaDoubleComplex *dwork)
-{
-        const int i = threadIdx.x;
-        const magmaDoubleComplex *dV = V + (blockIdx.x) * ldv;
-
-        __shared__ magmaDoubleComplex sum[ BLOCK_SIZE ];
-        magmaDoubleComplex lsum;
-
-        /*  lsum := v' * C  */
-        lsum = MAGMA_Z_ZERO;
-        for( int j = i; j < m; j += BLOCK_SIZE )
-           lsum += MAGMA_Z_MUL( MAGMA_Z_CNJG( dV[j] ), c[j] );
-
-        sum[i] = lsum;
-        magma_sum_reduce< BLOCK_SIZE >( i, sum );
-
-        __syncthreads();
-        if (i==0)
-           dwork [blockIdx.x] = (*tau)*sum[0];
 }
 
 
@@ -442,7 +413,7 @@ magma_zlaqps3_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
            Compute  F(K+1:N,K) := tau(K)*A(RK:M,K+1:N)'*A(RK:M,K) on the GPU */
         if (k < n-1) {
             magma_zgetvector( 1, &tau[k], 1, &tauk, 1 );
-            magmablas_zgemv( MagmaConjTrans, m-rk, n,
+            magma_zgemv( MagmaConjTrans, m-rk, n,
                          tauk,   A( rk,  0 ), lda,
                                  A( rk,  k   ), 1,
                          c_zero, auxv, 1 );

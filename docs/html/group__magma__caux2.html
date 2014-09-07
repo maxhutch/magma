@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__caux2.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -123,22 +126,31 @@ Functions</h2></td></tr>
 <tr class="memitem:ga24cc7787933eaa5d8c9cae93efbe29fa"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga24cc7787933eaa5d8c9cae93efbe29fa">magma_cnan_inf_gpu</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, const magmaFloatComplex *dA, magma_int_t ldda, magma_int_t *cnt_nan, magma_int_t *cnt_inf)</td></tr>
 <tr class="memdesc:ga24cc7787933eaa5d8c9cae93efbe29fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">magma_cnan_inf checks a matrix that is located on the CPU host for NAN (not-a-number) and INF (infinity) values.  <a href="#ga24cc7787933eaa5d8c9cae93efbe29fa">More...</a><br /></td></tr>
 <tr class="separator:ga24cc7787933eaa5d8c9cae93efbe29fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga616f9fb325e0179e1160780fab52332c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga616f9fb325e0179e1160780fab52332c">magmablas_cgeadd_q</a> (magma_int_t m, magma_int_t n, magmaFloatComplex alpha, const magmaFloatComplex *dA, magma_int_t ldda, magmaFloatComplex *dB, magma_int_t lddb, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga616f9fb325e0179e1160780fab52332c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEADD adds two matrices, dB = alpha*dA + dB.  <a href="#ga616f9fb325e0179e1160780fab52332c">More...</a><br /></td></tr>
+<tr class="separator:ga616f9fb325e0179e1160780fab52332c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga55c3c984194506145ab839245ceb16b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga55c3c984194506145ab839245ceb16b6">magmablas_cgeadd</a> (magma_int_t m, magma_int_t n, magmaFloatComplex alpha, const magmaFloatComplex *dA, magma_int_t ldda, magmaFloatComplex *dB, magma_int_t lddb)</td></tr>
-<tr class="memdesc:ga55c3c984194506145ab839245ceb16b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEADD adds two matrices, dB = alpha*dA + dB.  <a href="#ga55c3c984194506145ab839245ceb16b6">More...</a><br /></td></tr>
 <tr class="separator:ga55c3c984194506145ab839245ceb16b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2bf2c8b2fedac6545114f6099f357ae9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga2bf2c8b2fedac6545114f6099f357ae9">magmablas_cgeadd_batched_q</a> (magma_int_t m, magma_int_t n, magmaFloatComplex alpha, const magmaFloatComplex *const *dAarray, magma_int_t ldda, magmaFloatComplex **dBarray, magma_int_t lddb, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga2bf2c8b2fedac6545114f6099f357ae9"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i], for i = 0, ..., batchCount-1.  <a href="#ga2bf2c8b2fedac6545114f6099f357ae9">More...</a><br /></td></tr>
+<tr class="separator:ga2bf2c8b2fedac6545114f6099f357ae9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga27e1770b9564d83abb6331a8fbd46e91"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga27e1770b9564d83abb6331a8fbd46e91">magmablas_cgeadd_batched</a> (magma_int_t m, magma_int_t n, magmaFloatComplex alpha, const magmaFloatComplex *const *dAarray, magma_int_t ldda, magmaFloatComplex **dBarray, magma_int_t lddb, magma_int_t batchCount)</td></tr>
-<tr class="memdesc:ga27e1770b9564d83abb6331a8fbd46e91"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i], for i = 0, ..., batchCount-1.  <a href="#ga27e1770b9564d83abb6331a8fbd46e91">More...</a><br /></td></tr>
 <tr class="separator:ga27e1770b9564d83abb6331a8fbd46e91"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad57f63944812b643767baf6cc097a525"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gad57f63944812b643767baf6cc097a525">magmablas_clacpy_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, const magmaFloatComplex *dA, magma_int_t ldda, magmaFloatComplex *dB, magma_int_t lddb, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gad57f63944812b643767baf6cc097a525"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLACPY_STREAM copies all or part of a two-dimensional matrix dA to another matrix dB.  <a href="#gad57f63944812b643767baf6cc097a525">More...</a><br /></td></tr>
+<tr class="separator:gad57f63944812b643767baf6cc097a525"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4798f85b755bf59e51abd49ecae412f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga4798f85b755bf59e51abd49ecae412f4">magmablas_clacpy</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, const magmaFloatComplex *dA, magma_int_t ldda, magmaFloatComplex *dB, magma_int_t lddb)</td></tr>
-<tr class="memdesc:ga4798f85b755bf59e51abd49ecae412f4"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h2>Note </h2>
- <a href="#ga4798f85b755bf59e51abd49ecae412f4">More...</a><br /></td></tr>
 <tr class="separator:ga4798f85b755bf59e51abd49ecae412f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6a5193a0b207c9996220c9f6e1e71963"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga6a5193a0b207c9996220c9f6e1e71963">magmablas_clacpy_batched_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, const magmaFloatComplex *const *dAarray, magma_int_t ldda, magmaFloatComplex **dBarray, magma_int_t lddb, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga6a5193a0b207c9996220c9f6e1e71963"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h2>Note </h2>
+ <a href="#ga6a5193a0b207c9996220c9f6e1e71963">More...</a><br /></td></tr>
+<tr class="separator:ga6a5193a0b207c9996220c9f6e1e71963"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa77dc49cec899e83bf48903797fd660e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gaa77dc49cec899e83bf48903797fd660e">magmablas_clacpy_batched</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, const magmaFloatComplex *const *dAarray, magma_int_t ldda, magmaFloatComplex **dBarray, magma_int_t lddb, magma_int_t batchCount)</td></tr>
-<tr class="memdesc:gaa77dc49cec899e83bf48903797fd660e"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h2>Note </h2>
- <a href="#gaa77dc49cec899e83bf48903797fd660e">More...</a><br /></td></tr>
 <tr class="separator:gaa77dc49cec899e83bf48903797fd660e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacf5908d678c7a76a8b48bee4285ded6e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gacf5908d678c7a76a8b48bee4285ded6e">magmablas_clag2z_q</a> (magma_int_t m, magma_int_t n, const magmaFloatComplex *SA, magma_int_t ldsa, magmaDoubleComplex *A, magma_int_t lda, magma_int_t *info, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gacf5908d678c7a76a8b48bee4285ded6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLAG2Z_STREAM converts a single-complex matrix, SA, to a double-complex matrix, A.  <a href="#gacf5908d678c7a76a8b48bee4285ded6e">More...</a><br /></td></tr>
+<tr class="separator:gacf5908d678c7a76a8b48bee4285ded6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1fafc6db2511871f3bb542607da02677"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga1fafc6db2511871f3bb542607da02677">magmablas_clag2z</a> (magma_int_t m, magma_int_t n, const magmaFloatComplex *SA, magma_int_t ldsa, magmaDoubleComplex *A, magma_int_t lda, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga1fafc6db2511871f3bb542607da02677"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLAG2Z converts a single-complex matrix, SA, to a double-complex matrix, A.  <a href="#ga1fafc6db2511871f3bb542607da02677">More...</a><br /></td></tr>
 <tr class="separator:ga1fafc6db2511871f3bb542607da02677"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga789b77cda1ebc1775a3e1407ae2f9b3b"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga789b77cda1ebc1775a3e1407ae2f9b3b">magmablas_clange</a> (magma_norm_t norm, magma_int_t m, magma_int_t n, const magmaFloatComplex *A, magma_int_t lda, float *dwork)</td></tr>
 <tr class="memdesc:ga789b77cda1ebc1775a3e1407ae2f9b3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLANGE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a real matrix A.  <a href="#ga789b77cda1ebc1775a3e1407ae2f9b3b">More...</a><br /></td></tr>
@@ -146,33 +158,67 @@ Functions</h2></td></tr>
 <tr class="memitem:ga6f5aaea4f548acc263f4ebb1a81dc72e"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga6f5aaea4f548acc263f4ebb1a81dc72e">magmablas_clanhe</a> (magma_norm_t norm, magma_uplo_t uplo, magma_int_t n, const magmaFloatComplex *A, magma_int_t lda, float *dwork)</td></tr>
 <tr class="memdesc:ga6f5aaea4f548acc263f4ebb1a81dc72e"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLANHE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a complex Hermitian matrix A.  <a href="#ga6f5aaea4f548acc263f4ebb1a81dc72e">More...</a><br /></td></tr>
 <tr class="separator:ga6f5aaea4f548acc263f4ebb1a81dc72e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaaebbf112d689fac4b72eef71d839a523"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gaaebbf112d689fac4b72eef71d839a523">magmablas_claset_stream</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaFloatComplex offdiag, magmaFloatComplex diag, magmaFloatComplex *dA, magma_int_t ldda, magma_queue_t stream)</td></tr>
-<tr class="memdesc:gaaebbf112d689fac4b72eef71d839a523"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLASET_STREAM initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals.  <a href="#gaaebbf112d689fac4b72eef71d839a523">More...</a><br /></td></tr>
-<tr class="separator:gaaebbf112d689fac4b72eef71d839a523"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae1e96de4b9c5649c15bd7637fb9f9ed3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gae1e96de4b9c5649c15bd7637fb9f9ed3">magmablas_clascl_q</a> (magma_type_t type, magma_int_t kl, magma_int_t ku, float cfrom, float cto, magma_int_t m, magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t *info, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gae1e96de4b9c5649c15bd7637fb9f9ed3"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLASCL multiplies the M by N complex matrix A by the real scalar CTO/CFROM.  <a href="#gae1e96de4b9c5649c15bd7637fb9f9ed3">More...</a><br /></td></tr>
+<tr class="separator:gae1e96de4b9c5649c15bd7637fb9f9ed3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacc01fa36d455f9b8c66734ab4efeec7d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gacc01fa36d455f9b8c66734ab4efeec7d">magmablas_clascl</a> (magma_type_t type, magma_int_t kl, magma_int_t ku, float cfrom, float cto, magma_int_t m, magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t *info)</td></tr>
+<tr class="separator:gacc01fa36d455f9b8c66734ab4efeec7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga371c7b6b55f3bb40356730927b937bf3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga371c7b6b55f3bb40356730927b937bf3">magmablas_clascl2_q</a> (magma_type_t type, magma_int_t m, magma_int_t n, const float *dD, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t *info, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga371c7b6b55f3bb40356730927b937bf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLASCL2 scales the M by N complex matrix A by the real diagonal matrix dD.  <a href="#ga371c7b6b55f3bb40356730927b937bf3">More...</a><br /></td></tr>
+<tr class="separator:ga371c7b6b55f3bb40356730927b937bf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga79c7e184b2fa4d80cff9cbf4a4fb7a01"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga79c7e184b2fa4d80cff9cbf4a4fb7a01">magmablas_clascl2</a> (magma_type_t type, magma_int_t m, magma_int_t n, const float *dD, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t *info)</td></tr>
+<tr class="separator:ga79c7e184b2fa4d80cff9cbf4a4fb7a01"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae169738f21bfff6802247b00bc5d077d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gae169738f21bfff6802247b00bc5d077d">magmablas_claset_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaFloatComplex offdiag, magmaFloatComplex diag, magmaFloatComplex *dA, magma_int_t ldda, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gae169738f21bfff6802247b00bc5d077d"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLASET_STREAM initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals.  <a href="#gae169738f21bfff6802247b00bc5d077d">More...</a><br /></td></tr>
+<tr class="separator:gae169738f21bfff6802247b00bc5d077d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga40b0ba0e8b44df3364fae761ff01b418"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga40b0ba0e8b44df3364fae761ff01b418">magmablas_claset</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaFloatComplex offdiag, magmaFloatComplex diag, magmaFloatComplex *dA, magma_int_t ldda)</td></tr>
 <tr class="separator:ga40b0ba0e8b44df3364fae761ff01b418"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3d45df14bb57fc65a080e7ef30ec21df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga3d45df14bb57fc65a080e7ef30ec21df">magmablas_claset_band_stream</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloatComplex offdiag, magmaFloatComplex diag, magmaFloatComplex *dA, magma_int_t ldda, magma_queue_t stream)</td></tr>
-<tr class="memdesc:ga3d45df14bb57fc65a080e7ef30ec21df"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDIAG.  <a href="#ga3d45df14bb57fc65a080e7ef30ec21df">More...</a><br /></td></tr>
-<tr class="separator:ga3d45df14bb57fc65a080e7ef30ec21df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf3333ab68f77df074f2ce236d8cf5425"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gaf3333ab68f77df074f2ce236d8cf5425">magmablas_claset_band_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloatComplex offdiag, magmaFloatComplex diag, magmaFloatComplex *dA, magma_int_t ldda, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf3333ab68f77df074f2ce236d8cf5425"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDIAG.  <a href="#gaf3333ab68f77df074f2ce236d8cf5425">More...</a><br /></td></tr>
+<tr class="separator:gaf3333ab68f77df074f2ce236d8cf5425"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafbeb6538c4bd293f0bc8222e0f7fa11c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gafbeb6538c4bd293f0bc8222e0f7fa11c">magmablas_claset_band</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloatComplex offdiag, magmaFloatComplex diag, magmaFloatComplex *dA, magma_int_t ldda)</td></tr>
 <tr class="separator:gafbeb6538c4bd293f0bc8222e0f7fa11c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5de7cdfe6dd938d3cde1323b29c4bb25"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga5de7cdfe6dd938d3cde1323b29c4bb25">magmablas_cswapdblk</a> (magma_int_t n, magma_int_t nb, magmaFloatComplex *dA1, magma_int_t ldda1, magma_int_t inca1, magmaFloatComplex *dA2, magma_int_t ldda2, magma_int_t inca2)</td></tr>
-<tr class="memdesc:ga5de7cdfe6dd938d3cde1323b29c4bb25"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an auxiliary MAGMA routine.  <a href="#ga5de7cdfe6dd938d3cde1323b29c4bb25">More...</a><br /></td></tr>
-<tr class="separator:ga5de7cdfe6dd938d3cde1323b29c4bb25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5d0b1dbc696b3d1ddfd26006faae30ba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga5d0b1dbc696b3d1ddfd26006faae30ba">magmablas_claswp_q</a> (magma_int_t n, magmaFloatComplex *dAT, magma_int_t lda, magma_int_t k1, magma_int_t k2, const magma_int_t *ipiv, magma_int_t inci, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga5d0b1dbc696b3d1ddfd26006faae30ba"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h1>Purpose: </h1>
+CLASWP performs a series of row interchanges on the matrix A.  <a href="#ga5d0b1dbc696b3d1ddfd26006faae30ba">More...</a><br /></td></tr>
+<tr class="separator:ga5d0b1dbc696b3d1ddfd26006faae30ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga355ace580bcb413f392daa998d1e77f1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga355ace580bcb413f392daa998d1e77f1">magmablas_claswp</a> (magma_int_t n, magmaFloatComplex *dAT, magma_int_t lda, magma_int_t k1, magma_int_t k2, const magma_int_t *ipiv, magma_int_t inci)</td></tr>
+<tr class="separator:ga355ace580bcb413f392daa998d1e77f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga66b774a74772d664ea9b5c465684611f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga66b774a74772d664ea9b5c465684611f">magmablas_claswpx_q</a> (magma_int_t n, magmaFloatComplex *dA, magma_int_t ldx, magma_int_t ldy, magma_int_t k1, magma_int_t k2, const magma_int_t *ipiv, magma_int_t inci, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga66b774a74772d664ea9b5c465684611f"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h1>Purpose: </h1>
+CLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga66b774a74772d664ea9b5c465684611f">More...</a><br /></td></tr>
+<tr class="separator:ga66b774a74772d664ea9b5c465684611f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab277993b71d7c6127746e3df10070be3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gab277993b71d7c6127746e3df10070be3">magmablas_claswpx</a> (magma_int_t n, magmaFloatComplex *dA, magma_int_t ldx, magma_int_t ldy, magma_int_t k1, magma_int_t k2, const magma_int_t *ipiv, magma_int_t inci)</td></tr>
+<tr class="separator:gab277993b71d7c6127746e3df10070be3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6562a24d37dbbdec83cd0314492deb42"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga6562a24d37dbbdec83cd0314492deb42">magmablas_claswp2_q</a> (magma_int_t n, magmaFloatComplex *dAT, magma_int_t lda, magma_int_t k1, magma_int_t k2, const magma_int_t *d_ipiv, magma_int_t inci, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga6562a24d37dbbdec83cd0314492deb42"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h1>Purpose: </h1>
+CLASWP2 performs a series of row interchanges on the matrix A.  <a href="#ga6562a24d37dbbdec83cd0314492deb42">More...</a><br /></td></tr>
+<tr class="separator:ga6562a24d37dbbdec83cd0314492deb42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga949609c9379e2de51bb5abf3701ad691"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga949609c9379e2de51bb5abf3701ad691">magmablas_claswp2</a> (magma_int_t n, magmaFloatComplex *dAT, magma_int_t lda, magma_int_t k1, magma_int_t k2, const magma_int_t *d_ipiv, magma_int_t inci)</td></tr>
+<tr class="separator:ga949609c9379e2de51bb5abf3701ad691"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2ba2d44d5fc8436bf11bcbf382987e99"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga2ba2d44d5fc8436bf11bcbf382987e99">magmablas_cswapdblk_q</a> (magma_int_t n, magma_int_t nb, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t inca, magmaFloatComplex *dB, magma_int_t lddb, magma_int_t incb, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga2ba2d44d5fc8436bf11bcbf382987e99"><td class="mdescLeft">&#160;</td><td class="mdescRight">cswapdblk swaps diagonal blocks of size nb x nb between matrices dA and dB on the GPU.  <a href="#ga2ba2d44d5fc8436bf11bcbf382987e99">More...</a><br /></td></tr>
+<tr class="separator:ga2ba2d44d5fc8436bf11bcbf382987e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa301469d05e2671441440e367f1d567f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gaa301469d05e2671441440e367f1d567f">magmablas_cswapdblk</a> (magma_int_t n, magma_int_t nb, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t inca, magmaFloatComplex *dB, magma_int_t lddb, magma_int_t incb)</td></tr>
+<tr class="separator:gaa301469d05e2671441440e367f1d567f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga92663bb9c3be8a7c5eb13a7b99128d52"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga92663bb9c3be8a7c5eb13a7b99128d52">magmablas_csymmetrize_q</a> (magma_uplo_t uplo, magma_int_t m, magmaFloatComplex *dA, magma_int_t ldda, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga92663bb9c3be8a7c5eb13a7b99128d52"><td class="mdescLeft">&#160;</td><td class="mdescRight">CSYMMETRIZE copies lower triangle to upper triangle, or vice-versa, to make dA a general representation of a symmetric matrix.  <a href="#ga92663bb9c3be8a7c5eb13a7b99128d52">More...</a><br /></td></tr>
+<tr class="separator:ga92663bb9c3be8a7c5eb13a7b99128d52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga400ea96f657e95b6c9b349369b3e5ec4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga400ea96f657e95b6c9b349369b3e5ec4">magmablas_csymmetrize</a> (magma_uplo_t uplo, magma_int_t m, magmaFloatComplex *dA, magma_int_t ldda)</td></tr>
-<tr class="memdesc:ga400ea96f657e95b6c9b349369b3e5ec4"><td class="mdescLeft">&#160;</td><td class="mdescRight">CSYMMETRIZE copies lower triangle to upper triangle, or vice-versa, to make dA a general representation of a symmetric matrix.  <a href="#ga400ea96f657e95b6c9b349369b3e5ec4">More...</a><br /></td></tr>
 <tr class="separator:ga400ea96f657e95b6c9b349369b3e5ec4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf7575daf78a949d8e02702a0182a3224"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gaf7575daf78a949d8e02702a0182a3224">magmablas_csymmetrize_tiles_q</a> (magma_uplo_t uplo, magma_int_t m, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t ntile, magma_int_t mstride, magma_int_t nstride, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf7575daf78a949d8e02702a0182a3224"><td class="mdescLeft">&#160;</td><td class="mdescRight">CSYMMETRIZE_TILES copies lower triangle to upper triangle, or vice-versa, to make some blocks of dA into general representations of a symmetric block.  <a href="#gaf7575daf78a949d8e02702a0182a3224">More...</a><br /></td></tr>
+<tr class="separator:gaf7575daf78a949d8e02702a0182a3224"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaee7e4f971db51ffe154b4cfa5a64d0f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gaee7e4f971db51ffe154b4cfa5a64d0f8">magmablas_csymmetrize_tiles</a> (magma_uplo_t uplo, magma_int_t m, magmaFloatComplex *dA, magma_int_t ldda, magma_int_t ntile, magma_int_t mstride, magma_int_t nstride)</td></tr>
-<tr class="memdesc:gaee7e4f971db51ffe154b4cfa5a64d0f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">CSYMMETRIZE_TILES copies lower triangle to upper triangle, or vice-versa, to make some blocks of dA into general representations of a symmetric block.  <a href="#gaee7e4f971db51ffe154b4cfa5a64d0f8">More...</a><br /></td></tr>
 <tr class="separator:gaee7e4f971db51ffe154b4cfa5a64d0f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8e8a9ce7e015dca64f52be03360eed0c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga8e8a9ce7e015dca64f52be03360eed0c">magmablas_ctranspose_stream</a> (magma_int_t m, magma_int_t n, const magmaFloatComplex *dA, magma_int_t ldda, magmaFloatComplex *dAT, magma_int_t lddat, magma_queue_t stream)</td></tr>
-<tr class="memdesc:ga8e8a9ce7e015dca64f52be03360eed0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ctranspose_stream copies and transposes a matrix dA to matrix dAT.  <a href="#ga8e8a9ce7e015dca64f52be03360eed0c">More...</a><br /></td></tr>
-<tr class="separator:ga8e8a9ce7e015dca64f52be03360eed0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad8545d91733ea5f0c9884a359494317c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gad8545d91733ea5f0c9884a359494317c">magmablas_ctranspose_q</a> (magma_int_t m, magma_int_t n, const magmaFloatComplex *dA, magma_int_t ldda, magmaFloatComplex *dAT, magma_int_t lddat, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gad8545d91733ea5f0c9884a359494317c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ctranspose_q copies and transposes a matrix dA to matrix dAT.  <a href="#gad8545d91733ea5f0c9884a359494317c">More...</a><br /></td></tr>
+<tr class="separator:gad8545d91733ea5f0c9884a359494317c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga046ed25c4abe677543af9a16f8e9b31d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga046ed25c4abe677543af9a16f8e9b31d">magmablas_ctranspose</a> (magma_int_t m, magma_int_t n, const magmaFloatComplex *dA, magma_int_t ldda, magmaFloatComplex *dAT, magma_int_t lddat)</td></tr>
 <tr class="separator:ga046ed25c4abe677543af9a16f8e9b31d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4a728300c4ddc1c211eca474c49f540c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga4a728300c4ddc1c211eca474c49f540c">magmablas_ctranspose_inplace_stream</a> (magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda, magma_queue_t stream)</td></tr>
-<tr class="memdesc:ga4a728300c4ddc1c211eca474c49f540c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ctranspose_inplace_stream transposes a square N-by-N matrix in-place.  <a href="#ga4a728300c4ddc1c211eca474c49f540c">More...</a><br /></td></tr>
-<tr class="separator:ga4a728300c4ddc1c211eca474c49f540c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadc466e8d3c3c2f5b1dad3d319313f78c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#gadc466e8d3c3c2f5b1dad3d319313f78c">magmablas_ctranspose_inplace_q</a> (magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gadc466e8d3c3c2f5b1dad3d319313f78c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ctranspose_inplace_q transposes a square N-by-N matrix in-place.  <a href="#gadc466e8d3c3c2f5b1dad3d319313f78c">More...</a><br /></td></tr>
+<tr class="separator:gadc466e8d3c3c2f5b1dad3d319313f78c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga06d4e027a3b7b556c9c3295da771ca36"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__caux2.html#ga06d4e027a3b7b556c9c3295da771ca36">magmablas_ctranspose_inplace</a> (magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda)</td></tr>
 <tr class="separator:ga06d4e027a3b7b556c9c3295da771ca36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -325,7 +371,7 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N), on the GPU device. The M-by-N matrix to be printed.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N), on the GPU device. The M-by-N matrix to be printed.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">cnt_nan</td><td>INTEGER* If non-NULL, on exit contains the number of NAN values in A.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">cnt_inf</td><td>INTEGER* If non-NULL, on exit contains the number of INF values in A.</td></tr>
@@ -493,20 +539,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>ZGEADD adds two matrices, dB = alpha*dA + dB. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix dA. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>COMPLEX The scalar alpha.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The m by n matrix dA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array, dimension (LDDB,N) The m by n matrix dB.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= max(1,M). </td></tr>
-  </table>
-  </dd>
-</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga616f9fb325e0179e1160780fab52332c" title="ZGEADD adds two matrices, dB = alpha*dA + dB. ">magmablas_cgeadd_q</a> </dd></dl>
 
 </div>
 </div>
@@ -569,6 +602,75 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga2bf2c8b2fedac6545114f6099f357ae9" title="ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i], for i = 0...">magmablas_cgeadd_batched_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga2bf2c8b2fedac6545114f6099f357ae9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_cgeadd_batched_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magmaFloatComplex *const *&#160;</td>
+          <td class="paramname"><em>dAarray</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex **&#160;</td>
+          <td class="paramname"><em>dBarray</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 <p>ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i], for i = 0, ..., batchCount-1. </p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -580,7 +682,85 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array dAarray[i]. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dBarray</td><td>array on GPU, dimension(batchCount), of pointers to arrays, with each array a COMPLEX array, dimension (LDDB,N) The m by n matrices dBarray[i].</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of each array dBarray[i]. LDDB &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to add; length of dAarray and dBarray. batchCount &gt;= 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to add; length of dAarray and dBarray. batchCount &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga616f9fb325e0179e1160780fab52332c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_cgeadd_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ZGEADD adds two matrices, dB = alpha*dA + dB. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix dA. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>COMPLEX The scalar alpha.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The m by n matrix dA.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array, dimension (LDDB,N) The m by n matrix dB.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -640,30 +820,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p><h2>Note </h2>
-</p>
-<ul>
-<li>UPLO Parameter is disabled</li>
-<li>Do we want to provide a generic function to the user with all the options?</li>
-</ul>
-<p>CLACPY copies all or part of a two-dimensional matrix dA to another matrix dB.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies the part of the matrix dA to be copied to dB.<ul>
-<li>= MagmaUpper: Upper triangular part</li>
-<li>= MagmaLower: Lower triangular part Otherwise: All of the matrix dA</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix dA. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The m by n matrix dA. If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed; if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dB</td><td>COMPLEX array, dimension (LDDB,N) The m by n matrix dB. On exit, dB = dA in the locations specified by UPLO.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= max(1,M). </td></tr>
-  </table>
-  </dd>
-</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gad57f63944812b643767baf6cc097a525" title="CLACPY_STREAM copies all or part of a two-dimensional matrix dA to another matrix dB...">magmablas_clacpy_q</a> </dd></dl>
 
 </div>
 </div>
@@ -726,6 +883,75 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga6a5193a0b207c9996220c9f6e1e71963" title="Note ">magmablas_clacpy_batched_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6a5193a0b207c9996220c9f6e1e71963"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_clacpy_batched_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_uplo_t&#160;</td>
+          <td class="paramname"><em>uplo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magmaFloatComplex *const *&#160;</td>
+          <td class="paramname"><em>dAarray</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex **&#160;</td>
+          <td class="paramname"><em>dBarray</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 <p><h2>Note </h2>
 </p>
@@ -747,7 +973,90 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array dAarray[i]. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dBarray</td><td>array on GPU, dimension(batchCount), of pointers to arrays, with each array a COMPLEX array, dimension (LDDB,N) The m by n matrices dBarray[i]. On exit, matrix dBarray[i] = matrix dAarray[i] in the locations specified by UPLO.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of each array dBarray[i]. LDDB &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to add; length of dAarray and dBarray. batchCount &gt;= 0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to add; length of dAarray and dBarray. batchCount &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gad57f63944812b643767baf6cc097a525"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_clacpy_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_uplo_t&#160;</td>
+          <td class="paramname"><em>uplo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>CLACPY_STREAM copies all or part of a two-dimensional matrix dA to another matrix dB. </p>
+<p>This is the same as CLACPY, but adds queue argument.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies the part of the matrix dA to be copied to dB.<ul>
+<li>= MagmaUpper: Upper triangular part</li>
+<li>= MagmaLower: Lower triangular part Otherwise: All of the matrix dA</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix dA. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The m by n matrix dA. If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed; if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dB</td><td>COMPLEX array, dimension (LDDB,N) The m by n matrix dB. On exit, dB = dA in the locations specified by UPLO.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -807,8 +1116,71 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gacf5908d678c7a76a8b48bee4285ded6e" title="CLAG2Z_STREAM converts a single-complex matrix, SA, to a double-complex matrix, A. ">magmablas_clag2z_q</a> </dd></dl>
 
-<p>CLAG2Z converts a single-complex matrix, SA, to a double-complex matrix, A. </p>
+</div>
+</div>
+<a class="anchor" id="gacf5908d678c7a76a8b48bee4285ded6e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_clag2z_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>SA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldsa</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>CLAG2Z_STREAM converts a single-complex matrix, SA, to a double-complex matrix, A. </p>
 <p>Note that while it is possible to overflow while converting from double to single, it is not possible to overflow when converting from single to double.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -820,9 +1192,10 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -967,6 +1340,324 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gacc01fa36d455f9b8c66734ab4efeec7d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_clascl </td>
+          <td>(</td>
+          <td class="paramtype">magma_type_t&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>kl</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ku</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>cfrom</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>cto</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gae1e96de4b9c5649c15bd7637fb9f9ed3" title="CLASCL multiplies the M by N complex matrix A by the real scalar CTO/CFROM. ">magmablas_clascl_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga79c7e184b2fa4d80cff9cbf4a4fb7a01"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_clascl2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_type_t&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const float *&#160;</td>
+          <td class="paramname"><em>dD</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga371c7b6b55f3bb40356730927b937bf3" title="CLASCL2 scales the M by N complex matrix A by the real diagonal matrix dD. ">magmablas_clascl2_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga371c7b6b55f3bb40356730927b937bf3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_clascl2_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_type_t&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const float *&#160;</td>
+          <td class="paramname"><em>dD</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>CLASCL2 scales the M by N complex matrix A by the real diagonal matrix dD. </p>
+<p>TYPE specifies that A may be full, upper triangular, lower triangular.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>magma_type_t TYPE indices the storage type of the input matrix A. = MagmaFull: full matrix. = MagmaLower: lower triangular matrix. = MagmaUpper: upper triangular matrix. Other formats that LAPACK supports, MAGMA does not currently support.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dD</td><td>REAL vector, dimension (M) The diagonal matrix containing the scalar factors. Stored as a vector.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The matrix to be scaled by dD. See TYPE for the storage type.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gae1e96de4b9c5649c15bd7637fb9f9ed3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_clascl_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_type_t&#160;</td>
+          <td class="paramname"><em>type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>kl</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ku</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>cfrom</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>cto</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>CLASCL multiplies the M by N complex matrix A by the real scalar CTO/CFROM. </p>
+<p>This is done without over/underflow as long as the final result CTO*A(I,J)/CFROM does not over/underflow. TYPE specifies that A may be full, upper triangular, lower triangular.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>magma_type_t TYPE indices the storage type of the input matrix A. = MagmaFull: full matrix. = MagmaLower: lower triangular matrix. = MagmaUpper: upper triangular matrix. Other formats that LAPACK supports, MAGMA does not currently support.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">kl</td><td>INTEGER Unused, for LAPACK compatability.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ku</td><td>KU is INTEGER Unused, for LAPACK compatability.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cfrom</td><td>REAL</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cto</td><td>REAL <br />
+ The matrix A is multiplied by CTO/CFROM. A(I,J) is computed without over/underflow if the final result CTO*A(I,J)/CFROM can be represented without over/underflow. CFROM must be nonzero. CFROM and CTO must not be NAN.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The matrix to be multiplied by CTO/CFROM. See TYPE for the storage type.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga40b0ba0e8b44df3364fae761ff01b418"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1020,7 +1711,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gaaebbf112d689fac4b72eef71d839a523" title="CLASET_STREAM initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals...">magmablas_claset_stream</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gae169738f21bfff6802247b00bc5d077d" title="CLASET_STREAM initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals...">magmablas_claset_q</a> </dd></dl>
 
 </div>
 </div>
@@ -1083,16 +1774,16 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga3d45df14bb57fc65a080e7ef30ec21df" title="CLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals t...">magmablas_claset_band_stream</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gaf3333ab68f77df074f2ce236d8cf5425" title="CLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals t...">magmablas_claset_band_q</a> </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga3d45df14bb57fc65a080e7ef30ec21df"></a>
+<a class="anchor" id="gaf3333ab68f77df074f2ce236d8cf5425"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void magmablas_claset_band_stream </td>
+          <td class="memname">void magmablas_claset_band_q </td>
           <td>(</td>
           <td class="paramtype">magma_uplo_t&#160;</td>
           <td class="paramname"><em>uplo</em>, </td>
@@ -1143,7 +1834,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>stream</em>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1154,7 +1845,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDIAG. </p>
-<p>This is the same as CLASET_BAND, but adds stream argument.</p>
+<p>This is the same as CLASET_BAND, but adds queue argument.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies the part of the matrix dA to be set.<ul>
@@ -1169,22 +1860,19 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">diag</td><td>COMPLEX All the main diagonal elements are set to DIAG.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The M-by-N matrix dA. If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed; if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed. On exit, A(i,j) = ALPHA, 1 &lt;= i &lt;= m, 1 &lt;= j &lt;= n where i != j, abs(i-j) &lt; k; A(i,i) = BETA , 1 &lt;= i &lt;= min(m,n)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>magma_queue_t Stream to execute CLASET in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Stream to execute CLASET in. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section author"><dt>Author</dt><dd>Raffaele Solca </dd>
-<dd>
-Mark Gates </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="gaaebbf112d689fac4b72eef71d839a523"></a>
+<a class="anchor" id="gae169738f21bfff6802247b00bc5d077d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void magmablas_claset_stream </td>
+          <td class="memname">void magmablas_claset_q </td>
           <td>(</td>
           <td class="paramtype">magma_uplo_t&#160;</td>
           <td class="paramname"><em>uplo</em>, </td>
@@ -1229,7 +1917,7 @@ Mark Gates </dd></dl>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>stream</em>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1240,7 +1928,7 @@ Mark Gates </dd></dl>
 </div><div class="memdoc">
 
 <p>CLASET_STREAM initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals. </p>
-<p>This is the same as CLASET, but adds stream argument.</p>
+<p>This is the same as CLASET, but adds queue argument.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies the part of the matrix dA to be set.<ul>
@@ -1254,14 +1942,442 @@ Mark Gates </dd></dl>
     <tr><td class="paramdir">[in]</td><td class="paramname">diag</td><td>COMPLEX The scalar DIAG. (In LAPACK this is called BETA.)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The M-by-N matrix dA. If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed; if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed. On exit, A(i,j) = OFFDIAG, 1 &lt;= i &lt;= m, 1 &lt;= j &lt;= n, i != j; A(i,i) = DIAG, 1 &lt;= i &lt;= min(m,n)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>magma_queue_t Stream to execute in. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a class="anchor" id="ga5de7cdfe6dd938d3cde1323b29c4bb25"></a>
+<a class="anchor" id="ga355ace580bcb413f392daa998d1e77f1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_claswp </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dAT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magma_int_t *&#160;</td>
+          <td class="paramname"><em>ipiv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>inci</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga5d0b1dbc696b3d1ddfd26006faae30ba" title="Purpose: CLASWP performs a series of row interchanges on the matrix A. ">magmablas_claswp_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga949609c9379e2de51bb5abf3701ad691"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_claswp2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dAT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magma_int_t *&#160;</td>
+          <td class="paramname"><em>d_ipiv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>inci</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga6562a24d37dbbdec83cd0314492deb42" title="Purpose: CLASWP2 performs a series of row interchanges on the matrix A. ">magmablas_claswp2_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga6562a24d37dbbdec83cd0314492deb42"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_claswp2_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dAT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magma_int_t *&#160;</td>
+          <td class="paramname"><em>d_ipiv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>inci</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><h1>Purpose: </h1>
+CLASWP2 performs a series of row interchanges on the matrix A. </p>
+<p>One row interchange is initiated for each of rows K1 through K2 of A.</p>
+<p>Unlike LAPACK, here A is stored row-wise (hence dAT). ** Otherwise, this is identical to LAPACK's interface.</p>
+<p>Here, d_ipiv is passed in GPU memory.</p>
+<h1>Arguments: </h1>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dAT</td><td>COMPLEX array on GPU, stored row-wise, dimension (LDA,*) On entry, the matrix of column dimension N to which the row interchanges will be applied. On exit, the permuted matrix.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. (I.e., stride between elements in a column.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k1</td><td>INTEGER The first element of IPIV for which a row interchange will be done. (One based index.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k2</td><td>INTEGER The last element of IPIV for which a row interchange will be done. (One based index.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d_ipiv</td><td>INTEGER array, on GPU, dimension (K2*abs(INCI)) The vector of pivot indices. Only the elements in positions K1 through K2 of IPIV are accessed. IPIV(K) = L implies rows K and L are to be interchanged.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">inci</td><td>INTEGER The increment between successive values of IPIV. Currently, IPIV &gt; 0. TODO: If IPIV is negative, the pivots are applied in reverse order.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5d0b1dbc696b3d1ddfd26006faae30ba"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_claswp_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dAT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magma_int_t *&#160;</td>
+          <td class="paramname"><em>ipiv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>inci</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><h1>Purpose: </h1>
+CLASWP performs a series of row interchanges on the matrix A. </p>
+<p>One row interchange is initiated for each of rows K1 through K2 of A.</p>
+<p>Unlike LAPACK, here A is stored row-wise (hence dAT). ** Otherwise, this is identical to LAPACK's interface.</p>
+<h1>Arguments: </h1>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dAT</td><td>COMPLEX array on GPU, stored row-wise, dimension (LDA,N) On entry, the matrix of column dimension N to which the row interchanges will be applied. On exit, the permuted matrix.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. lda &gt;= n.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k1</td><td>INTEGER The first element of IPIV for which a row interchange will be done. (Fortran one-based index: 1 &lt;= k1 &lt;= n.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k2</td><td>INTEGER The last element of IPIV for which a row interchange will be done. (Fortran one-based index: 1 &lt;= k2 &lt;= n.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array, on CPU, dimension (K2*abs(INCI)) The vector of pivot indices. Only the elements in positions K1 through K2 of IPIV are accessed. IPIV(K) = L implies rows K and L are to be interchanged.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">inci</td><td>INTEGER The increment between successive values of IPIV. Currently, IPIV &gt; 0. TODO: If IPIV is negative, the pivots are applied in reverse order.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gab277993b71d7c6127746e3df10070be3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_claswpx </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magma_int_t *&#160;</td>
+          <td class="paramname"><em>ipiv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>inci</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga66b774a74772d664ea9b5c465684611f" title="Purpose: CLASWPX performs a series of row interchanges on the matrix A. ">magmablas_claswpx_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga66b774a74772d664ea9b5c465684611f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_claswpx_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const magma_int_t *&#160;</td>
+          <td class="paramname"><em>ipiv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>inci</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><h1>Purpose: </h1>
+CLASWPX performs a series of row interchanges on the matrix A. </p>
+<p>One row interchange is initiated for each of rows K1 through K2 of A.</p>
+<p>Unlike LAPACK, here A is stored either row-wise or column-wise, depending on ldx and ldy. ** Otherwise, this is identical to LAPACK's interface.</p>
+<h1>Arguments: </h1>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array on GPU, dimension (*,*) On entry, the matrix of column dimension N to which the row interchanges will be applied. On exit, the permuted matrix.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldx</td><td>INTEGER Stride between elements in same column.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldy</td><td>INTEGER Stride between elements in same row. For A stored row-wise, set ldx=lda and ldy=1. For A stored column-wise, set ldx=1 and ldy=lda.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k1</td><td>INTEGER The first element of IPIV for which a row interchange will be done. (One based index.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k2</td><td>INTEGER The last element of IPIV for which a row interchange will be done. (One based index.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array, on CPU, dimension (K2*abs(INCI)) The vector of pivot indices. Only the elements in positions K1 through K2 of IPIV are accessed. IPIV(K) = L implies rows K and L are to be interchanged.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">inci</td><td>INTEGER The increment between successive values of IPIV. Currently, IPIV &gt; 0. TODO: If IPIV is negative, the pivots are applied in reverse order.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa301469d05e2671441440e367f1d567f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1281,37 +2397,106 @@ Mark Gates </dd></dl>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magmaFloatComplex *&#160;</td>
-          <td class="paramname"><em>dA1</em>, </td>
+          <td class="paramname"><em>dA</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldda1</em>, </td>
+          <td class="paramname"><em>ldda</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>inca1</em>, </td>
+          <td class="paramname"><em>inca</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magmaFloatComplex *&#160;</td>
-          <td class="paramname"><em>dA2</em>, </td>
+          <td class="paramname"><em>dB</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldda2</em>, </td>
+          <td class="paramname"><em>lddb</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>inca2</em>&#160;</td>
+          <td class="paramname"><em>incb</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga2ba2d44d5fc8436bf11bcbf382987e99" title="cswapdblk swaps diagonal blocks of size nb x nb between matrices dA and dB on the GPU...">magmablas_cswapdblk_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga2ba2d44d5fc8436bf11bcbf382987e99"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_cswapdblk_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>inca</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1321,9 +2506,22 @@ Mark Gates </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>This is an auxiliary MAGMA routine. </p>
-<p>It swaps diagonal blocks of size nb x nb between matrices dA1 and dA2 on the GPU.</p>
-<p>The number of blocks swapped is (n-1)/nb. For i = 1 .. (n-1)/nb matrices dA1 + i * nb * (ldda1 + inca1) and dA2 + i * nb * (ldda2 + inca2) are swapped. </p>
+<p>cswapdblk swaps diagonal blocks of size nb x nb between matrices dA and dB on the GPU. </p>
+<p>It swaps nblocks = n/nb blocks. For i = 1 .. nblocks, submatrices dA( i*nb*inca, i*nb ) and dB( i*nb*incb, i*nb ) are swapped.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrices dA and dB. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The size of diagonal blocks. NB &gt; 0 and NB &lt;= maximum threads per CUDA block (512 or 1024).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The matrix dA.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= (nblocks - 1)*nb*inca + nb.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">inca</td><td>INTEGER The row increment between diagonal blocks of dA. inca &gt;= 0. For example, inca = 1 means blocks are stored on the diagonal at dA(i*nb, i*nb), inca = 0 means blocks are stored side-by-side at dA(0,    i*nb).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array, dimension (LDDB,N) The matrix dB.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array db. LDDB &gt;= (nblocks - 1)*nb*incb + nb.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incb</td><td>INTEGER The row increment between diagonal blocks of dB. incb &gt;= 0. See inca.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1362,6 +2560,51 @@ Mark Gates </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga92663bb9c3be8a7c5eb13a7b99128d52" title="CSYMMETRIZE copies lower triangle to upper triangle, or vice-versa, to make dA a general representati...">magmablas_csymmetrize_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga92663bb9c3be8a7c5eb13a7b99128d52"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_csymmetrize_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_uplo_t&#160;</td>
+          <td class="paramname"><em>uplo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 <p>CSYMMETRIZE copies lower triangle to upper triangle, or vice-versa, to make dA a general representation of a symmetric matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -1373,7 +2616,8 @@ Mark Gates </dd></dl>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The m by m matrix dA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1433,6 +2677,69 @@ Mark Gates </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gaf7575daf78a949d8e02702a0182a3224" title="CSYMMETRIZE_TILES copies lower triangle to upper triangle, or vice-versa, to make some blocks of dA i...">magmablas_csymmetrize_tiles_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gaf7575daf78a949d8e02702a0182a3224"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_csymmetrize_tiles_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_uplo_t&#160;</td>
+          <td class="paramname"><em>uplo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ntile</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>mstride</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nstride</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 <p>CSYMMETRIZE_TILES copies lower triangle to upper triangle, or vice-versa, to make some blocks of dA into general representations of a symmetric block. </p>
 <p>This processes NTILE blocks, typically the diagonal blocks. Each block is offset by mstride rows and nstride columns from the previous block.</p>
@@ -1446,9 +2753,10 @@ Mark Gates </dd></dl>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows &amp; columns of each square block of dA. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The matrix dA. N = m + nstride*(ntile-1).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1, m + mstride*(ntile-1)).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ntile</td><td>INTEGER Number of blocks to symmetrize.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">mstride</td><td>INTEGER Row offset from start of one block to start of next block.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nstride</td><td>INTEGER Column offset from start of one block to start of next block. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ntile</td><td>INTEGER Number of blocks to symmetrize. ntile &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">mstride</td><td>INTEGER Row offset from start of one block to start of next block. mstride &gt;= 0. Either (mstride &gt;= m) or (nstride &gt;= m), to prevent m-by-m tiles from overlapping.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nstride</td><td>INTEGER Column offset from start of one block to start of next block. nstride &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1502,7 +2810,7 @@ Mark Gates </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga8e8a9ce7e015dca64f52be03360eed0c" title="ctranspose_stream copies and transposes a matrix dA to matrix dAT. ">magmablas_ctranspose_stream</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gad8545d91733ea5f0c9884a359494317c" title="ctranspose_q copies and transposes a matrix dA to matrix dAT. ">magmablas_ctranspose_q</a> </dd></dl>
 
 </div>
 </div>
@@ -1535,16 +2843,16 @@ Mark Gates </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#ga4a728300c4ddc1c211eca474c49f540c" title="ctranspose_inplace_stream transposes a square N-by-N matrix in-place. ">magmablas_ctranspose_inplace_stream</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__caux2.html#gadc466e8d3c3c2f5b1dad3d319313f78c" title="ctranspose_inplace_q transposes a square N-by-N matrix in-place. ">magmablas_ctranspose_inplace_q</a> </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga4a728300c4ddc1c211eca474c49f540c"></a>
+<a class="anchor" id="gadc466e8d3c3c2f5b1dad3d319313f78c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void magmablas_ctranspose_inplace_stream </td>
+          <td class="memname">void magmablas_ctranspose_inplace_q </td>
           <td>(</td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
@@ -1565,7 +2873,7 @@ Mark Gates </dd></dl>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>stream</em>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1575,26 +2883,26 @@ Mark Gates </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>ctranspose_inplace_stream transposes a square N-by-N matrix in-place. </p>
-<p>Same as ctranspose_inplace, but adds stream argument.</p>
+<p>ctranspose_inplace_q transposes a square N-by-N matrix in-place. </p>
+<p>Same as ctranspose_inplace, but adds queue argument.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of rows &amp; columns of the matrix dA. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,N) The N-by-N matrix dA. On exit, dA(j,i) = dA_original(i,j), for 0 &lt;= i,j &lt; N.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= N.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>magma_queue_t Stream to execute in. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a class="anchor" id="ga8e8a9ce7e015dca64f52be03360eed0c"></a>
+<a class="anchor" id="gad8545d91733ea5f0c9884a359494317c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void magmablas_ctranspose_stream </td>
+          <td class="memname">void magmablas_ctranspose_q </td>
           <td>(</td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>m</em>, </td>
@@ -1633,7 +2941,7 @@ Mark Gates </dd></dl>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>stream</em>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1643,8 +2951,8 @@ Mark Gates </dd></dl>
       </table>
 </div><div class="memdoc">
 
-<p>ctranspose_stream copies and transposes a matrix dA to matrix dAT. </p>
-<p>Same as ctranspose, but adds stream argument.</p>
+<p>ctranspose_q copies and transposes a matrix dA to matrix dAT. </p>
+<p>Same as ctranspose, but adds queue argument.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
@@ -1653,7 +2961,7 @@ Mark Gates </dd></dl>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= M.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dAT</td><td>COMPLEX array, dimension (LDDA,N) The N-by-M matrix dAT.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddat</td><td>INTEGER The leading dimension of the array dAT. LDDAT &gt;= N.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>magma_queue_t Stream to execute in. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1665,7 +2973,7 @@ Mark Gates </dd></dl>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

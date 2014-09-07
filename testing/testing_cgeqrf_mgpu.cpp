@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zgeqrf_mgpu.cpp normal z -> c, Fri Jul 18 17:34:24 2014
+       @generated from testing_zgeqrf_mgpu.cpp normal z -> c, Tue Sep  2 12:38:29 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 
     printf("ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 1 ) {
-        printf("  M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R-Q'A||_1 / (M*||A||_1) ||I-Q'Q||_1 / M\n");
+        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R-Q'A||_1 / (M*||A||_1) ||I-Q'Q||_1 / M\n");
         printf("================================================================================================\n");
 
     } else {
@@ -98,7 +98,8 @@ int main( int argc, char** argv )
             }
             
             /* Initialize the matrix */
-            for ( int j=0; j<4; j++ ) ISEED2[j] = ISEED[j]; // saving seeds
+            for ( int j=0; j<4; j++ )
+                ISEED2[j] = ISEED[j]; // save seeds
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
             lapackf77_clacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             
@@ -134,14 +135,14 @@ int main( int argc, char** argv )
             magma_cgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_R, lda, ngpu, nb );
             magma_queue_sync( NULL );
             
-            if ( opts.check == 1 ) {
+            if ( opts.check == 1 && M >= N ) {
                 /* =====================================================================
-                   Check the result 
+                   Check the result -- cqrt02 requires M >= N
                    =================================================================== */
                 magma_int_t lwork = n2+N;
                 magmaFloatComplex *h_W1, *h_W2, *h_W3;
                 float *h_RW, results[2];
-    
+            
                 TESTING_MALLOC_CPU( h_W1, magmaFloatComplex, n2    ); // Q
                 TESTING_MALLOC_CPU( h_W2, magmaFloatComplex, n2    ); // R
                 TESTING_MALLOC_CPU( h_W3, magmaFloatComplex, lwork ); // WORK
@@ -176,19 +177,20 @@ int main( int argc, char** argv )
                 blasf77_caxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
                 error = lapackf77_clange("f", &M, &N, h_R, &lda, work ) / (min_mn*error);
                 
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s",
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                        (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
                        error, (error < tol ? "ok" : "failed"));
                 status += ! (error < tol);
             }
             else {
                 if ( opts.lapack ) {
-                    printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   ---\n",
+                    printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   ---",
                            (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
                 } else {
-                    printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
+                    printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---",
                            (int) M, (int) N, gpu_perf, gpu_time);
                 }
+                printf("%s\n", (opts.check != 0 ? "  (error check only for M >= N)" : ""));
             }
             
             TESTING_FREE_CPU( tau    );

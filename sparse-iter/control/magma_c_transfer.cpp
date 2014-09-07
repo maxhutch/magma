@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from magma_z_transfer.cpp normal z -> c, Fri Jul 18 17:34:30 2014
+       @generated from magma_z_transfer.cpp normal z -> c, Tue Sep  2 12:38:35 2014
        @author Hartwig Anzt
 */
 
@@ -17,9 +17,9 @@
 #include <ostream>
 #include <assert.h>
 #include <stdio.h>
-#include "../include/magmasparse_c.h"
-#include "../../include/magma.h"
-#include "../include/mmio.h"
+#include "magmasparse_c.h"
+#include "magma.h"
+#include "mmio.h"
 
 
 
@@ -118,41 +118,6 @@ magma_c_mtransfer( magma_c_sparse_matrix A,
             magma_index_setvector( A.nnz, A.col, 1, B->col, 1 );
             magma_index_setvector( A.nnz, A.rowidx, 1, B->rowidx, 1 );
         }
-   /*     //CSRCSC-type
-        if( A.storage_type == Magma_CSRCSCL ||
-            A.storage_type == Magma_CSRCSCU ){
-            // fill in information for B
-            B->storage_type = A.storage_type;
-            B->diagorder_type = A.diagorder_type;
-            B->memory_location = Magma_DEV;
-            B->num_rows = A.num_rows;
-            B->num_cols = A.num_cols;
-            B->nnz = A.nnz;
-            B->max_nnz_row = A.max_nnz_row;
-            B->diameter = A.diameter;
-            // memory allocation
-            stat = magma_cmalloc( &B->val, A.nnz );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-         //   stat = magma_cmalloc( &B->diag, A.num_rows );
-         //   if( stat != 0 )
-         //   {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            stat = magma_index_malloc( &B->row, (A.num_rows + 1) );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            stat = magma_index_malloc( &B->col, A.nnz );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            stat = magma_index_malloc( &B->blockinfo, A.nnz );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            // data transfer
-            magma_csetvector( A.nnz, A.val, 1, B->val, 1 );
-         //   magma_csetvector( A.num_rows, A.diag, 1, B->diag, 1 );
-            magma_index_setvector( (A.num_rows+1), A.row, 1, B->row, 1 );
-            magma_index_setvector( A.nnz, A.col, 1, B->col, 1 );
-            magma_index_setvector( A.nnz, A.blockinfo, 1, B->blockinfo, 1 );
-        } */
         //ELLPACK-type
         if( A.storage_type == Magma_ELLPACK ){
             // fill in information for B
@@ -385,37 +350,6 @@ magma_c_mtransfer( magma_c_sparse_matrix A,
                 B->row[i] = A.row[i];
             }
         }
-  /*      //CSRCSC-type
-        if( A.storage_type == Magma_CSRCSCL ||
-            A.storage_type == Magma_CSRCSCU ){
-            // fill in information for B
-            B->storage_type = A.storage_type;
-            B->diagorder_type = A.diagorder_type;
-            B->memory_location = Magma_CPU;
-            B->num_rows = A.num_rows;
-            B->num_cols = A.num_cols;
-            B->nnz = A.nnz;
-            B->max_nnz_row = A.max_nnz_row;
-            B->diameter = A.diameter;
-            // memory allocation
-            magma_cmalloc_cpu( &B->val, A.nnz );
-          //  magma_cmalloc_cpu( &B->diag, A.num_rows );
-            magma_index_malloc_cpu( &B->row, (A.num_rows+1) );
-            magma_index_malloc_cpu( &B->col, A.nnz );
-            magma_index_malloc_cpu( &B->blockinfo, A.nnz );
-            // data transfer
-            for( magma_int_t i=0; i<A.nnz; i++ ){
-                B->val[i] = A.val[i];
-                B->col[i] = A.col[i];
-                B->blockinfo[i] = A.blockinfo[i];
-            }
-            for( magma_int_t i=0; i<(A.num_rows+1); i++ ){
-                B->row[i] = A.row[i];
-            }
-            for( magma_int_t i=0; i<A.num_rows; i++ ){
-                B->diag[i] = A.diag[i];
-            }*/
-   //     }
         //ELLPACK-type
         if( A.storage_type == Magma_ELLPACK ){
             // fill in information for B
@@ -594,31 +528,6 @@ magma_c_mtransfer( magma_c_sparse_matrix A,
             magma_index_getvector( A.nnz, A.col, 1, B->col, 1 );
             magma_index_getvector( A.nnz, A.rowidx, 1, B->rowidx, 1 );
         }
- /*       //CSRCSC-type
-        if( A.storage_type == Magma_CSRCSCL ||
-            A.storage_type == Magma_CSRCSCU ){
-            // fill in information for B
-            B->storage_type = A.storage_type;
-            B->diagorder_type = A.diagorder_type;
-            B->memory_location = Magma_CPU;
-            B->num_rows = A.num_rows;
-            B->num_cols = A.num_cols;
-            B->nnz = A.nnz;
-            B->max_nnz_row = A.max_nnz_row;
-            B->diameter = A.diameter;
-            // memory allocation
-            magma_cmalloc_cpu( &B->val, A.nnz );
-          //  magma_cmalloc_cpu( &B->diag, A.num_rows );
-            magma_index_malloc_cpu( &B->row, (A.num_rows+1) );
-            magma_index_malloc_cpu( &B->col, A.nnz );
-            magma_index_malloc_cpu( &B->blockinfo, A.nnz );
-            // data transfer
-            magma_cgetvector( A.nnz, A.val, 1, B->val, 1 );
-       //     magma_cgetvector( A.num_rows, A.diag, 1, B->diag, 1 );
-            magma_index_getvector( (A.num_rows+1), A.row, 1, B->row, 1 );
-            magma_index_getvector( A.nnz, A.col, 1, B->col, 1 );
-            magma_index_getvector( A.nnz, A.blockinfo, 1, B->blockinfo, 1 );
-        } */
         //ELLPACK-type
         if( A.storage_type == Magma_ELLPACK ){
             // fill in information for B
@@ -826,41 +735,6 @@ magma_c_mtransfer( magma_c_sparse_matrix A,
             magma_index_copyvector( A.nnz, A.col, 1, B->col, 1 );
             magma_index_copyvector( A.nnz, A.rowidx, 1, B->rowidx, 1 );
         }
-  /*      //CSRCSC-type
-        if( A.storage_type == Magma_CSRCSCL ||
-            A.storage_type == Magma_CSRCSCU ){
-            // fill in information for B
-            B->storage_type = A.storage_type;
-            B->diagorder_type = A.diagorder_type;
-            B->memory_location = Magma_DEV;
-            B->num_rows = A.num_rows;
-            B->num_cols = A.num_cols;
-            B->nnz = A.nnz;
-            B->max_nnz_row = A.max_nnz_row;
-            B->diameter = A.diameter;
-            // memory allocation
-            stat = magma_cmalloc( &B->val, A.nnz );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            //stat = magma_cmalloc( &B->diag, A.num_rows );
-            //if( stat != 0 )
-            //{printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            stat = magma_index_malloc( &B->row, (A.num_rows + 1) );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            stat = magma_index_malloc( &B->col, A.nnz );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            stat = magma_index_malloc( &B->blockinfo, A.nnz );
-            if( stat != 0 )
-            {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-            // data transfer
-            magma_ccopyvector( A.nnz, A.val, 1, B->val, 1 );
-            //magma_ccopyvector( A.num_rows, A.diag, 1, B->diag, 1 );
-            magma_index_copyvector( (A.num_rows+1), A.row, 1, B->row, 1 );
-            magma_index_copyvector( A.nnz, A.col, 1, B->col, 1 );
-            magma_index_copyvector( A.nnz, A.blockinfo, 1, B->blockinfo, 1 );
-        } */
         //ELLPACK-type
         if( A.storage_type == Magma_ELLPACK ){
             // fill in information for B

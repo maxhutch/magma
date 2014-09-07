@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -11,7 +11,6 @@
        @author Mark Gates
 */
 #include "common_magma.h"
-//#include "commonblas.h"
 
 #define PRECISION_z
 
@@ -100,9 +99,9 @@ ztranspose_kernel(
 /**
     Purpose
     -------
-    ztranspose_stream copies and transposes a matrix dA to matrix dAT.
+    ztranspose_q copies and transposes a matrix dA to matrix dAT.
     
-    Same as ztranspose, but adds stream argument.
+    Same as ztranspose, but adds queue argument.
         
     Arguments
     ---------
@@ -131,16 +130,16 @@ ztranspose_kernel(
             The leading dimension of the array dAT.  LDDAT >= N.
     
     @param[in]
-    stream  magma_queue_t
-            Stream to execute in.
+    queue   magma_queue_t
+            Queue to execute in.
     
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_ztranspose_stream(
+magmablas_ztranspose_q(
     magma_int_t m, magma_int_t n,
     const magmaDoubleComplex *dA,  magma_int_t ldda,
-    magmaDoubleComplex       *dAT, magma_int_t lddat, magma_queue_t stream )
+    magmaDoubleComplex       *dAT, magma_int_t lddat, magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -163,13 +162,13 @@ magmablas_ztranspose_stream(
 
     dim3 threads( NX, NY );
     dim3 grid( (m+NB-1)/NB, (n+NB-1)/NB );
-    ztranspose_kernel<<< grid, threads, 0, stream >>>
+    ztranspose_kernel<<< grid, threads, 0, queue >>>
         ( m, n, dA, ldda, dAT, lddat );
 }
 
 
 /**
-    @see magmablas_ztranspose_stream
+    @see magmablas_ztranspose_q
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
@@ -178,5 +177,5 @@ magmablas_ztranspose(
     const magmaDoubleComplex *dA,  magma_int_t ldda,
     magmaDoubleComplex       *dAT, magma_int_t lddat )
 {
-    magmablas_ztranspose_stream( m, n, dA, ldda, dAT, lddat, magma_stream );
+    magmablas_ztranspose_q( m, n, dA, ldda, dAT, lddat, magma_stream );
 }

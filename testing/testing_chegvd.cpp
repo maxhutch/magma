@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_zhegvd.cpp normal z -> c, Fri Jul 18 17:34:25 2014
+    @generated from testing_zhegvd.cpp normal z -> c, Tue Sep  2 12:38:30 2014
 
 */
 
@@ -25,7 +25,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define absv(v1) ((v1)>0? (v1): -(v1))
+#define PRECISION_c
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing chegvd
@@ -36,15 +36,19 @@ int main( int argc, char** argv)
 
     real_Double_t   gpu_time, cpu_time;
     magmaFloatComplex *h_A, *h_R, *h_B, *h_S, *h_work;
-    float *rwork, *w1, *w2;
+    float *w1, *w2;
     float result[4] = {0};
     magma_int_t *iwork;
-    magma_int_t N, n2, info, nb, lwork, liwork, lda, lrwork;
+    magma_int_t N, n2, info, nb, lwork, liwork, lda;
     magmaFloatComplex c_zero    = MAGMA_C_ZERO;
     magmaFloatComplex c_one     = MAGMA_C_ONE;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     float d_one         =  1.;
     float d_neg_one     = -1.;
+    #if defined(PRECISION_z) || defined(PRECISION_c)
+    float *rwork;
+    magma_int_t lrwork;
+    #endif
     //float d_ten         = 10.;
     //magma_int_t izero    = 0;
     magma_int_t ione     = 1;
@@ -73,15 +77,21 @@ int main( int argc, char** argv)
             lda    = N;
             n2     = N*lda;
             nb     = magma_get_chetrd_nb(N);
-            lwork  = 2*N*nb + N*N;
-            lrwork = 1 + 5*N +2*N*N;
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+                lwork  = max( N + N*nb, 2*N + N*N );
+                lrwork = 1 + 5*N +2*N*N;
+            #else
+                lwork  = max( 2*N + N*nb, 1 + 6*N + 2*N*N );
+            #endif
             liwork = 3 + 5*N;
 
             TESTING_MALLOC_CPU( h_A,    magmaFloatComplex,  n2     );
             TESTING_MALLOC_CPU( h_B,    magmaFloatComplex,  n2     );
             TESTING_MALLOC_CPU( w1,     float,              N      );
             TESTING_MALLOC_CPU( w2,     float,              N      );
+            #if defined(PRECISION_z) || defined(PRECISION_c)
             TESTING_MALLOC_CPU( rwork,  float,              lrwork );
+            #endif
             TESTING_MALLOC_CPU( iwork,  magma_int_t,         liwork );
             
             TESTING_MALLOC_PIN( h_R,    magmaFloatComplex,  n2     );
@@ -103,7 +113,9 @@ int main( int argc, char** argv)
                 magma_chegvd( opts.itype, opts.jobz, opts.uplo,
                               N, h_R, lda, h_S, lda, w1,
                               h_work, lwork,
+                              #if defined(PRECISION_z) || defined(PRECISION_c)
                               rwork, lrwork,
+                              #endif
                               iwork, liwork,
                               &info );
                 if (info != 0)
@@ -121,7 +133,9 @@ int main( int argc, char** argv)
             magma_chegvd( opts.itype, opts.jobz, opts.uplo,
                           N, h_R, lda, h_S, lda, w1,
                           h_work, lwork,
+                          #if defined(PRECISION_z) || defined(PRECISION_c)
                           rwork, lrwork,
+                          #endif
                           iwork, liwork,
                           &info );
             gpu_time = magma_wtime() - gpu_time;
@@ -144,6 +158,10 @@ int main( int argc, char** argv)
                 float temp1, temp2;
                 //magmaFloatComplex *tau;
                 
+                #if defined(PRECISION_d) || defined(PRECISION_s)
+                float *rwork = h_work + N*N;
+                #endif
+
                 if ( opts.itype == 1 || opts.itype == 2 ) {
                     lapackf77_claset( "A", &N, &N, &c_zero, &c_one, h_S, &lda);
                     blasf77_cgemm("N", "C", &N, &N, &N, &c_one, h_R, &lda, h_R, &lda, &c_zero, h_work, &N);
@@ -198,7 +216,9 @@ int main( int argc, char** argv)
                 magma_chegvd( opts.itype, MagmaNoVec, opts.uplo,
                               N, h_R, lda, h_S, lda, w2,
                               h_work, lwork,
+                              #if defined(PRECISION_z) || defined(PRECISION_c)
                               rwork, lrwork,
+                              #endif
                               iwork, liwork,
                               &info );
                 if (info != 0)
@@ -207,9 +227,9 @@ int main( int argc, char** argv)
                 
                 temp1 = temp2 = 0;
                 for(int j=0; j<N; j++) {
-                    temp1 = max(temp1, absv(w1[j]));
-                    temp1 = max(temp1, absv(w2[j]));
-                    temp2 = max(temp2, absv(w1[j]-w2[j]));
+                    temp1 = max(temp1, fabs(w1[j]));
+                    temp1 = max(temp1, fabs(w2[j]));
+                    temp2 = max(temp2, fabs(w1[j]-w2[j]));
                 }
                 result[2] = temp2 / (((float)N)*temp1);
             }
@@ -222,7 +242,9 @@ int main( int argc, char** argv)
                 lapackf77_chegvd( &opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
                                   &N, h_A, &lda, h_B, &lda, w2,
                                   h_work, &lwork,
+                                  #if defined(PRECISION_z) || defined(PRECISION_c)
                                   rwork, &lrwork,
+                                  #endif
                                   iwork, &liwork,
                                   &info );
                 cpu_time = magma_wtime() - cpu_time;
@@ -266,7 +288,9 @@ int main( int argc, char** argv)
             TESTING_FREE_CPU( h_B    );
             TESTING_FREE_CPU( w1     );
             TESTING_FREE_CPU( w2     );
+            #if defined(PRECISION_z) || defined(PRECISION_c)
             TESTING_FREE_CPU( rwork  );
+            #endif
             TESTING_FREE_CPU( iwork  );
             
             TESTING_FREE_PIN( h_R    );

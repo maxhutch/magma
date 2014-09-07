@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -26,8 +26,8 @@
 
     @param[in]
     trans   magma_trans_t
-      -     = MagmaNoTrans:   apply H   (No transpose)
-      -     = MagmaConjTrans: apply H^H (Conjugate transpose)
+      -     = MagmaNoTrans:    apply H   (No transpose)
+      -     = Magma_ConjTrans: apply H^H (Conjugate transpose)
 
     @param[in]
     direct  magma_direct_t
@@ -163,13 +163,13 @@ magma_zlarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct,
     
     /* Function Body */
     if (m <= 0 || n <= 0) {
-        return MAGMA_SUCCESS;
+        return info;
     }
 
     // opposite of trans
     magma_trans_t transt;
     if (trans == MagmaNoTrans)
-        transt = MagmaConjTrans;
+        transt = Magma_ConjTrans;
     else
         transt = MagmaNoTrans;
     
@@ -184,10 +184,10 @@ magma_zlarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct,
     magma_trans_t notransV, transV;
     if (storev == MagmaColumnwise) {
         notransV = MagmaNoTrans;
-        transV   = MagmaConjTrans;
+        transV   = Magma_ConjTrans;
     }
     else {
-        notransV = MagmaConjTrans;
+        notransV = Magma_ConjTrans;
         transV   = MagmaNoTrans;
     }
 
@@ -196,7 +196,7 @@ magma_zlarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct,
         // Comments assume H C. When forming H^H C, T gets transposed via transt.
         
         // W = C^H V
-        magma_zgemm( MagmaConjTrans, notransV,
+        magma_zgemm( Magma_ConjTrans, notransV,
                      n, k, m,
                      c_one,  dC,    ldc,
                              dV,    ldv,
@@ -209,7 +209,7 @@ magma_zlarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct,
                             dwork, ldwork);
 
         // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
-        magma_zgemm( notransV, MagmaConjTrans,
+        magma_zgemm( notransV, Magma_ConjTrans,
                      m, n, k,
                      c_neg_one, dV,    ldv,
                                 dwork, ldwork,
@@ -240,5 +240,5 @@ magma_zlarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct,
                      c_one,     dC,    ldc);
     }
 
-    return MAGMA_SUCCESS;
+    return info;
 } /* magma_zlarfb */

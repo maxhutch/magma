@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
     
        @author Stan Tomov
        @author Mark Gates
-       @generated from dgesvd.cpp normal d -> s, Fri Jul 18 17:34:20 2014
+       @generated from dgesvd.cpp normal d -> s, Tue Sep  2 12:38:25 2014
 
 */
 #include "common_magma.h"
@@ -118,7 +118,7 @@
     
     @param[out]
     work    (workspace) REAL array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the required LWORK.
+            On exit, if INFO = 0, WORK[0] returns the required LWORK.
             if INFO > 0, WORK(2:MIN(M,N)) contains the unconverged
             superdiagonal elements of an upper bidiagonal matrix B
             whose diagonal is in S (not necessarily sorted). B
@@ -233,7 +233,7 @@ magma_sgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                      work, &ineg_one, info);
     maxwrk = (magma_int_t) MAGMA_S_REAL( work[0] );
     if (*info == 0) {
-        // Return required workspace in WORK(1)
+        // Return required workspace in WORK[0]
         nb = magma_get_sgesvd_nb(n);
         minwrk = (m + n)*nb + 3*minmn;
         

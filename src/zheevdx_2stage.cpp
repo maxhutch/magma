@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -17,7 +17,6 @@
 #include "magma_bulge.h"
 #include "magma_zbulge.h"
 
-#include <cblas.h>
 
 #define PRECISION_z
 
@@ -104,13 +103,13 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N * (NB + 1).
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N + N*NB.
             If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 2*N + N**2.
             where LQ2 is the size needed to store the Q2 matrix
             and is returned by magma_bulge_get_lq2.
@@ -124,7 +123,7 @@
     @param[out]
     rwork   (workspace) DOUBLE PRECISION array,
                                            dimension (LRWORK)
-            On exit, if INFO = 0, RWORK(1) returns the optimal LRWORK.
+            On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
 
     @param[in]
     lrwork  INTEGER
@@ -141,7 +140,7 @@
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -216,6 +215,7 @@ magma_zheevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     double smlnum;
     magma_int_t lquery;
     magma_int_t alleig, valeig, indeig;
+    magma_int_t len;
 
     double* dwork;
 
@@ -265,11 +265,11 @@ magma_zheevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     magma_int_t lq2 = magma_zbulge_get_lq2(n, parallel_threads);
 
     if (wantz) {
-        lwmin = lq2 + 2 * n + n * n;
-        lrwmin = 1 + 5 * n + 2 * n * n;
-        liwmin = 5 * n + 3;
+        lwmin  = lq2 + 2*n + n*n;
+        lrwmin = 1 + 5*n + 2*n*n;
+        liwmin = 5*n + 3;
     } else {
-        lwmin = lq2 + n * (nb + 1);
+        lwmin  = lq2 + n + n*nb;
         lrwmin = n;
         liwmin = 1;
     }
@@ -361,7 +361,7 @@ magma_zheevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     magma_int_t indV2   = indTAU2+ blkcnt*Vblksiz;
     magma_int_t indtau1 = indV2  + blkcnt*ldv*Vblksiz;
     magma_int_t indwrk  = indtau1+ n;
-    //magma_int_t indwk2  = indwrk + n * n;
+    //magma_int_t indwk2  = indwrk + n*n;
     magma_int_t llwork = lwork - indwrk;
     //magma_int_t llwrk2 = lwork - indwk2;
     magma_int_t inde = 0;
@@ -390,12 +390,14 @@ magma_zheevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     memset(A2, 0, n*lda2*sizeof(magmaDoubleComplex));
 
     for (magma_int_t j = 0; j < n-nb; j++) {
-        cblas_zcopy(nb+1, A(j,j), 1, A2(0,j), 1);
+        len = nb+1;
+        blasf77_zcopy( &len, A(j,j), &ione, A2(0,j), &ione );
         memset(A(j,j), 0, (nb+1)*sizeof(magmaDoubleComplex));
         *A(nb+j,j) = c_one;
     }
     for (magma_int_t j = 0; j < nb; j++) {
-        cblas_zcopy(nb-j, A(j+n-nb,j+n-nb), 1, A2(0,j+n-nb), 1);
+        len = nb-j;
+        blasf77_zcopy( &len, A(j+n-nb,j+n-nb), &ione, A2(0,j+n-nb), &ione );
         memset(A(j+n-nb,j+n-nb), 0, (nb-j)*sizeof(magmaDoubleComplex));
     }
 

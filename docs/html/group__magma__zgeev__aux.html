@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__zgeev__aux.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -732,7 +735,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 <p>|x(j)| &lt;= ( G(0) / |A(j,j)| ) product ( 1 + CNORM(i) / |A(i,i)| ) 1&lt;=i&lt; j</p>
 <p>Since |x(j)| &lt;= M(j), we use the Level 2 BLAS routine ZTRSV if the reciprocal of the largest M(j), j=1,..,n, is larger than max(underflow, 1/overflow).</p>
 <p>The bound on x(j) is also used to determine when a step in the columnwise method can be performed without fear of overflow. If the computed bound is greater than a large constant, x is scaled to prevent overflow, but if the bound overflows, x is set to 0, x(j) to 1, and scale to 0, and a non-trivial solution to A*x = 0 is found.</p>
-<p>Similarly, a row-wise scheme is used to solve A**T *x = b or A**H *x = b. The basic algorithm for A upper triangular is </p><pre class="fragment"> for j = 1, ..., n
+<p>Similarly, a row-wise scheme is used to solve A**T *x = b or A**H *x = b. The basic algorithm for upper triangular A is: </p><pre class="fragment"> for j = 1, ..., n
       x(j) := ( b(j) - A[1:j-1,j]' * x[1:j-1] ) / A(j,j)
  end
 </pre><p>We simultaneously compute two bounds G(j) = bound on ( b(i) - A[1:i-1,i]' * x[1:i-1] ), 1&lt;=i&lt;=j M(j) = bound on x(i), 1&lt;=i&lt;=j</p>
@@ -749,7 +752,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:43 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

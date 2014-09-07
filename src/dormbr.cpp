@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
 
-       @generated from zunmbr.cpp normal z -> d, Fri Jul 18 17:34:20 2014
+       @generated from zunmbr.cpp normal z -> d, Tue Sep  2 12:38:24 2014
 
 */
 #include "common_magma.h"
@@ -24,20 +24,20 @@
     If VECT = MagmaQ, DORMBR overwrites the general real M-by-N matrix C with
                                  SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:        Q*C                  C*Q
-    TRANS = MagmaTrans:      Q**T*C               C*Q**T
+    TRANS = MagmaTrans:     Q**H*C               C*Q**H
     
     If VECT = MagmaP, DORMBR overwrites the general real M-by-N matrix C with
                                  SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:        P*C                  C*P
-    TRANS = MagmaTrans:      P**T*C               C*P**T
+    TRANS = MagmaTrans:     P**H*C               C*P**H
     
-    Here Q and P**T are the unitary matrices determined by DGEBRD when
-    reducing A real matrix A to bidiagonal form: A = Q*B * P**T. Q
-    and P**T are defined as products of elementary reflectors H(i) and
+    Here Q and P**H are the unitary matrices determined by DGEBRD when
+    reducing A real matrix A to bidiagonal form: A = Q*B * P**H. Q
+    and P**H are defined as products of elementary reflectors H(i) and
     G(i) respectively.
     
     Let nq = m if SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Thus nq is the
-    order of the unitary matrix Q or P**T that is applied.
+    order of the unitary matrix Q or P**H that is applied.
     
     If VECT = MagmaQ, A is assumed to have been an NQ-by-K matrix:
     if nq >= k, Q = H(1) H(2) . . . H(k);
@@ -51,18 +51,18 @@
     ---------
     @param[in]
     vect    magma_vect_t
-      -     = MagmaQ: apply Q or Q**T;
-      -     = MagmaP: apply P or P**T.
+      -     = MagmaQ: apply Q or Q**H;
+      -     = MagmaP: apply P or P**H.
     
     @param[in]
     side    magma_side_t
-      -     = MagmaLeft:  apply Q, Q**T, P or P**T from the Left;
-      -     = MagmaRight: apply Q, Q**T, P or P**T from the Right.
+      -     = MagmaLeft:  apply Q, Q**H, P or P**H from the Left;
+      -     = MagmaRight: apply Q, Q**H, P or P**H from the Right.
     
     @param[in]
     trans   magma_trans_t
-      -     = MagmaNoTrans:   No transpose, apply Q or P;
-      -     = MagmaTrans: Conjugate transpose, apply Q**T or P**T.
+      -     = MagmaNoTrans:    No transpose, apply Q or P;
+      -     = MagmaTrans: Conjugate transpose, apply Q**H or P**H.
     
     @param[in]
     m       INTEGER
@@ -103,8 +103,8 @@
     @param[in,out]
     C       DOUBLE_PRECISION array, dimension (LDC,N)
             On entry, the M-by-N matrix C.
-            On exit, C is overwritten by Q*C or Q**T*C or C*Q**T or C*Q
-            or P*C or P**T*C or C*P or C*P**T.
+            On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q
+            or P*C or P**H*C or C*P or C*P**H.
     
     @param[in]
     ldc     INTEGER
@@ -112,7 +112,7 @@
     
     @param[out]
     work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     
     @param[in]
     lwork   INTEGER

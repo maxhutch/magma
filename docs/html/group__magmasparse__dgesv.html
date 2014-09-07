@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__dgesv.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -114,15 +117,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga00886fb86d94cf8dcb82122b9b602a2b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgesv.html#ga00886fb86d94cf8dcb82122b9b602a2b">magma_dbaiter</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_d_solver_par *solver_par)</td></tr>
 <tr class="memdesc:ga00886fb86d94cf8dcb82122b9b602a2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * x = b via the block asynchronous iteration method on GPU.  <a href="#ga00886fb86d94cf8dcb82122b9b602a2b">More...</a><br /></td></tr>
 <tr class="separator:ga00886fb86d94cf8dcb82122b9b602a2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6ce5f9f503864082e7cee5575c8b98d7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgesv.html#ga6ce5f9f503864082e7cee5575c8b98d7">magma_dbcsrlu</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_d_solver_par *solver_par)</td></tr>
-<tr class="memdesc:ga6ce5f9f503864082e7cee5575c8b98d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">LU decomposition and solution via triangular solves for a BCSR matrix A.  <a href="#ga6ce5f9f503864082e7cee5575c8b98d7">More...</a><br /></td></tr>
-<tr class="separator:ga6ce5f9f503864082e7cee5575c8b98d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0160a13aa810f495f26daae6a337bd47"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgesv.html#ga0160a13aa810f495f26daae6a337bd47">magma_dbcsrlutrf</a> (magma_d_sparse_matrix A, magma_d_sparse_matrix *M, magma_int_t *ipiv, magma_int_t version)</td></tr>
-<tr class="memdesc:ga0160a13aa810f495f26daae6a337bd47"><td class="mdescLeft">&#160;</td><td class="mdescRight">LU decomposition for a BCSR matrix A.  <a href="#ga0160a13aa810f495f26daae6a337bd47">More...</a><br /></td></tr>
-<tr class="separator:ga0160a13aa810f495f26daae6a337bd47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga82aea4c9251b64616232f42e4741571a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgesv.html#ga82aea4c9251b64616232f42e4741571a">magma_dbcsrlusv</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_d_solver_par *solver_par, magma_int_t *ipiv)</td></tr>
-<tr class="memdesc:ga82aea4c9251b64616232f42e4741571a"><td class="mdescLeft">&#160;</td><td class="mdescRight">LU solve for a BCSR matrix A.  <a href="#ga82aea4c9251b64616232f42e4741571a">More...</a><br /></td></tr>
-<tr class="separator:ga82aea4c9251b64616232f42e4741571a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga42a5ded0018fe2e8d744f82fffc8c872"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgesv.html#ga42a5ded0018fe2e8d744f82fffc8c872">magma_dbicgstab</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_d_solver_par *solver_par)</td></tr>
 <tr class="memdesc:ga42a5ded0018fe2e8d744f82fffc8c872"><td class="mdescLeft">&#160;</td><td class="mdescRight">Solves a system of linear equations A * X = B where A is a real symmetric N-by-N positive definite matrix A.  <a href="#ga42a5ded0018fe2e8d744f82fffc8c872">More...</a><br /></td></tr>
 <tr class="separator:ga42a5ded0018fe2e8d744f82fffc8c872"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -193,161 +187,6 @@ Functions</h2></td></tr>
     <tr><td class="paramname">b</td><td>magma_d_vector RHS b</td></tr>
     <tr><td class="paramname">x</td><td>magma_d_vector* solution approximation</td></tr>
     <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* solver parameters </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga6ce5f9f503864082e7cee5575c8b98d7"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dbcsrlu </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_vector&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_vector *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_solver_par *&#160;</td>
-          <td class="paramname"><em>solver_par</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>LU decomposition and solution via triangular solves for a BCSR matrix A. </p>
-<p>We assume all diagonal blocks to be nonzero.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix descriptor for matrix A</td></tr>
-    <tr><td class="paramname">b</td><td>magma_d_vector RHS b vector</td></tr>
-    <tr><td class="paramname">x</td><td>magma_d_vector* solution approximation</td></tr>
-    <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* solver parameters </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga82aea4c9251b64616232f42e4741571a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dbcsrlusv </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_vector&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_vector *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_solver_par *&#160;</td>
-          <td class="paramname"><em>solver_par</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>ipiv</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>LU solve for a BCSR matrix A. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input matrix A (on DEV)</td></tr>
-    <tr><td class="paramname">b</td><td>magma_d_vector RHS (on DEV)</td></tr>
-    <tr><td class="paramname">x</td><td>magma_d_vector solution (on DEV)</td></tr>
-    <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* solver parameters</td></tr>
-    <tr><td class="paramname">ipiv</td><td>magma_int_t* pivot vector </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga0160a13aa810f495f26daae6a337bd47"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dbcsrlutrf </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>M</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>ipiv</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>version</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>LU decomposition for a BCSR matrix A. </p>
-<p>We assume all diagonal blocks to be nonzero.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input matrix A (on DEV)</td></tr>
-    <tr><td class="paramname">m</td><td>magma_d_sparse_matrix* output matrix containing LU decomposition</td></tr>
-    <tr><td class="paramname">ipiv</td><td>magma_int_t* pivot vector </td></tr>
   </table>
   </dd>
 </dl>
@@ -541,7 +380,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Solves a system of linear equations A * X = B where A is a real sparse matrix stored in the GPU memory. </p>
-<p>X and B are real vectors stored on the GPU memory. This is a GPU implementation of the right-preconditioned GMRES method.</p>
+<p>X and B are real vectors stored on the GPU memory. This is a GPU implementation of the GMRES method.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix descriptor for matrix A</td></tr>
@@ -765,7 +604,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from magma_zutil.cpp normal z -> c, Fri Jul 18 17:34:25 2014
+       @generated from magma_zutil.cpp normal z -> c, Tue Sep  2 12:38:30 2014
 
        @author Mark Gates
 
@@ -19,7 +19,7 @@
 // --------------------
 // Make a matrix symmetric/Hermitian.
 // Makes diagonal real.
-// Sets Aji = conjf( Aij ) for j < i, that is, copy lower triangle to upper triangle.
+// Sets Aji = conj( Aij ) for j < i, that is, copy lower triangle to upper triangle.
 extern "C"
 void magma_cmake_hermitian( magma_int_t N, magmaFloatComplex* A, magma_int_t lda )
 {
@@ -36,7 +36,7 @@ void magma_cmake_hermitian( magma_int_t N, magmaFloatComplex* A, magma_int_t lda
 // --------------------
 // Make a matrix symmetric/Hermitian positive definite.
 // Increases diagonal by N, and makes it real.
-// Sets Aji = conjf( Aij ) for j < i, that is, copy lower triangle to upper triangle.
+// Sets Aji = conj( Aij ) for j < i, that is, copy lower triangle to upper triangle.
 extern "C"
 void magma_cmake_hpd( magma_int_t N, magmaFloatComplex* A, magma_int_t lda )
 {

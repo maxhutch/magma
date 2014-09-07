@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from ztrtri_lower.cu normal z -> d, Fri Jul 18 17:34:13 2014
+       @generated from ztrtri_lower.cu normal z -> d, Tue Sep  2 12:38:16 2014
 
        @author Peng Du
        @author Tingxing Dong
@@ -126,6 +126,9 @@ dtrtri_diag_kernel_lower(
     the right. This makes a single check easy to do.
     
     B is stored in workspace that is a full multiple of NB x NB; no checks needed.
+    
+    We split this into part1 & part2 to synchronize all blocks and make sure
+    that writes to B12 are observed by all blocks.
 */
 
 /*
@@ -174,7 +177,7 @@ triple_dgemm16_part1_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
 
         do {
             // TODO this won't coalesce, will it? unless NX=32 (or maybe 16 with doubles, or 8 with double-real)
@@ -290,7 +293,7 @@ triple_dgemm16_part2_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
 
         do {
             // load 16 x 16 block of B using NX x 4 threads
@@ -393,7 +396,7 @@ triple_dgemm32_part1_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
         
         do {
             // load 16 x 16 block of B using NX x 4 threads
@@ -497,7 +500,7 @@ triple_dgemm32_part2_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
 
         do {
             // load 16 x 16 block of B using NX x 4 threads
@@ -600,7 +603,7 @@ triple_dgemm64_part1_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
 
         do {
             // load 16 x 16 block of B using NX x 4 threads
@@ -704,7 +707,7 @@ triple_dgemm64_part2_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
 
         do {
             // load 16 x 16 block of B using NX x 4 threads
@@ -816,7 +819,7 @@ triple_dgemm_above64_part1_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
 
         do {
             // load 16 x 16 block of B using NX x 4 threads
@@ -920,7 +923,7 @@ triple_dgemm_above64_part2_lower(
         // compute NT x 16 block of C
         // each thread computes one 1x16 row, C(id,0:15)
         double rC[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        double rA[4];
+        double rA[4]  = {0, 0, 0, 0};
 
         do {
             // load 16 x 16 block of B using NX x 4 threads

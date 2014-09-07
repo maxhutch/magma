@@ -7,13 +7,12 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_applyQ.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+ *     @generated from zbulge_applyQ.cpp normal z -> c, Tue Sep  2 12:38:23 2014
  *
  */
 
 #include "common_magma.h"
 #include "magma_cbulgeinc.h"
-#include <cblas.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,6 +51,9 @@ extern "C" void magma_cbulge_applyQ(
     magma_int_t  nbgr, colst, coled, versionL, versionR;
     magma_int_t blkcnt=-1;
 
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     *INFO=0;
     versionL = 113;
     versionR = 92;
@@ -263,10 +265,10 @@ extern "C" void magma_cbulge_applyQ(
     }
 
 #if defined(USESTREAM)
-    magmablasSetKernelStream(NULL);
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
 #endif
+    magmablasSetKernelStream( orig_stream );
 }
 
 #undef E

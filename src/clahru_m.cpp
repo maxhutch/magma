@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlahru_m.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from zlahru_m.cpp normal z -> c, Tue Sep  2 12:38:24 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -109,6 +109,11 @@ magma_clahru_m(
         return info;
     }
     
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     for( d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
         magmablasSetKernelStream( data->streams[d] );
@@ -169,6 +174,9 @@ magma_clahru_m(
                                 dY(d, 0, 0),    nb,
                      c_one,     dA(d, k, dknb), ldda );
     }
-        
-    return 0;
+    
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
+    
+    return info;
 }

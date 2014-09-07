@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -23,7 +23,8 @@
     triangular (upper trapezoidal if m < n).
 
     This is the right-looking Level 3 BLAS version of the algorithm.
-    If the current stream is NULL, this version replaces it with user defined
+    
+    If the current stream is NULL, this version replaces it with a new
     stream to overlap computation with communication.
 
     Arguments
@@ -75,7 +76,7 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
 
     magma_int_t iinfo, nb;
     magma_int_t maxm, maxn, mindim;
-    magma_int_t i, rows, cols, s, lddat, lddwork;
+    magma_int_t i, rows, cols, s, lddat, ldwork;
     magmaDoubleComplex *dAT, *dAP, *work;
 
     /* Check arguments */
@@ -118,22 +119,21 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
         maxm = ((m + 31)/32)*32;
         maxn = ((n + 31)/32)*32;
 
-        lddat   = maxn;
-        lddwork = maxm;
-
-        dAT = dA;
-
         if (MAGMA_SUCCESS != magma_zmalloc( &dAP, nb*maxm )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
 
+        // square matrices can be done in place;
+        // rectangular requires copy to transpose
         if ( m == n ) {
+            dAT = dA;
             lddat = ldda;
             magmablas_ztranspose_inplace( m, dAT, ldda );
         }
         else {
-            if (MAGMA_SUCCESS != magma_zmalloc( &dAT, maxm*maxn )) {
+            lddat = maxn;  // N-by-M
+            if (MAGMA_SUCCESS != magma_zmalloc( &dAT, lddat*maxm )) {
                 magma_free( dAP );
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
@@ -141,7 +141,8 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
             magmablas_ztranspose( m, n, dA, ldda, dAT, lddat );
         }
 
-        if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, maxm*nb )) {
+        ldwork = maxm;
+        if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, ldwork*nb )) {
             magma_free( dAP );
             if ( ! (m == n))
                 magma_free( dAT );
@@ -150,16 +151,18 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
         }
 
         /* Define user stream if current stream is NULL */
-        cudaStream_t stream[2], current_stream;
-        magmablasGetKernelStream(&current_stream);
+        magma_queue_t stream[2];
+        
+        magma_queue_t orig_stream;
+        magmablasGetKernelStream( &orig_stream );
 
         magma_queue_create( &stream[0] );
-        if (current_stream == NULL) {
+        if (orig_stream == NULL) {
             magma_queue_create( &stream[1] );
             magmablasSetKernelStream(stream[1]);
         }
         else {
-            stream[1] = current_stream;
+            stream[1] = orig_stream;
         }
   
         for( i=0; i < s; i++ ) {
@@ -170,7 +173,7 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
 
             // make sure that that the transpose has completed
             magma_queue_sync( stream[1] );
-            magma_zgetmatrix_async( m-i*nb, nb, dAP, cols, work, lddwork,
+            magma_zgetmatrix_async( m-i*nb, nb, dAP, cols, work, ldwork,
                                     stream[0]);
 
             if ( i > 0 ) {
@@ -188,12 +191,12 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
             // do the cpu part
             rows = m - i*nb;
             magma_queue_sync( stream[0] );
-            lapackf77_zgetrf( &rows, &nb, work, &lddwork, ipiv+i*nb, &iinfo);
+            lapackf77_zgetrf( &rows, &nb, work, &ldwork, ipiv+i*nb, &iinfo);
             if ( (*info == 0) && (iinfo > 0) )
                 *info = iinfo + i*nb;
 
             // upload i-th panel
-            magma_zsetmatrix_async( m-i*nb, nb, work, lddwork, dAP, maxm,
+            magma_zsetmatrix_async( m-i*nb, nb, work, ldwork, dAP, maxm,
                                     stream[0]);
 
             magmablas_zpermute_long2( n, dAT, lddat, ipiv, nb, i*nb );
@@ -232,16 +235,16 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
         cols = maxm - s*nb;
 
         magmablas_ztranspose( nb0, rows, dAT(s,s), lddat, dAP, maxm );
-        magma_zgetmatrix( rows, nb0, dAP, maxm, work, lddwork );
+        magma_zgetmatrix( rows, nb0, dAP, maxm, work, ldwork );
 
         // do the cpu part
-        lapackf77_zgetrf( &rows, &nb0, work, &lddwork, ipiv+s*nb, &iinfo);
+        lapackf77_zgetrf( &rows, &nb0, work, &ldwork, ipiv+s*nb, &iinfo);
         if ( (*info == 0) && (iinfo > 0) )
             *info = iinfo + s*nb;
         magmablas_zpermute_long2( n, dAT, lddat, ipiv, nb0, s*nb );
 
         // upload i-th panel
-        magma_zsetmatrix( rows, nb0, work, lddwork, dAP, maxm );
+        magma_zsetmatrix( rows, nb0, work, ldwork, dAP, maxm );
         magmablas_ztranspose( rows, nb0, dAP, maxm, dAT(s,s), lddat );
 
         magma_ztrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
@@ -249,6 +252,7 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
                      c_one, dAT(s,s),     lddat,
                             dAT(s,s)+nb0, lddat);
 
+        // undo transpose
         if ( m == n ) {
             magmablas_ztranspose_inplace( m, dAT, lddat );
         }
@@ -259,12 +263,12 @@ magma_zgetrf_gpu(magma_int_t m, magma_int_t n,
 
         magma_free( dAP );
         magma_free_pinned( work );
-    
+        
         magma_queue_destroy( stream[0] );
-        if (current_stream == NULL) {
+        if (orig_stream == NULL) {
             magma_queue_destroy( stream[1] );
-            magmablasSetKernelStream(NULL);
         }
+        magmablasSetKernelStream( orig_stream );
     }
     return *info;
 } /* magma_zgetrf_gpu */

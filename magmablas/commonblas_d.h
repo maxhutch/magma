@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from commonblas_z.h normal z -> d, Fri Jul 18 17:34:13 2014
+       @generated from commonblas_z.h normal z -> d, Tue Sep  2 12:38:17 2014
 */
 
 #ifndef COMMONBLAS_D_H
@@ -51,6 +51,33 @@ void magmablas_dgemv_tesla(
     const double *x, magma_int_t incx,
     double beta,
     double *y, magma_int_t incy );
+
+
+// kernels used in dnrm2, dgeqr2x-v4, laqps2_gpu, laqps3_gpu, dlarfbx, dlarfgx-v2, dlarfx
+__global__ void
+magma_dgemv_kernel1(int m, const double * __restrict__ V, int ldv,
+                    const double * __restrict__ c,
+                    double *dwork);
+
+__global__ void
+magma_dgemv_kernel2(int m, int n, const double * __restrict__ V, int ldv,
+                    const double * __restrict__ x, double *c);
+
+__global__ void
+magma_dgemv_kernel3(int m, const double * __restrict__ V, int ldv,
+                    double *c, double *dwork,
+                    double *tau);
+
+__global__ void
+magma_dtrmv_tkernel(double *T, int ldt, double *v,
+                                    double *y);
+
+__global__ void
+magma_dtrmv_kernel2(const double *T, int ldt,
+                    double *v, double *y, double *tau);
+
+__global__ void
+magma_dnrm2_adjust_kernel(double *xnorm, double *c);
 
 #ifdef __cplusplus
 }

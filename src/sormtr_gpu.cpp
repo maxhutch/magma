@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmtr_gpu.cpp normal z -> s, Fri Jul 18 17:34:18 2014
+       @generated from zunmtr_gpu.cpp normal z -> s, Tue Sep  2 12:38:22 2014
 
 */
 #include "common_magma.h"
@@ -18,9 +18,9 @@
     -------
     SORMTR overwrites the general real M-by-N matrix C with
 
-                    SIDE = MagmaLeft     SIDE = MagmaRight
-    TRANS = MagmaNoTrans:      Q * C          C * Q
-    TRANS = MagmaTrans:      Q**T * C       C * Q**T
+                                SIDE = MagmaLeft    SIDE = MagmaRight
+    TRANS = MagmaNoTrans:       Q * C               C * Q
+    TRANS = MagmaTrans:    Q**H * C            C * Q**H
 
     where Q is a real unitary matrix of order nq, with nq = m if
     SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
@@ -34,8 +34,8 @@
     ---------
     @param[in]
     side    magma_side_t
-      -     = MagmaLeft:      apply Q or Q**T from the Left;
-      -     = MagmaRight:     apply Q or Q**T from the Right.
+      -     = MagmaLeft:      apply Q or Q**H from the Left;
+      -     = MagmaRight:     apply Q or Q**H from the Right.
 
     @param[in]
     uplo    magma_uplo_t
@@ -47,7 +47,7 @@
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaTrans:      Transpose, apply Q**T.
+      -     = MagmaTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -80,7 +80,7 @@
     @param[in,out]
     dC      REAL array, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
-            On exit, C is overwritten by (Q*C) or (Q**T * C) or (C * Q**T) or (C*Q).
+            On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).
 
     @param[in]
     lddc    INTEGER

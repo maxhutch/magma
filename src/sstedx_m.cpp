@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Raffaele Solca
        
-       @generated from dstedx_m.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dstedx_m.cpp normal d -> s, Tue Sep  2 12:38:22 2014
 */
 #include "common_magma.h"
 
@@ -90,7 +90,7 @@ magma_int_t magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e,
     @param[out]
     work    (workspace) REAL array,
                                            dimension (LWORK)
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -107,7 +107,7 @@ magma_int_t magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e,
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
-            On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.
+            On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.
 
     @param[in]
     liwork  INTEGER
@@ -212,18 +212,17 @@ magma_sstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, float vl, 
 
     if (*info != 0) {
         magma_xerbla( __func__, -(*info));
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     } else if (lquery) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
 
     // Quick return if possible
-
     if (n == 0)
-        return MAGMA_SUCCESS;
+        return *info;
     if (n == 1) {
         *Z = 1.;
-        return MAGMA_SUCCESS;
+        return *info;
     }
 
     /* determine the number of threads *///not needed here to be checked Azzam
@@ -249,7 +248,7 @@ magma_sstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, float vl, 
         if (orgnrm == 0) {
             work[0]  = lwmin;
             iwork[0] = liwmin;
-            return MAGMA_SUCCESS;
+            return *info;
         }
 
         eps = lapackf77_slamch( "Epsilon" );
@@ -287,7 +286,7 @@ magma_sstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, float vl, 
                     magma_slaex0_m( nrgpu, m, &d[start], &e[start], Z(start, start), ldz, work, iwork, MagmaRangeAll, vl, vu, il, iu, info);
 
                     if ( *info != 0) {
-                        return MAGMA_SUCCESS;
+                        return *info;
                     }
 
                     // Scale Back
@@ -334,7 +333,7 @@ magma_sstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, float vl, 
             magma_slaex0_m(nrgpu, n, d, e, Z, ldz, work, iwork, range, vl, vu, il, iu, info);
 
             if ( *info != 0) {
-                return MAGMA_SUCCESS;
+                return *info;
             }
 
             // Scale Back
@@ -345,5 +344,5 @@ magma_sstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, float vl, 
     work[0]  = lwmin;
     iwork[0] = liwmin;
 
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_sstedx_m */

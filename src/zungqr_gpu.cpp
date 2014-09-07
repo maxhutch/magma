@@ -1,17 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include <assert.h>
-
 #include "common_magma.h"
 
 /**
@@ -117,6 +115,9 @@ magma_zungqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
         return *info;
     }
 
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     // first kk columns are handled by blocked method.
     // ki is start of 2nd-to-last block
     if ((nb > 1) && (nb < k)) {
@@ -204,10 +205,11 @@ magma_zungqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
     }
     magma_queue_sync( stream );
 
-    magmablasSetKernelStream( NULL );
     magma_free( dV );
     magma_free_cpu( work );
     magma_queue_destroy( stream );
+    
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_zungqr_gpu */

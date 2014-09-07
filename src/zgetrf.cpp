@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -27,7 +27,8 @@
     triangular (upper trapezoidal if m < n).
 
     This is the right-looking Level 3 BLAS version of the algorithm.
-    If the current stream is NULL, this version replaces it with user defined
+    
+    If the current stream is NULL, this version replaces it with a new
     stream to overlap computation with communication.
 
     Arguments
@@ -184,16 +185,18 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
         lapackf77_zgetrf( &m, &nb, work, &lda, ipiv, &iinfo);
 
         /* Define user stream if current stream is NULL */
-        cudaStream_t stream[2], current_stream;
-        magmablasGetKernelStream(&current_stream);
+        magma_queue_t stream[2];
+        
+        magma_queue_t orig_stream;
+        magmablasGetKernelStream( &orig_stream );
 
         magma_queue_create( &stream[0] );
-        if (current_stream == NULL) {
+        if (orig_stream == NULL) {
             magma_queue_create( &stream[1] );
             magmablasSetKernelStream(stream[1]);
         }
         else
-            stream[1] = current_stream;
+            stream[1] = orig_stream;
 
         for( i = 0; i < s; i++ ) {
             // download i-th panel
@@ -299,10 +302,10 @@ magma_zgetrf(magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t ld
         magma_free( dA );
  
         magma_queue_destroy( stream[0] );
-        if (current_stream == NULL) {
+        if (orig_stream == NULL) {
             magma_queue_destroy( stream[1] );
-            magmablasSetKernelStream(NULL);
         }
+        magmablasSetKernelStream( orig_stream );
     }
     
     return *info;

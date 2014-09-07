@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlarfg.cu normal z -> s, Fri Jul 18 17:34:12 2014
+       @generated from zlarfg.cu normal z -> s, Tue Sep  2 12:38:16 2014
        
        @author Mark Gates
 */
@@ -114,13 +114,13 @@ slarfg_kernel(
     SLARFG generates a real elementary reflector (Householder matrix)
     H of order n, such that
 
-         H * ( alpha ) = ( beta ),   H**T * H = I.
+         H * ( alpha ) = ( beta ),   H**H * H = I.
              (   x   )   (   0  )
 
     where alpha and beta are scalars, with beta real and beta = ±norm([alpha, x]),
     and x is an (n-1)-element real vector. H is represented in the form
 
-         H = I - tau * ( 1 ) * ( 1 v**T ),
+         H = I - tau * ( 1 ) * ( 1 v**H ),
                        ( v )
 
     where tau is a real scalar and v is a real (n-1)-element vector.

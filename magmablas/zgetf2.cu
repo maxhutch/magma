@@ -1,16 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 */
-
-#include <stdio.h>
 #include "common_magma.h"
-#include "magmablas.h"
 
 #define PRECISION_z
 
@@ -121,12 +118,8 @@ magma_zgetf2_gpu(
             cudaDeviceSetCacheConfig( cudaFuncCachePreferL1 );
             
             // Apply the interchange to columns 1:N.
-            // TODO: replace with pre-existing BLAS-standard zswap routine,
-            // e.g., magmablas_zswap or cublasZswap
             if (jp != j) {
                 magma_zswap(n, A, j, jp, lda);
-                //magmablas_zswap( n, A(j,0), lda, A(jp,0), lda );
-                //cublasZswap( n, A(j,0), lda, A(jp,0), lda );
             }
             
             // Compute elements J+1:M of J-th column.

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from magmablas_z.h normal z -> c, Fri Jul 18 17:34:10 2014
+       @generated from magmablas_z.h normal z -> c, Tue Sep  2 12:38:14 2014
 */
 
 #ifndef MAGMABLAS_C_H
@@ -43,21 +43,10 @@ void magmablas_ctranspose_inplace(
     magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda );
 
-void magmablas_ctranspose_inplace_stream(
-    magma_int_t n,
-    magmaFloatComplex_ptr dA, magma_int_t ldda,
-    magma_queue_t stream );
-
 void magmablas_ctranspose(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr dA,  magma_int_t ldda,
     magmaFloatComplex_ptr       dAT, magma_int_t lddat );
-
-void magmablas_ctranspose_stream(
-    magma_int_t m, magma_int_t n,
-    magmaFloatComplex_const_ptr dA,  magma_int_t ldda,
-    magmaFloatComplex_ptr       dAT, magma_int_t lddat,
-    magma_queue_t stream );
 
 void magmablas_cgetmatrix_transpose(
     magma_int_t m, magma_int_t n,
@@ -291,7 +280,7 @@ void magma_cher2k_mgpu(
     magmaFloatComplex **db, magma_int_t lddb, magma_int_t boffset,
     float beta,
     magmaFloatComplex **dc, magma_int_t lddc, magma_int_t offset,
-    magma_int_t num_streams, magma_queue_t streams[][10] );
+    magma_int_t num_qs, magma_queue_t streams[][10] );
 
 void magmablas_cher2k_mgpu2(
     magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
@@ -395,27 +384,20 @@ void magmablas_clascl(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda, magma_int_t *info );
 
+void magmablas_clascl2(
+    magma_type_t type,
+    magma_int_t m, magma_int_t n, const float *dD,
+    magmaFloatComplex_ptr dA, magma_int_t ldda, magma_int_t *info );
+
 void magmablas_claset(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaFloatComplex offdiag, magmaFloatComplex diag,
     magmaFloatComplex_ptr dA, magma_int_t ldda );
 
-void magmablas_claset_stream(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaFloatComplex offdiag, magmaFloatComplex diag,
-    magmaFloatComplex *dA, magma_int_t ldda,
-    magma_queue_t stream);
-
 void magmablas_claset_band(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
     magmaFloatComplex offdiag, magmaFloatComplex diag,
     magmaFloatComplex *A, magma_int_t lda);
-
-void magmablas_claset_band_stream(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloatComplex offdiag, magmaFloatComplex diag,
-    magmaFloatComplex *A, magma_int_t lda,
-    magma_queue_t stream);
 
 void magmablas_claswp(
     magma_int_t n,
@@ -433,7 +415,7 @@ void magmablas_claswp2(
     magma_int_t n,
     magmaFloatComplex_ptr dAT, magma_int_t ldda,
     magma_int_t i1, magma_int_t i2,
-    const magma_int_t *d_ipiv );
+    const magma_int_t *d_ipiv, magma_int_t inci );
 
 void magmablas_csymmetrize(
     magma_uplo_t uplo, magma_int_t m,
@@ -448,12 +430,6 @@ void magmablas_ctrtri_diag(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
     const magmaFloatComplex *dA, magma_int_t ldda,
     magmaFloatComplex *d_invA);
-
-void magmablas_ctrtri_diag_stream(
-    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    magmaFloatComplex *d_invA,
-    magma_queue_t stream);
 
   /*
    * to cleanup
@@ -541,6 +517,13 @@ void magmablas_cgemv_batched(
     magmaFloatComplex beta,
     magmaFloatComplex **dy_array, magma_int_t incy,
     magma_int_t batchCount);
+
+void magmablas_cgemv_conjv(
+    magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
+    magmaFloatComplex_const_ptr dA, magma_int_t lda,
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex beta,
+    magmaFloatComplex_ptr dy, magma_int_t incy);
 
 magma_int_t magmablas_chemv(
     magma_uplo_t uplo, magma_int_t n,

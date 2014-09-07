@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
-       @generated from zgeqrf2_gpu.cpp normal z -> c, Fri Jul 18 17:34:16 2014
+       @generated from zgeqrf2_gpu.cpp normal z -> c, Tue Sep  2 12:38:20 2014
 
 */
 #include "common_magma.h"
@@ -18,7 +18,8 @@
     A = Q * R.
     
     This version has LAPACK-complaint arguments.
-    If the current stream is NULL, this version replaces it with user defined
+    
+    If the current stream is NULL, this version replaces it with a new
     stream to overlap computation with communication.
 
     Other versions (magma_cgeqrf_gpu and magma_cgeqrf3_gpu) store the
@@ -128,16 +129,19 @@ magma_cgeqrf2_gpu( magma_int_t m, magma_int_t n,
     }
 
     /* Define user stream if current stream is NULL */
-    magma_queue_t stream[2], current_stream;
-    magmablasGetKernelStream(&current_stream);
+    magma_queue_t stream[2];
+    
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     magma_queue_create( &stream[0] );
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_create( &stream[1] );
         magmablasSetKernelStream(stream[1]);
     }
-    else
-        stream[1] = current_stream;
+    else {
+        stream[1] = orig_stream;
+    }
 
     nbmin = 2;
     nx    = nb;
@@ -229,10 +233,10 @@ magma_cgeqrf2_gpu( magma_int_t m, magma_int_t n,
     magma_free_pinned( work );
 
     magma_queue_destroy( stream[0] );
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_destroy( stream[1] );
-        magmablasSetKernelStream(NULL);
     }
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_cgeqrf2_gpu */

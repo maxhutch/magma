@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from magma_z_precond_wrapper.cpp normal z -> c, Fri Jul 18 17:34:29 2014
+       @generated from magma_z_precond_wrapper.cpp normal z -> c, Tue Sep  2 12:38:35 2014
        @author Hartwig Anzt
 
 */
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 
 
@@ -31,12 +31,12 @@
                 sparse matrix A    
 
     @param
-    x           magma_c_vector
-                input vector x  
+    b           magma_c_vector
+                input vector b     
 
     @param
-    y           magma_c_vector
-                input vector y      
+    x           magma_c_vector*
+                output vector x        
 
     @param
     precond     magma_c_preconditioner
@@ -47,50 +47,53 @@
 
 magma_int_t
 magma_c_precond( magma_c_sparse_matrix A, magma_c_vector b, 
-                 magma_c_vector *x, magma_c_preconditioner precond )
+                 magma_c_vector *x, magma_c_preconditioner *precond )
 {
 // set up precond parameters as solver parameters   
     magma_c_solver_par psolver_par;
-    psolver_par.epsilon = precond.epsilon;
-    psolver_par.maxiter = precond.maxiter;
-    psolver_par.restart = precond.restart;
+    psolver_par.epsilon = precond->epsilon;
+    psolver_par.maxiter = precond->maxiter;
+    psolver_par.restart = precond->restart;
+    psolver_par.verbose = 0;
    
-    if( precond.solver == Magma_CG ){
+    if( precond->solver == Magma_CG ){
 // printf( "start CG preconditioner with epsilon: %f and maxiter: %d: ", 
 //                            psolver_par.epsilon, psolver_par.maxiter );
         magma_ccg( A, b, x, &psolver_par );
 // printf( "done.\n" );
         return MAGMA_SUCCESS;
     }
-    if( precond.solver == Magma_GMRES ){
+    if( precond->solver == Magma_GMRES ){
 // printf( "start GMRES preconditioner with epsilon: %f and maxiter: %d: ", 
 //                               psolver_par.epsilon, psolver_par.maxiter );
         magma_cgmres( A, b, x, &psolver_par );
 // printf( "done.\n" );
         return MAGMA_SUCCESS;
     }
-    if( precond.solver == Magma_BICGSTAB ){
+    if( precond->solver == Magma_BICGSTAB ){
 // printf( "start BICGSTAB preconditioner with epsilon: %f and maxiter: %d: ", 
 //                                  psolver_par.epsilon, psolver_par.maxiter );
         magma_cbicgstab( A, b, x, &psolver_par );
 // printf( "done.\n");
         return MAGMA_SUCCESS;
     }
-    if( precond.solver == Magma_JACOBI ){
+    if( precond->solver == Magma_JACOBI ){
 // printf( "start JACOBI preconditioner with epsilon: %f and maxiter: %d: ", 
 //                                  psolver_par.epsilon, psolver_par.maxiter );
         magma_cjacobi( A, b, x, &psolver_par );
 // printf( "done.\n");
         return MAGMA_SUCCESS;
     }
-    if( precond.solver == Magma_BCSRLU ){
-// printf( "start BCSRLU preconditioner with epsilon: %f and maxiter: %d: ", 
+    if( precond->solver == Magma_BAITER ){
+// printf( "start BAITER preconditioner with epsilon: %f and maxiter: %d: ", 
 //                                  psolver_par.epsilon, psolver_par.maxiter );
-        magma_cbcsrlu( A, b, x, &psolver_par );
+        magma_cbaiter( A, b, x, &psolver_par );
 // printf( "done.\n");
         return MAGMA_SUCCESS;
     }
-
+    if( precond->solver == Magma_NONE ){
+        return MAGMA_SUCCESS;
+    }
     else{
         printf( "error: preconditioner type not yet supported.\n" );
         return MAGMA_ERR_NOT_SUPPORTED;
@@ -114,14 +117,10 @@ magma_c_precond( magma_c_sparse_matrix A, magma_c_vector b,
 
     @param
     A           magma_c_sparse_matrix
-                sparse matrix A    
+                sparse matrix A     
 
     @param
-    x           magma_c_vector
-                input vector x  
-
-    @param
-    y           magma_c_vector
+    b           magma_c_vector
                 input vector y      
 
     @param
@@ -148,17 +147,10 @@ magma_c_precondsetup( magma_c_sparse_matrix A, magma_c_vector b,
         return MAGMA_SUCCESS;
     }
     else if( precond->solver == Magma_ICC ){
-//        magma_ccuilusetup( A, precond );
         magma_ccuiccsetup( A, precond );
         return MAGMA_SUCCESS;
     }
-    else if( precond->solver == Magma_AILU ){
-        magma_cailusetup( A, precond );
-        return MAGMA_SUCCESS;
-    }
-    else if( precond->solver == Magma_AICC ){
-        //magma_cailusetup( A, precond );
-        magma_caiccsetup( A, precond );
+    else if( precond->solver == Magma_NONE ){
         return MAGMA_SUCCESS;
     }
     else{
@@ -187,12 +179,12 @@ magma_c_precondsetup( magma_c_sparse_matrix A, magma_c_vector b,
                 sparse matrix A    
 
     @param
-    x           magma_c_vector
-                input vector x  
+    b           magma_c_vector
+                input vector b     
 
     @param
-    y           magma_c_vector
-                input vector y      
+    x           magma_c_vector*
+                output vector x     
 
     @param
     precond     magma_c_preconditioner
@@ -229,6 +221,10 @@ magma_c_applyprecond( magma_c_sparse_matrix A, magma_c_vector b,
         magma_c_vfree( &tmp );
         return MAGMA_SUCCESS;
     }
+    else if( precond->solver == Magma_NONE ){
+        magma_ccopy( b.num_rows, b.val, 1, x->val, 1 );      //  x = b
+        return MAGMA_SUCCESS;
+    }
     else{
         printf( "error: preconditioner type not yet supported.\n" );
         return MAGMA_ERR_NOT_SUPPORTED;
@@ -254,12 +250,12 @@ magma_c_applyprecond( magma_c_sparse_matrix A, magma_c_vector b,
                 sparse matrix A    
 
     @param
-    x           magma_c_vector
-                input vector x  
+    b           magma_c_vector
+                input vector b     
 
     @param
-    y           magma_c_vector
-                input vector y      
+    x           magma_c_vector*
+                output vector x     
 
     @param
     precond     magma_c_preconditioner
@@ -280,19 +276,12 @@ magma_c_applyprecond_left( magma_c_sparse_matrix A, magma_c_vector b,
         magma_capplycuilu_l( b, x, precond );
         return MAGMA_SUCCESS;
     }
-    else if( precond->solver == Magma_AILU ){
-        magma_capplycuilu_l( b, x, precond );
-//        magma_capplyailu_l( b, x, precond );
-        return MAGMA_SUCCESS;
-    }
     else if( precond->solver == Magma_ICC ){
-        //magma_capplycuilu_l( b, x, precond );
         magma_capplycuicc_l( b, x, precond );
         return MAGMA_SUCCESS;
     }
-    else if( precond->solver == Magma_AICC ){
-        //magma_capplycuilu_l( b, x, precond );
-        magma_capplycuicc_l( b, x, precond );
+    else if( precond->solver == Magma_NONE ){
+        magma_ccopy( b.num_rows, b.val, 1, x->val, 1 );      //  x = b
         return MAGMA_SUCCESS;
     }
     else{
@@ -320,12 +309,12 @@ magma_c_applyprecond_left( magma_c_sparse_matrix A, magma_c_vector b,
                 sparse matrix A    
 
     @param
-    x           magma_c_vector
-                input vector x  
+    b           magma_c_vector
+                input vector b     
 
     @param
-    y           magma_c_vector
-                input vector y      
+    x           magma_c_vector*
+                output vector x  
 
     @param
     precond     magma_c_preconditioner
@@ -347,19 +336,13 @@ magma_c_applyprecond_right( magma_c_sparse_matrix A, magma_c_vector b,
         magma_capplycuilu_r( b, x, precond );
         return MAGMA_SUCCESS;
     }
-    else if( precond->solver == Magma_AILU ){
-        magma_capplycuilu_r( b, x, precond );
-//        magma_capplyailu_r( b, x, precond );
+    else if( precond->solver == Magma_ICC || 
+            ( precond->solver == Magma_AICC && precond->maxiter == -1) ){
+        magma_capplycuicc_r( b, x, precond );
         return MAGMA_SUCCESS;
     }
-    else if( precond->solver == Magma_ICC ){
-        magma_capplycuicc_r( b, x, precond );
-//        magma_capplycuilu_r( b, x, precond );
-        return MAGMA_SUCCESS;
-    }
-    else if( precond->solver == Magma_AICC ){
-        magma_capplycuicc_r( b, x, precond );
-//        magma_capplycuilu_r( b, x, precond );
+    else if( precond->solver == Magma_NONE ){
+        magma_ccopy( b.num_rows, b.val, 1, x->val, 1 );      //  x = b
         return MAGMA_SUCCESS;
     }
     else{

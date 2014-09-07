@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
-       @generated from testing_zlarfb_gpu.cpp normal z -> d, Fri Jul 18 17:34:24 2014
+       @generated from testing_zlarfb_gpu.cpp normal z -> d, Tue Sep  2 12:38:29 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -42,7 +42,7 @@ int main( int argc, char** argv )
     
     // test all combinations of input parameters
     magma_side_t   side  [] = { MagmaLeft,       MagmaRight    };
-    magma_trans_t  trans [] = { MagmaTrans,  MagmaNoTrans  };
+    magma_trans_t  trans [] = { MagmaConjTrans,  MagmaNoTrans  };
     magma_direct_t direct[] = { MagmaForward,    MagmaBackward };
     magma_storev_t storev[] = { MagmaColumnwise, MagmaRowwise  };
 

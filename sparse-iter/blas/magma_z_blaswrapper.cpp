@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -13,9 +13,9 @@
 //#include <cusparse_v2.h>
 
 #include "common_magma.h"
-#include "../../include/magmablas.h"
-#include "../include/magmasparse_types.h"
-#include "../include/magmasparse.h"
+#include "magmablas.h"
+#include "magmasparse_types.h"
+#include "magmasparse.h"
 
 
 
@@ -71,10 +71,27 @@ magma_z_spmv(   magmaDoubleComplex alpha, magma_z_sparse_matrix A,
                             || A.storage_type == Magma_CSRL 
                             || A.storage_type == Magma_CSRU ){
                  //printf("using CSR kernel for SpMV: ");
-                 magma_zgecsrmv( MagmaNoTrans, A.num_rows, A.num_cols, alpha, 
-                                 A.val, A.row, A.col, x.val, beta, y.val );
+                 //magma_zgecsrmv( MagmaNoTrans, A.num_rows, A.num_cols, alpha, 
+                 //                A.val, A.row, A.col, x.val, beta, y.val );
                  //printf("done.\n");
-                 return MAGMA_SUCCESS;
+
+                cusparseHandle_t cusparseHandle = 0;
+                cusparseStatus_t cusparseStatus;
+                cusparseStatus = cusparseCreate(&cusparseHandle);
+                cusparseMatDescr_t descr = 0;
+                cusparseStatus = cusparseCreateMatDescr(&descr);
+
+                cusparseSetMatType(descr,CUSPARSE_MATRIX_TYPE_GENERAL);
+                cusparseSetMatIndexBase(descr,CUSPARSE_INDEX_BASE_ZERO);
+
+                cusparseZcsrmv( cusparseHandle,CUSPARSE_OPERATION_NON_TRANSPOSE, 
+                            A.num_rows, A.num_cols, A.nnz, &alpha, descr, 
+                            A.val, A.row, A.col, x.val, &beta, y.val );
+
+                cusparseDestroyMatDescr( descr );
+                cusparseDestroy( cusparseHandle );
+
+                return MAGMA_SUCCESS;
              }
              else if( A.storage_type == Magma_ELLPACK ){
                  //printf("using ELLPACK kernel for SpMV: ");

@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
 
-       @generated from zunmlq.cpp normal z -> d, Fri Jul 18 17:34:17 2014
+       @generated from zunmlq.cpp normal z -> d, Tue Sep  2 12:38:21 2014
 
 */
 #include "common_magma.h"
@@ -20,13 +20,13 @@
     @verbatim
                              SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:    Q * C                C * Q
-    TRANS = MagmaTrans:  Q**T * C             C * Q**T
+    TRANS = MagmaTrans: Q**H * C             C * Q**H
     @endverbatim
 
     where Q is a realunitary matrix defined as the product of k
     elementary reflectors
 
-          Q = H(k)**T . . . H(2)**T H(1)**T
+          Q = H(k)**H . . . H(2)**H H(1)**H
 
     as returned by DGELQF. Q is of order M if SIDE = MagmaLeft and of order N
     if SIDE = MagmaRight.
@@ -35,13 +35,13 @@
     ---------
     @param[in]
     side    magma_side_t
-      -     = MagmaLeft:      apply Q or Q**T from the Left;
-      -     = MagmaRight:     apply Q or Q**T from the Right.
+      -     = MagmaLeft:      apply Q or Q**H from the Left;
+      -     = MagmaRight:     apply Q or Q**H from the Right.
 
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaTrans:  Conjugate transpose, apply Q**T.
+      -     = MagmaTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -79,7 +79,7 @@
     @param[in,out]
     C       DOUBLE_PRECISION array, dimension (LDC,N)
             On entry, the M-by-N matrix C.
-            On exit, C is overwritten by Q*C or Q**T*C or C*Q**T or C*Q.
+            On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q.
 
     @param[in]
     ldc     INTEGER
@@ -268,17 +268,17 @@ magma_dormlq(
             dq_to_panel( MagmaLower, ib, A(i,i), lda, T2 );
             
             if (left) {
-                /* H or H**T is applied to C(i:m,1:n) */
+                /* H or H**H is applied to C(i:m,1:n) */
                 mi = m - i;
                 ic = i;
             }
             else {
-                /* H or H**T is applied to C(1:m,i:n) */
+                /* H or H**H is applied to C(1:m,i:n) */
                 ni = n - i;
                 jc = i;
             }
             
-            /* Apply H or H**T; First copy T to the GPU */
+            /* Apply H or H**H; First copy T to the GPU */
             magma_dsetmatrix( ib, ib, T, ib, dT, ib );
             magma_dlarfb_gpu( side, transt, MagmaForward, MagmaRowwise,
                               mi, ni, ib,

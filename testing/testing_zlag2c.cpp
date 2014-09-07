@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
        @precisions mixed zc -> ds
@@ -70,6 +70,9 @@ int main( int argc, char** argv )
             lapackf77_zlarnv( &ione, ISEED, &size,  A );
             lapackf77_clarnv( &ione, ISEED, &size, SA );
             
+            magma_zsetmatrix( m, n, A,  lda, dA,  ldda );
+            magma_csetmatrix( m, n, SA, lda, dSA, ldda );
+            
             /* =====================================================================
                Performs operation using LAPACK zlag2c
                =================================================================== */
@@ -83,9 +86,7 @@ int main( int argc, char** argv )
             
             /* ====================================================================
                Performs operation using MAGMA zlag2c
-               =================================================================== */
-            magma_zsetmatrix( m, n, A, lda, dA, ldda );
-            
+               =================================================================== */            
             gpu_time = magma_sync_wtime(0);
             magmablas_zlag2c( m, n, dA, ldda, dSA, ldda, &info );
             gpu_time = magma_sync_wtime(0) - gpu_time;
@@ -110,6 +111,14 @@ int main( int argc, char** argv )
             status += ! (serror == 0);
             
             
+            /* =====================================================================
+               Reset matrices
+               =================================================================== */
+            lapackf77_zlarnv( &ione, ISEED, &size,  A );
+            lapackf77_clarnv( &ione, ISEED, &size, SA );
+            
+            magma_zsetmatrix( m, n, A,  lda, dA,  ldda );
+            magma_csetmatrix( m, n, SA, lda, dSA, ldda );
             
             /* =====================================================================
                Performs operation using LAPACK clag2z

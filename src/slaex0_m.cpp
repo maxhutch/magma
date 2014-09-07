@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex0_m.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dlaex0_m.cpp normal d -> s, Tue Sep  2 12:38:22 2014
 */
 #include "common_magma.h"
 #include "timer.h"
@@ -125,13 +125,9 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
     magma_int_t submat, subpbs, tlvls;
     float* dw[MagmaMaxGPUs];
     magma_queue_t stream [MagmaMaxGPUs][2];
-    int gpu_b;
-    magma_getdevice(&gpu_b);
 
     // Test the input parameters.
-
     *info = 0;
-
     if ( n < 0 )
         *info = -1;
     else if ( ldq < max(1, n) )
@@ -143,9 +139,12 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
 
     // Quick return if possible
     if (n == 0)
-        return MAGMA_SUCCESS;
+        return *info;
 
-    //workspace dimension for nrgpu > 1
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    
+    // workspace dimension for nrgpu > 1
     size_t tmp = (n-1)/2+1;
     if (nrgpu > 1) {
         size_t tmp2 = (tmp-1) / (nrgpu/2) + 1;
@@ -156,14 +155,14 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
         magma_setdevice(igpu);
         if (nrgpu == 1) {
             if (MAGMA_SUCCESS != magma_smalloc( &dw[igpu], 3*n*(n/2 + 1) )) {
-                *info = -15;
-                return MAGMA_ERR_DEVICE_ALLOC;
+                *info = MAGMA_ERR_DEVICE_ALLOC;
+                return *info;
             }
         }
         else {
             if (MAGMA_SUCCESS != magma_smalloc( &dw[igpu], tmp )) {
-                *info = -15;
-                return MAGMA_ERR_DEVICE_ALLOC;
+                *info = MAGMA_ERR_DEVICE_ALLOC;
+                return *info;
             }
         }
         magma_queue_create( &stream[igpu][0] );
@@ -219,7 +218,7 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
             printf("info: %d\n, submat: %d\n", (int) *info, (int) submat);
             *info = (submat+1)*(n+1) + submat + matsiz;
             printf("info: %d\n", (int) *info);
-            return MAGMA_SUCCESS;
+            return *info;
         }
         k = 1;
         for (j = submat; j < iwork[i]; ++j) {
@@ -267,7 +266,7 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
 
             if (*info != 0) {
                 *info = (submat+1)*(n+1) + submat + matsiz;
-                return MAGMA_SUCCESS;
+                return *info;
             }
             iwork[i/2]= iwork[i+1];
         }
@@ -296,7 +295,7 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
         magma_free( dw[igpu] );
     }
 
-    magma_setdevice(gpu_b);
+    magma_setdevice( orig_dev );
 
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_slaex0 */

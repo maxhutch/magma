@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zheevx_gpu.cpp normal z -> c, Fri Jul 18 17:34:18 2014
+       @generated from zheevx_gpu.cpp normal z -> c, Tue Sep  2 12:38:22 2014
 
  */
 #include "common_magma.h"
@@ -147,7 +147,7 @@
 
     @param[out]
     work    (workspace) COMPLEX array, dimension (LWORK)
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -457,7 +457,7 @@ magma_cheevx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma
         }
     }
     
-    /* Set WORK(1) to optimal complex workspace size. */
+    /* Set WORK[0] to optimal complex workspace size. */
     work[1] = MAGMA_C_MAKE( lopt, 0 );
     
     return *info;

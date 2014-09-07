@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = ..
@@ -75,7 +75,7 @@ shared: lib
 
 $(LIBMAGMA_SPARSE_SO): src/*.o control/*.o blas/*.o
 	@echo ======================================== libmagma_sparse.so
-	$(CC) $(LDOPTS) -shared -o $(LIBMAGMA_SPARSE_SO) $^ \
+	$(CC) $(LDFLAGS) -shared -o $(LIBMAGMA_SPARSE_SO) $^ \
 	-L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
 	$(LIB)

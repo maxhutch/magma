@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from magma_zlag2c.cpp mixed zc -> ds, Fri Jul 18 17:34:27 2014
+       @generated from magma_zlag2c.cpp mixed zc -> ds, Tue Sep  2 12:38:32 2014
        @author Hartwig Anzt
 */
 
@@ -17,10 +17,10 @@
 #include <ostream>
 #include <assert.h>
 #include <stdio.h>
-#include "../include/magmasparse_z.h"
-#include "../include/magmasparse_ds.h"
-#include "../../include/magma.h"
-#include "../include/mmio.h"
+#include "magmasparse_z.h"
+#include "magmasparse_ds.h"
+#include "magma.h"
+#include "mmio.h"
 #include "common_magma.h"
 
 

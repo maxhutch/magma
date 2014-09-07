@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 */
 
 #ifndef MAGMABLAS_H
@@ -15,6 +15,13 @@
 #include "magmablas_s.h"
 #include "magmablas_zc.h"
 #include "magmablas_ds.h"
+
+#include "magmablas_z_q.h"
+#include "magmablas_c_q.h"
+#include "magmablas_d_q.h"
+#include "magmablas_s_q.h"
+#include "magmablas_zc_q.h"
+#include "magmablas_ds_q.h"
 
 #ifdef __cplusplus
 extern "C" {

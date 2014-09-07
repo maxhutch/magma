@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from zlarfb_gpu.cpp normal z -> d, Fri Jul 18 17:34:16 2014
+       @generated from zlarfb_gpu.cpp normal z -> d, Tue Sep  2 12:38:20 2014
 */
 #include "common_magma.h"
 
@@ -26,7 +26,7 @@
 
     @param[in]
     trans   magma_trans_t
-      -     = MagmaNoTrans:   apply H   (No transpose)
+      -     = MagmaNoTrans:    apply H   (No transpose)
       -     = MagmaTrans: apply H^H (Conjugate transpose)
 
     @param[in]
@@ -163,7 +163,7 @@ magma_dlarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct,
     
     /* Function Body */
     if (m <= 0 || n <= 0) {
-        return MAGMA_SUCCESS;
+        return info;
     }
 
     // opposite of trans
@@ -240,5 +240,5 @@ magma_dlarfb_gpu( magma_side_t side, magma_trans_t trans, magma_direct_t direct,
                      c_one,     dC,    ldc);
     }
 
-    return MAGMA_SUCCESS;
+    return info;
 } /* magma_dlarfb */

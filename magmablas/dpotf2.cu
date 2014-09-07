@@ -1,16 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
-       @generated from zpotf2.cu normal z -> d, Fri Jul 18 17:34:13 2014
+       @generated from zpotf2.cu normal z -> d, Tue Sep  2 12:38:17 2014
 */
-
-#include <stdio.h>
 #include "common_magma.h"
-#include "magmablas.h"
 
 #define PRECISION_d
 
@@ -125,7 +122,7 @@ magma_dpotf2_gpu(
                 magma_dgemv( MagmaTrans, j, n-j-1,
                              alpha, A(0, j+1), lda,
                                     A(0, j),   1,
-                             beta,  A(j, j+1), lda); // cublas is better in upper case
+                             beta,  A(j, j+1), lda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 dlacgv(j, A(0, j), 1);
@@ -141,10 +138,10 @@ magma_dpotf2_gpu(
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 dlacgv(j, A(j, 0), lda);
                 #endif
-                magmablas_dgemv( MagmaNoTrans, n-j-1, j,
-                                 alpha, A(j+1, 0), lda,
-                                        A(j,0),    lda,
-                                 beta,  A(j+1, j), 1 );// magmablas is better in lower case
+                magma_dgemv( MagmaNoTrans, n-j-1, j,
+                             alpha, A(j+1, 0), lda,
+                                    A(j,0),    lda,
+                             beta,  A(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 dlacgv(j, A(j, 0), lda);
@@ -208,13 +205,13 @@ void dpotf2_ddot(magma_int_t n, double *x, magma_int_t incx)
 {
 /*
     Specialized Ddot
-    1) performs ddot sum = x[0:n-1]*(x[0:n-1])
+    1) performs ddot sum = x[0:n-1]*conj(x[0:n-1])
     2) updates x[n] = sqrt(x[n]-sum);
 
 */
     if (n > ddot_max_bs) {
-        printf("n = %d > %d is not supported in dpotf2_ddot\n", (int) n, (int) ddot_max_bs);
-        exit(1);
+        fprintf( stderr, "n = %d > %d is not supported in dpotf2_ddot\n", (int) n, (int) ddot_max_bs);
+        return;
     }
     int threadSize;
 
@@ -258,7 +255,7 @@ __global__ void kernel_dscal(int n, double *x, int incx)
 void dpotf2_dscal(magma_int_t n, double *x, magma_int_t incx)
 {
 /*
-    Specialized Zdscal perform x[1:n-1]/x[0]
+    Specialized Dscal perform x[1:n-1]/x[0]
 
 */
     dim3 threads(dscal_bs, 1, 1);

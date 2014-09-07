@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Raffaele Solca
-       @generated from dlaex3_m.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dlaex3_m.cpp normal d -> s, Tue Sep  2 12:38:22 2014
 */
 
 #ifdef _OPENMP
@@ -15,7 +15,6 @@
 
 #include "common_magma.h"
 #include "timer.h"
-#include <cblas.h>
 
 extern "C" {
 
@@ -209,7 +208,7 @@ magma_slaex3_m(magma_int_t nrgpu,
         magma_slaex3(k, n, n1, d, Q, ldq, rho,
                      dlamda, Q2, indx, ctot, w, s, indxq,
                      *dwork, range, vl, vu, il, iu, info );
-        return MAGMA_SUCCESS;
+        return *info;
     }
     float d_one  = 1.;
     float d_zero = 0.;
@@ -251,15 +250,20 @@ magma_slaex3_m(magma_int_t nrgpu,
         }
     }
 
-
     if (*info != 0) {
         magma_xerbla(__func__, -(*info));
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
 
     // Quick return if possible
     if (k == 0)
-        return MAGMA_SUCCESS;
+        return *info;
+
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     /*
      Modify values DLAMDA(i) to make sure all DLAMDA(i)-DLAMDA(j) can
      be computed with high relative accuracy (barring over/underflow).
@@ -356,7 +360,7 @@ magma_slaex3_m(magma_int_t nrgpu,
             // If the zero finder fails, the computation is terminated.
             if (iinfo != 0) {
 #pragma omp critical (info)
-                *info=iinfo;
+                *info = iinfo;
                 break;
             }
         }
@@ -436,7 +440,7 @@ magma_slaex3_m(magma_int_t nrgpu,
                 for (j = ib; j < ie; ++j) {
                     for (i = 0; i < k; ++i)
                         s[id*k + i] = w[i] / *Q(i,j);
-                    temp = cblas_snrm2( k, s+id*k, 1);
+                    temp = magma_cblas_snrm2( k, s+id*k, 1 );
                     for (i = 0; i < k; ++i) {
                         magma_int_t iii = indx[i] - 1;
                         *Q(i,j) = s[id*k + iii] / temp;
@@ -446,7 +450,7 @@ magma_slaex3_m(magma_int_t nrgpu,
         }
     }
     if (*info != 0)
-        return MAGMA_SUCCESS; //??????
+        return *info;
 
     timer_stop( time );
     timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
@@ -470,7 +474,7 @@ magma_slaex3_m(magma_int_t nrgpu,
             *info=iinfo;
     }
     if (*info != 0)
-        return MAGMA_SUCCESS;
+        return *info;
 
     //Prepare the INDXQ sorting permutation.
     magma_int_t nk = n - k;
@@ -520,7 +524,7 @@ magma_slaex3_m(magma_int_t nrgpu,
         for (j = iil-1; j < iiu; ++j) {
             for (i = 0; i < k; ++i)
                 s[i] = w[i] / *Q(i,j);
-            temp = cblas_snrm2( k, s, 1);
+            temp = magma_cblas_snrm2( k, s, 1 );
             for (i = 0; i < k; ++i) {
                 magma_int_t iii = indx[i] - 1;
                 *Q(i,j) = s[iii] / temp;
@@ -666,7 +670,6 @@ magma_slaex3_m(magma_int_t nrgpu,
                 magma_free_pinned( hwQ[0][igpu] );
 #endif
                 magma_setdevice(igpu);
-                magmablasSetKernelStream(NULL);
                 magma_queue_sync( stream[igpu][0] );
                 magma_queue_sync( stream[igpu][1] );
             }
@@ -680,5 +683,8 @@ magma_slaex3_m(magma_int_t nrgpu,
     timer_stop( time );
     timer_printf( "gemms = %6.2f\n", time );
 
-    return MAGMA_SUCCESS;
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
+    
+    return *info;
 } /* magma_slaed3_m */

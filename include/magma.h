@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 */
 
 #ifndef MAGMA_H
@@ -138,6 +138,15 @@ void magma_queue_destroy_internal(
 void magma_queue_sync_internal(
     magma_queue_t queue,
     const char* func, const char* file, int line );
+
+/// Currently, magma_queue_t == cudaStream_t.
+/// Almost certainly this will change in the future,
+/// so these get & set the associated stream in a forward-compatible manner.
+/// @see magma_queue_set_cuda_stream
+#define magma_queue_get_cuda_stream( queue ) (queue)
+
+/// @see magma_queue_get_cuda_stream
+#define magma_queue_set_cuda_stream( queue, stream ) ((queue) = (stream))
 
 
 // ========================================

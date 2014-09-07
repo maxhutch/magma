@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlahr2_m.cpp normal z -> d, Fri Jul 18 17:34:19 2014
+       @generated from zlahr2_m.cpp normal z -> d, Tue Sep  2 12:38:24 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -186,7 +186,12 @@ magma_dlahr2_m(
 
     // Function Body
     if (n <= 1)
-        return 0;
+        return *info;
+    
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
     
     // zero out current top block of V on all GPUs
     for( d = 0; d < ngpu; ++d ) {
@@ -416,5 +421,8 @@ magma_dlahr2_m(
         magma_dsetmatrix_async( nb, nb, T, nb, dTi(d),      nb,   data->streams[d] );
     }
 
-    return 0;
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
+    
+    return *info;
 } /* magma_dlahr2 */

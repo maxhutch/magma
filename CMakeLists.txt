@@ -65,7 +65,8 @@ if ( CUDA_FOUND )
 		if ( NOT MIN_ARCH )
 			set( MIN_ARCH 100 )
 		endif()
-		set( NV_SM "${NV_SM} -gencode arch=compute_10,code=compute_10 -gencode arch=compute_13,code=sm_13" )
+		# -gencode arch=compute_10,code=compute_10
+		set( NV_SM "${NV_SM} -gencode arch=compute_13,code=sm_13" )
 		set( NV_COMP        "-gencode arch=compute_13,code=compute_13" )
 		message( "   compile for CUDA arch 1.x (Tesla)" )
 	endif()
@@ -226,11 +227,11 @@ endif()
 # ----------------------------------------
 # compile testing library
 set( TEST_SRC
-	testing/testing_zutil.cpp
-	testing/testing_cutil.cpp
-	testing/testing_dutil.cpp
-	testing/testing_sutil.cpp
-	testing/testing_util.cpp
+	testing/magma_zutil.cpp
+	testing/magma_cutil.cpp
+	testing/magma_dutil.cpp
+	testing/magma_sutil.cpp
+	testing/magma_util.cpp
 )
 add_library( test ${TEST_SRC} )
 
@@ -245,6 +246,7 @@ add_library( lapacktest ${testing_lin_ALLSRC} )
 # compile each tester
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY testing )
 include( ${CMAKE_SOURCE_DIR}/testing/CMake )
+list( REMOVE_ITEM testing_ALLSRC ${TEST_SRC} )
 foreach( TEST ${testing_ALLSRC} )
 	string( REGEX REPLACE "\\.(cpp|f90|F90)" "" EXE ${TEST} )
 	string( REGEX REPLACE "testing/" "" EXE ${EXE} )

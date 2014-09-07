@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -20,9 +20,9 @@
     ZUNMQR overwrites the general complex M-by-N matrix C with
 
     @verbatim
-                    SIDE = MagmaLeft     SIDE = MagmaRight
-    TRANS = MagmaNoTrans:      Q * C          C * Q
-    TRANS = MagmaTrans:      Q**H * C       C * Q**H
+                                SIDE = MagmaLeft    SIDE = MagmaRight
+    TRANS = MagmaNoTrans:       Q * C               C * Q
+    TRANS = Magma_ConjTrans:    Q**H * C            C * Q**H
     @endverbatim
 
     where Q is a complex unitary matrix defined as the product of k
@@ -47,7 +47,7 @@
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaTrans:      Transpose, apply Q**H.
+      -     = Magma_ConjTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -92,7 +92,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(0) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -139,6 +139,7 @@ magma_zunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
     const char* side_  = lapack_side_const( side );
     const char* trans_ = lapack_trans_const( trans );
 
+    // TODO fix memory leak (alloc after argument checks)
     magma_int_t nb = 128;
     magmaDoubleComplex *T;
     magma_zmalloc_pinned(&T, nb*nb);
@@ -149,10 +150,12 @@ magma_zunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
     magma_event_t  event [MagmaMaxGPUs][2];
 
     magma_int_t ind_c;
-
-    magma_int_t igpu = 0;
-    int gpu_b;
-    magma_getdevice(&gpu_b);
+    magma_device_t igpu;
+    
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     *info = 0;
 
@@ -173,7 +176,7 @@ magma_zunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
 
     if (! left && side != MagmaRight) {
         *info = -1;
-    } else if (! notran && trans != MagmaTrans) {
+    } else if (! notran && trans != Magma_ConjTrans) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -235,9 +238,8 @@ magma_zunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
     for (igpu = 0; igpu < nrgpu; ++igpu) {
         magma_setdevice(igpu);
         if (MAGMA_SUCCESS != magma_zmalloc( &dw[igpu], ldw )) {
-            magma_xerbla( __func__, -(*info) );
             *info = MAGMA_ERR_DEVICE_ALLOC;
-
+            magma_xerbla( __func__, -(*info) );
             return *info;
         }
         magma_queue_create( &stream[igpu][0] );
@@ -282,7 +284,7 @@ magma_zunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
                                        A(i, i),                 lda,
                                        dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0] );
                 // set upper triangular part of dA to identity
-                magmablas_zlaset_band_stream( MagmaUpper, kb, kb, kb, c_zero, c_one, dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0] );
+                magmablas_zlaset_band_q( MagmaUpper, kb, kb, kb, c_zero, c_one, dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0] );
             }
 
             /* Form the triangular factor of the block reflector
@@ -334,6 +336,7 @@ magma_zunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
 //                                   C(0, i*nb_l), ldc, stream[igpu][0] );
         }
     } else {
+        // TODO fix memory leak T, dw, event, stream
         fprintf(stderr, "The case (side == right) is not implemented\n");
         *info = MAGMA_ERR_NOT_IMPLEMENTED;
         magma_xerbla( __func__, -(*info) );
@@ -385,15 +388,14 @@ magma_zunmqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
 
     for (igpu = 0; igpu < nrgpu; ++igpu) {
         magma_setdevice(igpu);
-        magmablasSetKernelStream(NULL);
         magma_event_destroy( event[igpu][0] );
         magma_event_destroy( event[igpu][1] );
         magma_queue_destroy( stream[igpu][0] );
         magma_queue_destroy( stream[igpu][1] );
         magma_free( dw[igpu] );
     }
-
-    magma_setdevice(gpu_b);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_zunmqr */

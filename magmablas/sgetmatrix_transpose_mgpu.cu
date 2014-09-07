@@ -1,16 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgetmatrix_transpose_mgpu.cu normal z -> s, Fri Jul 18 17:34:13 2014
+       @generated from zgetmatrix_transpose_mgpu.cu normal z -> s, Tue Sep  2 12:38:17 2014
        @author Ichitaro Yamazaki
 */
 #include "common_magma.h"
+
 #define PRECISION_s
-#include "commonblas.h"
+
 
 //
 //    m, n - dimensions in the output (ha) matrix.
@@ -51,7 +52,7 @@ magmablas_sgetmatrix_transpose_mgpu(
        magma_setdevice(d);
 
        ib = min(n-j, nb);
-       magmablas_stranspose_stream( ib, m, dAT(d,j_local), ldda, dB(d,id), lddb, stream[d][id] );
+       magmablas_stranspose_q( ib, m, dAT(d,j_local), ldda, dB(d,id), lddb, stream[d][id] );
        magma_sgetmatrix_async( m, ib,
                                dB(d, id), lddb,
                                A(j),      lda, 

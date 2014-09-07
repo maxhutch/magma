@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgehrd_m.cpp normal z -> s, Fri Jul 18 17:34:19 2014
+       @generated from zgehrd_m.cpp normal z -> s, Tue Sep  2 12:38:24 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -58,7 +58,7 @@
 
     @param[out]
     work    (workspace) REAL array, dimension (LWORK)
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -173,9 +173,6 @@ magma_sgehrd_m(
     }
     else if (lquery)
         return *info;
-    
-    magma_device_t cdevice;
-    magma_getdevice( &cdevice );
 
     // Adjust from 1-based indexing
     ilo -= 1;
@@ -186,6 +183,9 @@ magma_sgehrd_m(
         work[0] = c_one;
         return *info;
     }
+    
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
 
     // Set elements 0:ILO-1 and IHI-1:N-2 of TAU to zero
     for (i = 0; i < ilo; ++i)
@@ -309,14 +309,10 @@ magma_sgehrd_m(
 CLEANUP:
     for( d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
-        magmablasSetKernelStream( NULL );
         magma_free( data.A[d] );
-        data.A[d] = NULL;
-        if ( data.streams[d] != NULL ) {
-            magma_queue_destroy( data.streams[d] );
-        }
+        magma_queue_destroy( data.streams[d] );
     }
-    magma_setdevice( cdevice );
+    magma_setdevice( orig_dev );
     
     return *info;
 } /* magma_sgehrd */

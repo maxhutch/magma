@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = .
@@ -87,14 +87,14 @@ cleanall2:
 	@echo
 
 # filter out MAGMA-specific options for pkg-config
-INSTALL_OPTS := $(filter-out \
+INSTALL_FLAGS := $(filter-out \
 	-DMAGMA_SETAFFINITY -DMAGMA_WITH_ACML -DMAGMA_WITH_MKL -DUSE_FLOCK \
 	-DMIN_CUDA_ARCH=100 -DMIN_CUDA_ARCH=200 -DMIN_CUDA_ARCH=300 \
 	-fno-strict-aliasing -fPIC -O0 -O1 -O2 -O3 -pedantic -stdc++98 \
-	-Wall -Wno-long-long, $(OPTS))
+	-Wall -Wno-long-long, $(CFLAGS))
 
-INSTALL_LDOPTS := $(filter-out \
-	-fPIC -Wall -Xlinker -zmuldefs, $(LDOPTS))
+INSTALL_LDFLAGS := $(filter-out \
+	-fPIC -Wall -Xlinker -zmuldefs, $(LDFLAGS))
 
 install_dirs:
 	mkdir -p $(prefix)
@@ -117,8 +117,8 @@ install: lib install_dirs
 	# pkgconfig
 	cat $(MAGMA_DIR)/lib/pkgconfig/magma.pc.in         | \
 	    sed -e s:@INSTALL_PREFIX@:"$(prefix)":         | \
-	    sed -e s:@CFLAGS@:"$(INSTALL_OPTS) $(INC)":    | \
-	    sed -e s:@LIBS@:"$(INSTALL_LDOPTS) $(LIBEXT)": | \
+	    sed -e s:@CFLAGS@:"$(INSTALL_FLAGS) $(INC)":    | \
+	    sed -e s:@LIBS@:"$(INSTALL_LDFLAGS) $(LIBEXT)": | \
 	    sed -e s:@MAGMA_REQUIRED@::                      \
 	    > $(prefix)/lib/pkgconfig/magma.pc
 
@@ -130,10 +130,11 @@ install: lib install_dirs
 # objects in each subdirectory, or use libtool, or put rules for, e.g., the
 # control directory in src/Makefile (as done in src/CMakeLists.txt)
 
-fpic = $(and $(findstring -fPIC, $(OPTS)), \
-             $(findstring -fPIC, $(FOPTS)), \
-             $(findstring -fPIC, $(F77OPTS)), \
-             $(findstring -fPIC, $(NVOPTS)))
+fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
+             $(findstring -fPIC, $(CXXFLAGS)), \
+             $(findstring -fPIC, $(FFLAGS)),   \
+             $(findstring -fPIC, $(F90FLAGS)), \
+             $(findstring -fPIC, $(NVCCFLAGS)))
 
 LIBMAGMA_SO = $(LIBMAGMA:.a=.so)
 
@@ -144,13 +145,13 @@ shared: lib
 
 $(LIBMAGMA_SO): src/*.o control/*.o interface_cuda/*.o magmablas/*.o
 	@echo ======================================== $(LIBMAGMA_SO)
-	$(CC) $(LDOPTS) -shared -o $(LIBMAGMA_SO) $^ \
+	$(CC) $(LDFLAGS) -shared -o $(LIBMAGMA_SO) $^ \
 	$(LIBDIR) \
 	$(LIB)
 
 else
 shared:
-	@echo "Error: 'make shared' requires OPTS, F77OPTS, FOPTS, and NVOPTS to have -fPIC."
+	@echo "Error: 'make shared' requires CFLAGS, CXXFLAGS, FFLAGS, F90FLAGS, and NVCCFLAGS to have -fPIC."
 	@echo "Please edit your make.inc file. See make.inc.mkl-shared for an example."
 	@echo "After updating make.inc, please 'make clean', then 'make shared', then 'make testing'."
 endif

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zhemv.cpp normal z -> c, Fri Jul 18 17:34:22 2014
+       @generated from testing_zhemv.cpp normal z -> c, Tue Sep  2 12:38:27 2014
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,8 +25,9 @@ int main(int argc, char **argv)
 {
     TESTING_INIT();
 
+    real_Double_t   atomics_perf, atomics_time;
     real_Double_t   gflops, magma_perf, magma_time, cublas_perf, cublas_time, cpu_perf, cpu_time;
-    float          magma_error, cublas_error, work[1];
+    float          magma_error, atomics_error, cublas_error, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t N, lda, ldda, sizeA, sizeX, sizeY, blocks, ldwork;
@@ -36,7 +37,7 @@ int main(int argc, char **argv)
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex alpha = MAGMA_C_MAKE(  1.5, -2.3 );
     magmaFloatComplex beta  = MAGMA_C_MAKE( -0.6,  0.8 );
-    magmaFloatComplex *A, *X, *Y, *Ycublas, *Ymagma;
+    magmaFloatComplex *A, *X, *Y, *Yatomics, *Ycublas, *Ymagma;
     magmaFloatComplex *dA, *dX, *dY, *dwork;
     magma_int_t status = 0;
     
@@ -49,8 +50,8 @@ int main(int argc, char **argv)
     if ( opts.uplo == MagmaUpper ) {
         printf("** for uplo=MagmaUpper, magmablas_chemv simply calls cublas_chemv.\n");
     }
-    printf("    N   MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  CUBLAS error\n");
-    printf("=============================================================================================\n");
+    printf("    N   MAGMA Gflop/s (ms)    Atomics Gflop/s      CUBLAS Gflop/s       CPU Gflop/s   MAGMA error  Atomics    CUBLAS\n");
+    printf("======================================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -61,11 +62,12 @@ int main(int argc, char **argv)
             sizeY  = N*incy;
             gflops = FLOPS_CHEMV( N ) / 1e9;
             
-            TESTING_MALLOC_CPU( A,       magmaFloatComplex, sizeA );
-            TESTING_MALLOC_CPU( X,       magmaFloatComplex, sizeX );
-            TESTING_MALLOC_CPU( Y,       magmaFloatComplex, sizeY );
-            TESTING_MALLOC_CPU( Ycublas, magmaFloatComplex, sizeY );
-            TESTING_MALLOC_CPU( Ymagma,  magmaFloatComplex, sizeY );
+            TESTING_MALLOC_CPU( A,        magmaFloatComplex, sizeA );
+            TESTING_MALLOC_CPU( X,        magmaFloatComplex, sizeX );
+            TESTING_MALLOC_CPU( Y,        magmaFloatComplex, sizeY );
+            TESTING_MALLOC_CPU( Yatomics, magmaFloatComplex, sizeY );
+            TESTING_MALLOC_CPU( Ycublas,  magmaFloatComplex, sizeY );
+            TESTING_MALLOC_CPU( Ymagma,   magmaFloatComplex, sizeY );
             
             TESTING_MALLOC_DEV( dA, magmaFloatComplex, ldda*N );
             TESTING_MALLOC_DEV( dX, magmaFloatComplex, sizeX );
@@ -98,6 +100,21 @@ int main(int argc, char **argv)
             cublas_perf = gflops / cublas_time;
             
             magma_cgetvector( N, dY, incy, Ycublas, incy );
+            
+            /* =====================================================================
+               Performs operation using CUBLAS - using atomics
+               =================================================================== */
+            cublasSetAtomicsMode( handle, CUBLAS_ATOMICS_ALLOWED );
+            magma_csetvector( N, Y, incy, dY, incy );
+            
+            atomics_time = magma_sync_wtime( 0 );
+            cublasChemv( handle, cublas_uplo_const(opts.uplo),
+                         N, &alpha, dA, ldda, dX, incx, &beta, dY, incy );
+            atomics_time = magma_sync_wtime( 0 ) - atomics_time;
+            atomics_perf = gflops / atomics_time;
+            
+            magma_cgetvector( N, dY, incy, Yatomics, incy );
+            cublasSetAtomicsMode( handle, CUBLAS_ATOMICS_NOT_ALLOWED );
             
             /* =====================================================================
                Performs operation using MAGMABLAS
@@ -134,20 +151,26 @@ int main(int argc, char **argv)
             blasf77_caxpy( &N, &c_neg_one, Y, &incy, Ycublas, &incy );
             cublas_error = lapackf77_clange( "M", &N, &ione, Ycublas, &N, work ) / N;
             
-            printf("%5d   %7.2f (%7.2f)    %7.2f (%7.2f)   %7.2f (%7.2f)    %8.2e     %8.2e   %s\n",
+            blasf77_caxpy( &N, &c_neg_one, Y, &incy, Yatomics, &incy );
+            atomics_error = lapackf77_clange( "M", &N, &ione, Yatomics, &N, work ) / N;
+            
+            bool ok = (magma_error < tol && cublas_error < tol && atomics_error < tol);
+            status += ! ok;
+            printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %8.2e   %s\n",
                    (int) N,
-                   magma_perf,  1000.*magma_time,
-                   cublas_perf, 1000.*cublas_time,
-                   cpu_perf,    1000.*cpu_time,
-                   magma_error, cublas_error,
-                   (magma_error < tol && cublas_error < tol ? "ok" : "failed"));
-            status += ! (magma_error < tol && cublas_error < tol);
+                   magma_perf,   1000.*magma_time,
+                   atomics_perf, 1000.*atomics_time,
+                   cublas_perf,  1000.*cublas_time,
+                   cpu_perf,     1000.*cpu_time,
+                   magma_error, cublas_error, atomics_error,
+                   (ok ? "ok" : "failed"));
             
             TESTING_FREE_CPU( A );
             TESTING_FREE_CPU( X );
             TESTING_FREE_CPU( Y );
-            TESTING_FREE_CPU( Ycublas );
-            TESTING_FREE_CPU( Ymagma  );
+            TESTING_FREE_CPU( Ycublas  );
+            TESTING_FREE_CPU( Yatomics );
+            TESTING_FREE_CPU( Ymagma   );
             
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dX );

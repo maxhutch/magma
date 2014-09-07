@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zpotrf_mgpu.cpp normal z -> d, Fri Jul 18 17:34:24 2014
+       @generated from testing_zpotrf_mgpu.cpp normal z -> d, Tue Sep  2 12:38:28 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -122,6 +122,10 @@ int main( int argc, char** argv )
             /* =====================================================================
                Check the result compared to LAPACK
                =================================================================== */
+            for( int dev=0; dev < ngpu; dev++ ){
+                magma_setdevice( dev );
+                magma_device_sync();
+            }
             if ( opts.lapack ) {
                 error = lapackf77_dlange("f", &N, &N, h_A, &lda, work );
                 blasf77_daxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );

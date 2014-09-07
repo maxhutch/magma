@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_z_cublas_v2.cpp normal z -> c, Fri Jul 18 17:34:22 2014
+       @generated from testing_z_cublas_v2.cpp normal z -> c, Tue Sep  2 12:38:27 2014
        @author Mark Gates
        
        This demonstrates how to use cublas_v2 with magma.
@@ -108,6 +108,7 @@ int main( int argc, char** argv )
             magma_free_cpu( A );
             magma_free_cpu( B );
             magma_free_cpu( C );
+            fflush( stdout );
         }
     }
     

@@ -1,14 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 */
-
-#include <stdio.h>
 #include "common_magma.h"
 
 
@@ -159,7 +157,7 @@ kernel_zgemvt_batched(
 
 /*
     Matrix Transpose Vector Multiplication
-    y := alpha*A'*x + beta*y,
+    y := alpha* A**T *x + beta*y,
 */
 
 extern "C"
@@ -260,7 +258,7 @@ kernel_zgemvc_batched(
 
 /*
     Matrix Conjugate Transpose Vector Multiplication
-    y := alpha*conjg(A')*x + beta*y,
+    y := alpha* A**H *x + beta*y,
 */
 
 extern "C"
@@ -322,17 +320,31 @@ void magmablas_zgemvc_batched(
 
     @param[in]
     x_array x = x_array[i]
-            x: COMPLEX*16 array of dimension n.
+            x: COMPLEX*16 array of dimension.
+            n if trans == MagmaNoTrans.
+            m if trans == MagmaTrans or MagmaConjTrans.
 
+    @param[in]
+    incx    INTEGER.
+            incx specifies the increment for the elments of x.
+            incx must not be zero.
+    
     @param[in]
     beta    DOUBLE PRECISION.
             On entry, BETA specifies the scalar beta.
 
     @param[out]
     y_array y = y_array[i]:       
-            y: COMPLEX*16 array of dimension n.
             On exit y = alpha opt(A) x + beta y.
+            y: COMPLEX*16 array of dimension.
+            m if trans == MagmaNoTrans.
+            n if trans == MagmaTrans or MagmaConjTrans.
 
+    @param[in]
+    incy    INTEGER.
+            incy specifies the increment for the elments of y.
+            incy must not be zero.
+    
     @param[in]
     batchCount INTEGER
             number of pointers contained in A_array, x_array and y_array.
@@ -348,6 +360,26 @@ void magmablas_zgemv_batched(
     magmaDoubleComplex beta, magmaDoubleComplex **y_array,  magma_int_t incy, 
     magma_int_t batchCount)
 {       
+    magma_int_t info = 0;
+    if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( n < 0 )
+        info = -3;
+    else if ( lda < m )
+        info = -6;
+    else if ( incx == 0 )
+        info = -8;
+    else if ( incy == 0 )
+        info = -11;
+
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+
+    if(m==0 || n ==0 ) return;
 
     if ( trans == MagmaNoTrans ) {
 

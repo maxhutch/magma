@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -54,7 +54,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
@@ -124,9 +124,13 @@ magma_zgeqrf_ooc(magma_int_t m, magma_int_t n,
         magma_xerbla( __func__, -(*info) );
         return *info;
     }
-    else if (lquery)
+    else if (lquery) {
         return *info;
+    }
 
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     /* Check how much memory do we have */
     size_t freeMem, totalMem;
     cudaMemGetInfo( &freeMem, &totalMem );
@@ -220,5 +224,7 @@ magma_zgeqrf_ooc(magma_int_t m, magma_int_t n,
     magma_queue_destroy( stream[1] );
     magma_free( dA );
 
+    magmablasSetKernelStream( orig_stream );
+    
     return *info;
 } /* magma_zgeqrf_ooc */

@@ -1,17 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
-       @generated from zlabrd_gpu.cpp normal z -> d, Fri Jul 18 17:34:20 2014
+       @generated from zlabrd_gpu.cpp normal z -> d, Tue Sep  2 12:38:24 2014
 
 */
 #include "common_magma.h"
-
-#include <assert.h>
 
 #define PRECISION_d
 
@@ -211,15 +209,19 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
     --taup;
 
     /* Quick return if possible */
+    magma_int_t info = 0;
     if (m <= 0 || n <= 0) {
-        return 0;
+        return info;
     }
 
     double *f;
     magma_queue_t stream;
     magma_queue_create( &stream );
     magma_dmalloc_cpu( &f, max(n,m) );
-    assert( f != NULL );  // TODO return error, or allocate outside dlatrd
+    if ( f == NULL ) {
+        info = MAGMA_ERR_HOST_ALLOC;
+        return info;
+    }
     
     if (m >= n) {
         /* Reduce to upper bidiagonal form */
@@ -260,7 +262,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                                   A(i,i), 1,
                                   dA(i-1,i-1), 1 );
                 // 2. Multiply ---------------------------------------------
-                magma_dgemv( MagmaTrans, i__2, i__3, c_one,
+                magma_dgemv( MagmaConjTrans, i__2, i__3, c_one,
                              dA(i-1,i),   ldda,
                              dA(i-1,i-1), ione, c_zero,
                              dY(i+1,i),   ione );
@@ -271,7 +273,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                                         Y(i+1,i),  ldy, stream );
                 i__2 = m - i + 1;
                 i__3 = i - 1;
-                blasf77_dgemv( MagmaTransStr, &i__2, &i__3, &c_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
                                A(i,1), &lda,
                                A(i,i), &ione, &c_zero,
                                Y(1,i), &ione );
@@ -284,7 +286,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                                f,        &ione );
                 i__2 = m - i + 1;
                 i__3 = i - 1;
-                blasf77_dgemv( MagmaTransStr, &i__2, &i__3, &c_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
                                X(i,1), &ldx,
                                A(i,i), &ione, &c_zero,
                                Y(1,i), &ione );
@@ -299,7 +301,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
 
                 i__2 = i - 1;
                 i__3 = n - i;
-                blasf77_dgemv( MagmaTransStr, &i__2, &i__3, &c_neg_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i__3, &c_neg_one,
                                A(1,i+1), &lda,
                                Y(1,i),   &ione, &c_one,
                                Y(i+1,i), &ione );
@@ -322,7 +324,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                 lapackf77_dlacgv( &i,  A(i,1), &lda );
                 lapackf77_dlacgv( &i__2, X(i,1), &ldx );
                 #endif
-                blasf77_dgemv( MagmaTransStr, &i__2, &i__3, &c_neg_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i__3, &c_neg_one,
                                A(1,i+1), &lda,
                                X(i,1),   &ldx, &c_one,
                                A(i,i+1), &lda );
@@ -360,7 +362,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                                         X(i+1,i),  ldx, stream );
 
                 i__2 = n - i;
-                blasf77_dgemv( MagmaTransStr, &i__2, &i, &c_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i, &c_one,
                                Y(i+1,1), &ldy,
                                A(i,i+1), &lda, &c_zero,
                                X(1,i),   &ione );
@@ -426,7 +428,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
             lapackf77_dlacgv( &i__3, X(i,1), &ldx );
             #endif
             i__3 = n - i + 1;
-            blasf77_dgemv( MagmaTransStr, &i__2, &i__3, &c_neg_one,
+            blasf77_dgemv( MagmaConjTransStr, &i__2, &i__3, &c_neg_one,
                            A(1,i), &lda,
                            X(i,1), &ldx, &c_one,
                            A(i,i), &lda );
@@ -468,7 +470,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                 
                 i__2 = n - i + 1;
                 i__3 = i - 1;
-                blasf77_dgemv( MagmaTransStr, &i__2, &i__3, &c_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
                                Y(i,1), &ldy,
                                A(i,i), &lda, &c_zero,
                                X(1,i), &ione );
@@ -545,7 +547,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                                   A(i+1,i), 1,
                                   dA(i,i-1), 1 );
                 // 2. Multiply ---------------------------------------------
-                magma_dgemv( MagmaTrans, i__2, i__3, c_one,
+                magma_dgemv( MagmaConjTrans, i__2, i__3, c_one,
                              dA(i,i),   ldda,
                              dA(i,i-1), ione, c_zero,
                              dY(i+1,i), ione );
@@ -557,7 +559,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                 
                 i__2 = m - i;
                 i__3 = i - 1;
-                blasf77_dgemv( MagmaTransStr, &i__2, &i__3, &c_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
                                A(i+1,1), &lda,
                                A(i+1,i), &ione, &c_zero,
                                Y(1,i),   &ione );
@@ -569,7 +571,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                                f,        &ione );
                 
                 i__2 = m - i;
-                blasf77_dgemv( MagmaTransStr, &i__2, &i, &c_one,
+                blasf77_dgemv( MagmaConjTransStr, &i__2, &i, &c_one,
                                X(i+1,1), &ldx,
                                A(i+1,i), &ione, &c_zero,
                                Y(1,i),   &ione );
@@ -582,7 +584,7 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
                 }
                 
                 i__2 = n - i;
-                blasf77_dgemv( MagmaTransStr, &i, &i__2, &c_neg_one,
+                blasf77_dgemv( MagmaConjTransStr, &i, &i__2, &c_neg_one,
                                A(1,i+1), &lda,
                                Y(1,i),   &ione, &c_one,
                                Y(i+1,i), &ione );
@@ -604,5 +606,5 @@ magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
     magma_queue_destroy( stream );
     magma_free_cpu( f );
     
-    return MAGMA_SUCCESS;
+    return info;
 } /* magma_dlabrd_gpu */

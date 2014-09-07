@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -40,14 +40,17 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX_16 array on the GPU, dimension (LDDA,N).
-            On entry, the M-by-N matrix to be factored.
+    d_lA    COMPLEX_16 array of pointers on the GPU, dimension (num_gpus).
+            On entry, the M-by-N matrix A distributed over GPUs 
+            (d_lA[d] points to the local matrix on d-th GPU). 
+            It uses 1D block column cyclic format with the block size of nb,
+            and each local matrix is stored by column.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
     ldda     INTEGER
-            The leading dimension of the array A.  LDDA >= max(1,M).
+            The leading dimension of the array d_lA.  LDDA >= max(1,M).
 
     @param[out]
     ipiv    INTEGER array, dimension (min(M,N))
@@ -114,6 +117,11 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
         magma_free_cpu(work);
     } else {
         /* Use hybrid blocked code. */
+        magma_device_t orig_dev;
+        magma_getdevice( &orig_dev );
+        magma_queue_t orig_stream;
+        magmablasGetKernelStream( &orig_stream );
+        
         maxm = ((m + 31)/32)*32;
         if ( num_gpus > ceil((double)n/nb) ) {
             printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) num_gpus );
@@ -174,7 +182,7 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
         }
         for (i=0; i < num_gpus; i++) {
             magma_setdevice(i);
-            cudaStreamSynchronize(streaml[i][0]);
+            magma_queue_sync(streaml[i][0]);
             magmablasSetKernelStream(NULL);
         }
         magma_setdevice(0);
@@ -208,9 +216,9 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
             magma_free( d_panel[d] );
             magma_queue_destroy( streaml[d][0] );
             magma_queue_destroy( streaml[d][1] );
-            magmablasSetKernelStream(NULL);
         } /* end of for d=1,..,num_gpus */
-        magma_setdevice(0);
+        magma_setdevice( orig_dev );
+        magmablasSetKernelStream( orig_stream );
         magma_free_pinned( work );
     }
         

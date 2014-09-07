@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -23,12 +23,14 @@ __global__ void
 zvjacobisetup_gpu(  int num_rows, 
                     magmaDoubleComplex *b, 
                     magmaDoubleComplex *d, 
-                    magmaDoubleComplex *c){
+                    magmaDoubleComplex *c,
+                    magmaDoubleComplex *x){
 
     int row = blockDim.x * blockIdx.x + threadIdx.x ;
 
     if(row < num_rows ){
         c[row] = b[row] / d[row];
+        x[row] = c[row];
     }
 }
 
@@ -65,6 +67,10 @@ zvjacobisetup_gpu(  int num_rows,
     c           magma_z_vector*
                 c = D^(-1) * b
 
+    @param
+    x           magma_z_vector*
+                iteration vector
+
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
@@ -72,12 +78,13 @@ extern "C" magma_int_t
 magma_zjacobisetup_vector_gpu(  int num_rows, 
                                 magmaDoubleComplex *b, 
                                 magmaDoubleComplex *d, 
-                                magmaDoubleComplex *c){
+                                magmaDoubleComplex *c,
+                                magmaDoubleComplex *x ){
 
 
    dim3 grid( (num_rows+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
 
-   zvjacobisetup_gpu<<< grid, BLOCK_SIZE, 0 >>>( num_rows, b, d, c );
+   zvjacobisetup_gpu<<< grid, BLOCK_SIZE, 0 >>>( num_rows, b, d, c, x );
 
    return MAGMA_SUCCESS;
 }

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
-       @generated from testing_zlag2c.cpp mixed zc -> ds, Fri Jul 18 17:34:22 2014
+       @generated from testing_zlag2c.cpp mixed zc -> ds, Tue Sep  2 12:38:27 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -70,6 +70,9 @@ int main( int argc, char** argv )
             lapackf77_dlarnv( &ione, ISEED, &size,  A );
             lapackf77_slarnv( &ione, ISEED, &size, SA );
             
+            magma_dsetmatrix( m, n, A,  lda, dA,  ldda );
+            magma_ssetmatrix( m, n, SA, lda, dSA, ldda );
+            
             /* =====================================================================
                Performs operation using LAPACK dlag2s
                =================================================================== */
@@ -83,9 +86,7 @@ int main( int argc, char** argv )
             
             /* ====================================================================
                Performs operation using MAGMA dlag2s
-               =================================================================== */
-            magma_dsetmatrix( m, n, A, lda, dA, ldda );
-            
+               =================================================================== */            
             gpu_time = magma_sync_wtime(0);
             magmablas_dlag2s( m, n, dA, ldda, dSA, ldda, &info );
             gpu_time = magma_sync_wtime(0) - gpu_time;
@@ -110,6 +111,14 @@ int main( int argc, char** argv )
             status += ! (serror == 0);
             
             
+            /* =====================================================================
+               Reset matrices
+               =================================================================== */
+            lapackf77_dlarnv( &ione, ISEED, &size,  A );
+            lapackf77_slarnv( &ione, ISEED, &size, SA );
+            
+            magma_dsetmatrix( m, n, A,  lda, dA,  ldda );
+            magma_ssetmatrix( m, n, SA, lda, dSA, ldda );
             
             /* =====================================================================
                Performs operation using LAPACK slag2d

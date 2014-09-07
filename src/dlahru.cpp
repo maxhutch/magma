@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlahru.cpp normal z -> d, Fri Jul 18 17:34:19 2014
+       @generated from zlahru.cpp normal z -> d, Tue Sep  2 12:38:24 2014
        @author Stan Tomov
        @author Mark Gates
 */
@@ -160,13 +160,13 @@ magma_dlahru(
     // on right, A := A Q = A - A V T V'
     // Update Am = Am - Am V T V' = Am - Ym W', with W = V T'
     // W = V T' = V(0:ihi-k-1, 0:nb-1) * T(0:nb-1, 0:nb-1)'
-    magma_dgemm( MagmaNoTrans, MagmaTrans, ihi-k, nb, nb,
+    magma_dgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, nb, nb,
                  c_one,  dV,    lddv,
                          dT,    nb,
                  c_zero, dwork, ldda );
 
     // Am = Am - Ym W' = A(0:k-1, 0:ihi-k-1) - Ym(0:k-1, 0:nb-1) * W(0:ihi-k-1, 0:nb-1)'
-    magma_dgemm( MagmaNoTrans, MagmaTrans, k, ihi-k, nb,
+    magma_dgemm( MagmaNoTrans, MagmaConjTrans, k, ihi-k, nb,
                  c_neg_one, dYm,   ldda,
                             dwork, ldda,
                  c_one,     dA,    ldda );
@@ -178,7 +178,7 @@ magma_dlahru(
     // on right, A := A Q = A - A V T V'
     // Update Ag = Ag - Ag V T V' = Ag - Y W'
     // Ag = Ag - Y W' = A(k:ihi-1, nb:ihi-k-1) - Y(0:ihi-k-1, 0:nb-1) * W(nb:ihi-k-1, 0:nb-1)'
-    magma_dgemm( MagmaNoTrans, MagmaTrans, ihi-k, ihi-k-nb, nb,
+    magma_dgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, ihi-k-nb, nb,
                  c_neg_one, dY,         ldda,
                             dwork + nb, ldda,
                  c_one,     dA(k,nb),   ldda );
@@ -190,7 +190,7 @@ magma_dlahru(
     // while    Ag2 is A(k:ihi, nb+1: n -k)
     
     // Z = V(0:ihi-k-1, 0:nb-1)' * A(k:ihi-1, nb:n-k-1);  Z is stored over Y
-    magma_dgemm( MagmaTrans, MagmaNoTrans, nb, n-k-nb, ihi-k,
+    magma_dgemm( MagmaConjTrans, MagmaNoTrans, nb, n-k-nb, ihi-k,
                  c_one,  dV,       lddv,
                          dA(k,nb), ldda,
                  c_zero, dY,       nb );
@@ -200,5 +200,6 @@ magma_dlahru(
                  c_neg_one, dwork,    ldda,
                             dY,       nb,
                  c_one,     dA(k,nb), ldda );
-    return 0;
+    
+    return info;
 }

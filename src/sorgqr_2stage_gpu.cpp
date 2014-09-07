@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zungqr_2stage_gpu.cpp normal z -> s, Fri Jul 18 17:34:19 2014
+       @generated from zungqr_2stage_gpu.cpp normal z -> s, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -153,13 +153,11 @@ magma_sorgqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
         i__1 = m - kk;
         i__2 = n - kk;
         i__3 = k - kk;
-        //cublasGetMatrix(i__1, i__2, sizeof(float),
-        //                dA(kk, kk), ldda, panel, i__1);
+        //magma_sgetmatrix(i__1, i__2, dA(kk, kk), ldda, panel, i__1);
         //lapackf77_sorgqr(&i__1, &i__2, &i__3, panel, &i__1, &tau[kk],
         //                 work, &lwork, &iinfo);
         //
-        //cublasSetMatrix(i__1, i__2, sizeof(float),
-        //              panel, i__1, dA(kk, kk), ldda);
+        //magma_ssetmatrix(i__1, i__2, panel, i__1, dA(kk, kk), ldda);
         
         magma_slarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise,
                           i__1, i__2, i__3,
@@ -176,10 +174,7 @@ magma_sorgqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
             ib = min(nb, k - i);
             /* Send current panel to the CPU for update */
             i__2 = m - i;
-            //cudaMemcpy2DAsync(panel,       i__2 * sizeof(float),
-            //                  dA(i,i), ldda * sizeof(float),
-            //                  sizeof(float)*i__2, ib,
-            //                  cudaMemcpyDeviceToHost,stream[0]);
+            //magma_sgetmatrix_async( i__2, ib, dA(i,i), ldda, panel, i__2, stream[0] );  // verify
             if (i + ib < n) {
                 /* Apply H to A(i:m,i+ib:n) from the left */
                 i__3 = n - i;
@@ -197,10 +192,7 @@ magma_sorgqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
             //magma_queue_sync( stream[0] );
             //lapackf77_sorgqr(&i__2, &ib, &ib, panel, &i__2, &tau[i],
             //                 work, &lwork, &iinfo);
-            //cudaMemcpy2DAsync(dA(i,i), ldda * sizeof(float),
-            //                  panel,       i__2 * sizeof(float),
-            //                  sizeof(float)*i__2, ib,
-            //                  cudaMemcpyHostToDevice,stream[1]);
+            //magma_ssetmatrix_async( i__2, ib, panel, i__2, dA(i,i), ldda, stream[1] );  // verify
 
             /* Set rows 1:i-1 of current block to zero */
             i__2 = i + ib;

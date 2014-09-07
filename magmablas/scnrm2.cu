@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from dznrm2.cu normal z -> c, Fri Jul 18 17:34:12 2014
+       @generated from dznrm2.cu normal z -> c, Tue Sep  2 12:38:16 2014
 
 */
 #include "common_magma.h"
+#include "commonblas_c.h"
 #include "magma_templates.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
@@ -148,7 +149,7 @@ magmablas_scnrm2_sm(
 }
 
 //==============================================================================
-
+extern "C"
 __global__ void
 magma_scnrm2_adjust_kernel(float *xnorm, magmaFloatComplex *c)
 {

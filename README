@@ -2,6 +2,8 @@
 MAGMA README FILE
 ==================
 
+* Further documentation is provided in docs/html/index.html.
+
 * To INSTALL MAGMA, modify the make.inc file to indicate where 
   CUDA, CPU BLAS, and LAPACK are installed on your system. Examples are given
   in make.inc.mkl-*, make.inc.acml, make.inc.atlas, and make.inc.macos
@@ -38,7 +40,7 @@ MAGMA README FILE
       setenv LAPACKDIR /opt/LAPACK
   
   Creating a shared library requires adding the -fPIC option in make.inc to
-  OPTS, FOPTS, F77OPTS, and NVOPTS. This is demonstrated in make.inc.mkl-shared.
+  CFLAGS, FFLAGS, F90FLAGS, and NVCCFLAGS. This is demonstrated in make.inc.mkl-shared.
   
   After proper modification of the make.inc file, running:
   

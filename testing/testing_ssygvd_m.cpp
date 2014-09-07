@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_zhegvd_m.cpp normal z -> s, Fri Jul 18 17:34:25 2014
+    @generated from testing_zhegvd_m.cpp normal z -> s, Tue Sep  2 12:38:30 2014
 
 */
 
@@ -23,13 +23,9 @@
 // includes, project
 #include "magma.h"
 #include "magma_lapack.h"
-
-#define PRECISION_s
-
-
 #include "testings.h"
 
-#define absv(v1) ((v1)>0? (v1): -(v1))
+#define PRECISION_s
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing ssygvd
@@ -47,7 +43,7 @@ int main( int argc, char** argv)
     real_Double_t mgpu_time, gpu_time, cpu_time;
 
     /* Matrix size */
-    magma_int_t N=0, n2;
+    magma_int_t N, n2, nb;
 
     magma_int_t info;
     magma_int_t ione = 1;
@@ -78,19 +74,15 @@ int main( int argc, char** argv)
     printf("=========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
+            // TODO define lda
             N = opts.nsize[itest];
             n2     = N*N;
+            nb     = magma_get_ssytrd_nb(N);
             #if defined(PRECISION_z) || defined(PRECISION_c)
-            magma_int_t lwork = 2*N + N*N;
-            magma_int_t lrwork = 1 + 5*N +2*N*N;
-            // MKL's ssygvd has a bug for small N - it looks like what is returned by a
-            // query (consistent with LAPACK's number above) is different from the memory
-            // requirement check (that returns info -11). The lwork increase below is needed
-            // to pass this check.
-            if (N<32)
-                lwork = 34*32;
+                magma_int_t lwork  = max( N + N*nb, 2*N + N*N );
+                magma_int_t lrwork = 1 + 5*N +2*N*N;
             #else
-            magma_int_t lwork  = 1 + 6*N + 2*N*N;
+                magma_int_t lwork  = max( 2*N + N*nb, 1 + 6*N + 2*N*N );
             #endif
             magma_int_t liwork = 3 + 5*N;
 
@@ -234,9 +226,9 @@ int main( int argc, char** argv)
                 float temp1 = 0;
                 float temp2 = 0;
                 for(int j=0; j<N; j++) {
-                    temp1 = max(temp1, absv(w1[j]));
-                    temp1 = max(temp1, absv(w2[j]));
-                    temp2 = max(temp2, absv(w1[j]-w2[j]));
+                    temp1 = max(temp1, fabs(w1[j]));
+                    temp1 = max(temp1, fabs(w2[j]));
+                    temp2 = max(temp2, fabs(w1[j]-w2[j]));
                 }
                 float result2 = temp2 / (((float)N)*temp1);
 

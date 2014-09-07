@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
   
-       @generated from zgeqp3.cpp normal z -> c, Fri Jul 18 17:34:17 2014
+       @generated from zgeqp3.cpp normal z -> c, Tue Sep  2 12:38:21 2014
 
+       @author Mitch Horton
 */
 
 #include "common_magma.h"
-#include <cblas.h>
 
 #define PRECISION_c
 #define COMPLEX
@@ -58,7 +58,7 @@
 
     @param[out]
     work    (workspace) COMPLEX array, dimension (MAX(1,LWORK))
-            On exit, if INFO=0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO=0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -223,7 +223,7 @@ magma_cgeqp3( magma_int_t m, magma_int_t n,
 
         /* Initialize partial column norms. */
         for (j = nfxd; j < n; ++j) {
-            rwork[j] = cblas_scnrm2(sm, A(nfxd, j), ione);
+            rwork[j] = magma_cblas_scnrm2( sm, A(nfxd,j), ione );
             rwork[n + j] = rwork[j];
         }
         

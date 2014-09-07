@@ -1,16 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
-       @generated from zpotf2.cu normal z -> c, Fri Jul 18 17:34:13 2014
+       @generated from zpotf2.cu normal z -> c, Tue Sep  2 12:38:17 2014
 */
-
-#include <stdio.h>
 #include "common_magma.h"
-#include "magmablas.h"
 
 #define PRECISION_c
 
@@ -125,7 +122,7 @@ magma_cpotf2_gpu(
                 magma_cgemv( MagmaTrans, j, n-j-1,
                              alpha, A(0, j+1), lda,
                                     A(0, j),   1,
-                             beta,  A(j, j+1), lda); // cublas is better in upper case
+                             beta,  A(j, j+1), lda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 clacgv(j, A(0, j), 1);
@@ -141,10 +138,10 @@ magma_cpotf2_gpu(
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 clacgv(j, A(j, 0), lda);
                 #endif
-                magmablas_cgemv( MagmaNoTrans, n-j-1, j,
-                                 alpha, A(j+1, 0), lda,
-                                        A(j,0),    lda,
-                                 beta,  A(j+1, j), 1 );// magmablas is better in lower case
+                magma_cgemv( MagmaNoTrans, n-j-1, j,
+                             alpha, A(j+1, 0), lda,
+                                    A(j,0),    lda,
+                             beta,  A(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 clacgv(j, A(j, 0), lda);
@@ -208,13 +205,13 @@ void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
 {
 /*
     Specialized Cdotc
-    1) performs cdotc sum = x[0:n-1]*conjf(x[0:n-1])
+    1) performs cdotc sum = x[0:n-1]*conj(x[0:n-1])
     2) updates x[n] = sqrt(x[n]-sum);
 
 */
     if (n > cdotc_max_bs) {
-        printf("n = %d > %d is not supported in cpotf2_cdotc\n", (int) n, (int) cdotc_max_bs);
-        exit(1);
+        fprintf( stderr, "n = %d > %d is not supported in cpotf2_cdotc\n", (int) n, (int) cdotc_max_bs);
+        return;
     }
     int threadSize;
 
@@ -258,7 +255,7 @@ __global__ void kernel_csscal(int n, magmaFloatComplex *x, int incx)
 void cpotf2_csscal(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
 {
 /*
-    Specialized Zsscal perform x[1:n-1]/x[0]
+    Specialized Csscal perform x[1:n-1]/x[0]
 
 */
     dim3 threads(csscal_bs, 1, 1);

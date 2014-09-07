@@ -1,46 +1,55 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from clag2z.cu mixed zc -> ds, Fri Jul 18 17:34:11 2014
+       @generated from clag2z.cu mixed zc -> ds, Tue Sep  2 12:38:15 2014
        @author Mark Gates
 */
 #include "common_magma.h"
 
-#define blksize 64
+#define PRECISION_d
 
-__global__ void
-slag2d_array(  int m, int n,
-               const float *SA, int ldsa,
-               double       *A, int lda )
+#define BLK_X 64
+#define BLK_Y 32
+
+
+/*
+    Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
+    Each block has BLK_X threads.
+    Each thread loops across one row, updating BLK_Y entries.
+    
+    Code similar to slat2d and zlaset.
+*/
+__global__
+void slag2d_kernel(
+    int m, int n,
+    const float *SA, int ldsa,
+    double       *A, int lda )
 {
-    int i = blockIdx.x*blksize + threadIdx.x;
-    if ( i < m ) {
-        A  += i;
-        SA += i;
-        const double *Aend = A + lda*n;
-        while( A < Aend ) {
-            *A = (double)( *SA );
-            A  += lda;
-            SA += ldsa;
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
+    int iby = blockIdx.y*BLK_Y;
+    /* check if full block-column */
+    bool full = (iby + BLK_Y <= n);
+    /* do only rows inside matrix */
+    if ( ind < m ) {
+        A  += ind + iby*lda;
+        SA += ind + iby*ldsa;
+        if ( full ) {
+            // full block-column
+            #pragma unroll
+            for( int j=0; j < BLK_Y; ++j ) {
+                A[j*lda] = (double)( SA[j*ldsa] );
+            }
         }
-    }
-}
-
-
-__global__ void
-slag2d_vector( int m,
-               const float *SA,
-               double       *A )
-{
-    int i = blockIdx.x*blksize + threadIdx.x;
-    if ( i < m ) {
-        A  += i;
-        SA += i;
-        *A = (double)( *SA );
+        else {
+            // partial block-column
+            for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
+                A[j*lda] = (double)( SA[j*ldsa] );
+            }
+        }
     }
 }
 
@@ -48,8 +57,8 @@ slag2d_vector( int m,
 /**
     Purpose
     -------
-    SLAG2D converts a single-real matrix, SA,
-                 to a double-real matrix, A.
+    SLAG2D_STREAM converts a single-real matrix, SA,
+                        to a double-real matrix, A.
 
     Note that while it is possible to overflow while converting
     from double to single, it is not possible to overflow when
@@ -85,15 +94,20 @@ slag2d_vector( int m,
     info    INTEGER
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
-
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+    
     @ingroup magma_saux2
     ********************************************************************/
 extern "C" void
-magmablas_slag2d(
+magmablas_slag2d_q(
     magma_int_t m, magma_int_t n,
     const float *SA, magma_int_t ldsa,
     double       *A, magma_int_t lda,
-    magma_int_t *info)
+    magma_int_t *info,
+    magma_queue_t queue)
 {
     *info = 0;
     if ( m < 0 )
@@ -115,12 +129,22 @@ magmablas_slag2d(
         return;
     }
 
-    dim3 threads( blksize );
-    dim3 grid( (m+blksize-1)/blksize );
-    if( n > 1 ) {
-        slag2d_array<<< grid, threads, 0, magma_stream >>> ( m, n, SA, ldsa, A, lda );
-    }
-    else{
-        slag2d_vector<<< grid, threads, 0, magma_stream >>> ( m, SA, A );
-    }
+    dim3 threads( BLK_X );
+    dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    slag2d_kernel<<< grid, threads, 0, queue >>> ( m, n, SA, ldsa, A, lda );
+}
+
+
+/**
+    @see magmablas_slag2d_q
+    @ingroup magma_saux2
+    ********************************************************************/
+extern "C" void
+magmablas_slag2d(
+    magma_int_t m, magma_int_t n,
+    const float *SA, magma_int_t ldsa,
+    double       *A, magma_int_t lda,
+    magma_int_t *info)
+{
+    magmablas_slag2d_q( m, n, SA, ldsa, A, lda, info, magma_stream );
 }

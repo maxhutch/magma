@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 */
 
 #ifndef MAGMA_TYPES_H
@@ -37,8 +37,8 @@
 // To use int64_t, link with mkl_intel_ilp64 or similar (instead of mkl_intel_lp64).
 // Similar to magma_int_t we declare magma_index_t used for row/column indices in sparse
 #if defined(MAGMA_ILP64) || defined(MKL_ILP64)
-typedef int64_t magma_int_t;
-typedef int magma_index_t;
+//typedef int64_t magma_int_t;
+typedef long long int magma_int_t;  // MKL uses long long int, not int64_t
 #else
 typedef int magma_int_t;
 #endif
@@ -74,7 +74,6 @@ typedef double real_Double_t;
     #define MAGMA_Z_ABS(a)        cuCabs(a)
     #define MAGMA_Z_ABS1(a)       (fabs((a).x) + fabs((a).y))
     #define MAGMA_Z_CNJG(a)       cuConj(a)
-    #define MAGMA_Z_DSCALE(v,t,s) {(v).x = (t).x/(s); (v).y = (t).y/(s);}
     
     #define MAGMA_C_MAKE(r,i)     make_cuFloatComplex(r, i)
     #define MAGMA_C_REAL(a)       (a).x
@@ -86,7 +85,6 @@ typedef double real_Double_t;
     #define MAGMA_C_ABS(a)        cuCabsf(a)
     #define MAGMA_C_ABS1(a)       (fabsf((a).x) + fabsf((a).y))
     #define MAGMA_C_CNJG(a)       cuConjf(a)
-    #define MAGMA_C_SSCALE(v,t,s) {(v).x = (t).x/(s); (v).y = (t).y/(s);}
     
 #elif defined(HAVE_clAmdBlas)
     #if defined(__APPLE__) || defined(__MACOSX)
@@ -110,7 +108,6 @@ typedef double real_Double_t;
     #define MAGMA_Z_ABS(a)        magma_cabs(a)
     #define MAGMA_Z_ABS1(a)       (fabs((a).x) + fabs((a).y))
     #define MAGMA_Z_CNJG(a)       MAGMA_Z_MAKE((a).x, -(a).y)
-    #define MAGMA_Z_DSCALE(v,t,s) {(v).x = (t).x/(s); (v).y = (t).y/(s);}
     
     #define MAGMA_C_MAKE(r,i)     floatComplex(r,i)
     #define MAGMA_C_REAL(a)       (a).x
@@ -120,7 +117,6 @@ typedef double real_Double_t;
     #define MAGMA_C_ABS(a)        magma_cabsf(a)
     #define MAGMA_C_ABS1(a)       (fabsf((a).x) + fabsf((a).y))
     #define MAGMA_C_CNJG(a)       MAGMA_C_MAKE((a).x, -(a).y)
-    #define MAGMA_C_SSCALE(v,t,s) {(v).x = (t).x/(s); (v).y = (t).y/(s);}
 
 #elif defined(HAVE_MIC)
     #include <stdio.h>
@@ -151,7 +147,6 @@ typedef double real_Double_t;
     #define MAGMA_Z_MUL(a, b)     ((a)*(b))
     #define MAGMA_Z_DIV(a, b)     ((a)/(b))
     #define MAGMA_Z_CNJG(a)       conj(a)
-    #define MAGMA_Z_DSCALE(v,t,s) ((v) = (t)/(s))
 
     #define MAGMA_C_MAKE(r, i)    std::complex<float> (r,i)
     #define MAGMA_C_REAL(x)       (x).real()
@@ -161,7 +156,6 @@ typedef double real_Double_t;
     #define MAGMA_C_MUL(a, b)     ((a)*(b))
     #define MAGMA_C_DIV(a, b)     ((a)/(b))
     #define MAGMA_C_CNJG(a)       conj(a)
-    #define MAGMA_C_SSCALE(v,t,s) ((v) = (t)/(s))
 #else
     #error "One of HAVE_CUBLAS, HAVE_clAmdBlas, or HAVE_MIC must be defined. For example, add -DHAVE_CUBLAS to CFLAGS, or #define HAVE_CUBLAS before #include <magma.h>. In MAGMA, this happens in Makefile.internal."
 #endif
@@ -184,7 +178,6 @@ typedef double real_Double_t;
 #define MAGMA_D_CNJG(a)           (a)
 #define MAGMA_D_EQUAL(a,b)        ((a) == (b))
 #define MAGMA_D_NEGATE(a)         (-a)
-#define MAGMA_D_DSCALE(v, t, s)   (v) = (t)/(s)
 
 #define MAGMA_S_MAKE(r,i)         (r)
 #define MAGMA_S_REAL(x)           (x)
@@ -198,7 +191,6 @@ typedef double real_Double_t;
 #define MAGMA_S_CNJG(a)           (a)
 #define MAGMA_S_EQUAL(a,b)        ((a) == (b))
 #define MAGMA_S_NEGATE(a)         (-a)
-#define MAGMA_S_SSCALE(v, t, s)   (v) = (t)/(s)
 
 #define MAGMA_Z_ZERO              MAGMA_Z_MAKE( 0.0, 0.0)
 #define MAGMA_Z_ONE               MAGMA_Z_MAKE( 1.0, 0.0)
@@ -274,7 +266,7 @@ typedef double real_Double_t;
 #define MAGMA_VERSION_MICRO 0
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
-#define MAGMA_VERSION_STAGE "beta3"
+#define MAGMA_VERSION_STAGE ""
 
 #define MagmaMaxGPUs 8
 
@@ -318,11 +310,13 @@ typedef enum {
     MagmaColMajor      = 102
 } magma_order_t;
 
+// Magma_ConjTrans is an alias for those rare occasions (zlarfb, zun*, zher*k)
+// where we want Magma_ConjTrans to convert to MagmaTrans in precision generation.
 typedef enum {
     MagmaNoTrans       = 111,
     MagmaTrans         = 112,
     MagmaConjTrans     = 113,
-    Magma_ConjTrans    = MagmaConjTrans   /* for those rare occasions where we don't want MagmaConjTrans to convert to MagmaTrans in precision generation */
+    Magma_ConjTrans    = MagmaConjTrans
 } magma_trans_t;
 
 typedef enum {
@@ -634,7 +628,7 @@ cublasSideMode_t     cublas_side_const  ( magma_side_t  side  );
 // --------------------
 // Convert MAGMA constants to CBLAS constants.
 #if defined(HAVE_CBLAS)
-#include "cblas.h"
+#include <cblas.h>
 enum CBLAS_ORDER     cblas_order_const  ( magma_order_t order );
 enum CBLAS_TRANSPOSE cblas_trans_const  ( magma_trans_t trans );
 enum CBLAS_UPLO      cblas_uplo_const   ( magma_uplo_t  uplo  );

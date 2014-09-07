@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        
@@ -58,7 +58,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (LWORK)
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -145,7 +145,6 @@ magma_zgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
 
     magma_int_t i, nh, iws;
     magma_int_t iinfo;
-    magma_int_t ldwork;
     magma_int_t lquery;
 
     *info = 0;
@@ -205,7 +204,6 @@ magma_zgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
         magmaDoubleComplex *dV = dwork + nb*ldda;
         magmaDoubleComplex *dA = dwork + nb*ldda*2;
         magmaDoubleComplex *dTi;
-        ldwork = ldda;
         
         magmaDoubleComplex *T;
         magma_zmalloc_cpu( &T, nb*nb );
@@ -249,7 +247,7 @@ magma_zgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
                           dA(0,i-ilo), ldda,
                           dV,          ldda,
                           A(0,i),      lda,
-                          &tau[i], T, nb, work, ldwork);
+                          &tau[i], T, nb, work, n);
             
             // Copy T from the CPU to dT on the GPU
             dTi = dT + (i - ilo)*nb;

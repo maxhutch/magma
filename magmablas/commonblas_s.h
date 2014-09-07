@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from commonblas_z.h normal z -> s, Fri Jul 18 17:34:13 2014
+       @generated from commonblas_z.h normal z -> s, Tue Sep  2 12:38:17 2014
 */
 
 #ifndef COMMONBLAS_S_H
@@ -51,6 +51,33 @@ void magmablas_sgemv_tesla(
     const float *x, magma_int_t incx,
     float beta,
     float *y, magma_int_t incy );
+
+
+// kernels used in snrm2, sgeqr2x-v4, laqps2_gpu, laqps3_gpu, slarfbx, slarfgx-v2, slarfx
+__global__ void
+magma_sgemv_kernel1(int m, const float * __restrict__ V, int ldv,
+                    const float * __restrict__ c,
+                    float *dwork);
+
+__global__ void
+magma_sgemv_kernel2(int m, int n, const float * __restrict__ V, int ldv,
+                    const float * __restrict__ x, float *c);
+
+__global__ void
+magma_sgemv_kernel3(int m, const float * __restrict__ V, int ldv,
+                    float *c, float *dwork,
+                    float *tau);
+
+__global__ void
+magma_strmv_tkernel(float *T, int ldt, float *v,
+                                    float *y);
+
+__global__ void
+magma_strmv_kernel2(const float *T, int ldt,
+                    float *v, float *y, float *tau);
+
+__global__ void
+magma_snrm2_adjust_kernel(float *xnorm, float *c);
 
 #ifdef __cplusplus
 }

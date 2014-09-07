@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zungqr_m.cpp normal z -> s, Fri Jul 18 17:34:17 2014
+       @generated from zungqr_m.cpp normal z -> s, Tue Sep  2 12:38:21 2014
 
        @author Mark Gates
 */
@@ -116,11 +116,14 @@ magma_sorgqr_m(
     }
     
     magma_int_t di, dn;
-    int dpanel;
+    magma_int_t dpanel;
 
-    int ngpu = magma_num_gpus();
-    int doriginal;
-    magma_getdevice( &doriginal );
+    magma_int_t ngpu = magma_num_gpus();
+    
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
     
     // Allocate memory on GPUs for A and workspaces
     magma_int_t ldda    = ((m + 31) / 32) * 32;
@@ -278,15 +281,12 @@ magma_sorgqr_m(
 CLEANUP:
     for( int d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
-        magmablasSetKernelStream( NULL );
         magma_free( dA[d] );
-        dA[d] = NULL;
-        if ( stream[d] != NULL ) {
-            magma_queue_destroy( stream[d] );
-        }
+        magma_queue_destroy( stream[d] );
     }
     magma_free_cpu( work );
-    magma_setdevice( doriginal );
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
     
     return *info;
 } /* magma_sorgqr */

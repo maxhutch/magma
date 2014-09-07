@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
   
        @precisions normal z -> c d s
        @author Mark Gates
@@ -109,8 +109,8 @@ int main( int argc, char** argv)
                 total = cnt_nan + cnt_inf;
             }
             
-            //printf( "nan %g + %gi\n", MAGMA_Z_REAL( magma_znan ), MAGMA_Z_REAL( magma_znan ) );
-            //printf( "inf %g + %gi\n", MAGMA_Z_REAL( magma_zinf ), MAGMA_Z_REAL( magma_zinf ) );
+            //printf( "nan %g + %gi\n", MAGMA_Z_REAL( MAGMA_Z_NAN ), MAGMA_Z_REAL( MAGMA_Z_NAN ) );
+            //printf( "inf %g + %gi\n", MAGMA_Z_REAL( MAGMA_Z_INF ), MAGMA_Z_REAL( MAGMA_Z_INF ) );
             //magma_zprint( M, N, hA, lda );
             
             magma_zsetmatrix( M, N, hA, lda, dA, ldda );

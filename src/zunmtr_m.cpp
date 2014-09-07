@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -18,9 +18,9 @@
     -------
     ZUNMTR overwrites the general complex M-by-N matrix C with
 
-                    SIDE = MagmaLeft     SIDE = MagmaRight
-    TRANS = MagmaNoTrans:      Q * C          C * Q
-    TRANS = MagmaTrans:      Q**H * C       C * Q**H
+                                SIDE = MagmaLeft    SIDE = MagmaRight
+    TRANS = MagmaNoTrans:       Q * C               C * Q
+    TRANS = Magma_ConjTrans:    Q**H * C            C * Q**H
 
     where Q is a complex unitary matrix of order nq, with nq = m if
     SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
@@ -51,7 +51,7 @@
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaTrans:      Transpose, apply Q**H.
+      -     = Magma_ConjTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -91,7 +91,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -152,7 +152,7 @@ magma_zunmtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
     } else if (! upper && uplo != MagmaLower) {
         *info = -2;
     } else if (trans != MagmaNoTrans &&
-               trans != MagmaConjTrans) {
+               trans != Magma_ConjTrans) {
         *info = -3;
     } else if (m < 0) {
         *info = -4;
@@ -170,6 +170,10 @@ magma_zunmtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
     lwkopt = max(1,nw) * nb;
     if (*info == 0) {
         work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
+    }
+    
+    if (upper) {
+        *info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
 
     if (*info != 0) {
@@ -197,8 +201,7 @@ magma_zunmtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
     if (upper) {
         /* Q was determined by a call to SSYTRD with UPLO = 'U' */
         i__2 = nq - 1;
-        printf("zunmtr_m upper case not implemented");
-        exit(-1);
+        // TODO: upper case is not yet implemented -- see above
         //lapackf77_zunmql(side_, trans_, &mi, &ni, &i__2, A(0,1), &lda,
         //                 tau, C, &ldc, work, &lwork, &iinfo);
         //magma_zunmql_m(nrgpu, side, trans, mi, ni, i__2, A(0,1), lda, tau,

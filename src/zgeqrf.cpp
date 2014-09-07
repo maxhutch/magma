@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -18,7 +18,7 @@
     A = Q * R. This version does not require work space on the GPU
     passed as input. GPU memory is allocated in the routine.
 
-    If the current stream is NULL, this version replaces it with user defined
+    If the current stream is NULL, this version replaces it with a new
     stream to overlap computation with communication.
 
     Arguments
@@ -55,7 +55,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
@@ -154,16 +154,18 @@ magma_zgeqrf(magma_int_t m, magma_int_t n,
     }
 
     /* Define user stream if current stream is NULL */
-    magma_queue_t stream[2], current_stream;
-    magmablasGetKernelStream(&current_stream);
+    magma_queue_t stream[2];
+    
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     magma_queue_create( &stream[0] );
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_create( &stream[1] );
         magmablasSetKernelStream(stream[1]);
     }
     else {
-        stream[1] = current_stream;
+        stream[1] = orig_stream;
     }
 
     dwork = dA + n*ldda;
@@ -256,10 +258,10 @@ magma_zgeqrf(magma_int_t m, magma_int_t n,
     }
 
     magma_queue_destroy( stream[0] );
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_destroy( stream[1] );
-        magmablasSetKernelStream(NULL);
     }
+    magmablasSetKernelStream( orig_stream );
 
     magma_free( dA );
     

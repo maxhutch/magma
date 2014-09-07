@@ -1,26 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlarfgx-v2.cu normal z -> s, Fri Jul 18 17:34:12 2014
+       @generated from zlarfgx-v2.cu normal z -> s, Tue Sep  2 12:38:16 2014
 
 */
 #include "common_magma.h"
+#include "commonblas_s.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE 512
 
 #define PRECISION_s
 
-__global__ void magma_sgemv_kernel3(int m, const float * __restrict__ V, int ldv, 
-                                    float *c, float *dwork,
-                                    float *tau);
-__global__ void magma_strmv_kernel(const float *T, int ldt, float *v);
-__global__ void magma_strmv_kernel2(const float *T, int ldt, 
-                                    float *v, float *y, float *tau);
 
 //==============================================================================
 
@@ -40,16 +35,23 @@ void magma_slarfgx_gpu_kernel( int n, float* dx0, float* dx,
         dxi = dx[j];
   
     if ( i == 0 ) {
-        xnorm = *dxnorm;
-        if ( xnorm == 0 || n == 1) {
+         xnorm = *dxnorm;
+#if (defined(PRECISION_s) || defined(PRECISION_d))
+        float alpha = *dx0;
+        float alphai = MAGMA_S_ZERO;
+        if ( (xnorm == 0 && alphai == MAGMA_S_ZERO ) || n == 1 )
+#else
+        float alpha = *dx0;
+        float alphar =  MAGMA_S_REAL(alpha), alphai = MAGMA_S_IMAG(alpha);
+        if ( (xnorm == 0 && alphai == MAGMA_S_ZERO ) || n == 0 )
+#endif
+        {
             *dtau = MAGMA_S_ZERO;
             *dA   = *dx0;
         }
         else {
 
 #if (defined(PRECISION_s) || defined(PRECISION_d))
-            float alpha = *dx0;
-
             // no need to compute the norm as it is passed as input
             float beta  = xnorm; // sqrt( alpha*alpha + xnorm*xnorm );
             beta  = -copysign( beta, alpha );
@@ -57,15 +59,12 @@ void magma_slarfgx_gpu_kernel( int n, float* dx0, float* dx,
             // todo: deal with badly scaled vectors (see lapack's larfg)
             if (j==0){
                 *dtau = (beta - alpha) / beta;
-                //*dx0  = 1.;
+                //*dx0  = 1.; //cannot be done here because raise condition all threadblock need to read it for alpha
                 *dA   = beta;  
             }
 
             scale = 1. / (alpha - beta);
 #else
-            float alpha = *dx0;
-            float alphar =  MAGMA_S_REAL(alpha), alphai = MAGMA_S_IMAG(alpha);
-
             // no need to compute the norm as it is passed as input
             float beta  = xnorm; // sqrt( alphar*alphar + alphai*alphai + xnorm*xnorm );
             beta  = -copysign( beta, alphar );
@@ -73,7 +72,7 @@ void magma_slarfgx_gpu_kernel( int n, float* dx0, float* dx,
             // todo: deal with badly scaled vectors (see lapack's larfg)
             if (j==0){
                 *dtau = MAGMA_S_MAKE((beta - alphar)/beta, -alphai/beta);
-                //*dx0  = MAGMA_S_MAKE(  1., 0.);
+                //*dx0  = MAGMA_S_MAKE(  1., 0.); //cannot be done here because raise condition all threadblock need to read it for alpha
                 *dA   = MAGMA_S_MAKE(beta, 0.);
             }            
 

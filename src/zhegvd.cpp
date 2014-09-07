@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -116,7 +116,7 @@
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
     @param[out]
-    rwork   (workspace) DOUBLE PRECISION array, dimension (LRWORK)
+    rwork   (workspace) DOUBLE PRECISION array, dimension (MAX(1,LRWORK))
             On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
 
     @param[in]
@@ -191,8 +191,7 @@ magma_zhegvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
 
     magmaDoubleComplex c_one = MAGMA_Z_ONE;
 
-    magmaDoubleComplex *da;
-    magmaDoubleComplex *db;
+    magmaDoubleComplex *dA=NULL, *dB=NULL;
     magma_int_t ldda = n;
     magma_int_t lddb = n;
 
@@ -289,23 +288,24 @@ magma_zhegvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
         return *info;
     }
 
-    // TODO fix memory leak
-    if (MAGMA_SUCCESS != magma_zmalloc( &da, n*ldda ) ||
-        MAGMA_SUCCESS != magma_zmalloc( &db, n*lddb )) {
+    if (MAGMA_SUCCESS != magma_zmalloc( &dA, n*ldda ) ||
+        MAGMA_SUCCESS != magma_zmalloc( &dB, n*lddb )) {
+        magma_free( dA );
+        magma_free( dB );
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
     /* Form a Cholesky factorization of B. */
-    magma_zsetmatrix( n, n, B, ldb, db, lddb );
+    magma_zsetmatrix( n, n, B, ldb, dB, lddb );
 
     magma_zsetmatrix_async( n, n,
                            A,  lda,
-                           da, ldda, stream );
+                           dA, ldda, stream );
 
     magma_timer_t time=0;
     timer_start( time );
-    magma_zpotrf_gpu(uplo, n, db, lddb, info);
+    magma_zpotrf_gpu(uplo, n, dB, lddb, info);
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -315,26 +315,26 @@ magma_zhegvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
 
     magma_queue_sync( stream );
     magma_zgetmatrix_async( n, n,
-                           db, lddb,
+                           dB, lddb,
                            B,  ldb, stream );
 
     timer_start( time );
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_zhegst_gpu(itype, uplo, n, da, ldda, db, lddb, info);
+    magma_zhegst_gpu(itype, uplo, n, dA, ldda, dB, lddb, info);
     timer_stop( time );
     timer_printf( "time zhegst_gpu = %6.2f\n", time );
 
     /* simple fix to be able to run bigger size.
      * need to have a dwork here that will be used
-     * a db and then passed to  dsyevd.
+     * as dB and then passed to dsyevd.
      * */
     if (n > 5000) {
         magma_queue_sync( stream );
-        magma_free( db );
+        magma_free( dB );
     }
 
     timer_start( time );
-    magma_zheevd_gpu(jobz, uplo, n, da, ldda, w, A, lda,
+    magma_zheevd_gpu(jobz, uplo, n, dA, ldda, w, A, lda,
                      work, lwork, rwork, lrwork, iwork, liwork, info);
     timer_stop( time );
     timer_printf( "time zheevd_gpu = %6.2f\n", time );
@@ -342,13 +342,13 @@ magma_zhegvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
     if (wantz && *info == 0) {
         timer_start( time );
         
-        /* allocate and copy db back */
+        /* allocate and copy dB back */
         if (n > 5000) {
-            if (MAGMA_SUCCESS != magma_zmalloc( &db, n*lddb ) ) {
+            if (MAGMA_SUCCESS != magma_zmalloc( &dB, n*lddb ) ) {
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
-            magma_zsetmatrix( n, n, B, ldb, db, lddb );
+            magma_zsetmatrix( n, n, B, ldb, dB, lddb );
         }
         /* Backtransform eigenvectors to the original problem. */
         if (itype == 1 || itype == 2) {
@@ -361,7 +361,7 @@ magma_zhegvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
             }
 
             magma_ztrsm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, c_one, db, lddb, da, ldda);
+                        n, n, c_one, dB, lddb, dA, ldda);
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -373,14 +373,14 @@ magma_zhegvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
             }
 
             magma_ztrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, c_one, db, lddb, da, ldda);
+                        n, n, c_one, dB, lddb, dA, ldda);
         }
 
-        magma_zgetmatrix( n, n, da, ldda, A, lda );
+        magma_zgetmatrix( n, n, dA, ldda, A, lda );
         
-        /* free db */
+        /* free dB */
         if (n > 5000) {
-            magma_free( db );
+            magma_free( dB );
         }
         
         timer_stop( time );
@@ -394,9 +394,9 @@ magma_zhegvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 
-    magma_free( da );
+    magma_free( dA );
     if (n <= 5000) {
-        magma_free( db );
+        magma_free( dB );
     }
 
     return *info;

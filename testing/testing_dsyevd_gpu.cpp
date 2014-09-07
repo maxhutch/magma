@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
     @precisions normal d -> s
 
@@ -22,7 +22,6 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define absv(v1) ((v1)>0? (v1): -(v1))
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dsyevd
@@ -152,9 +151,9 @@ int main( int argc, char** argv)
                 
                 temp1 = temp2 = 0;
                 for( int j=0; j<N; j++ ) {
-                    temp1 = max(temp1, absv(w1[j]));
-                    temp1 = max(temp1, absv(w2[j]));
-                    temp2 = max(temp2, absv(w1[j]-w2[j]));
+                    temp1 = max(temp1, fabs(w1[j]));
+                    temp1 = max(temp1, fabs(w2[j]));
+                    temp2 = max(temp2, fabs(w1[j]-w2[j]));
                 }
                 result[2] = temp2 / (((double)N)*temp1);
             }

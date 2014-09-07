@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
        @precisions normal d -> s
@@ -119,7 +119,7 @@
 
     @param[out]
     work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK[1] returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -144,7 +144,7 @@
                    prefer  LWORK >= y*y + max( 3*y + max( (2*y)*nb, 3*y*y + 4*y ), y + x*nb );
                 otherwise, LWORK >=            3*y + max( (x+y)*nb, 3*y*y + 4*y ).
     \n
-            If LWORK = -1 but other input arguments are legal, WORK[1]
+            If LWORK = -1 but other input arguments are legal, WORK[0]
             returns the optimal LWORK.
 
     @param
@@ -244,6 +244,8 @@ magma_int_t magma_dgesdd(
     /* as well as the preferred amount for good performance. */
     /* NB refers to the optimal block size for the immediately */
     /* following subroutine, as returned by ILAENV.) */
+    /* We assume MAGMA's nb >= LAPACK's nb for all routines, */
+    /* because calling Fortran's ILAENV is not portable. */
     if (*info == 0) {
         if (m >= n && minmn > 0) {
             /* Compute space needed for DBDSDC */
@@ -257,69 +259,69 @@ magma_int_t magma_dgesdd(
             if (m >= mnthr) {
                 if (wantqn) {
                     /* Path 1 (M much larger than N, JOBZ='N') */
-                    wrkbl  =              n +   n * magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl, 3*n + 2*n * nb);
+                    wrkbl  =              n +   n * nb;   //magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl, 3*n + 2*n * nb ); // dgebrd
                     maxwrk = max(wrkbl,   n + bdspac);
                     minwrk = maxwrk;  // lapack was: bdspac + n
                 }
                 else if (wantqo) {
                     /* Path 2 (M much larger than N, JOBZ='O') */
-                    wrkbl  =              n +   n * magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl,   n +   n * magma_ilaenv( 1, "DORGQR", " ",   m, n,  n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n + 2*n * nb);
-                    wrkbl  = max(wrkbl, 3*n +   n * magma_ilaenv( 1, "DORMBR", "QLN", n, n,  n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n +   n * magma_ilaenv( 1, "DORMBR", "PRT", n, n,  n, -1 ));
+                    wrkbl  =              n +   n * nb;   //magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl,   n +   n * nb ); //magma_ilaenv( 1, "DORGQR", " ",   m, n,  n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n + 2*n * nb ); // dgebrd
+                    wrkbl  = max(wrkbl, 3*n +   n * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", n, n,  n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n +   n * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", n, n,  n, -1 ))
                     wrkbl  = max(wrkbl, 3*n + n*n + bdspac);
                     maxwrk = wrkbl + n*n;
                     minwrk = maxwrk;  // lapack was: bdspac + 2*n*n + 3*n
                 }
                 else if (wantqs) {
                     /* Path 3 (M much larger than N, JOBZ='S') */
-                    wrkbl  =              n +   n * magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl,   n +   n * magma_ilaenv( 1, "DORGQR", " ",   m, n,  n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n + 2*n * nb);
-                    wrkbl  = max(wrkbl, 3*n +   n * magma_ilaenv( 1, "DORMBR", "QLN", n, n,  n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n +   n * magma_ilaenv( 1, "DORMBR", "PRT", n, n,  n, -1 ));
+                    wrkbl  =              n +   n * nb;   //magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl,   n +   n * nb ); //magma_ilaenv( 1, "DORGQR", " ",   m, n,  n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n + 2*n * nb ); // dgebrd
+                    wrkbl  = max(wrkbl, 3*n +   n * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", n, n,  n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n +   n * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", n, n,  n, -1 ))
                     wrkbl  = max(wrkbl, 3*n + bdspac);
                     maxwrk = wrkbl + n*n;
                     minwrk = maxwrk;  // lapack was: bdspac + n*n + 3*n
                 }
                 else if (wantqa) {
                     /* Path 4 (M much larger than N, JOBZ='A') */
-                    wrkbl  =              n +   n * magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl,   n +   m);  // min for dorgqr; preferred is below
-                    wrkbl  = max(wrkbl, 3*n + 2*n * nb);
-                    wrkbl  = max(wrkbl, 3*n +   n * magma_ilaenv( 1, "DORMBR", "QLN", n, n,  n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n +   n * magma_ilaenv( 1, "DORMBR", "PRT", n, n,  n, -1 ));
+                    wrkbl  =              n +   n * nb;   //magma_ilaenv( 1, "DGEQRF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl,   n +   m);       // min for dorgqr; preferred is below
+                    wrkbl  = max(wrkbl, 3*n + 2*n * nb ); // dgebrd
+                    wrkbl  = max(wrkbl, 3*n +   n * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", n, n,  n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n +   n * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", n, n,  n, -1 ))
                     wrkbl  = max(wrkbl, 3*n + bdspac);
                     minwrk = wrkbl + n*n;  // lapack was: bdspac + n*n + 2*n + m
                     // include preferred size for dorgqr
-                    wrkbl  = max(wrkbl,   n +   m * magma_ilaenv( 1, "DORGQR", " ",   m, m,  n, -1 ));
+                    wrkbl  = max(wrkbl,   n +   m * nb ); //magma_ilaenv( 1, "DORGQR", " ",   m, m,  n, -1 ))
                     maxwrk = wrkbl + n*n;
                 }
             }
             else {
                 /* Path 5 (M at least N, but not much larger) */
-                wrkbl  = 3*n + (m + n) * nb;
+                wrkbl  = 3*n + (m + n) * nb; // dgebrd
                 if (wantqn) {
                     maxwrk = max(wrkbl, 3*n + bdspac);
                     minwrk = maxwrk;  // lapack was: 3*n + max(m, bdspac)
                 }
                 else if (wantqo) {
-                    wrkbl  = max(wrkbl, 3*n + n * magma_ilaenv( 1, "DORMBR", "QLN", m, n, n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n + n * magma_ilaenv( 1, "DORMBR", "PRT", n, n, n, -1 ));
+                    wrkbl  = max(wrkbl, 3*n + n * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, n, n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n + n * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", n, n, n, -1 ))
                     maxwrk = max(wrkbl, 3*n + m*n + bdspac);
                     minwrk = max(wrkbl, 3*n + n*n + bdspac);  // lapack was: 3*n + max(m, n*n + bdspac)
                 }
                 else if (wantqs) {
-                    wrkbl  = max(wrkbl, 3*n + n * magma_ilaenv( 1, "DORMBR", "QLN", m, n, n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n + n * magma_ilaenv( 1, "DORMBR", "PRT", n, n, n, -1 ));
+                    wrkbl  = max(wrkbl, 3*n + n * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, n, n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n + n * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", n, n, n, -1 ))
                     maxwrk = max(wrkbl, 3*n + bdspac);
                     minwrk = maxwrk;  // lapack was: 3*n + max(m, bdspac)
                 }
                 else if (wantqa) {
-                    wrkbl  = max(wrkbl, 3*n + m * magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ));
-                    wrkbl  = max(wrkbl, 3*n + n * magma_ilaenv( 1, "DORMBR", "PRT", n, n, n, -1 ));
+                    wrkbl  = max(wrkbl, 3*n + m * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ))
+                    wrkbl  = max(wrkbl, 3*n + n * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", n, n, n, -1 ))
                     maxwrk = max(wrkbl, 3*n + bdspac);
                     minwrk = maxwrk;  // lapack was: 3*n + max(m, bdspac)
                 }
@@ -337,69 +339,69 @@ magma_int_t magma_dgesdd(
             if (n >= mnthr) {
                 if (wantqn) {
                     /* Path 1t (N much larger than M, JOBZ='N') */
-                    wrkbl  =              m +   m * magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl, 3*m + 2*m * nb);
+                    wrkbl  =              m +   m * nb;  //magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl, 3*m + 2*m * nb); // dgebrd
                     maxwrk = max(wrkbl,  m + bdspac);
                     minwrk = maxwrk;  // lapack was: bdspac + m
                 }
                 else if (wantqo) {
                     /* Path 2t (N much larger than M, JOBZ='O') */
-                    wrkbl  =              m +   m * magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl,   m +   m * magma_ilaenv( 1, "DORGLQ", " ",   m, n,  m, -1 ));
-                    wrkbl  = max(wrkbl, 3*m + 2*m * nb);
-                    wrkbl  = max(wrkbl, 3*m +   m * magma_ilaenv( 1, "DORMBR", "QLN", m, m,  m, -1 ));
-                    wrkbl  = max(wrkbl, 3*m +   m * magma_ilaenv( 1, "DORMBR", "PRT", m, m,  m, -1 ));
+                    wrkbl  =              m +   m * nb;   //magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl,   m +   m * nb ); //magma_ilaenv( 1, "DORGLQ", " ",   m, n,  m, -1 ))
+                    wrkbl  = max(wrkbl, 3*m + 2*m * nb ); // dgebrd
+                    wrkbl  = max(wrkbl, 3*m +   m * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, m,  m, -1 ))
+                    wrkbl  = max(wrkbl, 3*m +   m * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", m, m,  m, -1 ))
                     wrkbl  = max(wrkbl, 3*m + m*m + bdspac);
                     maxwrk = wrkbl + m*m;
                     minwrk = maxwrk;  // lapack was: bdspac + 2*m*m + 3*m
                 }
                 else if (wantqs) {
                     /* Path 3t (N much larger than M, JOBZ='S') */
-                    wrkbl  =              m +   m * magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl,   m +   m * magma_ilaenv( 1, "DORGLQ", " ",   m, n,  m, -1 ));
-                    wrkbl  = max(wrkbl, 3*m + 2*m * nb);
-                    wrkbl  = max(wrkbl, 3*m +   m * magma_ilaenv( 1, "DORMBR", "QLN", m, m,  m, -1 ));
-                    wrkbl  = max(wrkbl, 3*m +   m * magma_ilaenv( 1, "DORMBR", "PRT", m, m,  m, -1 ));
+                    wrkbl  =              m +   m * nb;   //magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl,   m +   m * nb ); //magma_ilaenv( 1, "DORGLQ", " ",   m, n,  m, -1 ))
+                    wrkbl  = max(wrkbl, 3*m + 2*m * nb ); // dgebrd
+                    wrkbl  = max(wrkbl, 3*m +   m * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, m,  m, -1 ))
+                    wrkbl  = max(wrkbl, 3*m +   m * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", m, m,  m, -1 ))
                     wrkbl  = max(wrkbl, 3*m + bdspac);
                     maxwrk = wrkbl + m*m;
                     minwrk = maxwrk;  // lapack was: bdspac + m*m + 3*m
                 }
                 else if (wantqa) {
                     /* Path 4t (N much larger than M, JOBZ='A') */
-                    wrkbl  =              m +   m * magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 );
-                    wrkbl  = max(wrkbl,   m +   n);  // min for dorgqr; preferred is below
-                    wrkbl  = max(wrkbl, 3*m + 2*m * nb);
-                    wrkbl  = max(wrkbl, 3*m +   m * magma_ilaenv( 1, "DORMBR", "QLN", m, m,  m, -1 ));
-                    wrkbl  = max(wrkbl, 3*m +   m * magma_ilaenv( 1, "DORMBR", "PRT", m, m,  m, -1 ));
+                    wrkbl  =              m +   m * nb;   //magma_ilaenv( 1, "DGELQF", " ",   m, n, -1, -1 )
+                    wrkbl  = max(wrkbl,   m +   n);       // min for dorgqr; preferred is below
+                    wrkbl  = max(wrkbl, 3*m + 2*m * nb ); // dgebrd
+                    wrkbl  = max(wrkbl, 3*m +   m * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, m,  m, -1 ))
+                    wrkbl  = max(wrkbl, 3*m +   m * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", m, m,  m, -1 ))
                     wrkbl  = max(wrkbl, 3*m + bdspac);
                     minwrk = wrkbl + m*m;  // corrected lapack was: bdspac + m*m + 2*m + n
                     // include preferred size for dorgqr
-                    wrkbl  = max(wrkbl,   m +   n * magma_ilaenv( 1, "DORGLQ", " ",   n, n,  m, -1 ));
+                    wrkbl  = max(wrkbl,   m +   n * nb ); //magma_ilaenv( 1, "DORGLQ", " ",   n, n,  m, -1 ))
                     maxwrk = wrkbl + m*m;
                 }
             }
             else {
                 /* Path 5t (N greater than M, but not much larger) */
-                wrkbl  = 3*m + (m + n) * nb;
+                wrkbl  = 3*m + (m + n) * nb;  // dgebrd
                 if (wantqn) {
                     maxwrk = max(wrkbl, 3*m + bdspac);
                     minwrk = maxwrk;  // lapack was: 3*m + max(n, bdspac)
                 }
                 else if (wantqo) {
-                    wrkbl  = max(wrkbl, 3*m + m * magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ));
-                    wrkbl  = max(wrkbl, 3*m + m * magma_ilaenv( 1, "DORMBR", "PRT", m, n, m, -1 ));
+                    wrkbl  = max(wrkbl, 3*m + m * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ))
+                    wrkbl  = max(wrkbl, 3*m + m * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", m, n, m, -1 ))
                     maxwrk = max(wrkbl, 3*m + m*n + bdspac);
                     minwrk = max(wrkbl, 3*m + m*m + bdspac);  // lapack was: 3*m + max(n, m*m + bdspac)
                 }
                 else if (wantqs) {
-                    wrkbl  = max(wrkbl, 3*m + m * magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ));
-                    wrkbl  = max(wrkbl, 3*m + m * magma_ilaenv( 1, "DORMBR", "PRT", m, n, m, -1 ));
+                    wrkbl  = max(wrkbl, 3*m + m * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ))
+                    wrkbl  = max(wrkbl, 3*m + m * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", m, n, m, -1 ))
                     maxwrk = max(wrkbl, 3*m + bdspac);
                     minwrk = maxwrk;  // lapack was: 3*m + max(n, bdspac)
                 }
                 else if (wantqa) {
-                    wrkbl  = max(wrkbl, 3*m + n * magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ));
-                    wrkbl  = max(wrkbl, 3*m + m * magma_ilaenv( 1, "DORMBR", "PRT", n, n, m, -1 ));
+                    wrkbl  = max(wrkbl, 3*m + n * nb ); //magma_ilaenv( 1, "DORMBR", "QLN", m, m, n, -1 ))
+                    wrkbl  = max(wrkbl, 3*m + m * nb ); //magma_ilaenv( 1, "DORMBR", "PRT", n, n, m, -1 ))
                     maxwrk = max(wrkbl, 3*m + bdspac);
                     minwrk = maxwrk;  // lapack was: 3*m + max(n, bdspac)
                 }
@@ -1231,7 +1233,7 @@ magma_int_t magma_dgesdd(
         }
     }
 
-    /* Return optimal workspace in WORK[1] */
+    /* Return optimal workspace in WORK[0] */
     work[1] = (double) maxwrk;
 
     return *info;

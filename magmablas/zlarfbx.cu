@@ -1,26 +1,25 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
+#include "commonblas_z.h"
 #include "magma_templates.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE 512
 
 
-__global__ void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *v, 
-                                    magmaDoubleComplex *y);
 
 
 //==============================================================================
-
+extern "C"
 __global__ void 
 magma_zgemv_kernel1(int m, const magmaDoubleComplex * __restrict__ V, int ldv, 
                     const magmaDoubleComplex * __restrict__ c, 
@@ -55,6 +54,7 @@ magma_zgemv_kernel1(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
     i.e., 
         work = -tau[0] V' c
     ----------------------------------------------------------------------------- */
+extern "C"
 __global__ void
 magma_zgemv_kernel3(int m, const magmaDoubleComplex * __restrict__ V, int ldv, magmaDoubleComplex *c,
                     magmaDoubleComplex *dwork, magmaDoubleComplex *tau)
@@ -82,7 +82,7 @@ magma_zgemv_kernel3(int m, const magmaDoubleComplex * __restrict__ V, int ldv, m
 }
 
 //==============================================================================
-
+extern "C"
 __global__ void
 magma_zgemv_kernel2(int m, int n, const magmaDoubleComplex * __restrict__ V, int ldv, 
                     const magmaDoubleComplex * __restrict__ x, magmaDoubleComplex *c)

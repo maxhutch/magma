@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from dtrevc3_mt.cpp normal d -> s, Fri Jul 18 17:34:20 2014
+       @generated from dtrevc3_mt.cpp normal d -> s, Tue Sep  2 12:38:24 2014
 */
-#include <cblas.h>
-#include "queue.hpp"
+#include "thread_queue.hpp"
 #include "timer.h"
 
 #include "common_magma.h"  // after thread.hpp, so max, min are defined
@@ -398,7 +397,7 @@ magma_int_t magma_strevc3_mt(
     magma_int_t nthread = magma_get_parallel_numthreads();
     magma_int_t lapack_nthread = magma_get_lapack_numthreads();
     magma_set_lapack_numthreads( 1 );
-    magma_queue queue;
+    magma_thread_queue queue;
     queue.launch( nthread );
     //printf( "nthread %d, %d\n", nthread, lapack_nthread );
     
@@ -482,7 +481,7 @@ magma_int_t magma_strevc3_mt(
                     n2 = ki+1;
                     blasf77_scopy( &n2, work(0,iv), &ione, VR(0,is), &ione );
 
-                    ii = blasf77_isamax( &n2, VR(0,is), &ione ) - 1;
+                    ii = blasf77_isamax( &n2, VR(0,is), &ione ) - 1;  // subtract 1; ii is 0-based
                     remax = c_one / fabsf( *VR(ii,is) );
                     blasf77_sscal( &n2, &remax, VR(0,is), &ione );
 
@@ -504,7 +503,7 @@ magma_int_t magma_strevc3_mt(
                                        work(ki,iv), VR(0,ki), &ione );
                     }
                     time_gemv_sum += timer_stop( time_gemv );
-                    ii = blasf77_isamax( &n, VR(0,ki), &ione ) - 1;
+                    ii = blasf77_isamax( &n, VR(0,ki), &ione ) - 1;  // subtract 1; ii is 0-based
                     remax = c_one / fabsf( *VR(ii,ki) );
                     blasf77_sscal( &n, &remax, VR(0,ki), &ione );
                     timer_start( time_trsv );
@@ -635,7 +634,7 @@ magma_int_t magma_strevc3_mt(
                     for( k=iv; k <= nb; ++k ) {
                         if ( iscomplex[k] == 0 ) {
                             // real eigenvector
-                            ii = blasf77_isamax( &n, work(0,nb+k), &ione ) - 1;
+                            ii = blasf77_isamax( &n, work(0,nb+k), &ione ) - 1;  // subtract 1; ii is 0-based
                             remax = c_one / fabsf( *work(ii,nb+k) );
                         }
                         else if ( iscomplex[k] == 1 ) {
@@ -729,7 +728,7 @@ magma_int_t magma_strevc3_mt(
                     n2 = n-ki;
                     blasf77_scopy( &n2, work(ki,iv), &ione, VL(ki,is), &ione );
     
-                    ii = blasf77_isamax( &n2, VL(ki,is), &ione ) + ki - 1;
+                    ii = blasf77_isamax( &n2, VL(ki,is), &ione ) + ki - 1;  // subtract 1; ii is 0-based
                     remax = c_one / fabsf( *VL(ii,is) );
                     blasf77_sscal( &n2, &remax, VL(ki,is), &ione );
     
@@ -748,7 +747,7 @@ magma_int_t magma_strevc3_mt(
                                        work(ki+1,iv), &ione,
                                        work(ki,  iv), VL(0,ki), &ione );
                     }
-                    ii = blasf77_isamax( &n, VL(0,ki), &ione ) - 1;
+                    ii = blasf77_isamax( &n, VL(0,ki), &ione ) - 1;  // subtract 1; ii is 0-based
                     remax = c_one / fabsf( *VL(ii,ki) );
                     blasf77_sscal( &n, &remax, VL(0,ki), &ione );
                 }
@@ -870,7 +869,7 @@ magma_int_t magma_strevc3_mt(
                     for( k=1; k <= iv; ++k ) {
                         if ( iscomplex[k] == 0 ) {
                             // real eigenvector
-                            ii = blasf77_isamax( &n, work(0,nb+k), &ione ) - 1;
+                            ii = blasf77_isamax( &n, work(0,nb+k), &ione ) - 1;  // subtract 1; ii is 0-based
                             remax = c_one / fabsf( *work(ii,nb+k) );
                         }
                         else if ( iscomplex[k] == 1) {

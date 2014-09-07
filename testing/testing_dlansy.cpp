@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zlanhe.cpp normal z -> d, Fri Jul 18 17:34:23 2014
+       @generated from testing_zlanhe.cpp normal z -> d, Tue Sep  2 12:38:27 2014
        @author Mark Gates
 */
 // includes, system

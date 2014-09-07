@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = testing
@@ -31,10 +31,8 @@ ZSRC := \
 	testing_zhemv_mgpu.cpp	\
 	testing_zher2k_mgpu.cpp	\
 	\
-	testing_auxiliary.cpp	\
-	testing_constants.cpp	\
-	testing_parse_opts.cpp	\
-	testing_zblas.cpp	\
+	testing_blas_z.cpp	\
+	testing_cblas_z.cpp	\
 	testing_zgeadd.cpp	\
 	testing_zgeadd_batched.cpp	\
 	testing_zlacpy.cpp	\
@@ -43,8 +41,10 @@ ZSRC := \
 	testing_zlange.cpp	\
 	testing_zlanhe.cpp	\
 	testing_zlarfg.cpp	\
+	testing_zlascl.cpp	\
 	testing_zlaset.cpp	\
 	testing_zlaset_band.cpp	\
+	testing_zlat2c.cpp	\
 	testing_znan_inf.cpp	\
 	testing_zprint.cpp	\
 	testing_zsymmetrize.cpp	\
@@ -52,6 +52,11 @@ ZSRC := \
 	testing_zswap.cpp	\
 	testing_ztranspose.cpp	\
 	testing_veclib.cpp	\
+	\
+	testing_auxiliary.cpp	\
+	testing_constants.cpp	\
+	testing_operators.cpp	\
+	testing_parse_opts.cpp	\
 
 # ----------
 # Cholesky, GPU interface
@@ -93,9 +98,11 @@ ZSRC += \
 ZSRC += \
 	testing_zcgeqrsv_gpu.cpp	\
 	\
+	testing_zgegqr_gpu.cpp	\
 	testing_zgelqf_gpu.cpp	\
 	testing_zgels_gpu.cpp	\
 	testing_zgels3_gpu.cpp	\
+	testing_zgeqp3_gpu.cpp	\
 	testing_zgeqr2_gpu.cpp	\
 	testing_zgeqr2x_gpu.cpp	\
 	testing_zgeqrf_gpu.cpp	\
@@ -104,12 +111,12 @@ ZSRC += \
 	testing_zunmqr_gpu.cpp	\
 	\
 	testing_zgeqrf_mgpu.cpp	\
-	testing_zgegqr_gpu.cpp  \
 
 # QR, CPU interface
 ZSRC += \
 	testing_zgelqf.cpp	\
 	testing_zgeqlf.cpp	\
+	testing_zgeqp3.cpp	\
 	testing_zgeqrf.cpp	\
 	testing_zungqr.cpp	\
 	testing_zunmlq.cpp	\
@@ -117,9 +124,6 @@ ZSRC += \
 	testing_zunmqr.cpp	\
 	\
 	testing_zungqr_m.cpp	\
-	\
-	testing_zgeqp3.cpp	\
-	testing_zgeqp3_gpu.cpp	\
 
 # ----------
 # symmetric eigenvalues, GPU interface
@@ -144,20 +148,20 @@ ZSRC += \
 
 # generalized symmetric eigenvalues
 ZSRC += \
-	testing_dsygvd.cpp	\
 	testing_zhegvd.cpp	\
 	testing_zhegvd_m.cpp	\
 	testing_zhegvdx.cpp	\
 	testing_zhegvdx_2stage.cpp	\
 	testing_zhegvdx_2stage_m.cpp	\
+
 # ----------
 # non-symmetric eigenvalues
 ZSRC += \
 	testing_dgeev.cpp	\
 	testing_zgeev.cpp	\
-	testing_zgehrd.cpp	\
 	testing_dgeev_m.cpp	\
 	testing_zgeev_m.cpp	\
+	testing_zgehrd.cpp	\
 	testing_zgehrd_m.cpp	\
 
 # ----------
@@ -194,9 +198,16 @@ ZSRC += $(ZSRCF)
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 
 ALLOBJ := $(ALLSRC:.cpp=.o)
-ALLOBJ := $(ALLOBJ:.f90=.o)
-ALLOBJ := $(ALLOBJ:.F90=.o)
-ALLOBJ := $(ALLOBJ:.cuf=.o)
+ALLOBJ := $(filter %.o, $(ALLOBJ))
+
+FOBJS  := $(ALLSRC:.f90=.o)
+FOBJS  := $(FOBJS:.F90=.o)
+FOBJS  := $(FOBJS:.cuf=.o)
+FOBJS  := $(filter %.o, $(FOBJS))
+
+ifneq ($(FORT),no_fortran)
+    ALLOBJ += $(FOBJS)
+endif
 
 TESTS  := $(filter testing_%,$(ALLOBJ))
 EXE    := $(TESTS:.o=)
@@ -217,6 +228,9 @@ all: $(EXE)
 lib:
 	cd .. && $(MAKE) lib
 
+shared:
+	cd .. && $(MAKE) shared
+
 # depend on header
 $(ALLOBJ): testings.h
 
@@ -231,7 +245,9 @@ $(LIBLAPACKTEST):
 
 $(EXE): $(LIBMAGMA) $(LIBLAPACKTEST) $(LIBTEST)
 
-clean:
+clean: cleanobj cleanexe
+
+cleanobj:
 	cd lin    && $(MAKE) clean
 	cd matgen && $(MAKE) clean
 	rm -f *.o *~ $(LIBTEST)
@@ -243,20 +259,20 @@ cleanall: clean cleanexe
 
 ifeq ($(FORT), pgfortran)
 testing_%.o : testing_%.cuf
-	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@
+	$(FORT) $(FFLAGS) $(CPPFLAGS) -c $< -o $@
 else
 testing_%.o : testing_%.f90
-	$(FORT) $(FOPTS) $(INC_MAGMA) -c $< -o $@
+	$(FORT) $(FFLAGS) $(CPPFLAGS) -c $< -o $@
 endif
 
 testing_%_f : testing_%_f.o $(FOBJ)
-	$(FORT) $(LDOPTS) $< $(FOBJ) -o $@ \
+	$(FORT) $(LDFLAGS) $< $(FOBJ) -o $@ \
 	$(LIBTEST) $(LIBLAPACKTEST) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
 	$(LIB)
 
 testing_% : testing_%.o
-	$(CC) $(LDOPTS) $(NOMAIN) $< -o $@ \
+	$(CC) $(LDFLAGS) $(NOMAIN) $< -o $@ \
 	$(LIBTEST) $(LIBLAPACKTEST) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
 	$(LIB)
@@ -265,12 +281,12 @@ testing_% : testing_%.o
 # These two files are provided by cuda
 # CUDA 5 needs -DCUBLAS_GFORTRAN or appropriate setting to compile cuda/src/fortran.c bindings
 #
-fortran.o : OPTS += -DCUBLAS_GFORTRAN
+fortran.o : CFLAGS += -DCUBLAS_GFORTRAN
 fortran.o : $(CUDADIR)/src/fortran.c
-	$(CC) $(OPTS) $(INC_MAGMA) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 fortran_thunking.o : $(CUDADIR)/src/fortran_thunking.c
-	$(CC) $(OPTS) $(INC_MAGMA) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # keep intermediate object files, to speed up re-compiling when library changes
 .SECONDARY: $(ALLOBJ)

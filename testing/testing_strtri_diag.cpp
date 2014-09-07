@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_ztrtri_diag.cpp normal z -> s, Fri Jul 18 17:34:22 2014
+       @generated from testing_ztrtri_diag.cpp normal z -> s, Tue Sep  2 12:38:27 2014
 */
 // includes, system
 #include <stdlib.h>
@@ -121,9 +121,9 @@ int main( int argc, char** argv )
             magma_sgetvector( size_inv, d_dinvA, 1, h_dinvA, 1 );
             
             if ( opts.verbose ) {
-                printf( "A%d=", N );
+                printf( "A%d=", (int) N );
                 magma_sprint( N, N, h_A, lda );
-                printf( "d_dinvA%d=", N );
+                printf( "d_dinvA%d=", (int) N );
                 magma_sprint( min(N+4, nb), min(N+4, nblock*nb), h_dinvA, nb );
             }
             

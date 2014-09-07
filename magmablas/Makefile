@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = magmablas
@@ -26,8 +26,8 @@ ZSRC := \
 	zgeadd.cu		\
 	zgeadd_batched.cu	\
 	zgemm_reduce.cu		\
-	dgemv_MLU.cu		\
-	zhemv.cu                \
+	zgemv_conjv.cu          \
+	zhemv.cu		\
 	zlacpy.cu		\
 	zlacpy_batched.cu	\
 	zlag2c.cu		\
@@ -43,16 +43,19 @@ ZSRC := \
 	zlarfg-v2.cu		\
 	zlarfgx-v2.cu		\
 	zlascl.cu		\
+	zlascl2.cu		\
 	zlaset.cu		\
+	zlaset_band.cu		\
 	zlaswp.cu		\
 	zclaswp.cu		\
 	zlat2c.cu		\
+	clat2z.cu		\
 	dznrm2.cu		\
 	stream.cu		\
 	zswap.cu		\
 	zswapblk.cu		\
 	zswapdblk.cu		\
-	zsymv.cu                \
+	zsymv.cu		\
 	zsymmetrize.cu		\
 	zsymmetrize_tiles.cu	\
 	ztranspose.cu		\
@@ -82,9 +85,6 @@ ZSRC += \
 # Fermi-specific (CUDA arch 2.x) codes
 ZSRC += \
 	zgemm_fermi.cu		\
-	\
-	sgemv_fermi.cu		\
-	dgemv_fermi.cu		\
 	zgemv_fermi.cu		\
 
 # multi-GPU
@@ -109,8 +109,7 @@ ZSRC += \
 -include Makefile.local
 -include Makefile.src
 
-ALLHDR := $(ZHDR) $(CHDR) $(DHDR) $(SHDR) \
-	commonblas.h
+ALLHDR := $(ZHDR) $(CHDR) $(DHDR) $(SHDR)
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 

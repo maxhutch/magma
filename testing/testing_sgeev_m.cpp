@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_dgeev_m.cpp normal d -> s, Fri Jul 18 17:34:25 2014
+       @generated from testing_dgeev_m.cpp normal d -> s, Tue Sep  2 12:38:30 2014
 
 */
 
@@ -16,7 +16,6 @@
 #include <math.h>
 #include <cuda_runtime_api.h>
 #include <cublas.h>
-#include <cblas.h>
 
 // includes, project
 #include "flops.h"
@@ -217,10 +216,10 @@ int main( int argc, char** argv)
                 for( int j = 0; j < N; ++j ) {
                     tnrm = 1.;
                     if (w1i[j] == 0.)
-                        tnrm = cblas_snrm2(N, &VR[j*lda], ione);
+                        tnrm = magma_cblas_snrm2( N, &VR[j*lda], ione );
                     else if (w1i[j] > 0.)
-                        tnrm = magma_slapy2( cblas_snrm2(N, &VR[j    *lda], ione),
-                                             cblas_snrm2(N, &VR[(j+1)*lda], ione) );
+                        tnrm = magma_slapy2( magma_cblas_snrm2( N, &VR[j*lda],     ione ),
+                                             magma_cblas_snrm2( N, &VR[(j+1)*lda], ione ));
                     
                     result[2] = max( result[2], min( ulpinv, MAGMA_S_ABS(tnrm-1.)/ulp ));
                     
@@ -248,10 +247,10 @@ int main( int argc, char** argv)
                 for( int j = 0; j < N; ++j ) {
                     tnrm = 1.;
                     if (w1i[j] == 0.)
-                        tnrm = cblas_snrm2(N, &VL[j*lda], ione);
+                        tnrm = magma_cblas_snrm2( N, &VL[j*lda], ione );
                     else if (w1i[j] > 0.)
-                        tnrm = magma_slapy2( cblas_snrm2(N, &VL[j    *lda], ione),
-                                             cblas_snrm2(N, &VL[(j+1)*lda], ione) );
+                        tnrm = magma_slapy2( magma_cblas_snrm2( N, &VL[j*lda],     ione ),
+                                             magma_cblas_snrm2( N, &VL[(j+1)*lda], ione ));
                     
                     result[3] = max( result[3], min( ulpinv, MAGMA_S_ABS(tnrm-1.)/ulp ));
                     

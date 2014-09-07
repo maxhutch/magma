@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #
 #      Contributed by: Allan Menezes (Ontario, Canada)
 #      Note that GOTO BLAS is no longer maintained.
@@ -21,6 +21,7 @@
 #GPU_TARGET ?= Tesla Fermi Kepler
 
 CC        = gcc
+CXX       = g++
 NVCC      = nvcc
 FORT      = gfortran
 
@@ -28,11 +29,11 @@ ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
 
-OPTS      = -O3 -DADD_
-F77OPTS   = -O3 -DADD_
-FOPTS     = -O3 -DADD_ -x f95-cpp-input
-NVOPTS    = -O3 -DADD_ --compiler-options -fno-strict-aliasing -DUNIX
-LDOPTS    = -fPIC -Xlinker -zmuldefs
+CFLAGS    = -O3 -DADD_
+FFLAGS    = -O3 -DADD_
+F90FLAGS  = -O3 -DADD_ -x f95-cpp-input
+NVCCFLAGS = -O3 -DADD_ --compiler-options -fno-strict-aliasing -DUNIX
+LDFLAGS   = -fPIC -Xlinker -zmuldefs
 
 LIB       = -lgoto  -lpthread -lcublas -lcudart -llapack -lm 
 

@@ -1,16 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
-       @generated from zpotf2.cu normal z -> s, Fri Jul 18 17:34:13 2014
+       @generated from zpotf2.cu normal z -> s, Tue Sep  2 12:38:17 2014
 */
-
-#include <stdio.h>
 #include "common_magma.h"
-#include "magmablas.h"
 
 #define PRECISION_s
 
@@ -125,7 +122,7 @@ magma_spotf2_gpu(
                 magma_sgemv( MagmaTrans, j, n-j-1,
                              alpha, A(0, j+1), lda,
                                     A(0, j),   1,
-                             beta,  A(j, j+1), lda); // cublas is better in upper case
+                             beta,  A(j, j+1), lda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 slacgv(j, A(0, j), 1);
@@ -141,10 +138,10 @@ magma_spotf2_gpu(
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 slacgv(j, A(j, 0), lda);
                 #endif
-                magmablas_sgemv( MagmaNoTrans, n-j-1, j,
-                                 alpha, A(j+1, 0), lda,
-                                        A(j,0),    lda,
-                                 beta,  A(j+1, j), 1 );// magmablas is better in lower case
+                magma_sgemv( MagmaNoTrans, n-j-1, j,
+                             alpha, A(j+1, 0), lda,
+                                    A(j,0),    lda,
+                             beta,  A(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 slacgv(j, A(j, 0), lda);
@@ -208,13 +205,13 @@ void spotf2_sdot(magma_int_t n, float *x, magma_int_t incx)
 {
 /*
     Specialized Sdot
-    1) performs sdot sum = x[0:n-1]*(x[0:n-1])
+    1) performs sdot sum = x[0:n-1]*conj(x[0:n-1])
     2) updates x[n] = sqrt(x[n]-sum);
 
 */
     if (n > sdot_max_bs) {
-        printf("n = %d > %d is not supported in spotf2_sdot\n", (int) n, (int) sdot_max_bs);
-        exit(1);
+        fprintf( stderr, "n = %d > %d is not supported in spotf2_sdot\n", (int) n, (int) sdot_max_bs);
+        return;
     }
     int threadSize;
 
@@ -258,7 +255,7 @@ __global__ void kernel_sscal(int n, float *x, int incx)
 void spotf2_sscal(magma_int_t n, float *x, magma_int_t incx)
 {
 /*
-    Specialized Zsscal perform x[1:n-1]/x[0]
+    Specialized Sscal perform x[1:n-1]/x[0]
 
 */
     dim3 threads(sscal_bs, 1, 1);

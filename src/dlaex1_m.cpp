@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Raffaele Solca
        
@@ -186,7 +186,7 @@ magma_dlaex1_m(magma_int_t nrgpu, magma_int_t n, double* d, double* Q, magma_int
     //  Quick return if possible
 
     if ( n == 0 )
-        return MAGMA_SUCCESS;
+        return *info;
 
     //  The following values are integer pointers which indicate
     //  the portion of the workspace
@@ -217,7 +217,7 @@ magma_dlaex1_m(magma_int_t nrgpu, magma_int_t n, double* d, double* Q, magma_int
                      &iwork[coltyp], info);
 
     if ( *info != 0 )
-        return MAGMA_SUCCESS;
+        return *info;
 
     //  Solve Secular Equation.
 
@@ -228,12 +228,12 @@ magma_dlaex1_m(magma_int_t nrgpu, magma_int_t n, double* d, double* Q, magma_int
                        &iwork[coltyp], &work[iw], &work[is],
                        indxq, dwork, stream, range, vl, vu, il, iu, info );
         if ( *info != 0 )
-            return MAGMA_SUCCESS;
+            return *info;
     }
     else {
         for (i = 0; i < n; ++i)
             indxq[i] = i+1;
     }
 
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_dlaex1_m */

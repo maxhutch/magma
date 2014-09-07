@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmqr_gpu_2stage.cpp normal z -> d, Fri Jul 18 17:34:19 2014
+       @generated from zunmqr_gpu_2stage.cpp normal z -> d, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -20,9 +20,9 @@
     DORMQR_GPU overwrites the general real M-by-N matrix C with
 
     @verbatim
-                    SIDE = MagmaLeft     SIDE = MagmaRight
-    TRANS = MagmaNoTrans:      Q * C          C * Q
-    TRANS = MagmaTrans:      Q**T * C       C * Q**T
+                               SIDE = MagmaLeft    SIDE = MagmaRight
+    TRANS = MagmaNoTrans:      Q * C               C * Q
+    TRANS = MagmaTrans:   Q**H * C            C * Q**H
     @endverbatim
 
     where Q is a real unitary matrix defined as the product of k
@@ -37,13 +37,13 @@
     ---------
     @param[in]
     side    magma_side_t
-      -      = MagmaLeft:      apply Q or Q**T from the Left;
-      -      = MagmaRight:     apply Q or Q**T from the Right.
+      -      = MagmaLeft:      apply Q or Q**H from the Left;
+      -      = MagmaRight:     apply Q or Q**H from the Right.
 
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaTrans:      Transpose, apply Q**T.
+      -     = MagmaTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -76,7 +76,7 @@
     @param[in,out]
     dC      DOUBLE_PRECISION array on the GPU, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
-            On exit, C is overwritten by Q*C or Q**T * C or C * Q**T or C*Q.
+            On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
 
     @param[in]
     lddc     INTEGER
@@ -111,7 +111,7 @@ magma_dormqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
     
     double *dwork;
 
-    magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw, ret;
+    magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw;
     int left, notran;
     //magma_int_t lwkopt;
 
@@ -191,18 +191,11 @@ magma_dormqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
             ni = n - i;
             jc = i;
         }
-        // TODO use info instead of ret, so info & return value always agree.
-        ret = magma_dlarfb_gpu( MagmaLeft, trans, MagmaForward, MagmaColumnwise,
-                               mi, ni, ib, dA(i,i), ldda, dT+i*nb, nb,
-                               dC(ic,jc), lddc, dwork, nw);
-
-        if ( ret != MAGMA_SUCCESS ) {
-            magma_free(dwork);
-            return ret;
-        }
+        magma_dlarfb_gpu( MagmaLeft, trans, MagmaForward, MagmaColumnwise,
+                          mi, ni, ib, dA(i,i), ldda, dT+i*nb, nb,
+                          dC(ic,jc), lddc, dwork, nw );
     }
     
-    // TODO fix free(dwork) memory leak
-
-    return MAGMA_SUCCESS;
+    magma_free( dwork );
+    return *info;
 } /* magma_dormqr_gpu_2stages */

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zswapblk.cu normal z -> s, Fri Jul 18 17:34:12 2014
+       @generated from zswapblk.cu normal z -> s, Tue Sep  2 12:38:16 2014
 
 */
 #include "common_magma.h"
@@ -68,12 +68,18 @@ __global__ void magmagpu_sswapblkcm( magmagpu_sswapblk_params_t params )
     __syncthreads();
 }
 
+
+/**
+    @ingroup magma_sblas2
+    ********************************************************************/
 extern "C" void 
-magmablas_sswapblk( magma_order_t order, magma_int_t n, 
-                    float *dA1T, magma_int_t lda1,
-                    float *dA2T, magma_int_t lda2,
-                    magma_int_t i1, magma_int_t i2,
-                    const magma_int_t *ipiv, magma_int_t inci, magma_int_t offset )
+magmablas_sswapblk_q(
+    magma_order_t order, magma_int_t n, 
+    float *dA1T, magma_int_t lda1,
+    float *dA2T, magma_int_t lda2,
+    magma_int_t i1, magma_int_t i2,
+    const magma_int_t *ipiv, magma_int_t inci, magma_int_t offset,
+    magma_queue_t queue )
 {
     magma_int_t  blocksize = 64;
     dim3 blocks( (n+blocksize-1) / blocksize, 1, 1);
@@ -96,7 +102,7 @@ magmablas_sswapblk( magma_order_t order, magma_int_t n,
                 else
                     params.ipiv[j] = im - offset;
             }
-            magmagpu_sswapblkcm<<< blocks, blocksize, 0, magma_stream >>>( params );
+            magmagpu_sswapblkcm<<< blocks, blocksize, 0, queue >>>( params );
         }
     }
     else {
@@ -112,8 +118,24 @@ magmablas_sswapblk( magma_order_t order, magma_int_t n,
                 else
                     params.ipiv[j] = im - offset;
             }
-            magmagpu_sswapblkrm<<< blocks, blocksize, 0, magma_stream >>>( params );
+            magmagpu_sswapblkrm<<< blocks, blocksize, 0, queue >>>( params );
         }
     }
 }
 
+
+/**
+    @see magmablas_sswapblk_q
+    @ingroup magma_sblas2
+    ********************************************************************/
+extern "C" void 
+magmablas_sswapblk(
+    magma_order_t order, magma_int_t n, 
+    float *dA1T, magma_int_t lda1,
+    float *dA2T, magma_int_t lda2,
+    magma_int_t i1, magma_int_t i2,
+    const magma_int_t *ipiv, magma_int_t inci, magma_int_t offset )
+{
+    magmablas_sswapblk_q(
+        order, n, dA1T, lda1, dA2T, lda2, i1, i2, ipiv, inci, offset, magma_stream );
+}

@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from ztrevc3.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from ztrevc3.cpp normal z -> c, Tue Sep  2 12:38:24 2014
 */
-#include <cblas.h>
 #include "timer.h"
 
 #include "common_magma.h"
@@ -264,7 +263,7 @@ magma_int_t magma_ctrevc3(
     // part of T to control overflow in triangular solver.
     rwork[0] = 0.;
     for( j=1; j < n; ++j ) {
-        rwork[j] = cblas_scasum( j, T(0,j), ione );
+        rwork[j] = magma_cblas_scasum( j, T(0,j), ione );
     }
 
     magma_timer_t time_total=0, time_trsv=0, time_gemm=0, time_gemv=0, time_trsv_sum=0, time_gemm_sum=0, time_gemv_sum=0;

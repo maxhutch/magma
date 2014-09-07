@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex3.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dlaex3.cpp normal d -> s, Tue Sep  2 12:38:22 2014
 */
 
 #ifdef _OPENMP
@@ -16,7 +16,6 @@
 
 #include "common_magma.h"
 #include "timer.h"
-#include <cblas.h>
 
 extern "C" {
 
@@ -264,12 +263,12 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
 
     if (*info != 0) {
         magma_xerbla(__func__, -(*info));
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
 
     // Quick return if possible
     if (k == 0)
-        return MAGMA_SUCCESS;
+        return *info;
     /*
      Modify values DLAMDA(i) to make sure all DLAMDA(i)-DLAMDA(j) can
      be computed with high relative accuracy (barring over/underflow).
@@ -404,7 +403,7 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
                 for (j = ib; j < ie; ++j) {
                     for (i = 0; i < k; ++i)
                         s[id*k + i] = w[i] / *Q(i,j);
-                    temp = cblas_snrm2( k, s+id*k, 1);
+                    temp = magma_cblas_snrm2( k, s+id*k, 1 );
                     for (i = 0; i < k; ++i) {
                         magma_int_t iii = indx[i] - 1;
                         *Q(i,j) = s[id*k + iii] / temp;
@@ -414,7 +413,7 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
         }
     }
     if (*info != 0)
-        return MAGMA_SUCCESS; //??????
+        return *info;
 
     timer_stop( time );
     timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
@@ -438,7 +437,7 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
             *info=iinfo;
     }
     if (*info != 0)
-        return MAGMA_SUCCESS;
+        return *info;
 
     //Prepare the INDXQ sorting permutation.
     magma_int_t nk = n - k;
@@ -488,7 +487,7 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
         for (j = iil-1; j < iiu; ++j) {
             for (i = 0; i < k; ++i)
                 s[i] = w[i] / *Q(i,j);
-            temp = cblas_snrm2( k, s, 1);
+            temp = magma_cblas_snrm2( k, s, 1 );
             for (i = 0; i < k; ++i) {
                 magma_int_t iii = indx[i] - 1;
                 *Q(i,j) = s[iii] / temp;
@@ -535,5 +534,5 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
     timer_stop( time );
     timer_printf( "gemms = %6.2f\n", time );
 
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_slaex3 */

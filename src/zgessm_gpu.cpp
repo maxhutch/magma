@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -43,7 +43,7 @@
             ZGETRF_INCPIV.
 
     @param[in]
-    dL1     DOUBLE COMPLEX array, dimension(LDDL1, N)
+    dL1     COMPLEX_16 array, dimension(LDDL1, N)
             The IB-by-K matrix in which is stored L^(-1) as returned by GETRF_INCPIV
 
     @param[in]
@@ -51,7 +51,7 @@
             The leading dimension of the array L1.  LDDL1 >= max(1,2*IB).
 
     @param[in]
-    dL      DOUBLE COMPLEX array, dimension(LDDL, N)
+    dL      COMPLEX_16 array, dimension(LDDL, N)
             The M-by-K lower triangular tile on the gpu.
 
     @param[in]
@@ -59,7 +59,7 @@
             The leading dimension of the array L.  LDDL >= max(1,M).
 
     @param[in,out]
-    dA      DOUBLE COMPLEX array, dimension (LDDA, N)
+    dA      COMPLEX_16 array, dimension (LDDA, N)
             On entry, the M-by-N tile A on the gpu.
             On exit, updated by the application of L on the gpu.
 

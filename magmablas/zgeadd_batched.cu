@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
 */
 #include "common_magma.h"
-#include <assert.h>
 
 #define NB 64
 
@@ -95,16 +94,20 @@ zgeadd_batched_kernel(
             The number of matrices to add; length of dAarray and dBarray.
             batchCount >= 0.
     
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_zgeadd_batched(
+magmablas_zgeadd_batched_q(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
     const magmaDoubleComplex * const *dAarray, magma_int_t ldda,
     magmaDoubleComplex              **dBarray, magma_int_t lddb,
-    magma_int_t batchCount )
+    magma_int_t batchCount,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -129,6 +132,23 @@ magmablas_zgeadd_batched(
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB, batchCount );
         
-    zgeadd_batched_kernel<<< grid, threads, 0, magma_stream >>>(
+    zgeadd_batched_kernel<<< grid, threads, 0, queue >>>(
         m, n, alpha, dAarray, ldda, dBarray, lddb );
+}
+
+
+/**
+    @see magmablas_zgeadd_batched_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zgeadd_batched(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex alpha,
+    const magmaDoubleComplex * const *dAarray, magma_int_t ldda,
+    magmaDoubleComplex              **dBarray, magma_int_t lddb,
+    magma_int_t batchCount )
+{
+    magmablas_zgeadd_batched_q(
+        m, n, alpha, dAarray, ldda, dBarray, lddb, batchCount, magma_stream );
 }

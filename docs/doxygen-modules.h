@@ -351,9 +351,6 @@
             @defgroup magma_zaux3 double-complex precision
         @}
 
-        @defgroup magma_aux     General auxiliary
-        @brief    General (non-matrix) auxiliary functions
-
         @defgroup magma_comm    Communication
         @brief    CPU to GPU communication
         @{
@@ -380,21 +377,21 @@
                 @defgroup magmasparse_zgesv double-complex precision
             @}
             
-            @defgroup sparse_posv      Symmetric (SPD) solver
+            @defgroup sparse_posv      Hermitian (SPD for real) solver
             @brief    Solve \f$ Ax = b \f$,
                       for symmetric positive definite (SPD) \f$ A \f$
             @{
-                @defgroup magmasparse_sposv single precision
-                @defgroup magmasparse_dposv double precision
-                @defgroup magmasparse_cposv single-complex precision
-                @defgroup magmasparse_zposv double-complex precision
+                @defgroup magmasparse_shesv single precision
+                @defgroup magmasparse_dhesv double precision
+                @defgroup magmasparse_chesv single-complex precision
+                @defgroup magmasparse_zhesv double-complex precision
             @}
         @}
         
         @defgroup sparse_eigenvalue    Sparse eigenvalue
         @brief    Solve \f$ Ax = \lambda x \f$
         @{
-            @defgroup sparse_geev      Non-symmetric eigenvalue
+            @defgroup sparse_geev      general eigenvalue
             @brief    Solve \f$ Ax = \lambda x \f$ for non-symmetric \f$ A \f$
             @{
                 @defgroup magmasparse_sgeev single precision
@@ -403,20 +400,20 @@
                 @defgroup magmasparse_zgeev double-complex precision
             @}
             
-            @defgroup sparse_syev      Symmetric eigenvalue
+            @defgroup sparse_heev      hermitian eigenvalue
             @brief    Solve \f$ Ax = \lambda x \f$ for symmetric \f$ A \f$
             @{
-                @defgroup magmasparse_ssyev single precision
-                @defgroup magmasparse_dsyev double precision
-                @defgroup magmasparse_csyev single-complex precision
-                @defgroup magmasparse_zsyev double-complex precision
+                @defgroup magmasparse_sheev single precision
+                @defgroup magmasparse_dheev double precision
+                @defgroup magmasparse_cheev single-complex precision
+                @defgroup magmasparse_zheev double-complex precision
             @}
         @}
 
         @defgroup sparse_precond    Sparse preconditioner
         @brief    Preconditioner for solving \f$ Ax = \lambda x \f$
         @{
-            @defgroup sparse_gepr      Non-symmetric preconditioner
+            @defgroup sparse_gepr      general preconditioner
             @brief    Preconditioner for \f$ Ax = \lambda x \f$ for non-symmetric \f$ A \f$
             @{
                 @defgroup magmasparse_sgepr single precision
@@ -425,13 +422,13 @@
                 @defgroup magmasparse_zgepr double-complex precision
             @}
             
-            @defgroup sparse_sypr      Symmetric preconditioner
+            @defgroup sparse_hepr      hermitian preconditioner
             @brief    Preconditioner for \f$ Ax = \lambda x \f$ for symmetric \f$ A \f$
             @{
-                @defgroup magmasparse_ssypr single precision
-                @defgroup magmasparse_dsypr double precision
-                @defgroup magmasparse_csypr single-complex precision
-                @defgroup magmasparse_zsypr double-complex precision
+                @defgroup magmasparse_shepr single precision
+                @defgroup magmasparse_dhepr double precision
+                @defgroup magmasparse_chepr single-complex precision
+                @defgroup magmasparse_zhepr double-complex precision
             @}
         @}
 
@@ -490,7 +487,7 @@
         @brief    Solve \f$ Ax = b \f$, using symmetric indefinite factorization
                   for symmetric \f$ A \f$
         @{
-            @defgroup magma_sysv_driver   Symmetric indefinite solve: driver
+            @defgroup magma_hesv_driver   Symmetric indefinite solve: driver
             @brief    Whole \f$ Ax=b \f$ (symmetric) problem
             @{
                 @defgroup magma_ssysv_driver single precision

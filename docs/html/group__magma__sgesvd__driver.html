@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__sgesvd__driver.html','')
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -112,7 +115,7 @@ $(document).ready(function(){initNavTree('group__magma__sgesvd__driver.html','')
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga1af7fbb2b1ea64aa347fc95e3924aca5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgesvd__driver.html#ga1af7fbb2b1ea64aa347fc95e3924aca5">magma_sgesdd</a> (magma_vec_t jobz, magma_int_t m, magma_int_t n, float *A, magma_int_t lda, float *s, float *U, magma_int_t ldu, float *VT, magma_int_t ldvt, float *work, magma_int_t lwork, magma_int_t *iwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga1af7fbb2b1ea64aa347fc95e3924aca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGESDD computes the singular value decomposition (SVD) of a real M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method.  <a href="#ga1af7fbb2b1ea64aa347fc95e3924aca5">More...</a><br /></td></tr>
+<tr class="memdesc:ga1af7fbb2b1ea64aa347fc95e3924aca5"><td class="mdescLeft">&#160;</td><td class="mdescRight">SGESDD computes the singular value decomposition (SVD) of a real M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method.  <a href="#ga1af7fbb2b1ea64aa347fc95e3924aca5">More...</a><br /></td></tr>
 <tr class="separator:ga1af7fbb2b1ea64aa347fc95e3924aca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga96e26a734d9c48e5c994863c4e2d83f1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgesvd__driver.html#ga96e26a734d9c48e5c994863c4e2d83f1">magma_sgesvd</a> (magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n, float *A, magma_int_t lda, float *s, float *U, magma_int_t ldu, float *VT, magma_int_t ldvt, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga96e26a734d9c48e5c994863c4e2d83f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">SGESVD computes the singular value decomposition (SVD) of a real M-by-N matrix A, optionally computing the left and/or right singular vectors.  <a href="#ga96e26a734d9c48e5c994863c4e2d83f1">More...</a><br /></td></tr>
@@ -216,7 +219,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>DGESDD computes the singular value decomposition (SVD) of a real M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method. </p>
+<p>SGESDD computes the singular value decomposition (SVD) of a real M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method. </p>
 <p>The SVD is written</p>
 <p>A = U * SIGMA * transpose(V)</p>
 <p>where SIGMA is an M-by-N matrix which is zero except for its min(m,n) diagonal elements, U is an M-by-M orthogonal matrix, and V is an N-by-N orthogonal matrix. The diagonal elements of SIGMA are the singular values of A; they are real and non-negative, and are returned in descending order. The first min(m,n) columns of U and V are the left and right singular vectors of A.</p>
@@ -254,13 +257,13 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldvt</td><td>INTEGER The leading dimension of the array VT. LDVT &gt;= 1; if JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &gt;= N, LDVT &gt;= N; if JOBZ = MagmaSomeVec, LDVT &gt;= min(M,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[1] returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. Let x = max(M,N) and y = min(M,N). The optimal block size nb can be obtained through magma_get_sgesvd_nb(N). The threshold for x &gt;&gt; y currently is x &gt;= y*11/6. Required size different than in LAPACK.* In most cases, these sizes should give optimal performance for both MAGMA and LAPACK.<ul>
 <li>If JOBZ = MagmaNoVec, if x &gt;&gt; y, LWORK &gt;= 3*y + max( (2*y)*nb, 7*y ); otherwise, LWORK &gt;= 3*y + max( (x+y)*nb, 7*y ).</li>
 <li>If JOBZ = MagmaOverwriteVec, if x &gt;&gt; y, LWORK &gt;= y*y + 3*y + max( (2*y)*nb, 4*y*y + 4*y ), prefer LWORK &gt;= y*y + 3*y + max( (2*y)*nb, 4*y*y + 4*y, y*y + y*nb ); otherwise, LWORK &gt;= 3*y + max( (x+y)*nb, 4*y*y + 4*y ).</li>
 <li>If JOBZ = MagmaSomeVec, if x &gt;&gt; y, LWORK &gt;= y*y + 3*y + max( (2*y)*nb, 3*y*y + 4*y ); otherwise, LWORK &gt;= 3*y + max( (x+y)*nb, 3*y*y + 4*y ).</li>
 <li>If JOBZ = MagmaAllVec, if x &gt;&gt; y, LWORK &gt;= y*y + max( 3*y + max( (2*y)*nb, 3*y*y + 4*y ), y + x ), prefer LWORK &gt;= y*y + max( 3*y + max( (2*y)*nb, 3*y*y + 4*y ), y + x*nb ); otherwise, LWORK &gt;= 3*y + max( (x+y)*nb, 3*y*y + 4*y ). <br />
- If LWORK = -1 but other input arguments are legal, WORK[1] returns the optimal LWORK.</li>
+ If LWORK = -1 but other input arguments are legal, WORK[0] returns the optimal LWORK.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir"></td><td class="paramname">iwork</td><td>(workspace) INTEGER array, dimension (8*min(M,N))</td></tr>
@@ -424,7 +427,7 @@ Functions</h2></td></tr>
 <li>if JOBVT = MagmaSomeVec, LDVT &gt;= min(M,N).</li>
 </ul>
 </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the required LWORK. if INFO &gt; 0, WORK(2:MIN(M,N)) contains the unconverged superdiagonal elements of an upper bidiagonal matrix B whose diagonal is in S (not necessarily sorted). B satisfies A = U * B * VT, so it has the same singular values as A, and singular vectors related by U and VT.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the required LWORK. if INFO &gt; 0, WORK(2:MIN(M,N)) contains the unconverged superdiagonal elements of an upper bidiagonal matrix B whose diagonal is in S (not necessarily sorted). B satisfies A = U * B * VT, so it has the same singular values as A, and singular vectors related by U and VT.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= (M+N)*nb + 3*min(M,N). For optimum performance with some paths (m &gt;&gt; n and jobu=A,S,O; or n &gt;&gt; m and jobvt=A,S,O), LWORK &gt;= (M+N)*nb + 3*min(M,N) + 2*min(M,N)**2 (see comments inside code). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the required size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -444,7 +447,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:43 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:48 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

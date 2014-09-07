@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        
@@ -55,15 +55,17 @@ __global__ void zlaswp_kernel( zlaswp_params_t params )
 
 
 // Launch zlaswp kernel with ceil( n / NTHREADS ) blocks of NTHREADS threads each.
-extern "C" void zlaswp_launch( zlaswp_params_t &params )
+extern "C" void zlaswp_launch( zlaswp_params_t &params, magma_queue_t queue )
 {
     int blocks = (params.n + NTHREADS - 1) / NTHREADS;
-    zlaswp_kernel<<< blocks, NTHREADS, 0, magma_stream >>>( params );
+    zlaswp_kernel<<< blocks, NTHREADS, 0, queue >>>( params );
 }
 
 
+// @deprecated
 // Swap rows of A, stored row-wise.
 // This version updates each entry of ipiv by adding ind.
+// (In contrast, LAPACK applies laswp, then updates ipiv.)
 // It is used in zgetrf, zgetrf_gpu, zgetrf_mgpu, zgetrf_ooc.
 extern "C" void
 magmablas_zpermute_long2( magma_int_t n, magmaDoubleComplex *dAT, magma_int_t lda,
@@ -77,13 +79,15 @@ magmablas_zpermute_long2( magma_int_t n, magmaDoubleComplex *dAT, magma_int_t ld
             params.ipiv[j] = ipiv[ind + k + j] - k - 1;
             ipiv[ind + k + j] += ind;
         }
-        zlaswp_launch( params );
+        zlaswp_launch( params, magma_stream );
     }
 }
 
 
+// @deprecated
 // Swap rows of A, stored row-wise.
 // This version assumes ind has already been added to ipiv.
+// (In contrast, LAPACK applies laswp, then updates ipiv.)
 // It is used in zgetrf_mgpu, zgetrf_ooc.
 extern "C" void
 magmablas_zpermute_long3( magmaDoubleComplex *dAT, magma_int_t lda,
@@ -96,29 +100,114 @@ magmablas_zpermute_long3( magmaDoubleComplex *dAT, magma_int_t lda,
         for( int j = 0; j < MAX_PIVOTS; ++j ) {
             params.ipiv[j] = ipiv[ind + k + j] - k - 1 - ind;
         }
-        zlaswp_launch( params );
+        zlaswp_launch( params, magma_stream );
     }
 }
 
 
-// Swap rows of A, stored row-wise.
-// This interface is identical to LAPACK's laswp interface.
+/**
+    Purpose:
+    =============
+    ZLASWP performs a series of row interchanges on the matrix A.
+    One row interchange is initiated for each of rows K1 through K2 of A.
+    
+    ** Unlike LAPACK, here A is stored row-wise (hence dAT). **
+    Otherwise, this is identical to LAPACK's interface.
+    
+    Arguments:
+    ==========
+    \param[in]
+    n        INTEGER
+             The number of columns of the matrix A.
+    
+    \param[in,out]
+    dAT      COMPLEX*16 array on GPU, stored row-wise, dimension (LDA,N)
+             On entry, the matrix of column dimension N to which the row
+             interchanges will be applied.
+             On exit, the permuted matrix.
+    
+    \param[in]
+    lda      INTEGER
+             The leading dimension of the array A. lda >= n.
+    
+    \param[in]
+    k1       INTEGER
+             The first element of IPIV for which a row interchange will
+             be done. (Fortran one-based index: 1 <= k1 <= n.)
+    
+    \param[in]
+    k2       INTEGER
+             The last element of IPIV for which a row interchange will
+             be done. (Fortran one-based index: 1 <= k2 <= n.)
+    
+    \param[in]
+    ipiv     INTEGER array, on CPU, dimension (K2*abs(INCI))
+             The vector of pivot indices.  Only the elements in positions
+             K1 through K2 of IPIV are accessed.
+             IPIV(K) = L implies rows K and L are to be interchanged.
+    
+    \param[in]
+    inci     INTEGER
+             The increment between successive values of IPIV.
+             Currently, IPIV > 0.
+             TODO: If IPIV is negative, the pivots are applied in reverse order.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_zaux2
+    ********************************************************************/
 // It is used in zgessm, zgetrf_incpiv.
 extern "C" void
-magmablas_zlaswp( magma_int_t n, magmaDoubleComplex *dAT, magma_int_t lda,
-                  magma_int_t i1, magma_int_t i2,
-                  const magma_int_t *ipiv, magma_int_t inci )
+magmablas_zlaswp_q(
+    magma_int_t n, magmaDoubleComplex *dAT, magma_int_t lda,
+    magma_int_t k1, magma_int_t k2,
+    const magma_int_t *ipiv, magma_int_t inci,
+    magma_queue_t queue )
 {
-    for( int k = i1-1; k < i2; k += MAX_PIVOTS ) {
-        int npivots = min( MAX_PIVOTS, i2-k );
+    magma_int_t info = 0;
+    if ( n < 0 )
+        info = -1;
+    else if ( k1 < 1 || k1 > n )
+        info = -4;
+    else if ( k2 < 1 || k2 > n )
+        info = -5;
+    else if ( inci <= 0 )
+        info = -7;
+
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    for( int k = k1-1; k < k2; k += MAX_PIVOTS ) {
+        int npivots = min( MAX_PIVOTS, k2-k );
         // fields are:             dAT        n  lda  j0 npivots
         zlaswp_params_t params = { dAT+k*lda, n, lda, 0, npivots };
         for( int j = 0; j < npivots; ++j ) {
             params.ipiv[j] = ipiv[(k+j)*inci] - k - 1;
         }
-        zlaswp_launch( params );
+        zlaswp_launch( params, queue );
     }
 }
+
+
+/**
+    @see magmablas_zlaswp_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zlaswp( magma_int_t n, magmaDoubleComplex *dAT, magma_int_t lda,
+                  magma_int_t k1, magma_int_t k2,
+                  const magma_int_t *ipiv, magma_int_t inci )
+{
+    magmablas_zlaswp_q( n, dAT, lda, k1, k2, ipiv, inci, magma_stream );
+}
+
+
+
+
 
 
 // ------------------------------------------------------------
@@ -158,32 +247,122 @@ __global__ void zlaswpx_kernel( zlaswpx_params_t params )
 
 
 // Launch zlaswpx kernel with ceil( n / NTHREADS ) blocks of NTHREADS threads each.
-extern "C" void zlaswpx( zlaswpx_params_t &params )
+extern "C" void zlaswpx( zlaswpx_params_t &params, magma_queue_t queue )
 {
     int blocks = (params.n + NTHREADS - 1) / NTHREADS;
-    zlaswpx_kernel<<< blocks, NTHREADS, 0, magma_stream >>>( params );
+    zlaswpx_kernel<<< blocks, NTHREADS, 0, queue >>>( params );
 }
 
 
-// Swap rows of A.
-// For A stored row-wise,    set ldx=lda and ldy=1.
-// For A stored column-wise, set ldx=1   and ldy=lda.
-// Otherwise, this interface is identical to LAPACK's laswp interface.
+/**
+    Purpose:
+    =============
+    ZLASWPX performs a series of row interchanges on the matrix A.
+    One row interchange is initiated for each of rows K1 through K2 of A.
+    
+    ** Unlike LAPACK, here A is stored either row-wise or column-wise,
+       depending on ldx and ldy. **
+    Otherwise, this is identical to LAPACK's interface.
+    
+    Arguments:
+    ==========
+    \param[in]
+    n        INTEGER
+             The number of columns of the matrix A.
+    
+    \param[in,out]
+    dA       COMPLEX*16 array on GPU, dimension (*,*)
+             On entry, the matrix of column dimension N to which the row
+             interchanges will be applied.
+             On exit, the permuted matrix.
+    
+    \param[in]
+    ldx      INTEGER
+             Stride between elements in same column.
+    
+    \param[in]
+    ldy      INTEGER
+             Stride between elements in same row.
+             For A stored row-wise,    set ldx=lda and ldy=1.
+             For A stored column-wise, set ldx=1   and ldy=lda.
+    
+    \param[in]
+    k1       INTEGER
+             The first element of IPIV for which a row interchange will
+             be done. (One based index.)
+    
+    \param[in]
+    k2       INTEGER
+             The last element of IPIV for which a row interchange will
+             be done. (One based index.)
+    
+    \param[in]
+    ipiv     INTEGER array, on CPU, dimension (K2*abs(INCI))
+             The vector of pivot indices.  Only the elements in positions
+             K1 through K2 of IPIV are accessed.
+             IPIV(K) = L implies rows K and L are to be interchanged.
+    
+    \param[in]
+    inci     INTEGER
+             The increment between successive values of IPIV.
+             Currently, IPIV > 0.
+             TODO: If IPIV is negative, the pivots are applied in reverse order.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_zaux2
+    ********************************************************************/
 extern "C" void
-magmablas_zlaswpx( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldx, magma_int_t ldy,
-                   magma_int_t i1, magma_int_t i2,
-                   const magma_int_t *ipiv, magma_int_t inci )
+magmablas_zlaswpx_q(
+    magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldx, magma_int_t ldy,
+    magma_int_t k1, magma_int_t k2,
+    const magma_int_t *ipiv, magma_int_t inci,
+    magma_queue_t queue )
 {
-    for( int k = i1-1; k < i2; k += MAX_PIVOTS ) {
-        int npivots = min( MAX_PIVOTS, i2-k );
+    magma_int_t info = 0;
+    if ( n < 0 )
+        info = -1;
+    else if ( k1 < 0 )
+        info = -4;  
+    else if ( k2 < 0 || k2 < k1 )
+        info = -5;
+    else if ( inci <= 0 )
+        info = -7;
+
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    for( int k = k1-1; k < k2; k += MAX_PIVOTS ) {
+        int npivots = min( MAX_PIVOTS, k2-k );
         // fields are:              dA        n  ldx  ldy  j0 npivots
         zlaswpx_params_t params = { dA+k*ldx, n, ldx, ldy, 0, npivots };
         for( int j = 0; j < npivots; ++j ) {
             params.ipiv[j] = ipiv[(k+j)*inci] - k - 1;
         }
-        zlaswpx( params );
+        zlaswpx( params, queue );
     }
 }
+
+
+/**
+    @see magmablas_zlaswpx_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zlaswpx( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldx, magma_int_t ldy,
+                   magma_int_t k1, magma_int_t k2,
+                   const magma_int_t *ipiv, magma_int_t inci )
+{
+    return magmablas_zlaswpx_q( n, dA, ldx, ldy, k1, k2, ipiv, inci, magma_stream );
+}
+
+
+
+
 
 
 // ------------------------------------------------------------
@@ -194,7 +373,9 @@ magmablas_zlaswpx( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldx, magma
 // batches of pivots. On Fermi, it is faster than magmablas_zlaswp
 // (including copying pivots to the GPU).
 
-__global__ void zlaswp2_kernel( int n, magmaDoubleComplex *dAT, int lda, int npivots, const magma_int_t* d_ipiv )
+__global__ void zlaswp2_kernel(
+    int n, magmaDoubleComplex *dAT, int lda, int npivots,
+    const magma_int_t* d_ipiv, magma_int_t inci )
 {
     unsigned int tid = threadIdx.x + blockDim.x*blockIdx.x;
     if( tid < n ) {
@@ -202,7 +383,7 @@ __global__ void zlaswp2_kernel( int n, magmaDoubleComplex *dAT, int lda, int npi
         magmaDoubleComplex *A1  = dAT;
         
         for( int i1 = 0; i1 < npivots; ++i1 ) {
-            int i2 = d_ipiv[i1] - 1;  // Fortran index
+            int i2 = d_ipiv[i1*inci] - 1;  // Fortran index
             magmaDoubleComplex *A2 = dAT + i2*lda;
             magmaDoubleComplex temp = *A1;
             *A1 = *A2;
@@ -212,16 +393,99 @@ __global__ void zlaswp2_kernel( int n, magmaDoubleComplex *dAT, int lda, int npi
     }
 }
 
-// Swap rows of A, stored row-wise.
-// d_ipiv is vector of pivots stored on the GPU,
-// unlike magmablas_zlaswp where ipiv is stored on the CPU.
-// This interface is identical to LAPACK's laswp interface.
+
+/**
+    Purpose:
+    =============
+    ZLASWP2 performs a series of row interchanges on the matrix A.
+    One row interchange is initiated for each of rows K1 through K2 of A.
+    
+    ** Unlike LAPACK, here A is stored row-wise (hence dAT). **
+    Otherwise, this is identical to LAPACK's interface.
+    
+    Here, d_ipiv is passed in GPU memory.
+    
+    Arguments:
+    ==========
+    \param[in]
+    n        INTEGER
+             The number of columns of the matrix A.
+    
+    \param[in,out]
+    dAT      COMPLEX*16 array on GPU, stored row-wise, dimension (LDA,*)
+             On entry, the matrix of column dimension N to which the row
+             interchanges will be applied.
+             On exit, the permuted matrix.
+    
+    \param[in]
+    lda      INTEGER
+             The leading dimension of the array A.
+             (I.e., stride between elements in a column.)
+    
+    \param[in]
+    k1       INTEGER
+             The first element of IPIV for which a row interchange will
+             be done. (One based index.)
+    
+    \param[in]
+    k2       INTEGER
+             The last element of IPIV for which a row interchange will
+             be done. (One based index.)
+    
+    \param[in]
+    d_ipiv   INTEGER array, on GPU, dimension (K2*abs(INCI))
+             The vector of pivot indices.  Only the elements in positions
+             K1 through K2 of IPIV are accessed.
+             IPIV(K) = L implies rows K and L are to be interchanged.
+    
+    \param[in]
+    inci     INTEGER
+             The increment between successive values of IPIV.
+             Currently, IPIV > 0.
+             TODO: If IPIV is negative, the pivots are applied in reverse order.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zlaswp2_q(
+    magma_int_t n, magmaDoubleComplex* dAT, magma_int_t lda,
+    magma_int_t k1, magma_int_t k2,
+    const magma_int_t *d_ipiv, magma_int_t inci,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+    if ( n < 0 )
+        info = -1;
+    else if ( k1 < 0 )
+        info = -4;  
+    else if ( k2 < 0 || k2 < k1 )
+        info = -5;
+    else if ( inci <= 0 )
+        info = -7;
+
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    int blocks = (n + NTHREADS - 1) / NTHREADS;
+    zlaswp2_kernel<<< blocks, NTHREADS, 0, queue >>>(
+        n, dAT + (k1-1)*lda, lda, k2-(k1-1), d_ipiv, inci );
+}
+
+
+/**
+    @see magmablas_zlaswp2_q
+    @ingroup magma_zaux2
+    ********************************************************************/
 extern "C" void
 magmablas_zlaswp2( magma_int_t n, magmaDoubleComplex* dAT, magma_int_t lda,
-                   magma_int_t i1, magma_int_t i2,
-                   const magma_int_t *d_ipiv )
+                   magma_int_t k1, magma_int_t k2,
+                   const magma_int_t *d_ipiv, magma_int_t inci )
 {
-    int blocks = (n + NTHREADS - 1) / NTHREADS;
-    zlaswp2_kernel<<< blocks, NTHREADS, 0, magma_stream >>>(
-        n, dAT + (i1-1)*lda, lda, i2-(i1-1), d_ipiv );
+    magmablas_zlaswp2_q( n, dAT, lda, k1, k2, d_ipiv, inci, magma_stream );
 }

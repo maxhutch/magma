@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegvdx.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from zhegvdx.cpp normal z -> c, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -146,7 +146,7 @@
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
     @param[out]
-    rwork   (workspace) REAL array, dimension (LRWORK)
+    rwork   (workspace) REAL array, dimension (MAX(1,LRWORK))
             On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
 
     @param[in]
@@ -221,8 +221,7 @@ magma_chegvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
 
     magmaFloatComplex c_one = MAGMA_C_ONE;
 
-    magmaFloatComplex *dA;
-    magmaFloatComplex *dB;
+    magmaFloatComplex *dA=NULL, *dB=NULL;
     magma_int_t ldda = n;
     magma_int_t lddb = n;
 
@@ -338,9 +337,10 @@ magma_chegvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
         return *info;
     }
 
-    // TODO: fix memory leak
     if (MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda ) ||
         MAGMA_SUCCESS != magma_cmalloc( &dB, n*lddb )) {
+        magma_free( dA );
+        magma_free( dB );
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }

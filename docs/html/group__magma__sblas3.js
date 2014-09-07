@@ -1,5 +1,11 @@
 var group__magma__sblas3 =
 [
+    [ "magma_sgemm", "group__magma__sblas3.html#ga26703184bb17f17401e387cbd2a97727", null ],
+    [ "magma_ssymm", "group__magma__sblas3.html#gaf7ef94f5065b5ab886f43e142283ee50", null ],
+    [ "magma_ssyr2k", "group__magma__sblas3.html#ga00717a8b8d406d6cfc5e952a2d76063b", null ],
+    [ "magma_ssyrk", "group__magma__sblas3.html#ga9b715d4fb705fdf4a8051ce56b92538d", null ],
+    [ "magma_strmm", "group__magma__sblas3.html#ga72e0b75128e3abc7215659fac063651d", null ],
+    [ "magma_strsm", "group__magma__sblas3.html#ga8f5ebb3cb916cc79e8a70b8ce5c95cea", null ],
     [ "magma_strsm_m", "group__magma__sblas3.html#ga3aca580d635f97da050847d8a8311196", null ],
     [ "magmablas_sgemm", "group__magma__sblas3.html#gaf625ccbcb84d2d11fed2792ee11ef10a", null ],
     [ "magmablas_sgemm_reduce", "group__magma__sblas3.html#ga7a9b11ca1a24d7c704e8cdb9fb0e1b83", null ],
@@ -9,7 +15,7 @@ var group__magma__sblas3 =
     [ "magmablas_strsm", "group__magma__sblas3.html#ga120e9e6547ddce6584bb8da42d29b185", null ],
     [ "magmablas_strsm_work", "group__magma__sblas3.html#ga189de2336e5f6343f067df1190a89642", null ],
     [ "magmablas_strtri_diag", "group__magma__sblas3.html#gaa20a088eb0daf0f37c1e3e4f81788f4b", null ],
-    [ "magmablas_strtri_diag_stream", "group__magma__sblas3.html#ga082cfe4bd99e1b217c6362166b10170d", null ],
+    [ "magmablas_strtri_diag_q", "group__magma__sblas3.html#ga7332a0b3c14d7771ce6ef3b7b9d9bd08", null ],
     [ "sgemm_kernel_N_N_64_16_16_16_4", "group__magma__sblas3.html#gaffef22784aa9f5705addef50a32167a8", null ],
     [ "sgemm_kernel_N_N_64_16_16_16_4_special", "group__magma__sblas3.html#ga905207a66bde0b1d0f1caed316061210", null ],
     [ "sgemm_kernel_N_T_64_16_4_16_4", "group__magma__sblas3.html#gaad6c2fdad98c1e0ce135aca72c39120b", null ],

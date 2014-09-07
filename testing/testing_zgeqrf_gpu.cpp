@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
 */
@@ -44,24 +44,22 @@ int main( int argc, char** argv)
     opts.lapack |= (opts.version == 2 && opts.check == 2);  // check (-c2) implies lapack (-l)
 
     if ( opts.version != 2 && opts.check == 1 ) {
-        printf( "  ===================================================================\n"
-                "  NOTE: -c check for this version will be wrong\n"
-                "  because tester ignores the special structure of MAGMA zgeqrf resuls.\n"
-                "  We reset it to -c2.\n" 
-                "  ===================================================================\n\n");
+        printf( "NOTE: version %d requires -c2 check due to the special structure of the\n"
+                "MAGMA zgeqrf results; using -c2.\n\n", (int) opts.version );
         opts.check = 2;
     }
+    printf( "version %d\n", (int) opts.version );
     if ( opts.version == 2 ) {
         if ( opts.check == 1 ) {
-            printf("  M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R-Q'A||_1 / (M*||A||_1*eps) ||I-Q'Q||_1 / (M*eps)\n");
+            printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R-Q'A||_1 / (M*||A||_1*eps) ||I-Q'Q||_1 / (M*eps)\n");
             printf("=========================================================================================================\n");
         } else {
-            printf("  M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||A||_F\n");
+            printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||A||_F\n");
             printf("=======================================================================\n");
         }
         tol = 1.0;
     } else {
-        printf("  M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||Ax-b||_F/(N*||A||_F*||x||_F)\n");
+        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||Ax-b||_F/(N*||A||_F*||x||_F)\n");
         printf("====================================================================================\n");
         tol = opts.tolerance * lapackf77_dlamch("E");
     }
@@ -89,7 +87,8 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A,    magmaDoubleComplex, ldda*N );
             
             /* Initialize the matrix */
-            for ( int j=0; j<4; j++ ) ISEED2[j] = ISEED[j]; // saving seeds
+            for ( int j=0; j<4; j++ )
+                ISEED2[j] = ISEED[j]; // save seeds
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             magma_zsetmatrix( M, N, h_R, lda, d_A, ldda );
@@ -134,13 +133,14 @@ int main( int argc, char** argv)
                 TESTING_FREE_CPU( tau2 );
             }
 
-            if ( opts.check == 1 ) {
+            if ( opts.check == 1 && M >= N ) {
                 /* =====================================================================
-                   Check the result 
+                   Check the result -- only version 1, zqrt02 requires M >= N
                    =================================================================== */
                 magma_int_t lwork = n2+N;
                 magmaDoubleComplex *h_W1, *h_W2, *h_W3;
                 double *h_RW, results[2];
+                
                 magma_zgetmatrix( M, N, d_A, ldda, h_R, M );
 
                 TESTING_MALLOC_CPU( h_W1, magmaDoubleComplex, n2    ); // Q
@@ -167,124 +167,115 @@ int main( int argc, char** argv)
                 TESTING_FREE_CPU( h_W3 );
                 TESTING_FREE_CPU( h_RW );
             }
-            else if ( opts.check == 2 ) {
-                if ( opts.version == 2 ) {
-                    /* =====================================================================
-                       Check the result compared to LAPACK
-                       =================================================================== */
-                    magma_zgetmatrix( M, N, d_A, ldda, h_R, M );
-                    error = lapackf77_zlange("f", &M, &N, h_A, &lda, work);
-                    blasf77_zaxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
-                    error = lapackf77_zlange("f", &M, &N, h_R, &lda, work) / error;
+            else if ( opts.check == 2 && opts.version == 2 ) {
+                /* =====================================================================
+                   Check the result compared to LAPACK -- only version 2
+                   =================================================================== */
+                magma_zgetmatrix( M, N, d_A, ldda, h_R, M );
+                error = lapackf77_zlange("f", &M, &N, h_A, &lda, work);
+                blasf77_zaxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
+                error = lapackf77_zlange("f", &M, &N, h_R, &lda, work) / error;
 
-                    if ( opts.lapack ) {
-                        printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e",
-                               (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
-                    } else {
-                        printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e",
-                               (int) M, (int) N, gpu_perf, gpu_time, error );
-                    }
-                    printf("   %s\n", (error < tol ? "ok" : "failed"));
-                    status += ! (error < tol);
+                if ( opts.lapack ) {
+                    printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e",
+                           (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
+                } else {
+                    printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e",
+                           (int) M, (int) N, gpu_perf, gpu_time, error );
                 }
-                else if ( M >= N ) {
-                    magma_int_t lwork;
-                    magmaDoubleComplex *x, *b, *d_B, *hwork;
-                    const magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
-                    const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
-                    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-                    const magma_int_t ione = 1;
+                printf("   %s\n", (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
+            }
+            else if ( opts.check == 2 && M >= N ) {
+                /* =====================================================================
+                   Check the result by solving linear system -- only versions 1 & 3, M >= N
+                   =================================================================== */
+                magma_int_t lwork;
+                magmaDoubleComplex *x, *b, *d_B, *hwork;
+                const magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
+                const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+                const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+                const magma_int_t ione = 1;
 
-                    // initialize RHS, b = A*random
-                    TESTING_MALLOC_CPU( x, magmaDoubleComplex, N );
-                    TESTING_MALLOC_CPU( b, magmaDoubleComplex, M );
-                    lapackf77_zlarnv( &ione, ISEED, &N, x );
-                    blasf77_zgemv( "Notrans", &M, &N, &c_one, h_A, &lda, x, &ione, &c_zero, b, &ione );
-                    // copy to GPU
-                    TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, M );
-                    magma_zsetvector( M, b, 1, d_B, 1 );
+                // initialize RHS, b = A*random
+                TESTING_MALLOC_CPU( x, magmaDoubleComplex, N );
+                TESTING_MALLOC_CPU( b, magmaDoubleComplex, M );
+                lapackf77_zlarnv( &ione, ISEED, &N, x );
+                blasf77_zgemv( "Notrans", &M, &N, &c_one, h_A, &lda, x, &ione, &c_zero, b, &ione );
+                // copy to GPU
+                TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, M );
+                magma_zsetvector( M, b, 1, d_B, 1 );
 
-                    if ( opts.version == 1 ) {
-                        // allocate hwork
-                        magma_zgeqrs_gpu( M, N, 1,
-                                          d_A, ldda, tau, dT,
-                                          d_B, M, tmp, -1, &info );
-                        lwork = (magma_int_t)MAGMA_Z_REAL( tmp[0] );
-                        TESTING_MALLOC_CPU( hwork, magmaDoubleComplex, lwork );
+                if ( opts.version == 1 ) {
+                    // allocate hwork
+                    magma_zgeqrs_gpu( M, N, 1,
+                                      d_A, ldda, tau, dT,
+                                      d_B, M, tmp, -1, &info );
+                    lwork = (magma_int_t)MAGMA_Z_REAL( tmp[0] );
+                    TESTING_MALLOC_CPU( hwork, magmaDoubleComplex, lwork );
 
-                        // solve linear system
-                        magma_zgeqrs_gpu( M, N, 1,
-                                          d_A, ldda, tau, dT,
-                                          d_B, M, hwork, lwork, &info );
-                       if (info != 0)
-                           printf("magma_zgeqrs returned error %d: %s.\n",
-                                  (int) info, magma_strerror( info ));
-                        TESTING_FREE_CPU( hwork );
-                    }
-                    else {
-                        // allocate hwork
-                        magma_zgeqrs3_gpu( M, N, 1,
-                                           d_A, ldda, tau, dT,
-                                           d_B, M, tmp, -1, &info );
-                        lwork = (magma_int_t)MAGMA_Z_REAL( tmp[0] );
-                        TESTING_MALLOC_CPU( hwork, magmaDoubleComplex, lwork );
-
-                        // solve linear system
-                        magma_zgeqrs3_gpu( M, N, 1,
-                                           d_A, ldda, tau, dT,
-                                           d_B, M, hwork, lwork, &info );
-                       if (info != 0)
-                           printf("magma_zgeqrs3 returned error %d: %s.\n",
-                                  (int) info, magma_strerror( info ));
-                        TESTING_FREE_CPU( hwork );
-                    }
-                    magma_zgetvector( N, d_B, 1, x, 1 );
-
-                    // compute r = Ax - b, saved in b
-                    lapackf77_zlarnv( &ione, ISEED2, &n2, h_A );
-                    blasf77_zgemv( "Notrans", &M, &N, &c_one, h_A, &lda, x, &ione, &c_neg_one, b, &ione );
-
-                    // compute residual |Ax - b| / (n*|A|*|x|)
-                    double norm_x, norm_A, norm_r, work[1];
-                    norm_A = lapackf77_zlange( "F", &M, &N, h_A, &lda, work );
-                    norm_r = lapackf77_zlange( "F", &M, &ione, b, &M, work );
-                    norm_x = lapackf77_zlange( "F", &N, &ione, x, &N, work );
-
-                    TESTING_FREE_CPU( x );
-                    TESTING_FREE_CPU( b );
-                    TESTING_FREE_DEV( d_B );
-
-                    error = norm_r / (N * norm_A * norm_x);
-                    if ( opts.lapack ) {
-                        printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e",
-                               (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
-                    } else {
-                        printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e",
-                               (int) M, (int) N, gpu_perf, gpu_time, error );
-                    }
-                    printf("   %s\n", (error < tol ? "ok" : "failed"));
-                    status += ! (error < tol);
+                    // solve linear system
+                    magma_zgeqrs_gpu( M, N, 1,
+                                      d_A, ldda, tau, dT,
+                                      d_B, M, hwork, lwork, &info );
+                   if (info != 0)
+                       printf("magma_zgeqrs returned error %d: %s.\n",
+                              (int) info, magma_strerror( info ));
+                    TESTING_FREE_CPU( hwork );
                 }
                 else {
-                    if ( opts.lapack ) {
-                        printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   --- ",
-                               (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
-                    } else {
-                        printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     --- ",
-                               (int) M, (int) N, gpu_perf, gpu_time);
-                    }
-                    printf("%s\n", (opts.check != 0 ? "  (error check only for M >= N)" : ""));
+                    // allocate hwork
+                    magma_zgeqrs3_gpu( M, N, 1,
+                                       d_A, ldda, tau, dT,
+                                       d_B, M, tmp, -1, &info );
+                    lwork = (magma_int_t)MAGMA_Z_REAL( tmp[0] );
+                    TESTING_MALLOC_CPU( hwork, magmaDoubleComplex, lwork );
+
+                    // solve linear system
+                    magma_zgeqrs3_gpu( M, N, 1,
+                                       d_A, ldda, tau, dT,
+                                       d_B, M, hwork, lwork, &info );
+                   if (info != 0)
+                       printf("magma_zgeqrs3 returned error %d: %s.\n",
+                              (int) info, magma_strerror( info ));
+                    TESTING_FREE_CPU( hwork );
                 }
+                magma_zgetvector( N, d_B, 1, x, 1 );
+
+                // compute r = Ax - b, saved in b
+                lapackf77_zlarnv( &ione, ISEED2, &n2, h_A );
+                blasf77_zgemv( "Notrans", &M, &N, &c_one, h_A, &lda, x, &ione, &c_neg_one, b, &ione );
+
+                // compute residual |Ax - b| / (n*|A|*|x|)
+                double norm_x, norm_A, norm_r, work[1];
+                norm_A = lapackf77_zlange( "F", &M, &N, h_A, &lda, work );
+                norm_r = lapackf77_zlange( "F", &M, &ione, b, &M, work );
+                norm_x = lapackf77_zlange( "F", &N, &ione, x, &N, work );
+
+                TESTING_FREE_CPU( x );
+                TESTING_FREE_CPU( b );
+                TESTING_FREE_DEV( d_B );
+
+                error = norm_r / (N * norm_A * norm_x);
+                if ( opts.lapack ) {
+                    printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e",
+                           (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
+                } else {
+                    printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e",
+                           (int) M, (int) N, gpu_perf, gpu_time, error );
+                }
+                printf("   %s\n", (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
             }
             else {
                 if ( opts.lapack ) {
-                    printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   ---\n",
+                    printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   ---",
                            (int) M, (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
                 } else {
-                    printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
+                    printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---",
                            (int) M, (int) N, gpu_perf, gpu_time);
                 }
-
+                printf("%s\n", (opts.check != 0 ? "  (error check only for M >= N)" : ""));
             }
             
             TESTING_FREE_CPU( tau    );

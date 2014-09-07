@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Azzam Haidar
 
@@ -283,11 +283,12 @@ int main( int argc, char** argv)
                 omp_set_num_threads(i);
                 #endif
     
-                #if defined(PRECISION_z) || defined (PRECISION_c)
-                lapackf77_zheev( "N", "L", &N, h_A, &lda, D2, work2, &lwork2, rwork2, &info );
-                #else
-                lapackf77_dsyev( "N", "L", &N, h_A, &lda, D2, work2, &lwork2, &info );
-                #endif
+                lapackf77_zheev( "N", "L", &N, h_A, &lda, D2, work2, &lwork2,
+                    #if defined(PRECISION_z) || defined (PRECISION_c)
+                    rwork2,
+                    #endif
+                    &info );
+                
                 ///* call eigensolver for our resulting tridiag [D E] and for Q */
                 //dstedc_withZ('V', N, D, E, h_R, lda);
                 ////dsterf_( &N, D, E, &info);

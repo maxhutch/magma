@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Azzam Haidar
        @author Stan Tomov
@@ -15,12 +15,6 @@
 #include "common_magma.h"
 #include "magma_bulge.h"
 #include "magma_zbulge.h"
-#include <cblas.h>
-
-#ifdef MAGMA_SETAFFINITY
-#include "affinity.h"
-#endif
-
 
 #define PRECISION_z
 
@@ -32,82 +26,71 @@ static void magma_ztile_bulge_applyQ(magma_int_t core_id, magma_side_t side, mag
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class magma_zapplyQ_data {
-
-public:
-
-    magma_zapplyQ_data(magma_int_t threads_num_, magma_int_t n_, magma_int_t ne_, magma_int_t n_gpu_,
-                       magma_int_t nb_, magma_int_t Vblksiz_, magmaDoubleComplex *E_, magma_int_t lde_,
-                       magmaDoubleComplex *V_, magma_int_t ldv_, magmaDoubleComplex *TAU_,
-                       magmaDoubleComplex *T_, magma_int_t ldt_, magmaDoubleComplex *dE_, magma_int_t ldde_)
-    :
-    threads_num(threads_num_),
-    n(n_),
-    ne(ne_),
-    n_gpu(n_gpu_),
-    nb(nb_),
-    Vblksiz(Vblksiz_),
-    E(E_),
-    lde(lde_),
-    V(V_),
-    ldv(ldv_),
-    TAU(TAU_),
-    T(T_),
-    ldt(ldt_),
-    dE(dE_),
-    ldde(ldde_)
-    {
-        magma_int_t count = threads_num;
-
-        if (threads_num > 1)
-            --count;
-
-        pthread_barrier_init(&barrier, NULL, count);
-    }
-
-    ~magma_zapplyQ_data()
-    {
-        pthread_barrier_destroy(&barrier);
-    }
-
-    const magma_int_t threads_num;
-    const magma_int_t n;
-    const magma_int_t ne;
-    const magma_int_t n_gpu;
-    const magma_int_t nb;
-    const magma_int_t Vblksiz;
-    magmaDoubleComplex* const E;
-    const magma_int_t lde;
-    magmaDoubleComplex* const V;
-    const magma_int_t ldv;
-    magmaDoubleComplex* const TAU;
-    magmaDoubleComplex* const T;
-    const magma_int_t ldt;
-    magmaDoubleComplex* const dE;
-    const magma_int_t ldde;
+typedef struct magma_zapplyQ_data_s {
+    magma_int_t threads_num;
+    magma_int_t n;
+    magma_int_t ne;
+    magma_int_t n_gpu;
+    magma_int_t nb;
+    magma_int_t Vblksiz;
+    magmaDoubleComplex* E;
+    magma_int_t lde;
+    magmaDoubleComplex* V;
+    magma_int_t ldv;
+    magmaDoubleComplex* TAU;
+    magmaDoubleComplex* T;
+    magma_int_t ldt;
+    magmaDoubleComplex* dE;
+    magma_int_t ldde;
     pthread_barrier_t barrier;
+} magma_zapplyQ_data;
 
-private:
+void magma_zapplyQ_data_init(magma_zapplyQ_data *zapplyQ_data, magma_int_t threads_num, magma_int_t n, magma_int_t ne, magma_int_t n_gpu,
+        magma_int_t nb, magma_int_t Vblksiz, magmaDoubleComplex *E, magma_int_t lde,
+        magmaDoubleComplex *V, magma_int_t ldv, magmaDoubleComplex *TAU,
+        magmaDoubleComplex *T, magma_int_t ldt, magmaDoubleComplex *dE, magma_int_t ldde)
+{
 
-    magma_zapplyQ_data(magma_zapplyQ_data& data); // disable copy
-};
+    zapplyQ_data->threads_num = threads_num;
+    zapplyQ_data->n = n;
+    zapplyQ_data->ne = ne;
+    zapplyQ_data->n_gpu = n_gpu;
+    zapplyQ_data->nb = nb;
+    zapplyQ_data->Vblksiz = Vblksiz;
+    zapplyQ_data->E = E;
+    zapplyQ_data->lde = lde;
+    zapplyQ_data->V = V;
+    zapplyQ_data->ldv = ldv;
+    zapplyQ_data->TAU = TAU;
+    zapplyQ_data->T = T;
+    zapplyQ_data->ldt = ldt;
+    zapplyQ_data->dE = dE;
+    zapplyQ_data->ldde = ldde;
 
-class magma_zapplyQ_id_data {
+    magma_int_t count = zapplyQ_data->threads_num;
 
-public:
+    if (zapplyQ_data->threads_num > 1)
+        --count;
 
-    magma_zapplyQ_id_data()
-    : id(-1), data(NULL)
-    {}
+    pthread_barrier_init(&(zapplyQ_data->barrier), NULL, count);
+}
 
-    magma_zapplyQ_id_data(magma_int_t id_, magma_zapplyQ_data* data_)
-    : id(id_), data(data_)
-    {}
+void magma_zapplyQ_data_destroy(magma_zapplyQ_data *zapplyQ_data)
+{
+    pthread_barrier_destroy(&(zapplyQ_data->barrier));
+}
 
+typedef struct magma_zapplyQ_id_data {
     magma_int_t id;
     magma_zapplyQ_data* data;
-};
+} magma_zapplyQ_id_data;
 
+void magma_zapplyQ_id_data_init(magma_zapplyQ_id_data *zapplyQ_id_data,
+        magma_int_t id, magma_zapplyQ_data* data)
+{
+    zapplyQ_id_data->id = id;
+    zapplyQ_id_data->data = data;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C" magma_int_t
@@ -166,7 +149,8 @@ magma_zbulge_back(magma_uplo_t uplo,
         #ifdef ENABLE_DEBUG
         printf("---> calling GPU + CPU(if N_CPU > 0) to apply V2 to Z with NE %d     N_GPU %d   N_CPU %d\n",ne, n_gpu, ne-n_gpu);
         #endif
-        magma_zapplyQ_data data_applyQ(threads, n, ne, n_gpu, nb, Vblksiz, Z, ldz, V, ldv, TAU, T, ldt, dZ, lddz);
+        magma_zapplyQ_data data_applyQ;
+        magma_zapplyQ_data_init(&data_applyQ, threads, n, ne, n_gpu, nb, Vblksiz, Z, ldz, V, ldv, TAU, T, ldt, dZ, lddz);
 
         magma_zapplyQ_id_data* arg;
         magma_malloc_cpu((void**) &arg, threads*sizeof(magma_zapplyQ_id_data));
@@ -186,10 +170,10 @@ magma_zbulge_back(magma_uplo_t uplo,
 
         // Launch threads
         for (magma_int_t thread = 1; thread < threads; thread++) {
-            arg[thread] = magma_zapplyQ_id_data(thread, &data_applyQ);
+            magma_zapplyQ_id_data_init(&(arg[thread]), thread, &data_applyQ);
             pthread_create(&thread_id[thread], &thread_attr, magma_zapplyQ_parallel_section, &arg[thread]);
         }
-        arg[0] = magma_zapplyQ_id_data(0, &data_applyQ);
+        magma_zapplyQ_id_data_init(&(arg[0]), 0, &data_applyQ);
         magma_zapplyQ_parallel_section(&arg[0]);
 
         // Wait for completion
@@ -200,6 +184,8 @@ magma_zbulge_back(magma_uplo_t uplo,
 
         magma_free_cpu(thread_id);
         magma_free_cpu(arg);
+        magma_zapplyQ_data_destroy(&data_applyQ);
+
 
         magma_zsetmatrix(n, ne-n_gpu, Z + n_gpu*ldz, ldz, dZ + n_gpu*ldz, lddz);
 
@@ -259,20 +245,16 @@ static void *magma_zapplyQ_parallel_section(void *arg)
     affinity_set print_set;
     print_set.print_affinity(my_core_id, "starting affinity");
 #endif
-    affinity_set original_set;
-    affinity_set new_set(my_core_id);
-    int check  = 0;
-    int check2 = 0;
+    cpu_set_t old_set, new_set;
+
+    //store current affinity
+    CPU_ZERO(&old_set);
+    sched_getaffinity( 0, sizeof(old_set), &old_set);
+    //set new affinity
     // bind threads
-    check = original_set.get_affinity();
-    if (check == 0) {
-        check2 = new_set.set_affinity();
-        if (check2 != 0)
-            printf("Error in sched_setaffinity (single cpu)\n");
-    }
-    else {
-        printf("Error in sched_getaffinity\n");
-    }
+    CPU_ZERO(&new_set);
+    CPU_SET(my_core_id, &new_set);
+    sched_setaffinity( 0, sizeof(new_set), &new_set) ;       
 #ifdef PRINTAFFINITY
     print_set.print_affinity(my_core_id, "set affinity");
 #endif
@@ -321,12 +303,8 @@ static void *magma_zapplyQ_parallel_section(void *arg)
     } // END if my_core_id
 
 #ifdef MAGMA_SETAFFINITY
-    // unbind threads
-    if (check == 0) {
-        check2 = original_set.set_affinity();
-        if (check2 != 0)
-            printf("Error in sched_setaffinity (restore cpu list)\n");
-    }
+    //restore old affinity
+    sched_setaffinity(0, sizeof(old_set), &old_set);
 #ifdef PRINTAFFINITY
     print_set.print_affinity(my_core_id, "restored_affinity");
 #endif

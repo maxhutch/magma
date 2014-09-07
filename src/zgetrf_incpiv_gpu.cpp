@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -48,7 +48,7 @@
             The inner-blocking size.  IB >= 0.
 
     @param[in,out]
-    hA      DOUBLE COMPLEX array, dimension(LDHA, N), on cpu.
+    hA      COMPLEX_16 array, dimension(LDHA, N), on cpu.
             On entry, only the M-by-IB first panel needs to be identical to dA(1..M, 1..IB).
             On exit, the content is incomplete. Shouldn't be used.
 
@@ -57,7 +57,7 @@
             The leading dimension of the array hA.  LDHA >= max(1,M).
 
     @param[in,out]
-    dA      DOUBLE COMPLEX array, dimension(LDDA, N), on gpu.
+    dA      COMPLEX_16 array, dimension(LDDA, N), on gpu.
             On entry, the M-by-N tile to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
@@ -67,7 +67,7 @@
             The leading dimension of the array dA.  LDDA >= max(1,M).
 
     @param[out]
-    hL      DOUBLE COMPLEX array, dimension(LDHL, min(M,N)), on vpu.
+    hL      COMPLEX_16 array, dimension(LDHL, min(M,N)), on vpu.
             On exit, contains in the upper part the IB-by-K lower triangular tile,
             and in the lower part IB-by-min(M,N) the inverse of the top part.
 
@@ -76,7 +76,7 @@
             The leading dimension of the array hL.  LDHL >= max(1,2*IB).
 
     @param[out]
-    dL      DOUBLE COMPLEX array, dimension(LDDL, K), on gpu.
+    dL      COMPLEX_16 array, dimension(LDDL, K), on gpu.
             On exit, contains in the upper part the IB-by-min(M,N) lower triangular tile,
             and in the lower part IB-by-min(M,N) the inverse of the top part.
 
@@ -89,7 +89,7 @@
             The pivot indices array.
 
     @param[out]
-    dWORK   DOUBLE COMPLEX array, dimension(LDDWORK, 2*IB), on gpu.
+    dWORK   COMPLEX_16 array, dimension(LDDWORK, 2*IB), on gpu.
             Workspace.
 
     @param[in]

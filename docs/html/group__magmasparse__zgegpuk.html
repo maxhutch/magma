@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__zgegpuk.html','');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -111,12 +114,6 @@ $(document).ready(function(){initNavTree('group__magmasparse__zgegpuk.html','');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga06c02857f0372fdbbf92ee7975f8d3d9"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga06c02857f0372fdbbf92ee7975f8d3d9">magma_zailu_csr_a</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix L, magma_z_sparse_matrix U)</td></tr>
-<tr class="memdesc:ga06c02857f0372fdbbf92ee7975f8d3d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes the ILU approximation of a matrix iteratively.  <a href="#ga06c02857f0372fdbbf92ee7975f8d3d9">More...</a><br /></td></tr>
-<tr class="separator:ga06c02857f0372fdbbf92ee7975f8d3d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga318ef374e9c55d48286be1b04586a8d6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga318ef374e9c55d48286be1b04586a8d6">magma_zailu_csr_s</a> (magma_z_sparse_matrix A_L, magma_z_sparse_matrix A_U, magma_z_sparse_matrix L, magma_z_sparse_matrix U)</td></tr>
-<tr class="memdesc:ga318ef374e9c55d48286be1b04586a8d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes the ILU approximation of a matrix iteratively.  <a href="#ga318ef374e9c55d48286be1b04586a8d6">More...</a><br /></td></tr>
-<tr class="separator:ga318ef374e9c55d48286be1b04586a8d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6460286dbd4b0f469215c74cdfb16b5e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga6460286dbd4b0f469215c74cdfb16b5e">magma_zbajac_csr</a> (magma_int_t localiters, magma_z_sparse_matrix D, magma_z_sparse_matrix R, magma_z_vector b, magma_z_vector *x)</td></tr>
 <tr class="memdesc:ga6460286dbd4b0f469215c74cdfb16b5e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine is a block-asynchronous Jacobi iteration performing s local Jacobi-updates within the block.  <a href="#ga6460286dbd4b0f469215c74cdfb16b5e">More...</a><br /></td></tr>
 <tr class="separator:ga6460286dbd4b0f469215c74cdfb16b5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -141,9 +138,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gab0f82605a9b3c2d64015d56c68298938"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#gab0f82605a9b3c2d64015d56c68298938">magma_zcompact</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda, double *dnorms, double tol, magma_index_t *active, magma_index_t *cBlock)</td></tr>
 <tr class="memdesc:gab0f82605a9b3c2d64015d56c68298938"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZCOMPACT takes a set of n vectors of size m (in dA) and their norms and compacts them into the cBlock size&lt;=n vectors that have norms &gt; tol.  <a href="#gab0f82605a9b3c2d64015d56c68298938">More...</a><br /></td></tr>
 <tr class="separator:gab0f82605a9b3c2d64015d56c68298938"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2ba39137f41e2b87552eaa83db4ee739"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga2ba39137f41e2b87552eaa83db4ee739">magma_zjacobisetup_vector_gpu</a> (int num_rows, magmaDoubleComplex *b, magmaDoubleComplex *d, magmaDoubleComplex *c)</td></tr>
-<tr class="memdesc:ga2ba39137f41e2b87552eaa83db4ee739"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#ga2ba39137f41e2b87552eaa83db4ee739">More...</a><br /></td></tr>
-<tr class="separator:ga2ba39137f41e2b87552eaa83db4ee739"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga410fbac603124e02176f1a3993c24f2e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga410fbac603124e02176f1a3993c24f2e">magma_zjacobisetup_vector_gpu</a> (int num_rows, magmaDoubleComplex *b, magmaDoubleComplex *d, magmaDoubleComplex *c, magmaDoubleComplex *x)</td></tr>
+<tr class="memdesc:ga410fbac603124e02176f1a3993c24f2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#ga410fbac603124e02176f1a3993c24f2e">More...</a><br /></td></tr>
+<tr class="separator:ga410fbac603124e02176f1a3993c24f2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1e9a38dfc24a411b4db2ae541c6e7879"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga1e9a38dfc24a411b4db2ae541c6e7879">magma_zlobpcg_maxpy</a> (magma_int_t num_rows, magma_int_t num_vecs, magmaDoubleComplex *X, magmaDoubleComplex *Y)</td></tr>
 <tr class="memdesc:ga1e9a38dfc24a411b4db2ae541c6e7879"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes a axpy for a mxn matrix:  <a href="#ga1e9a38dfc24a411b4db2ae541c6e7879">More...</a><br /></td></tr>
 <tr class="separator:ga1e9a38dfc24a411b4db2ae541c6e7879"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,103 +165,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gaeef32f1a72647465a00762dbcd4d4007"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#gaeef32f1a72647465a00762dbcd4d4007">magma_zbicgmerge_xrbeta</a> (int n, magmaDoubleComplex *d1, magmaDoubleComplex *d2, magmaDoubleComplex *rr, magmaDoubleComplex *r, magmaDoubleComplex *p, magmaDoubleComplex *s, magmaDoubleComplex *t, magmaDoubleComplex *x, magmaDoubleComplex *skp)</td></tr>
 <tr class="memdesc:gaeef32f1a72647465a00762dbcd4d4007"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the second SpmV using CSR with the dot product and the computation of omega.  <a href="#gaeef32f1a72647465a00762dbcd4d4007">More...</a><br /></td></tr>
 <tr class="separator:gaeef32f1a72647465a00762dbcd4d4007"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1e4578404d80b5841a8268b7ab84a1c5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zgegpuk.html#ga1e4578404d80b5841a8268b7ab84a1c5">magma_zcgmerge_spmv1</a> (magma_z_sparse_matrix A, magmaDoubleComplex *d1, magmaDoubleComplex *d2, magmaDoubleComplex *d_d, magmaDoubleComplex *d_z, magmaDoubleComplex *skp)</td></tr>
+<tr class="memdesc:ga1e4578404d80b5841a8268b7ab84a1c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the first SpmV using different formats with the dot product and the computation of rho.  <a href="#ga1e4578404d80b5841a8268b7ab84a1c5">More...</a><br /></td></tr>
+<tr class="separator:ga1e4578404d80b5841a8268b7ab84a1c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ga06c02857f0372fdbbf92ee7975f8d3d9"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zailu_csr_a </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>U</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This routine computes the ILU approximation of a matrix iteratively. </p>
-<p>The idea is according to Edmond Chow's presentation at SIAM 2014. The input format of the matrix is Magma_CSRCOO for the upper and lower triangular parts. Note however, that we flip col and rowidx for the U-part. Every component of L and U is handled by one thread.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A_L</td><td>magma_z_sparse_matrix input matrix L</td></tr>
-    <tr><td class="paramname">A_U</td><td>magma_z_sparse_matrix input matrix U</td></tr>
-    <tr><td class="paramname">L</td><td>magma_z_sparse_matrix input/output matrix L containing the ILU approximation</td></tr>
-    <tr><td class="paramname">U</td><td>magma_z_sparse_matrix input/output matrix U containing the ILU approximation </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga318ef374e9c55d48286be1b04586a8d6"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zailu_csr_s </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A_L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A_U</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>U</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This routine computes the ILU approximation of a matrix iteratively. </p>
-<p>The idea is according to Edmond Chow's presentation at SIAM 2014. The input format of the matrix is Magma_CSRCOO for the upper and lower triangular parts. Note however, that we flip col and rowidx for the U-part. Every component of L and U is handled by one thread.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A_L</td><td>magma_z_sparse_matrix input matrix L</td></tr>
-    <tr><td class="paramname">A_U</td><td>magma_z_sparse_matrix input matrix U</td></tr>
-    <tr><td class="paramname">L</td><td>magma_z_sparse_matrix input/output matrix L containing the ILU approximation</td></tr>
-    <tr><td class="paramname">U</td><td>magma_z_sparse_matrix input/output matrix U containing the ILU approximation </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga6460286dbd4b0f469215c74cdfb16b5e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1133,6 +1039,69 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga1e4578404d80b5841a8268b7ab84a1c5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zcgmerge_spmv1 </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>d1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>d2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>d_d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>d_z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>skp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Merges the first SpmV using different formats with the dot product and the computation of rho. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix input matrix</td></tr>
+    <tr><td class="paramname">d1</td><td>magmaDoubleComplex* temporary vector</td></tr>
+    <tr><td class="paramname">d2</td><td>magmaDoubleComplex* temporary vector</td></tr>
+    <tr><td class="paramname">d_d</td><td>magmaDoubleComplex* input vector d</td></tr>
+    <tr><td class="paramname">d_z</td><td>magmaDoubleComplex* input vector z</td></tr>
+    <tr><td class="paramname">skp</td><td>magmaDoubleComplex* array for parameters ( skp[3]=rho ) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="gab0f82605a9b3c2d64015d56c68298938"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1211,7 +1180,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga2ba39137f41e2b87552eaa83db4ee739"></a>
+<a class="anchor" id="ga410fbac603124e02176f1a3993c24f2e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1237,7 +1206,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>c</em>&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>x</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1254,7 +1229,8 @@ Functions</h2></td></tr>
     <tr><td class="paramname">num_rows</td><td>magma_int_t number of rows</td></tr>
     <tr><td class="paramname">b</td><td>magma_z_vector RHS b</td></tr>
     <tr><td class="paramname">d</td><td>magma_z_vector vector with diagonal entries</td></tr>
-    <tr><td class="paramname">c</td><td>magma_z_vector* c = D^(-1) * b </td></tr>
+    <tr><td class="paramname">c</td><td>magma_z_vector* c = D^(-1) * b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_z_vector* iteration vector </td></tr>
   </table>
   </dd>
 </dl>
@@ -1320,7 +1296,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

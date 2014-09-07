@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__sgeev__aux.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -124,7 +127,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga71cba043adcb464ba130a8f249d27268"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLAHRU is an auxiliary MAGMA routine that is used in SGEHRD to update the trailing sub-matrices after the reductions of the corresponding panels.  <a href="#ga71cba043adcb464ba130a8f249d27268">More...</a><br /></td></tr>
 <tr class="separator:ga71cba043adcb464ba130a8f249d27268"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9da2eeaaaf0396e82d2561db3b9a10a4"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgeev__aux.html#ga9da2eeaaaf0396e82d2561db3b9a10a4">magma_slaqtrsd</a> (magma_trans_t trans, magma_int_t n, const float *T, magma_int_t ldt, float *x, magma_int_t ldx, const float *cnorm, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga9da2eeaaaf0396e82d2561db3b9a10a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">DLAQTRSD is used by STREVC to solve one of the (singular) quasi-triangular systems with modified diagonal (T - lambda*I) * x = 0 or (T - lambda*I)**T * x = 0 with scaling to prevent overflow.  <a href="#ga9da2eeaaaf0396e82d2561db3b9a10a4">More...</a><br /></td></tr>
+<tr class="memdesc:ga9da2eeaaaf0396e82d2561db3b9a10a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLAQTRSD is used by STREVC to solve one of the (singular) quasi-triangular systems with modified diagonal (T - lambda*I) * x = 0 or (T - lambda*I)**T * x = 0 with scaling to prevent overflow.  <a href="#ga9da2eeaaaf0396e82d2561db3b9a10a4">More...</a><br /></td></tr>
 <tr class="separator:ga9da2eeaaaf0396e82d2561db3b9a10a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -649,7 +652,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
       </table>
 </div><div class="memdoc">
 
-<p>DLAQTRSD is used by STREVC to solve one of the (singular) quasi-triangular systems with modified diagonal (T - lambda*I) * x = 0 or (T - lambda*I)**T * x = 0 with scaling to prevent overflow. </p>
+<p>SLAQTRSD is used by STREVC to solve one of the (singular) quasi-triangular systems with modified diagonal (T - lambda*I) * x = 0 or (T - lambda*I)**T * x = 0 with scaling to prevent overflow. </p>
 <p>Here T is an upper quasi-triangular matrix with 1x1 or 2x2 diagonal blocks, A**T denotes the transpose of A, and x is an n-element real or complex vector. The eigenvalue lambda is computed from the block diagonal of T. It does not modify T during the computation.</p>
 <p>If trans = MagmaNoTrans, lambda is an eigenvalue for the lower 1x1 or 2x2 block, and it solves ( [ That u ] - lambda*I ) * x = 0, ( [ 0 lambda ] ) which becomes (That - lambda*I) * w = -s*u, with x = [ w ; 1 ] and scaling s. If the lower block is 1x1, lambda and x are real; if the lower block is 2x2, lambda and x are complex.</p>
 <p>If trans = MagmaTrans, lambda is an eigenvalue for the upper 1x1 or 2x2 block, and it solves ( [ lambda v^T ] - lambda I )**T * x = 0, ( [ 0 That ] ) which becomes (That - lambda*I)**T * w = -s*v, with x = [ 1 ; w ] and scaling s. If the upper block is 1x1, lambda and x are real; if the upper block is 2x2, lambda and x are complex.</p>
@@ -661,9 +664,9 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix T. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">T</td><td>COMPLEX_16 array, dimension (LDT,N) The triangular matrix T. The leading n by n upper triangular part of the array T contains the upper triangular matrix, and the strictly lower triangular part of T is not referenced.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">T</td><td>REAL array, dimension (LDT,N) The triangular matrix T. The leading n by n upper triangular part of the array T contains the upper triangular matrix, and the strictly lower triangular part of T is not referenced.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldt</td><td>INTEGER The leading dimension of the array T. LDT &gt;= max (1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">x</td><td>COMPLEX_16 array, dimension (LDX,1) or (LDX,2). On exit, X is overwritten by the solution vector x. If LAMBDAI .EQ. 0, X is real and has dimension (LDX,1). If LAMBDAI .NE. 0, X is complex and has dimension (LDX,2); the real part is in X(:,0), the imaginary part in X(:,1).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">x</td><td>REAL array, dimension (LDX,1) or (LDX,2). On exit, X is overwritten by the solution vector x. If LAMBDAI .EQ. 0, X is real and has dimension (LDX,1). If LAMBDAI .NE. 0, X is complex and has dimension (LDX,2); the real part is in X(:,0), the imaginary part in X(:,1).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldx</td><td>INTEGER The leading dimension of the array X. LDX &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">cnorm</td><td>(input) REAL array, dimension (N) CNORM(j) contains the norm of the off-diagonal part of the j-th column of T. If TRANS = MagmaNoTrans, CNORM(j) must be greater than or equal to the infinity-norm, and if TRANS = MagmaTrans or MagmaConjTrans, CNORM(j) must be greater than or equal to the 1-norm.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -682,7 +685,7 @@ form through hybrid GPU-based computing," University of Tennessee Computer Scien
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:43 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

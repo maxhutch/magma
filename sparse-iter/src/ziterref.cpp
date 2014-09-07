@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hartwig Anzt 
 
@@ -11,7 +11,7 @@
 */
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #include <assert.h>
 
@@ -108,7 +108,7 @@ magma_ziterref( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
                                                     solver_par->numiter++ ){
 
         magma_zscal( dofs, MAGMA_Z_MAKE(1./nom, 0.), r.val, 1) ;  // scale it
-        magma_z_precond( A, r, &z, *precond_par );  // inner solver:  A * z = r
+        magma_z_precond( A, r, &z, precond_par );  // inner solver:  A * z = r
         magma_zscal( dofs, MAGMA_Z_MAKE(nom, 0.), z.val, 1) ;  // scale it
         magma_zaxpy(dofs,  c_one, z.val, 1, x->val, 1);        // x = x + z
         magma_z_spmv( c_mone, A, *x, c_zero, r );              // r = - A x

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zhemv_mgpu.cpp normal z -> c, Fri Jul 18 17:34:23 2014
+       @generated from testing_zhemv_mgpu.cpp normal z -> c, Tue Sep  2 12:38:27 2014
 */
 
 #include <stdlib.h>
@@ -14,7 +14,6 @@
 #include <math.h>
 #include <cuda_runtime_api.h>
 #include <cublas_v2.h>
-#include <cblas.h>
 
 #include "flops.h"
 #include "magma.h"
@@ -219,12 +218,12 @@ int main(int argc, char **argv)
 
 #if  0
             /*
-             * Extra check with cblas vs magma
+             * Extra check with BLAS vs magma
              */
-            cblas_ccopy( N, Y, incx, Ycublas, incx );
-            cblas_chemv( CblasColMajor, CblasLower, N,
-                         CBLAS_SADDR(alpha), A, lda, X, incx,
-                         CBLAS_SADDR(beta), Ycublas, incx );
+            blasf77_ccopy( &N, Y, &incx, Ycublas, &incx );
+            blasf77_chemv( lapack_uplo_const(opts.uplo), N,
+                           alpha, A, lda, X, incx,
+                           beta,  Ycublas, incx );
             
             blasf77_caxpy( &N, &c_neg_one, Ymagma, &incx, Ycublas, &incx);
             error = lapackf77_clange( "N", &N, &ione, Ycublas, &N, work ) / N;

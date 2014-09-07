@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -11,7 +11,7 @@
 */
 #include "magma_lapack.h"
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #include <assert.h>
 
@@ -24,12 +24,7 @@
 #define RTOLERANCE     lapackf77_dlamch( "E" )
 #define ATOLERANCE     lapackf77_dlamch( "E" )
 
-/** -- MAGMA (version 1.5.0-beta3) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
-
+/**
     Purpose
     -------
 
@@ -296,12 +291,7 @@ magma_zsolverinfo( magma_z_solver_par *solver_par,
 }
 
 
-/** -- MAGMA (version 1.5.0-beta3) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
-
+/**
     Purpose
     -------
 
@@ -346,10 +336,17 @@ magma_zsolverinfo_free( magma_z_solver_par *solver_par,
         magma_free_cpu( solver_par->eigenvalues );
         solver_par->eigenvalues = NULL;
     }
-
     if( precond_par->d.val != NULL ){
         magma_free( precond_par->d.val );
         precond_par->d.val = NULL;
+    }
+    if( precond_par->work1.val != NULL ){
+        magma_free( precond_par->work1.val );
+        precond_par->work1.val = NULL;
+    }
+    if( precond_par->work2.val != NULL ){
+        magma_free( precond_par->work2.val );
+        precond_par->work2.val = NULL;
     }
     if( precond_par->M.val != NULL ){
         if ( precond_par->M.memory_location == Magma_DEV )
@@ -494,12 +491,7 @@ magma_zsolverinfo_free( magma_z_solver_par *solver_par,
     return MAGMA_SUCCESS;
 }
 
-/** -- MAGMA (version 1.5.0-beta3) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
-
+/**
     Purpose
     -------
 
@@ -569,6 +561,8 @@ magma_zsolverinfo_init( magma_z_solver_par *solver_par,
     }  
 
     precond_par->d.val = NULL;
+    precond_par->work1.val = NULL;
+    precond_par->work2.val = NULL;
 
     precond_par->M.val = NULL;
     precond_par->M.col = NULL;

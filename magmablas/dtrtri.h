@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from ztrtri.h normal z -> d, Fri Jul 18 17:34:13 2014
+       @generated from ztrtri.h normal z -> d, Tue Sep  2 12:38:17 2014
 
        @author Peng Du
        @author Tingxing Dong
@@ -166,7 +166,11 @@ dtrtri_diag_kernel_upper(
     magma_diag_t diag, int n, const double *A, int lda, double *d_invA);
 
 __global__ void
-triple_dgemm16_upper(
+triple_dgemm16_part1_upper(
+    int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
+
+__global__ void
+triple_dgemm16_part2_upper(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void

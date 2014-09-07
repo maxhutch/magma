@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__cgesvd__driver.html','')
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -112,7 +115,7 @@ $(document).ready(function(){initNavTree('group__magma__cgesvd__driver.html','')
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:gabdfa5370c04558dc13a6431907fe0c05"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cgesvd__driver.html#gabdfa5370c04558dc13a6431907fe0c05">magma_cgesdd</a> (magma_vec_t jobz, magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, float *s, magmaFloatComplex *U, magma_int_t ldu, magmaFloatComplex *VT, magma_int_t ldvt, magmaFloatComplex *work, magma_int_t lwork, float *rwork, magma_int_t *iwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:gabdfa5370c04558dc13a6431907fe0c05"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGESDD computes the singular value decomposition (SVD) of a complex M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method.  <a href="#gabdfa5370c04558dc13a6431907fe0c05">More...</a><br /></td></tr>
+<tr class="memdesc:gabdfa5370c04558dc13a6431907fe0c05"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGESDD computes the singular value decomposition (SVD) of a complex M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method.  <a href="#gabdfa5370c04558dc13a6431907fe0c05">More...</a><br /></td></tr>
 <tr class="separator:gabdfa5370c04558dc13a6431907fe0c05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4fabaf4f2eb541d45768429d7ef8979a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cgesvd__driver.html#ga4fabaf4f2eb541d45768429d7ef8979a">magma_cgesvd</a> (magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, float *s, magmaFloatComplex *U, magma_int_t ldu, magmaFloatComplex *VT, magma_int_t ldvt, magmaFloatComplex *work, magma_int_t lwork, float *rwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga4fabaf4f2eb541d45768429d7ef8979a"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGESVD computes the singular value decomposition (SVD) of a complex M-by-N matrix A, optionally computing the left and/or right singular vectors.  <a href="#ga4fabaf4f2eb541d45768429d7ef8979a">More...</a><br /></td></tr>
@@ -222,7 +225,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>ZGESDD computes the singular value decomposition (SVD) of a complex M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method. </p>
+<p>CGESDD computes the singular value decomposition (SVD) of a complex M-by-N matrix A, optionally computing the left and right singular vectors, by using divide-and-conquer method. </p>
 <p>The SVD is written </p><pre class="fragment">A = U * SIGMA * conjugate-transpose(V)
 </pre><p>where SIGMA is an M-by-N matrix which is zero except for its min(m,n) diagonal elements, U is an M-by-M unitary matrix, and V is an N-by-N unitary matrix. The diagonal elements of SIGMA are the singular values of A; they are real and non-negative, and are returned in descending order. The first min(m,n) columns of U and V are the left and right singular vectors of A.</p>
 <p>Note that the routine returns VT = V**H, not V.</p>
@@ -259,13 +262,13 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldvt</td><td>INTEGER The leading dimension of the array VT. LDVT &gt;= 1; if JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &gt;= N, LDVT &gt;= N; if JOBZ = MagmaSomeVec, LDVT &gt;= min(M,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,lwork)) On exit, if INFO = 0, WORK[1] returns the optimal lwork.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,lwork)) On exit, if INFO = 0, WORK[0] returns the optimal lwork.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. Let x = max(M,N) and y = min(M,N). The optimal block size nb can be obtained through magma_get_dgesvd_nb(N). The threshold for x &gt;&gt; y currently is x &gt;= int( y*17/9 ). Required size different than in LAPACK.* In most cases, these sizes should give optimal performance for both MAGMA and LAPACK.<ul>
 <li>If JOBZ = MagmaNoVec, if x &gt;&gt; y, LWORK &gt;= 2*y + (2*y)*nb; otherwise, LWORK &gt;= 2*y + (x+y)*nb.</li>
 <li>If JOBZ = MagmaOverwriteVec, if x &gt;&gt; y, LWORK &gt;= 2*y*y + 2*y + (2*y)*nb; otherwise, LWORK &gt;= 2*y + max( (x+y)*nb, y*y + x ), prefer LWORK &gt;= 2*y + max( (x+y)*nb, x*y + y*nb ).</li>
 <li>If JOBZ = MagmaSomeVec, if x &gt;&gt; y, LWORK &gt;= y*y + 2*y + (2*y)*nb; otherwise, LWORK &gt;= 2*y + (x+y)*nb.</li>
 <li>If JOBZ = MagmaAllVec, if x &gt;&gt; y, LWORK &gt;= y*y + 2*y + max( (2*y)*nb, x    ), prefer LWORK &gt;= y*y + 2*y + max( (2*y)*nb, x*nb ); otherwise, LWORK &gt;= 2*y + (x+y)*nb. <br />
- If lwork = -1, a workspace query is assumed. The optimal size for the WORK array is calculated and stored in WORK[1], and no other work except argument checking is performed.</li>
+ If lwork = -1, a workspace query is assumed. The optimal size for the WORK array is calculated and stored in WORK[0], and no other work except argument checking is performed.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir"></td><td class="paramname">rwork</td><td>(workspace) REAL array, dimension (MAX(1,LRWORK)) Let x = max(M,N) and y = min(M,N). These sizes should work for both MAGMA and LAPACK. If JOBZ = MagmaNoVec, LRWORK &gt;= 5*y. If JOBZ != MagmaNoVec, if x &gt;&gt; y, LRWORK &gt;= 5*y*y + 5*y; otherwise, LRWORK &gt;= max( 5*y*y + 5*y, 2*x*y + 2*y*y + y ). <br />
@@ -436,7 +439,7 @@ Functions</h2></td></tr>
 <li>if JOBVT = MagmaSomeVec, LDVT &gt;= min(M,N).</li>
 </ul>
 </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the required LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the required LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= (M+N)*nb + 2*min(M,N). For optimum performance with some paths (m &gt;&gt; n and jobu=A,S,O; or n &gt;&gt; m and jobvt=A,S,O), LWORK &gt;= (M+N)*nb + 2*min(M,N) + 2*min(M,N)**2 (see comments inside code). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the required size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">rwork</td><td>(workspace) DOUBLE_PRECISION array, dimension (5*min(M,N)) On exit, if INFO &gt; 0, RWORK(1:MIN(M,N)-1) contains the unconverged superdiagonal elements of an upper bidiagonal matrix B whose diagonal is in S (not necessarily sorted). B satisfies A = U * B * VT, so it has the same singular values as A, and singular vectors related by U and VT.</td></tr>
@@ -457,7 +460,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:43 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:48 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

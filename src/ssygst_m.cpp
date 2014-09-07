@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegst_m.cpp normal z -> s, Fri Jul 18 17:34:19 2014
+       @generated from zhegst_m.cpp normal z -> s, Tue Sep  2 12:38:23 2014
 */
 #include "common_magma.h"
-#include <cblas.h>
 
 
 static void magma_ssygst_m_1_L_col_update(magma_int_t nk, magma_int_t nb, float* dA_col, magma_int_t ldda,
@@ -27,12 +26,12 @@ static void magma_ssygst_m_1_U_row_update(magma_int_t nk, magma_int_t nb, float*
     eigenproblem to standard form.
     
     If ITYPE = 1, the problem is A*x = lambda*B*x,
-    and A is overwritten by inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T)
+    and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)
     
     If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or
-    B*A*x = lambda*x, and A is overwritten by U*A*U**T or L**T*A*L.
+    B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.
     
-    B must have been previously factorized as U**T*U or L*L**T by SPOTRF.
+    B must have been previously factorized as U**H*U or L*L**H by SPOTRF.
     
     Arguments
     ---------
@@ -42,13 +41,13 @@ static void magma_ssygst_m_1_U_row_update(magma_int_t nk, magma_int_t nb, float*
 
     @param[in]
     itype   INTEGER
-            = 1: compute inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T);
-            = 2 or 3: compute U*A*U**T or L**T*A*L.
+            = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H);
+            = 2 or 3: compute U*A*U**H or L**H*A*L.
     
     @param[in]
     uplo    magma_uplo_t
-      -     = MagmaUpper:  Upper triangle of A is stored and B is factored as U**T*U;
-      -     = MagmaLower:  Lower triangle of A is stored and B is factored as L*L**T.
+      -     = MagmaUpper:  Upper triangle of A is stored and B is factored as U**H*U;
+      -     = MagmaLower:  Lower triangle of A is stored and B is factored as L*L**H.
     
     @param[in]
     n       INTEGER
@@ -112,9 +111,6 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
     magma_queue_t stream [MagmaMaxGPUs][3];
     magma_event_t  event  [MagmaMaxGPUs][2];
 
-    int gpu_b;
-    magma_getdevice(&gpu_b);
-
     int upper = (uplo == MagmaUpper);
 
     magma_int_t nb = magma_get_ssygst_nb_m(n);
@@ -140,6 +136,11 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
     /* Quick return */
     if ( n == 0 )
         return *info;
+
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     magma_int_t nbl = (n-1)/nb+1; // number of blocks
 
@@ -213,7 +214,7 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_int_t nk = n - k*nb;
 
-                    magma_ssyr2k(MagmaUpper, MagmaTrans, kb, nb,
+                    magma_ssyr2k(MagmaUpper, MagmaConjTrans, kb, nb,
                                  c_neg_one, dwork(igpu_p, 0, k), nb, dB_r(igpu_p, ind_k1, k), lddbr,
                                  d_one, dA(igpu_p, k/nrgpu, k), ldda);
 
@@ -224,10 +225,10 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_event_record( event[igpu_p][0], stream[igpu_p][2]);
 
-                    magma_sgemm(MagmaTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dwork(igpu_p, 0, k), nb,
+                    magma_sgemm(MagmaConjTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dwork(igpu_p, 0, k), nb,
                                 dB_r(igpu_p, ind_k1, k+1), lddbr, c_one, dA(igpu_p, k/nrgpu, k+1), ldda );
 
-                    magma_sgemm(MagmaTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dB_r(igpu_p, ind_k1, k), lddbr,
+                    magma_sgemm(MagmaConjTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dB_r(igpu_p, ind_k1, k), lddbr,
                                 dwork(igpu_p, 0, k+1), nb, c_one, dA(igpu_p, k/nrgpu, k+1), ldda );
 
                     // Update the panels of the other GPUs
@@ -249,7 +250,7 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     magma_queue_sync( stream[igpu_p][0] ); // sync B panel copy
                     magmablasSetKernelStream(stream[igpu_p][2]);
 
-                    magma_strsm(MagmaLeft, uplo, MagmaTrans, MagmaNonUnit,
+                    magma_strsm(MagmaLeft, uplo, MagmaConjTrans, MagmaNonUnit,
                                 kb, n-(k+1)*nb,
                                 c_one, dB_r(igpu_p, ind_k, k), lddbr,
                                 dA(igpu_p, k/nrgpu, k+1), ldda);
@@ -404,10 +405,10 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_event_record( event[igpu_p][0], stream[igpu_p][2]);
 
-                    magma_sgemm(MagmaNoTrans, MagmaTrans, nk-kb, kb, nb, c_neg_one, dwork(igpu_p, k+1, 0), n,
+                    magma_sgemm(MagmaNoTrans, MagmaConjTrans, nk-kb, kb, nb, c_neg_one, dwork(igpu_p, k+1, 0), n,
                                 dB_c(igpu_p, k, ind_k1), lddbc, c_one, dA(igpu_p, k+1, k/nrgpu), ldda );
 
-                    magma_sgemm(MagmaNoTrans, MagmaTrans, nk-kb, kb, nb, c_neg_one, dB_c(igpu_p, k+1, ind_k1), lddbc,
+                    magma_sgemm(MagmaNoTrans, MagmaConjTrans, nk-kb, kb, nb, c_neg_one, dB_c(igpu_p, k+1, ind_k1), lddbc,
                                 dwork(igpu_p, k, 0), n, c_one, dA(igpu_p, k+1, k/nrgpu), ldda );
 
                     // Update the panels of the other GPUs
@@ -429,7 +430,7 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     magma_queue_sync( stream[igpu_p][0] ); // sync B panel copy
                     magmablasSetKernelStream(stream[igpu_p][2]);
 
-                    magma_strsm(MagmaRight, uplo, MagmaTrans, MagmaNonUnit,
+                    magma_strsm(MagmaRight, uplo, MagmaConjTrans, MagmaNonUnit,
                                 n-(k+1)*nb, kb,
                                 c_one, dB_c(igpu_p, k, ind_k), lddbc,
                                 dA(igpu_p, k+1, k/nrgpu), ldda);
@@ -642,7 +643,7 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                                 dB_c(igpu_p, 0, ind_k), lddbc,
                                 c_one, dA(igpu_p, 0, k/nrgpu), ldda);
 
-                    magma_strmm(MagmaRight, uplo, MagmaTrans, MagmaNonUnit,
+                    magma_strmm(MagmaRight, uplo, MagmaConjTrans, MagmaNonUnit,
                                 k*nb, kb,
                                 c_one, dB_c(igpu_p, k, ind_k), lddbc,
                                 dA(igpu_p, 0, k/nrgpu), ldda);
@@ -661,10 +662,10 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                                      dB_c(igpu, j, ind_k), lddbc,
                                      d_one, dA(igpu, j, j/nrgpu), ldda);
 
-                        magma_sgemm(MagmaNoTrans, MagmaTrans, j*nb, nb, kb, c_one, dB_c(igpu, 0, ind_k), lddbc,
+                        magma_sgemm(MagmaNoTrans, MagmaConjTrans, j*nb, nb, kb, c_one, dB_c(igpu, 0, ind_k), lddbc,
                                     dwork(igpu, j, 0), n, c_one, dA(igpu, 0, j/nrgpu), ldda );
 
-                        magma_sgemm(MagmaNoTrans, MagmaTrans, j*nb, nb, kb, c_one, dwork(igpu, 0, 0), n,
+                        magma_sgemm(MagmaNoTrans, MagmaConjTrans, j*nb, nb, kb, c_one, dwork(igpu, 0, 0), n,
                                     dB_c(igpu, j, ind_k), lddbc, c_one, dA(igpu, 0, j/nrgpu), ldda );
                     }
                 }
@@ -805,7 +806,7 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                                 dB_r(igpu_p, ind_k, 0), lddbr,
                                 c_one, dA(igpu_p, k/nrgpu, 0), ldda);
 
-                    magma_strmm(MagmaLeft, uplo, MagmaTrans, MagmaNonUnit,
+                    magma_strmm(MagmaLeft, uplo, MagmaConjTrans, MagmaNonUnit,
                                 kb, k*nb,
                                 c_one, dB_r(igpu_p, ind_k, k), lddbr,
                                 dA(igpu_p, k/nrgpu, 0), ldda);
@@ -818,16 +819,16 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                         magma_setdevice(igpu);
                         magmablasSetKernelStream(stream[igpu][1]);
 
-                        magma_ssyr2k(uplo, MagmaTrans,
+                        magma_ssyr2k(uplo, MagmaConjTrans,
                                      nb, kb,
                                      c_one, dwork(igpu, 0, j), nb,
                                      dB_r(igpu, ind_k, j), lddbr,
                                      d_one, dA(igpu, j/nrgpu, j), ldda);
 
-                        magma_sgemm(MagmaTrans, MagmaNoTrans, nb, j*nb, kb, c_one, dwork(igpu, 0, j), nb,
+                        magma_sgemm(MagmaConjTrans, MagmaNoTrans, nb, j*nb, kb, c_one, dwork(igpu, 0, j), nb,
                                     dB_r(igpu, ind_k, 0), lddbr, c_one, dA(igpu, j/nrgpu, 0), ldda );
 
-                        magma_sgemm(MagmaTrans, MagmaNoTrans, nb, j*nb, kb, c_one, dB_r(igpu, ind_k, j), lddbr,
+                        magma_sgemm(MagmaConjTrans, MagmaNoTrans, nb, j*nb, kb, c_one, dB_r(igpu, ind_k, j), lddbr,
                                     dwork(igpu, 0, 0), nb, c_one, dA(igpu, j/nrgpu, 0), ldda );
                     }
                 }
@@ -865,7 +866,6 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
     for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
         magma_setdevice(igpu);
-        magmablasSetKernelStream(NULL);
         magma_event_destroy( event[igpu][0] );
         magma_event_destroy( event[igpu][1] );
         magma_queue_destroy( stream[igpu][0] );
@@ -873,41 +873,48 @@ magma_ssygst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
         magma_queue_destroy( stream[igpu][2] );
         magma_free( dw[igpu] );
     }
-
-    magma_setdevice(gpu_b);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_ssygst_gpu */
 
-inline static void magma_ssygst_m_1_U_row_update(magma_int_t nk, magma_int_t nb, float* dA_row, magma_int_t ldda,
-                                                 float* dC1, magma_int_t lddc1, float* dC2, magma_int_t lddc2)
+
+inline static void magma_ssygst_m_1_U_row_update(
+    magma_int_t nk, magma_int_t nb,
+    float* dA_row, magma_int_t ldda,
+    float* dC1, magma_int_t lddc1,
+    float* dC2, magma_int_t lddc2)
 {
     // update 1 rowblock (rowwise ssyr2k) for itype=1 Upper case
     float             d_one      = 1.0;
-    float    c_one      = MAGMA_S_ONE;
-    float    c_neg_one  = MAGMA_S_NEG_ONE;
+    float c_one      = MAGMA_S_ONE;
+    float c_neg_one  = MAGMA_S_NEG_ONE;
 
     magma_int_t kb = min(nk, nb);
 
-    magma_ssyr2k(MagmaUpper, MagmaTrans, kb, nb,
+    magma_ssyr2k(MagmaUpper, MagmaConjTrans, kb, nb,
                  c_neg_one, dC1, lddc1, dC2, lddc2,
                  d_one, dA_row, ldda);
 
-    magma_sgemm(MagmaTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dC1, lddc1,
+    magma_sgemm(MagmaConjTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dC1, lddc1,
                 dC2+kb*lddc2, lddc2, c_one, dA_row+kb*ldda, ldda );
 
-    magma_sgemm(MagmaTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dC2, lddc2,
+    magma_sgemm(MagmaConjTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dC2, lddc2,
                 dC1+kb*lddc1, lddc1, c_one, dA_row+kb*ldda, ldda );
-    return;
 }
 
-inline static void magma_ssygst_m_1_L_col_update(magma_int_t nk, magma_int_t nb, float* dA_col, magma_int_t ldda,
-                                                 float* dC1, magma_int_t lddc1, float* dC2, magma_int_t lddc2)
+
+inline static void magma_ssygst_m_1_L_col_update(
+    magma_int_t nk, magma_int_t nb,
+    float* dA_col, magma_int_t ldda,
+    float* dC1, magma_int_t lddc1,
+    float* dC2, magma_int_t lddc2)
 {
     // update 1 columnblock (columnwise ssyr2k) for itype=1 Lower case
     float             d_one      = 1.0;
-    float    c_one      = MAGMA_S_ONE;
-    float    c_neg_one  = MAGMA_S_NEG_ONE;
+    float c_one      = MAGMA_S_ONE;
+    float c_neg_one  = MAGMA_S_NEG_ONE;
 
     magma_int_t kb = min(nk, nb);
 
@@ -915,10 +922,9 @@ inline static void magma_ssygst_m_1_L_col_update(magma_int_t nk, magma_int_t nb,
                  c_neg_one, dC1, lddc1, dC2, lddc2,
                  d_one, dA_col, ldda);
 
-    magma_sgemm(MagmaNoTrans, MagmaTrans, nk-kb, kb, nb, c_neg_one, dC1+kb, lddc1,
+    magma_sgemm(MagmaNoTrans, MagmaConjTrans, nk-kb, kb, nb, c_neg_one, dC1+kb, lddc1,
                 dC2, lddc2, c_one, dA_col+kb, ldda );
 
-    magma_sgemm(MagmaNoTrans, MagmaTrans, nk-kb, kb, nb, c_neg_one, dC2+kb, lddc2,
+    magma_sgemm(MagmaNoTrans, MagmaConjTrans, nk-kb, kb, nb, c_neg_one, dC2+kb, lddc2,
                 dC1, lddc1, c_one, dA_col+kb, ldda );
-    return;
 }

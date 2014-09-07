@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions mixed zc -> ds
 */
@@ -50,6 +50,12 @@ void magmablas_zlat2c(
     magma_uplo_t uplo, magma_int_t n,
     const magmaDoubleComplex *A,  magma_int_t lda,
           magmaFloatComplex  *SA, magma_int_t ldsa,
+    magma_int_t *info );
+
+void magmablas_clat2z(
+    magma_uplo_t uplo, magma_int_t n,
+    const magmaFloatComplex  *SA, magma_int_t ldsa,
+          magmaDoubleComplex *A,  magma_int_t lda,
     magma_int_t *info );
 
 #ifdef __cplusplus

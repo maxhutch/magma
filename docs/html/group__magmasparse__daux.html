@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__daux.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -114,9 +117,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gad57f83e26e610da1c4ac753620ef6b68"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gad57f83e26e610da1c4ac753620ef6b68">magma_dresidual</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector x, double *res)</td></tr>
 <tr class="memdesc:gad57f83e26e610da1c4ac753620ef6b68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the residual ||b-Ax|| for a solution approximation x.  <a href="#gad57f83e26e610da1c4ac753620ef6b68">More...</a><br /></td></tr>
 <tr class="separator:gad57f83e26e610da1c4ac753620ef6b68"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga67276d0816cf6ae7f61647745ccdc590"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga67276d0816cf6ae7f61647745ccdc590">magma_d_precond</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_d_preconditioner precond)</td></tr>
-<tr class="memdesc:ga67276d0816cf6ae7f61647745ccdc590"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is chosen.  <a href="#ga67276d0816cf6ae7f61647745ccdc590">More...</a><br /></td></tr>
-<tr class="separator:ga67276d0816cf6ae7f61647745ccdc590"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac03d9cd329996ee27ffa7c9ff531d67e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gac03d9cd329996ee27ffa7c9ff531d67e">magma_d_precond</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_d_preconditioner *precond)</td></tr>
+<tr class="memdesc:gac03d9cd329996ee27ffa7c9ff531d67e"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is chosen.  <a href="#gac03d9cd329996ee27ffa7c9ff531d67e">More...</a><br /></td></tr>
+<tr class="separator:gac03d9cd329996ee27ffa7c9ff531d67e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9419b08d87e1568bc0cbda8137a4ff11"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga9419b08d87e1568bc0cbda8137a4ff11">magma_d_precondsetup</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_preconditioner *precond)</td></tr>
 <tr class="memdesc:ga9419b08d87e1568bc0cbda8137a4ff11"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is preprocessed.  <a href="#ga9419b08d87e1568bc0cbda8137a4ff11">More...</a><br /></td></tr>
 <tr class="separator:ga9419b08d87e1568bc0cbda8137a4ff11"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -129,12 +132,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga4411733bf8cd9b4d876a9263962f3bbe"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga4411733bf8cd9b4d876a9263962f3bbe">magma_d_applyprecond_right</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_d_preconditioner *precond)</td></tr>
 <tr class="memdesc:ga4411733bf8cd9b4d876a9263962f3bbe"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective right-preconditioner is applied.  <a href="#ga4411733bf8cd9b4d876a9263962f3bbe">More...</a><br /></td></tr>
 <tr class="separator:ga4411733bf8cd9b4d876a9263962f3bbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga69cde9cd2bd5a1db56a9af95b5119f55"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga69cde9cd2bd5a1db56a9af95b5119f55">magma_dnonlinres</a> (magma_d_sparse_matrix A, magma_d_sparse_matrix L, magma_d_sparse_matrix U, magma_d_sparse_matrix *LU, real_Double_t *res)</td></tr>
-<tr class="memdesc:ga69cde9cd2bd5a1db56a9af95b5119f55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the nonlinear residual A- LU and returns the difference as well es the Frobenius norm of the difference.  <a href="#ga69cde9cd2bd5a1db56a9af95b5119f55">More...</a><br /></td></tr>
-<tr class="separator:ga69cde9cd2bd5a1db56a9af95b5119f55"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga9563e9afecc1b4670a813d4895e21da1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga9563e9afecc1b4670a813d4895e21da1">magma_dilures</a> (magma_d_sparse_matrix A, magma_d_sparse_matrix L, magma_d_sparse_matrix U, magma_d_sparse_matrix *LU, real_Double_t *res)</td></tr>
-<tr class="memdesc:ga9563e9afecc1b4670a813d4895e21da1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the ILU residual A- LU and returns the difference as well es the Frobenius norm of the difference.  <a href="#ga9563e9afecc1b4670a813d4895e21da1">More...</a><br /></td></tr>
-<tr class="separator:ga9563e9afecc1b4670a813d4895e21da1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad9cdc64f1707c4f56234a19556de49c7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gad9cdc64f1707c4f56234a19556de49c7">magma_d_solver</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, magma_dopts *zopts)</td></tr>
+<tr class="memdesc:gad9cdc64f1707c4f56234a19556de49c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">ALlows the user to choose a solver.  <a href="#gad9cdc64f1707c4f56234a19556de49c7">More...</a><br /></td></tr>
+<tr class="separator:gad9cdc64f1707c4f56234a19556de49c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafaae8f24d302caa813c29d6091129c1d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gafaae8f24d302caa813c29d6091129c1d">magma_d_vfree</a> (magma_d_vector *x)</td></tr>
 <tr class="memdesc:gafaae8f24d302caa813c29d6091129c1d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the memory of a magma_d_vector.  <a href="#gafaae8f24d302caa813c29d6091129c1d">More...</a><br /></td></tr>
 <tr class="separator:gafaae8f24d302caa813c29d6091129c1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,32 +174,32 @@ Functions</h2></td></tr>
 <tr class="memitem:ga0d2fa71c156bf0f28cd62b75d817e2d7"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga0d2fa71c156bf0f28cd62b75d817e2d7">magma_dmgenerator</a> (magma_int_t n, magma_int_t offdiags, magma_index_t *diag_offset, double *diag_vals, magma_d_sparse_matrix *A)</td></tr>
 <tr class="memdesc:ga0d2fa71c156bf0f28cd62b75d817e2d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a symmetric n x n CSR matrix for a stencil.  <a href="#ga0d2fa71c156bf0f28cd62b75d817e2d7">More...</a><br /></td></tr>
 <tr class="separator:ga0d2fa71c156bf0f28cd62b75d817e2d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac9b3f7749baf90b540b1c6c661c8fb0c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gac9b3f7749baf90b540b1c6c661c8fb0c">magma_dilustruct</a> (magma_d_sparse_matrix *A, magma_int_t levels)</td></tr>
-<tr class="memdesc:gac9b3f7749baf90b540b1c6c661c8fb0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes the fill-in structure of an ILU(levels) factorization based on the successive multiplication of upper and lower triangular factors using the CUSPARSE library.  <a href="#gac9b3f7749baf90b540b1c6c661c8fb0c">More...</a><br /></td></tr>
-<tr class="separator:gac9b3f7749baf90b540b1c6c661c8fb0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadd59f805f1361a4ae0d850657a4a80e0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gadd59f805f1361a4ae0d850657a4a80e0">magma_dmhom</a> (magma_d_sparse_matrix A, magma_int_t b, magma_index_t *p)</td></tr>
-<tr class="memdesc:gadd59f805f1361a4ae0d850657a4a80e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#gadd59f805f1361a4ae0d850657a4a80e0">More...</a><br /></td></tr>
-<tr class="separator:gadd59f805f1361a4ae0d850657a4a80e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacb99389a3ba995f983c00daa50671557"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gacb99389a3ba995f983c00daa50671557">magma_dm_27stencil</a> (magma_int_t n, magma_d_sparse_matrix *A)</td></tr>
+<tr class="memdesc:gacb99389a3ba995f983c00daa50671557"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a 27-point stencil for a 3D FD discretization.  <a href="#gacb99389a3ba995f983c00daa50671557">More...</a><br /></td></tr>
+<tr class="separator:gacb99389a3ba995f983c00daa50671557"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad36e4873a4ff520f1632be768f326cfe"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gad36e4873a4ff520f1632be768f326cfe">magma_dm_5stencil</a> (magma_int_t n, magma_d_sparse_matrix *A)</td></tr>
+<tr class="memdesc:gad36e4873a4ff520f1632be768f326cfe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a 5-point stencil for a 2D FD discretization.  <a href="#gad36e4873a4ff520f1632be768f326cfe">More...</a><br /></td></tr>
+<tr class="separator:gad36e4873a4ff520f1632be768f326cfe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae3a90f7bb20602ef900aa433e5efbc5a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gae3a90f7bb20602ef900aa433e5efbc5a">magma_dmdiff</a> (magma_d_sparse_matrix A, magma_d_sparse_matrix B, real_Double_t *res)</td></tr>
+<tr class="memdesc:gae3a90f7bb20602ef900aa433e5efbc5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the Frobenius norm of the difference between the CSR matrices A and B.  <a href="#gae3a90f7bb20602ef900aa433e5efbc5a">More...</a><br /></td></tr>
+<tr class="separator:gae3a90f7bb20602ef900aa433e5efbc5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2f0c358e76225216cb6e10d72f28f462"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga2f0c358e76225216cb6e10d72f28f462">magma_dmscale</a> (magma_d_sparse_matrix *A, magma_scale_t scaling)</td></tr>
-<tr class="memdesc:ga2f0c358e76225216cb6e10d72f28f462"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga2f0c358e76225216cb6e10d72f28f462">More...</a><br /></td></tr>
+<tr class="memdesc:ga2f0c358e76225216cb6e10d72f28f462"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scales a matrix.  <a href="#ga2f0c358e76225216cb6e10d72f28f462">More...</a><br /></td></tr>
 <tr class="separator:ga2f0c358e76225216cb6e10d72f28f462"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3d098e4a6d407e1fe734ab7c5375154c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga3d098e4a6d407e1fe734ab7c5375154c">magma_dmdiagadd</a> (magma_d_sparse_matrix *A, double add)</td></tr>
-<tr class="memdesc:ga3d098e4a6d407e1fe734ab7c5375154c"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga3d098e4a6d407e1fe734ab7c5375154c">More...</a><br /></td></tr>
+<tr class="memdesc:ga3d098e4a6d407e1fe734ab7c5375154c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a multiple of the Identity matrix to a matrix: A = A+add * I.  <a href="#ga3d098e4a6d407e1fe734ab7c5375154c">More...</a><br /></td></tr>
 <tr class="separator:ga3d098e4a6d407e1fe734ab7c5375154c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3f753e1ef75a3455f00eaaf75fe13c5c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga3f753e1ef75a3455f00eaaf75fe13c5c">magma_dmsort</a> (magma_d_sparse_matrix *A)</td></tr>
-<tr class="memdesc:ga3f753e1ef75a3455f00eaaf75fe13c5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts columns and rows for a matrix in COO or CSRCOO format.  <a href="#ga3f753e1ef75a3455f00eaaf75fe13c5c">More...</a><br /></td></tr>
-<tr class="separator:ga3f753e1ef75a3455f00eaaf75fe13c5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga84218872c96e02f154bb2d4132ec402f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga84218872c96e02f154bb2d4132ec402f">magma_d_initP2P</a> (magma_int_t *bw_bmark, magma_int_t *num_gpus)</td></tr>
 <tr class="memdesc:ga84218872c96e02f154bb2d4132ec402f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes P2P communication between GPUs.  <a href="#ga84218872c96e02f154bb2d4132ec402f">More...</a><br /></td></tr>
 <tr class="separator:ga84218872c96e02f154bb2d4132ec402f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga91e54fe036d546564e6740f4bacdddba"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga91e54fe036d546564e6740f4bacdddba">magma_dsolverinfo</a> (magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par)</td></tr>
-<tr class="memdesc:ga91e54fe036d546564e6740f4bacdddba"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga91e54fe036d546564e6740f4bacdddba">More...</a><br /></td></tr>
+<tr class="memdesc:ga91e54fe036d546564e6740f4bacdddba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints information about a previously called solver.  <a href="#ga91e54fe036d546564e6740f4bacdddba">More...</a><br /></td></tr>
 <tr class="separator:ga91e54fe036d546564e6740f4bacdddba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4396d63702630fd1fc506a903cf5995b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga4396d63702630fd1fc506a903cf5995b">magma_dsolverinfo_free</a> (magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par)</td></tr>
-<tr class="memdesc:ga4396d63702630fd1fc506a903cf5995b"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga4396d63702630fd1fc506a903cf5995b">More...</a><br /></td></tr>
+<tr class="memdesc:ga4396d63702630fd1fc506a903cf5995b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees any memory assocoiated with the verbose mode of solver_par.  <a href="#ga4396d63702630fd1fc506a903cf5995b">More...</a><br /></td></tr>
 <tr class="separator:ga4396d63702630fd1fc506a903cf5995b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae082946871e6160f58ef11517cab1311"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#gae082946871e6160f58ef11517cab1311">magma_dsolverinfo_init</a> (magma_d_solver_par *solver_par, magma_d_preconditioner *precond_par)</td></tr>
-<tr class="memdesc:gae082946871e6160f58ef11517cab1311"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#gae082946871e6160f58ef11517cab1311">More...</a><br /></td></tr>
+<tr class="memdesc:gae082946871e6160f58ef11517cab1311"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes all solver and preconditioner parameters.  <a href="#gae082946871e6160f58ef11517cab1311">More...</a><br /></td></tr>
 <tr class="separator:gae082946871e6160f58ef11517cab1311"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1cb5e4be1321bb2063b6b88efa855d4c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga1cb5e4be1321bb2063b6b88efa855d4c">d_transpose_csr</a> (magma_int_t n_rows, magma_int_t n_cols, magma_int_t nnz, double *val, magma_index_t *row, magma_index_t *col, magma_int_t *new_n_rows, magma_int_t *new_n_cols, magma_int_t *new_nnz, double **new_val, magma_index_t **new_row, magma_index_t **new_col)</td></tr>
 <tr class="memdesc:ga1cb5e4be1321bb2063b6b88efa855d4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transposes a matrix stored in CSR format.  <a href="#ga1cb5e4be1321bb2063b6b88efa855d4c">More...</a><br /></td></tr>
@@ -232,7 +232,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:gaeafe71116b3614487019ec697f00b610"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in a matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format.  <a href="#gaeafe71116b3614487019ec697f00b610">More...</a><br /></td></tr>
 <tr class="separator:gaeafe71116b3614487019ec697f00b610"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7a65a432ca5bec1ef7e80994fd35d91f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga7a65a432ca5bec1ef7e80994fd35d91f">magma_d_csr_mtxsymm</a> (magma_d_sparse_matrix *A, const char *filename)</td></tr>
-<tr class="memdesc:ga7a65a432ca5bec1ef7e80994fd35d91f"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga7a65a432ca5bec1ef7e80994fd35d91f">More...</a><br /></td></tr>
+<tr class="memdesc:ga7a65a432ca5bec1ef7e80994fd35d91f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in a SYMMETRIC matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format.  <a href="#ga7a65a432ca5bec1ef7e80994fd35d91f">More...</a><br /></td></tr>
 <tr class="separator:ga7a65a432ca5bec1ef7e80994fd35d91f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga40f0802cce9cddfae8fadff6fa391356"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__daux.html#ga40f0802cce9cddfae8fadff6fa391356">magma_dlobpcg_res</a> (magma_int_t num_rows, magma_int_t num_vecs, double *evalues, double *X, double *R, double *res)</td></tr>
 <tr class="memdesc:ga40f0802cce9cddfae8fadff6fa391356"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes for Block-LOBPCG, the set of residuals.  <a href="#ga40f0802cce9cddfae8fadff6fa391356">More...</a><br /></td></tr>
@@ -395,8 +395,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_d_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_d_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_d_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_d_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_d_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -445,8 +445,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_d_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_d_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_d_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_d_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_d_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -495,8 +495,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_d_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_d_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_d_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_d_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_d_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -634,9 +634,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Reads in a SYMMETRIC matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format. It does not duplicate the off-diagonal entries!</p>
+<p>Reads in a SYMMETRIC matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format. </p>
+<p>It does not duplicate the off-diagonal entries!</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix* matrix in magma sparse matrix format</td></tr>
@@ -942,7 +941,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga67276d0816cf6ae7f61647745ccdc590"></a>
+<a class="anchor" id="gac03d9cd329996ee27ffa7c9ff531d67e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -967,7 +966,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_d_preconditioner&#160;</td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
           <td class="paramname"><em>precond</em>&#160;</td>
         </tr>
         <tr>
@@ -983,8 +982,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_d_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_d_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_d_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_d_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_d_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -1027,9 +1026,57 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_d_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_d_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_d_vector input vector y</td></tr>
     <tr><td class="paramname">precond</td><td>magma_d_preconditioner preconditioner </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gad9cdc64f1707c4f56234a19556de49c7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_d_solver </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_vector&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_vector *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_dopts *&#160;</td>
+          <td class="paramname"><em>zopts</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ALlows the user to choose a solver. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix A</td></tr>
+    <tr><td class="paramname">b</td><td>magma_d_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_d_vector* output vector x</td></tr>
+    <tr><td class="paramname">zopts</td><td>magma_dopts options for solver and preconditioner </td></tr>
   </table>
   </dd>
 </dl>
@@ -1415,97 +1462,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga9563e9afecc1b4670a813d4895e21da1"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dilures </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>U</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>LU</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real_Double_t *&#160;</td>
-          <td class="paramname"><em>res</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Computes the ILU residual A- LU and returns the difference as well es the Frobenius norm of the difference. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">L</td><td>magma_d_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">U</td><td>magma_d_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">LU</td><td>magma_d_sparse_matrix* output sparse matrix in A-LU in CSR</td></tr>
-    <tr><td class="paramname">res</td><td>real_Double_t* residual </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gac9b3f7749baf90b540b1c6c661c8fb0c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dilustruct </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>levels</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This routine computes the fill-in structure of an ILU(levels) factorization based on the successive multiplication of upper and lower triangular factors using the CUSPARSE library. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix* matrix in magma sparse matrix format</td></tr>
-    <tr><td class="paramname">levels</td><td>magma_int_t fill in level </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga40f0802cce9cddfae8fadff6fa391356"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1623,6 +1579,76 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gacb99389a3ba995f983c00daa50671557"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dm_27stencil </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
+          <td class="paramname"><em>A</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a 27-point stencil for a 3D FD discretization. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>magma_int_t number of rows</td></tr>
+    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix* matrix to generate </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gad36e4873a4ff520f1632be768f326cfe"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dm_5stencil </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
+          <td class="paramname"><em>A</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a 5-point stencil for a 2D FD discretization. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>magma_int_t number of rows</td></tr>
+    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix* matrix to generate </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga3d098e4a6d407e1fe734ab7c5375154c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1647,13 +1673,54 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Adds a multiple of the Identity matrix to a matrix: A = A+add * I</p>
+<p>Adds a multiple of the Identity matrix to a matrix: A = A+add * I. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix* input/output matrix</td></tr>
     <tr><td class="paramname">add</td><td>double scaling for the identity matrix </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gae3a90f7bb20602ef900aa433e5efbc5a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dmdiff </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real_Double_t *&#160;</td>
+          <td class="paramname"><em>res</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes the Frobenius norm of the difference between the CSR matrices A and B. </p>
+<p>They do not need to share the same sparsity pattern! </p><pre class="fragment">   res = ||A-B||_F = sqrt( sum_ij (A_ij-B_ij)^2 )
+</pre><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix in CSR</td></tr>
+    <tr><td class="paramname">B</td><td>magma_d_sparse_matrix sparse matrix in CSR</td></tr>
+    <tr><td class="paramname">res</td><td>real_Double_t* residual </td></tr>
   </table>
   </dd>
 </dl>
@@ -1718,57 +1785,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gadd59f805f1361a4ae0d850657a4a80e0"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dmhom </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>p</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Takes a matrix and a blocksize b to generate a homomorphism that orders the matrix entries according to the subdomains of size b x b. Returns p on the device</p>
-<p>example: </p><pre class="fragment">/ a 0 0 b 0 \
-| 0 c 0 d 0 |
-</pre><p> A= | 0 e f g 0 | b = 2 | h 0 0 0 0 | \ i j 0 0 0 /</p>
-<p>will generate the projection:</p>
-<p>0 2 1 3 4 7 8 9 10 11</p>
-<p>according to</p>
-<p>a c b d e h f g i j</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input/output matrix</td></tr>
-    <tr><td class="paramname">b</td><td>magma_int_t blocksize</td></tr>
-    <tr><td class="paramname">p</td><td>magma_index_t* homomorphism vector containing the indices </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga2f0c358e76225216cb6e10d72f28f462"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1793,93 +1809,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Scales a matrix.</p>
+<p>Scales a matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix* input/output matrix</td></tr>
     <tr><td class="paramname">scaling</td><td>magma_scale_t scaling type (unit rownorm / unit diagonal) </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga3f753e1ef75a3455f00eaaf75fe13c5c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dmsort </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>A</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Sorts columns and rows for a matrix in COO or CSRCOO format. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix* matrix in magma sparse matrix format </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga69cde9cd2bd5a1db56a9af95b5119f55"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dnonlinres </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>U</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>LU</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real_Double_t *&#160;</td>
-          <td class="paramname"><em>res</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Computes the nonlinear residual A- LU and returns the difference as well es the Frobenius norm of the difference. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">L</td><td>magma_d_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">U</td><td>magma_d_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">LU</td><td>magma_d_sparse_matrix* output sparse matrix in A-LU in CSR</td></tr>
-    <tr><td class="paramname">res</td><td>real_Double_t* residual </td></tr>
   </table>
   </dd>
 </dl>
@@ -1984,9 +1918,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Prints information about a previously called solver.</p>
+<p>Prints information about a previously called solver. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* structure containing all solver information </td></tr>
@@ -2021,9 +1953,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Frees any memory assocoiated with the verbose mode of solver_par. The other values are set to default.</p>
+<p>Frees any memory assocoiated with the verbose mode of solver_par. </p>
+<p>The other values are set to default.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* structure containing all solver information </td></tr>
@@ -2058,9 +1989,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Initializes all solver and preconditioner parameters.</p>
+<p>Initializes all solver and preconditioner parameters. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* structure containing all solver information </td></tr>
@@ -2442,7 +2371,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

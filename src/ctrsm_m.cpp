@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
 
-       @generated from ztrsm_m.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from ztrsm_m.cpp normal z -> c, Tue Sep  2 12:38:24 2014
 */
 #include "common_magma.h"
 
@@ -24,7 +24,7 @@ magma_get_ctrsm_m_nb() { return 128; }
 
        op( A ) = A      or
        op( A ) = A**T   or
-       op( A ) = conjf( A**T ).
+       op( A ) = A**H.
 
     The matrix X is overwritten on B.
 
@@ -54,7 +54,7 @@ magma_get_ctrsm_m_nb() { return 128; }
             the matrix multiplication as follows:
          -     = MagmaNoTrans:     op( A ) = A.
          -     = MagmaTrans:       op( A ) = A**T.
-         -     = MagmaConjTrans:   op( A ) = conjf( A**T ).
+         -     = MagmaConjTrans:   op( A ) = A**H.
 
     @param[in]
     diag    magma_diag_t.
@@ -143,8 +143,11 @@ magma_ctrsm_m(
     magma_int_t info;
     magma_int_t k, j, kb, jb;
     magma_int_t ldda, dima, lddb, dimb;
-    int gpu_b;
-    magma_getdevice(&gpu_b);
+    
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     lside = (side == MagmaLeft);
     if (lside) {
@@ -173,6 +176,11 @@ magma_ctrsm_m(
         info = 9;
     } else if (ldb < max(1,m)) {
         info = 11;
+    }
+
+    // alpha = 0 case not done
+    if (MAGMA_C_REAL(alpha) == 0. && MAGMA_C_IMAG(alpha) == 0.) {
+        info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
 
     if (info != 0) {
@@ -219,13 +227,6 @@ magma_ctrsm_m(
         magma_queue_create( &stream[igpu][0] );
         magma_queue_create( &stream[igpu][1] );
         magma_queue_create( &stream[igpu][2] );
-    }
-
-    // alpha = 0 case;
-    if (MAGMA_C_REAL(alpha) == 0. && MAGMA_C_IMAG(alpha) == 0.) {
-        printf("ctrsm_m: alpha = 0 not implemented\n");
-        exit(-1);
-        return info;
     }
 
     if (lside) {
@@ -375,7 +376,7 @@ magma_ctrsm_m(
         else {
             // Form  B := alpha*inv( A**T )*B
             if (upper) {
-                // left upper transpose or conjf transpose
+                // left upper transpose or conj transpose
                 magma_int_t nloc[MagmaMaxGPUs];
                 for (igpu = 0; igpu < nrgpu; ++igpu)
                     nloc[igpu] = 0;
@@ -445,7 +446,7 @@ magma_ctrsm_m(
                 }
             }
             else {
-                // left lower transpose or conjf transpose
+                // left lower transpose or conj transpose
                 magma_int_t nloc[MagmaMaxGPUs];
                 for (igpu = 0; igpu < nrgpu; ++igpu)
                     nloc[igpu] = 0;
@@ -663,7 +664,7 @@ magma_ctrsm_m(
         else {
             // Form  B := alpha*B*inv( A**T ).
             if (upper) {
-                // right upper transpose or conjf transpose
+                // right upper transpose or conj transpose
                 magma_int_t mloc[MagmaMaxGPUs];
                 for (igpu = 0; igpu < nrgpu; ++igpu)
                     mloc[igpu] = 0;
@@ -733,7 +734,7 @@ magma_ctrsm_m(
                 }
             }
             else {
-                // right lower transpose or conjf transpose
+                // right lower transpose or conj transpose
                 magma_int_t mloc[MagmaMaxGPUs];
                 for (igpu = 0; igpu < nrgpu; ++igpu)
                     mloc[igpu] = 0;
@@ -808,15 +809,14 @@ magma_ctrsm_m(
 
     for (igpu = 0; igpu < nrgpu; ++igpu) {
         magma_setdevice(igpu);
-        magmablasSetKernelStream(NULL);
         magma_queue_sync( stream[igpu][2] );
         magma_queue_destroy( stream[igpu][0] );
         magma_queue_destroy( stream[igpu][1] );
         magma_queue_destroy( stream[igpu][2] );
         magma_free( dw[igpu] );
     }
-
-    magma_setdevice(gpu_b);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return info;
 } /* magma_ctrsm_m */

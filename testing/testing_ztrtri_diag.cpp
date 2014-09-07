@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
 */
@@ -121,9 +121,9 @@ int main( int argc, char** argv )
             magma_zgetvector( size_inv, d_dinvA, 1, h_dinvA, 1 );
             
             if ( opts.verbose ) {
-                printf( "A%d=", N );
+                printf( "A%d=", (int) N );
                 magma_zprint( N, N, h_A, lda );
-                printf( "d_dinvA%d=", N );
+                printf( "d_dinvA%d=", (int) N );
                 magma_zprint( min(N+4, nb), min(N+4, nblock*nb), h_dinvA, nb );
             }
             

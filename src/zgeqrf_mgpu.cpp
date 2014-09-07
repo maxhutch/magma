@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -89,12 +89,6 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
     magma_int_t lhwork, lwork;
     magma_int_t panel_dev, i_local, i_nb_local, n_local[MagmaMaxGPUs], la_dev, dpanel_offset;
 
-    magma_queue_t cqueue;
-    magmablasGetKernelStream( &cqueue );
-    
-    magma_device_t cdevice;
-    magma_getdevice( &cdevice );
-
     *info = 0;
     if (m < 0) {
         *info = -1;
@@ -111,6 +105,11 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
     min_mn = min(m,n);
     if (min_mn == 0)
         return *info;
+
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     nb = magma_get_zgeqrf_nb( m );
 
@@ -310,17 +309,16 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
 
 CLEANUP:
     // free(NULL) does nothing.
-    // check that queues and events are non-zero before destroying them, though.
     for( dev=0; dev < num_gpus; dev++ ) {
         magma_setdevice( dev );
-        if ( stream[dev][0]   ) { magma_queue_destroy( stream[dev][0]   ); }
-        if ( stream[dev][1]   ) { magma_queue_destroy( stream[dev][1]   ); }
-        if ( panel_event[dev] ) { magma_event_destroy( panel_event[dev] ); }
+        magma_queue_destroy( stream[dev][0]   );
+        magma_queue_destroy( stream[dev][1]   );
+        magma_event_destroy( panel_event[dev] );
         magma_free( dwork[dev] );
     }
     magma_free_pinned( hwork );
-    magma_setdevice( cdevice );
-    magmablasSetKernelStream( cqueue );
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_zgeqrf2_mgpu */

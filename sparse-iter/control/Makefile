@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/control
@@ -13,6 +13,7 @@ include $(MAGMA_DIR)/Makefile.internal
 INC += -I../include
 
 ZSRC := \
+    magma_zutil_sparse.cpp  \
 	magma_z_free.cpp	\
 	magma_z_init.cpp	\
 	magma_z_matrixchar.cpp	\
@@ -23,14 +24,10 @@ ZSRC := \
 	matrix_zio.cpp		\
 	magma_zsolverinfo.cpp	\
 	magma_ztranspose.cpp	\
-    magma_z_chowutils.cpp   \
     magma_zp2p.cpp   \
     magma_zcsrsplit.cpp   \
     magma_zmscale.cpp   \
-    magma_zmsort.cpp   \
-    magma_zilustruct.cpp   \
-    magma_zmhom.cpp   \
-	magma_zmreorder.cpp	\
+    magma_zmdiff.cpp  \
 
 SRC := \
 	mmio.cpp		\
@@ -48,9 +45,13 @@ ALLOBJ := $(ALLOBJ:.F90=.o)
 
 all: $(LIBMAGMA_SPARSE)
 
-$(LIBMAGMA_SPARSE): $(ALLOBJ)
+$(LIBMAGMA_SPARSE): $(ALLOBJ) stamp
 	$(ARCH) $(ARCHFLAGS) $@ $(ALLOBJ)
 	$(RANLIB) $@
+
+# this forces LIBMAGMA to be archived
+stamp: $(ALLHDR) $(ALLOBJ)
+	touch $@
 
 clean:
 	rm -f *.cu_o *.o *~ *.linkinfo *.mod ../include/*.mod sizeptr

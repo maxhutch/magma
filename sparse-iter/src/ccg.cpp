@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hartwig Anzt 
 
-       @generated from zcg.cpp normal z -> c, Fri Jul 18 17:34:29 2014
+       @generated from zcg.cpp normal z -> c, Tue Sep  2 12:38:34 2014
 */
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #include <assert.h>
 
@@ -47,7 +47,7 @@
     solver_par  magma_c_solver_par*
                 solver parameters
 
-    @ingroup magmasparse_cposv
+    @ingroup magmasparse_chesv
     ********************************************************************/
 
 magma_int_t

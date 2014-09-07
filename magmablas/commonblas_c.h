@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from commonblas_z.h normal z -> c, Fri Jul 18 17:34:13 2014
+       @generated from commonblas_z.h normal z -> c, Tue Sep  2 12:38:17 2014
 */
 
 #ifndef COMMONBLAS_C_H
@@ -51,6 +51,33 @@ void magmablas_cgemv_tesla(
     const magmaFloatComplex *x, magma_int_t incx,
     magmaFloatComplex beta,
     magmaFloatComplex *y, magma_int_t incy );
+
+
+// kernels used in scnrm2, cgeqr2x-v4, laqps2_gpu, laqps3_gpu, clarfbx, clarfgx-v2, clarfx
+__global__ void
+magma_cgemv_kernel1(int m, const magmaFloatComplex * __restrict__ V, int ldv,
+                    const magmaFloatComplex * __restrict__ c,
+                    magmaFloatComplex *dwork);
+
+__global__ void
+magma_cgemv_kernel2(int m, int n, const magmaFloatComplex * __restrict__ V, int ldv,
+                    const magmaFloatComplex * __restrict__ x, magmaFloatComplex *c);
+
+__global__ void
+magma_cgemv_kernel3(int m, const magmaFloatComplex * __restrict__ V, int ldv,
+                    magmaFloatComplex *c, magmaFloatComplex *dwork,
+                    magmaFloatComplex *tau);
+
+__global__ void
+magma_ctrmv_tkernel(magmaFloatComplex *T, int ldt, magmaFloatComplex *v,
+                                    magmaFloatComplex *y);
+
+__global__ void
+magma_ctrmv_kernel2(const magmaFloatComplex *T, int ldt,
+                    magmaFloatComplex *v, magmaFloatComplex *y, magmaFloatComplex *tau);
+
+__global__ void
+magma_scnrm2_adjust_kernel(float *xnorm, magmaFloatComplex *c);
 
 #ifdef __cplusplus
 }

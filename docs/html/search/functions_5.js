@@ -1,10 +1,13 @@
 var searchData=
 [
-  ['s_5ftranspose_5fcsr',['s_transpose_csr',['../group__magmasparse__saux.html#ga9387e3c7beb5946945d067611a1b7d13',1,'magma_stranspose.cpp']]],
-  ['sgemm_5fkernel_5fn_5fn_5f64_5f16_5f16_5f16_5f4',['sgemm_kernel_N_N_64_16_16_16_4',['../group__magma__sblas3.html#gaffef22784aa9f5705addef50a32167a8',1,'sgemm_tesla_N_N.cu']]],
-  ['sgemm_5fkernel_5fn_5fn_5f64_5f16_5f16_5f16_5f4_5fspecial',['sgemm_kernel_N_N_64_16_16_16_4_special',['../group__magma__sblas3.html#ga905207a66bde0b1d0f1caed316061210',1,'sgemm_tesla_N_N_special.cu']]],
-  ['sgemm_5fkernel_5fn_5ft_5f64_5f16_5f4_5f16_5f4',['sgemm_kernel_N_T_64_16_4_16_4',['../group__magma__sblas3.html#gaad6c2fdad98c1e0ce135aca72c39120b',1,'sgemm_tesla_N_T.cu']]],
-  ['sgemm_5fkernel_5ft_5fn_5f32_5f32_5f8_5f8_5f8',['sgemm_kernel_T_N_32_32_8_8_8',['../group__magma__sblas3.html#gabfd18de23d86fce65d96bc7387ffdb0b',1,'sgemm_tesla_T_N.cu']]],
-  ['sgemm_5fkernel_5ft_5ft_5f64_5f16_5f16_5f16_5f4',['sgemm_kernel_T_T_64_16_16_16_4',['../group__magma__sblas3.html#ga6e861d690fec08a0a7c6701b3bb6f6e0',1,'sgemm_tesla_T_T.cu']]],
-  ['sgemm_5fkernel_5ft_5ft_5f64_5f16_5f16_5f16_5f4_5fspecial',['sgemm_kernel_T_T_64_16_16_16_4_special',['../group__magma__sblas3.html#gab9374a80a778eb2259ae66d46a3e1863',1,'sgemm_tesla_T_T_special.cu']]]
+  ['pop_5ftask',['pop_task',['../classmagma__thread__queue.html#a2819b023e5d04949f96d5f142eeec13d',1,'magma_thread_queue']]],
+  ['print_5fc_5fcsr',['print_c_csr',['../group__magmasparse__caux.html#ga84c91dcf2c4012dbd209425fbf885159',1,'matrix_cio.cpp']]],
+  ['print_5fc_5fcsr_5fmtx',['print_c_csr_mtx',['../group__magmasparse__caux.html#gad4d9a68c4712e07c5c61d111f97b3264',1,'matrix_cio.cpp']]],
+  ['print_5fd_5fcsr',['print_d_csr',['../group__magmasparse__daux.html#ga9e453496043363c23c7dc1e43782b4fb',1,'matrix_dio.cpp']]],
+  ['print_5fd_5fcsr_5fmtx',['print_d_csr_mtx',['../group__magmasparse__daux.html#gae243787ac533445b87d8fd8ed94bb7fb',1,'matrix_dio.cpp']]],
+  ['print_5fs_5fcsr',['print_s_csr',['../group__magmasparse__saux.html#gaa7ca526771850106dc88f6176483caa3',1,'matrix_sio.cpp']]],
+  ['print_5fs_5fcsr_5fmtx',['print_s_csr_mtx',['../group__magmasparse__saux.html#ga8a97b0084d0d6e536acf4c994bf62d1a',1,'matrix_sio.cpp']]],
+  ['print_5fz_5fcsr',['print_z_csr',['../group__magmasparse__zaux.html#ga4c780b989cd9d2530a7cf4a74fd8a014',1,'matrix_zio.cpp']]],
+  ['print_5fz_5fcsr_5fmtx',['print_z_csr_mtx',['../group__magmasparse__zaux.html#gabb2f690859ebe4dcf2f06637f0dba459',1,'matrix_zio.cpp']]],
+  ['push_5ftask',['push_task',['../classmagma__thread__queue.html#a9220f8ad5466f976dcc094f492474e93',1,'magma_thread_queue']]]
 ];

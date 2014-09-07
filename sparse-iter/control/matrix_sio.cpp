@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from matrix_zio.cpp normal z -> s, Fri Jul 18 17:34:30 2014
+       @generated from matrix_zio.cpp normal z -> s, Tue Sep  2 12:38:36 2014
        @author Hartwig Anzt
 */
 
@@ -1092,12 +1092,7 @@ magma_int_t magma_s_csr_mtx( magma_s_sparse_matrix *A, const char *filename ){
 }
 
 
-/** -- MAGMA (version 1.5.0-beta3) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
-
+/**
     Purpose
     -------
 

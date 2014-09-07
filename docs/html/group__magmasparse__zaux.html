@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__zaux.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -111,9 +114,9 @@ $(document).ready(function(){initNavTree('group__magmasparse__zaux.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaa9fea5166436c386c6d31bdccaf9c670"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gaa9fea5166436c386c6d31bdccaf9c670">magma_z_precond</a> (magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x, magma_z_preconditioner precond)</td></tr>
-<tr class="memdesc:gaa9fea5166436c386c6d31bdccaf9c670"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is chosen.  <a href="#gaa9fea5166436c386c6d31bdccaf9c670">More...</a><br /></td></tr>
-<tr class="separator:gaa9fea5166436c386c6d31bdccaf9c670"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga17feadf9bb5f467ec234f7274ce0233d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga17feadf9bb5f467ec234f7274ce0233d">magma_z_precond</a> (magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x, magma_z_preconditioner *precond)</td></tr>
+<tr class="memdesc:ga17feadf9bb5f467ec234f7274ce0233d"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is chosen.  <a href="#ga17feadf9bb5f467ec234f7274ce0233d">More...</a><br /></td></tr>
+<tr class="separator:ga17feadf9bb5f467ec234f7274ce0233d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5e5d67ff1544a419c257097e865ce12c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga5e5d67ff1544a419c257097e865ce12c">magma_z_precondsetup</a> (magma_z_sparse_matrix A, magma_z_vector b, magma_z_preconditioner *precond)</td></tr>
 <tr class="memdesc:ga5e5d67ff1544a419c257097e865ce12c"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is preprocessed.  <a href="#ga5e5d67ff1544a419c257097e865ce12c">More...</a><br /></td></tr>
 <tr class="separator:ga5e5d67ff1544a419c257097e865ce12c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,18 +129,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga18ebc809b1d82b3226e5b50bb353cafc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga18ebc809b1d82b3226e5b50bb353cafc">magma_z_applyprecond_right</a> (magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x, magma_z_preconditioner *precond)</td></tr>
 <tr class="memdesc:ga18ebc809b1d82b3226e5b50bb353cafc"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective right-preconditioner is applied.  <a href="#ga18ebc809b1d82b3226e5b50bb353cafc">More...</a><br /></td></tr>
 <tr class="separator:ga18ebc809b1d82b3226e5b50bb353cafc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga37e4a9bccbbf6175ddf547236e8e3315"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga37e4a9bccbbf6175ddf547236e8e3315">magma_zorthomgs</a> (magma_int_t num_rows, magma_int_t num_vecs, magmaDoubleComplex *X)</td></tr>
-<tr class="memdesc:ga37e4a9bccbbf6175ddf547236e8e3315"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine orthogonalizes a set of vectors stored in a n x m - matrix X in column major:  <a href="#ga37e4a9bccbbf6175ddf547236e8e3315">More...</a><br /></td></tr>
-<tr class="separator:ga37e4a9bccbbf6175ddf547236e8e3315"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf739afac970c74480ce377e9e723c75"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gadf739afac970c74480ce377e9e723c75">magma_z_solver</a> (magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x, magma_zopts *zopts)</td></tr>
+<tr class="memdesc:gadf739afac970c74480ce377e9e723c75"><td class="mdescLeft">&#160;</td><td class="mdescRight">ALlows the user to choose a solver.  <a href="#gadf739afac970c74480ce377e9e723c75">More...</a><br /></td></tr>
+<tr class="separator:gadf739afac970c74480ce377e9e723c75"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae46dd6f9b8657c7f61b4ee7d35edd729"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gae46dd6f9b8657c7f61b4ee7d35edd729">magma_zresidual</a> (magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector x, double *res)</td></tr>
 <tr class="memdesc:gae46dd6f9b8657c7f61b4ee7d35edd729"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the residual ||b-Ax|| for a solution approximation x.  <a href="#gae46dd6f9b8657c7f61b4ee7d35edd729">More...</a><br /></td></tr>
 <tr class="separator:gae46dd6f9b8657c7f61b4ee7d35edd729"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga19c499b592f7ba62c1ec210e55026dee"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga19c499b592f7ba62c1ec210e55026dee">magma_znonlinres</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix L, magma_z_sparse_matrix U, magma_z_sparse_matrix *LU, real_Double_t *res)</td></tr>
-<tr class="memdesc:ga19c499b592f7ba62c1ec210e55026dee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the nonlinear residual A- LU and returns the difference as well es the Frobenius norm of the difference.  <a href="#ga19c499b592f7ba62c1ec210e55026dee">More...</a><br /></td></tr>
-<tr class="separator:ga19c499b592f7ba62c1ec210e55026dee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga17ebeb99416b7eec5b95c5275236ea29"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga17ebeb99416b7eec5b95c5275236ea29">magma_zilures</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix L, magma_z_sparse_matrix U, magma_z_sparse_matrix *LU, real_Double_t *res)</td></tr>
-<tr class="memdesc:ga17ebeb99416b7eec5b95c5275236ea29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the ILU residual A- LU and returns the difference as well es the Frobenius norm of the difference.  <a href="#ga17ebeb99416b7eec5b95c5275236ea29">More...</a><br /></td></tr>
-<tr class="separator:ga17ebeb99416b7eec5b95c5275236ea29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5abc314f842eb3d24b2305c51681811c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga5abc314f842eb3d24b2305c51681811c">magma_z_vfree</a> (magma_z_vector *x)</td></tr>
 <tr class="memdesc:ga5abc314f842eb3d24b2305c51681811c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the memory of a magma_z_vector.  <a href="#ga5abc314f842eb3d24b2305c51681811c">More...</a><br /></td></tr>
 <tr class="separator:ga5abc314f842eb3d24b2305c51681811c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,27 +159,6 @@ Functions</h2></td></tr>
 <tr class="memitem:gae8ef64e2a00f1c82c900477da7144392"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gae8ef64e2a00f1c82c900477da7144392">magma_z_LUmergein</a> (magma_z_sparse_matrix L, magma_z_sparse_matrix U, magma_z_sparse_matrix *B)</td></tr>
 <tr class="memdesc:gae8ef64e2a00f1c82c900477da7144392"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges an ILU factorization into one matrix.  <a href="#gae8ef64e2a00f1c82c900477da7144392">More...</a><br /></td></tr>
 <tr class="separator:gae8ef64e2a00f1c82c900477da7144392"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4d8aa5404a8f76ca6ff065a145443fe6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga4d8aa5404a8f76ca6ff065a145443fe6">magma_z_mpksetup_one</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix *B, magma_int_t offset, magma_int_t blocksize, magma_int_t s)</td></tr>
-<tr class="memdesc:ga4d8aa5404a8f76ca6ff065a145443fe6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides for a matrix A, a blocksize, an offset, and a number of matrix powers s, the local matrix B to needed by this processor for the matrix power kernel.  <a href="#ga4d8aa5404a8f76ca6ff065a145443fe6">More...</a><br /></td></tr>
-<tr class="separator:ga4d8aa5404a8f76ca6ff065a145443fe6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac8d130470336e1ce7755a02c7a05c373"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gac8d130470336e1ce7755a02c7a05c373">magma_z_mpksetup</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix B[MagmaMaxGPUs], magma_int_t num_procs, magma_int_t *offset, magma_int_t *blocksize, magma_int_t s)</td></tr>
-<tr class="memdesc:gac8d130470336e1ce7755a02c7a05c373"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides for a matrix A, a number of processors num_procs, and a distribution *offset, *blocksize and s a set of matrices B each containing the matrix rows to compute the matrix power kernel.  <a href="#gac8d130470336e1ce7755a02c7a05c373">More...</a><br /></td></tr>
-<tr class="separator:gac8d130470336e1ce7755a02c7a05c373"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf1fa56b5c11d07f6b4592ffd341d0943"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gaf1fa56b5c11d07f6b4592ffd341d0943">magma_z_mpkinfo</a> (magma_z_sparse_matrix A, magma_int_t num_procs, magma_int_t *offset, magma_int_t *blocksize, magma_int_t s, magma_index_t **num_addrows, magma_index_t **add_rows, magma_int_t *num_addvecs, magma_index_t **add_vecs, magma_int_t *num_vecs_back, magma_index_t **vecs_back)</td></tr>
-<tr class="memdesc:gaf1fa56b5c11d07f6b4592ffd341d0943"><td class="mdescLeft">&#160;</td><td class="mdescRight">Provides for a matrix A, a number of processors num_procs, and a distribution *offset, *blocksize and s the number of rows added to the different matrices.  <a href="#gaf1fa56b5c11d07f6b4592ffd341d0943">More...</a><br /></td></tr>
-<tr class="separator:gaf1fa56b5c11d07f6b4592ffd341d0943"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gad55d855caa281c8cf5737114aa5736c9"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gad55d855caa281c8cf5737114aa5736c9">magma_z_mpk_compress</a> (magma_int_t num_addrows, magma_index_t *add_rows, magmaDoubleComplex *x, magmaDoubleComplex *y)</td></tr>
-<tr class="memdesc:gad55d855caa281c8cf5737114aa5736c9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Packs for a given vector x and a key add_rows a compressed version where the add_rows are in consecutive order.  <a href="#gad55d855caa281c8cf5737114aa5736c9">More...</a><br /></td></tr>
-<tr class="separator:gad55d855caa281c8cf5737114aa5736c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafdf9bfdb89c16d806c3e01da37c27ff6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gafdf9bfdb89c16d806c3e01da37c27ff6">magma_z_mpk_uncompress</a> (magma_int_t num_add_rows, magma_index_t *add_rows, magmaDoubleComplex *x, magmaDoubleComplex *y)</td></tr>
-<tr class="memdesc:gafdf9bfdb89c16d806c3e01da37c27ff6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unpacks for a given vector x and a key add_rows the compressed version.  <a href="#gafdf9bfdb89c16d806c3e01da37c27ff6">More...</a><br /></td></tr>
-<tr class="separator:gafdf9bfdb89c16d806c3e01da37c27ff6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab5b3a4c8368bcec469251d9e75fd3c73"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gab5b3a4c8368bcec469251d9e75fd3c73">magma_z_mpk_uncompress_sel</a> (magma_int_t num_addvecs, magma_index_t *add_vecs, magma_int_t offset, magma_int_t blocksize, magmaDoubleComplex *x, magmaDoubleComplex *y)</td></tr>
-<tr class="memdesc:gab5b3a4c8368bcec469251d9e75fd3c73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Unpacks for a given vector x and a key add_rows the compressed version.  <a href="#gab5b3a4c8368bcec469251d9e75fd3c73">More...</a><br /></td></tr>
-<tr class="separator:gab5b3a4c8368bcec469251d9e75fd3c73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga5f6f01435201e65e463438a8af0fb7fd"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga5f6f01435201e65e463438a8af0fb7fd">magma_z_mpk_mcompresso</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix *B, magma_int_t offset, magma_int_t blocksize, magma_int_t num_add_rows, magma_index_t *add_rows)</td></tr>
-<tr class="memdesc:ga5f6f01435201e65e463438a8af0fb7fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Packs the local matrix for higher SpMV performance.  <a href="#ga5f6f01435201e65e463438a8af0fb7fd">More...</a><br /></td></tr>
-<tr class="separator:ga5f6f01435201e65e463438a8af0fb7fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0a8a71a421dee0ba4461444641814584"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga0a8a71a421dee0ba4461444641814584">magma_z_mtransfer</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix *B, magma_location_t src, magma_location_t dst)</td></tr>
 <tr class="memdesc:ga0a8a71a421dee0ba4461444641814584"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies a matrix from memory location src to memory location dst.  <a href="#ga0a8a71a421dee0ba4461444641814584">More...</a><br /></td></tr>
 <tr class="separator:ga0a8a71a421dee0ba4461444641814584"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -198,32 +174,32 @@ Functions</h2></td></tr>
 <tr class="memitem:ga944069ecbae75950f7c15cf53aead386"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga944069ecbae75950f7c15cf53aead386">magma_zmgenerator</a> (magma_int_t n, magma_int_t offdiags, magma_index_t *diag_offset, magmaDoubleComplex *diag_vals, magma_z_sparse_matrix *A)</td></tr>
 <tr class="memdesc:ga944069ecbae75950f7c15cf53aead386"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a symmetric n x n CSR matrix for a stencil.  <a href="#ga944069ecbae75950f7c15cf53aead386">More...</a><br /></td></tr>
 <tr class="separator:ga944069ecbae75950f7c15cf53aead386"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga41e7e2a51377bda43f8bf96e22359db4"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga41e7e2a51377bda43f8bf96e22359db4">magma_zilustruct</a> (magma_z_sparse_matrix *A, magma_int_t levels)</td></tr>
-<tr class="memdesc:ga41e7e2a51377bda43f8bf96e22359db4"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes the fill-in structure of an ILU(levels) factorization based on the successive multiplication of upper and lower triangular factors using the CUSPARSE library.  <a href="#ga41e7e2a51377bda43f8bf96e22359db4">More...</a><br /></td></tr>
-<tr class="separator:ga41e7e2a51377bda43f8bf96e22359db4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga487da83db9a1ac8834d991dac369ed98"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga487da83db9a1ac8834d991dac369ed98">magma_zmhom</a> (magma_z_sparse_matrix A, magma_int_t b, magma_index_t *p)</td></tr>
-<tr class="memdesc:ga487da83db9a1ac8834d991dac369ed98"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga487da83db9a1ac8834d991dac369ed98">More...</a><br /></td></tr>
-<tr class="separator:ga487da83db9a1ac8834d991dac369ed98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga87c8931a40f1b4b151d0bdb3f1530086"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga87c8931a40f1b4b151d0bdb3f1530086">magma_zm_27stencil</a> (magma_int_t n, magma_z_sparse_matrix *A)</td></tr>
+<tr class="memdesc:ga87c8931a40f1b4b151d0bdb3f1530086"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a 27-point stencil for a 3D FD discretization.  <a href="#ga87c8931a40f1b4b151d0bdb3f1530086">More...</a><br /></td></tr>
+<tr class="separator:ga87c8931a40f1b4b151d0bdb3f1530086"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab255cfc0b6e60f79f9905b10fc5dea28"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gab255cfc0b6e60f79f9905b10fc5dea28">magma_zm_5stencil</a> (magma_int_t n, magma_z_sparse_matrix *A)</td></tr>
+<tr class="memdesc:gab255cfc0b6e60f79f9905b10fc5dea28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a 5-point stencil for a 2D FD discretization.  <a href="#gab255cfc0b6e60f79f9905b10fc5dea28">More...</a><br /></td></tr>
+<tr class="separator:gab255cfc0b6e60f79f9905b10fc5dea28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga719297120d1836e39eafb8ebd77e2d86"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga719297120d1836e39eafb8ebd77e2d86">magma_zmdiff</a> (magma_z_sparse_matrix A, magma_z_sparse_matrix B, real_Double_t *res)</td></tr>
+<tr class="memdesc:ga719297120d1836e39eafb8ebd77e2d86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the Frobenius norm of the difference between the CSR matrices A and B.  <a href="#ga719297120d1836e39eafb8ebd77e2d86">More...</a><br /></td></tr>
+<tr class="separator:ga719297120d1836e39eafb8ebd77e2d86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6b54cd6dec164a008a12302d546801cc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga6b54cd6dec164a008a12302d546801cc">magma_zmscale</a> (magma_z_sparse_matrix *A, magma_scale_t scaling)</td></tr>
-<tr class="memdesc:ga6b54cd6dec164a008a12302d546801cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga6b54cd6dec164a008a12302d546801cc">More...</a><br /></td></tr>
+<tr class="memdesc:ga6b54cd6dec164a008a12302d546801cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scales a matrix.  <a href="#ga6b54cd6dec164a008a12302d546801cc">More...</a><br /></td></tr>
 <tr class="separator:ga6b54cd6dec164a008a12302d546801cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9582e0848d95bf4240fe2bfc75477021"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga9582e0848d95bf4240fe2bfc75477021">magma_zmdiagadd</a> (magma_z_sparse_matrix *A, magmaDoubleComplex add)</td></tr>
-<tr class="memdesc:ga9582e0848d95bf4240fe2bfc75477021"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga9582e0848d95bf4240fe2bfc75477021">More...</a><br /></td></tr>
+<tr class="memdesc:ga9582e0848d95bf4240fe2bfc75477021"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a multiple of the Identity matrix to a matrix: A = A+add * I.  <a href="#ga9582e0848d95bf4240fe2bfc75477021">More...</a><br /></td></tr>
 <tr class="separator:ga9582e0848d95bf4240fe2bfc75477021"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7d2ba0d2679ae7bacb802d7b52af4eac"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga7d2ba0d2679ae7bacb802d7b52af4eac">magma_zmsort</a> (magma_z_sparse_matrix *A)</td></tr>
-<tr class="memdesc:ga7d2ba0d2679ae7bacb802d7b52af4eac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts columns and rows for a matrix in COO or CSRCOO format.  <a href="#ga7d2ba0d2679ae7bacb802d7b52af4eac">More...</a><br /></td></tr>
-<tr class="separator:ga7d2ba0d2679ae7bacb802d7b52af4eac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa0c2e202f461e8d779a39a5b0179e69c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gaa0c2e202f461e8d779a39a5b0179e69c">magma_z_initP2P</a> (magma_int_t *bw_bmark, magma_int_t *num_gpus)</td></tr>
 <tr class="memdesc:gaa0c2e202f461e8d779a39a5b0179e69c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes P2P communication between GPUs.  <a href="#gaa0c2e202f461e8d779a39a5b0179e69c">More...</a><br /></td></tr>
 <tr class="separator:gaa0c2e202f461e8d779a39a5b0179e69c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7b4b3730521e7502fafda7ea9b340244"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga7b4b3730521e7502fafda7ea9b340244">magma_zsolverinfo</a> (magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par)</td></tr>
-<tr class="memdesc:ga7b4b3730521e7502fafda7ea9b340244"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga7b4b3730521e7502fafda7ea9b340244">More...</a><br /></td></tr>
+<tr class="memdesc:ga7b4b3730521e7502fafda7ea9b340244"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints information about a previously called solver.  <a href="#ga7b4b3730521e7502fafda7ea9b340244">More...</a><br /></td></tr>
 <tr class="separator:ga7b4b3730521e7502fafda7ea9b340244"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab565387e34d9892c6f1e0e565e0e9b94"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gab565387e34d9892c6f1e0e565e0e9b94">magma_zsolverinfo_free</a> (magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par)</td></tr>
-<tr class="memdesc:gab565387e34d9892c6f1e0e565e0e9b94"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#gab565387e34d9892c6f1e0e565e0e9b94">More...</a><br /></td></tr>
+<tr class="memdesc:gab565387e34d9892c6f1e0e565e0e9b94"><td class="mdescLeft">&#160;</td><td class="mdescRight">Frees any memory assocoiated with the verbose mode of solver_par.  <a href="#gab565387e34d9892c6f1e0e565e0e9b94">More...</a><br /></td></tr>
 <tr class="separator:gab565387e34d9892c6f1e0e565e0e9b94"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafb3edebc55acacab19c0df7c91b331f3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gafb3edebc55acacab19c0df7c91b331f3">magma_zsolverinfo_init</a> (magma_z_solver_par *solver_par, magma_z_preconditioner *precond_par)</td></tr>
-<tr class="memdesc:gafb3edebc55acacab19c0df7c91b331f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#gafb3edebc55acacab19c0df7c91b331f3">More...</a><br /></td></tr>
+<tr class="memdesc:gafb3edebc55acacab19c0df7c91b331f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes all solver and preconditioner parameters.  <a href="#gafb3edebc55acacab19c0df7c91b331f3">More...</a><br /></td></tr>
 <tr class="separator:gafb3edebc55acacab19c0df7c91b331f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabfbac3ed2a716028f30c89bcec02a7b5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gabfbac3ed2a716028f30c89bcec02a7b5">z_transpose_csr</a> (magma_int_t n_rows, magma_int_t n_cols, magma_int_t nnz, magmaDoubleComplex *val, magma_index_t *row, magma_index_t *col, magma_int_t *new_n_rows, magma_int_t *new_n_cols, magma_int_t *new_nnz, magmaDoubleComplex **new_val, magma_index_t **new_row, magma_index_t **new_col)</td></tr>
 <tr class="memdesc:gabfbac3ed2a716028f30c89bcec02a7b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transposes a matrix stored in CSR format.  <a href="#gabfbac3ed2a716028f30c89bcec02a7b5">More...</a><br /></td></tr>
@@ -256,7 +232,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga74d1c52406a8aede98f83f52529857e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in a matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format.  <a href="#ga74d1c52406a8aede98f83f52529857e8">More...</a><br /></td></tr>
 <tr class="separator:ga74d1c52406a8aede98f83f52529857e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa079fdcf12992fed0a58293b58c91e05"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gaa079fdcf12992fed0a58293b58c91e05">magma_z_csr_mtxsymm</a> (magma_z_sparse_matrix *A, const char *filename)</td></tr>
-<tr class="memdesc:gaa079fdcf12992fed0a58293b58c91e05"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#gaa079fdcf12992fed0a58293b58c91e05">More...</a><br /></td></tr>
+<tr class="memdesc:gaa079fdcf12992fed0a58293b58c91e05"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in a SYMMETRIC matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format.  <a href="#gaa079fdcf12992fed0a58293b58c91e05">More...</a><br /></td></tr>
 <tr class="separator:gaa079fdcf12992fed0a58293b58c91e05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga255bf5e8f3339631f0d7a9d6589b66b8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga255bf5e8f3339631f0d7a9d6589b66b8">magmablas_dlag2s_sparse</a> (magma_int_t M, magma_int_t N, const double *A, magma_int_t lda, float *SA, magma_int_t ldsa, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga255bf5e8f3339631f0d7a9d6589b66b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">DLAG2S converts a DOUBLE PRECISION matrix A to a SINGLE PRECISION matrix SA.  <a href="#ga255bf5e8f3339631f0d7a9d6589b66b8">More...</a><br /></td></tr>
@@ -267,12 +243,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga06d8039a93b7e7bc337abed55200a853"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#ga06d8039a93b7e7bc337abed55200a853">magma_z_spmv_shift</a> (magmaDoubleComplex alpha, magma_z_sparse_matrix A, magmaDoubleComplex lambda, magma_z_vector x, magmaDoubleComplex beta, magma_int_t offset, magma_int_t blocksize, magma_index_t *add_rows, magma_z_vector y)</td></tr>
 <tr class="memdesc:ga06d8039a93b7e7bc337abed55200a853"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and scalars alpha, beta the wrapper determines the suitable SpMV computing y = alpha * ( A - lambda I ) * x + beta * y.  <a href="#ga06d8039a93b7e7bc337abed55200a853">More...</a><br /></td></tr>
 <tr class="separator:ga06d8039a93b7e7bc337abed55200a853"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf15a9a8fe671f18dba762ff6bd2512ba"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gaf15a9a8fe671f18dba762ff6bd2512ba">magma_z_mpk_compress_gpu</a> (magma_int_t num_add_rows, magma_index_t *add_rows, magmaDoubleComplex *x, magmaDoubleComplex *y)</td></tr>
-<tr class="memdesc:gaf15a9a8fe671f18dba762ff6bd2512ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Packs a vector x using a key add_rows into the compressed version.  <a href="#gaf15a9a8fe671f18dba762ff6bd2512ba">More...</a><br /></td></tr>
-<tr class="separator:gaf15a9a8fe671f18dba762ff6bd2512ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae6ffef3fe2ae5a24c0a9bc4b27f24634"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gae6ffef3fe2ae5a24c0a9bc4b27f24634">magma_zbitflip</a> (magmaDoubleComplex *d, magma_int_t loc, magma_int_t bit)</td></tr>
-<tr class="memdesc:gae6ffef3fe2ae5a24c0a9bc4b27f24634"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#gae6ffef3fe2ae5a24c0a9bc4b27f24634">More...</a><br /></td></tr>
-<tr class="separator:gae6ffef3fe2ae5a24c0a9bc4b27f24634"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabe77ad2f9197d21c8c11152ef163c42d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zaux.html#gabe77ad2f9197d21c8c11152ef163c42d">magma_vector_zlag2c</a> (magma_z_vector x, magma_c_vector *y)</td></tr>
 <tr class="memdesc:gabe77ad2f9197d21c8c11152ef163c42d"><td class="mdescLeft">&#160;</td><td class="mdescRight">convertes magma_z_vector from Z to C  <a href="#gabe77ad2f9197d21c8c11152ef163c42d">More...</a><br /></td></tr>
 <tr class="separator:gabe77ad2f9197d21c8c11152ef163c42d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -402,8 +372,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_z_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_z_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_z_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_z_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_z_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -452,8 +422,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_z_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_z_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_z_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_z_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_z_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -502,8 +472,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_z_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_z_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_z_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_z_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_z_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -641,9 +611,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Reads in a SYMMETRIC matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format. It does not duplicate the off-diagonal entries!</p>
+<p>Reads in a SYMMETRIC matrix stored in coo format from a Matrix Market (.mtx) file and converts it into CSR format. </p>
+<p>It does not duplicate the off-diagonal entries!</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* matrix in magma sparse matrix format</td></tr>
@@ -876,487 +845,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gad55d855caa281c8cf5737114aa5736c9"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_z_mpk_compress </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_addrows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>add_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>y</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Packs for a given vector x and a key add_rows a compressed version where the add_rows are in consecutive order. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_addrows</td><td>magma_int_t number of elements to pack</td></tr>
-    <tr><td class="paramname">add_rows</td><td>magma_int_t* indices of elements to pack</td></tr>
-    <tr><td class="paramname">x</td><td>magmaDoubleComplex* uncompressed input vector</td></tr>
-    <tr><td class="paramname">y</td><td>magmaDoubleComplex* compressed output vector </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gaf15a9a8fe671f18dba762ff6bd2512ba"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int magma_z_mpk_compress_gpu </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_add_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>add_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>y</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Packs a vector x using a key add_rows into the compressed version. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_add_rowsmagma_int_t</td><td>number of elements to unpack</td></tr>
-    <tr><td class="paramname">add_rows</td><td>magma_index_t* indices of elements to unpack</td></tr>
-    <tr><td class="paramname">x</td><td>magmaDoubleComplex* uncompressed input vector</td></tr>
-    <tr><td class="paramname">y</td><td>magmaDoubleComplex* compressed output vector </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga5f6f01435201e65e463438a8af0fb7fd"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_z_mpk_mcompresso </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>B</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>blocksize</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_add_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>add_rows</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Packs the local matrix for higher SpMV performance. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_addrows</td><td>magma_int_t number of elements to pack</td></tr>
-    <tr><td class="paramname">add_rows</td><td>magma_int_t* indices of elements to pack</td></tr>
-    <tr><td class="paramname">x</td><td>magmaDoubleComplex* uncompressed input vector</td></tr>
-    <tr><td class="paramname">y</td><td>magmaDoubleComplex* compressed output vector </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gafdf9bfdb89c16d806c3e01da37c27ff6"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_z_mpk_uncompress </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_add_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>add_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>y</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Unpacks for a given vector x and a key add_rows the compressed version. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_add_rowsmagma_int_t</td><td>number of elements to pack</td></tr>
-    <tr><td class="paramname">add_rows</td><td>magma_int_t* indices of elements to pack</td></tr>
-    <tr><td class="paramname">x</td><td>magmaDoubleComplex* compressed input vector</td></tr>
-    <tr><td class="paramname">y</td><td>magmaDoubleComplex* uncompressed output vector </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gab5b3a4c8368bcec469251d9e75fd3c73"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_z_mpk_uncompress_sel </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_addvecs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>add_vecs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>blocksize</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>y</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Unpacks for a given vector x and a key add_rows the compressed version. </p>
-<p>The selective version uncompresses only vectors within the area [ offset , offset+blocksize ]</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_addvecs</td><td>magma_int_t number of elements to pack</td></tr>
-    <tr><td class="paramname">add_vecs</td><td>magma_int_t* indices of elements to pack</td></tr>
-    <tr><td class="paramname">offset</td><td>magma_int_t lower bound of vector chunk</td></tr>
-    <tr><td class="paramname">blocksize</td><td>magma_int_t number of locally computed elements</td></tr>
-    <tr><td class="paramname">x</td><td>magmaDoubleComplex* compressed input vector</td></tr>
-    <tr><td class="paramname">y</td><td>magmaDoubleComplex* uncompressed output vector </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gaf1fa56b5c11d07f6b4592ffd341d0943"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_z_mpkinfo </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_procs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>blocksize</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>s</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t **&#160;</td>
-          <td class="paramname"><em>num_addrows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t **&#160;</td>
-          <td class="paramname"><em>add_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>num_addvecs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t **&#160;</td>
-          <td class="paramname"><em>add_vecs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>num_vecs_back</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t **&#160;</td>
-          <td class="paramname"><em>vecs_back</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Provides for a matrix A, a number of processors num_procs, and a distribution *offset, *blocksize and s the number of rows added to the different matrices. </p>
-<p>magma_sparse_matrix A input matrix A </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_procs</td><td>magma_int_t number of processors</td></tr>
-    <tr><td class="paramname">offset</td><td>magma_int_t* array containing the offsets</td></tr>
-    <tr><td class="paramname">blocksize</td><td>magma_int_t* array containing the chunk sizes</td></tr>
-    <tr><td class="paramname">s</td><td>magma_int_t matrix powers</td></tr>
-    <tr><td class="paramname">num_addrows</td><td>magma_int_t* output array: number of additional rows</td></tr>
-    <tr><td class="paramname">num_addvecs</td><td>magma_int_t* number of additional vector entries</td></tr>
-    <tr><td class="paramname">add_vecs</td><td>magma_int_t* array for additional vector entries </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gac8d130470336e1ce7755a02c7a05c373"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_z_mpksetup </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>B</em>[MagmaMaxGPUs], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_procs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>blocksize</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>s</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Provides for a matrix A, a number of processors num_procs, and a distribution *offset, *blocksize and s a set of matrices B each containing the matrix rows to compute the matrix power kernel. </p>
-<p>magma_sparse_matrix A input matrix A magma_sparse_matrix B[MagmaMaxGPUs] set of output matrices B </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_procs</td><td>magma_int_t number of processors</td></tr>
-    <tr><td class="paramname">offset</td><td>magma_int_t* array containing the offsets</td></tr>
-    <tr><td class="paramname">blocksize</td><td>magma_int_t* array containing the chunk sizes</td></tr>
-    <tr><td class="paramname">s</td><td>magma_int_t matrix powers </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga4d8aa5404a8f76ca6ff065a145443fe6"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_z_mpksetup_one </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>B</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>blocksize</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>s</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Provides for a matrix A, a blocksize, an offset, and a number of matrix powers s, the local matrix B to needed by this processor for the matrix power kernel. </p>
-<p>magma_sparse_matrix A input matrix A magma_sparse_matrix *B output matrix B </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">offset</td><td>magma_int_t first row to compute</td></tr>
-    <tr><td class="paramname">blocksize</td><td>magma_int_t number of rows to compute</td></tr>
-    <tr><td class="paramname">s</td><td>magma_int_t matrix powers </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga0a8a71a421dee0ba4461444641814584"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1430,7 +918,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaa9fea5166436c386c6d31bdccaf9c670"></a>
+<a class="anchor" id="ga17feadf9bb5f467ec234f7274ce0233d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1455,7 +943,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_z_preconditioner&#160;</td>
+          <td class="paramtype">magma_z_preconditioner *&#160;</td>
           <td class="paramname"><em>precond</em>&#160;</td>
         </tr>
         <tr>
@@ -1471,8 +959,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_z_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_z_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_z_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_z_vector* output vector x</td></tr>
     <tr><td class="paramname">precond</td><td>magma_z_preconditioner preconditioner </td></tr>
   </table>
   </dd>
@@ -1515,9 +1003,57 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix sparse matrix A</td></tr>
-    <tr><td class="paramname">x</td><td>magma_z_vector input vector x</td></tr>
-    <tr><td class="paramname">y</td><td>magma_z_vector input vector y</td></tr>
+    <tr><td class="paramname">b</td><td>magma_z_vector input vector y</td></tr>
     <tr><td class="paramname">precond</td><td>magma_z_preconditioner preconditioner </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gadf739afac970c74480ce377e9e723c75"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_z_solver </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_vector&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_vector *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_zopts *&#160;</td>
+          <td class="paramname"><em>zopts</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ALlows the user to choose a solver. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix sparse matrix A</td></tr>
+    <tr><td class="paramname">b</td><td>magma_z_vector input vector b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_z_vector* output vector x</td></tr>
+    <tr><td class="paramname">zopts</td><td>magma_zopts options for solver and preconditioner </td></tr>
   </table>
   </dd>
 </dl>
@@ -1815,42 +1351,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gae6ffef3fe2ae5a24c0a9bc4b27f24634"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zbitflip </td>
-          <td>(</td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>d</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>loc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>bit</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>This tool flips the bit 'bit' of the magmaDoubleComplex value d[ loc ]. </p>
-
-</div>
-</div>
 <a class="anchor" id="gabfa42bcce2f66ea2033312a0d1caa0d8"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1933,97 +1433,6 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* sparse matrix </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga17ebeb99416b7eec5b95c5275236ea29"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zilures </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>U</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>LU</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real_Double_t *&#160;</td>
-          <td class="paramname"><em>res</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Computes the ILU residual A- LU and returns the difference as well es the Frobenius norm of the difference. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">L</td><td>magma_z_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">U</td><td>magma_z_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">LU</td><td>magma_z_sparse_matrix* output sparse matrix in A-LU in CSR</td></tr>
-    <tr><td class="paramname">res</td><td>real_Double_t* residual </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga41e7e2a51377bda43f8bf96e22359db4"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zilustruct </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>levels</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This routine computes the fill-in structure of an ILU(levels) factorization based on the successive multiplication of upper and lower triangular factors using the CUSPARSE library. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* matrix in magma sparse matrix format</td></tr>
-    <tr><td class="paramname">levels</td><td>magma_int_t fill in level </td></tr>
   </table>
   </dd>
 </dl>
@@ -2147,6 +1556,76 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga87c8931a40f1b4b151d0bdb3f1530086"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zm_27stencil </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
+          <td class="paramname"><em>A</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a 27-point stencil for a 3D FD discretization. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>magma_int_t number of rows</td></tr>
+    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* matrix to generate </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gab255cfc0b6e60f79f9905b10fc5dea28"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zm_5stencil </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
+          <td class="paramname"><em>A</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Generate a 5-point stencil for a 2D FD discretization. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">n</td><td>magma_int_t number of rows</td></tr>
+    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* matrix to generate </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga9582e0848d95bf4240fe2bfc75477021"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2171,13 +1650,54 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Adds a multiple of the Identity matrix to a matrix: A = A+add * I</p>
+<p>Adds a multiple of the Identity matrix to a matrix: A = A+add * I. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* input/output matrix</td></tr>
     <tr><td class="paramname">add</td><td>magmaDoubleComplex scaling for the identity matrix </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga719297120d1836e39eafb8ebd77e2d86"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zmdiff </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real_Double_t *&#160;</td>
+          <td class="paramname"><em>res</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes the Frobenius norm of the difference between the CSR matrices A and B. </p>
+<p>They do not need to share the same sparsity pattern! </p><pre class="fragment">   res = ||A-B||_F = sqrt( sum_ij (A_ij-B_ij)^2 )
+</pre><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix sparse matrix in CSR</td></tr>
+    <tr><td class="paramname">B</td><td>magma_z_sparse_matrix sparse matrix in CSR</td></tr>
+    <tr><td class="paramname">res</td><td>real_Double_t* residual </td></tr>
   </table>
   </dd>
 </dl>
@@ -2242,57 +1762,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga487da83db9a1ac8834d991dac369ed98"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zmhom </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>p</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Takes a matrix and a blocksize b to generate a homomorphism that orders the matrix entries according to the subdomains of size b x b. Returns p on the device</p>
-<p>example: </p><pre class="fragment">/ a 0 0 b 0 \
-| 0 c 0 d 0 |
-</pre><p> A= | 0 e f g 0 | b = 2 | h 0 0 0 0 | \ i j 0 0 0 /</p>
-<p>will generate the projection:</p>
-<p>0 2 1 3 4 7 8 9 10 11</p>
-<p>according to</p>
-<p>a c b d e h f g i j</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix input/output matrix</td></tr>
-    <tr><td class="paramname">b</td><td>magma_int_t blocksize</td></tr>
-    <tr><td class="paramname">p</td><td>magma_index_t* homomorphism vector containing the indices </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga6b54cd6dec164a008a12302d546801cc"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2317,137 +1786,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Scales a matrix.</p>
+<p>Scales a matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* input/output matrix</td></tr>
     <tr><td class="paramname">scaling</td><td>magma_scale_t scaling type (unit rownorm / unit diagonal) </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga7d2ba0d2679ae7bacb802d7b52af4eac"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zmsort </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>A</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Sorts columns and rows for a matrix in COO or CSRCOO format. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix* matrix in magma sparse matrix format </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga19c499b592f7ba62c1ec210e55026dee"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_znonlinres </td>
-          <td>(</td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix&#160;</td>
-          <td class="paramname"><em>U</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_z_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>LU</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real_Double_t *&#160;</td>
-          <td class="paramname"><em>res</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Computes the nonlinear residual A- LU and returns the difference as well es the Frobenius norm of the difference. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_z_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">L</td><td>magma_z_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">U</td><td>magma_z_sparse_matrix input sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">LU</td><td>magma_z_sparse_matrix* output sparse matrix in A-LU in CSR</td></tr>
-    <tr><td class="paramname">res</td><td>real_Double_t* residual </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga37e4a9bccbbf6175ddf547236e8e3315"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zorthomgs </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_rows</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>num_vecs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>X</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>This routine orthogonalizes a set of vectors stored in a n x m - matrix X in column major: </p>
-<p>/ x1[0] x2[0] x3[0] \ | x1[1] x2[1] x3[1] | X = | x1[2] x2[2] x3[2] | = x1[0] x1[1] x1[2] x1[3] x1[4] x2[1] x2[2] . | x1[3] x2[3] x3[3] | \ x1[4] x2[4] x3[4] /</p>
-<p>This routine performs a modified Gram-Schmidt orthogonalization.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">num_rows</td><td>magma_int_t number of rows</td></tr>
-    <tr><td class="paramname">num_vecs</td><td>magma_int_t number of vectors</td></tr>
-    <tr><td class="paramname">X</td><td>magmaDoubleComplex* input/output vector-block/matrix X </td></tr>
   </table>
   </dd>
 </dl>
@@ -2552,9 +1895,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Prints information about a previously called solver.</p>
+<p>Prints information about a previously called solver. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">solver_par</td><td>magma_z_solver_par* structure containing all solver information </td></tr>
@@ -2589,9 +1930,8 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Frees any memory assocoiated with the verbose mode of solver_par. The other values are set to default.</p>
+<p>Frees any memory assocoiated with the verbose mode of solver_par. </p>
+<p>The other values are set to default.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">solver_par</td><td>magma_z_solver_par* structure containing all solver information </td></tr>
@@ -2626,9 +1966,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Initializes all solver and preconditioner parameters.</p>
+<p>Initializes all solver and preconditioner parameters. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">solver_par</td><td>magma_z_solver_par* structure containing all solver information </td></tr>
@@ -3267,7 +2605,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

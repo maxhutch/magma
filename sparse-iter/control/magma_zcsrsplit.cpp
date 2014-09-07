@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -11,7 +11,7 @@
 */
 #include "magma_lapack.h"
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #include <assert.h>
 
@@ -21,15 +21,8 @@
 #include <cusparse_v2.h>
 #include <cuda_profiler_api.h>
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
 
-
-/** -- MAGMA (version 1.5.0-beta3) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
-
+/**
     Purpose
     -------
 

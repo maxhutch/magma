@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgeqrf-v4.cpp normal z -> s, Fri Jul 18 17:34:17 2014
+       @generated from zgeqrf-v4.cpp normal z -> s, Tue Sep  2 12:38:21 2014
 
 */
 #include "common_magma.h"
@@ -55,7 +55,7 @@
 
     @param[out]
     work    (workspace) REAL array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     \n
             Higher performance is achieved if WORK is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
@@ -133,6 +133,9 @@ magma_sgeqrf4(magma_int_t num_gpus, magma_int_t m, magma_int_t n,
         return *info;
     }
 
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    
     ldda    = ((m+31)/32)*32;
 
     magma_int_t  n_local[MagmaMaxGPUs];
@@ -172,6 +175,7 @@ magma_sgeqrf4(magma_int_t num_gpus, magma_int_t m, magma_int_t n,
         magma_setdevice(i);
         magma_free( da[i] );
     }
+    magma_setdevice( orig_dev );
 
     return *info;
 } /* magma_sgeqrf4 */

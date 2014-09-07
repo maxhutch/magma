@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        Note: [ds] precisions generated from zhemv.cu
        zsymv.cu is nearly identical to zhemv.cu, just change names and drop cuConj.
@@ -591,7 +591,7 @@ magmablas_zsymv_work(
     if ( arch < 200 ) {
         //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         //return MAGMA_SUCCESS;
-        fprintf(stderr, "%s: %s\n", __func__, "not implemented on CUDA ARCH 1.x");
+        fprintf(stderr, "%s: %s\n", __func__, "not supported on CUDA ARCH 1.x");
         return MAGMA_ERR_NOT_SUPPORTED;
     }
 #endif
@@ -636,7 +636,7 @@ magmablas_zsymv_work(
     if ( upper ) {
         //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
-        info = MAGMA_ERR_NOT_SUPPORTED;
+        info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
     else {
         magmablas_zsymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
@@ -742,7 +742,7 @@ magmablas_zsymv(
     if ( arch < 200 ) {
         //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         //return MAGMA_SUCCESS;
-        fprintf(stderr, "%s: %s\n", __func__, "not implemented on CUDA ARCH 1.x");
+        fprintf(stderr, "%s: %s\n", __func__, "not supported on CUDA ARCH 1.x");
         return MAGMA_ERR_NOT_SUPPORTED;
     }
 #endif
@@ -782,18 +782,21 @@ magmablas_zsymv(
     if ( upper ) {
         //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
-        info = MAGMA_ERR_NOT_SUPPORTED;
+        info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
     else {
         magmaDoubleComplex *dwork;
         magma_int_t blocks = (n - 1)/NB_X + 1;
         magma_int_t lwork  = lda*blocks;
 
-        // TODO deal with error
         magma_zmalloc( &dwork, lwork );
-
-        magmablas_zsymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
-
+        if ( dwork == NULL ) {
+            info = MAGMA_ERR_DEVICE_ALLOC;
+            magma_xerbla( __func__, -(info) );
+        }
+        else {
+            magmablas_zsymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+        }
         magma_free( dwork );
     }
     return info;

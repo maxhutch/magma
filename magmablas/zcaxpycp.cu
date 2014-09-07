@@ -1,70 +1,91 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions mixed zc -> ds
 
 */
 #include "common_magma.h"
 
-#define BLOCK_SIZE 64
+#define NB 64
 
-// adds   X += R (including conversion to double)  --and--
-// copies W = B
-// each thread does one index, X[i] and W[i]
-extern "C" __global__ void
+// adds   x += r (including conversion to double)  --and--
+// copies w = b
+// each thread does one index, x[i] and w[i]
+__global__ void
 zcaxpycp_kernel(
-    int M, magmaFloatComplex *R, magmaDoubleComplex *X,
-    const magmaDoubleComplex *B, magmaDoubleComplex *W )
+    int m, magmaFloatComplex *r, magmaDoubleComplex *x,
+    const magmaDoubleComplex *b, magmaDoubleComplex *w )
 {
-    const int i = threadIdx.x + blockIdx.x*BLOCK_SIZE;
-    if ( i < M ) {
-        X[i] = MAGMA_Z_ADD( X[i], cuComplexFloatToDouble( R[i] ) );
-        W[i] = B[i];
+    const int i = threadIdx.x + blockIdx.x*NB;
+    if ( i < m ) {
+        x[i] = MAGMA_Z_ADD( x[i], cuComplexFloatToDouble( r[i] ) );
+        w[i] = b[i];
     }
 }
 
 
-// adds   X += R  --and--
-// copies R = B
-// each thread does one index, X[i] and R[i]
-extern "C" __global__ void
+// adds   x += r  --and--
+// copies r = b
+// each thread does one index, x[i] and r[i]
+__global__ void
 zaxpycp_kernel(
-    int M, magmaDoubleComplex *R, magmaDoubleComplex *X,
-    const magmaDoubleComplex *B)
+    int m, magmaDoubleComplex *r, magmaDoubleComplex *x,
+    const magmaDoubleComplex *b)
 {
-    const int i = threadIdx.x + blockIdx.x*BLOCK_SIZE;
-    if ( i < M ) {
-        X[i] = MAGMA_Z_ADD( X[i], R[i] );
-        R[i] = B[i];
+    const int i = threadIdx.x + blockIdx.x*NB;
+    if ( i < m ) {
+        x[i] = MAGMA_Z_ADD( x[i], r[i] );
+        r[i] = b[i];
     }
 }
 
 
-// adds   X += R (including conversion to double)  --and--
-// copies W = B
+// ----------------------------------------------------------------------
+// adds   x += r (including conversion to double)  --and--
+// copies w = b
+extern "C" void
+magmablas_zcaxpycp_q(
+    magma_int_t m, magmaFloatComplex *r, magmaDoubleComplex *x,
+    const magmaDoubleComplex *b, magmaDoubleComplex *w,
+    magma_queue_t queue )
+{
+    dim3 threads( NB );
+    dim3 grid( (m + NB - 1)/NB );
+    zcaxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b, w );
+}
+
+
 extern "C" void
 magmablas_zcaxpycp(
-    magma_int_t M, magmaFloatComplex *R, magmaDoubleComplex *X,
-    const magmaDoubleComplex *B, magmaDoubleComplex *W)
+    magma_int_t m, magmaFloatComplex *r, magmaDoubleComplex *x,
+    const magmaDoubleComplex *b, magmaDoubleComplex *w)
 {
-    dim3 threads( BLOCK_SIZE );
-    dim3 grid( (M + BLOCK_SIZE - 1)/BLOCK_SIZE );
-    zcaxpycp_kernel <<< grid, threads, 0, magma_stream >>> ( M, R, X, B, W );
+    magmablas_zcaxpycp_q( m, r, x, b, w, magma_stream );
 }
 
 
-// adds   X += R  --and--
-// copies R = B
+// ----------------------------------------------------------------------
+// adds   x += r  --and--
+// copies r = b
+extern "C" void
+magmablas_zaxpycp_q(
+    magma_int_t m, magmaDoubleComplex *r, magmaDoubleComplex *x,
+    const magmaDoubleComplex *b,
+    magma_queue_t queue )
+{
+    dim3 threads( NB );
+    dim3 grid( (m + NB - 1)/NB );
+    zaxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b );
+}
+
 extern "C" void
 magmablas_zaxpycp(
-    magma_int_t M, magmaDoubleComplex *R, magmaDoubleComplex *X,
-    const magmaDoubleComplex *B)
+    magma_int_t m, magmaDoubleComplex *r, magmaDoubleComplex *x,
+    const magmaDoubleComplex *b)
 {
-    dim3 threads( BLOCK_SIZE );
-    dim3 grid( (M + BLOCK_SIZE - 1)/BLOCK_SIZE );
-    zaxpycp_kernel <<< grid, threads, 0, magma_stream >>> ( M, R, X, B );
+    magmablas_zaxpycp_q( m, r, x, b, magma_stream );
 }

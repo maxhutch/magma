@@ -1,22 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from zgmres.cpp normal z -> d, Fri Jul 18 17:34:29 2014
+       @generated from zgmres.cpp normal z -> d, Tue Sep  2 12:38:35 2014
 */
 #include <sys/time.h>
 #include <time.h>
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
-#include <cblas.h>
 
 #define PRECISION_d
 
@@ -38,7 +37,7 @@
        A * X = B
     where A is a real sparse matrix stored in the GPU memory.
     X and B are real vectors stored on the GPU memory. 
-    This is a GPU implementation of the right-preconditioned GMRES method.
+    This is a GPU implementation of the GMRES method.
 
     Arguments
     ---------
@@ -81,7 +80,6 @@ magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
     double nom, rNorm, RNorm, nom0, betanom, r0 = 0.;
 
     // CPU workspace
-    magma_setdevice(0);
     double *H, *HH, *y, *h1;
     magma_dmalloc_pinned( &H, (ldh+1)*ldh );
     magma_dmalloc_pinned( &y, ldh );
@@ -117,8 +115,8 @@ magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
     solver_par->init_res = nom0;
     H(1,0) = MAGMA_D_MAKE( nom0, 0. ); 
     magma_dsetvector(1, &H(1,0), 1, &dH(1,0), 1);
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE ) 
-        r0 = ATOLERANCE;
+    if ( (r0 = nom0 * RTOLERANCE ) < ATOLERANCE ) 
+        r0 = solver_par->epsilon;
     if ( nom < r0 )
         return MAGMA_SUCCESS;
 
@@ -132,32 +130,26 @@ magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
     // start iteration
     for( solver_par->numiter= 1; solver_par->numiter<solver_par->maxiter; 
                                                     solver_par->numiter++ ){
-        magma_dcopy(dofs, r.val, 1, q(0), 1);       //  q[0]    = 1.0/||r||
-        magma_dscal(dofs, 1./H(1,0), q(0), 1);      //  (to be fused)
 
         for(k=1; k<=restart; k++) {
+
+        magma_dcopy(dofs, r.val, 1, q(k-1), 1);       //  q[0]    = 1.0/||r||
+        magma_dscal(dofs, 1./H(k,k-1), q(k-1), 1);    //  (to be fused)
+
             q_t.val = q(k-1);
-            magmablasSetKernelStream(stream[0]);
-            magma_d_spmv( c_one, A, q_t, c_zero, r );
-                 // r = A q[k] 
-            if (solver_par->ortho == Magma_MGS ) {
+            magma_d_spmv( c_one, A, q_t, c_zero, r ); //  r = A q[k] 
+    //            if (solver_par->ortho == Magma_MGS ) {
                 // modified Gram-Schmidt
-                magmablasSetKernelStream(stream[0]);
+                //magmablasSetKernelStream(stream[0]);
                 for (i=1; i<=k; i++) {
                     H(i,k) =magma_ddot(dofs, q(i-1), 1, r.val, 1);            
                         //  H(i,k) = q[i] . r
                     magma_daxpy(dofs,-H(i,k), q(i-1), 1, r.val, 1);            
                        //  r = r - H(i,k) q[i]
                 }
-                H(k+1,k) = MAGMA_D_MAKE( magma_dnrm2(dofs, r.val, 1), 0. );
-                      //  H(k+1,k) = sqrt(r . r) 
-                if (k < restart) {
-                        magma_dcopy(dofs, r.val, 1, q(k), 1);                  
-                      //  q[k] = 1.0/H[k][k-1] r
-                        magma_dscal(dofs, 1./H(k+1,k), q(k), 1);               
-                      //  (to be fused)   
-                 }
-            } else if (solver_par->ortho == Magma_FUSED_CGS ) {
+                H(k+1,k) = MAGMA_D_MAKE( magma_dnrm2(dofs, r.val, 1), 0. ); // H(k+1,k) = ||r|| 
+
+            /*}else if (solver_par->ortho == Magma_FUSED_CGS ) {
                 // fusing dgemv with dnrm2 in classical Gram-Schmidt
                 magmablasSetKernelStream(stream[0]);
                 magma_dcopy(dofs, r.val, 1, q(k), 1);  
@@ -214,28 +206,21 @@ magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
                             //  (to be fused)   
                  }
                 #endif
-            }
-        }
-        magma_queue_sync( stream[1] );
-        for( k=1; k<=restart; k++ ){
+            }*/
             /*     Minimization of  || b-Ax ||  in H_k       */ 
             for (i=1; i<=k; i++) {
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                cblas_ddot_sub( i+1, &H(1,k), 1, &H(1,i), 1, &HH(k,i) );
-                #else
-                HH(k,i) = cblas_ddot(i+1, &H(1,k), 1, &H(1,i), 1);
-                #endif
+                HH(k,i) = magma_cblas_ddot( i+1, &H(1,k), 1, &H(1,i), 1 );
             }
             h1[k] = H(1,k)*H(1,0); 
-            if (k != 1)
+            if (k != 1){
                 for (i=1; i<k; i++) {
-                    for (m=i+1; m<k; m++){
-                        HH(k,m) -= HH(k,i) * HH(m,i);
+                    HH(k,i) = HH(k,i)/HH(i,i);//
+                    for (m=i+1; m<=k; m++){
+                        HH(k,m) -= HH(k,i) * HH(m,i) * HH(i,i);
                     }
-                    HH(k,k) -= HH(k,i) * HH(k,i) / HH(i,i);
-                    HH(k,i) = HH(k,i)/HH(i,i);
                     h1[k] -= h1[i] * HH(k,i);   
                 }    
+            }
             y[k] = h1[k]/HH(k,k); 
             if (k != 1)  
                 for (i=k-1; i>=1; i--) {
@@ -245,12 +230,13 @@ magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
                 }                    
             m = k;
             rNorm = fabs(MAGMA_D_REAL(H(k+1,k)));
-        }
-
-        magma_dsetmatrix_async(m, 1, y+1, m, dy, m, stream[0]);
-        magmablasSetKernelStream(stream[0]);
+        }/*     Minimization done       */ 
+        // compute solution approximation
+        magma_dsetmatrix(m, 1, y+1, m, dy, m );
         magma_dgemv(MagmaNoTrans, dofs, m, c_one, q(0), dofs, dy, 1, 
                                                     c_one, x->val, 1); 
+
+        // compute residual
         magma_d_spmv( c_mone, A, *x, c_zero, r );      //  r = - A * x
         magma_daxpy(dofs, c_one, b.val, 1, r.val, 1);  //  r = r + b
         H(1,0) = MAGMA_D_MAKE( magma_dnrm2(dofs, r.val, 1), 0. ); 
@@ -316,8 +302,6 @@ magma_dgmres( magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,
     magma_d_vfree(&q);
 
     // free GPU streams and events
-    //magma_queue_destroy( stream[0] );
-    //magma_queue_destroy( stream[1] );
     magma_event_destroy( event[0] );
     magmablasSetKernelStream(NULL);
 

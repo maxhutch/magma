@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zposv_gpu.cpp normal z -> d, Fri Jul 18 17:34:14 2014
+       @generated from zposv_gpu.cpp normal z -> d, Tue Sep  2 12:38:19 2014
 */
 #include "common_magma.h"
 
@@ -17,8 +17,8 @@
     where A is an N-by-N symmetric positive definite matrix and X and B
     are N-by-NRHS matrices.
     The Cholesky decomposition is used to factor A as
-       A = U**T * U,  if UPLO = MagmaUpper, or
-       A = L * L**T,  if UPLO = MagmaLower,
+       A = U**H * U,  if UPLO = MagmaUpper, or
+       A = L * L**H,  if UPLO = MagmaLower,
     where U is an upper triangular matrix and  L is a lower triangular
     matrix.  The factored form of A is then used to solve the system of
     equations A * X = B.
@@ -50,7 +50,7 @@
             triangular part of dA is not referenced.
     \n
             On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization dA = U**T*U or dA = L*L**T.
+            factorization dA = U**H*U or dA = L*L**H.
 
     @param[in]
     ldda    INTEGER

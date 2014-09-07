@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zhemm_mgpu_spec.cpp normal z -> c, Fri Jul 18 17:34:13 2014
+       @generated from zhemm_mgpu_spec.cpp normal z -> c, Tue Sep  2 12:38:17 2014
        @author Azzam Haidar
 */
 #include "common_magma.h"
 #include "magma_bulge.h"
 //#include "trace.h"
-#include <assert.h>
 
 extern "C"
 void magmablas_chemm_mgpu_spec(
@@ -205,10 +204,10 @@ void magmablas_chemm_mgpu_spec(
                         if(gmaster!=-1){ //complex is active
                             //printf     ("                    device %d from cmplx %d is sending to master %d on cmplx %d block of size %d event %d\n",dev,cmplxid,gmaster,k,mycolsize,redevents[dev][gmaster*ngpu+dev]);
                             magma_queue_wait_event(streams[ dev ][ gmaster ], redevents[dev][dev*ngpu+dev]);
-                            cudaMemcpy2DAsync(&dwork[gmaster][maxgsize*dev], mycolsize*sizeof(magmaFloatComplex),
-                                         &dwork[dev][maxgsize*dev], mycolsize*sizeof(magmaFloatComplex),
-                                         mycolsize*sizeof(magmaFloatComplex), n,
-                                         cudaMemcpyDeviceToDevice, streams[dev][gmaster]);
+                            magma_ccopymatrix_async(
+                                mycolsize, n,
+                                &dwork[dev    ][maxgsize*dev], mycolsize,
+                                &dwork[gmaster][maxgsize*dev], mycolsize, streams[dev][gmaster] );
                             magma_event_record(redevents[dev][gmaster*ngpu+dev], streams[dev][gmaster]);
                         }
                     }
@@ -225,10 +224,10 @@ void magmablas_chemm_mgpu_spec(
                     if((lcdev!=dev)&&(lccolsize>0)){
                         //printf     ("                    device %d from cmplx %d is sending internal to dev %d block of size %d event %d\n",dev,cmplxid,lcdev,mycolsize,redevents[dev][lcdev*ngpu+dev]);
                         magma_queue_wait_event(streams[ dev ][ lcdev ], redevents[dev][dev*ngpu+dev]);
-                        cudaMemcpy2DAsync(&dwork[lcdev][maxgsize*dev], mycolsize*sizeof(magmaFloatComplex),
-                                         &dwork[dev][maxgsize*dev], mycolsize*sizeof(magmaFloatComplex),
-                                         mycolsize*sizeof(magmaFloatComplex), n,
-                                         cudaMemcpyDeviceToDevice, streams[dev][lcdev]);
+                        magma_ccopymatrix_async(
+                            mycolsize, n,
+                            &dwork[dev  ][maxgsize*dev], mycolsize,
+                            &dwork[lcdev][maxgsize*dev], mycolsize, streams[dev][lcdev] );
                         magma_event_record(redevents[dev][lcdev*ngpu+dev], streams[dev][lcdev]);
                     }
                 }
@@ -268,10 +267,10 @@ void magmablas_chemm_mgpu_spec(
                                 lccolsize     = gpuisactive[lcdev];
                                 if((lcdev!=masterdev)&&(lccolsize>0)){
                                     //printf("                    Master %d on cmplx %d waiting on event %d is distributing internal results of %d to lcdev %d block of size %d event %d\n", masterdev,cmplxid,redevents[gdev][masterdev*ngpu+gdev],gdev,lcdev,gcolsize,redevents[masterdev][lcdev*ngpu+gdev]);
-                                    cudaMemcpy2DAsync(&dwork[lcdev][maxgsize*gdev], gcolsize*sizeof(magmaFloatComplex),
-                                                    &dwork[masterdev][maxgsize*gdev], gcolsize*sizeof(magmaFloatComplex),
-                                                    gcolsize*sizeof(magmaFloatComplex), n,
-                                                    cudaMemcpyDeviceToDevice, streams[masterdev][gdev]);
+                                    magma_ccopymatrix_async(
+                                        gcolsize, n,
+                                        &dwork[masterdev][maxgsize*gdev], gcolsize,
+                                        &dwork[lcdev    ][maxgsize*gdev], gcolsize, streams[masterdev][gdev] );
                                     magma_event_record(redevents[masterdev][lcdev*ngpu+gdev], streams[masterdev][gdev]);
                                 }
                             }
@@ -408,7 +407,7 @@ void magmablas_chemm_mgpu_spec(
 
     for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
-        cudaDeviceSynchronize();
+        magma_device_sync();
     }
 
     // put back the input gpu and its input stream 

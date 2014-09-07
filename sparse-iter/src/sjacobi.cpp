@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hartwig Anzt 
 
-       @generated from zjacobi.cpp normal z -> s, Fri Jul 18 17:34:29 2014
+       @generated from zjacobi.cpp normal z -> s, Tue Sep  2 12:38:34 2014
 */
 
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #include <assert.h>
 
@@ -131,30 +131,25 @@ magma_sjacobi( magma_s_sparse_matrix A, magma_s_vector b, magma_s_vector *x,
                 input matrix A
 
     @param
-    b           magma_s_vector
-                RHS b
-
-    @param
-    m           magma_s_sparse_matrix*
+    M           magma_s_sparse_matrix*
                 M = D^(-1) * (L+U)
 
     @param
     d           magma_s_vector*
-                vector with diagonal elements
+                vector with diagonal elements of A
 
     @ingroup magmasparse_s
     ********************************************************************/
 
 magma_int_t
-magma_sjacobisetup_matrix( magma_s_sparse_matrix A, magma_s_vector b, 
+magma_sjacobisetup_matrix( magma_s_sparse_matrix A, 
                     magma_s_sparse_matrix *M, magma_s_vector *d ){
 
     magma_int_t i;
 
     magma_s_sparse_matrix A_h1, A_h2, B, C;
-    magma_s_vector diag, b_h;
+    magma_s_vector diag;
     magma_s_vinit( &diag, Magma_CPU, A.num_rows, MAGMA_S_ZERO );
-    magma_s_vtransfer( b, &b_h, A.memory_location, Magma_CPU);
 
     if( A.storage_type != Magma_CSR){
         magma_s_mtransfer( A, &A_h1, A.memory_location, Magma_CPU);
@@ -206,7 +201,6 @@ magma_sjacobisetup_matrix( magma_s_sparse_matrix A, magma_s_vector b,
     magma_s_mfree( &C ); 
 
     magma_s_vfree( &diag);
-    magma_s_vfree( &b_h);
  
     return MAGMA_SUCCESS;
 }
@@ -328,7 +322,11 @@ magma_sjacobisetup_vector( magma_s_vector b, magma_s_vector d,
     }
     else if( b.memory_location == Magma_DEV ){
         // fill vector
-        magma_sjacobisetup_vector_gpu( b.num_rows, b.val, d.val, c->val );
+        magma_s_vector tmp;
+        magma_s_vinit( &tmp, Magma_DEV, b.num_rows, MAGMA_S_ZERO );
+        magma_sjacobisetup_vector_gpu( 
+                    b.num_rows, b.val, d.val, c->val, tmp.val );
+        magma_s_vfree( &tmp );
         return MAGMA_SUCCESS;
     }
 
@@ -356,7 +354,7 @@ magma_sjacobisetup_vector( magma_s_vector b, magma_s_vector d,
                 RHS b
 
     @param
-    m           magma_s_sparse_matrix*
+    M           magma_s_sparse_matrix*
                 M = D^(-1) * (L+U)
 
     @param
@@ -454,7 +452,7 @@ magma_sjacobisetup( magma_s_sparse_matrix A, magma_s_vector b,
     ---------
 
     @param
-    m           magma_s_sparse_matrix
+    M           magma_s_sparse_matrix
                 input matrix M = D^(-1) * (L+U)
 
     @param
@@ -480,18 +478,83 @@ magma_sjacobiiter( magma_s_sparse_matrix M, magma_s_vector c, magma_s_vector *x,
     float c_zero = MAGMA_S_ZERO, c_one = MAGMA_S_ONE, 
                                             c_mone = MAGMA_S_NEG_ONE;
     magma_int_t dofs = M.num_rows;
-    magma_s_vector t;
+    magma_s_vector t, swap;
     magma_s_vinit( &t, Magma_DEV, dofs, c_zero );
 
 
     for( magma_int_t i=0; i<solver_par->maxiter; i++ ){
         magma_s_spmv( c_mone, M, *x, c_zero, t );                // t = - M * x
         magma_saxpy( dofs, c_one , c.val, 1 , t.val, 1 );        // t = t + c
-        magma_scopy( dofs, t.val, 1 , x->val, 1 );               // x = t
+
+        // swap so that x again contains solution, and y is ready to be used
+        swap = *x;
+        *x = t;
+        t = swap;        
+        //magma_scopy( dofs, t.val, 1 , x->val, 1 );               // x = t
     }
 
-    magma_s_vfree(&t);
+    magma_s_vfree( &t );
 
     return MAGMA_SUCCESS;
 }   /* magma_sjacobiiter */
 
+
+
+/**
+    Purpose
+    -------
+
+    Iterates the solution approximation according to
+       x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k
+       x^(k+1) =      c     -       M        * x^k.
+
+    Arguments
+    ---------
+
+    @param
+    M           magma_s_sparse_matrix
+                input matrix M = D^(-1) * (L+U)
+
+    @param
+    c           magma_s_vector
+                c = D^(-1) * b
+
+    @param
+    x           magma_s_vector*
+                iteration vector x
+
+    @param
+    solver_par  magma_s_solver_par*
+                solver parameters
+
+    @param
+    solver_par  magma_s_precond_par*
+                precond parameters
+
+    @ingroup magmasparse_s
+    ********************************************************************/
+
+magma_int_t
+magma_sjacobiiter_precond( magma_s_sparse_matrix M, magma_s_vector *x, 
+            magma_s_solver_par *solver_par, magma_s_preconditioner *precond ){
+
+    // local variables
+    float c_zero = MAGMA_S_ZERO, c_one = MAGMA_S_ONE, 
+                                            c_mone = MAGMA_S_NEG_ONE;
+    magma_int_t dofs = M.num_rows;
+    magma_s_vector swap;
+
+    for( magma_int_t i=0; i<solver_par->maxiter; i++ ){
+        magma_s_spmv( c_mone, M, *x, c_zero, precond->work2 );   // t = - M * x
+        magma_saxpy( dofs, c_one , 
+                precond->work1.val, 1 , precond->work2.val, 1 ); // t = t + c
+
+        // swap so that x again contains solution, and y is ready to be used
+        swap = *x;
+        *x = precond->work2;
+        precond->work2 = swap;        
+        //magma_scopy( dofs, t.val, 1 , x->val, 1 );               // x = t
+    }
+
+    return MAGMA_SUCCESS;
+}   /* magma_sjacobiiter */

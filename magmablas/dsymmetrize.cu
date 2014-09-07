@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zsymmetrize.cu normal z -> d, Fri Jul 18 17:34:12 2014
+       @generated from zsymmetrize.cu normal z -> d, Tue Sep  2 12:38:16 2014
        @author Mark Gates
 */
 #include "common_magma.h"
-#include <assert.h>
 
 #define NB 64
 
@@ -87,30 +86,53 @@ dsymmetrize_upper( int m, double *dA, int ldda )
     ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_daux2
     ********************************************************************/
 extern "C" void
-magmablas_dsymmetrize( magma_uplo_t uplo, magma_int_t m, double *dA, magma_int_t ldda )
+magmablas_dsymmetrize_q(
+    magma_uplo_t uplo, magma_int_t m, double *dA, magma_int_t ldda,
+    magma_queue_t queue )
 {
-    //printf( "m %d, grid %d, threads %d\n", m, grid.x, threads.x );
+    magma_int_t info = 0;
+    if ( uplo != MagmaLower && uplo != MagmaUpper )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( ldda < max(1,m) )
+        info = -4;
+    
+    if ( info != 0 ) {
+        magma_xerbla( __func__, -(info) );
+        return;
+    }
+    
     if ( m == 0 )
         return;
     
-    assert( m >= 0 );
-    assert( ldda >= m );
     
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB );
     
     if ( uplo == MagmaUpper ) {
-        dsymmetrize_upper<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
-    }
-    else if ( uplo == MagmaLower ) {
-        dsymmetrize_lower<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
+        dsymmetrize_upper<<< grid, threads, 0, queue >>>( m, dA, ldda );
     }
     else {
-        printf( "uplo has illegal value\n" );
-        exit(1);
+        dsymmetrize_lower<<< grid, threads, 0, queue >>>( m, dA, ldda );
     }
+}
+
+
+/**
+    @see magmablas_dsymmetrize_q
+    @ingroup magma_daux2
+    ********************************************************************/
+extern "C" void
+magmablas_dsymmetrize(
+    magma_uplo_t uplo, magma_int_t m, double *dA, magma_int_t ldda )
+{
+    magmablas_dsymmetrize_q( uplo, m, dA, ldda, magma_stream );
 }

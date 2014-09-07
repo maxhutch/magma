@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -108,6 +108,7 @@ int main( int argc, char** argv )
             magma_free_cpu( A );
             magma_free_cpu( B );
             magma_free_cpu( C );
+            fflush( stdout );
         }
     }
     

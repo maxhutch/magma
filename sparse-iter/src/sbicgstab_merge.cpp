@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zbicgstab_merge.cpp normal z -> s, Fri Jul 18 17:34:29 2014
+       @generated from zbicgstab_merge.cpp normal z -> s, Tue Sep  2 12:38:34 2014
        @author Hartwig Anzt
 
 */
 #include "common_magma.h"
-#include "../include/magmasparse.h"
-#include <cblas.h>
+#include "magmasparse.h"
 #include <assert.h>
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
@@ -162,10 +161,9 @@ magma_sbicgstab_merge( magma_s_sparse_matrix A, magma_s_vector b,
 
         magma_smdotc( dofs, 2, q.val+4*dofs, t.val, d1, d2, skp+6 );
         magma_sbicgmerge4(  2, skp );
-        magma_sbicgmerge3( dofs, skp, p.val, s.val,     // x=x+alpha*p+omega*s
-                            t.val, x->val, r.val );     // r=s-omega*t
-        magma_smdotc( dofs, 2, q.val, r.val, d1, d2, skp+4);
-        magma_sbicgmerge4(  3, skp );
+
+        magma_sbicgmerge_xrbeta( dofs, d1, d2, q.val, r.val, p.val, 
+                                                    s.val, t.val, x->val, skp);  
 
         // check stopping criterion (asynchronous copy)
         magma_sgetvector_async( 1 , skp+5, 1, 

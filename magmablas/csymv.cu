@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        Note: [ds] precisions generated from chemv.cu
        csymv.cu is nearly identical to chemv.cu, just change names and drop cuConjf.
        
-       @generated from zsymv.cu normal z -> c, Fri Jul 18 17:34:13 2014
+       @generated from zsymv.cu normal z -> c, Tue Sep  2 12:38:16 2014
        
        @author Mark Gates
 */
@@ -591,7 +591,7 @@ magmablas_csymv_work(
     if ( arch < 200 ) {
         //magma_csymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         //return MAGMA_SUCCESS;
-        fprintf(stderr, "%s: %s\n", __func__, "not implemented on CUDA ARCH 1.x");
+        fprintf(stderr, "%s: %s\n", __func__, "not supported on CUDA ARCH 1.x");
         return MAGMA_ERR_NOT_SUPPORTED;
     }
 #endif
@@ -636,7 +636,7 @@ magmablas_csymv_work(
     if ( upper ) {
         //magma_csymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
-        info = MAGMA_ERR_NOT_SUPPORTED;
+        info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
     else {
         magmablas_csymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
@@ -742,7 +742,7 @@ magmablas_csymv(
     if ( arch < 200 ) {
         //magma_csymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
         //return MAGMA_SUCCESS;
-        fprintf(stderr, "%s: %s\n", __func__, "not implemented on CUDA ARCH 1.x");
+        fprintf(stderr, "%s: %s\n", __func__, "not supported on CUDA ARCH 1.x");
         return MAGMA_ERR_NOT_SUPPORTED;
     }
 #endif
@@ -782,18 +782,21 @@ magmablas_csymv(
     if ( upper ) {
         //magma_csymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
-        info = MAGMA_ERR_NOT_SUPPORTED;
+        info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
     else {
         magmaFloatComplex *dwork;
         magma_int_t blocks = (n - 1)/NB_X + 1;
         magma_int_t lwork  = lda*blocks;
 
-        // TODO deal with error
         magma_cmalloc( &dwork, lwork );
-
-        magmablas_csymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
-
+        if ( dwork == NULL ) {
+            info = MAGMA_ERR_DEVICE_ALLOC;
+            magma_xerbla( __func__, -(info) );
+        }
+        else {
+            magmablas_csymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+        }
         magma_free( dwork );
     }
     return info;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
 
@@ -24,12 +24,12 @@
     If VECT = MagmaQ, ZUNMBR overwrites the general complex M-by-N matrix C with
                                  SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:        Q*C                  C*Q
-    TRANS = MagmaConjTrans:      Q**H*C               C*Q**H
+    TRANS = Magma_ConjTrans:     Q**H*C               C*Q**H
     
     If VECT = MagmaP, ZUNMBR overwrites the general complex M-by-N matrix C with
                                  SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:        P*C                  C*P
-    TRANS = MagmaConjTrans:      P**H*C               C*P**H
+    TRANS = Magma_ConjTrans:     P**H*C               C*P**H
     
     Here Q and P**H are the unitary matrices determined by ZGEBRD when
     reducing A complex matrix A to bidiagonal form: A = Q*B * P**H. Q
@@ -61,8 +61,8 @@
     
     @param[in]
     trans   magma_trans_t
-      -     = MagmaNoTrans:   No transpose, apply Q or P;
-      -     = MagmaConjTrans: Conjugate transpose, apply Q**H or P**H.
+      -     = MagmaNoTrans:    No transpose, apply Q or P;
+      -     = Magma_ConjTrans: Conjugate transpose, apply Q**H or P**H.
     
     @param[in]
     m       INTEGER
@@ -112,7 +112,7 @@
     
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
     
     @param[in]
     lwork   INTEGER
@@ -181,7 +181,7 @@ magma_zunmbr(
     else if (! left && side != MagmaRight) {
         *info = -2;
     }
-    else if (! notran && trans != MagmaConjTrans) {
+    else if (! notran && trans != Magma_ConjTrans) {
         *info = -3;
     }
     else if (m < 0) {
@@ -269,7 +269,7 @@ magma_zunmbr(
     else {
         /* Apply P */
         if (notran) {
-            transt = MagmaConjTrans;
+            transt = Magma_ConjTrans;
         }
         else {
             transt = MagmaNoTrans;

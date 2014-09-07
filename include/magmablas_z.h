@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 */
@@ -43,21 +43,10 @@ void magmablas_ztranspose_inplace(
     magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda );
 
-void magmablas_ztranspose_inplace_stream(
-    magma_int_t n,
-    magmaDoubleComplex_ptr dA, magma_int_t ldda,
-    magma_queue_t stream );
-
 void magmablas_ztranspose(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr dA,  magma_int_t ldda,
     magmaDoubleComplex_ptr       dAT, magma_int_t lddat );
-
-void magmablas_ztranspose_stream(
-    magma_int_t m, magma_int_t n,
-    magmaDoubleComplex_const_ptr dA,  magma_int_t ldda,
-    magmaDoubleComplex_ptr       dAT, magma_int_t lddat,
-    magma_queue_t stream );
 
 void magmablas_zgetmatrix_transpose(
     magma_int_t m, magma_int_t n,
@@ -291,7 +280,7 @@ void magma_zher2k_mgpu(
     magmaDoubleComplex **db, magma_int_t lddb, magma_int_t boffset,
     double beta,
     magmaDoubleComplex **dc, magma_int_t lddc, magma_int_t offset,
-    magma_int_t num_streams, magma_queue_t streams[][10] );
+    magma_int_t num_qs, magma_queue_t streams[][10] );
 
 void magmablas_zher2k_mgpu2(
     magma_uplo_t uplo, magma_trans_t trans, magma_int_t n, magma_int_t k,
@@ -395,27 +384,20 @@ void magmablas_zlascl(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info );
 
+void magmablas_zlascl2(
+    magma_type_t type,
+    magma_int_t m, magma_int_t n, const double *dD,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info );
+
 void magmablas_zlaset(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaDoubleComplex offdiag, magmaDoubleComplex diag,
     magmaDoubleComplex_ptr dA, magma_int_t ldda );
 
-void magmablas_zlaset_stream(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
-    magmaDoubleComplex *dA, magma_int_t ldda,
-    magma_queue_t stream);
-
 void magmablas_zlaset_band(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex offdiag, magmaDoubleComplex diag,
     magmaDoubleComplex *A, magma_int_t lda);
-
-void magmablas_zlaset_band_stream(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaDoubleComplex offdiag, magmaDoubleComplex diag,
-    magmaDoubleComplex *A, magma_int_t lda,
-    magma_queue_t stream);
 
 void magmablas_zlaswp(
     magma_int_t n,
@@ -433,7 +415,7 @@ void magmablas_zlaswp2(
     magma_int_t n,
     magmaDoubleComplex_ptr dAT, magma_int_t ldda,
     magma_int_t i1, magma_int_t i2,
-    const magma_int_t *d_ipiv );
+    const magma_int_t *d_ipiv, magma_int_t inci );
 
 void magmablas_zsymmetrize(
     magma_uplo_t uplo, magma_int_t m,
@@ -448,12 +430,6 @@ void magmablas_ztrtri_diag(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
     const magmaDoubleComplex *dA, magma_int_t ldda,
     magmaDoubleComplex *d_invA);
-
-void magmablas_ztrtri_diag_stream(
-    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex *d_invA,
-    magma_queue_t stream);
 
   /*
    * to cleanup
@@ -541,6 +517,13 @@ void magmablas_zgemv_batched(
     magmaDoubleComplex beta,
     magmaDoubleComplex **dy_array, magma_int_t incy,
     magma_int_t batchCount);
+
+void magmablas_zgemv_conjv(
+    magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
+    magmaDoubleComplex_const_ptr dA, magma_int_t lda,
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex beta,
+    magmaDoubleComplex_ptr dy, magma_int_t incy);
 
 magma_int_t magmablas_zhemv(
     magma_uplo_t uplo, magma_int_t n,

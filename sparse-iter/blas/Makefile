@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/blas
@@ -18,6 +18,7 @@ ZSRC := \
 	magma_z_blaswrapper.cpp	\
 	magma_clag2z.cpp	\
 	magma_zlag2c.cpp	\
+	zbajac_csr.cu		\
 	zbcsrswp.cu		\
 	zbcsrtrsv.cu		\
 	zbcsrcpy.cu		\
@@ -31,9 +32,9 @@ ZSRC := \
 	zgesellcmmv.cu		\
 	zjacobisetup.cu		\
 	zlag2c_sparse.cu	\
-	zlobpcg_maxpy.cu	\
 	zlobpcg_shift.cu	\
 	zlobpcg_residuals.cu	\
+	zlobpcg_maxpy.cu	\
 	zmdot.cu		\
 	zmergebicgstab.cu	\
 	zmergebicgstab2.cu	\
@@ -44,18 +45,11 @@ ZSRC := \
 	zmgesellcmmv.cu		\
 	zpipelinedgmres.cu	\
 
-# asynchronous iterations
-ZSRC += \
-	zaicc_chow_csr_s.cu	\
-	zaicc_chow_csr_a.cu	\
-	zailu_chow_csr_s.cu	\
-	zailu_chow_csr_a.cu	\
-	zbajac_csr.cu		\
-
 
 # Auxiliary routines
 ZSRC += \
 	zcompact.cu		\
+
 
 -include Makefile.local
 -include Makefile.src
@@ -71,9 +65,13 @@ ALLOBJ := $(ALLOBJ:.cpp=.o)
 
 all: $(LIBMAGMA_SPARSE) 
 
-$(LIBMAGMA_SPARSE): $(ALLHDR) $(ALLOBJ)
+$(LIBMAGMA_SPARSE): $(ALLHDR) $(ALLOBJ) stamp
 	$(ARCH) $(ARCHFLAGS) $@ $(ALLOBJ)
 	$(RANLIB) $@
+
+# this forces LIBMAGMA to be archived
+stamp: $(ALLHDR) $(ALLOBJ)
+	touch $@
 
 clean:
 	rm -f *.cu_o *.o *~ *.linkinfo

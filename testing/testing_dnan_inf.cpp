@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
   
-       @generated from testing_znan_inf.cpp normal z -> d, Fri Jul 18 17:34:23 2014
+       @generated from testing_znan_inf.cpp normal z -> d, Tue Sep  2 12:38:28 2014
        @author Mark Gates
 */
 // includes, system
@@ -109,8 +109,8 @@ int main( int argc, char** argv)
                 total = cnt_nan + cnt_inf;
             }
             
-            //printf( "nan %g + %gi\n", MAGMA_D_REAL( magma_dnan ), MAGMA_D_REAL( magma_dnan ) );
-            //printf( "inf %g + %gi\n", MAGMA_D_REAL( magma_dinf ), MAGMA_D_REAL( magma_dinf ) );
+            //printf( "nan %g + %gi\n", MAGMA_D_REAL( MAGMA_D_NAN ), MAGMA_D_REAL( MAGMA_D_NAN ) );
+            //printf( "inf %g + %gi\n", MAGMA_D_REAL( MAGMA_D_INF ), MAGMA_D_REAL( MAGMA_D_INF ) );
             //magma_dprint( M, N, hA, lda );
             
             magma_dsetmatrix( M, N, hA, lda, dA, ldda );

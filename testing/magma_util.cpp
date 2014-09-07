@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
        
@@ -26,10 +26,27 @@ extern "C"
 void magma_assert( bool condition, const char* msg, ... )
 {
     if ( ! condition ) {
+        printf( "Assert failed: " );
         va_list va;
         va_start( va, msg );
         vprintf( msg, va );
+        printf( "\n" );
         exit(1);
+    }
+}
+
+// --------------------
+// If condition is false, print warning message; does not exit.
+// Warning message is formatted using printf, using any additional arguments.
+extern "C"
+void magma_assert_warn( bool condition, const char* msg, ... )
+{
+    if ( ! condition ) {
+        printf( "Assert failed: " );
+        va_list va;
+        va_start( va, msg );
+        vprintf( msg, va );
+        printf( "\n" );
     }
 }
 

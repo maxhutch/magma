@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd_mgpu.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from zhetrd_mgpu.cpp normal z -> c, Tue Sep  2 12:38:22 2014
 
 */
 #include "common_magma.h"
@@ -19,7 +19,7 @@
     -------
     CHETRD reduces a complex Hermitian matrix A to real symmetric
     tridiagonal form T by an orthogonal similarity transformation:
-    Q\*\*H * A * Q = T.
+    Q**H * A * Q = T.
 
     Arguments
     ---------
@@ -81,7 +81,7 @@
 
     @param[out]
     work     (workspace) COMPLEX array, dimension (MAX(1,LWORK))
-             On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork    INTEGER
@@ -163,7 +163,7 @@ magma_chetrd_mgpu(
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex c_one = MAGMA_C_ONE;
     float  d_one = MAGMA_D_ONE;
-    float mv_time = 0.0;
+    //float mv_time = 0.0;
 #ifdef PROFILE_SY2RK
     float up_time = 0.0;
 #endif
@@ -181,7 +181,6 @@ magma_chetrd_mgpu(
     int upper = (uplo == MagmaUpper);
     lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
-        printf( " uplo = %c\n",uplo );
         *info = -1;
     } else if (n < 0) {
         *info = -2;
@@ -190,7 +189,7 @@ magma_chetrd_mgpu(
     } else if (lwork < nb*n && ! lquery) {
         *info = -9;
     } else if ( num_streams > 2 ) {
-        *info = 2;
+        *info = 2;  // TODO fix
     }
 
     /* Determine the block size. */
@@ -202,17 +201,22 @@ magma_chetrd_mgpu(
 
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
     else if (lquery)
-        return 0;
+        return *info;
 
     /* Quick return if possible */
     if (n == 0) {
         work[0] = c_one;
-        return 0;
+        return *info;
     }
 
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     magmaFloatComplex *dA[MagmaMaxGPUs];
     magmaFloatComplex *dwork[MagmaMaxGPUs];
 
@@ -380,8 +384,6 @@ magma_chetrd_mgpu(
                 magma_setdevice(0);
             }
             
-            
-            mv_time +=
             magma_clatrd_mgpu(num_gpus, uplo, n, n-i, ib, nb,
                               A(i, i), lda, &e[i],
                               &tau[i], work, ldwork,
@@ -464,17 +466,19 @@ magma_chetrd_mgpu(
         magma_free(dy[did]);
         magma_free(dwork2[did]);
     }
-    magma_setdevice(0);
     magma_free_pinned(hwork);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
+    
     work[0] = MAGMA_C_MAKE( lwkopt, 0 );
 
 #ifdef PROFILE_SY2RK
-    printf( " n=%d nb=%d\n",n,nb );
-    printf( " Time in CLARFG: %.2e seconds\n",times[0] );
-    printf( " Time in CHEMV : %.2e seconds\n",mv_time );
-    printf( " Time in CHER2K: %.2e seconds\n",up_time );
+    printf( " n=%d nb=%d\n", n, nb );
+    printf( " Time in CLARFG: %.2e seconds\n", times[0] );
+    //printf( " Time in CHEMV : %.2e seconds\n", mv_time );
+    printf( " Time in CHER2K: %.2e seconds\n", up_time );
 #endif
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_chetrd */
 
 
@@ -484,6 +488,9 @@ magma_chtodhe(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n, magma_int_
               magmaFloatComplex **dA, magma_int_t ldda,
               magma_queue_t stream[][10], magma_int_t *info)
 {
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    
     magma_int_t k;
     if (uplo == MagmaLower) {
         /* go through each block-column */
@@ -523,9 +530,9 @@ magma_chtodhe(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n, magma_int_
         magma_setdevice(k);
         magma_queue_sync(stream[k][0]);
     }
-    magma_setdevice(0);
+    magma_setdevice( orig_dev );
     
-    return MAGMA_SUCCESS;
+    return *info;
 }
 
 extern "C" void
@@ -544,6 +551,11 @@ magma_cher2k_mgpu(
     magma_int_t i, id, ib, ii, kk, n1;
     magmaFloatComplex c_one = MAGMA_C_ONE;
 
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
     /* diagonal update */
     for( i=0; i < n; i += nb ) {
         id = ((i+offset)/nb)%num_gpus;
@@ -637,7 +649,10 @@ magma_cher2k_mgpu(
 
     for( id=0; id < num_gpus; id++ ) {
         magma_setdevice(id);
-        for( kk=0; kk < num_streams; kk++ ) magma_queue_sync(stream[id][kk]);
-        magmablasSetKernelStream(NULL);
+        for( kk=0; kk < num_streams; kk++ ) {
+            magma_queue_sync(stream[id][kk]);
+        }
     }
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 }

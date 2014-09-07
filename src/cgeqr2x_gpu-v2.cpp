@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zgeqr2x_gpu-v2.cpp normal z -> c, Fri Jul 18 17:34:16 2014
+       @generated from zgeqr2x_gpu-v2.cpp normal z -> c, Tue Sep  2 12:38:20 2014
 
 */
 #include "common_magma.h"
@@ -91,25 +91,25 @@
     @ingroup magma_cgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgeqr2x2_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA,
-                  magma_int_t *ldda, magmaFloatComplex *dtau,
+magma_cgeqr2x2_gpu(magma_int_t m, magma_int_t n, magmaFloatComplex *dA,
+                  magma_int_t ldda, magmaFloatComplex *dtau,
                   magmaFloatComplex *dT, magmaFloatComplex *ddA,
                   float *dwork, magma_int_t *info)
 {
-    #define dA(a_1,a_2) (dA + (a_2)*(*ldda) + (a_1))
+    #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
     
     magma_int_t i, k;
     
     magmaFloatComplex *work = (magmaFloatComplex *)dwork;
-    float *dnorm = dwork + 4*(*n);
+    float *dnorm = dwork + 4*(n);
 
 
     *info = 0;
-    if (*m < 0) {
+    if (m < 0) {
         *info = -1;
-    } else if (*n < 0) {
+    } else if (n < 0) {
         *info = -2;
-    } else if (*ldda < max(1,*m)) {
+    } else if (ldda < max(1,m)) {
         *info = -4;
     }
     if (*info != 0) {
@@ -118,14 +118,14 @@ magma_cgeqr2x2_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA,
     }
 
     /* Compute the norms of the trailing columns */
-    k = min(*m,*n);
-    magmablas_scnrm2_cols(*m, k, dA(0,0), *ldda, dnorm);
+    k = min(m,n);
+    magmablas_scnrm2_cols(m, k, dA(0,0), ldda, dnorm);
 
     for (i = 0; i < k; ++i) {
         /*   1. Apply H' to A(:,i) from the left
              2. Adjust the dnorm[i] to hold the norm of A(i:m,i) */
         if (i > 0) {
-            magma_clarfbx_gpu(*m, i, dA(0, 0), *ldda,
+            magma_clarfbx_gpu(m, i, dA(0, 0), ldda,
                               dT, k, dA(0, i), work);
             magmablas_scnrm2_adjust(i, dnorm+i, dA(0, i));
         }
@@ -134,10 +134,10 @@ magma_cgeqr2x2_gpu(magma_int_t *m, magma_int_t *n, magmaFloatComplex *dA,
             1. 1 is not yet put on the diagonal of A
             2. Elements above the diagonal are copied in ddA and the ones
                in A are set to zero
-            3. update T                                                  */
-        magma_clarfgtx_gpu(*m-i, dA(i, i), dA(min(i+1,*m), i), dtau+i,
-                           dnorm+i, ddA + i + i*(*n), i,
-                           dA(i,0), *ldda,  dT, k, work);
+            3. update T */
+        magma_clarfgtx_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i,
+                           dnorm+i, ddA + i + i*(n), i,
+                           dA(i,0), ldda,  dT, k, work);
     }
 
     return *info;

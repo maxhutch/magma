@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 */
 
 #ifndef MAGMASPARSE_TYPES_H
@@ -340,6 +340,8 @@ typedef struct magma_z_preconditioner{
     magma_z_sparse_matrix   LD;
     magma_z_sparse_matrix   UD;
     magma_z_vector          d;
+    magma_z_vector          work1;
+    magma_z_vector          work2;
     magma_int_t*            int_array_1;
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
@@ -371,6 +373,8 @@ typedef struct magma_c_preconditioner{
     magma_c_sparse_matrix   LD;
     magma_c_sparse_matrix   UD;
     magma_c_vector          d;
+    magma_c_vector          work1;
+    magma_c_vector          work2;
     magma_int_t*            int_array_1;
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
@@ -403,6 +407,8 @@ typedef struct magma_d_preconditioner{
     magma_d_sparse_matrix   LD;
     magma_d_sparse_matrix   UD;
     magma_d_vector          d;
+    magma_d_vector          work1;
+    magma_d_vector          work2;
     magma_int_t*            int_array_1;
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
@@ -435,6 +441,8 @@ typedef struct magma_s_preconditioner{
     magma_s_sparse_matrix   LD;
     magma_s_sparse_matrix   UD;
     magma_s_vector          d;
+    magma_s_vector          work1;
+    magma_s_vector          work2;
     magma_int_t*            int_array_1;
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
@@ -449,9 +457,67 @@ typedef struct magma_s_preconditioner{
 }magma_s_preconditioner;
 
 
+//##############################################################################
+//
+//              opts for the testers
+//
+//##############################################################################
 
+typedef struct magma_zopts{
 
+    magma_z_solver_par      solver_par;
+    magma_z_preconditioner  precond_par;
+    magma_storage_t         input_format;
+    int                     blocksize;
+    int                     alignment;
+    magma_storage_t         output_format;
+    magma_location_t        input_location;
+    magma_location_t        output_location;
+    magma_scale_t           scaling;
 
+}magma_zopts;
+
+typedef struct magma_copts{
+
+    magma_c_solver_par      solver_par;
+    magma_c_preconditioner  precond_par;
+    magma_storage_t         input_format;
+    int                     blocksize;
+    int                     alignment;
+    magma_storage_t         output_format;
+    magma_location_t        input_location;
+    magma_location_t        output_location;
+    magma_scale_t           scaling;
+
+}magma_copts;
+
+typedef struct magma_dopts{
+
+    magma_d_solver_par      solver_par;
+    magma_d_preconditioner  precond_par;
+    magma_storage_t         input_format;
+    int                     blocksize;
+    int                     alignment;
+    magma_storage_t         output_format;
+    magma_location_t        input_location;
+    magma_location_t        output_location;
+    magma_scale_t           scaling;
+
+}magma_dopts;
+
+typedef struct magma_sopts{
+
+    magma_s_solver_par      solver_par;
+    magma_s_preconditioner  precond_par;
+    magma_storage_t         input_format;
+    int                     blocksize;
+    int                     alignment;
+    magma_storage_t         output_format;
+    magma_location_t        input_location;
+    magma_location_t        output_location;
+    magma_scale_t           scaling;
+
+}magma_sopts;
 
 #ifdef __cplusplus
 }

@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zmergebicgstab2.cu normal z -> c, Fri Jul 18 17:34:28 2014
+       @generated from zmergebicgstab2.cu normal z -> c, Tue Sep  2 12:38:33 2014
        @author Hartwig Anzt
 
 */
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
-#define BLOCK_SIZE 512
+#define BLOCK_SIZE 256
 
 #define PRECISION_c
 

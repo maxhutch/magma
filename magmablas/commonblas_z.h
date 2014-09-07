@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 */
@@ -51,6 +51,33 @@ void magmablas_zgemv_tesla(
     const magmaDoubleComplex *x, magma_int_t incx,
     magmaDoubleComplex beta,
     magmaDoubleComplex *y, magma_int_t incy );
+
+
+// kernels used in dznrm2, zgeqr2x-v4, laqps2_gpu, laqps3_gpu, zlarfbx, zlarfgx-v2, zlarfx
+__global__ void
+magma_zgemv_kernel1(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
+                    const magmaDoubleComplex * __restrict__ c,
+                    magmaDoubleComplex *dwork);
+
+__global__ void
+magma_zgemv_kernel2(int m, int n, const magmaDoubleComplex * __restrict__ V, int ldv,
+                    const magmaDoubleComplex * __restrict__ x, magmaDoubleComplex *c);
+
+__global__ void
+magma_zgemv_kernel3(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
+                    magmaDoubleComplex *c, magmaDoubleComplex *dwork,
+                    magmaDoubleComplex *tau);
+
+__global__ void
+magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *v,
+                                    magmaDoubleComplex *y);
+
+__global__ void
+magma_ztrmv_kernel2(const magmaDoubleComplex *T, int ldt,
+                    magmaDoubleComplex *v, magmaDoubleComplex *y, magmaDoubleComplex *tau);
+
+__global__ void
+magma_dznrm2_adjust_kernel(double *xnorm, magmaDoubleComplex *c);
 
 #ifdef __cplusplus
 }

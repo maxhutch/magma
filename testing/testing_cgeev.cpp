@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from testing_zgeev.cpp normal z -> c, Fri Jul 18 17:34:25 2014
+       @generated from testing_zgeev.cpp normal z -> c, Tue Sep  2 12:38:30 2014
 
 */
 
@@ -16,7 +16,6 @@
 #include <math.h>
 #include <cuda_runtime_api.h>
 #include <cublas.h>
-#include <cblas.h>
 
 #include <algorithm>  // for sorting
 
@@ -211,7 +210,7 @@ int main( int argc, char** argv)
                     // Do test 2: | |VR(i)| - 1 |   and whether largest component real
                     result[1] = -1.;
                     for( int j = 0; j < N; ++j ) {
-                        tnrm = cblas_scnrm2(N, &VR[j*lda], ione);
+                        tnrm = magma_cblas_scnrm2( N, &VR[j*lda], ione );
                         result[1] = max( result[1], min( ulpinv, fabs(tnrm-1.)/ulp ));
                         
                         vmx = vrmx = 0.;
@@ -243,7 +242,7 @@ int main( int argc, char** argv)
                     // Do test 4: | |VL(i)| - 1 |   and whether largest component real
                     result[3] = -1.;
                     for( int j = 0; j < N; ++j ) {
-                        tnrm = cblas_scnrm2(N, &VL[j*lda], ione);
+                        tnrm = magma_cblas_scnrm2( N, &VL[j*lda], ione );
                         result[3] = max( result[3], min( ulpinv, fabs(tnrm - 1.)/ ulp ));
                         
                         vmx = vrmx = 0.;
@@ -390,8 +389,8 @@ int main( int argc, char** argv)
                 }
                 
                 blasf77_caxpy( &N, &c_neg_one, w2copy, &ione, w1copy, &ione );
-                error  = cblas_scnrm2( N, w1copy, 1 );
-                error /= cblas_scnrm2( N, w2copy, 1 );
+                error  = magma_cblas_scnrm2( N, w1copy, 1 );
+                error /= magma_cblas_scnrm2( N, w2copy, 1 );
                 
                 printf("%5d   %7.2f          %7.2f          %8.2e   %s\n",
                        (int) N, cpu_time, gpu_time,

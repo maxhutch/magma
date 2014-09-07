@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
  
        @precisions normal z -> s d c
 */
@@ -40,6 +40,11 @@ extern "C" {
 #define lapackf77_clag2z FORTRAN_NAME( clag2z, CLAG2Z )
 #define lapackf77_dlag2s FORTRAN_NAME( dlag2s, DLAG2S )
 #define lapackf77_slag2d FORTRAN_NAME( slag2d, SLAG2D )
+
+#define lapackf77_zlat2c FORTRAN_NAME( zlat2c, ZLAT2C )
+#define lapackf77_dlat2s FORTRAN_NAME( dlat2s, DLAT2S )
+//#define lapackf77_clat2z FORTRAN_NAME( clat2z, CLAT2Z )
+//#define lapackf77_slat2d FORTRAN_NAME( slat2d, SLAT2D )
 
 #define lapackf77_dlapy2 FORTRAN_NAME( dlapy2, DLAPY2 )
 #define lapackf77_slapy2 FORTRAN_NAME( slapy2, SLAPY2 )
@@ -101,6 +106,7 @@ void   lapackf77_ssterf( const magma_int_t *n,
                          float *d, float *e,
                          magma_int_t *info );
 
+// precision conversion, general matrix
 void   lapackf77_zlag2c( magma_int_t *m, magma_int_t *n,
                          const magmaDoubleComplex *A,  magma_int_t *lda,
                                magmaFloatComplex  *SA, magma_int_t *ldsa,
@@ -120,6 +126,28 @@ void   lapackf77_slag2d( magma_int_t *m, magma_int_t *n,
                          const float  *SA, magma_int_t *ldsa,
                                double *A,  magma_int_t *lda,
                          magma_int_t *info );
+
+// precision conversion, triangular (or symmetric) matrix
+void   lapackf77_zlat2c( const char* uplo, magma_int_t *n,
+                         const magmaDoubleComplex *A,  magma_int_t *lda,
+                               magmaFloatComplex  *SA, magma_int_t *ldsa,
+                         magma_int_t *info );
+
+void   lapackf77_dlat2s( const char* uplo, magma_int_t *n,
+                         const double *A,  magma_int_t *lda,
+                               float  *SA, magma_int_t *ldsa,
+                         magma_int_t *info );
+
+// not implemented in LAPACK
+//void lapackf77_clat2z(const char* uplo, magma_int_t *n,
+//                       const magmaFloatComplex  *SA, magma_int_t *ldsa,
+//                             magmaDoubleComplex *A,  magma_int_t *lda,
+//                       magma_int_t *info );
+//
+//void lapackf77_slat2d( const char* uplo, magma_int_t *n,
+//                       const float  *SA, magma_int_t *ldsa,
+//                             double *A,  magma_int_t *lda,
+//                       magma_int_t *info );
 
 double lapackf77_dlapy2( const double *x, const double *y );
 float  lapackf77_slapy2( const float  *x, const float  *y );

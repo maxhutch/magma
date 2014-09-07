@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zmergebicgstab.cu normal z -> c, Fri Jul 18 17:34:28 2014
+       @generated from zmergebicgstab.cu normal z -> c, Tue Sep  2 12:38:33 2014
        @author Hartwig Anzt
 
 */
@@ -316,7 +316,7 @@ extern "C" int
 magma_cbicgmerge4(  int type, 
                     magmaFloatComplex *skp ){
 
-    dim3 Bs( 2 );
+    dim3 Bs( 1 );
     dim3 Gs( 1 );
     if( type == 1 )
         magma_cbicgmerge4_kernel_1<<<Gs, Bs, 0>>>( skp );

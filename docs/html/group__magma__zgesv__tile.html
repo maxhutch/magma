@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__zgesv__tile.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -218,11 +221,11 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER The number of columns of the matrix L. K &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ib</td><td>INTEGER The inner-blocking size. IB &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array on the cpu. The pivot indices array of size K as returned by ZGETRF_INCPIV.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dL1</td><td>DOUBLE COMPLEX array, dimension(LDDL1, N) The IB-by-K matrix in which is stored L^(-1) as returned by GETRF_INCPIV</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dL1</td><td>COMPLEX_16 array, dimension(LDDL1, N) The IB-by-K matrix in which is stored L^(-1) as returned by GETRF_INCPIV</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddl1</td><td>INTEGER The leading dimension of the array L1. LDDL1 &gt;= max(1,2*IB).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dL</td><td>DOUBLE COMPLEX array, dimension(LDDL, N) The M-by-K lower triangular tile on the gpu.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dL</td><td>COMPLEX_16 array, dimension(LDDL, N) The M-by-K lower triangular tile on the gpu.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddl</td><td>INTEGER The leading dimension of the array L. LDDL &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE COMPLEX array, dimension (LDDA, N) On entry, the M-by-N tile A on the gpu. On exit, updated by the application of L on the gpu.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array, dimension (LDDA, N) On entry, the M-by-N tile A on the gpu. On exit, updated by the application of L on the gpu.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M). </td></tr>
   </table>
   </dd>
@@ -374,7 +377,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:42 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

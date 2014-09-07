@@ -241,7 +241,7 @@ const char *magma2lapack_constants[] =
     "", "", "", "", "", "", "",              // 114-120
     "Upper",                                 // 121: MagmaUpper
     "Lower",                                 // 122: MagmaLower
-    "Full",                                  // 123: MagmaFull; see lascl
+    "GFull",                                 // 123: MagmaFull; see lascl for "G"
     "", "", "", "", "", "", "",              // 124-130
     "Non-unit",                              // 131: MagmaNonUnit
     "Unit",                                  // 132: MagmaUnit

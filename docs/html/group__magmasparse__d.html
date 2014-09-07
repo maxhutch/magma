@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__d.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -111,9 +114,9 @@ $(document).ready(function(){initNavTree('group__magmasparse__d.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga3115f05bcee9a711215faa5f1b590ad5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#ga3115f05bcee9a711215faa5f1b590ad5">magma_djacobisetup_matrix</a> (magma_d_sparse_matrix A, magma_d_vector b, magma_d_sparse_matrix *M, magma_d_vector *d)</td></tr>
-<tr class="memdesc:ga3115f05bcee9a711215faa5f1b590ad5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Matrix M for the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#ga3115f05bcee9a711215faa5f1b590ad5">More...</a><br /></td></tr>
-<tr class="separator:ga3115f05bcee9a711215faa5f1b590ad5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga46414ad06565e32de20094cefca7e0b4"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#ga46414ad06565e32de20094cefca7e0b4">magma_djacobisetup_matrix</a> (magma_d_sparse_matrix A, magma_d_sparse_matrix *M, magma_d_vector *d)</td></tr>
+<tr class="memdesc:ga46414ad06565e32de20094cefca7e0b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Matrix M for the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#ga46414ad06565e32de20094cefca7e0b4">More...</a><br /></td></tr>
+<tr class="separator:ga46414ad06565e32de20094cefca7e0b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa1dcd96b4d70feec3134ef4322196692"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#gaa1dcd96b4d70feec3134ef4322196692">magma_djacobisetup_diagscal</a> (magma_d_sparse_matrix A, magma_d_vector *d)</td></tr>
 <tr class="memdesc:gaa1dcd96b4d70feec3134ef4322196692"><td class="mdescLeft">&#160;</td><td class="mdescRight">It returns a vector d containing the inverse diagonal elements.  <a href="#gaa1dcd96b4d70feec3134ef4322196692">More...</a><br /></td></tr>
 <tr class="separator:gaa1dcd96b4d70feec3134ef4322196692"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,18 +129,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga1f945c2bb7c573800ba9254295843b5f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#ga1f945c2bb7c573800ba9254295843b5f">magma_djacobiiter</a> (magma_d_sparse_matrix M, magma_d_vector c, magma_d_vector *x, magma_d_solver_par *solver_par)</td></tr>
 <tr class="memdesc:ga1f945c2bb7c573800ba9254295843b5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates the solution approximation according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#ga1f945c2bb7c573800ba9254295843b5f">More...</a><br /></td></tr>
 <tr class="separator:ga1f945c2bb7c573800ba9254295843b5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga42e911633faf5be0ad8bd01ea82bf6be"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#ga42e911633faf5be0ad8bd01ea82bf6be">magma_dfrobenius</a> (magma_d_sparse_matrix A, magma_d_sparse_matrix B, real_Double_t *res)</td></tr>
-<tr class="memdesc:ga42e911633faf5be0ad8bd01ea82bf6be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the Frobenius norm of the difference between the CSR matrices A and B.  <a href="#ga42e911633faf5be0ad8bd01ea82bf6be">More...</a><br /></td></tr>
-<tr class="separator:ga42e911633faf5be0ad8bd01ea82bf6be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac896be1bddd5c2b518a67d314777503c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#gac896be1bddd5c2b518a67d314777503c">magma_dinitguess</a> (magma_d_sparse_matrix A, magma_d_sparse_matrix *L, magma_d_sparse_matrix *U)</td></tr>
-<tr class="memdesc:gac896be1bddd5c2b518a67d314777503c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes an initial guess for the iterative ILU/IC.  <a href="#gac896be1bddd5c2b518a67d314777503c">More...</a><br /></td></tr>
-<tr class="separator:gac896be1bddd5c2b518a67d314777503c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaaa71bb1fd571a53c83c6c4fa864b269a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#gaaa71bb1fd571a53c83c6c4fa864b269a">magma_dmhom_fd</a> (magma_d_sparse_matrix A, magma_int_t n, magma_int_t b, magma_index_t *p)</td></tr>
-<tr class="memdesc:gaaa71bb1fd571a53c83c6c4fa864b269a"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#gaaa71bb1fd571a53c83c6c4fa864b269a">More...</a><br /></td></tr>
-<tr class="separator:gaaa71bb1fd571a53c83c6c4fa864b269a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6b27072995910e529ba4c9caa360d813"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#ga6b27072995910e529ba4c9caa360d813">magma_dmreorder</a> (magma_d_sparse_matrix A, magma_int_t n, magma_int_t b, magma_d_sparse_matrix *B)</td></tr>
-<tr class="memdesc:ga6b27072995910e529ba4c9caa360d813"><td class="mdescLeft">&#160;</td><td class="mdescRight">&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ.  <a href="#ga6b27072995910e529ba4c9caa360d813">More...</a><br /></td></tr>
-<tr class="separator:ga6b27072995910e529ba4c9caa360d813"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaaeb8574a6a67d1580dd3f88fb30d5d55"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#gaaeb8574a6a67d1580dd3f88fb30d5d55">magma_djacobiiter_precond</a> (magma_d_sparse_matrix M, magma_d_vector *x, magma_d_solver_par *solver_par, magma_d_preconditioner *precond)</td></tr>
+<tr class="memdesc:gaaeb8574a6a67d1580dd3f88fb30d5d55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterates the solution approximation according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#gaaeb8574a6a67d1580dd3f88fb30d5d55">More...</a><br /></td></tr>
+<tr class="separator:gaaeb8574a6a67d1580dd3f88fb30d5d55"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0234243dd6b92048065bf776d9ebb892"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__d.html#ga0234243dd6b92048065bf776d9ebb892">magma_dcompactActive</a> (magma_int_t m, magma_int_t n, double *dA, magma_int_t ldda, magma_index_t *active)</td></tr>
 <tr class="memdesc:ga0234243dd6b92048065bf776d9ebb892"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZCOMPACTACTIVE takes a set of n vectors of size m (in dA) and an array of 1s and 0sindicating which vectors to compact (for 1s) and which to disregard (for 0s).  <a href="#ga0234243dd6b92048065bf776d9ebb892">More...</a><br /></td></tr>
 <tr class="separator:ga0234243dd6b92048065bf776d9ebb892"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -262,49 +256,6 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX DOUBLE PRECISION array, dimension (LDDA,N) The m by n matrix dA.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">active</td><td>INTEGER array, dimension N A mask of 1s and 0s showing if a vector remains or has been removed </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga42e911633faf5be0ad8bd01ea82bf6be"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dfrobenius </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>B</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real_Double_t *&#160;</td>
-          <td class="paramname"><em>res</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Computes the Frobenius norm of the difference between the CSR matrices A and B. </p>
-<p>They need to share the same sparsity pattern!</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">B</td><td>magma_d_sparse_matrix sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">res</td><td>real_Double_t* residual </td></tr>
   </table>
   </dd>
 </dl>
@@ -482,47 +433,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gac896be1bddd5c2b518a67d314777503c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dinitguess </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>L</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>U</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Computes an initial guess for the iterative ILU/IC. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix sparse matrix in CSR</td></tr>
-    <tr><td class="paramname">B</td><td>magma_d_sparse_matrix* sparse matrix in CSR </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="ga027503521ded87b3ff52a62662a13704"></a>
 <div class="memitem">
 <div class="memproto">
@@ -612,10 +522,60 @@ Functions</h2></td></tr>
 <p>Iterates the solution approximation according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">m</td><td>magma_d_sparse_matrix input matrix M = D^(-1) * (L+U)</td></tr>
+    <tr><td class="paramname">M</td><td>magma_d_sparse_matrix input matrix M = D^(-1) * (L+U)</td></tr>
     <tr><td class="paramname">c</td><td>magma_d_vector c = D^(-1) * b</td></tr>
     <tr><td class="paramname">x</td><td>magma_d_vector* iteration vector x</td></tr>
     <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* solver parameters </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaaeb8574a6a67d1580dd3f88fb30d5d55"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_djacobiiter_precond </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
+          <td class="paramname"><em>M</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_vector *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_solver_par *&#160;</td>
+          <td class="paramname"><em>solver_par</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Iterates the solution approximation according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">M</td><td>magma_d_sparse_matrix input matrix M = D^(-1) * (L+U)</td></tr>
+    <tr><td class="paramname">c</td><td>magma_d_vector c = D^(-1) * b</td></tr>
+    <tr><td class="paramname">x</td><td>magma_d_vector* iteration vector x</td></tr>
+    <tr><td class="paramname">solver_par</td><td>magma_d_solver_par* solver parameters</td></tr>
+    <tr><td class="paramname">solver_par</td><td>magma_d_precond_par* precond parameters </td></tr>
   </table>
   </dd>
 </dl>
@@ -663,7 +623,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input matrix A</td></tr>
     <tr><td class="paramname">b</td><td>magma_d_vector RHS b</td></tr>
-    <tr><td class="paramname">m</td><td>magma_d_sparse_matrix* M = D^(-1) * (L+U)</td></tr>
+    <tr><td class="paramname">M</td><td>magma_d_sparse_matrix* M = D^(-1) * (L+U)</td></tr>
     <tr><td class="paramname">c</td><td>magma_d_vector* c = D^(-1) * b </td></tr>
   </table>
   </dd>
@@ -706,7 +666,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga3115f05bcee9a711215faa5f1b590ad5"></a>
+<a class="anchor" id="ga46414ad06565e32de20094cefca7e0b4"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -715,12 +675,6 @@ Functions</h2></td></tr>
           <td>(</td>
           <td class="paramtype">magma_d_sparse_matrix&#160;</td>
           <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_vector&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -747,9 +701,8 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input matrix A</td></tr>
-    <tr><td class="paramname">b</td><td>magma_d_vector RHS b</td></tr>
-    <tr><td class="paramname">m</td><td>magma_d_sparse_matrix* M = D^(-1) * (L+U)</td></tr>
-    <tr><td class="paramname">d</td><td>magma_d_vector* vector with diagonal elements </td></tr>
+    <tr><td class="paramname">M</td><td>magma_d_sparse_matrix* M = D^(-1) * (L+U)</td></tr>
+    <tr><td class="paramname">d</td><td>magma_d_vector* vector with diagonal elements of A </td></tr>
   </table>
   </dd>
 </dl>
@@ -799,127 +752,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gaaa71bb1fd571a53c83c6c4fa864b269a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dmhom_fd </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_index_t *&#160;</td>
-          <td class="paramname"><em>p</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Takes a matrix and a blocksize b to generate a homomorphism that orders the matrix entries according to the subdomains of size b x b. Returns p on the device</p>
-<p>example: </p><pre class="fragment">/ a 0 0 b 0 \
-| 0 c 0 d 0 |
-</pre><p> A= | 0 e f g 0 | b = 2 | h 0 0 0 0 | \ i j 0 0 0 /</p>
-<p>will generate the projection:</p>
-<p>0 2 1 3 4 7 8 9 10 11</p>
-<p>according to</p>
-<p>a c b d e h f g i j</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input/output matrix</td></tr>
-    <tr><td class="paramname">b</td><td>magma_int_t blocksize</td></tr>
-    <tr><td class="paramname">p</td><td>magma_index_t* homomorphism vector containing the indices </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga6b27072995910e529ba4c9caa360d813"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_dmreorder </td>
-          <td>(</td>
-          <td class="paramtype">magma_d_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_d_sparse_matrix *&#160;</td>
-          <td class="paramname"><em>B</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>&ndash; MAGMA (version 1.5.0-beta3) &ndash; Univ. </p>
-<p>of Tennessee, Knoxville Univ. of California, Berkeley Univ. of Colorado, Denver November 2011</p>
-<p>Takes a matrix and a reordering scheme such that the output mat</p>
-<p>example: </p><pre class="fragment">/ a 0 0 b 0 \
-| 0 c 0 d 0 |
-</pre><p> A= | 0 e f g 0 | b = 2 | h 0 0 0 0 | \ i j 0 0 0 /</p>
-<p>will generate the projection:</p>
-<p>0 2 1 3 4 7 8 9 10 11</p>
-<p>according to</p>
-<p>a c b d e h f g i j</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_d_sparse_matrix input/output matrix</td></tr>
-    <tr><td class="paramname">n</td><td>magma_int_t nodes in one dimension</td></tr>
-    <tr><td class="paramname">b</td><td>magma_int_t blocksize</td></tr>
-    <tr><td class="paramname">B</td><td>magma_d_sparse_matrix* new matrix filled with new indices </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

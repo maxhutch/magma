@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from ztrevc3_mt.cpp normal z -> c, Fri Jul 18 17:34:19 2014
+       @generated from ztrevc3_mt.cpp normal z -> c, Tue Sep  2 12:38:24 2014
 */
-#include <cblas.h>
-#include "queue.hpp"
+#include "thread_queue.hpp"
 #include "timer.h"
 
 #include "common_magma.h"  // after thread.hpp, so max, min are defined
@@ -380,14 +379,14 @@ magma_int_t magma_ctrevc3_mt(
     // part of T to control overflow in triangular solver.
     rwork[0] = 0.;
     for( j=1; j < n; ++j ) {
-        rwork[j] = cblas_scasum( j, T(0,j), ione );
+        rwork[j] = magma_cblas_scasum( j, T(0,j), ione );
     }
 
     // launch threads -- each single-threaded MKL
     magma_int_t nthread = magma_get_parallel_numthreads();
     magma_int_t lapack_nthread = magma_get_lapack_numthreads();
     magma_set_lapack_numthreads( 1 );
-    magma_queue queue;
+    magma_thread_queue queue;
     queue.launch( nthread );
     //printf( "nthread %d, %d\n", nthread, lapack_nthread );
     

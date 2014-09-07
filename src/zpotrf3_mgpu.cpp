@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
 
@@ -100,28 +100,6 @@ magma_zpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
     magmaDoubleComplex *dlpanel;
     magma_int_t n_local[MagmaMaxGPUs], ldpanel;
     const magma_int_t stream1 = 0, stream2 = 1, stream3 = 2;
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-    /* used by ztrsm_work */
-    magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
-    int trsm_nb = 128;
-    int trsm_n = trsm_nb*((nb+trsm_nb-1)/trsm_nb);
-    magmaDoubleComplex *d_dinvA[MagmaMaxGPUs];
-    magmaDoubleComplex *d_x[MagmaMaxGPUs];
-    #define dinvA(d,j) &(d_dinvA[(d)][(j)*trsm_nb*trsm_n])
-    #define dx(d,j) &(d_x[(d)][(j)*nb*m])
-    /*
-     * Allocate device memory for the inversed diagonal blocks, size=N*BLOCK_SIZE
-     */
-    for( d=0; d < num_gpus; d++ ) {
-        magma_setdevice(d);
-        if ( (MAGMA_SUCCESS != magma_zmalloc( &d_dinvA[d], 2*trsm_nb*trsm_n )) ||
-             (MAGMA_SUCCESS != magma_zmalloc( &d_x[d],     2*nb*(upper ? n : m) )) ) {
-            *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
-        }
-    }
-    magma_setdevice(0);
-#endif
     
     *info = 0;
     if (! upper && uplo != MagmaLower) {
@@ -138,6 +116,35 @@ magma_zpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
         return *info;
     }
 
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+    
+#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+    /* used by ztrsm_work */
+    magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
+    int trsm_nb = 128;
+    int trsm_n = trsm_nb*((nb+trsm_nb-1)/trsm_nb);
+    magmaDoubleComplex *d_dinvA[MagmaMaxGPUs];
+    magmaDoubleComplex *d_x[MagmaMaxGPUs];
+    #define dinvA(d,j) &(d_dinvA[(d)][(j)*trsm_nb*trsm_n])
+    #define dx(d,j) &(d_x[(d)][(j)*nb*m])
+    /*
+     * Allocate device memory for the inversed diagonal blocks, size=N*BLOCK_SIZE
+     */
+    // TODO free memory on failure.
+    for( d=0; d < num_gpus; d++ ) {
+        magma_setdevice(d);
+        if ( (MAGMA_SUCCESS != magma_zmalloc( &d_dinvA[d], 2*trsm_nb*trsm_n )) ||
+             (MAGMA_SUCCESS != magma_zmalloc( &d_x[d],     2*nb*(upper ? n : m) )) ) {
+            *info = MAGMA_ERR_DEVICE_ALLOC;
+            return *info;
+        }
+    }
+    magma_setdevice(0);
+#endif
+    
     /* initialization */
     for( d=0; d < num_gpus; d++ ) {
         /* local-n and local-ld */
@@ -208,6 +215,7 @@ magma_zpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                             ldpanel = ldda;
                             // the GPU owns the row from start, and no need of synch.
                             //magma_queue_wait_event( stream[d][stream2], event[d][0] ); // rows arrived at gpu
+                            magma_queue_wait_event( stream[d][stream2], event[d][4] ); // wait for look-ahead trsm to finish
                         } else {
                             dlpanel = dlP(d,nb,0,buf);
                             ldpanel = lddp;
@@ -461,6 +469,7 @@ magma_zpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
                         if ( d == id ) {
                             dlpanel = dlA(d, nb*j_local, 0);
                             ldpanel = ldda;
+                            magma_queue_wait_event( stream[d][stream2], event[d][4] ); // wait for look-ahead trsm to finish
                         } else {
                             dlpanel = dlPT(d,0,nb,buf);
                             ldpanel = nb;
@@ -684,9 +693,9 @@ magma_zpotrf3_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma
         magma_free( d_dinvA[d] );
         magma_free( d_x[d] );
 #endif
-        magmablasSetKernelStream(NULL);
     }
-    magma_setdevice(0);
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_zpotrf_mgpu */
@@ -708,6 +717,9 @@ magma_zhtodpo(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_
               magmaDoubleComplex *dwork[], magma_int_t ldda,
               magma_queue_t stream[][3], magma_int_t *info)
 {
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    
     magma_int_t k;
     if (uplo == MagmaUpper) {
         magma_int_t j, jj, jb, mj;
@@ -755,7 +767,7 @@ magma_zhtodpo(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_
         magma_setdevice(k);
         magma_queue_sync( stream[k][0] );
     }
-    magma_setdevice(0);
+    magma_setdevice( orig_dev );
 
     return *info;
 }
@@ -767,6 +779,9 @@ magma_zdtohpo(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_
               magmaDoubleComplex *dwork[], magma_int_t ldda,
               magma_queue_t stream[][3], magma_int_t *info)
 {
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    
     magma_int_t k;
     if (uplo == MagmaUpper) {
         magma_int_t j, jj, jb, mj;
@@ -815,7 +830,7 @@ magma_zdtohpo(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t m, magma_int_
         magma_setdevice(k);
         magma_queue_sync( stream[k][0] );
     }*/
-    magma_setdevice(0);
+    magma_setdevice( orig_dev );
 
     return *info;
 }

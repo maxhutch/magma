@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zswap.cu normal z -> s, Fri Jul 18 17:34:12 2014
+       @generated from zswap.cu normal z -> s, Tue Sep  2 12:38:16 2014
 
 */
 #include "common_magma.h"
@@ -41,13 +41,24 @@ __global__ void magmagpu_sswap( magmagpu_sswap_params_t params )
     }
 }
 
+
 extern "C" void 
-magmablas_sswap( magma_int_t n, float *dA1T, magma_int_t lda1, 
-                 float *dA2T, magma_int_t lda2)
+magmablas_sswap_q(
+    magma_int_t n, float *dA1T, magma_int_t lda1, 
+    float *dA2T, magma_int_t lda2,
+    magma_queue_t queue )
 {
     int blocksize = 64;
     dim3 blocks( (n+blocksize-1) / blocksize, 1, 1);
     magmagpu_sswap_params_t params = { dA1T, dA2T, n, lda1, lda2 };
-    magmagpu_sswap<<< blocks, blocksize, 0, magma_stream >>>( params );
+    magmagpu_sswap<<< blocks, blocksize, 0, queue >>>( params );
 }
 
+
+extern "C" void 
+magmablas_sswap(
+    magma_int_t n, float *dA1T, magma_int_t lda1, 
+    float *dA2T, magma_int_t lda2)
+{
+    magmablas_sswap_q( n, dA1T, lda1, dA2T, lda2, magma_stream );
+}

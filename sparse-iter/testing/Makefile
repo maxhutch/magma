@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/testing
@@ -15,85 +15,19 @@ LIB += -lcusparse
 # ----------
 # utility functions
 ZSRC += \
-#	testing_z_mv.cpp	\
-#	testing_zdot.cpp	\
-#	testing_z_multimv.cpp	\
-#	testing_z_matrix_io.cpp	\
-#    testing_ziluchow.cpp \
-#    testing_ziluchowcsrcsc.cpp \
-#    testing_ziccchowcsrcsc.cpp \
-#    testing_ziluchow_cpu_csrcsc.cpp \
-#    testing_ziluchow_multigpu.cpp   \
-#    testing_ziluchowcsr_multigpu.cpp    \
-#    testing_ziccchow.cpp \
-#	testing_zmgenerator.cpp	\
-#	testing_z_matrix_compressor.cpp	\
-
-# ----------
-# run utility functions
-ZSRC += \
-#	run_zspmv.cpp	\
-
-# ----------
-# test Krylov space linear solvers
-ZSRC += \
-#	testing_zcg.cpp		\
-#	testing_zbicgstab.cpp	\
-#	testing_ziterref.cpp		\
-#	testing_zgmres.cpp	\
-#	testing_zjacobi.cpp	\
-#	testing_zp1gmres.cpp	\
-#	testing_zbicgstab.cpp	\
-#	testing_zir.cpp		\
-#	testing_zcir.cpp	\
-#	testing_zcpir.cpp	\
-
-# ----------
-# run Krylov space linear solvers
-ZSRC += \
-	run_zcg.cpp		    \
-	run_zbicgstab.cpp	\
-	run_ziterref.cpp	\
-	run_zgmres.cpp	    \
-	run_zjacobi.cpp	    \
-	run_zbaiter.cpp	    \
-
-# ----------
-# run Krylov space eigen-solvers
-ZSRC += \
-	run_zlobpcg.cpp     \
-
-# ----------
-# test Krylov space eigen-solvers
-ZSRC += \
-#	testing_zlobpcg.cpp     \
-#	testing_zlobpcg3.cpp     \
-
-# run preconditioned Krylov solvers
-ZSRC += \
-	run_zpcg.cpp		    \
-	run_zpbicgstab.cpp		    \
-	run_zpgmres.cpp		    \
-
-# run solver for laplace problem
-ZSRC += \
-	run_zlaplacesolver.cpp		    \
-
-# run tester for all solvers on laplace problem
-ZSRC += \
-	run_zalltests.cpp		    \
-
+    testing_zmatrix.cpp     \
 
 
 # ----------
-# test sparse direct solvers
+# low level LA operations
 ZSRC += \
-#	testing_zbcsrlu.cpp	\
+    testing_zdot.cpp        \
+    testing_zspmv.cpp       \
 
 # ----------
-# run sparse direct solvers
+# low level LA operations
 ZSRC += \
-	run_zbcsrlu.cpp	\
+    testing_zsolver.cpp     \
 
 
 # ----------
@@ -161,13 +95,13 @@ cleanall: clean cleanexe
 
 testing_% : testing_%.o
 	echo $(LIB)
-	$(CC) $(LDOPTS) $(NOMAIN) $< -o $@ \
+	$(CXX) $(LDFLAGS) $(NOMAIN) $< -o $@ \
 	$(LIBTEST) -L$(MAGMA_DIR)/lib -lmagma_sparse -lmagma \
 	$(LIBDIR) \
 	$(LIB)
 
 run_% : run_%.o
-	$(CC) $(LDOPTS) $(NOMAIN) $< -o $@ \
+	$(CXX) $(LDFLAGS) $(NOMAIN) $< -o $@ \
 	$(LIBTEST) -L$(MAGMA_DIR)/lib -lmagma_sparse -lmagma \
 	$(LIBDIR) \
 	$(LIB)

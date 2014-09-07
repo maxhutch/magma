@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
  
        @author Mark Gates
 */
@@ -56,11 +56,11 @@ extern "C"
 magma_int_t magma_init()
 {
     if ( g_magma_devices == NULL ) {
-        cudaGetDeviceCount( &g_magma_devices_cnt );
+        check_error( cudaGetDeviceCount( &g_magma_devices_cnt ));
         g_magma_devices = (struct magma_device*) malloc( g_magma_devices_cnt * sizeof(struct magma_device) );
         for( int i = 0; i < g_magma_devices_cnt; ++i ) {
             cudaDeviceProp prop;
-            cudaGetDeviceProperties( &prop, i );
+            check_error( cudaGetDeviceProperties( &prop, i ));
             g_magma_devices[i].memory = prop.totalGlobalMem;
             g_magma_devices[i].cuda_arch  = prop.major*100 + prop.minor*10;
         }
@@ -81,7 +81,7 @@ magma_int_t magma_finalize()
 // --------------------
 // Print the available GPU devices. Used in testing.
 extern "C"
-void magma_print_devices()
+void magma_print_environment()
 {
     magma_int_t major, minor, micro;
     magma_version( &major, &minor, &micro );
@@ -89,8 +89,8 @@ void magma_print_devices()
             (int) major, (int) minor, (int) micro, MAGMA_VERSION_STAGE, MIN_CUDA_ARCH/100. );
     
     int cuda_runtime, cuda_driver;
-    cudaDriverGetVersion( &cuda_driver );
-    cudaRuntimeGetVersion( &cuda_runtime );
+    check_error( cudaDriverGetVersion( &cuda_driver ));
+    check_error( cudaRuntimeGetVersion( &cuda_runtime ));
     printf( "CUDA runtime %d, driver %d. ", cuda_runtime, cuda_driver );
     
 #if defined(_OPENMP)
@@ -123,10 +123,10 @@ void magma_print_devices()
     printf( "\n" );
     
     int ndevices;
-    cudaGetDeviceCount( &ndevices );
+    check_error( cudaGetDeviceCount( &ndevices ));
     for( int idevice = 0; idevice < ndevices; idevice++ ) {
         cudaDeviceProp prop;
-        cudaGetDeviceProperties( &prop, idevice );
+        check_error( cudaGetDeviceProperties( &prop, idevice ));
         printf( "device %d: %s, %.1f MHz clock, %.1f MB memory, capability %d.%d\n",
                 idevice,
                 prop.name,
@@ -153,12 +153,12 @@ void magma_print_devices()
 // Returns CUDA architecture capability for the current device.
 // This requires magma_init to be called first (to cache the information).
 // Version is integer xyz, where x is major, y is minor, and z is micro,
-// the same as __CUDA_ARCH__. For instance, for architecture 1.3, returns 130.
+// the same as __CUDA_ARCH__. Thus for architecture 1.3 it returns 130.
 extern "C"
 magma_int_t magma_getdevice_arch()
 {
     int dev;
-    cudaGetDevice( &dev );
+    check_error( cudaGetDevice( &dev ));
     if ( g_magma_devices == NULL || dev < 0 || dev >= g_magma_devices_cnt ) {
         fprintf( stderr, "Error in %s: MAGMA not initialized (call magma_init() first) or bad device\n", __func__ );
         return 0;
@@ -240,13 +240,9 @@ void magma_queue_destroy_internal(
     magma_queue_t queue,
     const char* func, const char* file, int line )
 {
-    //cudaStream_t   stream;
-    //cublasStatus_t stat;
-    cudaError_t    err;
-    //stat = cublasGetStream( queue, &stream );
-    err  = cudaStreamDestroy( queue );  //stream );
-    //stat = cublasDestroy( queue );
-    check_xerror( err, func, file, line );
+    if ( queue != NULL ) {
+        check_xerror( cudaStreamDestroy( queue ), func, file, line );
+    }
 }
 
 // --------------------
@@ -279,9 +275,9 @@ void magma_event_create( magma_event_t* event )
 extern "C"
 void magma_event_destroy( magma_event_t event )
 {
-    cudaError_t err;
-    err = cudaEventDestroy( event );
-    check_error( err );
+    if ( event != NULL ) {
+        check_error( cudaEventDestroy( event ));
+    }
 }
 
 // --------------------

@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
 */
 #include "common_magma.h"
-#include <assert.h>
 
 #define NB 64
 
@@ -99,45 +98,75 @@ zsymmetrize_tiles_upper( int m, magmaDoubleComplex *dA, int ldda, int mstride, i
     
     @param[in]
     ntile   INTEGER
-            Number of blocks to symmetrize.
+            Number of blocks to symmetrize. ntile >= 0.
     
     @param[in]
     mstride INTEGER
-            Row offset from start of one block to start of next block.
+            Row offset from start of one block to start of next block. mstride >= 0.
+            Either (mstride >= m) or (nstride >= m), to prevent m-by-m tiles
+            from overlapping.
     
     @param[in]
     nstride INTEGER
-            Column offset from start of one block to start of next block.
+            Column offset from start of one block to start of next block. nstride >= 0.
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_zsymmetrize_tiles( magma_uplo_t uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda,
-                             magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
+magmablas_zsymmetrize_tiles_q(
+    magma_uplo_t uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda,
+    magma_int_t ntile, magma_int_t mstride, magma_int_t nstride,
+    magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    if ( uplo != MagmaLower && uplo != MagmaUpper )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( ldda < max(1,m + mstride*(ntile-1)) )
+        info = -5;
+    else if ( ntile < 0 )
+        info = -6;
+    else if ( mstride < 0 )
+        info = -7;
+    else if ( nstride < 0 )
+        info = -8;
+    else if ( mstride < m && nstride < m )  // only one must be >= m.
+        info = -7;
+    
+    if ( info != 0 ) {
+        magma_xerbla( __func__, -(info) );
+        return;
+    }
+    
     if ( m == 0 || ntile == 0 )
         return;
-    
-    assert( m >= 0 );
-    assert( ldda >= m );
-    assert( ldda >= (ntile - 1)*mstride + m );
-    assert( ntile >= 0 );
-    assert( mstride >= 0 );
-    assert( nstride >= 0 );
-    assert( mstride >= m || nstride >= m );  // prevent tile overlap
     
     dim3 threads( NB );
     dim3 grid( ntile, (m + NB - 1)/NB );
     
     //printf( "m %d, grid %d x %d, threads %d\n", m, grid.x, grid.y, threads.x );
     if ( uplo == MagmaUpper ) {
-        zsymmetrize_tiles_upper<<< grid, threads, 0, magma_stream >>>( m, dA, ldda, mstride, nstride );
-    }
-    else if ( uplo == MagmaLower ) {
-        zsymmetrize_tiles_lower<<< grid, threads, 0, magma_stream >>>( m, dA, ldda, mstride, nstride );
+        zsymmetrize_tiles_upper<<< grid, threads, 0, queue >>>( m, dA, ldda, mstride, nstride );
     }
     else {
-        printf( "uplo has illegal value\n" );
-        exit(1);
+        zsymmetrize_tiles_lower<<< grid, threads, 0, queue >>>( m, dA, ldda, mstride, nstride );
     }
+}
+
+
+/**
+    @see magmablas_zsymmetrize_tiles_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zsymmetrize_tiles(
+    magma_uplo_t uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda,
+    magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
+{
+    magmablas_zsymmetrize_tiles_q( uplo, m, dA, ldda, ntile, mstride, nstride, magma_stream );
 }

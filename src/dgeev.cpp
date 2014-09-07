@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal d -> s
        @author Stan Tomov
@@ -11,7 +11,6 @@
 */
 #include "common_magma.h"
 #include "timer.h"
-#include <cblas.h>
 
 #define PRECISION_d
 
@@ -110,7 +109,7 @@
 
     @param[out]
     work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -146,8 +145,8 @@ magma_dgeev(
     #define VL(i,j)  (VL + (i) + (j)*ldvl)
     #define VR(i,j)  (VR + (i) + (j)*ldvr)
     
-    magma_int_t c_one = 1;
-    magma_int_t c_zero = 0;
+    const magma_int_t ione  = 1;
+    const magma_int_t izero = 0;
     
     double d__1, d__2;
     double r, cs, sn, scl;
@@ -234,7 +233,7 @@ magma_dgeev(
         cscale = bignum;
     }
     if (scalea) {
-        lapackf77_dlascl( "G", &c_zero, &c_zero, &anrm, &cscale, &n, &n, A, &lda, &ierr );
+        lapackf77_dlascl( "G", &izero, &izero, &anrm, &cscale, &n, &n, A, &lda, &ierr );
     }
 
     /* Balance the matrix
@@ -400,24 +399,24 @@ magma_dgeev(
         /* Normalize left eigenvectors and make largest component real */
         for (i = 0; i < n; ++i) {
             if ( wi[i] == 0. ) {
-                scl = 1. / cblas_dnrm2( n, VL(0,i), 1 );
-                cblas_dscal( n, scl, VL(0,i), 1 );
+                scl = 1. / magma_cblas_dnrm2( n, VL(0,i), 1 );
+                blasf77_dscal( &n, &scl, VL(0,i), &ione );
             }
             else if ( wi[i] > 0. ) {
-                d__1 = cblas_dnrm2( n, VL(0,i),   1 );
-                d__2 = cblas_dnrm2( n, VL(0,i+1), 1 );
+                d__1 = magma_cblas_dnrm2( n, VL(0,i),   1 );
+                d__2 = magma_cblas_dnrm2( n, VL(0,i+1), 1 );
                 scl = 1. / lapackf77_dlapy2( &d__1, &d__2 );
-                cblas_dscal( n, scl, VL(0,i),   1 );
-                cblas_dscal( n, scl, VL(0,i+1), 1 );
+                blasf77_dscal( &n, &scl, VL(0,i), &ione );
+                blasf77_dscal( &n, &scl, VL(0,i+1), &ione );
                 for (k = 0; k < n; ++k) {
                     /* Computing 2nd power */
                     d__1 = *VL(k,i);
                     d__2 = *VL(k,i+1);
                     work[iwrk + k] = d__1*d__1 + d__2*d__2;
                 }
-                k = cblas_idamax( n, &work[iwrk], 1 );
+                k = blasf77_idamax( &n, &work[iwrk], &ione ) - 1;  // subtract 1; k is 0-based
                 lapackf77_dlartg( VL(k,i), VL(k,i+1), &cs, &sn, &r );
-                cblas_drot( n, VL(0,i), 1, VL(0,i+1), 1, cs, sn );
+                blasf77_drot( &n, VL(0,i), &ione, VL(0,i+1), &ione, &cs, &sn );
                 *VL(k,i+1) = 0.;
             }
         }
@@ -432,24 +431,24 @@ magma_dgeev(
         /* Normalize right eigenvectors and make largest component real */
         for (i = 0; i < n; ++i) {
             if ( wi[i] == 0. ) {
-                scl = 1. / cblas_dnrm2( n, VR(0,i), 1 );
-                cblas_dscal( n, scl, VR(0,i), 1 );
+                scl = 1. / magma_cblas_dnrm2( n, VR(0,i), 1 );
+                blasf77_dscal( &n, &scl, VR(0,i), &ione );
             }
             else if ( wi[i] > 0. ) {
-                d__1 = cblas_dnrm2( n, VR(0,i),   1 );
-                d__2 = cblas_dnrm2( n, VR(0,i+1), 1 );
+                d__1 = magma_cblas_dnrm2( n, VR(0,i),   1 );
+                d__2 = magma_cblas_dnrm2( n, VR(0,i+1), 1 );
                 scl = 1. / lapackf77_dlapy2( &d__1, &d__2 );
-                cblas_dscal( n, scl, VR(0,i),   1 );
-                cblas_dscal( n, scl, VR(0,i+1), 1 );
+                blasf77_dscal( &n, &scl, VR(0,i), &ione );
+                blasf77_dscal( &n, &scl, VR(0,i+1), &ione );
                 for (k = 0; k < n; ++k) {
                     /* Computing 2nd power */
                     d__1 = *VR(k,i);
                     d__2 = *VR(k,i+1);
                     work[iwrk + k] = d__1*d__1 + d__2*d__2;
                 }
-                k = cblas_idamax( n, &work[iwrk], 1 );
+                k = blasf77_idamax( &n, &work[iwrk], &ione ) - 1;  // subtract 1; k is 0-based
                 lapackf77_dlartg( VR(k,i), VR(k,i+1), &cs, &sn, &r );
-                cblas_drot( n, VR(0,i), 1, VR(0,i+1), 1, cs, sn );
+                blasf77_drot( &n, VR(0,i), &ione, VR(0,i+1), &ione, &cs, &sn );
                 *VR(k,i+1) = 0.;
             }
         }
@@ -461,14 +460,14 @@ CLEANUP:
         // converged eigenvalues, stored in wr[i+1:n] and wi[i+1:n] for i = INFO
         magma_int_t nval = n - (*info);
         magma_int_t ld   = max( nval, 1 );
-        lapackf77_dlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &nval, &c_one, wr + (*info), &ld, &ierr );
-        lapackf77_dlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &nval, &c_one, wi + (*info), &ld, &ierr );
+        lapackf77_dlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, wr + (*info), &ld, &ierr );
+        lapackf77_dlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, wi + (*info), &ld, &ierr );
         if (*info > 0) {
             // first ilo columns were already upper triangular,
             // so the corresponding eigenvalues are also valid.
             nval = ilo - 1;
-            lapackf77_dlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &nval, &c_one, wr, &n, &ierr );
-            lapackf77_dlascl( "G", &c_zero, &c_zero, &cscale, &anrm, &nval, &c_one, wi, &n, &ierr );
+            lapackf77_dlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, wr, &n, &ierr );
+            lapackf77_dlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, wi, &n, &ierr );
         }
     }
 

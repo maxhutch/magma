@@ -1,9 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
+       
+       @author Mark Gates
 */
 
 #include "common_magma.h"
@@ -14,8 +16,8 @@ magma_queue_t magma_stream = 0;
 /**
     Purpose
     -------
-    magmablasSetKernelStream sets the CUDA stream that all MAGMA BLAS and
-    CUBLAS routines use.
+    magmablasSetKernelStream sets the CUDA stream that MAGMA BLAS and
+    CUBLAS (v1) routines use (unless explicitly given a stream).
     
     In a multi-threaded application, be careful to avoid race conditions
     when using this. For instance, if calls are executed in this order:
@@ -55,7 +57,7 @@ magma_queue_t magma_stream = 0;
     stream  magma_queue_t
             The CUDA stream.
 
-    @ingroup magma_s
+    @ingroup magma_util
     ********************************************************************/
 extern "C"
 cublasStatus_t magmablasSetKernelStream( magma_queue_t stream )
@@ -68,7 +70,7 @@ cublasStatus_t magmablasSetKernelStream( magma_queue_t stream )
 /**
     Purpose
     -------
-    magmablasGetKernelStream gets the CUDA stream that all MAGMA BLAS
+    magmablasGetKernelStream gets the CUDA stream that MAGMA BLAS
     routines use.
 
     Arguments
@@ -77,7 +79,7 @@ cublasStatus_t magmablasSetKernelStream( magma_queue_t stream )
     stream  magma_queue_t
             The CUDA stream.
 
-    @ingroup magma_s
+    @ingroup magma_util
     ********************************************************************/
 extern "C"
 cublasStatus_t magmablasGetKernelStream( magma_queue_t *stream )

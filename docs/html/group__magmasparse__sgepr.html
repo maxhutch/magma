@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magmasparse__sgepr.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -105,21 +108,12 @@ $(document).ready(function(){initNavTree('group__magmasparse__sgepr.html','');})
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">single precision<div class="ingroups"><a class="el" href="group__sparse__gepr.html">Non-symmetric preconditioner</a></div></div>  </div>
+<div class="title">single precision<div class="ingroups"><a class="el" href="group__sparse__gepr.html">general preconditioner</a></div></div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga054b8af5bbee527afafb441b0ca016db"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__sgepr.html#ga054b8af5bbee527afafb441b0ca016db">magma_ialusetup</a> (magma_s_sparse_matrix A, magma_s_preconditioner *precond)</td></tr>
-<tr class="memdesc:ga054b8af5bbee527afafb441b0ca016db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the ILU preconditioner via the asynchronous ILU iteration.  <a href="#ga054b8af5bbee527afafb441b0ca016db">More...</a><br /></td></tr>
-<tr class="separator:ga054b8af5bbee527afafb441b0ca016db"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga106ed0c8e1d87b7c1f6ecf3746324c33"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__sgepr.html#ga106ed0c8e1d87b7c1f6ecf3746324c33">magma_sapplyailu_l</a> (magma_s_vector b, magma_s_vector *x, magma_s_preconditioner *precond)</td></tr>
-<tr class="memdesc:ga106ed0c8e1d87b7c1f6ecf3746324c33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the left triangular solves using the ILU preconditioner.  <a href="#ga106ed0c8e1d87b7c1f6ecf3746324c33">More...</a><br /></td></tr>
-<tr class="separator:ga106ed0c8e1d87b7c1f6ecf3746324c33"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaae7aa6917a17a286144522bdd6c8e37f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__sgepr.html#gaae7aa6917a17a286144522bdd6c8e37f">magma_sapplyailu_r</a> (magma_s_vector b, magma_s_vector *x, magma_s_preconditioner *precond)</td></tr>
-<tr class="memdesc:gaae7aa6917a17a286144522bdd6c8e37f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the right triangular solves using the ILU preconditioner.  <a href="#gaae7aa6917a17a286144522bdd6c8e37f">More...</a><br /></td></tr>
-<tr class="separator:gaae7aa6917a17a286144522bdd6c8e37f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga61ce761fcc0acd64444d581ad9846515"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__sgepr.html#ga61ce761fcc0acd64444d581ad9846515">magma_scuilusetup</a> (magma_s_sparse_matrix A, magma_s_preconditioner *precond)</td></tr>
 <tr class="memdesc:ga61ce761fcc0acd64444d581ad9846515"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the ILU preconditioner via the asynchronous ILU iteration.  <a href="#ga61ce761fcc0acd64444d581ad9846515">More...</a><br /></td></tr>
 <tr class="separator:ga61ce761fcc0acd64444d581ad9846515"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -132,125 +126,6 @@ Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ga054b8af5bbee527afafb441b0ca016db"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_ialusetup </td>
-          <td>(</td>
-          <td class="paramtype">magma_s_sparse_matrix&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_s_preconditioner *&#160;</td>
-          <td class="paramname"><em>precond</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Prepares the ILU preconditioner via the asynchronous ILU iteration. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">A</td><td>magma_s_sparse_matrix input matrix A</td></tr>
-    <tr><td class="paramname">precond</td><td>magma_s_preconditioner* preconditioner parameters </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga106ed0c8e1d87b7c1f6ecf3746324c33"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_sapplyailu_l </td>
-          <td>(</td>
-          <td class="paramtype">magma_s_vector&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_s_vector *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_s_preconditioner *&#160;</td>
-          <td class="paramname"><em>precond</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Performs the left triangular solves using the ILU preconditioner. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">b</td><td>magma_s_vector RHS</td></tr>
-    <tr><td class="paramname">x</td><td>magma_s_vector* vector to precondition</td></tr>
-    <tr><td class="paramname">precond</td><td>magma_s_preconditioner* preconditioner parameters </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="gaae7aa6917a17a286144522bdd6c8e37f"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_sapplyailu_r </td>
-          <td>(</td>
-          <td class="paramtype">magma_s_vector&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_s_vector *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_s_preconditioner *&#160;</td>
-          <td class="paramname"><em>precond</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Performs the right triangular solves using the ILU preconditioner. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">b</td><td>magma_s_vector RHS</td></tr>
-    <tr><td class="paramname">x</td><td>magma_s_vector* vector to precondition</td></tr>
-    <tr><td class="paramname">precond</td><td>magma_s_preconditioner* preconditioner parameters </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a class="anchor" id="gabe211e4dd55ae65f6b3e46e7b3d51462"></a>
 <div class="memitem">
 <div class="memproto">
@@ -375,7 +250,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:44 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:49 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

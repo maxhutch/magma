@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from magma_zlapack.h normal z -> s, Fri Jul 18 17:34:10 2014
+       @generated from magma_zlapack.h normal z -> s, Tue Sep  2 12:38:14 2014
 */
 
 #ifndef MAGMA_SLAPACK_H
@@ -32,6 +32,7 @@ extern "C" {
 #define blasf77_sger      FORTRAN_NAME( sger,  SGER  )
 #define blasf77_ssymm      FORTRAN_NAME( ssymm,  SSYMM  )
 #define blasf77_ssymv      FORTRAN_NAME( ssymv,  SSYMV  )
+#define blasf77_ssyr       FORTRAN_NAME( ssyr,   SSYR   )
 #define blasf77_ssyr2      FORTRAN_NAME( ssyr2,  SSYR2  )
 #define blasf77_ssyr2k     FORTRAN_NAME( ssyr2k, SSYR2K )
 #define blasf77_ssyrk      FORTRAN_NAME( ssyrk,  SSYRK  )
@@ -41,6 +42,9 @@ extern "C" {
 #define blasf77_ssymm      FORTRAN_NAME( ssymm,  SSYMM  )
 #define blasf77_ssyr2k     FORTRAN_NAME( ssyr2k, SSYR2K )
 #define blasf77_ssyrk      FORTRAN_NAME( ssyrk,  SSYRK  )
+#define blasf77_srotg      FORTRAN_NAME( srotg,  SROTG  )
+#define blasf77_srot       FORTRAN_NAME( srot,   SROT   )
+#define blasf77_srot      FORTRAN_NAME( srot,  SROT  )
 #define blasf77_strmm      FORTRAN_NAME( strmm,  STRMM  )
 #define blasf77_strmv      FORTRAN_NAME( strmv,  STRMV  )
 #define blasf77_strsm      FORTRAN_NAME( strsm,  STRSM  )
@@ -60,6 +64,7 @@ extern "C" {
 #define lapackf77_sgebal   FORTRAN_NAME( sgebal, SGEBAL )
 #define lapackf77_sgebd2   FORTRAN_NAME( sgebd2, SGEBD2 )
 #define lapackf77_sgebrd   FORTRAN_NAME( sgebrd, SGEBRD )
+#define lapackf77_sgbbrd   FORTRAN_NAME( sgbbrd, SGBBRD )
 #define lapackf77_sgeev    FORTRAN_NAME( sgeev,  SGEEV  )
 #define lapackf77_sgehd2   FORTRAN_NAME( sgehd2, SGEHD2 )
 #define lapackf77_sgehrd   FORTRAN_NAME( sgehrd, SGEHRD )
@@ -68,7 +73,7 @@ extern "C" {
 #define lapackf77_sgeqlf   FORTRAN_NAME( sgeqlf, SGEQLF )
 #define lapackf77_sgeqp3   FORTRAN_NAME( sgeqp3, SGEQP3 )
 #define lapackf77_sgeqrf   FORTRAN_NAME( sgeqrf, SGEQRF )
-#define lapackf77_sgesdd   FORTRAN_NAME( sgesdd, ZGESDD )
+#define lapackf77_sgesdd   FORTRAN_NAME( sgesdd, SGESDD )
 #define lapackf77_sgesv    FORTRAN_NAME( sgesv,  SGESV  )
 #define lapackf77_sgesvd   FORTRAN_NAME( sgesvd, SGESVD )
 #define lapackf77_sgetrf   FORTRAN_NAME( sgetrf, SGETRF )
@@ -214,6 +219,12 @@ void blasf77_ssymv(  const char *uplo,
                      const float *beta,
                            float *y, const magma_int_t *incy );
 
+void blasf77_ssyr(   const char *uplo,
+                     const magma_int_t *n,
+                     const float *alpha,
+                     const float *x, const magma_int_t *incx,
+                           float *A, const magma_int_t *lda );
+
 void blasf77_ssyr2(  const char *uplo,
                      const magma_int_t *n,
                      const float *alpha,
@@ -272,6 +283,19 @@ void blasf77_ssyrk(  const char *uplo, const char *trans,
                      const float *beta,
                            float *C, const magma_int_t *ldc );
 
+void blasf77_srotg(  float* ca, const float* cb,
+                     float* c, float* s );
+                     
+void blasf77_srot(   const magma_int_t* n,
+                     float* x, const magma_int_t* incx,
+                     float* y, const magma_int_t* incy,
+                     const float* c, const float* s );
+                     
+void blasf77_srot(  const magma_int_t* n,
+                     float* x, const magma_int_t* incx,
+                     float* y, const magma_int_t* incy,
+                     const float* c, const float* s );
+
 void blasf77_strmm(  const char *side, const char *uplo, const char *transa, const char *diag,
                      const magma_int_t *m, const magma_int_t *n,
                      const float *alpha,
@@ -293,6 +317,31 @@ void blasf77_strsv(  const char *uplo, const char *transa, const char *diag,
                      const magma_int_t *n,
                      const float *A, const magma_int_t *lda,
                            float *x, const magma_int_t *incx );
+
+/* ////////////////////////////////////////////////////////////////////////////
+ -- MAGMA wrappers around BLAS functions (alphabetical order)
+    The Fortran interface for these is not portable, so we
+    provide a C interface identical to the Fortran interface.
+*/
+
+float magma_cblas_sasum(
+    magma_int_t n,
+    const float *x, magma_int_t incx );
+
+float magma_cblas_snrm2(
+    magma_int_t n,
+    const float *x, magma_int_t incx );
+
+float magma_cblas_sdot(
+    magma_int_t n,
+    const float *x, magma_int_t incx,
+    const float *y, magma_int_t incy );
+
+float magma_cblas_sdot(
+    magma_int_t n,
+    const float *x, magma_int_t incx,
+    const float *y, magma_int_t incy );
+
 
 /*
  * LAPACK functions (alphabetical order)
@@ -345,6 +394,20 @@ void   lapackf77_sgebrd( const magma_int_t *m, const magma_int_t *n,
                          float *tauq,
                          float *taup,
                          float *work, const magma_int_t *lwork,
+                         magma_int_t *info );
+
+void   lapackf77_sgbbrd( const char *vect, const magma_int_t *m,
+                         const magma_int_t *n, const magma_int_t *ncc,
+                         const magma_int_t *kl, const magma_int_t *ku,
+                         float *Ab, const magma_int_t *ldab,
+                         float *d, float *e,
+                         float *Q, const magma_int_t *ldq,
+                         float *PT, const magma_int_t *ldpt,
+                         float *C, const magma_int_t *ldc,
+                         float *work,
+                         #ifdef COMPLEX
+                         float *rwork,
+                         #endif
                          magma_int_t *info );
 
 void   lapackf77_sgeev(  const char *jobvl, const char *jobvr,

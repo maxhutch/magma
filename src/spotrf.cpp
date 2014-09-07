@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
-       @generated from zpotrf.cpp normal z -> s, Fri Jul 18 17:34:15 2014
+       @generated from zpotrf.cpp normal z -> s, Tue Sep  2 12:38:19 2014
 */
 #include "common_magma.h"
 
@@ -27,12 +27,13 @@
     routine.
 
     The factorization has the form
-        A = U**T * U,  if uplo = MagmaUpper, or
-        A = L  * L**T, if uplo = MagmaLower,
+        A = U**H * U,  if uplo = MagmaUpper, or
+        A = L  * L**H, if uplo = MagmaLower,
     where U is an upper triangular matrix and L is lower triangular.
 
     This is the block version of the algorithm, calling Level 3 BLAS.
-    If the current stream is NULL, this version replaces it with user defined
+    
+    If the current stream is NULL, this version replaces it with a new
     stream to overlap computation with communication.
 
     Arguments
@@ -57,7 +58,7 @@
             triangular part of A is not referenced.
     \n
             On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization A = U**T * U or A = L * L**T.
+            factorization A = U**H * U or A = L * L**H.
     \n
             Higher performance is achieved if A is in pinned memory, e.g.
             allocated using magma_malloc_pinned.
@@ -126,18 +127,21 @@ magma_spotrf(magma_uplo_t uplo, magma_int_t n,
     }
 
     /* Define user stream if current stream is NULL */
-    cudaStream_t stream[3], current_stream;
-    magmablasGetKernelStream(&current_stream);
+    magma_queue_t stream[3];
+    
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     magma_queue_create( &stream[0] );
     magma_queue_create( &stream[2] );
 
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_create( &stream[1] );
         magmablasSetKernelStream(stream[1]);
     }
-    else
-        stream[1] = current_stream;
+    else {
+        stream[1] = orig_stream;
+    }
 
     nb = magma_get_spotrf_nb(n);
 
@@ -153,7 +157,7 @@ magma_spotrf(magma_uplo_t uplo, magma_int_t n,
                 jb = min(nb, (n-j));
                 magma_ssetmatrix_async( jb, (n-j), A(j, j), lda, dA(j, j), ldda, stream[1]);
                 
-                magma_ssyrk(MagmaUpper, MagmaTrans, jb, j,
+                magma_ssyrk(MagmaUpper, MagmaConjTrans, jb, j,
                             d_neg_one, dA(0, j), ldda,
                             d_one,     dA(j, j), ldda);
                 magma_queue_sync( stream[1] );
@@ -163,7 +167,7 @@ magma_spotrf(magma_uplo_t uplo, magma_int_t n,
                                         A(j, j),  lda, stream[0] );
                 
                 if ( (j+jb) < n) {
-                    magma_sgemm(MagmaTrans, MagmaNoTrans,
+                    magma_sgemm(MagmaConjTrans, MagmaNoTrans,
                                 jb, (n-j-jb), j,
                                 c_neg_one, dA(0, j   ), ldda,
                                            dA(0, j+jb), ldda,
@@ -186,7 +190,7 @@ magma_spotrf(magma_uplo_t uplo, magma_int_t n,
                 magma_queue_sync( stream[0] );
 
                 if ( (j+jb) < n ) {
-                    magma_strsm(MagmaLeft, MagmaUpper, MagmaTrans, MagmaNonUnit,
+                    magma_strsm(MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
                                 jb, (n-j-jb),
                                 c_one, dA(j, j   ), ldda,
                                        dA(j, j+jb), ldda);
@@ -212,7 +216,7 @@ magma_spotrf(magma_uplo_t uplo, magma_int_t n,
                                         A(j,j),  lda, stream[0] );
 
                 if ( (j+jb) < n) {
-                    magma_sgemm( MagmaNoTrans, MagmaTrans,
+                    magma_sgemm( MagmaNoTrans, MagmaConjTrans,
                                  (n-j-jb), jb, j,
                                  c_neg_one, dA(j+jb, 0), ldda,
                                             dA(j,    0), ldda,
@@ -235,7 +239,7 @@ magma_spotrf(magma_uplo_t uplo, magma_int_t n,
                 magma_queue_sync( stream[0] );
 
                 if ( (j+jb) < n) {
-                    magma_strsm(MagmaRight, MagmaLower, MagmaTrans, MagmaNonUnit,
+                    magma_strsm(MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                                 (n-j-jb), jb,
                                 c_one, dA(j,    j), ldda,
                                        dA(j+jb, j), ldda);
@@ -246,10 +250,10 @@ magma_spotrf(magma_uplo_t uplo, magma_int_t n,
     
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[2] );
-    if (current_stream == NULL) {
+    if (orig_stream == NULL) {
         magma_queue_destroy( stream[1] );
-        magmablasSetKernelStream(NULL);
     }
+    magmablasSetKernelStream( orig_stream );
 
     magma_free( work );
     

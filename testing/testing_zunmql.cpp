@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -48,8 +48,8 @@ int main( int argc, char** argv )
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     // test all combinations of input parameters
-    magma_side_t  side [] = { MagmaLeft,      MagmaRight   };
-    magma_trans_t trans[] = { MagmaConjTrans, MagmaNoTrans };
+    magma_side_t  side [] = { MagmaLeft,       MagmaRight   };
+    magma_trans_t trans[] = { Magma_ConjTrans, MagmaNoTrans };
 
     printf("    M     N     K   side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
     printf("===============================================================================================\n");

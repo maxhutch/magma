@@ -1,11 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlarf.cu normal z -> c, Fri Jul 18 17:34:12 2014
+       @generated from zlarf.cu normal z -> c, Tue Sep  2 12:38:15 2014
+       @author Azzam Haidar
 
 */
 #include "common_magma.h"
@@ -19,60 +20,52 @@
 
 
 //==============================================================================
+//==============================================================================
 
 __global__
-void magma_clarf_kernel( int m, magmaFloatComplex *v, magmaFloatComplex *tau,
-                         magmaFloatComplex *c, int ldc, float *xnorm )
+void magma_clarf_kernel( int m, const magmaFloatComplex *dv, const magmaFloatComplex *dtau,
+                         magmaFloatComplex *dc, int lddc )
 {
-    if ( !MAGMA_C_EQUAL(*tau, MAGMA_C_ZERO) ) {
-        const int i = threadIdx.x;
-        magmaFloatComplex *dc = c + blockIdx.x * ldc;
+    if ( !MAGMA_C_EQUAL(*dtau, MAGMA_C_ZERO) ) {
+        const int tx = threadIdx.x;
+        dc = dc + blockIdx.x * lddc;
 
         __shared__ magmaFloatComplex sum[ BLOCK_SIZE ];
-        magmaFloatComplex lsum;
+        magmaFloatComplex tmp;
 
-        /*  w := v' * C  */
-        lsum = MAGMA_C_ZERO;
-        for( int j = i; j < m; j += BLOCK_SIZE ){
-            if (j==0)
-               lsum += MAGMA_C_MUL( MAGMA_C_ONE, dc[j] );
-            else
-               lsum += MAGMA_C_MUL( MAGMA_C_CNJG( v[j] ), dc[j] );
+        /* perform  w := v' * C  */
+        if (tx==0)
+            tmp = dc[0]; //since V[0] should be one
+        else
+            tmp = MAGMA_C_ZERO;
+        for( int j = tx+1; j < m; j += BLOCK_SIZE ){
+            tmp += MAGMA_C_MUL( MAGMA_C_CNJG( dv[j] ), dc[j] );
         }
-        sum[i] = lsum;
-        magma_sum_reduce< BLOCK_SIZE >( i, sum );
+        sum[tx] = tmp;
+        magma_sum_reduce< BLOCK_SIZE >( tx, sum );
 
         /*  C := C - v * w  */
         __syncthreads();
-        magmaFloatComplex z__1 = - MAGMA_C_CNJG(*tau) * sum[0];
-        for( int j = m-i-1; j>=0 ; j -= BLOCK_SIZE ) {
-             if (j==0)
-                dc[j] += z__1;
-             else
-                dc[j] += z__1 * v[j];
-        }
-        __syncthreads();
+        tmp = - MAGMA_C_CNJG(*dtau) * sum[0];
+        for( int j = m-tx-1; j>0 ; j -= BLOCK_SIZE )
+             dc[j] += tmp * dv[j];
 
-        /* Adjust the rest of the column norms */
-        //if (i==0){
-        //    float temp = MAGMA_C_ABS( dc[0] ) / xnorm[blockIdx.x];
-        //    temp = (temp + 1.) * (1. - temp);
-        //    xnorm[blockIdx.x] = xnorm[blockIdx.x] * sqrt(temp); 
-        //}
+        if(tx==0) dc[0] += tmp;
     }
 }
 
 //==============================================================================
+//==============================================================================
 
 __global__
-void magma_clarf_smkernel( int m, int n, magmaFloatComplex *v, magmaFloatComplex *tau,
-                           magmaFloatComplex *c, int ldc, float *xnorm )
+void magma_clarf_smkernel( int m, int n, magmaFloatComplex *dv, magmaFloatComplex *dtau,
+                           magmaFloatComplex *dc, int lddc )
 {
-    if ( ! MAGMA_C_EQUAL(*tau, MAGMA_C_ZERO) ) {
+    if ( ! MAGMA_C_EQUAL(*dtau, MAGMA_C_ZERO) ) {
         const int i = threadIdx.x, col= threadIdx.y;
 
         for( int k = col; k < n; k += BLOCK_SIZEy ) {
-            magmaFloatComplex *dc = c + k * ldc;
+            dc = dc + k * lddc;
     
             __shared__ magmaFloatComplex sum[ BLOCK_SIZEx ][ BLOCK_SIZEy + 1];
             magmaFloatComplex lsum;
@@ -83,28 +76,20 @@ void magma_clarf_smkernel( int m, int n, magmaFloatComplex *v, magmaFloatComplex
                 if (j==0)
                    lsum += MAGMA_C_MUL( MAGMA_C_ONE, dc[j] );
                 else
-                   lsum += MAGMA_C_MUL( MAGMA_C_CNJG( v[j] ), dc[j] );
+                   lsum += MAGMA_C_MUL( MAGMA_C_CNJG( dv[j] ), dc[j] );
             }
             sum[i][col] = lsum;
             magma_sum_reduce_2d< BLOCK_SIZEx, BLOCK_SIZEy+1 >( i, col, sum );
     
             /*  C := C - v * w  */
             __syncthreads();
-            magmaFloatComplex z__1 = - MAGMA_C_CNJG(*tau) * sum[0][col];
+            magmaFloatComplex z__1 = - MAGMA_C_CNJG(*dtau) * sum[0][col];
             for( int j = m-i-1; j>=0 ; j -= BLOCK_SIZEx ) {
                  if (j==0)
                     dc[j] += z__1;
                  else
-                    dc[j] += z__1 * v[j];
+                    dc[j] += z__1 * dv[j];
             }
-            __syncthreads();
-    
-            /* Adjust the rest of the column norms */
-            // if (i==0){
-            //    float temp = MAGMA_C_ABS( dc[0] ) / xnorm[k];
-            //    temp = (temp + 1.) * (1. - temp);
-            //    xnorm[k] = xnorm[k] * sqrt(temp);
-            // }
         }
     }
 }
@@ -124,15 +109,14 @@ void magma_clarf_smkernel( int m, int n, magmaFloatComplex *v, magmaFloatComplex
     This routine uses only one SM (block).
  */
 extern "C" void
-magma_clarf_sm(int m, int n, magmaFloatComplex *v, magmaFloatComplex *tau,
-               magmaFloatComplex *c, int ldc, float *xnorm)
+magma_clarf_sm(magma_int_t m, magma_int_t n, magmaFloatComplex *dv, magmaFloatComplex *dtau,
+               magmaFloatComplex *dc, magma_int_t lddc)
 {
     dim3  blocks( 1 );
     dim3 threads( BLOCK_SIZEx, BLOCK_SIZEy );
 
-    magma_clarf_smkernel<<< blocks, threads, 0, magma_stream >>>( m, n, v, tau, c, ldc, xnorm);
+    magma_clarf_smkernel<<< blocks, threads, 0, magma_stream >>>( m, n, dv, dtau, dc, lddc );
 }
-
 //==============================================================================
 /*
     Apply a complex elementary reflector H to a complex M-by-N
@@ -144,24 +128,22 @@ magma_clarf_sm(int m, int n, magmaFloatComplex *v, magmaFloatComplex *tau,
     To apply H' (the conjugate transpose of H), supply conjg(tau) 
     instead tau.
 
-    The norms of v(:, 1:n) are given as input in xnorm(1:n). On exit, the norms
-    are adjusted to hold the norms of v(2:m,2:n). This is a difference with the 
-    LAPACK's clarf routine. 
  */
 
 extern "C" magma_int_t
 magma_clarf_gpu(
     magma_int_t m,  magma_int_t n,
-    magmaFloatComplex *v, magmaFloatComplex *tau,
-    magmaFloatComplex *c,  magma_int_t ldc, float *xnorm)
+    const magmaFloatComplex *dv, const magmaFloatComplex *dtau,
+    magmaFloatComplex *dc,  magma_int_t lddc)
 {
-    dim3  blocks( n );
+    dim3 grid( n, 1, 1 );
     dim3 threads( BLOCK_SIZE );
-
-    magma_clarf_kernel<<< blocks, threads, 0, magma_stream >>>( m, v, tau, c, ldc, xnorm);
+    if ( n>0 ){
+        magma_clarf_kernel<<< grid, threads, 0, magma_stream >>>( m, dv, dtau, dc, lddc);
+    }
 
     // The computation can be done on 1 SM with the following routine.
-    // magma_clarf_sm(m, n, v, tau, c, ldc, xnorm);
+    // magma_clarf_sm(m, n, dv, dtau, dc, lddc);
 
     return MAGMA_SUCCESS;
 }

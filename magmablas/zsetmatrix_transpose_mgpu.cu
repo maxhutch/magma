@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Ichitaro Yamazaki
 */
 #include "common_magma.h"
+
 #define PRECISION_z
-#include "commonblas.h"
 
 //
 //    m, n - dimensions in the source (input) matrix.
@@ -56,6 +56,6 @@ magmablas_zsetmatrix_transpose_mgpu(
                                dB(d, id), lddb, 
                                stream[d][id] );
 
-       magmablas_ztranspose_stream( m, ib, dB(d,id), lddb, dAT(d,j_local), ldda, stream[d][id] );
+       magmablas_ztranspose_q( m, ib, dB(d,id), lddb, dAT(d,j_local), ldda, stream[d][id] );
     }
 }

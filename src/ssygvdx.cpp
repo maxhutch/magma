@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dsygvdx.cpp normal d -> s, Fri Jul 18 17:34:19 2014
+       @generated from dsygvdx.cpp normal d -> s, Tue Sep  2 12:38:23 2014
 
 */
 #include "common_magma.h"
@@ -63,7 +63,7 @@
             The order of the matrices A and B.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX_16 array, dimension (LDA, N)
+    A       REAL array, dimension (LDA, N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
@@ -84,7 +84,7 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[in,out]
-    B       COMPLEX_16 array, dimension (LDB, N)
+    B       REAL array, dimension (LDB, N)
             On entry, the symmetric matrix B.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of B contains the
             upper triangular part of the matrix B.  If UPLO = MagmaLower,
@@ -125,8 +125,8 @@
             If INFO = 0, the eigenvalues in ascending order.
 
     @param[out]
-    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+    work    (workspace) REAL array, dimension (MAX(1,LWORK))
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[out]
     work    (workspace) REAL array, dimension (MAX(1,LWORK))
@@ -205,8 +205,7 @@ magma_ssygvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
 
     float d_one = MAGMA_S_ONE;
 
-    float *dA;
-    float *dB;
+    float *dA=NULL, *dB=NULL;
     magma_int_t ldda = n;
     magma_int_t lddb = n;
 
@@ -284,15 +283,15 @@ magma_ssygvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
 
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
     else if (lquery) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
 
     /* Quick return if possible */
     if (n == 0) {
-        return 0;
+        return *info;
     }
     /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
@@ -309,9 +308,10 @@ magma_ssygvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
         return *info;
     }
 
-    // TODO fix memory leak
     if (MAGMA_SUCCESS != magma_smalloc( &dA, n*ldda ) ||
         MAGMA_SUCCESS != magma_smalloc( &dB, n*lddb )) {
+        magma_free( dA );
+        magma_free( dB );
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -419,5 +419,5 @@ magma_ssygvdx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_up
         magma_free( dB );
     }
 
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_ssygvd */

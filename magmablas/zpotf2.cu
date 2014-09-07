@@ -1,16 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        @precisions normal z -> s d c
 */
-
-#include <stdio.h>
 #include "common_magma.h"
-#include "magmablas.h"
 
 #define PRECISION_z
 
@@ -125,7 +122,7 @@ magma_zpotf2_gpu(
                 magma_zgemv( MagmaTrans, j, n-j-1,
                              alpha, A(0, j+1), lda,
                                     A(0, j),   1,
-                             beta,  A(j, j+1), lda); // cublas is better in upper case
+                             beta,  A(j, j+1), lda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 zlacgv(j, A(0, j), 1);
@@ -141,10 +138,10 @@ magma_zpotf2_gpu(
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 zlacgv(j, A(j, 0), lda);
                 #endif
-                magmablas_zgemv( MagmaNoTrans, n-j-1, j,
-                                 alpha, A(j+1, 0), lda,
-                                        A(j,0),    lda,
-                                 beta,  A(j+1, j), 1 );// magmablas is better in lower case
+                magma_zgemv( MagmaNoTrans, n-j-1, j,
+                             alpha, A(j+1, 0), lda,
+                                    A(j,0),    lda,
+                             beta,  A(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 zlacgv(j, A(j, 0), lda);
@@ -213,8 +210,8 @@ void zpotf2_zdotc(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
 
 */
     if (n > zdotc_max_bs) {
-        printf("n = %d > %d is not supported in zpotf2_zdotc\n", (int) n, (int) zdotc_max_bs);
-        exit(1);
+        fprintf( stderr, "n = %d > %d is not supported in zpotf2_zdotc\n", (int) n, (int) zdotc_max_bs);
+        return;
     }
     int threadSize;
 

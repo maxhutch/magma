@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__zgeqlf__comp.html','');}
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -192,7 +195,7 @@ Functions</h2></td></tr>
  Higher performance is achieved if A is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>COMPLEX_16 array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX_16 array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK. <br />
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX_16 array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
  Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= max(1,N,2*NB^2). For optimum performance LWORK &gt;= max(N*NB, 2*NB^2) where NB can be obtained through magma_get_zgeqlf_nb(M). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
@@ -306,7 +309,7 @@ Functions</h2></td></tr>
 <p>ZUNMQL overwrites the general complex M-by-N matrix C with. </p>
 <pre class="fragment">                          SIDE = MagmaLeft   SIDE = MagmaRight
 TRANS = MagmaNoTrans:     Q * C              C * Q
-TRANS = MagmaConjTrans:   Q**H * C           C * Q**H
+TRANS = Magma_ConjTrans:  Q**H * C           C * Q**H
 </pre><p>where Q is a complex unitary matrix defined as the product of k elementary reflectors </p><pre class="fragment">  Q = H(k) . . . H(2) H(1)
 </pre><p>as returned by ZGEQLF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -318,7 +321,7 @@ TRANS = MagmaConjTrans:   Q**H * C           C * Q**H
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaConjTrans: Conjugate transpose, apply Q**H.</li>
+<li>= Magma_ConjTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -436,7 +439,7 @@ TRANS = MagmaConjTrans:   Q**H * C           C * Q**H
 <p>ZUNMQL overwrites the general complex M-by-N matrix C with. </p>
 <pre class="fragment">                           SIDE = MagmaLeft   SIDE = MagmaRight
 TRANS = MagmaNoTrans:      Q * C              C * Q
-TRANS = MagmaConjTrans:    Q**H * C           C * Q**H
+TRANS = Magma_ConjTrans:   Q**H * C           C * Q**H
 </pre><p>where Q is a complex unitary matrix defined as the product of k elementary reflectors </p><pre class="fragment">  Q = H(k) . . . H(2) H(1)
 </pre><p>as returned by ZGEQLF. Q is of order M if SIDE = MagmaLeft and of order N if SIDE = MagmaRight.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -448,7 +451,7 @@ TRANS = MagmaConjTrans:    Q**H * C           C * Q**H
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaConjTrans: Conjugate transpose, apply Q**H.</li>
+<li>= Magma_ConjTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -477,7 +480,7 @@ TRANS = MagmaConjTrans:    Q**H * C           C * Q**H
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:42 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__ssyev__comp.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -139,13 +142,13 @@ Functions</h2></td></tr>
 <tr class="memdesc:gad4b079024d13b85fe62cc12e27e26988"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYGST_M reduces a real symmetric-definite generalized eigenproblem to standard form.  <a href="#gad4b079024d13b85fe62cc12e27e26988">More...</a><br /></td></tr>
 <tr class="separator:gad4b079024d13b85fe62cc12e27e26988"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0927a81947bfad9598baa1725b319696"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#ga0927a81947bfad9598baa1725b319696">magma_ssytrd</a> (magma_uplo_t uplo, magma_int_t n, float *A, magma_int_t lda, float *d, float *e, float *tau, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga0927a81947bfad9598baa1725b319696"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**T * A * Q = T.  <a href="#ga0927a81947bfad9598baa1725b319696">More...</a><br /></td></tr>
+<tr class="memdesc:ga0927a81947bfad9598baa1725b319696"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T.  <a href="#ga0927a81947bfad9598baa1725b319696">More...</a><br /></td></tr>
 <tr class="separator:ga0927a81947bfad9598baa1725b319696"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga907a020b19c4522fe4ffdb8543133858"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#ga907a020b19c4522fe4ffdb8543133858">magma_ssytrd2_gpu</a> (magma_uplo_t uplo, magma_int_t n, float *dA, magma_int_t ldda, float *d, float *e, float *tau, float *wA, magma_int_t ldwa, float *work, magma_int_t lwork, float *dwork, magma_int_t ldwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga907a020b19c4522fe4ffdb8543133858"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD2_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**T * A * Q = T.  <a href="#ga907a020b19c4522fe4ffdb8543133858">More...</a><br /></td></tr>
+<tr class="memdesc:ga907a020b19c4522fe4ffdb8543133858"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD2_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T.  <a href="#ga907a020b19c4522fe4ffdb8543133858">More...</a><br /></td></tr>
 <tr class="separator:ga907a020b19c4522fe4ffdb8543133858"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa00519c30788c3e894f421d89199878d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#gaa00519c30788c3e894f421d89199878d">magma_ssytrd_gpu</a> (magma_uplo_t uplo, magma_int_t n, float *dA, magma_int_t ldda, float *d, float *e, float *tau, float *wA, magma_int_t ldwa, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:gaa00519c30788c3e894f421d89199878d"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**T * A * Q = T.  <a href="#gaa00519c30788c3e894f421d89199878d">More...</a><br /></td></tr>
+<tr class="memdesc:gaa00519c30788c3e894f421d89199878d"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T.  <a href="#gaa00519c30788c3e894f421d89199878d">More...</a><br /></td></tr>
 <tr class="separator:gaa00519c30788c3e894f421d89199878d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5b4409a1a450be64bd4bca56532cc1a3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#ga5b4409a1a450be64bd4bca56532cc1a3">magma_ssytrd_mgpu</a> (magma_int_t num_gpus, magma_int_t num_streams, magma_uplo_t uplo, magma_int_t n, float *A, magma_int_t lda, float *d, float *e, float *tau, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga5b4409a1a450be64bd4bca56532cc1a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T.  <a href="#ga5b4409a1a450be64bd4bca56532cc1a3">More...</a><br /></td></tr>
@@ -239,7 +242,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>REAL array, dimension (LDA,N) On entry, the vectors which define the elementary reflectors, as returned by SSYTRD. On exit, the N-by-N unitary matrix Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= N.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>REAL array, dimension (N-1) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by SSYTRD.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (LWORK) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (LWORK) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N-1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dT</td><td>REAL array on the GPU device. DT contains the T matrices used in blocking the elementary reflectors H(i) as returned by magma_ssytrd.</td></tr>
@@ -346,15 +349,15 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SORMTR overwrites the general real M-by-N matrix C with. </p>
-<p>SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q * C C * Q TRANS = MagmaTrans: Q**T * C C * Q**T</p>
+<p>SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q * C C * Q TRANS = MagmaTrans: Q**H * C C * Q**H</p>
 <p>where Q is a real unitary matrix of order nq, with nq = m if SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of nq-1 elementary reflectors, as returned by SSYTRD:</p>
 <p>if UPLO = MagmaUpper, Q = H(nq-1) . . . H(2) H(1);</p>
 <p>if UPLO = MagmaLower, Q = H(1) H(2) . . . H(nq-1).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply Q or Q**T from the Left;</li>
-<li>= MagmaRight: apply Q or Q**T from the Right.</li>
+<li>= MagmaLeft: apply Q or Q**H from the Left;</li>
+<li>= MagmaRight: apply Q or Q**H from the Right.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -364,7 +367,7 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Transpose, apply Q**T.</li>
+<li>= MagmaTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -372,9 +375,9 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>REAL array, dimension (LDA,M) if SIDE = MagmaLeft (LDA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M) if SIDE = MagmaLeft; LDA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>REAL array, dimension (M-1) if SIDE = MagmaLeft (N-1) if SIDE = MagmaRight TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by SSYTRD.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>REAL array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**T * C or C * Q**T or C*Q.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>REAL array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldc</td><td>INTEGER The leading dimension of the array C. LDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance LWORK &gt;= N*NB if SIDE = MagmaLeft, and LWORK &gt;= M*NB if SIDE = MagmaRight, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -479,15 +482,15 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SORMTR overwrites the general real M-by-N matrix C with. </p>
-<p>SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q * C C * Q TRANS = MagmaTrans: Q**T * C C * Q**T</p>
+<p>SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q * C C * Q TRANS = MagmaTrans: Q**H * C C * Q**H</p>
 <p>where Q is a real unitary matrix of order nq, with nq = m if SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of nq-1 elementary reflectors, as returned by SSYTRD:</p>
 <p>if UPLO = MagmaUpper, Q = H(nq-1) . . . H(2) H(1);</p>
 <p>if UPLO = MagmaLower, Q = H(1) H(2) . . . H(nq-1).</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply Q or Q**T from the Left;</li>
-<li>= MagmaRight: apply Q or Q**T from the Right.</li>
+<li>= MagmaLeft: apply Q or Q**H from the Left;</li>
+<li>= MagmaRight: apply Q or Q**H from the Right.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -497,7 +500,7 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Transpose, apply Q**T.</li>
+<li>= MagmaTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -505,7 +508,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,M) if SIDE = MagmaLeft (LDDA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU. On output the diagonal, the subdiagonal and the upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper) are destroyed.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array DA. LDDA &gt;= max(1,M) if SIDE = MagmaLeft; LDDA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>REAL array, dimension (M-1) if SIDE = MagmaLeft (N-1) if SIDE = MagmaRight TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by SSYTRD.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>REAL array, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by (Q*C) or (Q**T * C) or (C * Q**T) or (C*Q).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>REAL array, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array C. LDDC &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>(workspace) REAL array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. LDWA &gt;= max(1,M) if SIDE = MagmaLeft; LDWA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
@@ -617,7 +620,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SORMTR overwrites the general real M-by-N matrix C with. </p>
-<p>SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q * C C * Q TRANS = MagmaTrans: Q**T * C C * Q**T</p>
+<p>SIDE = MagmaLeft SIDE = MagmaRight TRANS = MagmaNoTrans: Q * C C * Q TRANS = MagmaTrans: Q**H * C C * Q**H</p>
 <p>where Q is a real unitary matrix of order nq, with nq = m if SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of nq-1 elementary reflectors, as returned by SSYTRD:</p>
 <p>if UPLO = MagmaUpper, Q = H(nq-1) . . . H(2) H(1);</p>
 <p>if UPLO = MagmaLower, Q = H(1) H(2) . . . H(nq-1).</p>
@@ -625,8 +628,8 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">nrgpu</td><td>INTEGER Number of GPUs to use.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply Q or Q**T from the Left;</li>
-<li>= MagmaRight: apply Q or Q**T from the Right.</li>
+<li>= MagmaLeft: apply Q or Q**H from the Left;</li>
+<li>= MagmaRight: apply Q or Q**H from the Right.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -636,7 +639,7 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
 <li>= MagmaNoTrans: No transpose, apply Q;</li>
-<li>= MagmaTrans: Transpose, apply Q**T.</li>
+<li>= MagmaTrans: Conjugate transpose, apply Q**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
@@ -644,9 +647,9 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>REAL array, dimension (LDA,M) if SIDE = MagmaLeft (LDA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M) if SIDE = MagmaLeft; LDA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>REAL array, dimension (M-1) if SIDE = MagmaLeft (N-1) if SIDE = MagmaRight TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by SSYTRD.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>REAL array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**T*C or C*Q**T or C*Q.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">C</td><td>REAL array, dimension (LDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by Q*C or Q**H*C or C*Q**H or C*Q.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldc</td><td>INTEGER The leading dimension of the array C. LDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If SIDE = MagmaLeft, LWORK &gt;= max(1,N); if SIDE = MagmaRight, LWORK &gt;= max(1,M). For optimum performance LWORK &gt;= N*NB if SIDE = MagmaLeft, and LWORK &gt;= M*NB if SIDE = MagmaRight, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -787,10 +790,10 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">e</td><td>REAL array, dimension (N-1) On entry, the subdiagonal elements of the tridiagonal matrix. On exit, E has been destroyed.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">Z</td><td>REAL array, dimension (LDZ,N) On exit, if INFO = 0, Z contains the orthonormal eigenvectors of the symmetric tridiagonal matrix.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldz</td><td>INTEGER The leading dimension of the array Z. LDZ &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (LWORK) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (LWORK) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If N &gt; 1 then LWORK &gt;= ( 1 + 4*N + N**2 ). Note that if N is less than or equal to the minimum divide size, usually 25, then LWORK need only be max(1,2*(N-1)). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">iwork</td><td>(workspace) INTEGER array, dimension (MAX(1,LIWORK)) On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">iwork</td><td>(workspace) INTEGER array, dimension (MAX(1,LIWORK)) On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">liwork</td><td>INTEGER The dimension of the array IWORK. LIWORK &gt;= ( 3 + 5*N ). Note that if N is less than or equal to the minimum divide size, usually 25, then LIWORK need only be 1. <br />
  If LIWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the IWORK array, returns this value as the first entry of the IWORK array, and no error message related to LIWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) REAL array, dimension (3*N*N/2+3*N)</td></tr>
@@ -936,10 +939,10 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">e</td><td>REAL array, dimension (N-1) On entry, the subdiagonal elements of the tridiagonal matrix. On exit, E has been destroyed.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">Z</td><td>REAL array, dimension (LDZ,N) On exit, if INFO = 0, Z contains the orthonormal eigenvectors of the symmetric tridiagonal matrix.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldz</td><td>INTEGER The leading dimension of the array Z. LDZ &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (LWORK) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (LWORK) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If N &gt; 1 then LWORK &gt;= ( 1 + 4*N + N**2 ). Note that if N is less than or equal to the minimum divide size, usually 25, then LWORK need only be max(1,2*(N-1)). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">iwork</td><td>(workspace) INTEGER array, dimension (MAX(1,LIWORK)) On exit, if INFO = 0, IWORK(1) returns the optimal LIWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">iwork</td><td>(workspace) INTEGER array, dimension (MAX(1,LIWORK)) On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">liwork</td><td>INTEGER The dimension of the array IWORK. LIWORK &gt;= ( 3 + 5*N ). Note that if N is less than or equal to the minimum divide size, usually 25, then LIWORK need only be 1. <br />
  If LIWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the IWORK array, returns this value as the first entry of the IWORK array, and no error message related to LIWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -1017,15 +1020,15 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SSYGST reduces a real symmetric-definite generalized eigenproblem to standard form. </p>
-<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T)</p>
-<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**T or L**T*A*L.</p>
-<p>B must have been previously factorized as U**T*U or L*L**T by SPOTRF.</p>
+<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)</p>
+<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.</p>
+<p>B must have been previously factorized as U**H*U or L*L**H by SPOTRF.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T); = 2 or 3: compute U*A*U**T or L**T*A*L.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H); = 2 or 3: compute U*A*U**H or L**H*A*L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**T*U;</li>
-<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**T.</li>
+<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**H*U;</li>
+<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrices A and B. N &gt;= 0.</td></tr>
@@ -1106,15 +1109,15 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SSYGST_GPU reduces a real symmetric-definite generalized eigenproblem to standard form. </p>
-<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T)</p>
-<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**T or L**T*A*L.</p>
-<p>B must have been previously factorized as U**T*U or L*L**T by SPOTRF.</p>
+<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)</p>
+<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.</p>
+<p>B must have been previously factorized as U**H*U or L*L**H by SPOTRF.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T); = 2 or 3: compute U*A*U**T or L**T*A*L.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H); = 2 or 3: compute U*A*U**H or L**H*A*L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**T*U;</li>
-<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**T.</li>
+<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**H*U;</li>
+<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrices A and B. N &gt;= 0.</td></tr>
@@ -1201,16 +1204,16 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SSYGST_M reduces a real symmetric-definite generalized eigenproblem to standard form. </p>
-<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T)</p>
-<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**T or L**T*A*L.</p>
-<p>B must have been previously factorized as U**T*U or L*L**T by SPOTRF.</p>
+<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)</p>
+<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.</p>
+<p>B must have been previously factorized as U**H*U or L*L**H by SPOTRF.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">nrgpu</td><td>INTEGER Number of GPUs to use.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T); = 2 or 3: compute U*A*U**T or L**T*A*L.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H); = 2 or 3: compute U*A*U**H or L**H*A*L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**T*U;</li>
-<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**T.</li>
+<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**H*U;</li>
+<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrices A and B. N &gt;= 0.</td></tr>
@@ -1302,7 +1305,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>SSYTRD reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**T * A * Q = T. </p>
+<p>SSYTRD reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -1316,7 +1319,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">d</td><td>REAL array, dimension (N) The diagonal elements of the tridiagonal matrix T: D(i) = A(i,i).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">e</td><td>REAL array, dimension (N-1) The off-diagonal elements of the tridiagonal matrix T: E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB is the optimal blocksize given by magma_get_ssytrd_nb(). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -1441,7 +1444,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>SSYTRD2_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**T * A * Q = T. </p>
+<p>SSYTRD2_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T. </p>
 <p>This version passes a workspace that is used in an optimized GPU matrix-vector product.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1458,7 +1461,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">wA</td><td>(workspace) REAL array, dimension (LDA,N) On exit the diagonal, the upper part (UPLO=MagmaUpper) or the lower part (UPLO=MagmaLower) are copies of DA</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. LDWA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dwork</td><td>(workspace) REAL array on the GPU, dim (MAX(1,LDWORK))</td></tr>
@@ -1572,7 +1575,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>SSYTRD_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**T * A * Q = T. </p>
+<p>SSYTRD_GPU reduces a real symmetric matrix A to real symmetric tridiagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -1588,7 +1591,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">wA</td><td>(workspace) REAL array, dimension (LDA,N) On exit the diagonal, the upper part (UPLO=MagmaUpper) or the lower part (UPLO=MagmaLower) are copies of DA</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. LDWA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB is the optimal blocksize given by magma_get_ssytrd_nb(). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -1717,7 +1720,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">d</td><td>REAL array, dimension (N) The diagonal elements of the tridiagonal matrix T: D(i) = A(i,i).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">e</td><td>REAL array, dimension (N-1) The off-diagonal elements of the tridiagonal matrix T: E(i) = A(i,i+1) if UPLO = MagmaUpper, E(i) = A(i+1,i) if UPLO = MagmaLower.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK(1) returns the optimal LWORK.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -1751,7 +1754,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:43 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:48 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

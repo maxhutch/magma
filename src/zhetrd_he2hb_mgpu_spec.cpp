@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -14,7 +14,6 @@
 #include "common_magma.h"
 #include "magma_bulge.h"
 #include "trace.h"
-#include <assert.h>
 
 /**
     Purpose
@@ -67,7 +66,7 @@
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -201,9 +200,14 @@ magma_zhetrd_he2hb_mgpu_spec( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
         return *info;
     }
 
-    magma_int_t threads = magma_get_lapack_numthreads();
-    magma_int_t mklth   = min(threads,16);
-    magma_set_lapack_numthreads(mklth);
+    magma_device_t orig_dev;
+    magma_getdevice( &orig_dev );
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
+
+    // limit to 16 threads
+    magma_int_t orig_threads = magma_get_lapack_numthreads();
+    magma_set_lapack_numthreads( min(orig_threads,16) );
 
     magma_int_t gnode[MagmaMaxGPUs][MagmaMaxGPUs+2];
     magma_int_t nbcmplx=0;
@@ -211,12 +215,6 @@ magma_zhetrd_he2hb_mgpu_spec( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     #ifdef ENABLE_DEBUG
     printf(" Initializing communication pattern.... GPU-ncmplx %d\n\n", nbcmplx);
     #endif
-
-
-    magma_device_t cdev;
-    magma_getdevice( &cdev );
-    magma_queue_t cstream;
-    magmablasGetKernelStream(&cstream);
 
     magmaDoubleComplex *dspace[MagmaMaxGPUs];
     magmaDoubleComplex *dwork[MagmaMaxGPUs], *dworkbis[MagmaMaxGPUs];
@@ -293,14 +291,6 @@ magma_zhetrd_he2hb_mgpu_spec( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
                                         dA(idev, i, di+1), ldda,
                                         A ( i, i), lda, streams[ idev ][ nstream-1 ] );
               
-                /*
-                magma_device_sync();
-                cudaMemcpy2DAsync(A(i,i), lda*sizeof(magmaDoubleComplex),
-                                 dA(idev,i,di+1), ldda*sizeof(magmaDoubleComplex),
-                                 (pm+pn)*sizeof(magmaDoubleComplex), pn,
-                                 cudaMemcpyDeviceToHost, streams[ idev ][ nstream-1 ]);
-                */
-
                 //magma_setdevice( 0 );
                 //printf("updating zher2k on A(%d,%d) of size %d %d \n",indi_old+pn_old-1,indi_old+pn_old-1,pm_old-pn_old,pn_old);
                 // compute ZHER2K_MGPU
@@ -510,16 +500,16 @@ magma_zhetrd_he2hb_mgpu_spec( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
         magma_free( dspace[dev]);
         magma_free_pinned(workngpu[dev]);
         for( magma_int_t e = 0; e < nbevents; ++e ) {
-            cudaEventDestroy(redevents[dev][e]);
+            magma_event_destroy( redevents[dev][e] );
         }
     }
     magma_free_pinned(workngpu[ngpu]);
     magma_free_cpu(worktest);
 
-    magma_setdevice( cdev );
-    magmablasSetKernelStream( cstream );
+    magma_setdevice( orig_dev );
+    magmablasSetKernelStream( orig_stream );
+    magma_set_lapack_numthreads( orig_threads );
 
     work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
-    magma_set_lapack_numthreads(threads);
     return *info;
 } /* magma_zhetrd_he2hb_mgpu_spec */

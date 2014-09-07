@@ -1,48 +1,79 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlag2c.cu mixed zc -> ds, Fri Jul 18 17:34:11 2014
+       @generated from zlag2c.cu mixed zc -> ds, Tue Sep  2 12:38:15 2014
        @author Mark Gates
 */
 #include "common_magma.h"
 
 #define PRECISION_d
-#define blksize 64
+
+#define BLK_X 64
+#define BLK_Y 32
 
 // TODO get rid of global variable!
-static __device__ int flag = 0; 
+static __device__ int flag = 0;
 
-__global__ void 
-dlag2s_kernel( int m, int n, 
-               const double *A, int lda, 
-               float *SA,       int ldsa, 
-               double rmax ) 
+
+/*
+    Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
+    Each block has BLK_X threads.
+    Each thread loops across one row, updating BLK_Y entries.
+    
+    Code similar to dlat2s and zlaset.
+*/
+__global__
+void dlag2s_kernel(
+    int m, int n,
+    const double *A, int lda,
+    float *SA,       int ldsa,
+    double rmax )
 {
     double tmp;
     double neg_rmax = - rmax;
     
-    int i = blockIdx.x*blksize + threadIdx.x;
-    if ( i < m ) {
-        A  += i;
-        SA += i; 
-        const double *Aend = A + lda*n;
-        while( A < Aend ) {
-            tmp = *A;
-            if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
+    int ind = blockIdx.x*BLK_X + threadIdx.x;
+    int iby = blockIdx.y*BLK_Y;
+    /* check if full block-column */
+    bool full = (iby + BLK_Y <= n);
+    /* do only rows inside matrix */
+    if ( ind < m ) {
+        A  += ind + iby*lda;
+        SA += ind + iby*ldsa;
+        if ( full ) {
+            // full block-column
+            #pragma unroll
+            for( int j=0; j < BLK_Y; ++j ) {
+                tmp = A[j*lda];
+                if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
 #if defined(PRECISION_z) || defined(PRECISION_c)
-                || ((tmp) < neg_rmax) || ((tmp) > rmax) 
+                    || ((tmp) < neg_rmax) || ((tmp) > rmax)
 #endif
-                )
-            {
-                flag = 1; 
+                    )
+                {
+                    flag = 1;
+                }
+                SA[j*ldsa] = (float)( tmp );
             }
-            *SA = (float)( tmp );
-            A  += lda;
-            SA += ldsa;
+        }
+        else {
+            // partial block-column
+            for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
+                tmp = A[j*lda];
+                if (   ((tmp) < neg_rmax) || ((tmp) > rmax)
+#if defined(PRECISION_z) || defined(PRECISION_c)
+                    || ((tmp) < neg_rmax) || ((tmp) > rmax)
+#endif
+                    )
+                {
+                    flag = 1;
+                }
+                SA[j*ldsa] = (float)( tmp );
+            }
         }
     }
 }
@@ -51,12 +82,14 @@ dlag2s_kernel( int m, int n,
 /**
     Purpose
     -------
-    DLAG2S converts a double-real matrix, A,
-                 to a single-real matrix, SA.
+    DLAG2S_STREAM converts a double-real matrix, A,
+                        to a single-real matrix, SA.
     
     RMAX is the overflow for the single-real arithmetic.
     DLAG2S checks that all the entries of A are between -RMAX and
     RMAX. If not, the conversion is aborted and a flag is raised.
+    
+    This is the same as DLAG2S, but adds queue argument.
         
     Arguments
     ---------
@@ -78,8 +111,8 @@ dlag2s_kernel( int m, int n,
     
     @param[out]
     SA      SINGLE PRECISION array, dimension (LDSA,n)
-            On exit, if INFO=0, the m-by-n coefficient matrix SA; if
-            INFO>0, the content of SA is unspecified.
+            On exit, if INFO=0, the m-by-n coefficient matrix SA;
+            if INFO > 0, the content of SA is unspecified.
     
     @param[in]
     ldsa    INTEGER
@@ -91,15 +124,21 @@ dlag2s_kernel( int m, int n,
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
       -     = 1:  an entry of the matrix A is greater than the SINGLE PRECISION
                   overflow threshold, in this case, the content
-                  of SA in exit is unspecified.
+                  of SA on exit is unspecified.
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_daux2
     ********************************************************************/
-extern "C" void 
-magmablas_dlag2s( magma_int_t m, magma_int_t n, 
-                  const double *A, magma_int_t lda, 
-                  float *SA,       magma_int_t ldsa, 
-                  magma_int_t *info ) 
+extern "C" void
+magmablas_dlag2s_q(
+    magma_int_t m, magma_int_t n,
+    const double *A, magma_int_t lda,
+    float *SA,       magma_int_t ldsa,
+    magma_int_t *info,
+    magma_queue_t queue )
 {
     *info = 0;
     if ( m < 0 )
@@ -123,9 +162,26 @@ magmablas_dlag2s( magma_int_t m, magma_int_t n,
     
     double rmax = (double)lapackf77_slamch("O");
 
-    dim3 threads( blksize );
-    dim3 grid( (m+blksize-1)/blksize );
+    dim3 threads( BLK_X );
+    dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    dlag2s_kernel<<< grid, threads, 0, magma_stream >>>( m, n, A, lda, SA, ldsa, rmax ); 
+    
+    dlag2s_kernel<<< grid, threads, 0, queue >>>( m, n, A, lda, SA, ldsa, rmax );
+    
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
+}
+
+
+/**
+    @see magmablas_dlag2s_q
+    @ingroup magma_daux2
+    ********************************************************************/
+extern "C" void
+magmablas_dlag2s(
+    magma_int_t m, magma_int_t n,
+    const double *A, magma_int_t lda,
+    float *SA,       magma_int_t ldsa,
+    magma_int_t *info )
+{
+    magmablas_dlag2s_q( m, n, A, lda, SA, ldsa, info, magma_stream );
 }

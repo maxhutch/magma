@@ -1,18 +1,48 @@
 var NAVTREE =
 [
   [ "MAGMA", "index.html", [
-    [ "Modules", "modules.html", "modules" ]
+    [ "MAGMA User Guide", "index.html", null ],
+    [ "Collaborators", "authors.html", null ],
+    [ "Installing MAGMA", "installing.html", null ],
+    [ "Running tests", "testing.html", null ],
+    [ "Example", "example.html", null ],
+    [ "Routine names", "routines.html", [
+      [ "Driver routines  ", "routines.html#driver", null ],
+      [ "Computational routines  ", "routines.html#comp", null ],
+      [ "BLAS routines  ", "routines.html#blas", null ],
+      [ "Auxiliary routines  ", "routines.html#aux", null ],
+      [ "Utility routines  ", "routines.html#util", null ]
+    ] ],
+    [ "Data types & complex numbers", "types.html", null ],
+    [ "Conventions for variables", "variables.html", null ],
+    [ "Constants", "constants.html", null ],
+    [ "Errors", "errors.html", null ],
+    [ "Methodology", "methodology.html", null ],
+    [ "Modules", "modules.html", "modules" ],
+    [ "Classes", null, [
+      [ "Class List", "annotated.html", "annotated" ],
+      [ "Class Index", "classes.html", null ],
+      [ "Class Members", "functions.html", [
+        [ "All", "functions.html", null ],
+        [ "Functions", "functions_func.html", null ],
+        [ "Related Functions", "functions_rela.html", null ]
+      ] ]
+    ] ],
+    [ "Files", null, [
+      [ "File List", "files.html", "files" ]
+    ] ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"group___b_l_a_s.html",
-"group__magma__dblas3.html",
-"group__magma__sblas3.html#gab9374a80a778eb2259ae66d46a3e1863",
-"group__magma__zgeqrf__comp.html#ga033366cf39f90014b851cb7e875ac2cc",
-"group__magmasparse__csypr.html",
-"group__magmasparse__sgesv.html#ga8f06bd30449a93564675ad0bf7da71f7"
+"annotated.html",
+"group__magma__cheev__driver.html#ga901f53f7f2bbe3e15fa9a254f3a533dd",
+"group__magma__dposv__driver.html",
+"group__magma__sgesv__comp.html#gae9a9c2cbdb42500efe4afe86b1ad906b",
+"group__magma__zgeqrf__comp.html#ga4587cb2eaa187ca56071db7b03d059b3",
+"group__magmasparse__daux.html#ga1b0e3fe9970014d8db89b822c1457d83",
+"group__magmasparse__zaux.html#ga5abc314f842eb3d24b2305c51681811c"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Mark Gates
 
@@ -20,7 +20,7 @@
     @verbatim
                              SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:    Q * C                C * Q
-    TRANS = MagmaConjTrans:  Q**H * C             C * Q**H
+    TRANS = Magma_ConjTrans: Q**H * C             C * Q**H
     @endverbatim
 
     where Q is a complexunitary matrix defined as the product of k
@@ -41,7 +41,7 @@
     @param[in]
     trans   magma_trans_t
       -     = MagmaNoTrans:    No transpose, apply Q;
-      -     = MagmaConjTrans:  Conjugate transpose, apply Q**H.
+      -     = Magma_ConjTrans: Conjugate transpose, apply Q**H.
 
     @param[in]
     m       INTEGER
@@ -147,7 +147,7 @@ magma_zunmlq(
     /* Test the input arguments */
     if (! left && side != MagmaRight) {
         *info = -1;
-    } else if (! notran && trans != MagmaConjTrans) {
+    } else if (! notran && trans != Magma_ConjTrans) {
         *info = -2;
     } else if (m < 0) {
         *info = -3;
@@ -246,7 +246,7 @@ magma_zunmlq(
         }
 
         if (notran) {
-            transt = MagmaConjTrans;
+            transt = Magma_ConjTrans;
         } else {
             transt = MagmaNoTrans;
         }

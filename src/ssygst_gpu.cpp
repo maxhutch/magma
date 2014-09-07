@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegst_gpu.cpp normal z -> s, Fri Jul 18 17:34:19 2014
+       @generated from zhegst_gpu.cpp normal z -> s, Tue Sep  2 12:38:23 2014
 */
 
 #include "common_magma.h"
@@ -20,26 +20,26 @@
     eigenproblem to standard form.
     
     If ITYPE = 1, the problem is A*x = lambda*B*x,
-    and A is overwritten by inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T)
+    and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)
     
     If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or
-    B*A*x = lambda*x, and A is overwritten by U*A*U**T or L**T*A*L.
+    B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.
     
-    B must have been previously factorized as U**T*U or L*L**T by SPOTRF.
+    B must have been previously factorized as U**H*U or L*L**H by SPOTRF.
     
     Arguments
     ---------
     @param[in]
     itype   INTEGER
-            = 1: compute inv(U**T)*A*inv(U) or inv(L)*A*inv(L**T);
-            = 2 or 3: compute U*A*U**T or L**T*A*L.
+            = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H);
+            = 2 or 3: compute U*A*U**H or L**H*A*L.
     
     @param[in]
     uplo    magma_uplo_t
       -     = MagmaUpper:  Upper triangle of A is stored and B is factored as
-                    U**T*U;
+                    U**H*U;
       -     = MagmaLower:  Lower triangle of A is stored and B is factored as
-                    L*L**T.
+                    L*L**H.
     
     @param[in]
     n       INTEGER
@@ -173,7 +173,7 @@ magma_ssygst_gpu(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
                                             dB(k+kb, k+kb), lddb,
                                             B(0, 0),        nb, stream[2] );
                     
-                    magma_strsm(MagmaLeft, MagmaUpper, MagmaTrans, MagmaNonUnit,
+                    magma_strsm(MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
                                 kb, n-k-kb,
                                 c_one, dB(k,k), lddb,
                                 dA(k,k+kb), ldda);
@@ -186,7 +186,7 @@ magma_ssygst_gpu(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
                                 dB(k,k+kb), lddb,
                                 c_one, dA(k, k+kb), ldda);
                     
-                    magma_ssyr2k(MagmaUpper, MagmaTrans,
+                    magma_ssyr2k(MagmaUpper, MagmaConjTrans,
                                  n-k-kb, kb,
                                  c_neg_one, dA(k,k+kb), ldda,
                                  dB(k,k+kb), lddb,
@@ -243,7 +243,7 @@ magma_ssygst_gpu(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
                                             dB(k+kb, k+kb), lddb,
                                             B(0, 0),        nb, stream[2] );
                     
-                    magma_strsm(MagmaRight, MagmaLower, MagmaTrans, MagmaNonUnit,
+                    magma_strsm(MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                                 n-k-kb, kb,
                                 c_one, dB(k,k), lddb,
                                 dA(k+kb,k), ldda);
@@ -325,7 +325,7 @@ magma_ssygst_gpu(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
                                 dB(0,k), lddb,
                                 c_one, dA(0, k), ldda);
                     
-                    magma_strmm(MagmaRight, MagmaUpper, MagmaTrans, MagmaNonUnit,
+                    magma_strmm(MagmaRight, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
                                 k, kb,
                                 c_one, dB(k,k), lddb,
                                 dA(0,k), ldda);
@@ -373,7 +373,7 @@ magma_ssygst_gpu(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
                                         A(0, 0),  lda, stream[0] );
                 
                 if (k > 0) {
-                    magma_ssyr2k(MagmaLower, MagmaTrans,
+                    magma_ssyr2k(MagmaLower, MagmaConjTrans,
                                  k, kb,
                                  c_one, dA(k,0), ldda,
                                  dB(k,0), lddb,
@@ -385,7 +385,7 @@ magma_ssygst_gpu(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
                                 dB(k,0), lddb,
                                 c_one, dA(k, 0), ldda);
                     
-                    magma_strmm(MagmaLeft, MagmaLower, MagmaTrans, MagmaNonUnit,
+                    magma_strmm(MagmaLeft, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                                 kb, k,
                                 c_one, dB(k,k), lddb,
                                 dA(k,0), ldda);

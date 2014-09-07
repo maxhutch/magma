@@ -8,5 +8,5 @@ var group__magma__ssyev__aux =
     [ "magma_slaex3_m", "group__magma__ssyev__aux.html#ga313bd6fefc3c7533b6b233ad8d2ea422", null ],
     [ "magma_slatrd", "group__magma__ssyev__aux.html#ga1749ef670a6e60a2f7e6b69ffe01abba", null ],
     [ "magma_slatrd2", "group__magma__ssyev__aux.html#gad6da1dcb28725fa4be9eea8352380ffe", null ],
-    [ "magma_slatrd_mgpu", "group__magma__ssyev__aux.html#ga8b81f6d52e3cb4b958b90966cfa982c6", null ]
+    [ "magma_slatrd_mgpu", "group__magma__ssyev__aux.html#ga6e6d7e5861938a2d60c7aa54e5fedaeb", null ]
 ];

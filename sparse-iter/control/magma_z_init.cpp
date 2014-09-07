@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -17,9 +17,9 @@
 #include <ostream>
 #include <assert.h>
 #include <stdio.h>
-#include "../include/magmasparse_z.h"
-#include "../../include/magma.h"
-#include "../include/mmio.h"
+#include "magmasparse_z.h"
+#include "magma.h"
+#include "mmio.h"
 
 
 
@@ -84,20 +84,10 @@ magma_z_vinit(    magma_z_vector *x,
     else if( mem_loc == Magma_DEV ){
         x->memory_location = Magma_DEV;
 
-        magmaDoubleComplex *tmp;
-
-        magma_zmalloc_cpu( &tmp, num_rows );
-        if ( tmp == NULL )
-            return MAGMA_ERR_HOST_ALLOC;
-        for( magma_int_t i=0; i<num_rows; i++)
-             tmp[i] = values; 
-
         if (MAGMA_SUCCESS != magma_zmalloc( &x->val, x->num_rows)) 
             return MAGMA_ERR_DEVICE_ALLOC;
 
-        // data transfer
-        magma_zsetvector( x->num_rows, tmp, 1, x->val, 1 );
-        magma_free_cpu(tmp);
+        magmablas_zlaset(MagmaFull, num_rows, 1, values, values, x->val, num_rows);
 
         return MAGMA_SUCCESS; 
     }

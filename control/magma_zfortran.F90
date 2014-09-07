@@ -185,6 +185,14 @@ subroutine magmaf_zgesv( n, nrhs, A, lda, ipiv, B, ldb, info )
     integer          :: info
 end subroutine magmaf_zgesv
 
+subroutine magmaf_zgetf2_nopiv( m, n, A, lda, info )
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: info
+end subroutine magmaf_zgetf2_nopiv
+
 subroutine magmaf_zgetrf( m, n, A, lda, ipiv, info )
     integer          :: m
     integer          :: n
@@ -193,6 +201,14 @@ subroutine magmaf_zgetrf( m, n, A, lda, ipiv, info )
     integer          :: ipiv(*)
     integer          :: info
 end subroutine magmaf_zgetrf
+
+subroutine magmaf_zgetrf_nopiv( m, n, A, lda, info )
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: info
+end subroutine magmaf_zgetrf_nopiv
 
 subroutine magmaf_zlatrsd( uplo, trans, diag, normin, n, A, lda, lambda, x, scale, cnorm,  &
         info )
@@ -328,6 +344,40 @@ subroutine magmaf_zungqr2( m, n, k, a, lda, tau, info )
     complex*16       :: tau(*)
     integer          :: info
 end subroutine magmaf_zungqr2
+
+subroutine magmaf_zunmbr( vect, side, trans, m, n, k, A, lda, tau, C, ldc, work, lwork,  &
+        info )
+    character        :: vect
+    character        :: side
+    character        :: trans
+    integer          :: m
+    integer          :: n
+    integer          :: k
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: tau(*)
+    complex*16       :: C(*)
+    integer          :: ldc
+    complex*16       :: work(*)
+    integer          :: lwork
+    integer          :: info
+end subroutine magmaf_zunmbr
+
+subroutine magmaf_zunmlq( side, trans, m, n, k, A, lda, tau, C, ldc, work, lwork, info )
+    character        :: side
+    character        :: trans
+    integer          :: m
+    integer          :: n
+    integer          :: k
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: tau(*)
+    complex*16       :: C(*)
+    integer          :: ldc
+    complex*16       :: work(*)
+    integer          :: lwork
+    integer          :: info
+end subroutine magmaf_zunmlq
 
 subroutine magmaf_zunmql( side, trans, m, n, k, a, lda, tau, c, ldc, work, lwork, info )
     character        :: side
@@ -1075,9 +1125,9 @@ end subroutine magmaf_zgelqf_gpu
 
 subroutine magmaf_zgeqr2x_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info )
     integer          :: m
-    integer          :: n(*)
+    integer          :: n
     magma_devptr_t   :: dA
-    integer          :: ldda(*)
+    integer          :: ldda
     magma_devptr_t   :: dtau
     magma_devptr_t   :: dT
     magma_devptr_t   :: ddA
@@ -1087,9 +1137,9 @@ end subroutine magmaf_zgeqr2x_gpu
 
 subroutine magmaf_zgeqr2x2_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info )
     integer          :: m
-    integer          :: n(*)
+    integer          :: n
     magma_devptr_t   :: dA
-    integer          :: ldda(*)
+    integer          :: ldda
     magma_devptr_t   :: dtau
     magma_devptr_t   :: dT
     magma_devptr_t   :: ddA
@@ -1099,9 +1149,9 @@ end subroutine magmaf_zgeqr2x2_gpu
 
 subroutine magmaf_zgeqr2x3_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info )
     integer          :: m
-    integer          :: n(*)
+    integer          :: n
     magma_devptr_t   :: dA
-    integer          :: ldda(*)
+    integer          :: ldda
     magma_devptr_t   :: dtau
     magma_devptr_t   :: dT
     magma_devptr_t   :: ddA
@@ -1111,9 +1161,9 @@ end subroutine magmaf_zgeqr2x3_gpu
 
 subroutine magmaf_zgeqr2x4_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info, stream )
     integer          :: m
-    integer          :: n(*)
+    integer          :: n
     magma_devptr_t   :: dA
-    integer          :: ldda(*)
+    integer          :: ldda
     magma_devptr_t   :: dtau
     magma_devptr_t   :: dT
     magma_devptr_t   :: ddA
@@ -1315,14 +1365,13 @@ subroutine magmaf_zlaqps3_gpu( m, n, offset, nb, kb, A, lda, jpvt, tau, vn1, vn2
     integer          :: lddf
 end subroutine magmaf_zlaqps3_gpu
 
-subroutine magmaf_zlarf_gpu( m, n, v, tau, c, ldc, xnorm )
+subroutine magmaf_zlarf_gpu( m, n, dv, dtau, dc, lddc )
     integer          :: m
     integer          :: n
-    complex*16       :: v(*)
-    complex*16       :: tau(*)
-    complex*16       :: c(*)
-    integer          :: ldc
-    double precision :: xnorm(*)
+    magma_devptr_t   :: dv
+    magma_devptr_t   :: dtau
+    magma_devptr_t   :: dc
+    integer          :: lddc
 end subroutine magmaf_zlarf_gpu
 
 subroutine magmaf_zlarfb_gpu( side, trans, direct, storev, m, n, k, dv, ldv, dt, ldt, dc,  &
@@ -1609,14 +1658,14 @@ subroutine magmaf_zunmtr_gpu( side, uplo, trans, m, n, da, ldda, tau, dc, lddc, 
     integer          :: info
 end subroutine magmaf_zunmtr_gpu
 
-subroutine magmaf_zgeqp3_gpu( m, n, A, lda, jpvt, tau, work, lwork, rwork, info )
+subroutine magmaf_zgeqp3_gpu( m, n, dA, ldda, jpvt, tau, dwork, lwork, rwork, info )
     integer          :: m
     integer          :: n
-    complex*16       :: A(*)
-    integer          :: lda
+    magma_devptr_t   :: dA
+    integer          :: ldda
     integer          :: jpvt(*)
     complex*16       :: tau(*)
-    complex*16       :: work(*)
+    magma_devptr_t   :: dwork
     integer          :: lwork
     double precision :: rwork(*)
     integer          :: info
@@ -1751,6 +1800,26 @@ subroutine magmaf_zprint_gpu( m, n, dA, ldda )
     magma_devptr_t   :: dA
     integer          :: ldda
 end subroutine magmaf_zprint_gpu
+
+subroutine magmaf_znan_inf( uplo, m, n, A, lda, cnt_nan, cnt_inf )
+    character        :: uplo
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: cnt_nan(*)
+    integer          :: cnt_inf(*)
+end subroutine magmaf_znan_inf
+
+subroutine magmaf_znan_inf_gpu( uplo, m, n, dA, ldda, cnt_nan, cnt_inf )
+    character        :: uplo
+    integer          :: m
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    integer          :: cnt_nan(*)
+    integer          :: cnt_inf(*)
+end subroutine magmaf_znan_inf_gpu
 
 end interface
 

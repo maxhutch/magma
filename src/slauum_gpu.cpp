@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zlauum_gpu.cpp normal z -> s, Fri Jul 18 17:34:14 2014
+       @generated from zlauum_gpu.cpp normal z -> s, Tue Sep  2 12:38:19 2014
 
 */
 #include "common_magma.h"
@@ -108,7 +108,7 @@ magma_slauum_gpu(magma_uplo_t uplo, magma_int_t n,
 
                 /* Compute the product U * U'. */
                 magma_strmm( MagmaRight, MagmaUpper,
-                             MagmaTrans, MagmaNonUnit, i, ib,
+                             MagmaConjTrans, MagmaNonUnit, i, ib,
                              c_one, dA(i,i), ldda, dA(0, i),ldda);
 
                 magma_sgetmatrix( ib, ib,
@@ -122,7 +122,7 @@ magma_slauum_gpu(magma_uplo_t uplo, magma_int_t n,
                                   dA(i, i), ldda );
 
                 if (i+ib < n) {
-                    magma_sgemm( MagmaNoTrans, MagmaTrans,
+                    magma_sgemm( MagmaNoTrans, MagmaConjTrans,
                                  i, ib, (n-i-ib), c_one, dA(0,i+ib),
                                  ldda, dA(i, i+ib), ldda, c_one,
                                  dA(0,i), ldda);
@@ -139,7 +139,7 @@ magma_slauum_gpu(magma_uplo_t uplo, magma_int_t n,
                 ib=min(nb,(n-i));
 
                 magma_strmm( MagmaLeft, MagmaLower,
-                             MagmaTrans, MagmaNonUnit, ib,
+                             MagmaConjTrans, MagmaNonUnit, ib,
                              i, c_one, dA(i,i), ldda,
                              dA(i, 0),ldda);
 
@@ -154,11 +154,11 @@ magma_slauum_gpu(magma_uplo_t uplo, magma_int_t n,
                                   dA(i, i), ldda );
 
                 if (i+ib < n) {
-                    magma_sgemm( MagmaTrans, MagmaNoTrans,
+                    magma_sgemm( MagmaConjTrans, MagmaNoTrans,
                                  ib, i, (n-i-ib), c_one, dA( i+ib,i),
                                  ldda, dA(i+ib, 0),ldda, c_one,
                                  dA(i,0), ldda);
-                    magma_ssyrk( MagmaLower, MagmaTrans, ib, (n-i-ib),
+                    magma_ssyrk( MagmaLower, MagmaConjTrans, ib, (n-i-ib),
                                  d_one, dA(i+ib, i), ldda,
                                  d_one, dA(i, i),    ldda);
                 }

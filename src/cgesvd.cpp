@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from zgesvd.cpp normal z -> c, Fri Jul 18 17:34:20 2014
+       @generated from zgesvd.cpp normal z -> c, Tue Sep  2 12:38:25 2014
 
 */
 #include "common_magma.h"
@@ -114,7 +114,7 @@
 
     @param[out]
     work    (workspace) COMPLEX array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the required LWORK.
+            On exit, if INFO = 0, WORK[0] returns the required LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -231,7 +231,7 @@ magma_cgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                      work, &ineg_one, rwork, info);
     maxwrk = (magma_int_t) MAGMA_C_REAL( work[0] );
     if (*info == 0) {
-        // Return required workspace in WORK(1)
+        // Return required workspace in WORK[0]
         nb = magma_get_cgesvd_nb(n);
         minwrk = (m + n)*nb + 2*minmn;
         

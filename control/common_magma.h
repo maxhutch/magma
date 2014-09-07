@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
  
        @author Mathieu Faverge
  
@@ -23,7 +23,6 @@
 #include <ctype.h>
 
 #include <cuda_runtime_api.h>
-#include <cublas.h>
 
 #if defined( _WIN32 ) || defined( _WIN64 )
 
@@ -60,7 +59,7 @@
 
 #include "magma.h"
 #include "magma_lapack.h"
-#include "operators.h"
+#include "magma_operators.h"
 #include "transpose.h"
 #include "magma_threadsetting.h"
 

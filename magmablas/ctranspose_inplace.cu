@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from ztranspose_inplace.cu normal z -> c, Fri Jul 18 17:34:12 2014
+       @generated from ztranspose_inplace.cu normal z -> c, Tue Sep  2 12:38:16 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -139,9 +139,9 @@ __global__ void ctranspose_inplace_even( int n, magmaFloatComplex *matrix, int l
 /**
     Purpose
     -------
-    ctranspose_inplace_stream transposes a square N-by-N matrix in-place.
+    ctranspose_inplace_q transposes a square N-by-N matrix in-place.
     
-    Same as ctranspose_inplace, but adds stream argument.
+    Same as ctranspose_inplace, but adds queue argument.
     
     Arguments
     ---------
@@ -159,15 +159,15 @@ __global__ void ctranspose_inplace_even( int n, magmaFloatComplex *matrix, int l
             The leading dimension of the array dA.  LDDA >= N.
     
     @param[in]
-    stream  magma_queue_t
-            Stream to execute in.
+    queue   magma_queue_t
+            Queue to execute in.
     
     @ingroup magma_caux2
     ********************************************************************/
 extern "C" void
-magmablas_ctranspose_inplace_stream(
+magmablas_ctranspose_inplace_q(
     magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
-    magma_queue_t stream )
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( n < 0 )
@@ -187,21 +187,21 @@ magmablas_ctranspose_inplace_stream(
     // block assignment differs depending on whether nblock is odd or even.
     if( nblock % 2 == 1 ) {
         dim3 grid( nblock, (nblock+1)/2 );
-        ctranspose_inplace_odd<<< grid, threads, 0, stream >>>( n, dA, ldda );
+        ctranspose_inplace_odd<<< grid, threads, 0, queue >>>( n, dA, ldda );
     }
     else {
         dim3 grid( nblock+1, nblock/2 );
-        ctranspose_inplace_even<<< grid, threads, 0, stream >>>( n, dA, ldda );
+        ctranspose_inplace_even<<< grid, threads, 0, queue >>>( n, dA, ldda );
     }
 }
 
 
 /**
-    @see magmablas_ctranspose_inplace_stream
+    @see magmablas_ctranspose_inplace_q
     @ingroup magma_caux2
     ********************************************************************/
 extern "C" void
 magmablas_ctranspose_inplace( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda )
 {
-    magmablas_ctranspose_inplace_stream( n, dA, ldda, magma_stream );
+    magmablas_ctranspose_inplace_q( n, dA, ldda, magma_stream );
 }

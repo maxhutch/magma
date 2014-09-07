@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
@@ -17,6 +17,7 @@
 #GPU_TARGET ?= Tesla Fermi Kepler
 
 CC        = gcc
+CXX       = g++
 NVCC      = nvcc
 FORT      = gfortran
 
@@ -24,11 +25,11 @@ ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
 
-OPTS      = -O3 -DADD_ -fopenmp -DMAGMA_SETAFFINITY -DMAGMA_WITH_ACML
-F77OPTS   = -O3 -DADD_
-FOPTS     = -O3 -DADD_ -x f95-cpp-input
-NVOPTS    = -O3 -DADD_ -Xcompiler -fno-strict-aliasing
-LDOPTS    = -fopenmp
+CFLAGS    = -O3 -DADD_ -fopenmp -DMAGMA_SETAFFINITY -DMAGMA_WITH_ACML
+FFLAGS    = -O3 -DADD_
+F90FLAGS  = -O3 -DADD_ -x f95-cpp-input
+NVCCFLAGS = -O3 -DADD_ -Xcompiler -fno-strict-aliasing
+LDFLAGS   = -fopenmp
 
 LIB       = -lacml_mp -lacml_mv -lcblas -lcublas -lcudart -lstdc++ -lm
 

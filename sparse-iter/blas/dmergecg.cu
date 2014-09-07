@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @generated from zmergecg.cu normal z -> d, Fri Jul 18 17:34:28 2014
+       @generated from zmergecg.cu normal z -> d, Tue Sep  2 12:38:33 2014
        @author Hartwig Anzt
 
 */
 #include "common_magma.h"
-#include "../include/magmasparse.h"
+#include "magmasparse.h"
 
 #define BLOCK_SIZE 512
 
@@ -841,7 +841,7 @@ magma_dcg_rhokernel(
                 array for parameters ( skp[3]=rho )
 
 
-    @ingroup magmasparse_dsygpuk
+    @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t

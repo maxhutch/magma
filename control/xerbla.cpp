@@ -35,7 +35,7 @@
             - minfo >= -MAGMA_ERR: Pre-defined MAGMA error, such as malloc failure.
             - minfo == 0:          No error.
 
-    @ingroup magma_aux
+    @ingroup magma_util
     ********************************************************************/
 extern "C"
 void magma_xerbla(const char *srname , magma_int_t minfo)

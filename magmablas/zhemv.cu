@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        zsymv.cu is nearly identical to zhemv.cu, just change names and drop cuConj.
        
@@ -780,11 +780,14 @@ magmablas_zhemv(
         magma_int_t blocks = (n - 1)/NB_X + 1;
         magma_int_t lwork  = lda*blocks;
 
-        // TODO deal with error
         magma_zmalloc( &dwork, lwork );
-
-        magmablas_zhemv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
-
+        if ( dwork == NULL ) {
+            info = MAGMA_ERR_DEVICE_ALLOC;
+            magma_xerbla( __func__, -(info) );
+        }
+        else {
+            magmablas_zhemv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+        }
         magma_free( dwork );
     }
     return info;

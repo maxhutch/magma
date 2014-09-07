@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
 */
 #include "common_magma.h"
-#include <assert.h>
 
 #define NB 64
 
@@ -87,30 +86,53 @@ zsymmetrize_upper( int m, magmaDoubleComplex *dA, int ldda )
     ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_zsymmetrize( magma_uplo_t uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda )
+magmablas_zsymmetrize_q(
+    magma_uplo_t uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda,
+    magma_queue_t queue )
 {
-    //printf( "m %d, grid %d, threads %d\n", m, grid.x, threads.x );
+    magma_int_t info = 0;
+    if ( uplo != MagmaLower && uplo != MagmaUpper )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( ldda < max(1,m) )
+        info = -4;
+    
+    if ( info != 0 ) {
+        magma_xerbla( __func__, -(info) );
+        return;
+    }
+    
     if ( m == 0 )
         return;
     
-    assert( m >= 0 );
-    assert( ldda >= m );
     
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB );
     
     if ( uplo == MagmaUpper ) {
-        zsymmetrize_upper<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
-    }
-    else if ( uplo == MagmaLower ) {
-        zsymmetrize_lower<<< grid, threads, 0, magma_stream >>>( m, dA, ldda );
+        zsymmetrize_upper<<< grid, threads, 0, queue >>>( m, dA, ldda );
     }
     else {
-        printf( "uplo has illegal value\n" );
-        exit(1);
+        zsymmetrize_lower<<< grid, threads, 0, queue >>>( m, dA, ldda );
     }
+}
+
+
+/**
+    @see magmablas_zsymmetrize_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_zsymmetrize(
+    magma_uplo_t uplo, magma_int_t m, magmaDoubleComplex *dA, magma_int_t ldda )
+{
+    magmablas_zsymmetrize_q( uplo, m, dA, ldda, magma_stream );
 }

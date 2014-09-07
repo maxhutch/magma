@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
-       @author Stan Tomov
        @author Raffaele Solca
+       @author Stan Tomov
        @author Azzam Haidar
 
        @precisions normal d -> s
@@ -55,7 +55,7 @@
             The order of the matrices A and B.  N >= 0.
 
     @param[in,out]
-    A       COMPLEX_16 array, dimension (LDA, N)
+    A       DOUBLE PRECISION array, dimension (LDA, N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of A contains the
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
@@ -76,7 +76,7 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[in,out]
-    B       COMPLEX_16 array, dimension (LDB, N)
+    B       DOUBLE PRECISION array, dimension (LDB, N)
             On entry, the symmetric matrix B.  If UPLO = MagmaUpper, the
             leading N-by-N upper triangular part of B contains the
             upper triangular part of the matrix B.  If UPLO = MagmaLower,
@@ -96,11 +96,7 @@
             If INFO = 0, the eigenvalues in ascending order.
 
     @param[out]
-    work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
-            On exit, if INFO = 0, WORK(1) returns the optimal LWORK.
-
-    @param[out]
-    work    (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK))
+    work    (workspace) DOUBLE PRECISION array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
 
     @param[in]
@@ -175,8 +171,7 @@ magma_dsygvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
 
     double d_one = MAGMA_D_ONE;
 
-    double *dA;
-    double *dB;
+    double *dA=NULL, *dB=NULL;
     magma_int_t ldda = n;
     magma_int_t lddb = n;
 
@@ -236,16 +231,17 @@ magma_dsygvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
 
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
     else if (lquery) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
 
     /* Quick return if possible */
     if (n == 0) {
-        return 0;
+        return *info;
     }
+    
     /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
         #ifdef ENABLE_DEBUG
@@ -262,6 +258,8 @@ magma_dsygvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
 
     if (MAGMA_SUCCESS != magma_dmalloc( &dA, n*ldda ) ||
         MAGMA_SUCCESS != magma_dmalloc( &dB, n*lddb )) {
+        magma_free( dA );
+        magma_free( dB );
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -277,7 +275,7 @@ magma_dsygvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
     magma_dpotrf_gpu(uplo, n, dB, lddb, info);
     if (*info != 0) {
         *info = n + *info;
-        return 0;
+        return *info;
     }
     timer_stop( time );
     timer_printf( "time dpotrf_gpu = %6.2f\n", time );
@@ -295,7 +293,7 @@ magma_dsygvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
 
     /* simple fix to be able to run bigger size.
      * need to have a dwork here that will be used
-     * a dB and then passed to  dsyevd.
+     * as dB and then passed to dsyevd.
      * */
     if (n > 5000) {
         magma_queue_sync( stream );
@@ -365,5 +363,5 @@ magma_dsygvd(magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t
         magma_free( dB );
     }
 
-    return MAGMA_SUCCESS;
+    return *info;
 } /* magma_dsygvd */

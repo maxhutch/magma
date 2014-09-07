@@ -15,7 +15,6 @@
 #include "common_magma.h"
 #include "magma_bulge.h"
 #include "magma_zbulgeinc.h"
-#include <cblas.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -65,13 +64,13 @@ magma_zbulge_applyQ_v2(magma_side_t side,
 
     /* Quick return */
     if ( NE == 0 ) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
     if ( N == 0 ) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
     if ( NB == 0 ) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
     /* ==========================================
      * some infos for developer
@@ -88,9 +87,9 @@ magma_zbulge_applyQ_v2(magma_side_t side,
     */
 
     // Initialize streaming and events
-    cudaDeviceSynchronize();
-    magma_queue_t cstream;
-    magmablasGetKernelStream(&cstream);
+    magma_device_sync();
+    magma_queue_t orig_stream;
+    magmablasGetKernelStream( &orig_stream );
 
     magma_queue_t stream[2];
     magma_queue_create( &stream[0] );
@@ -246,24 +245,24 @@ magma_zbulge_applyQ_v2(magma_side_t side,
                         //printf("voici blkj %d blki %d  Vm %d  Vn %d mycol %d locvpos %5d loctpos %5d  blkid %2d  using data in dV%1d dT%1d \n",blkj,blki,Vm, Vn,mycol,lcvpos,lctpos, blkid,flip,flip);
                         if (flip == 0) {
                             magmablasSetKernelStream(stream[0]);
-                            cudaStreamWaitEvent(stream[0], myevent[1], 0);
+                            magma_queue_wait_event( stream[0], myevent[1] );
                             for (magma_int_t i=0; i < NE; i += sz_bl) {
                                 ib = min(sz_bl, NE-i);
                                 lddw = min(lddwork,sz_bl);
                                 //magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0+lcvpos, lddv, dT0+lctpos, lddt, dE(myrow,i), ldde, dwork0, lddw);
                                 magma_zlarfb_gpu_gemm( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV0+lcvpos, lddv, dT0+lctpos, lddt, dE(myrow,i), ldde, dwork0, lddw, dwvt0, lddv);
                             }
-                            cudaEventRecord(myevent[0], stream[0]);
+                            magma_event_record( myevent[0], stream[0] );
                         } else {
                             magmablasSetKernelStream(stream[1]);
-                            cudaStreamWaitEvent(stream[1], myevent[0], 0);
+                            magma_queue_wait_event( stream[1], myevent[0] );
                             for (magma_int_t i=0; i < NE; i += sz_bl) {
                                 ib = min(sz_bl, NE-i);
                                 lddw = min(lddwork,sz_bl);
                                 //magma_zlarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV1+lcvpos, lddv, dT1+lctpos, lddt, dE(myrow,i), ldde, dwork1, lddw);
                                 magma_zlarfb_gpu_gemm( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise, Vm, ib, Vn, dV1+lcvpos, lddv, dT1+lctpos, lddt, dE(myrow,i), ldde, dwork1, lddw, dwvt1, lddv);
                             }
-                            cudaEventRecord(myevent[1], stream[1]);
+                            magma_event_record( myevent[1], stream[1] );
                         }
                     }  // end for (Vm &Vn) > 0
                 } // end for blki
@@ -394,16 +393,16 @@ magma_zbulge_applyQ_v2(magma_side_t side,
     } // end RIGHT
 
 
-    cudaDeviceSynchronize();
-    magmablasSetKernelStream(cstream);
-    cudaEventDestroy(myevent[0]);
-    cudaEventDestroy(myevent[1]);
+    magma_device_sync();
+    magmablasSetKernelStream( orig_stream );
+    magma_event_destroy( myevent[0] );
+    magma_event_destroy( myevent[1] );
     magma_queue_destroy( stream[0] );
     magma_queue_destroy( stream[1] );
     magma_free(dwork);
 
 
-    return MAGMA_SUCCESS;
+    return *info;
 }
 #undef V
 #undef T

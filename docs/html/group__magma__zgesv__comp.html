@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__zgesv__comp.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -120,9 +123,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga6dfc418dd9bb6b8098f4209bab6be5ad"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesv__comp.html#ga6dfc418dd9bb6b8098f4209bab6be5ad">magma_zgetrf2_gpu</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda, magma_int_t *ipiv, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga6dfc418dd9bb6b8098f4209bab6be5ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#ga6dfc418dd9bb6b8098f4209bab6be5ad">More...</a><br /></td></tr>
 <tr class="separator:ga6dfc418dd9bb6b8098f4209bab6be5ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac41a3568b253f7406322aaf1ae3fdc2b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesv__comp.html#gac41a3568b253f7406322aaf1ae3fdc2b">magma_zgetrf2_mgpu</a> (magma_int_t num_gpus, magma_int_t m, magma_int_t n, magma_int_t nb, magma_int_t offset, magmaDoubleComplex *d_lAT[], magma_int_t lddat, magma_int_t *ipiv, magmaDoubleComplex *d_lAP[], magmaDoubleComplex *w, magma_int_t ldw, magma_queue_t streaml[][2], magma_int_t *info)</td></tr>
-<tr class="memdesc:gac41a3568b253f7406322aaf1ae3fdc2b"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#gac41a3568b253f7406322aaf1ae3fdc2b">More...</a><br /></td></tr>
-<tr class="separator:gac41a3568b253f7406322aaf1ae3fdc2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0872695048f95eda18cab6bc9ef4506d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesv__comp.html#ga0872695048f95eda18cab6bc9ef4506d">magma_zgetrf2_mgpu</a> (magma_int_t num_gpus, magma_int_t m, magma_int_t n, magma_int_t nb, magma_int_t offset, magmaDoubleComplex *d_lAT[], magma_int_t lddat, magma_int_t *ipiv, magmaDoubleComplex *d_lAP[], magmaDoubleComplex *w, magma_int_t ldw, magma_queue_t stream[][2], magma_int_t *info)</td></tr>
+<tr class="memdesc:ga0872695048f95eda18cab6bc9ef4506d"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#ga0872695048f95eda18cab6bc9ef4506d">More...</a><br /></td></tr>
+<tr class="separator:ga0872695048f95eda18cab6bc9ef4506d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacabb7a6b59279499b546258c5763c39b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesv__comp.html#gacabb7a6b59279499b546258c5763c39b">magma_zgetrf_gpu</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda, magma_int_t *ipiv, magma_int_t *info)</td></tr>
 <tr class="memdesc:gacabb7a6b59279499b546258c5763c39b"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#gacabb7a6b59279499b546258c5763c39b">More...</a><br /></td></tr>
 <tr class="separator:gacabb7a6b59279499b546258c5763c39b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -313,7 +316,8 @@ Functions</h2></td></tr>
 <p>ZGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
 <p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine.</p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
-<p>This is the right-looking Level 3 BLAS version of the algorithm. If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -404,7 +408,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gac41a3568b253f7406322aaf1ae3fdc2b"></a>
+<a class="anchor" id="ga0872695048f95eda18cab6bc9ef4506d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -478,7 +482,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>streaml</em>[][2], </td>
+          <td class="paramname"><em>stream</em>[][2], </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -502,9 +506,13 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_gpus</td><td>INTEGER The number of GPUs to be used for the factorization.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N). On entry, the M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lAT</td><td>COMPLEX_16 array of pointers on the GPU, dimension (num_gpus). On entry, the M-by-N matrix A distributed over GPUs (d_lAT[d] points to the local matrix on d-th GPU). It uses a 1D block column cyclic format (with the block size nb), and each local matrix is stored by row. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddat</td><td>INTEGER The leading dimension of the array d_lAT[d]. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">(workspace)</td><td>on device d_lAP COMPLEX_16 array of pointers on the GPU, dimension (num_gpus). d_lAP[d] is the workspace on d-th GPU. Each local workspace must be of size (3+num_gpus)*nb*maxm, where maxm is m rounded up to a multiple of 32 and nb is the block size.</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">(workspace)</td><td>w COMPLEX_16 array, dimension (num_gpus*nb*maxm). It is used to store panel on CPU.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldw</td><td>INTEGER The leading dimension of the workspace w.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>magma_queue_t stream[d] points to the streams for the d-th GPU to execute in. Each GPU require two streams.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
@@ -567,7 +575,8 @@ Functions</h2></td></tr>
 
 <p>ZGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
-<p>This is the right-looking Level 3 BLAS version of the algorithm. If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -642,7 +651,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>ZGETRF_m computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
-<p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine. The matrix may not fit entirely in the GPU memory.</p>
+<p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine. The matrix may exceed the GPU memory.</p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
 <p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
 <p>Note: The factorization of big panel is done calling multiple-gpu-interface. Pivots are applied on GPU within the big panel.</p>
@@ -729,8 +738,8 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_gpus</td><td>INTEGER The number of GPUs to be used for the factorization.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N). On entry, the M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lA</td><td>COMPLEX_16 array of pointers on the GPU, dimension (num_gpus). On entry, the M-by-N matrix A distributed over GPUs (d_lA[d] points to the local matrix on d-th GPU). It uses 1D block column cyclic format with the block size of nb, and each local matrix is stored by column. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array d_lA. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1046,7 +1055,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:42 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

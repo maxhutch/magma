@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -37,7 +37,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex *d_A;
     magmaDoubleComplex offdiag = MAGMA_Z_MAKE( 1.2000, 6.7000 );
     magmaDoubleComplex diag    = MAGMA_Z_MAKE( 3.1415, 2.7183 );
-    magma_int_t M, N, size, lda, ldb, ldda;
+    magma_int_t M, N, size, lda, ldda;
     magma_int_t ione     = 1;
     magma_int_t status = 0;
     
@@ -45,9 +45,9 @@ int main( int argc, char** argv)
     parse_opts( argc, argv, &opts );
 
     magma_uplo_t uplo[] = { MagmaLower, MagmaUpper, MagmaFull };
-    
-    printf("uplo       M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
-    printf("==================================================================\n");
+
+    printf("uplo      M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
+    printf("=================================================================\n");
     for( int iuplo = 0; iuplo < 3; ++iuplo ) {
       for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -56,7 +56,6 @@ int main( int argc, char** argv)
             //M += 2;  // space for insets
             //N += 2;
             lda    = M;
-            ldb    = lda;
             ldda   = ((M+31)/32)*32;
             size   = lda*N;
             if ( uplo[iuplo] == MagmaLower || uplo[iuplo] == MagmaUpper ) {
@@ -103,6 +102,11 @@ int main( int argc, char** argv)
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gbytes / cpu_time;
             
+            if ( opts.verbose ) {
+                printf( "A= " );  magma_zprint(     M, N, h_A, lda );
+                printf( "dA=" );  magma_zprint_gpu( M, N, d_A, ldda );
+            }
+            
             /* =====================================================================
                Check the result
                =================================================================== */
@@ -111,8 +115,8 @@ int main( int argc, char** argv)
             blasf77_zaxpy(&size, &c_neg_one, h_A, &ione, h_R, &ione);
             error = lapackf77_zlange("f", &M, &N, h_R, &lda, work);
 
-            printf("%4c   %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
-                   lapacke_uplo_const( uplo[iuplo] ), (int) M, (int) N,
+            printf("%5s %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
+                   lapack_uplo_const( uplo[iuplo] ), (int) M, (int) N,
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                    (error == 0. ? "ok" : "failed") );
             status += ! (error == 0.);

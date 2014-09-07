@@ -1,7 +1,5 @@
 var group__magmasparse__cgegpuk =
 [
-    [ "magma_cailu_csr_a", "group__magmasparse__cgegpuk.html#gaf9f8e082f06a27bca5c4dcca0f9ee8b4", null ],
-    [ "magma_cailu_csr_s", "group__magmasparse__cgegpuk.html#ga8b747b5eff1e9750c4f82c3ec2fa83aa", null ],
     [ "magma_cbajac_csr", "group__magmasparse__cgegpuk.html#ga7382a520590db6abae9c6928581d8833", null ],
     [ "magma_cbcsrluegemm", "group__magmasparse__cgegpuk.html#gaf3453aa83537c1d1fa5b099ce0e56feb", null ],
     [ "magma_cbcsrlupivloc", "group__magmasparse__cgegpuk.html#ga45343387e3de4b7eb24df75e8676bdb2", null ],
@@ -15,7 +13,8 @@ var group__magmasparse__cgegpuk =
     [ "magma_cbicgmerge_spmv1", "group__magmasparse__cgegpuk.html#gaaeb02ad97ceeae56136fe84f3eab1fbc", null ],
     [ "magma_cbicgmerge_spmv2", "group__magmasparse__cgegpuk.html#ga543fd6037b6abebdd87205043717da7b", null ],
     [ "magma_cbicgmerge_xrbeta", "group__magmasparse__cgegpuk.html#gaadb19a5e46be02d888dbbd4acb4ce840", null ],
+    [ "magma_ccgmerge_spmv1", "group__magmasparse__cgegpuk.html#ga9022ae473cef29980e98b4bcb0734df9", null ],
     [ "magma_ccompact", "group__magmasparse__cgegpuk.html#ga31727df4802ca5eea3bce507544aac51", null ],
-    [ "magma_cjacobisetup_vector_gpu", "group__magmasparse__cgegpuk.html#ga11b5b874486a82e491a9d41c8a33c9ca", null ],
+    [ "magma_cjacobisetup_vector_gpu", "group__magmasparse__cgegpuk.html#gafc9732038cdd3a7c4d4bc374a15ce273", null ],
     [ "magma_clobpcg_maxpy", "group__magmasparse__cgegpuk.html#ga824dacfd1e9392725728a1908f43e630", null ]
 ];

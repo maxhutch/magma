@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
   
        @precisions normal z -> c d s
 
 */
 #include "common_magma.h"
-#include <cblas.h>
 
 #define PRECISION_z
 #define COMPLEX
@@ -57,7 +56,7 @@
 
     @param[out]
     dwork   (workspace) COMPLEX_16 array on the GPU, dimension (MAX(1,LWORK))
-            On exit, if INFO=0, WORK(1) returns the optimal LWORK.
+            On exit, if INFO=0, WORK[0] returns the optimal LWORK.
 
     @param[in]
     lwork   INTEGER
@@ -66,10 +65,8 @@
             for [cz]geqp3, LWORK >= (N+1)*NB,
             where NB is the optimal blocksize.
     \n
-            If LWORK = -1, then a workspace query is assumed; the routine
-            only calculates the optimal size of the WORK array, returns
-            this value as the first entry of the WORK array, and no error
-            message related to LWORK is issued by XERBLA.
+            Note: unlike the CPU interface of this routine, the GPU interface
+            does not support a workspace query.
 
     @param
     rwork   (workspace, for [cz]geqp3 only) DOUBLE PRECISION array, dimension (2*N)
@@ -112,10 +109,9 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
     //magma_int_t na;
     magma_int_t n_j;
     magma_int_t j, jb, nb, sm, sn, fjb, nfxd, minmn;
-    magma_int_t topbmn, sminmn, lwkopt, lquery;
+    magma_int_t topbmn, sminmn, lwkopt;
     
     *info = 0;
-    lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;
     } else if (n < 0) {
@@ -135,17 +131,13 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
             lwkopt += 2*n;
             #endif
         }
-        //dwork[0] = MAGMA_Z_MAKE( lwkopt, 0. );
-
-        if (lwork < lwkopt && ! lquery) {
+        if (lwork < lwkopt) {
             *info = -8;
         }
     }
 
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return *info;
-    } else if (lquery) {
         return *info;
     }
 
@@ -168,7 +160,7 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
     for (j = 0; j < n; ++j) {
         if (jpvt[j] != 0) {
             if (j != nfxd) {
-                blasf77_zswap(&m, dA(0, j), &ione, dA(0, nfxd), &ione);  // TODO: matrix not on CPU!
+                blasf77_zswap(&m, dA(0, j), &ione, dA(0, nfxd), &ione);  // TODO: ERROR, matrix not on CPU!
                 jpvt[j]    = jpvt[nfxd];
                 jpvt[nfxd] = j + 1;
             }
@@ -182,17 +174,19 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
         }
     }
 
-    /*     Factorize fixed columns
+    /*  
+        // TODO:
+           Factorize fixed columns
            =======================
            Compute the QR factorization of fixed columns and update
            remaining columns.
     if (nfxd > 0) {
         na = min(m,nfxd);
-        lapackf77_zgeqrf(&m, &na, A, &lda, tau, dwork, &lwork, info);
+        lapackf77_zgeqrf(&m, &na, dA, &ldda, tau, dwork, &lwork, info);
         if (na < n) {
             n_j = n - na;
             lapackf77_zunmqr( MagmaLeftStr, MagmaConjTransStr, &m, &n_j, &na,
-                              A, &lda, tau, dA(0, na), &lda,
+                              dA, &ldda, tau, dA(0, na), &ldda,
                               dwork, &lwork, info );
         }
     }*/
@@ -203,32 +197,14 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
         sn = n - nfxd;
         sminmn = minmn - nfxd;
         
-        /*if (nb < sminmn) {
-            j = nfxd;
-            
-            // Set the original matrix to the GPU
-            magma_zsetmatrix_async( m, sn,
-                                     A(0,j), lda,
-                                    dA(0,j), ldda, stream[0] );
-        }*/
-
         /* Initialize partial column norms. */
         magmablas_dznrm2_cols(sm, sn, dA(nfxd,nfxd), ldda, &rwork[nfxd]);
-#if defined(PRECISION_d) || defined(PRECISION_z)
         magma_dcopymatrix( sn, 1, &rwork[nfxd], sn, &rwork[n+nfxd], sn);
-#else
-        magma_scopymatrix( sn, 1, &rwork[nfxd], sn, &rwork[n+nfxd], sn);
-#endif
-        /*for (j = nfxd; j < n; ++j) {
-            rwork[j] = cblas_dznrm2(sm, dA(nfxd, j), ione);
-            rwork[n + j] = rwork[j];
-        }*/
         
         j = nfxd;
         //if (nb < sminmn)
         {
             /* Use blocked code initially. */
-            //magma_queue_sync( stream[0] );
             
             /* Compute factorization: while loop. */
             topbmn = minmn; // - nb;
@@ -238,18 +214,6 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
                 /* Factorize JB columns among columns J:N. */
                 n_j = n - j;
                 
-                /*if (j > nfxd) {
-                    // Get panel to the CPU
-                    magma_zgetmatrix( m-j, jb,
-                                      dA(j,j), ldda,
-                                       A(j,j), lda );
-                    
-                    // Get the rows
-                    magma_zgetmatrix( jb, n_j - jb,
-                                      dA(j,j + jb), ldda,
-                                       A(j,j + jb), lda );
-                }*/
-
                 //magma_zlaqps_gpu    // this is a cpp-file
                 magma_zlaqps2_gpu   // this is a cuda-file
                     ( m, n_j, j, jb, &fjb,
@@ -262,7 +226,8 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
             }
         }
         
-        /* Use unblocked code to factor the last or only block.
+        /*
+        // Use unblocked code to factor the last or only block.
         if (j < minmn) {
             n_j = n - j;
             if (j > nfxd) {
@@ -270,11 +235,11 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
                                   dA(j,j), ldda,
                                    A(j,j), lda );
             }
-            lapackf77_zlaqp2(&m, &n_j, &j, dA(0, j), &lda, &jpvt[j],
+            lapackf77_zlaqp2(&m, &n_j, &j, dA(0, j), &ldda, &jpvt[j],
                              &tau[j], &rwork[j], &rwork[n+j], dwork );
         }*/
     }
-    //dwork[0] = MAGMA_Z_MAKE( lwkopt, 0. );
+
     magma_free(df);
 
     return *info;

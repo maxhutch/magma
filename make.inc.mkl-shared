@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0-beta3) --
+#   -- MAGMA (version 1.5.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date July 2014
+#      @date September 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
@@ -17,6 +17,7 @@
 #GPU_TARGET ?= Tesla Fermi Kepler
 
 CC        = gcc
+CXX       = g++
 NVCC      = nvcc
 FORT      = gfortran
 
@@ -24,11 +25,11 @@ ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
 
-OPTS      = -fPIC -O3 -DADD_ -Wall -fno-strict-aliasing -fopenmp -DMAGMA_WITH_MKL -DMAGMA_SETAFFINITY
-F77OPTS   = -fPIC -O3 -DADD_ -Wall  
-FOPTS     = -fPIC -O3 -DADD_ -Wall -x f95-cpp-input
-NVOPTS    =       -O3 -DADD_ -Xcompiler "-fno-strict-aliasing -fPIC"
-LDOPTS    = -fPIC -fopenmp
+CFLAGS    = -fPIC -O3 -DADD_ -Wall -fno-strict-aliasing -fopenmp -DMAGMA_WITH_MKL -DMAGMA_SETAFFINITY
+FFLAGS    = -fPIC -O3 -DADD_ -Wall  
+F90FLAGS  = -fPIC -O3 -DADD_ -Wall -x f95-cpp-input
+NVCCFLAGS =       -O3 -DADD_ -Xcompiler "-fno-strict-aliasing -fPIC"
+LDFLAGS   = -fPIC -fopenmp
 
 # gcc with MKL 10.3, Intel threads
 LIB       = -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lpthread -lcublas -lcudart -lstdc++ -lm -liomp5 -lgfortran

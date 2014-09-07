@@ -1,5 +1,6 @@
 var group__magmasparse__dblas =
 [
+    [ "magma_dcuspmm", "group__magmasparse__dblas.html#gab05ce78083468136e364cb95fec8eadc", null ],
     [ "magma_dgecsrmv", "group__magmasparse__dblas.html#ga1c49fd79be172a71335650775d55bbdc", null ],
     [ "magma_dgecsrmv_shift", "group__magmasparse__dblas.html#ga4991a1e29460e674ea03d3b5ea74346a", null ],
     [ "magma_dgeellmv", "group__magmasparse__dblas.html#gacebb62ae6d100e6d51ae3db48dda44f2", null ],

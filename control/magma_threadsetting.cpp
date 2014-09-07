@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Azzam Haidar
        @author Mark Gates
@@ -187,7 +187,7 @@ void magma_set_lapack_numthreads(magma_int_t threads)
     printf("==============================================================================\n"
            "WARNING: a parallel section of MAGMA could not be run in parallel because\n"
            "OpenMP was not enabled; add -fopenmp (for gcc) or -openmp (for icc) to\n"
-           "both compilation and linkage flags (OPTS and LDOPTS in make.inc).\n"
+           "both compilation and linkage flags (CFLAGS and LDFLAGS in make.inc).\n"
            "Also, if using multi-threaded MKL, please compile MAGMA with -DMAGMA_WITH_MKL.\n"
            "To disable this warning, compile MAGMA with -DNO_WARNING.\n"
            "==============================================================================\n");
@@ -196,7 +196,7 @@ void magma_set_lapack_numthreads(magma_int_t threads)
     printf("==============================================================================\n"
            "WARNING: a parallel section of MAGMA could not be run in parallel because\n"
            "OpenMP was not enabled; add -fopenmp (for gcc) or -openmp (for icc) to\n"
-           "both compilation and linkage flags (OPTS and LDOPTS in make.inc).\n"
+           "both compilation and linkage flags (CFLAGS and LDFLAGS in make.inc).\n"
            "To disable this warning, compile MAGMA with -DNO_WARNING.\n"
            "==============================================================================\n");
     #endif

@@ -53,7 +53,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="modules.html"><span>Modules</span></a></li>
+      <li><a href="annotated.html"><span>Classes</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -92,7 +95,7 @@ $(document).ready(function(){initNavTree('group__magma__zposv__comp.html','');})
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Groups</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Groups</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -189,7 +192,8 @@ Functions</h2></td></tr>
 <p>ZPOTRF computes the Cholesky factorization of a complex Hermitian positive definite matrix A. </p>
 <p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine.</p>
 <p>The factorization has the form A = U**H * U, if uplo = MagmaUpper, or A = L * L**H, if uplo = MagmaLower, where U is an upper triangular matrix and L is lower triangular.</p>
-<p>This is the block version of the algorithm, calling Level 3 BLAS. If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
+<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -561,7 +565,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <p>The factorization has the form dA = U**H * U, if UPLO = MagmaUpper, or dA = L * L**H, if UPLO = MagmaLower, where U is an upper triangular matrix and L is lower triangular.</p>
-<p>This is the block version of the algorithm, calling Level 3 BLAS. If the current stream is NULL, this version replaces it with user defined stream to overlap computation with communication.</p>
+<p>This is the block version of the algorithm, calling Level 3 BLAS. If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -634,7 +638,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>ZPOTRF_OOC computes the Cholesky factorization of a complex Hermitian positive definite matrix A. </p>
-<p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine. The matrix A may not fit entirely in the GPU memory.</p>
+<p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine. The matrix A may exceed the GPU memory.</p>
 <p>The factorization has the form A = U**H * U, if UPLO = MagmaUpper, or A = L * L**H, if UPLO = MagmaLower, where U is an upper triangular matrix and L is lower triangular.</p>
 <p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -715,15 +719,16 @@ Functions</h2></td></tr>
 <p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_gpus</td><td>INTEGER The number of GPUs to be used for the factorization.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
 <li>= MagmaUpper: Upper triangle of dA is stored;</li>
 <li>= MagmaLower: Lower triangle of dA is stored.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix dA. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N) On entry, the Hermitian matrix dA. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lA</td><td>COMPLEX_16 array of pointers on the GPU, dimension (num_gpus) On entry, the Hermitian matrix dA distributed over GPUs (d_lA[d] points to the local matrix on the d-th GPU). It is distributed in 1D block column or row cyclic (with the block size of nb) if UPLO = MagmaUpper or MagmaLower, respectively. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
  On exit, if INFO = 0, the factor U or L from the Cholesky factorization dA = U**H * U or dA = L * L**H.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,N). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array d_lA. LDDA &gt;= max(1,N). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
@@ -795,7 +800,7 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix dA. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the gpu, dimension (LDDA,N) On entry, the Hermitian matrix dA. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lA</td><td>COMPLEX_16 array of pointers on the GPU, dimension (num_gpus) On entry, the Hermitian matrix dA distributed over GPUs (dl_A[d] points to the local matrix on the d-th GPU). It is distributed in 1D block column or row cyclic (with the block size of nb) if UPLO = MagmaUpper or MagmaLower, respectively. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
  On exit, if INFO = 0, the factor U or L from the Cholesky factorization dA = U**H * U or dA = L * L**H.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,N). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -1030,7 +1035,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Jul 18 2014 17:34:42 for MAGMA by
+    <li class="footer">Generated on Tue Sep 2 2014 12:38:47 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

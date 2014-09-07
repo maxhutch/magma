@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgessm_gpu.cpp normal z -> s, Fri Jul 18 17:34:16 2014
+       @generated from zgessm_gpu.cpp normal z -> s, Tue Sep  2 12:38:20 2014
 
 */
 #include "common_magma.h"
@@ -43,7 +43,7 @@
             SGETRF_INCPIV.
 
     @param[in]
-    dL1     DOUBLE COMPLEX array, dimension(LDDL1, N)
+    dL1     REAL array, dimension(LDDL1, N)
             The IB-by-K matrix in which is stored L^(-1) as returned by GETRF_INCPIV
 
     @param[in]
@@ -51,7 +51,7 @@
             The leading dimension of the array L1.  LDDL1 >= max(1,2*IB).
 
     @param[in]
-    dL      DOUBLE COMPLEX array, dimension(LDDL, N)
+    dL      REAL array, dimension(LDDL, N)
             The M-by-K lower triangular tile on the gpu.
 
     @param[in]
@@ -59,7 +59,7 @@
             The leading dimension of the array L.  LDDL >= max(1,M).
 
     @param[in,out]
-    dA      DOUBLE COMPLEX array, dimension (LDDA, N)
+    dA      REAL array, dimension (LDDA, N)
             On entry, the M-by-N tile A on the gpu.
             On exit, updated by the application of L on the gpu.
 

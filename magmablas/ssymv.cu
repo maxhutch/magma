@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0-beta3) --
+    -- MAGMA (version 1.5.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date July 2014
+       @date September 2014
        
        ssymv.cu is nearly identical to ssymv.cu, just change names and drop .
        
-       @generated from zhemv.cu normal z -> s, Fri Jul 18 17:34:12 2014
+       @generated from zhemv.cu normal z -> s, Tue Sep  2 12:38:15 2014
        
        @author Mark Gates
 */
@@ -329,7 +329,7 @@ ssymv_kernel_L(
 
             // 1) multiply 64x16 block A * x2
             //    each thread does partial row rA(tx + 16*k, ty*4 + 16*k : ty*4 + 3 + 16*k)
-            // 2) multiply transposed 16x64 block A**T * x,
+            // 2) multiply transposed 16x64 block A**H * x,
             //    storing each product Aji*xi to sA(j,i)
             #pragma unroll
             for(int j=0; j < 4; j++) {
@@ -780,11 +780,14 @@ magmablas_ssymv(
         magma_int_t blocks = (n - 1)/NB_X + 1;
         magma_int_t lwork  = lda*blocks;
 
-        // TODO deal with error
         magma_smalloc( &dwork, lwork );
-
-        magmablas_ssymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
-
+        if ( dwork == NULL ) {
+            info = MAGMA_ERR_DEVICE_ALLOC;
+            magma_xerbla( __func__, -(info) );
+        }
+        else {
+            magmablas_ssymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+        }
         magma_free( dwork );
     }
     return info;
