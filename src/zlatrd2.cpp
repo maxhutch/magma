@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -147,13 +147,14 @@
     @ingroup magma_zheev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_zlatrd2(magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
-              magmaDoubleComplex *A,  magma_int_t lda,
-              double *e, magmaDoubleComplex *tau,
-              magmaDoubleComplex *W,  magma_int_t ldw,
-              magmaDoubleComplex *dA, magma_int_t ldda,
-              magmaDoubleComplex *dW, magma_int_t lddw,
-              magmaDoubleComplex *dwork, magma_int_t ldwork)
+magma_zlatrd2(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
+    magmaDoubleComplex *A,  magma_int_t lda,
+    double *e, magmaDoubleComplex *tau,
+    magmaDoubleComplex *W,  magma_int_t ldw,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dW, magma_int_t lddw,
+    magmaDoubleComplex_ptr dwork, magma_int_t ldwork)
 {
 #define A(i, j) (A + (j)*lda + (i))
 #define W(i, j) (W + (j)*ldw + (i))

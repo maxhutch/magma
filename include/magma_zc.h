@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions mixed zc -> ds
 */
@@ -18,34 +18,46 @@ extern "C" {
 #endif
 
 /* Mixed precision */
-magma_int_t magma_zcgesv_gpu(   magma_trans_t trans, magma_int_t N, magma_int_t NRHS,
-                                magmaDoubleComplex *dA, magma_int_t ldda,
-                                magma_int_t *IPIV, magma_int_t *dIPIV,
-                                magmaDoubleComplex *dB, magma_int_t lddb,
-                                magmaDoubleComplex *dX, magma_int_t lddx,
-                                magmaDoubleComplex *dworkd, magmaFloatComplex *dworks,
-                                magma_int_t *iter, magma_int_t *info );
+magma_int_t
+magma_zcgesv_gpu(
+    magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_int_t *ipiv,
+    magmaInt_ptr dipiv,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magmaDoubleComplex_ptr dX, magma_int_t lddx,
+    magmaDoubleComplex_ptr dworkd, magmaFloatComplex_ptr dworks,
+    magma_int_t *iter,
+    magma_int_t *info );
 
-magma_int_t magma_zcgetrs_gpu(  magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
-                                magmaFloatComplex  *dA, magma_int_t ldda,
-                                magma_int_t *ipiv,
-                                magmaDoubleComplex *dB, magma_int_t lddb,
-                                magmaDoubleComplex *dX, magma_int_t lddx,
-                                magmaFloatComplex  *dSX,
-                                magma_int_t *info );
+magma_int_t
+magma_zcgetrs_gpu(
+    magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
+    magmaFloatComplex_ptr  dA, magma_int_t ldda,
+    magmaInt_ptr        dipiv,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magmaDoubleComplex_ptr dX, magma_int_t lddx,
+    magmaFloatComplex_ptr dSX,
+    magma_int_t *info );
 
-magma_int_t magma_zcposv_gpu(   magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
-                                magmaDoubleComplex *dA, magma_int_t ldda,
-                                magmaDoubleComplex *dB, magma_int_t lddb,
-                                magmaDoubleComplex *dX, magma_int_t lddx,
-                                magmaDoubleComplex *dworkd, magmaFloatComplex *dworks,
-                                magma_int_t *iter, magma_int_t *info );
+magma_int_t
+magma_zcposv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magmaDoubleComplex_ptr dX, magma_int_t lddx,
+    magmaDoubleComplex_ptr dworkd, magmaFloatComplex_ptr dworks,
+    magma_int_t *iter,
+    magma_int_t *info );
 
-magma_int_t magma_zcgeqrsv_gpu( magma_int_t M, magma_int_t N, magma_int_t NRHS,
-                                magmaDoubleComplex *dA,  magma_int_t ldda,
-                                magmaDoubleComplex *dB,  magma_int_t lddb,
-                                magmaDoubleComplex *dX,  magma_int_t lddx,
-                                magma_int_t *iter,    magma_int_t *info );
+magma_int_t
+magma_zcgeqrsv_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t nrhs,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magmaDoubleComplex_ptr dX, magma_int_t lddx,
+    magma_int_t *iter,
+    magma_int_t *info );
 
 #ifdef __cplusplus
 }

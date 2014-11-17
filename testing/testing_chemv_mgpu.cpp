@@ -1,24 +1,24 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zhemv_mgpu.cpp normal z -> c, Tue Sep  2 12:38:27 2014
+       @generated from testing_zhemv_mgpu.cpp normal z -> c, Sat Nov 15 19:54:18 2014
 */
 
+// includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
+// includes, project
+#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 
 #define PRECISION_c
 
@@ -40,11 +40,11 @@ int main(int argc, char **argv)
     magmaFloatComplex alpha = MAGMA_C_MAKE(  1.5, -2.3 );  // MAGMA_C_ONE;
     magmaFloatComplex beta  = MAGMA_C_MAKE( -0.6,  0.8 );  // MAGMA_C_ZERO;
     magmaFloatComplex *A, *X, *Y[MagmaMaxGPUs], *Ycublas, *Ymagma;
-    magmaFloatComplex *dA, *dX[MagmaMaxGPUs], *dY[MagmaMaxGPUs], *d_lA[MagmaMaxGPUs], *dYcublas;
+    magmaFloatComplex_ptr dA, dX[MagmaMaxGPUs], dY[MagmaMaxGPUs], d_lA[MagmaMaxGPUs], dYcublas;
 
     //magma_queue_t stream[MagmaMaxGPUs][10];
     magmaFloatComplex *C_work;
-    magmaFloatComplex *dC_work[MagmaMaxGPUs];
+    magmaFloatComplex_ptr dC_work[MagmaMaxGPUs];
     magma_int_t     status = 0;
     
     magma_opts opts;
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
             
             magma_setdevice(0);
             cuda_time = magma_wtime();
-            cublasChemv( handle, cublas_uplo_const(opts.uplo), N-opts.offset,
+            cublasChemv( opts.handle, cublas_uplo_const(opts.uplo), N-opts.offset,
                          &alpha, dA + opts.offset + opts.offset*lda, lda,
                                  dX[0] + opts.offset,    incx,
                          &beta,  dYcublas + opts.offset, incx );
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
             // todo probably don't need sync here; getvector will sync
             for(d=1; d < opts.ngpu; d++) {
                 magma_setdevice(d);
-                cudaDeviceSynchronize();
+                magma_device_sync();
             }
             
             for(d=0; d < opts.ngpu; d++) {

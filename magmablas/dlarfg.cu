@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlarfg.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from zlarfg.cu normal z -> d, Sat Nov 15 19:53:59 2014
        
        @author Mark Gates
 */
@@ -154,12 +154,38 @@ dlarfg_kernel(
     @param[out]
     dtau    DOUBLE_PRECISION* on the GPU.
             Pointer to the value tau.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_daux1
+    ********************************************************************/
+extern "C"
+void magmablas_dlarfg_q(
+    magma_int_t n,
+    magmaDouble_ptr dalpha,
+    magmaDouble_ptr dx, magma_int_t incx,
+    magmaDouble_ptr dtau,
+    magma_queue_t queue )
+{
+    dim3 blocks( 1 );
+    dim3 threads( NB );
+    //dim3 threads( min( NB, max( n-1, 1 )));
+    dlarfg_kernel<<< blocks, threads, 0, queue >>>( n, dalpha, dx, incx, dtau );
+}
+
+
+/**
+    @see magmablas_dlarfg_q
+    @ingroup magma_daux1
     ********************************************************************/
 extern "C"
 void magmablas_dlarfg(
     magma_int_t n,
-    double* dalpha, double* dx, magma_int_t incx,
-    double* dtau )
+    magmaDouble_ptr dalpha,
+    magmaDouble_ptr dx, magma_int_t incx,
+    magmaDouble_ptr dtau )
 {
     dim3 blocks( 1 );
     dim3 threads( NB );

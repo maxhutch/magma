@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zmergebicgstab.cu normal z -> d, Tue Sep  2 12:38:33 2014
+       @generated from zmergebicgstab.cu normal z -> d, Sat Nov 15 19:54:21 2014
        @author Hartwig Anzt
 
 */
@@ -22,13 +22,14 @@
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_dbicgmerge1_kernel(  
-                    int n, 
-                    double *skp,
-                    double *v, 
-                    double *r, 
-                    double *p ){
+    int n, 
+    magmaDouble_ptr skp,
+    magmaDouble_ptr v, 
+    magmaDouble_ptr r, 
+    magmaDouble_ptr p )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double beta=skp[1];
     double omega=skp[2];
@@ -54,36 +55,40 @@ magma_dbicgmerge1_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    skp         double*
+    @param[in]
+    skp         magmaDouble_ptr 
                 set of scalar parameters
 
-    @param
-    v           double*
+    @param[in]
+    v           magmaDouble_ptr 
                 input v
 
-    @param
-    r           double*
+    @param[in]
+    r           magmaDouble_ptr 
                 input r
 
-    @param
-    p           double*
+    @param[in/out]
+    p           magmaDouble_ptr 
                 input/output p
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_dbicgmerge1(  int n, 
-                    double *skp,
-                    double *v, 
-                    double *r, 
-                    double *p ){
+magma_dbicgmerge1(  
+    int n, 
+    magmaDouble_ptr skp,
+    magmaDouble_ptr v, 
+    magmaDouble_ptr r, 
+    magmaDouble_ptr p ){
 
     
     dim3 Bs( BLOCK_SIZE );
@@ -95,13 +100,14 @@ magma_dbicgmerge1(  int n,
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_dbicgmerge2_kernel(  
-                    int n, 
-                    double *skp, 
-                    double *r,
-                    double *v, 
-                    double *s ){
+    int n, 
+    magmaDouble_ptr skp, 
+    magmaDouble_ptr r,
+    magmaDouble_ptr v, 
+    magmaDouble_ptr s )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double alpha=skp[0];
     if( i<n ){
@@ -124,36 +130,41 @@ magma_dbicgmerge2_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    skp         double*
+    @param[in]
+    skp         magmaDouble_ptr 
                 set of scalar parameters
 
-    @param
-    r           double*
+    @param[in]
+    r           magmaDouble_ptr 
                 input r
 
-    @param
-    v           double*
+    @param[in]
+    v           magmaDouble_ptr 
                 input v
 
-    @param
-    s           double*
-                input/output s
+    @param[s]
+    s           magmaDouble_ptr 
+                output s
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_dbicgmerge2(  int n, 
-                    double *skp, 
-                    double *r,
-                    double *v, 
-                    double *s ){
+magma_dbicgmerge2(  
+    int n, 
+    magmaDouble_ptr skp, 
+    magmaDouble_ptr r,
+    magmaDouble_ptr v, 
+    magmaDouble_ptr s )
+{
 
     
     dim3 Bs( BLOCK_SIZE );
@@ -166,15 +177,16 @@ magma_dbicgmerge2(  int n,
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_dbicgmerge3_kernel(  
-                    int n, 
-                    double *skp, 
-                    double *p,
-                    double *se,
-                    double *t,
-                    double *x, 
-                    double *r ){
+    int n, 
+    magmaDouble_ptr skp, 
+    magmaDouble_ptr p,
+    magmaDouble_ptr se,
+    magmaDouble_ptr t,
+    magmaDouble_ptr x, 
+    magmaDouble_ptr r )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double alpha=skp[0];
     double omega=skp[2];
@@ -204,46 +216,51 @@ magma_dbicgmerge3_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    skp         double*
+    @param[in]
+    skp         magmaDouble_ptr 
                 set of scalar parameters
 
-    @param
-    p           double*
+    @param[in]
+    p           magmaDouble_ptr 
                 input p
 
-    @param
-    s           double*
+    @param[in]
+    s           magmaDouble_ptr 
                 input s
 
-    @param
-    t           double*
+    @param[in]
+    t           magmaDouble_ptr 
                 input t
 
-    @param
-    x           double*
+    @param[in/out]
+    x           magmaDouble_ptr 
                 input/output x
 
-    @param
-    r           double*
+    @param[in/out]
+    r           magmaDouble_ptr 
                 input/output r
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_dbicgmerge3(  int n, 
-                    double *skp,
-                    double *p,
-                    double *s,
-                    double *t,
-                    double *x, 
-                    double *r ){
+magma_dbicgmerge3(  
+    int n, 
+    magmaDouble_ptr skp,
+    magmaDouble_ptr p,
+    magmaDouble_ptr s,
+    magmaDouble_ptr t,
+    magmaDouble_ptr x, 
+    magmaDouble_ptr r )
+{
 
     
     dim3 Bs( BLOCK_SIZE );
@@ -255,9 +272,10 @@ magma_dbicgmerge3(  int n,
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_dbicgmerge4_kernel_1(  
-                    double *skp ){
+    magmaDouble_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -266,9 +284,10 @@ magma_dbicgmerge4_kernel_1(
     }
 }
 
-__global__ void 
+__global__ void
 magma_dbicgmerge4_kernel_2(  
-                    double *skp ){
+    magmaDouble_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -277,9 +296,10 @@ magma_dbicgmerge4_kernel_2(
     }
 }
 
-__global__ void 
+__global__ void
 magma_dbicgmerge4_kernel_3(  
-                    double *skp ){
+    magmaDouble_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -300,21 +320,26 @@ magma_dbicgmerge4_kernel_3(
     Arguments
     ---------
 
-    @param
+    @param[in]
     type        int
                 kernel type
 
-    @param
-    skp         double*
+    @param[in/out]
+    skp         magmaDouble_ptr 
                 vector with parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_dbicgmerge4(  int type, 
-                    double *skp ){
+magma_dbicgmerge4(  
+    int type, 
+    magmaDouble_ptr skp )
+{
 
     dim3 Bs( 1 );
     dim3 Gs( 1 );

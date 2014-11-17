@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -115,8 +115,10 @@ zlascl2_upper(int m, int n, const double *D, magmaDoubleComplex* A, int lda)
 extern "C" void
 magmablas_zlascl2_q(
     magma_type_t type, magma_int_t m, magma_int_t n,
-    const double *dD, magmaDoubleComplex *dA, magma_int_t ldda, magma_int_t *info,
-    magma_queue_t queue )
+    magmaDouble_const_ptr dD,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     *info = 0;
     if ( type != MagmaLower && type != MagmaUpper && type != MagmaFull )
@@ -155,7 +157,8 @@ magmablas_zlascl2_q(
 extern "C" void
 magmablas_zlascl2(
     magma_type_t type, magma_int_t m, magma_int_t n,
-    const double *dD, magmaDoubleComplex *dA, magma_int_t ldda, magma_int_t *info )
+    magmaDouble_const_ptr dD,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info )
 {
-    magmablas_zlascl2_q( type, m, n, dD, dA, ldda, info, magma_stream );
+    magmablas_zlascl2_q( type, m, n, dD, dA, ldda, magma_stream, info );
 }

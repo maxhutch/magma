@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -99,17 +99,18 @@
     @ingroup magma_zheev_2stage
     ********************************************************************/
 extern "C" magma_int_t
-magma_zunmqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
-                         magma_int_t m, magma_int_t n, magma_int_t k,
-                         magmaDoubleComplex *dA,   magma_int_t ldda,
-                         magmaDoubleComplex *dC,    magma_int_t lddc,
-                         magmaDoubleComplex *dT,    magma_int_t nb,
-                         magma_int_t *info)
+magma_zunmqr_gpu_2stages(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex_ptr dA,   magma_int_t ldda,
+    magmaDoubleComplex_ptr dC,    magma_int_t lddc,
+    magmaDoubleComplex_ptr dT,    magma_int_t nb,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
     
-    magmaDoubleComplex *dwork;
+    magmaDoubleComplex_ptr dwork;
 
     magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw;
     int left, notran;

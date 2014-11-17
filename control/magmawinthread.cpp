@@ -8,7 +8,7 @@
  *
  * @version 2.3.1
  * @author Piotr Luszczek
- * @date September 2014
+ * @date November 2014
  *
  * This file is originally from PLASMA project, where plasma has been
  * replaced by MAGMA.

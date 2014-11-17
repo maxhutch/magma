@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 */
@@ -90,47 +90,6 @@ extern volatile magma_int_t *ss_prog;
 // declare globals here; defined in zhetrd_bhe2trc.cpp
 extern struct gbstrct_blg core_in_all;
 
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-#define MAX_EVENTSBLG 163840
-//#define MAX_EVENTSBLG 1048576
-
-// If we're not using GNU C, elide __attribute__
-#ifndef __GNUC__
-#define __attribute__(x)  /*NOTHING*/
-#endif
-
-// declare globals here; defined in zhetrd_bhe2trc.cpp
-extern int           event_numblg        [MAX_THREADS_BLG]                 __attribute__ ((aligned (128)));
-extern real_Double_t event_start_timeblg [MAX_THREADS_BLG]                 __attribute__ ((aligned (128)));
-extern real_Double_t event_end_timeblg   [MAX_THREADS_BLG]                 __attribute__ ((aligned (128)));
-extern real_Double_t event_logblg        [MAX_THREADS_BLG][MAX_EVENTSBLG]  __attribute__ ((aligned (128)));
-extern int           log_eventsblg;
-
-#ifndef __GNUC__
-#undef  __attribute__
-#endif
-
-#define core_event_startblg(my_core_id)\
-    event_start_timeblg[my_core_id] = magma_wtime();
-
-#define core_event_endblg(my_core_id)\
-    event_end_timeblg[my_core_id] = magma_wtime();
-
-#define core_log_eventblg(event, my_core_id)\
-    event_logblg[my_core_id][event_numblg[my_core_id]+0] = my_core_id;\
-    event_logblg[my_core_id][event_numblg[my_core_id]+1] = event_start_timeblg[my_core_id];\
-    event_logblg[my_core_id][event_numblg[my_core_id]+2] = event_end_timeblg[my_core_id];\
-    event_logblg[my_core_id][event_numblg[my_core_id]+3] = (event);\
-    event_numblg[my_core_id] += (log_eventsblg << 2);\
-    event_numblg[my_core_id] &= (MAX_EVENTSBLG-1);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __cplusplus
 }

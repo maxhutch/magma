@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
+       @author Azzam Haidar
        
        File named ztrtri_diag.cu to avoid name conflict with src/ztrtri.o
        in the library. The actual kernels are in ztrtri_lower.cu and ztrtri_upper.cu
@@ -85,8 +86,8 @@
 extern "C" void
 magmablas_ztrtri_diag_q(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex *d_dinvA,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr d_dinvA,
     magma_queue_t queue)
 {
     magma_int_t info = 0;
@@ -110,7 +111,7 @@ magmablas_ztrtri_diag_q(
     
     if ( uplo == MagmaLower ) {
         // invert diagonal IB x IB inner blocks
-        ztrtri_diag_kernel_lower<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
+        ztrtri_diag_lower_kernel<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
 
         // build up NB x NB blocks (assuming IB=16 here):
         // use   16 x 16  blocks to build  32 x 32  blocks,  1 x (1 x npages) grid,  4 x 4 threads;
@@ -126,28 +127,28 @@ magmablas_ztrtri_diag_q(
             //printf( "n %d, jb %d, grid %d x %d (%d x %d)\n", n, jb, grid.x, grid.y, grid.y / npages, npages );
             switch (jb) {
                 case 16:
-                    triple_zgemm16_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm16_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 32:
-                    triple_zgemm32_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm32_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 64:
-                    triple_zgemm64_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm64_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 default:
-                    triple_zgemm_above64_part1_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part2_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part3_lower<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part3_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
             }
             if ( kb >= n ) break;
         }
     }
     else {
-        ztrtri_diag_kernel_upper<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
+        ztrtri_diag_upper_kernel<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
 
         // update the inverse up to the size of IB
         for( int jb=IB; jb < NB; jb*=2 ) {
@@ -158,21 +159,21 @@ magmablas_ztrtri_diag_q(
             
             switch (jb) {
                 case 16:
-                    triple_zgemm16_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm16_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm16_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 32:
-                    triple_zgemm32_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm32_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm32_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 64:
-                    triple_zgemm64_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm64_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm64_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 default:
-                    triple_zgemm_above64_part1_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part2_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_zgemm_above64_part3_upper<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_zgemm_above64_part3_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
             }
             if ( kb >= n ) break;
@@ -187,8 +188,8 @@ magmablas_ztrtri_diag_q(
 extern "C" void
 magmablas_ztrtri_diag(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex *d_dinvA)
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr d_dinvA)
 {
     magmablas_ztrtri_diag_q( uplo, diag, n, dA, ldda, d_dinvA, magma_stream );
 }

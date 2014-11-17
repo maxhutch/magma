@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlarfg.cu normal z -> c, Tue Sep  2 12:38:16 2014
+       @generated from zlarfg.cu normal z -> c, Sat Nov 15 19:53:59 2014
        
        @author Mark Gates
 */
@@ -154,12 +154,38 @@ clarfg_kernel(
     @param[out]
     dtau    COMPLEX* on the GPU.
             Pointer to the value tau.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_caux1
+    ********************************************************************/
+extern "C"
+void magmablas_clarfg_q(
+    magma_int_t n,
+    magmaFloatComplex_ptr dalpha,
+    magmaFloatComplex_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr dtau,
+    magma_queue_t queue )
+{
+    dim3 blocks( 1 );
+    dim3 threads( NB );
+    //dim3 threads( min( NB, max( n-1, 1 )));
+    clarfg_kernel<<< blocks, threads, 0, queue >>>( n, dalpha, dx, incx, dtau );
+}
+
+
+/**
+    @see magmablas_clarfg_q
+    @ingroup magma_caux1
     ********************************************************************/
 extern "C"
 void magmablas_clarfg(
     magma_int_t n,
-    magmaFloatComplex* dalpha, magmaFloatComplex* dx, magma_int_t incx,
-    magmaFloatComplex* dtau )
+    magmaFloatComplex_ptr dalpha,
+    magmaFloatComplex_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr dtau )
 {
     dim3 blocks( 1 );
     dim3 threads( NB );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zungqr.cpp normal z -> d, Tue Sep  2 12:38:21 2014
+       @generated from zungqr.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -75,11 +75,12 @@
     @ingroup magma_dgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dorgqr(magma_int_t m, magma_int_t n, magma_int_t k,
-             double *A, magma_int_t lda,
-             double *tau,
-             double *dT, magma_int_t nb,
-             magma_int_t *info)
+magma_dorgqr(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    double *A, magma_int_t lda,
+    double *tau,
+    magmaDouble_ptr dT, magma_int_t nb,
+    magma_int_t *info)
 {
 #define  A(i,j) ( A + (i) + (j)*lda )
 #define dA(i,j) (dA + (i) + (j)*ldda)

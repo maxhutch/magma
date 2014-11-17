@@ -1,18 +1,19 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal d -> s
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 
 #define PRECISION_d
+#define REAL
 
 /*
  * Version1 - LAPACK              (lapack_zgehrd and lapack_zunghr)
@@ -138,10 +139,17 @@ extern "C" magma_int_t
 magma_dgeev_m(
     magma_vec_t jobvl, magma_vec_t jobvr, magma_int_t n,
     double *A, magma_int_t lda,
+    #ifdef COMPLEX
+    double *w,
+    #else
     double *wr, double *wi,
+    #endif
     double *VL, magma_int_t ldvl,
     double *VR, magma_int_t ldvr,
     double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
     magma_int_t *info )
 {
     #define VL(i,j)  (VL + (i) + (j)*ldvl)

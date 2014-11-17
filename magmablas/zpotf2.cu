@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @precisions normal z -> s d c
 */
@@ -16,8 +16,6 @@
 //#else
 //#define zdotc_max_bs 1024
 //#endif
-
-#define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
 void zpotf2_zdscal(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
 void zpotf2_zdotc(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
@@ -34,8 +32,8 @@ void zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
     positive definite matrix A.
 
     The factorization has the form
-        A = U' * U , if UPLO = MagmaUpper, or
-        A = L  * L', if UPLO = MagmaLower,
+        A = U**H * U,  if UPLO = MagmaUpper, or
+        A = L  * L**H, if UPLO = MagmaLower,
     where U is an upper triangular matrix and L is lower triangular.
 
     This is the unblocked version of the algorithm, calling Level 2 BLAS.
@@ -52,11 +50,10 @@ void zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
 
     @param[in]
     n       INTEGER
-            The order of the matrix A.  N >= 0 and N <= 1024.
-            On CUDA architecture 1.x cards, N <= 512.
+            The order of the matrix A.  N >= 0 and N <= 512.
 
     @param[in,out]
-    A       COMPLEX_16 array, dimension (LDA,N)
+    dA      COMPLEX_16 array, dimension (LDDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             n by n upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -66,11 +63,11 @@ void zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
             triangular part of A is not referenced.
     \n
             On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization A = U'*U  or A = L*L'.
+            factorization A = U**H * U  or A = L * L**H.
 
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+    ldda    INTEGER
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
     info    INTEGER
@@ -85,9 +82,11 @@ void zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
 extern "C" magma_int_t
 magma_zpotf2_gpu(
     magma_uplo_t uplo, magma_int_t n,
-    magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magma_int_t *info )
 {
+#define dA(i_, j_)  (dA + (i_) + (j_)*ldda)
+
     magma_int_t j;
 
     *info = 0;
@@ -95,7 +94,7 @@ magma_zpotf2_gpu(
         *info = -1;
     } else if (n < 0 || n > zdotc_max_bs) {
         *info = -2;
-    } else if (lda < max(1,n)) {
+    } else if (ldda < max(1,n)) {
         *info = -4;
     }
 
@@ -114,39 +113,39 @@ magma_zpotf2_gpu(
 
     if (uplo == MagmaUpper) {
         for(j = 0; j < n; j++) {
-            zpotf2_zdotc(j, A(0,j), 1); // including zdotc product and update a(j,j)
+            zpotf2_zdotc(j, dA(0,j), 1); // including zdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, A(0, j), 1);
+                zlacgv(j, dA(0, j), 1);
                 #endif
                 magma_zgemv( MagmaTrans, j, n-j-1,
-                             alpha, A(0, j+1), lda,
-                                    A(0, j),   1,
-                             beta,  A(j, j+1), lda);
+                             alpha, dA(0, j+1), ldda,
+                                    dA(0, j),   1,
+                             beta,  dA(j, j+1), ldda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, A(0, j), 1);
+                zlacgv(j, dA(0, j), 1);
                 #endif
-                zpotf2_zdscal(n-j, A(j,j), lda);
+                zpotf2_zdscal(n-j, dA(j,j), ldda);
             }
         }
     }
     else {
         for(j = 0; j < n; j++) {
-            zpotf2_zdotc(j, A(j,0), lda); // including zdotc product and update a(j,j)
+            zpotf2_zdotc(j, dA(j,0), ldda); // including zdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, A(j, 0), lda);
+                zlacgv(j, dA(j, 0), ldda);
                 #endif
                 magma_zgemv( MagmaNoTrans, n-j-1, j,
-                             alpha, A(j+1, 0), lda,
-                                    A(j,0),    lda,
-                             beta,  A(j+1, j), 1 );
+                             alpha, dA(j+1, 0), ldda,
+                                    dA(j,0),    ldda,
+                             beta,  dA(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, A(j, 0), lda);
+                zlacgv(j, dA(j, 0), ldda);
                 #endif
-                zpotf2_zdscal(n-j, A(j,j), 1);
+                zpotf2_zdscal(n-j, dA(j,j), 1);
             }
         }
     }

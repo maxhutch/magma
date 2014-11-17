@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zmergebicgstab2.cu normal z -> d, Tue Sep  2 12:38:33 2014
+       @generated from zmergebicgstab2.cu normal z -> d, Sat Nov 15 19:54:21 2014
        @author Hartwig Anzt
 
 */
@@ -24,11 +24,13 @@
 
 
 // accelerated reduction for one vector
-__global__ void 
-magma_dreduce_kernel_spmv1(    int Gs,
-                               int n, 
-                               double *vtmp,
-                               double *vtmp2 ){
+__global__ void
+magma_dreduce_kernel_spmv1(    
+    int Gs,
+    int n, 
+    magmaDouble_ptr vtmp,
+    magmaDouble_ptr vtmp2 )
+{
 
     extern __shared__ double temp[];    
     int Idx = threadIdx.x;
@@ -85,17 +87,17 @@ magma_dreduce_kernel_spmv1(    int Gs,
 }
 
 
-__global__ void 
+__global__ void
 magma_dbicgmerge_spmv1_kernel(  
-                 int n,
-                 double *d_val, 
-                 magma_index_t *d_rowptr, 
-                 magma_index_t *d_colind,
-                 double *p,
-                 double *r,
-                 double *v,
-                 double *vtmp
-                                            ){
+    int n,
+    magmaDouble_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr p,
+    magmaDouble_ptr r,
+    magmaDouble_ptr v,
+    magmaDouble_ptr vtmp)
+{
 
     extern __shared__ double temp[]; 
     int Idx = threadIdx.x;   
@@ -104,10 +106,10 @@ magma_dbicgmerge_spmv1_kernel(
 
     if( i<n ){
         double dot = MAGMA_D_ZERO;
-        int start = d_rowptr[ i ];
-        int end = d_rowptr[ i+1 ];
+        int start = drowptr[ i ];
+        int end = drowptr[ i+1 ];
         for( j=start; j<end; j++)
-            dot += d_val[ j ] * p[ d_colind[j] ];
+            dot += dval[ j ] * p[ dcolind[j] ];
         v[ i ] =  dot;
     }
 
@@ -161,9 +163,9 @@ magma_dbicgmerge_spmv1_kernel(
     }
 }
 
-__global__ void 
+__global__ void
 magma_dbicgstab_alphakernel(  
-                    double *skp ){
+                    magmaDouble_ptr skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -182,46 +184,55 @@ magma_dbicgstab_alphakernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_d_sparse_matrix
                 system matrix
 
-    @param
-    d1          double*
+    @param[in]
+    d1          magmaDouble_ptr 
                 temporary vector
 
-    @param
-    d2          double*
+    @param[in]
+    d2          magmaDouble_ptr 
                 temporary vector
 
-    @param
-    d_p         double*
+    @param[in]
+    dp          magmaDouble_ptr 
                 input vector p
 
-    @param
-    d_r         double*
+    @param[in]
+    dr          magmaDouble_ptr 
                 input vector r
 
-    @param
-    d_v         double*
+    @param[in]
+    dv          magmaDouble_ptr 
                 output vector v
 
-    @param
-    skp         double*
+    @param[in/out]
+    skp         magmaDouble_ptr 
                 array for parameters ( skp[0]=alpha )
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dbicgmerge_spmv1(  magma_d_sparse_matrix A,
-                         double *d1,
-                         double *d2,
-                         double *d_p,
-                         double *d_r,
-                         double *d_v,
-                         double *skp ){
+magma_dbicgmerge_spmv1(
+    magma_d_sparse_matrix A,
+    magmaDouble_ptr d1,
+    magmaDouble_ptr d2,
+    magmaDouble_ptr dp,
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dv,
+    magmaDouble_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int n = A.num_rows;
     int local_block_size=256;
@@ -229,24 +240,24 @@ magma_dbicgmerge_spmv1(  magma_d_sparse_matrix A,
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  local_block_size * sizeof( double ); 
-    double *aux1 = d1, *aux2 = d2;
+    magmaDouble_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
 
-    if( A.storage_type == Magma_CSR)
+    if ( A.storage_type == Magma_CSR)
         magma_dbicgmerge_spmv1_kernel<<<Gs, Bs, Ms>>>
-                    ( n, A.val, A.row, A.col, d_p, d_r, d_v, d1 );
+                    ( n, A.dval, A.drow, A.dcol, dp, dr, dv, d1 );
     else
         printf("error: only CSR format supported.\n");
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_dreduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                             ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -256,17 +267,20 @@ magma_dbicgmerge_spmv1(  magma_d_sparse_matrix A,
     dim3 Gs2( 1 );
     magma_dbicgstab_alphakernel<<<Gs2, Bs2, 0>>>( skp );
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
 
 // accelerated block reduction for multiple vectors
-__global__ void 
-magma_dreduce_kernel_spmv2( int Gs,
-                           int n, 
-                           double *vtmp,
-                           double *vtmp2 ){
+__global__ void
+magma_dreduce_kernel_spmv2( 
+    int Gs,
+    int n, 
+    magmaDouble_ptr vtmp,
+    magmaDouble_ptr vtmp2 )
+{
 
     extern __shared__ double temp[];    
     int Idx = threadIdx.x;
@@ -347,16 +361,16 @@ magma_dreduce_kernel_spmv2( int Gs,
     }
 }
 
-__global__ void 
+__global__ void
 magma_dbicgmerge_spmv2_kernel(  
-                 int n,
-                 double *d_val, 
-                 magma_index_t *d_rowptr, 
-                 magma_index_t *d_colind,
-                 double *s,
-                 double *t,
-                 double *vtmp
-                                            ){
+    int n,
+    magmaDouble_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr s,
+    magmaDouble_ptr t,
+    magmaDouble_ptr vtmp )
+{
 
     extern __shared__ double temp[]; 
     int Idx = threadIdx.x;   
@@ -365,10 +379,10 @@ magma_dbicgmerge_spmv2_kernel(
 
     if( i<n ){
         double dot = MAGMA_D_ZERO;
-        int start = d_rowptr[ i ];
-        int end = d_rowptr[ i+1 ];
+        int start = drowptr[ i ];
+        int end = drowptr[ i+1 ];
         for( j=start; j<end; j++)
-            dot += d_val[ j ] * s[ d_colind[j] ];
+            dot += dval[ j ] * s[ dcolind[j] ];
         t[ i ] =  dot;
     }
 
@@ -452,9 +466,9 @@ magma_dbicgmerge_spmv2_kernel(
     }
 }
 
-__global__ void 
+__global__ void
 magma_dbicgstab_omegakernel(  
-                    double *skp ){
+                    magmaDouble_ptr skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -473,42 +487,50 @@ magma_dbicgstab_omegakernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_d_sparse_matrix
                 input matrix 
 
-    @param
-    d1          double*
+    @param[in]
+    d1          magmaDouble_ptr 
                 temporary vector
 
-    @param
-    d2          double*
+    @param[in]
+    d2          magmaDouble_ptr 
                 temporary vector
 
-    @param
-    d_s         double*
+    @param[in]
+    ds          magmaDouble_ptr 
                 input vector s
 
-    @param
-    d_t         double*
+    @param[in]
+    dt          magmaDouble_ptr 
                 output vector t
 
-    @param
-    skp         double*
+    @param[in/out]
+    skp         magmaDouble_ptr 
                 array for parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dbicgmerge_spmv2(  
-                 magma_d_sparse_matrix A,
-                 double *d1,
-                 double *d2,
-                 double *d_s,
-                 double *d_t,
-                 double *skp ){
+magma_dbicgmerge_spmv2(
+    magma_d_sparse_matrix A,
+    magmaDouble_ptr d1,
+    magmaDouble_ptr d2,
+    magmaDouble_ptr ds,
+    magmaDouble_ptr dt,
+    magmaDouble_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int n = A.num_rows;
     int local_block_size=256;
@@ -516,23 +538,23 @@ magma_dbicgmerge_spmv2(
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( double ); 
-    double *aux1 = d1, *aux2 = d2;
+    magmaDouble_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
-    if( A.storage_type == Magma_CSR)
+    if ( A.storage_type == Magma_CSR)
         magma_dbicgmerge_spmv2_kernel<<<Gs, Bs, Ms>>>
-                    ( n, A.val, A.row, A.col, d_s, d_t, d1 );
+                    ( n, A.dval, A.drow, A.dcol, ds, dt, d1 );
     else
         printf("error: only CSR format supported.\n");
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_dreduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                     ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -543,23 +565,24 @@ magma_dbicgmerge_spmv2(
     dim3 Gs2( 1 );
     magma_dbicgstab_omegakernel<<<Gs2, Bs2, 0>>>( skp );
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_dbicgmerge_xrbeta_kernel(  
-                    int n, 
-                    double *rr,
-                    double *r,
-                    double *p,
-                    double *s,
-                    double *t,
-                    double *x, 
-                    double *skp,
-                    double *vtmp
-                                            ){
+    int n, 
+    magmaDouble_ptr rr,
+    magmaDouble_ptr r,
+    magmaDouble_ptr p,
+    magmaDouble_ptr s,
+    magmaDouble_ptr t,
+    magmaDouble_ptr x, 
+    magmaDouble_ptr skp,
+    magmaDouble_ptr vtmp )
+{
 
     extern __shared__ double temp[]; 
     int Idx = threadIdx.x;   
@@ -656,9 +679,10 @@ magma_dbicgmerge_xrbeta_kernel(
     }
 }
 
-__global__ void 
+__global__ void
 magma_dbicgstab_betakernel(  
-                    double *skp ){
+    magmaDouble_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -678,82 +702,90 @@ magma_dbicgstab_betakernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    d1          double*
+    @param[in]
+    d1          magmaDouble_ptr 
                 temporary vector
 
-    @param
-    d2          double*
+    @param[in]
+    d2          magmaDouble_ptr 
                 temporary vector
 
-    @param
-    rr        double*
+    @param[in]
+    rr          magmaDouble_ptr 
                 input vector rr
 
-    @param
-    r         double*
+    @param[in]
+    r           magmaDouble_ptr 
                 input/output vector r
 
-    @param
-    p         double*
+    @param[in]
+    p           magmaDouble_ptr 
                 input vector p
 
-    @param
-    s         double*
+    @param[in]
+    s           magmaDouble_ptr 
                 input vector s
 
-    @param
-    t         double*
+    @param[in]
+    t           magmaDouble_ptr 
                 input vector t
 
-    @param
-    x         double*
+    @param[out]
+    x           magmaDouble_ptr 
                 output vector x
 
-    @param
-    skp         double*
+    @param[in]
+    skp         magmaDouble_ptr 
                 array for parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dbicgmerge_xrbeta(  
-                 int n,
-                 double *d1,
-                 double *d2,
-                 double *rr,
-                 double *r,
-                 double *p,
-                 double *s,
-                 double *t,
-                 double *x, 
-                 double *skp ){
+magma_dbicgmerge_xrbeta(
+    int n,
+    magmaDouble_ptr d1,
+    magmaDouble_ptr d2,
+    magmaDouble_ptr rr,
+    magmaDouble_ptr r,
+    magmaDouble_ptr p,
+    magmaDouble_ptr s,
+    magmaDouble_ptr t,
+    magmaDouble_ptr x, 
+    magmaDouble_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( double ); 
-    double *aux1 = d1, *aux2 = d2;
+    magmaDouble_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
     magma_dbicgmerge_xrbeta_kernel<<<Gs, Bs, Ms>>>
                     ( n, rr, r, p, s, t, x, skp, d1);  
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_dreduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                             ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -764,6 +796,7 @@ magma_dbicgmerge_xrbeta(
     dim3 Gs2( 1 );
     magma_dbicgstab_betakernel<<<Gs2, Bs2, 0>>>( skp );
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 

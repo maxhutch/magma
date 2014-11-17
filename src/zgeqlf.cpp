@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -90,9 +90,11 @@
     @ingroup magma_zgeqlf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgeqlf(magma_int_t m, magma_int_t n,
-             magmaDoubleComplex *A,    magma_int_t lda, magmaDoubleComplex *tau,
-             magmaDoubleComplex *work, magma_int_t lwork, magma_int_t *info)
+magma_zgeqlf(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex *A,    magma_int_t lda, magmaDoubleComplex *tau,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    magma_int_t *info)
 {
     #define  A(a_1,a_2) ( A + (a_2)*(lda) + (a_1))
     #define dA(a_1,a_2) (dA + (a_2)*ldda  + (a_1))

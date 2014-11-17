@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 1.5.0) --
+# MAGMA (version 1.6.0) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date September 2014
+# @date November 2014
 
 ## @file run_tests.py
 #  @author Mark Gates
@@ -209,7 +209,6 @@ if opts.small:
 	)
 if opts.med:
 	n +=  ' -N 510  -N 511  -N 512  -N 513  -N 514 --range 100:900:100'
-	n_sm = n
 if opts.large:
 	n +=  ' --range 1000:4000:1000'
 
@@ -297,8 +296,8 @@ blas = (
 	
 	# lower/upper, no-trans/conj-trans
 	('testing_zherk',   '-L             -c',  n,    'cublas only'),
-	('testing_zherk',   '-U -C          -c',  n,    'cublas only'),
-	('testing_zherk',   '-L             -c',  n,    'cublas only'),
+	('testing_zherk',   '-L -C          -c',  n,    'cublas only'),
+	('testing_zherk',   '-U             -c',  n,    'cublas only'),
 	('testing_zherk',   '-U -C          -c',  n,    'cublas only'),
 	
 	# lower/upper, no-trans/conj-trans
@@ -453,7 +452,7 @@ chol = (
 	
 	('testing_zpotrf_mgpu',      '-L    -c',  n,    ''),
 	('testing_zpotrf_mgpu',      '-U    -c',  n,    ''),
-	
+
 # ----------
 # Cholesky, CPU interface
 	('testing_zposv',            '-L    -c',  n,    ''),
@@ -464,6 +463,30 @@ chol = (
 	
 	('testing_zpotri',           '-L    -c',  n,    ''),
 	('testing_zpotri',           '-U    -c',  n,    ''),
+
+# ----------
+# Symmetric Indefinite, GPU interface 
+# > no-pivot LDLt
+	('testing_zhetrf',           '-L   -c  --version 4',  n,    ''),
+	('testing_zhetrf',           '-U   -c  --version 4',  n,    ''),
+
+	('testing_zhetrf',           '-L   -c2 --version 4',  n,    ''),
+	('testing_zhetrf',           '-U   -c2 --version 4',  n,    ''),
+
+# ----------
+# Symmetric Indefinite, CPU interface
+# > Bunch-Kauffman
+	('testing_zhetrf',           '-L   -c  --version 1',  n,    ''),
+	('testing_zhetrf',           '-U   -c  --version 1',  n,    ''),
+
+	('testing_zhetrf',           '-L   -c2 --version 1',  n,    ''),
+	('testing_zhetrf',           '-U   -c2 --version 1',  n,    ''),
+# > no-pivot LDLt
+	('testing_zhetrf',           '-L   -c  --version 3',  n,    ''),
+	('testing_zhetrf',           '-U   -c  --version 3',  n,    ''),
+
+	('testing_zhetrf',           '-L   -c2 --version 3',  n,    ''),
+	('testing_zhetrf',           '-U   -c2 --version 3',  n,    ''),
 )
 if ( opts.chol ):
 	tests += chol

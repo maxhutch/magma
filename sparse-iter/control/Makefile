@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/control
@@ -17,17 +17,24 @@ ZSRC := \
 	magma_z_free.cpp	\
 	magma_z_init.cpp	\
 	magma_z_matrixchar.cpp	\
-	magma_z_mconverter.cpp	\
-	magma_z_transfer.cpp	\
+	magma_zmconverter.cpp	\
+	magma_zmtransfer.cpp	\
 	magma_z_vio.cpp		\
 	magma_zgeneratematrix.cpp	\
-	matrix_zio.cpp		\
+	magma_zmio.cpp		\
 	magma_zsolverinfo.cpp	\
-	magma_ztranspose.cpp	\
-    magma_zp2p.cpp   \
     magma_zcsrsplit.cpp   \
+    magma_zmcsrpass.cpp   \
+    magma_zmcsrpass_gpu.cpp   \
+    magma_zmcsrcompressor.cpp   \
     magma_zmscale.cpp   \
     magma_zmdiff.cpp  \
+	magma_zmlumerge.cpp	\
+	magma_zvtranspose.cpp	\
+	magma_zmtranspose.cpp	\
+	magma_zvtransfer.cpp	\
+    magma_zvpass.cpp   \
+    magma_zvpass_gpu.cpp   \
 
 SRC := \
 	mmio.cpp		\

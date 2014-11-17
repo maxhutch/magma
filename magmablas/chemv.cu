@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        csymv.cu is nearly identical to chemv.cu, just change names and drop cuConjf.
        
-       @generated from zhemv.cu normal z -> c, Tue Sep  2 12:38:15 2014
+       @generated from zhemv.cu normal z -> c, Sat Nov 15 19:53:59 2014
        
        @author Mark Gates
 */
@@ -450,10 +450,10 @@ chemv_kernel_L_sum(
 extern "C"
 void magmablas_chemv_L(
     magma_int_t n, magmaFloatComplex alpha,
-    const magmaFloatComplex *A, magma_int_t lda,
-    const magmaFloatComplex *x, magma_int_t incx,
+    const magmaFloatComplex *dA, magma_int_t ldda,
+    const magmaFloatComplex *dx, magma_int_t incx,
     magmaFloatComplex beta,
-    magmaFloatComplex *y, magma_int_t incy,
+    magmaFloatComplex *dy, magma_int_t incy,
     magmaFloatComplex *dwork)
 {
     magma_int_t blocks = (n - 1)/NB_X + 1;
@@ -461,11 +461,11 @@ void magmablas_chemv_L(
 
     dim3 threads( NB_X, NB_Y, 1 );
     chemv_kernel_L<<< grid, threads, 0, magma_stream >>>
-        (n, A, lda, x, incx, dwork);
+        (n, dA, ldda, dx, incx, dwork);
 
     dim3 threads_sum( NB_X, 1, 1 );
     chemv_kernel_L_sum<<< grid, threads_sum, 0, magma_stream >>>
-        (n, alpha, lda, beta, y, incy, dwork);
+        (n, alpha, ldda, beta, dy, incy, dwork);
 }
 
 
@@ -499,7 +499,7 @@ void magmablas_chemv_L(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    A       COMPLEX array of DIMENSION ( LDA, n ).
+    dA      COMPLEX array of DIMENSION ( LDDA, n ).
             Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the Hermitian matrix and the strictly
@@ -512,16 +512,16 @@ void magmablas_chemv_L(
             not be set and are assumed to be zero.
 
     @param[in]
-    lda     INTEGER.
-            On entry, LDA specifies the first dimension of A as declared
-            in the calling (sub) program. LDA must be at least
+    ldda     INTEGER.
+            On entry, LDDA specifies the first dimension of A as declared
+            in the calling (sub) program. LDDA must be at least
             max( 1, n ).
-            It is recommended that lda is multiple of 16. Otherwise
+            It is recommended that ldda is multiple of 16. Otherwise
             performance would be deteriorated as the memory accesses
             would not be fully coalescent.
 
     @param[in]
-    x       COMPLEX array of dimension at least
+    dx      COMPLEX array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
@@ -536,8 +536,8 @@ void magmablas_chemv_L(
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
-    @param[in, out]
-    y       COMPLEX array of dimension at least
+    @param[in,out]
+    dy      COMPLEX array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
@@ -553,7 +553,7 @@ void magmablas_chemv_L(
 
     @param[in]
     lwork   INTEGER.
-            The dimension of the array DWORK. LWORK >= LDA * ceil( N / NB_X ),
+            The dimension of the array DWORK. LWORK >= LDDA * ceil( N / NB_X ),
             where NB_X = 64.
 
     MAGMA implements chemv through two steps:
@@ -578,17 +578,17 @@ magma_int_t
 magmablas_chemv_work(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *A, magma_int_t lda,
-    const magmaFloatComplex *x, magma_int_t incx,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magmaFloatComplex beta,
-    magmaFloatComplex *y, magma_int_t incy,
-    magmaFloatComplex *dwork, magma_int_t lwork)
+    magmaFloatComplex_ptr dy, magma_int_t incy,
+    magmaFloatComplex_ptr dwork, magma_int_t lwork)
 {
 #if defined(PRECISION_z)
     // z precision requires CUDA ARCH 2.x; call CUBLAS version instead.
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
-        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_chemv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
         return MAGMA_SUCCESS;
     }
 #endif
@@ -598,7 +598,7 @@ magmablas_chemv_work(
     int upper = (uplo == MagmaUpper);
 
     magma_int_t blocks = (n - 1)/NB_X + 1;
-    magma_int_t lwmin  = lda*blocks;
+    magma_int_t lwmin  = ldda*blocks;
 
     /*
      * Test the input parameters.
@@ -608,7 +608,7 @@ magmablas_chemv_work(
         info = -1;
     } else if ( n < 0 ) {
         info = -2;
-    } else if ( lda < max(1, n) ) {
+    } else if ( ldda < max(1, n) ) {
         info = -5;
     } else if ( incx == 0 ) {
         info = -7;
@@ -631,10 +631,10 @@ magmablas_chemv_work(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper ) {
-        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_chemv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
     }
     else {
-        magmablas_chemv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+        magmablas_chemv_L(n, alpha, dA, ldda, dx, incx, beta, dy, incy, dwork);
     }
     return info;
 }
@@ -670,7 +670,7 @@ magmablas_chemv_work(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    A       COMPLEX array of DIMENSION ( LDA, n ).
+    dA      COMPLEX array of DIMENSION ( LDDA, n ).
             Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the Hermitian matrix and the strictly
@@ -683,16 +683,16 @@ magmablas_chemv_work(
             not be set and are assumed to be zero.
 
     @param[in]
-    lda     INTEGER.
-            On entry, LDA specifies the first dimension of A as declared
-            in the calling (sub) program. LDA must be at least
+    ldda    INTEGER.
+            On entry, LDDA specifies the first dimension of A as declared
+            in the calling (sub) program. LDDA must be at least
             max( 1, n ).
-            It is recommended that lda is multiple of 16. Otherwise
+            It is recommended that ldda is multiple of 16. Otherwise
             performance would be deteriorated as the memory accesses
             would not be fully coalescent.
 
     @param[in]
-    x       COMPLEX array of dimension at least
+    dx      COMPLEX array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
@@ -707,8 +707,8 @@ magmablas_chemv_work(
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
-    @param[in, out]
-    y       COMPLEX array of dimension at least
+    @param[in,out]
+    dy      COMPLEX array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
@@ -726,16 +726,16 @@ magma_int_t
 magmablas_chemv(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *A, magma_int_t lda,
-    const magmaFloatComplex *x, magma_int_t incx,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magmaFloatComplex beta,
-    magmaFloatComplex *y, magma_int_t incy)
+    magmaFloatComplex_ptr dy, magma_int_t incy)
 {
 #if defined(PRECISION_z)
     // z precision requires CUDA ARCH 2.x; call CUBLAS version instead.
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
-        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_chemv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
         return MAGMA_SUCCESS;
     }
 #endif
@@ -752,7 +752,7 @@ magmablas_chemv(
         info = -1;
     } else if ( n < 0 ) {
         info = -2;
-    } else if ( lda < max(1, n) ) {
+    } else if ( ldda < max(1, n) ) {
         info = -5;
     } else if ( incx == 0 ) {
         info = -7;
@@ -773,12 +773,12 @@ magmablas_chemv(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper ) {
-        magma_chemv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        magma_chemv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
     }
     else {
         magmaFloatComplex *dwork;
         magma_int_t blocks = (n - 1)/NB_X + 1;
-        magma_int_t lwork  = lda*blocks;
+        magma_int_t lwork  = ldda*blocks;
 
         magma_cmalloc( &dwork, lwork );
         if ( dwork == NULL ) {
@@ -786,7 +786,7 @@ magmablas_chemv(
             magma_xerbla( __func__, -(info) );
         }
         else {
-            magmablas_chemv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+            magmablas_chemv_L(n, alpha, dA, ldda, dx, incx, beta, dy, incy, dwork);
         }
         magma_free( dwork );
     }

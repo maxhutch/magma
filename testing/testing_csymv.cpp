@@ -1,20 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        Note: [ds] precisions generated from testing_chemv.cu
        
-       @generated from testing_zsymv.cpp normal z -> c, Tue Sep  2 12:38:27 2014
+       @generated from testing_zsymv.cpp normal z -> c, Sat Nov 15 19:54:18 2014
 */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 #include "flops.h"
 #include "magma.h"
@@ -39,7 +37,7 @@ int main(int argc, char **argv)
     magmaFloatComplex alpha = MAGMA_C_MAKE(  1.5, -2.3 );
     magmaFloatComplex beta  = MAGMA_C_MAKE( -0.6,  0.8 );
     magmaFloatComplex *A, *X, *Y, *Ymagma;
-    magmaFloatComplex *dA, *dX, *dY, *dwork;
+    magmaFloatComplex_ptr dA, dX, dY, dwork;
     magma_int_t status = 0;
     
     magma_opts opts;

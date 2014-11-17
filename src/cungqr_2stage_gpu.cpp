@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zungqr_2stage_gpu.cpp normal z -> c, Tue Sep  2 12:38:23 2014
+       @generated from zungqr_2stage_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -75,10 +75,12 @@
     @ingroup magma_cheev_2stage
     ********************************************************************/
 extern "C" magma_int_t
-magma_cungqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
-                 magmaFloatComplex *dA, magma_int_t ldda,
-                 magmaFloatComplex *tau, magmaFloatComplex *dT,
-                 magma_int_t nb, magma_int_t *info)
+magma_cungqr_2stage_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex *tau,
+    magmaFloatComplex_ptr dT, magma_int_t nb,
+    magma_int_t *info)
 {
     #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
     #define dT(a_1)     (dT + (a_1)*nb)
@@ -91,7 +93,7 @@ magma_cungqr_2stage_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
     magma_int_t i, ib, ki, kk;  //, iinfo;
     //magma_int_t lddwork = min(m, n);
     //magmaFloatComplex *work, *panel;
-    magmaFloatComplex *dwork;
+    magmaFloatComplex_ptr dwork;
     //magma_queue_t stream[2];
     magma_int_t ldt=nb; // need to be an input parameter
 

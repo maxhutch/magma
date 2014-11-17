@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zclaswp.cu mixed zc -> ds, Tue Sep  2 12:38:16 2014
+       @generated from zclaswp.cu mixed zc -> ds, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -103,8 +103,9 @@ dslaswp_inv_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_
     ********************************************************************/
 extern "C" void
 magmablas_dslaswp_q(
-    magma_int_t n, double *A, magma_int_t lda,
-    float *SA, magma_int_t m,
+    magma_int_t n,
+    magmaDouble_ptr A, magma_int_t lda,
+    magmaFloat_ptr SA, magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx,
     magma_queue_t queue )
 {
@@ -125,8 +126,9 @@ magmablas_dslaswp_q(
     ********************************************************************/
 extern "C" void
 magmablas_dslaswp(
-    magma_int_t n, double *A, magma_int_t lda,
-    float *SA, magma_int_t m,
+    magma_int_t n,
+    magmaDouble_ptr A, magma_int_t lda,
+    magmaFloat_ptr SA, magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx )
 {
     magmablas_dslaswp_q( n, A, lda, SA, m, ipiv, incx, magma_stream );

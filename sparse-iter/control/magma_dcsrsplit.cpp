@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from magma_zcsrsplit.cpp normal z -> d, Tue Sep  2 12:38:36 2014
+       @generated from magma_zcsrsplit.cpp normal z -> d, Sat Nov 15 19:54:23 2014
        @author Hartwig Anzt
 
 */
@@ -33,37 +33,65 @@
     Arguments
     ---------
 
-    @param
+    @param[in]
     bsize       magma_int_t
                 size of the diagonal blocks
 
-    @param
+    @param[in]
     A           magma_d_sparse_matrix
                 CSR input matrix
 
-    @param
+    @param[out]
     D           magma_d_sparse_matrix*
                 CSR matrix containing diagonal blocks
 
-    @param
+    @param[out]
     R           magma_d_sparse_matrix*
                 CSR matrix containing rest
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_saux
     ********************************************************************/
 
-magma_int_t
-magma_dcsrsplit(    magma_int_t bsize,
-                    magma_d_sparse_matrix A,
-                    magma_d_sparse_matrix *D,
-                    magma_d_sparse_matrix *R ){
-
-    if(  A.memory_location == Magma_CPU &&
+extern "C" magma_int_t
+magma_dcsrsplit(
+    magma_int_t bsize,
+    magma_d_sparse_matrix A,
+    magma_d_sparse_matrix *D,
+    magma_d_sparse_matrix *R,
+    magma_queue_t queue )
+{
+    if (  A.memory_location == Magma_CPU &&
             (   A.storage_type == Magma_CSR ||
-                A.storage_type == Magma_CSRCOO ) ){
+                A.storage_type == Magma_CSRCOO ) ) {
 
         magma_int_t i, k, j, nnz_diag, nnz_offd;
-
+        
+        magma_int_t stat_cpu = 0, stat_dev = 0;
+        D->val = NULL;
+        D->col = NULL;
+        D->row = NULL;
+        D->rowidx = NULL;
+        D->blockinfo = NULL;
+        D->diag = NULL;
+        D->dval = NULL;
+        D->dcol = NULL;
+        D->drow = NULL;
+        D->drowidx = NULL;
+        D->ddiag = NULL;
+        R->val = NULL;
+        R->col = NULL;
+        R->row = NULL;
+        R->rowidx = NULL;
+        R->blockinfo = NULL;
+        R->diag = NULL;
+        R->dval = NULL;
+        R->dcol = NULL;
+        R->drow = NULL;
+        R->drowidx = NULL;
+        R->ddiag = NULL;
 
         nnz_diag = nnz_offd = 0;
         // Count the new number of nonzeroes in the two matrices
@@ -90,34 +118,41 @@ magma_dcsrsplit(    magma_int_t bsize,
         R->num_cols = A.num_cols;
         R->nnz = nnz_offd;
 
-        magma_dmalloc_cpu( &D->val, nnz_diag );
-        magma_index_malloc_cpu( &D->row, A.num_rows+1 );
-        magma_index_malloc_cpu( &D->col, nnz_diag );
+        stat_cpu += magma_dmalloc_cpu( &D->val, nnz_diag );
+        stat_cpu += magma_index_malloc_cpu( &D->row, A.num_rows+1 );
+        stat_cpu += magma_index_malloc_cpu( &D->col, nnz_diag );
 
-        magma_dmalloc_cpu( &R->val, nnz_offd );
-        magma_index_malloc_cpu( &R->row, A.num_rows+1 );
-        magma_index_malloc_cpu( &R->col, nnz_offd );
+        stat_cpu += magma_dmalloc_cpu( &R->val, nnz_offd );
+        stat_cpu += magma_index_malloc_cpu( &R->row, A.num_rows+1 );
+        stat_cpu += magma_index_malloc_cpu( &R->col, nnz_offd );
+        
+        if( stat_cpu != 0 ){
+            magma_d_mfree( D, queue );
+            magma_d_mfree( R, queue );
+            return MAGMA_ERR_HOST_ALLOC;
+        }
+        
 
         // Fill up the new sparse matrices  
         D->row[0] = 0;
         R->row[0] = 0;
 
         nnz_offd = nnz_diag = 0;
-        for( i=0; i<A.num_rows; i+=bsize){
-            for( k=i; k<min(A.num_rows,i+bsize); k++ ){
+        for( i=0; i<A.num_rows; i+=bsize) {
+            for( k=i; k<min(A.num_rows,i+bsize); k++ ) {
                 D->row[k+1] = D->row[k];
                 R->row[k+1] = R->row[k];
      
-                for( j=A.row[k]; j<A.row[k+1]; j++ ){
-                    if ( A.col[j] < i ){
+                for( j=A.row[k]; j<A.row[k+1]; j++ ) {
+                    if ( A.col[j] < i ) {
                         R->val[nnz_offd] = A.val[j];
                         R->col[nnz_offd] = A.col[j];
                         R->row[k+1]++;  
                         nnz_offd++;
                     }
-                    else if ( A.col[j] < i+bsize ){
+                    else if ( A.col[j] < i+bsize ) {
                         // larger than diagonal remain as before
-                        if ( A.col[j]>k ){
+                        if ( A.col[j]>k ) {
                             D->val[nnz_diag] = A.val[ j ];
                             D->col[nnz_diag] = A.col[ j ];
                             D->row[k+1]++;
@@ -148,25 +183,25 @@ magma_dcsrsplit(    magma_int_t bsize,
         }
         return MAGMA_SUCCESS; 
     }
-    else{
+    else {
         magma_d_sparse_matrix Ah, ACSR, DCSR, RCSR, Dh, Rh;
-        magma_d_mtransfer( A, &Ah, A.memory_location, Magma_CPU );
-        magma_d_mconvert( Ah, &ACSR, A.storage_type, Magma_CSR );
+        magma_d_mtransfer( A, &Ah, A.memory_location, Magma_CPU, queue );
+        magma_d_mconvert( Ah, &ACSR, A.storage_type, Magma_CSR, queue );
 
-        magma_dcsrsplit( bsize, ACSR, &DCSR, &RCSR );
+        magma_dcsrsplit( bsize, ACSR, &DCSR, &RCSR, queue );
 
-        magma_d_mconvert( DCSR, &Dh, Magma_CSR, A.storage_type );
-        magma_d_mconvert( RCSR, &Rh, Magma_CSR, A.storage_type );
+        magma_d_mconvert( DCSR, &Dh, Magma_CSR, A.storage_type, queue );
+        magma_d_mconvert( RCSR, &Rh, Magma_CSR, A.storage_type, queue );
 
-        magma_d_mtransfer( Dh, D, Magma_CPU, A.memory_location );
-        magma_d_mtransfer( Rh, R, Magma_CPU, A.memory_location );
+        magma_d_mtransfer( Dh, D, Magma_CPU, A.memory_location, queue );
+        magma_d_mtransfer( Rh, R, Magma_CPU, A.memory_location, queue );
 
-        magma_d_mfree( &Ah );
-        magma_d_mfree( &ACSR );
-        magma_d_mfree( &Dh );
-        magma_d_mfree( &DCSR );
-        magma_d_mfree( &Rh );
-        magma_d_mfree( &RCSR );
+        magma_d_mfree( &Ah, queue );
+        magma_d_mfree( &ACSR, queue );
+        magma_d_mfree( &Dh, queue );
+        magma_d_mfree( &DCSR, queue );
+        magma_d_mfree( &Rh, queue );
+        magma_d_mfree( &RCSR, queue );
 
         return MAGMA_SUCCESS; 
     }

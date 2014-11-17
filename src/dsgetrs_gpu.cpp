@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zcgetrs_gpu.cpp mixed zc -> ds, Tue Sep  2 12:38:19 2014
+       @generated from zcgetrs_gpu.cpp mixed zc -> ds, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -82,13 +82,14 @@
     @ingroup magma_dgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dsgetrs_gpu(magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
-                  float  *dA, magma_int_t ldda,
-                  magma_int_t        *dipiv,
-                  double *dB, magma_int_t lddb,
-                  double *dX, magma_int_t lddx,
-                  float  *dSX,
-                  magma_int_t *info)
+magma_dsgetrs_gpu(
+    magma_trans_t trans, magma_int_t n, magma_int_t nrhs,
+    magmaFloat_ptr  dA, magma_int_t ldda,
+    magmaInt_ptr        dipiv,
+    magmaDouble_ptr dB, magma_int_t lddb,
+    magmaDouble_ptr dX, magma_int_t lddx,
+    magmaFloat_ptr dSX,
+    magma_int_t *info)
 {
     float c_one = MAGMA_S_ONE;
     int notran = (trans == MagmaNoTrans);

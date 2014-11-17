@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -27,8 +27,8 @@
     Arguments
     ---------
     @param[in]
-    num_gpus INTEGER
-            The number of GPUs to be used for the factorization.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     uplo    magma_uplo_t
@@ -40,16 +40,16 @@
             The order of the matrix dA.  N >= 0.
 
     @param[in,out]
-    d_lA    COMPLEX_16 array of pointers on the GPU, dimension (num_gpus)
+    d_lA    COMPLEX_16 array of pointers on the GPU, dimension (ngpu)
             On entry, the Hermitian matrix dA distributed over GPUs
             (d_lA[d] points to the local matrix on the d-th GPU).
             It is distributed in 1D block column or row cyclic (with the
             block size of nb) if UPLO = MagmaUpper or MagmaLower, respectively.
-            If UPLO = MagmaUpper, the leading N-by-N upper triangular 
-            part of dA contains the upper triangular part of the matrix dA, 
-            and the strictly lower triangular part of dA is not referenced.  
-            If UPLO = MagmaLower, the leading N-by-N lower triangular part 
-            of dA contains the lower triangular part of the matrix dA, and 
+            If UPLO = MagmaUpper, the leading N-by-N upper triangular
+            part of dA contains the upper triangular part of the matrix dA,
+            and the strictly lower triangular part of dA is not referenced.
+            If UPLO = MagmaLower, the leading N-by-N lower triangular part
+            of dA contains the lower triangular part of the matrix dA, and
             the strictly upper triangular part of dA is not referenced.
     \n
             On exit, if INFO = 0, the factor U or L from the Cholesky
@@ -72,8 +72,11 @@
     @ingroup magma_zposv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zpotrf_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
-                  magmaDoubleComplex **d_lA, magma_int_t ldda, magma_int_t *info)
+magma_zpotrf_mgpu(
+    magma_int_t ngpu,
+    magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex_ptr d_lA[], magma_int_t ldda,
+    magma_int_t *info)
 {
     magma_int_t     j, nb, d, lddp, h;
     const char* uplo_ = lapack_uplo_const( uplo );
@@ -90,8 +93,8 @@ magma_zpotrf_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
     } else if (n < 0) {
         *info = -2;
     } else if (!upper) {
-        lddp = nb*(n/(nb*num_gpus));
-        if ( n%(nb*num_gpus) != 0 ) lddp += min(nb,n-num_gpus*lddp);
+        lddp = nb*(n/(nb*ngpu));
+        if ( n%(nb*ngpu) != 0 ) lddp += min(nb, n-ngpu*lddp);
         if ( ldda < lddp ) *info = -4;
     } else if ( ldda < n ) {
         *info = -4;
@@ -104,7 +107,7 @@ magma_zpotrf_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
     
-    if (num_gpus == 1 && ((nb <= 1) || (nb >= n)) ) {
+    if (ngpu == 1 && ((nb <= 1) || (nb >= n)) ) {
         /*  Use unblocked code. */
         magma_setdevice(0);
         if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, n*nb )) {
@@ -118,9 +121,9 @@ magma_zpotrf_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
     }
     else {
         lddp = nb*((n+nb-1)/nb);
-        for( d=0; d < num_gpus; d++ ) {
+        for( d=0; d < ngpu; d++ ) {
             magma_setdevice(d);
-            if (MAGMA_SUCCESS != magma_zmalloc( &dwork[d], num_gpus*nb*lddp )) {
+            if (MAGMA_SUCCESS != magma_zmalloc( &dwork[d], ngpu*nb*lddp )) {
                 for( j=0; j < d; j++ ) {
                     magma_setdevice(j);
                     magma_free( dwork[j] );
@@ -134,29 +137,23 @@ magma_zpotrf_mgpu(magma_int_t num_gpus, magma_uplo_t uplo, magma_int_t n,
                 magma_event_create( &event[d][j]  );
         }
         magma_setdevice(0);
-        h = 1; //num_gpus; //(n+nb-1)/nb;
+        h = 1; //ngpu; //(n+nb-1)/nb;
         if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, n*nb*h )) {
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
         }
         if (upper) {
-            /* with two streams */
-            //magma_zpotrf2_mgpu(num_gpus, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, n,
-            //                   h, stream, event, info);
             /* with three streams */
-            magma_zpotrf3_mgpu(num_gpus, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, n,
+            magma_zpotrf3_mgpu(ngpu, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, n,
                                h, stream, event, info);
         } else {
-            /* with two streams */
-            //magma_zpotrf2_mgpu(num_gpus, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, nb*h,
-            //                   h, stream, event, info);
             /* with three streams */
-            magma_zpotrf3_mgpu(num_gpus, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, nb*h,
+            magma_zpotrf3_mgpu(ngpu, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, nb*h,
                                h, stream, event, info);
         }
 
         /* clean up */
-        for( d=0; d < num_gpus; d++ ) {
+        for( d=0; d < ngpu; d++ ) {
             magma_setdevice(d);
             for( j=0; j < 3; j++ ) {
                 magma_queue_sync( stream[d][j] );

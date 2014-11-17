@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -91,13 +91,15 @@
     @ingroup magma_zgesv_tile
     ********************************************************************/
 extern "C" magma_int_t
-magma_zssssm_gpu(magma_order_t order, magma_int_t m1, magma_int_t n1,
-                 magma_int_t m2, magma_int_t n2, magma_int_t k, magma_int_t ib,
-                 magmaDoubleComplex *dA1, magma_int_t ldda1,
-                 magmaDoubleComplex *dA2, magma_int_t ldda2,
-                 magmaDoubleComplex *dL1, magma_int_t lddl1,
-                 magmaDoubleComplex *dL2, magma_int_t lddl2,
-                 magma_int_t *ipiv, magma_int_t *info)
+magma_zssssm_gpu(
+    magma_order_t order, magma_int_t m1, magma_int_t n1,
+    magma_int_t m2, magma_int_t n2, magma_int_t k, magma_int_t ib,
+    magmaDoubleComplex_ptr dA1, magma_int_t ldda1,
+    magmaDoubleComplex_ptr dA2, magma_int_t ldda2,
+    magmaDoubleComplex_ptr dL1, magma_int_t lddl1,
+    magmaDoubleComplex_ptr dL2, magma_int_t lddl2,
+    magma_int_t *ipiv,
+    magma_int_t *info)
 {
 #define A1T(i,j) (dA1T + (i)*ldda1 + (j))
 #define A2T(i,j) (dA2T + (i)*ldda2 + (j))
@@ -108,7 +110,7 @@ magma_zssssm_gpu(magma_order_t order, magma_int_t m1, magma_int_t n1,
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
 
     int ip, ii, sb;
-    magmaDoubleComplex *dA1T, *dA2T;
+    magmaDoubleComplex_ptr dA1T, dA2T;
     magma_trans_t transL;
     int lddl2i, lddl2j;
 

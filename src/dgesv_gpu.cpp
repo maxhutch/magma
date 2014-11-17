@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgesv_gpu.cpp normal z -> d, Tue Sep  2 12:38:19 2014
+       @generated from zgesv_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 */
 #include "common_magma.h"
 
@@ -65,11 +65,11 @@
     @ingroup magma_dgesv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_dgesv_gpu( magma_int_t n, magma_int_t nrhs,
-                 double *dA, magma_int_t ldda,
-                 magma_int_t *ipiv,
-                 double *dB, magma_int_t lddb,
-                 magma_int_t *info)
+magma_dgesv_gpu(
+    magma_int_t n, magma_int_t nrhs,
+    magmaDouble_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magmaDouble_ptr dB, magma_int_t lddb,
+    magma_int_t *info)
 {
     *info = 0;
     if (n < 0) {

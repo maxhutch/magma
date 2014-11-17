@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -11,9 +11,13 @@
 
 #include "common_magma.h"
 
-__global__ void 
-magma_zlobpcg_shift_kernel( magma_int_t num_rows, magma_int_t num_vecs, 
-        magma_int_t shift, magmaDoubleComplex *x ){
+__global__ void
+magma_zlobpcg_shift_kernel( 
+    magma_int_t num_rows, 
+    magma_int_t num_vecs, 
+    magma_int_t shift, 
+    magmaDoubleComplex_ptr x )
+{
 
     int idx = threadIdx.x ;     // thread in row
     int row = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -51,32 +55,37 @@ magma_zlobpcg_shift_kernel( magma_int_t num_rows, magma_int_t num_vecs,
     Arguments
     ---------
 
-    @param
+    @param[in]
     num_rows    magma_int_t
                 number of rows
 
-    @param
+    @param[in]
     num_vecs    magma_int_t
                 number of vectors
 
-    @param
+    @param[in]
     shift       magma_int_t
                 shift number
 
-    @param
-    x           magmaDoubleComplex*
+    @param[in/out]
+    x           magmaDoubleComplex_ptr 
                 input/output vector x
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zaux
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zlobpcg_shift(    magma_int_t num_rows,
-                        magma_int_t num_vecs, 
-                        magma_int_t shift,
-                        magmaDoubleComplex *x ){
-
+magma_zlobpcg_shift(
+    magma_int_t num_rows,
+    magma_int_t num_vecs, 
+    magma_int_t shift,
+    magmaDoubleComplex_ptr x,
+    magma_queue_t queue )
+{
     magma_int_t num_threads = num_vecs;
     // every thread handles one row containing the 
     if (  num_threads > 1024 )
@@ -93,7 +102,7 @@ magma_zlobpcg_shift(    magma_int_t num_rows,
 
     dim3 grid( dimgrid1, dimgrid2, 1);
 
-    magma_zlobpcg_shift_kernel<<< grid, block, Ms, magma_stream >>>
+    magma_zlobpcg_shift_kernel<<< grid, block, Ms, queue >>>
             ( num_rows, num_vecs, shift, x );
 
 

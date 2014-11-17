@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -137,12 +137,13 @@
     @ingroup magma_zheev_2stage
     ********************************************************************/
 extern "C" magma_int_t
-magma_zhetrd_he2hb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
-                    magmaDoubleComplex *A, magma_int_t lda,
-                    magmaDoubleComplex *tau,
-                    magmaDoubleComplex *work, magma_int_t lwork,
-                    magmaDoubleComplex *dT,
-                    magma_int_t *info)
+magma_zhetrd_he2hb(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
+    magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex *tau,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    magmaDoubleComplex_ptr dT,
+    magma_int_t *info)
 {
     #define  A(a_1,a_2)  ( A + ((a_2)-1)*( lda) + (a_1)-1)
     #define dA(a_1,a_2)  (dA + ((a_2)-1)*(ldda) + (a_1)-1)
@@ -427,7 +428,7 @@ magma_zhetrd_he2hb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     magma_free( dA );
     work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
 
-    magmablasSetKernelStream( orig_stream );    
+    magmablasSetKernelStream( orig_stream );
     magma_set_lapack_numthreads( orig_threads );
 
     return *info;

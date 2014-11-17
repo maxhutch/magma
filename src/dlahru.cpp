@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlahru.cpp normal z -> d, Tue Sep  2 12:38:24 2014
+       @generated from zlahru.cpp normal z -> d, Sat Nov 15 19:54:10 2014
        @author Stan Tomov
        @author Mark Gates
 */
@@ -112,11 +112,11 @@ extern "C" magma_int_t
 magma_dlahru(
     magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
     double *A,  magma_int_t lda,
-    double *dA, magma_int_t ldda,
-    double *dY, magma_int_t lddy,
-    double *dV, magma_int_t lddv,
-    double *dT,
-    double *dwork )
+    magmaDouble_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr dY, magma_int_t lddy,
+    magmaDouble_ptr dV, magma_int_t lddv,
+    magmaDouble_ptr dT,
+    magmaDouble_ptr dwork )
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     

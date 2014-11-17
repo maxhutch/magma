@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zgetri_gpu.cpp normal z -> d, Tue Sep  2 12:38:28 2014
+       @generated from testing_zgetri_gpu.cpp normal z -> d, Sat Nov 15 19:54:18 2014
        @author Mark Gates
 */
 // includes, system
@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -31,7 +29,7 @@ int main( int argc, char** argv )
 
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double *h_A, *h_R, *work;
-    double *d_A, *dwork;
+    magmaDouble_ptr d_A, dwork;
     double c_neg_one = MAGMA_D_NEG_ONE;
     magma_int_t N, n2, lda, ldda, info, lwork, ldwork;
     magma_int_t ione     = 1;

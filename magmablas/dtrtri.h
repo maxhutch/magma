@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztrtri.h normal z -> d, Tue Sep  2 12:38:17 2014
+       @generated from ztrtri.h normal z -> d, Sat Nov 15 19:53:59 2014
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
+       @author Azzam Haidar
        
        Definitions used in dtrtri_diag.cu dtrtri_lower.cu dtrtri_upper.cu
 */
@@ -120,85 +121,186 @@ dgemm_kernel_16(
 
 
 __global__ void
-dtrtri_diag_kernel_lower(
+dtrtri_diag_lower_kernel(
     magma_diag_t diag, int n, const double *A, int lda, double *d_invA);
 
 __global__ void
-triple_dgemm16_part1_lower(
+triple_dgemm16_part1_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm16_part2_lower(
+triple_dgemm16_part2_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm32_part1_lower(
+triple_dgemm32_part1_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm32_part2_lower(
+triple_dgemm32_part2_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm64_part1_lower(
+triple_dgemm64_part1_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm64_part2_lower(
+triple_dgemm64_part2_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm_above64_part1_lower(
+triple_dgemm_above64_part1_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm_above64_part2_lower(
+triple_dgemm_above64_part2_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm_above64_part3_lower(
+triple_dgemm_above64_part3_lower_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 
     
 __global__ void
-dtrtri_diag_kernel_upper(
+dtrtri_diag_upper_kernel(
     magma_diag_t diag, int n, const double *A, int lda, double *d_invA);
 
 __global__ void
-triple_dgemm16_part1_upper(
+triple_dgemm16_part1_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm16_part2_upper(
+triple_dgemm16_part2_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm32_part1_upper(
+triple_dgemm32_part1_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm32_part2_upper(
+triple_dgemm32_part2_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm64_part1_upper(
+triple_dgemm64_part1_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm64_part2_upper(
+triple_dgemm64_part2_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm_above64_part1_upper(
+triple_dgemm_above64_part1_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm_above64_part2_upper(
+triple_dgemm_above64_part2_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
 
 __global__ void
-triple_dgemm_above64_part3_upper(
+triple_dgemm_above64_part3_upper_kernel(
     int n, const double *Ain, int lda, double *d_invA, int jb, int npages);
+
+
+
+
+
+
+
+__global__ void
+dtrtri_diag_lower_kernel_batched(
+    magma_diag_t diag, int n, double const * const * dA_array, int lda, double **dinvA_array);
+
+__global__ void
+triple_dgemm16_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm16_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm32_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm32_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm64_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm64_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm_above64_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm_above64_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm_above64_part3_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+
+    
+__global__ void
+dtrtri_diag_upper_kernel_batched(
+    magma_diag_t diag, int n, double const * const * dA_array, int lda, double **dinvA_array);
+
+__global__ void
+triple_dgemm16_part1_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm16_part2_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm32_part1_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm32_part2_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm64_part1_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm64_part2_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm_above64_part1_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm_above64_part2_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_dgemm_above64_part3_upper_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif        //  #ifndef DTRTRI_H

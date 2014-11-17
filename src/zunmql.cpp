@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Mark Gates
@@ -113,13 +113,14 @@
     @ingroup magma_zgeqlf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zunmql(magma_side_t side, magma_trans_t trans,
-             magma_int_t m, magma_int_t n, magma_int_t k,
-             magmaDoubleComplex *A, magma_int_t lda,
-             magmaDoubleComplex *tau,
-             magmaDoubleComplex *C, magma_int_t ldc,
-             magmaDoubleComplex *work, magma_int_t lwork,
-             magma_int_t *info)
+magma_zunmql(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex *tau,
+    magmaDoubleComplex *C, magma_int_t ldc,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    magma_int_t *info)
 {
     #define  A(i_,j_) ( A + (i_) + (j_)*lda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)

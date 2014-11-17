@@ -3,7 +3,7 @@
     Later cleaned up by hand, particularly to be thread-safe (no static variables).
     
     @author Mark Gates
-    @generated from dlaln2.cpp normal d -> s, Tue Sep  2 12:38:24 2014
+    @generated from dlaln2.cpp normal d -> s, Sat Nov 15 19:54:09 2014
 */
 #include "common_magma.h"
 
@@ -148,7 +148,8 @@ magma_int_t magma_slaln2(
     float smin, float ca, const float *A, magma_int_t lda,
     float d1, float d2, const float *B, magma_int_t ldb,
     float wr, float wi, float *X, magma_int_t ldx,
-    float *scale, float *xnorm, magma_int_t *info)
+    float *scale, float *xnorm,
+    magma_int_t *info)
 {
     // normally, we use A(i,j) to be a pointer, A + i + j*lda, but
     // in this function it is more convenient to be an element, A[i + j*lda].

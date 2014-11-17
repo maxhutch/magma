@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
-       @generated from zlabrd_gpu.cpp normal z -> d, Tue Sep  2 12:38:24 2014
+       @generated from zlabrd_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -173,14 +173,15 @@
     @ingroup magma_dgesvd_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_dlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
-                  double *A,  magma_int_t lda,
-                  double *dA, magma_int_t ldda,
-                  double *d, double *e, double *tauq, double *taup,
-                  double *X,  magma_int_t ldx,
-                  double *dX, magma_int_t lddx,
-                  double *Y,  magma_int_t ldy,
-                  double *dY, magma_int_t lddy)
+magma_dlabrd_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t nb,
+    double     *A, magma_int_t lda,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    double *d, double *e, double *tauq, double *taup,
+    double     *X, magma_int_t ldx,
+    magmaDouble_ptr dX, magma_int_t lddx,
+    double     *Y, magma_int_t ldy,
+    magmaDouble_ptr dY, magma_int_t lddy)
 {
     #define A(i_,j_) (A + (i_) + (j_)*lda)
     #define X(i_,j_) (X + (i_) + (j_)*ldx)

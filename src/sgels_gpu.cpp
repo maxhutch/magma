@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgels_gpu.cpp normal z -> s, Tue Sep  2 12:38:20 2014
+       @generated from zgels_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -79,13 +79,14 @@
     @ingroup magma_sgels_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgels_gpu( magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs,
-                 float *dA,    magma_int_t ldda,
-                 float *dB,    magma_int_t lddb,
-                 float *hwork, magma_int_t lwork,
-                 magma_int_t *info)
+magma_sgels_gpu(
+    magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t nrhs,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dB, magma_int_t lddb,
+    float *hwork, magma_int_t lwork,
+    magma_int_t *info)
 {
-    float *dT;
+    magmaFloat_ptr dT;
     float *tau;
     magma_int_t k;
 

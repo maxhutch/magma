@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -106,20 +106,21 @@
     @ingroup magma_zgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zunmqr2_gpu(magma_side_t side, magma_trans_t trans,
-                  magma_int_t m, magma_int_t n, magma_int_t k,
-                  magmaDoubleComplex *dA, magma_int_t ldda,
-                  magmaDoubleComplex *tau,
-                  magmaDoubleComplex *dC, magma_int_t lddc,
-                  magmaDoubleComplex *wA, magma_int_t ldwa,
-                  magma_int_t *info)
+magma_zunmqr2_gpu(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex    *tau,
+    magmaDoubleComplex_ptr dC, magma_int_t lddc,
+    magmaDoubleComplex    *wA, magma_int_t ldwa,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
     /* Allocate work space on the GPU */
-    magmaDoubleComplex *dwork;
+    magmaDoubleComplex_ptr dwork;
 
     magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
     magmaDoubleComplex c_one  = MAGMA_Z_ONE;

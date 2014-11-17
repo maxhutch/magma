@@ -1,19 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zgeqrf_gpu.cpp normal z -> s, Tue Sep  2 12:38:29 2014
+       @generated from testing_zgeqrf_gpu.cpp normal z -> s, Sat Nov 15 19:54:18 2014
 */
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -31,14 +29,15 @@ int main( int argc, char** argv)
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf=0, cpu_time=0;
     float           error, work[1];
     float  c_neg_one = MAGMA_S_NEG_ONE;
-    float *h_A, *d_A, *h_R, *tau, *dT, *h_work, tmp[1];
+    float *h_A, *h_R, *tau, *h_work, tmp[1];
+    magmaFloat_ptr d_A, dT;
     magma_int_t M, N, n2, lda, ldda, lwork, info, min_mn, nb, size;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1}, ISEED2[4];
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
- 
+    
     magma_int_t status = 0;
     float tol;
     opts.lapack |= (opts.version == 2 && opts.check == 2);  // check (-c2) implies lapack (-l)
@@ -98,17 +97,23 @@ int main( int argc, char** argv)
                =================================================================== */
             gpu_time = magma_wtime();
             if ( opts.version == 2 ) {
-                magma_sgeqrf2_gpu( M, N, d_A, ldda, tau, &info);
+                magma_sgeqrf2_gpu( M, N, d_A, ldda, tau, &info );
             }
             else {
                 nb = magma_get_sgeqrf_nb( M );
                 size = (2*min(M, N) + (N+31)/32*32 )*nb;
                 TESTING_MALLOC_DEV( dT, float, size );
-                if ( opts.version == 3 ) {
-                    magma_sgeqrf3_gpu( M, N, d_A, ldda, tau, dT, &info);
+                if ( opts.version == 1 ) {
+                    magma_sgeqrf_gpu( M, N, d_A, ldda, tau, dT, &info );
                 }
+                #ifdef HAVE_CUBLAS
+                else if ( opts.version == 3 ) {
+                    magma_sgeqrf3_gpu( M, N, d_A, ldda, tau, dT, &info );
+                }
+                #endif
                 else {
-                    magma_sgeqrf_gpu( M, N, d_A, ldda, tau, dT, &info);
+                    printf( "Unknown version %d\n", opts.version );
+                    exit(1);
                 }
             }
             gpu_time = magma_wtime() - gpu_time;
@@ -191,7 +196,8 @@ int main( int argc, char** argv)
                    Check the result by solving linear system -- only versions 1 & 3, M >= N
                    =================================================================== */
                 magma_int_t lwork;
-                float *x, *b, *d_B, *hwork;
+                float *x, *b, *hwork;
+                magmaFloat_ptr d_B;
                 const float c_zero    = MAGMA_S_ZERO;
                 const float c_one     = MAGMA_S_ONE;
                 const float c_neg_one = MAGMA_S_NEG_ONE;
@@ -218,12 +224,13 @@ int main( int argc, char** argv)
                     magma_sgeqrs_gpu( M, N, 1,
                                       d_A, ldda, tau, dT,
                                       d_B, M, hwork, lwork, &info );
-                   if (info != 0)
-                       printf("magma_sgeqrs returned error %d: %s.\n",
-                              (int) info, magma_strerror( info ));
+                    if (info != 0)
+                        printf("magma_sgeqrs returned error %d: %s.\n",
+                               (int) info, magma_strerror( info ));
                     TESTING_FREE_CPU( hwork );
                 }
-                else {
+                #ifdef HAVE_CUBLAS
+                else if ( opts.version == 3 ) {
                     // allocate hwork
                     magma_sgeqrs3_gpu( M, N, 1,
                                        d_A, ldda, tau, dT,
@@ -235,10 +242,15 @@ int main( int argc, char** argv)
                     magma_sgeqrs3_gpu( M, N, 1,
                                        d_A, ldda, tau, dT,
                                        d_B, M, hwork, lwork, &info );
-                   if (info != 0)
-                       printf("magma_sgeqrs3 returned error %d: %s.\n",
-                              (int) info, magma_strerror( info ));
+                    if (info != 0)
+                        printf("magma_sgeqrs3 returned error %d: %s.\n",
+                               (int) info, magma_strerror( info ));
                     TESTING_FREE_CPU( hwork );
+                }
+                #endif
+                else {
+                    printf( "Unknown version %d\n", opts.version );
+                    exit(1);
                 }
                 magma_sgetvector( N, d_B, 1, x, 1 );
 

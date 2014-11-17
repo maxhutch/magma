@@ -1,21 +1,22 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqr2x_gpu-v3.cpp normal z -> s, Tue Sep  2 12:38:20 2014
+       @generated from zgeqr2x_gpu-v3.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
 
 extern "C" magma_int_t
-magma_slarfb2_gpu( magma_int_t m, magma_int_t n, magma_int_t k,
-                   const float *dV,    magma_int_t ldv,
-                   const float *dT,    magma_int_t ldt,
-                   float *dC,          magma_int_t ldc,
-                   float *dwork,       magma_int_t ldwork )
+magma_slarfb2_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaFloat_const_ptr dV,    magma_int_t lddv,
+    magmaFloat_const_ptr dT,    magma_int_t lddt,
+    magmaFloat_ptr       dC,    magma_int_t lddc,
+    magmaFloat_ptr       dwork, magma_int_t ldwork )
 {
     float c_zero    = MAGMA_S_ZERO;
     float c_one     = MAGMA_S_ONE;
@@ -28,22 +29,22 @@ magma_slarfb2_gpu( magma_int_t m, magma_int_t n, magma_int_t k,
     magma_sgemm( MagmaConjTrans, MagmaNoTrans,
     //magmablas_sgemm_reduce(
                            n, k, m,
-                           c_one,  dC,    ldc,
-                           dV,    ldv,
+                           c_one,  dC,    lddc,
+                                   dV,    lddv,
                            c_zero, dwork, ldwork);
 
     // W = W T^H = C^H V T^H
     magma_strmm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                  n, k,
-                 c_one, dT,    ldt,
-                 dwork, ldwork);
+                 c_one, dT,    lddt,
+                        dwork, ldwork);
 
     // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
     magma_sgemm( MagmaNoTrans, MagmaConjTrans,
                  m, n, k,
-                 c_neg_one, dV,    ldv,
-                 dwork, ldwork,
-                 c_one,     dC,    ldc);
+                 c_neg_one, dV,    lddv,
+                            dwork, ldwork,
+                 c_one,     dC,    lddc);
     
     return MAGMA_SUCCESS;
 }
@@ -133,17 +134,21 @@ magma_slarfb2_gpu( magma_int_t m, magma_int_t n, magma_int_t k,
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgeqr2x3_gpu(magma_int_t m, magma_int_t n, float *dA,
-                   magma_int_t ldda, float *dtau,
-                   float *dT, float *ddA,
-                   float *dwork, magma_int_t *info)
+magma_sgeqr2x3_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dtau,
+    magmaFloat_ptr dT,
+    magmaFloat_ptr ddA,
+    magmaFloat_ptr        dwork,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
     #define BLOCK_SIZE 32
 
     magma_int_t i, k;
 
-    float *dnorm = dwork;
+    magmaFloat_ptr dnorm = dwork;
     float *work = (float *)(dwork+2*(n));
 
     *info = 0;

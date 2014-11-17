@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
   
        @precisions normal z -> c d s
 
@@ -93,14 +93,15 @@
     @ingroup magma_zgeqp3_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
-                  magmaDoubleComplex *dA, magma_int_t ldda,
-                  magma_int_t *jpvt, magmaDoubleComplex *tau,
-                  magmaDoubleComplex *dwork, magma_int_t lwork,
-                  #ifdef COMPLEX
-                  double *rwork,
-                  #endif
-                  magma_int_t *info )
+magma_zgeqp3_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_int_t *jpvt, magmaDoubleComplex *tau,
+    magmaDoubleComplex_ptr dwork, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
@@ -147,7 +148,7 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
     #ifdef REAL
     double *rwork = dwork + (n + 1)*nb;
     #endif
-    magmaDoubleComplex   *df;
+    magmaDoubleComplex_ptr df;
     if (MAGMA_SUCCESS != magma_zmalloc( &df, (n+1)*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
@@ -174,7 +175,7 @@ magma_zgeqp3_gpu( magma_int_t m, magma_int_t n,
         }
     }
 
-    /*  
+    /*
         // TODO:
            Factorize fixed columns
            =======================

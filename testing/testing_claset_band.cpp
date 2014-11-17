@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zlaset_band.cpp normal z -> c, Tue Sep  2 12:38:28 2014
+       @generated from testing_zlaset_band.cpp normal z -> c, Sat Nov 15 19:54:18 2014
        @author Mark Gates
 */
 
@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "magma.h"
@@ -37,7 +35,7 @@ int main( int argc, char** argv)
     float           error, work[1];
     magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex *h_A, *h_R;
-    magmaFloatComplex *d_A;
+    magmaFloatComplex_ptr d_A;
     magmaFloatComplex offdiag = MAGMA_C_MAKE( 1.2000, 6.7000 );
     magmaFloatComplex diag    = MAGMA_C_MAKE( 3.1415, 2.7183 );
     magma_int_t M, N, nb, cnt, size, lda, ldb, ldda;

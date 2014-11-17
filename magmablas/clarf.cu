@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlarf.cu normal z -> c, Tue Sep  2 12:38:15 2014
+       @generated from zlarf.cu normal z -> c, Sat Nov 15 19:53:59 2014
        @author Azzam Haidar
 
 */
@@ -33,7 +33,7 @@ void magma_clarf_kernel( int m, const magmaFloatComplex *dv, const magmaFloatCom
         __shared__ magmaFloatComplex sum[ BLOCK_SIZE ];
         magmaFloatComplex tmp;
 
-        /* perform  w := v' * C  */
+        /* perform  w := v**H * C  */
         if (tx==0)
             tmp = dc[0]; //since V[0] should be one
         else
@@ -70,7 +70,7 @@ void magma_clarf_smkernel( int m, int n, magmaFloatComplex *dv, magmaFloatComple
             __shared__ magmaFloatComplex sum[ BLOCK_SIZEx ][ BLOCK_SIZEy + 1];
             magmaFloatComplex lsum;
     
-            /*  w := v' * C  */
+            /*  w := v**H * C  */
             lsum = MAGMA_C_ZERO;
             for( int j = i; j < m; j += BLOCK_SIZEx ){
                 if (j==0)
@@ -99,11 +99,11 @@ void magma_clarf_smkernel( int m, int n, magmaFloatComplex *dv, magmaFloatComple
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
-          H = I - tau * v * v'
+          H = I - tau * v * v**H
     where tau is a complex scalar and v is a complex vector.
     If tau = 0, then H is taken to be the unit matrix.
 
-    To apply H' (the conjugate transpose of H), supply conjg(tau)
+    To apply H**H (the conjugate transpose of H), supply conjg(tau)
     instead tau.
 
     This routine uses only one SM (block).
@@ -121,11 +121,11 @@ magma_clarf_sm(magma_int_t m, magma_int_t n, magmaFloatComplex *dv, magmaFloatCo
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
-          H = I - tau * v * v'
+          H = I - tau * v * v**H
     where tau is a complex scalar and v is a complex vector.
     If tau = 0, then H is taken to be the unit matrix.
 
-    To apply H' (the conjugate transpose of H), supply conjg(tau) 
+    To apply H**H (the conjugate transpose of H), supply conjg(tau) 
     instead tau.
 
  */
@@ -133,13 +133,14 @@ magma_clarf_sm(magma_int_t m, magma_int_t n, magmaFloatComplex *dv, magmaFloatCo
 extern "C" magma_int_t
 magma_clarf_gpu(
     magma_int_t m,  magma_int_t n,
-    const magmaFloatComplex *dv, const magmaFloatComplex *dtau,
-    magmaFloatComplex *dc,  magma_int_t lddc)
+    magmaFloatComplex_const_ptr dv,
+    magmaFloatComplex_const_ptr dtau,
+    magmaFloatComplex_ptr dC,  magma_int_t lddc)
 {
     dim3 grid( n, 1, 1 );
     dim3 threads( BLOCK_SIZE );
-    if ( n>0 ){
-        magma_clarf_kernel<<< grid, threads, 0, magma_stream >>>( m, dv, dtau, dc, lddc);
+    if ( n > 0 ) {
+        magma_clarf_kernel<<< grid, threads, 0, magma_stream >>>( m, dv, dtau, dC, lddc);
     }
 
     // The computation can be done on 1 SM with the following routine.

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zmdot.cu normal z -> d, Tue Sep  2 12:38:33 2014
+       @generated from zmdot.cu normal z -> d, Sat Nov 15 19:54:21 2014
        @author Hartwig Anzt
 
 */
@@ -17,8 +17,12 @@
 
 
 // initialize arrays with zero
-__global__ void 
-magma_dgpumemzero(  double *d, int n, int k ){
+__global__ void
+magma_dgpumemzero(  
+    magmaDouble_ptr d, 
+    int n, 
+    int k )
+{
 
    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -29,12 +33,14 @@ magma_dgpumemzero(  double *d, int n, int k ){
 }
 
 // dot product
-__global__ void 
-magma_ddot_kernel( int Gs,
-                        int n, 
-                        double *v,
-                        double *r,
-                        double *vtmp){
+__global__ void
+magma_ddot_kernel( 
+    int Gs,
+    int n, 
+    magmaDouble_ptr v,
+    magmaDouble_ptr r,
+    magmaDouble_ptr vtmp)
+{
 
     extern __shared__ double temp[]; 
     int Idx = threadIdx.x;   
@@ -88,13 +94,15 @@ magma_ddot_kernel( int Gs,
 }
 
 // dot product for multiple vectors
-__global__ void 
-magma_dblockdot_kernel( int Gs,
-                        int n, 
-                        int k,
-                        double *v,
-                        double *r,
-                        double *vtmp){
+__global__ void
+magma_dblockdot_kernel( 
+    int Gs,
+    int n, 
+    int k,
+    magmaDouble_ptr v,
+    magmaDouble_ptr r,
+    magmaDouble_ptr vtmp)
+{
 
     extern __shared__ double temp[]; 
     int Idx = threadIdx.x;   
@@ -179,12 +187,14 @@ magma_dblockdot_kernel( int Gs,
 }
 
 // block reduction for multiple vectors
-__global__ void 
-magma_dblockreduce_kernel( int Gs,
-                           int n, 
-                           int k,
-                           double *vtmp,
-                           double *vtmp2 ){
+__global__ void
+magma_dblockreduce_kernel( 
+    int Gs,
+    int n, 
+    int k,
+    magmaDouble_ptr vtmp,
+    magmaDouble_ptr vtmp2 )
+{
 
     extern __shared__ double temp[];    
     int Idx = threadIdx.x;
@@ -263,11 +273,11 @@ magma_dblockreduce_kernel( int Gs,
 }
 
 // accelerated reduction for one vector
-__global__ void 
+__global__ void
 magma_dreduce_kernel_fast( int Gs,
                            int n, 
-                           double *vtmp,
-                           double *vtmp2 ){
+                           magmaDouble_ptr vtmp,
+                           magmaDouble_ptr vtmp2 ){
 
     extern __shared__ double temp[];    
     int Idx = threadIdx.x;
@@ -324,12 +334,14 @@ magma_dreduce_kernel_fast( int Gs,
 }
 
 // accelerated block reduction for multiple vectors
-__global__ void 
-magma_dblockreduce_kernel_fast( int Gs,
-                           int n, 
-                           int k,
-                           double *vtmp,
-                           double *vtmp2 ){
+__global__ void
+magma_dblockreduce_kernel_fast( 
+    int Gs,
+    int n, 
+    int k,
+    magmaDouble_ptr vtmp,
+    magmaDouble_ptr vtmp2 )
+{
 
     extern __shared__ double temp[];    
     int Idx = threadIdx.x;
@@ -423,58 +435,68 @@ magma_dblockreduce_kernel_fast( int Gs,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i and r
 
-    @param
+    @param[in]
     k           int
                 # vectors v_i
 
-    @param
-    v           double*
+    @param[in]
+    v           magmaDouble_ptr 
                 v = (v_0 .. v_i.. v_k)
 
-    @param
-    r           double*
+    @param[in]
+    r           magmaDouble_ptr 
                 r
 
-    @param
-    d1          double*
+    @param[in]
+    d1          magmaDouble_ptr 
                 workspace
 
-    @param
-    d2          double*
+    @param[in]
+    d2          magmaDouble_ptr 
                 workspace
 
-    @param
-    skp         double*
+    @param[out]
+    skp         magmaDouble_ptr 
                 vector[k] of scalar products (<v_i,r>...)
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dmdotc(       int n, 
-                    int k, 
-                    double *v, 
-                    double *r,
-                    double *d1,
-                    double *d2,
-                    double *skp ){
+magma_dmdotc(
+    int n, 
+    int k, 
+    magmaDouble_ptr v, 
+    magmaDouble_ptr r,
+    magmaDouble_ptr d1,
+    magmaDouble_ptr d2,
+    magmaDouble_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
+
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  (k)* (local_block_size) * sizeof( double ); // k vecs 
-    double *aux1 = d1, *aux2 = d2;
+    magmaDouble_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
 
-    if(k>1){
+    if (k>1) {
         magma_dblockdot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, k, v, r, d1 );
     }
-    else{
+    else {
         magma_ddot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, v, r, d1 );
     }
 /*
@@ -483,52 +505,53 @@ magma_dmdotc(       int n,
     magma_dgpumemzero<<<Gs, Bs, 0>>>( d2, n*k,1 );
     //magmablas_dlaset( MagmaUpperLower, n, k, d1, n );
     //magmablas_dlaset( MagmaUpperLower, n, k, d2, n );
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
         magma_dblockreduce_kernel<<< Gs_next.x, Bs.x, Ms >>> 
                                         ( Gs.x, n, k, aux1, aux2 );
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
-    for( int j=0; j<k; j++){
+    for( int j=0; j<k; j++) {
             magma_dcopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
 */
    
-    if( k>1){
-        while( Gs.x > 1 ){
+    if ( k>1) {
+        while( Gs.x > 1 ) {
             Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-            if( Gs_next.x == 1 ) Gs_next.x = 2;
+            if ( Gs_next.x == 1 ) Gs_next.x = 2;
             magma_dblockreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                         ( Gs.x, n, k, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
             b = 1 - b;
-            if( b ){ aux1 = d1; aux2 = d2; }
+            if ( b ) { aux1 = d1; aux2 = d2; }
             else   { aux2 = d1; aux1 = d2; }
         }
     }
-    else{
-        while( Gs.x > 1 ){
+    else {
+        while( Gs.x > 1 ) {
             Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-            if( Gs_next.x == 1 ) Gs_next.x = 2;
+            if ( Gs_next.x == 1 ) Gs_next.x = 2;
             magma_dreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                         ( Gs.x, n, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
             b = 1 - b;
-            if( b ){ aux1 = d1; aux2 = d2; }
+            if ( b ) { aux1 = d1; aux2 = d2; }
             else   { aux2 = d1; aux1 = d2; }
         }
     }
 
 
-    for( int j=0; j<k; j++){
+    for( int j=0; j<k; j++) {
             magma_dcopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -548,59 +571,64 @@ magma_dmdotc(       int n,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i and r
 
-    @param
+    @param[in]
     k           int
                 # vectors v_i
 
-    @param
-    v           double*
+    @param[in]
+    v           magmaDouble_ptr 
                 v = (v_0 .. v_i.. v_k)
 
-    @param
-    r           double*
+    @param[in]
+    r           magmaDouble_ptr 
                 r
 
-    @param
-    d1          double*
+    @param[in]
+    d1          magmaDouble_ptr 
                 workspace
 
-    @param
-    d2          double*
+    @param[in]
+    d2          magmaDouble_ptr 
                 workspace
 
-    @param
-    skp         double*
+    @param[out]
+    skp         magmaDouble_ptr 
                 vector[k] of scalar products (<v_i,r>...)
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_d
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dgemvmdot(    int n, 
-                    int k, 
-                    double *v, 
-                    double *r,
-                    double *d1,
-                    double *d2,
-                    double *skp ){
-     
+magma_dgemvmdot(
+    int n, 
+    int k, 
+    magmaDouble_ptr v, 
+    magmaDouble_ptr r,
+    magmaDouble_ptr d1,
+    magmaDouble_ptr d2,
+    magmaDouble_ptr skp,
+    magma_queue_t queue )
+{
     int rows_left = k;
     int offset = 0;
     int chunk_size = 4;
     // process in chunks of 10 - has to be adapted to hardware and precision
-    while( rows_left > (chunk_size) ){
-        magma_dmdotc( n, chunk_size, v+offset*n, r, d1, d2, skp+offset );
+    while( rows_left > (chunk_size) ) {
+        magma_dmdotc( n, chunk_size, v+offset*n, r, d1, d2, skp+offset, queue );
         offset = offset + chunk_size;
         rows_left = rows_left-chunk_size;
 
     }
     // process rest
-    magma_dmdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset ); 
+    magma_dmdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset, queue ); 
 
 
    return MAGMA_SUCCESS;

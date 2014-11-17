@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlobpcg_residuals.cu normal z -> c, Tue Sep  2 12:38:33 2014
+       @generated from zlobpcg_residuals.cu normal z -> c, Sat Nov 15 19:54:21 2014
 
 */
 
@@ -27,7 +27,7 @@
 // Assumes number of threads <= 1024 (which is max number of threads up to CUDA capability 3.0)
 // Having n as template parameter allows compiler to evaluate some conditions at compile time.
 template< int n >
-__device__ void sum_reduce( /*int n,*/ int i, float* x )
+__device__ void sum_reduce( /*int n,*/ int i, magmaFloat_ptr  x )
 {
     __syncthreads();
     if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { x[i] += x[i+1024]; }  __syncthreads(); }
@@ -48,13 +48,15 @@ __device__ void sum_reduce( /*int n,*/ int i, float* x )
 
 
 
-__global__ void 
-magma_clobpcg_res_kernel( magma_int_t num_rows, 
-                          magma_int_t num_vecs, 
-                          float *evals, 
-                          magmaFloatComplex *X, 
-                          magmaFloatComplex *R,
-                          float *res){
+__global__ void
+magma_clobpcg_res_kernel( 
+    magma_int_t num_rows, 
+    magma_int_t num_vecs, 
+    magmaFloat_ptr evals, 
+    magmaFloatComplex_ptr X, 
+    magmaFloatComplex_ptr R,
+    magmaFloat_ptr res)
+{
 
     int row = blockIdx.x * blockDim.x + threadIdx.x; // global row index
 
@@ -70,10 +72,14 @@ magma_clobpcg_res_kernel( magma_int_t num_rows,
 
 
 /*
-magmablas_scnrm2_kernel( int m, magmaFloatComplex *da, int ldda, float *dxnorm )
+magmablas_scnrm2_kernel( 
+    int m, 
+    magmaFloatComplex_ptr da, 
+    int ldda, 
+    magmaFloat_ptr dxnorm )
 {
     const int i = threadIdx.x;
-    magmaFloatComplex *dx = da + blockIdx.x * ldda;
+    magmaFloatComplex_ptr dx = da + blockIdx.x * ldda;
 
     __shared__ float sum[ BLOCK_SIZE ];
     float re, lsum;
@@ -123,50 +129,55 @@ magmablas_scnrm2_kernel( int m, magmaFloatComplex *da, int ldda, float *dxnorm )
     Arguments
     ---------
 
-    @param
+    @param[in]
     num_rows    magma_int_t
                 number of rows
 
-    @param
+    @param[in]
     num_vecs    magma_int_t
                 number of vectors
                 
-    @param
-    evalues     float*
+    @param[in]
+    evalues     magmaFloat_ptr 
                 array of eigenvalues/approximations
 
-    @param
-    X           magmaFloatComplex*
+    @param[in]
+    X           magmaFloatComplex_ptr 
                 block of eigenvector approximations
                 
-    @param
-    R           magmaFloatComplex*
+    @param[in]
+    R           magmaFloatComplex_ptr 
                 block of residuals
 
-    @param
-    res         float*
+    @param[in]
+    res         magmaFloat_ptr 
                 array of residuals
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_caux
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_clobpcg_res(      magma_int_t num_rows,
-                        magma_int_t num_vecs, 
-                        float *evalues, 
-                        magmaFloatComplex *X,
-                        magmaFloatComplex *R, 
-                        float *res ){
-
+magma_clobpcg_res(
+    magma_int_t num_rows,
+    magma_int_t num_vecs, 
+    magmaFloat_ptr evalues, 
+    magmaFloatComplex_ptr X,
+    magmaFloatComplex_ptr R, 
+    magmaFloat_ptr res,
+    magma_queue_t queue )
+{
     // every thread handles one row
 
     magma_int_t block_size = BLOCK_SIZE;
  
-    dim3 block( block_size );
-    dim3 grid( (num_rows+block_size-1)/block_size );
+    dim3 threads( block_size );
+    dim3 grid( (num_rows+block_size-1)/block_size, 1, 1 );
 
-    magma_clobpcg_res_kernel<<< grid, block, 0, magma_stream >>>
+    magma_clobpcg_res_kernel<<< grid, threads, 0, queue >>>
                                 ( num_rows, num_vecs, evalues, X, R, res );
 
 

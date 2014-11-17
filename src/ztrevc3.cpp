@@ -1,19 +1,20 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Mark Gates
        @author Azzam Haidar
        
        @precisions normal z -> c
 */
-#include "timer.h"
+#include "magma_timer.h"
 
 #include "common_magma.h"
 
+#define COMPLEX
 
 /**
     Purpose
@@ -162,7 +163,10 @@ magma_int_t magma_ztrevc3(
     magmaDoubleComplex *VR, magma_int_t ldvr,
     magma_int_t mm, magma_int_t *mout,
     magmaDoubleComplex *work, magma_int_t lwork,
-    double *rwork, magma_int_t *info )
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define  T(i,j)  ( T + (i) + (j)*ldt )
     #define VL(i,j)  (VL + (i) + (j)*ldvl)

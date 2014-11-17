@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zpotri_gpu.cpp normal z -> c, Tue Sep  2 12:38:19 2014
+       @generated from zpotri_gpu.cpp normal z -> c, Sat Nov 15 19:54:05 2014
 
 */
 #include "common_magma.h"
@@ -52,8 +52,10 @@
     @ingroup magma_cposv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cpotri_gpu(magma_uplo_t uplo, magma_int_t n,
-              magmaFloatComplex *dA, magma_int_t ldda, magma_int_t *info)
+magma_cpotri_gpu(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magma_int_t *info)
 {
     /* Local variables */
     *info = 0;

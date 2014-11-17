@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zlatrd.cpp normal z -> c, Tue Sep  2 12:38:22 2014
+       @generated from zlatrd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -146,12 +146,13 @@
     @ingroup magma_cheev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_clatrd(magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
-             magmaFloatComplex *A,  magma_int_t lda,
-             float *e, magmaFloatComplex *tau,
-             magmaFloatComplex *W,  magma_int_t ldw,
-             magmaFloatComplex *dA, magma_int_t ldda,
-             magmaFloatComplex *dW, magma_int_t lddw)
+magma_clatrd(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
+    magmaFloatComplex *A,  magma_int_t lda,
+    float *e, magmaFloatComplex *tau,
+    magmaFloatComplex *W,  magma_int_t ldw,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dW, magma_int_t lddw)
 {
 #define A(i, j) (A + (j)*lda + (i))
 #define W(i, j) (W + (j)*ldw + (i))

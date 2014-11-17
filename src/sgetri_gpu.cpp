@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgetri_gpu.cpp normal z -> s, Tue Sep  2 12:38:19 2014
+       @generated from zgetri_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -70,9 +70,11 @@
     @ingroup magma_sgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgetri_gpu( magma_int_t n, float *dA, magma_int_t ldda,
-                  magma_int_t *ipiv, float *dwork, magma_int_t lwork,
-                  magma_int_t *info )
+magma_sgetri_gpu(
+    magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magmaFloat_ptr dwork, magma_int_t lwork,
+    magma_int_t *info )
 {
     #define dA(i, j)  (dA + (i) + (j)*ldda)
     #define dL(i, j)  (dL + (i) + (j)*lddl)
@@ -81,7 +83,7 @@ magma_sgetri_gpu( magma_int_t n, float *dA, magma_int_t ldda,
     float c_zero    = MAGMA_S_ZERO;
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
-    float *dL = dwork;
+    magmaFloat_ptr dL = dwork;
     magma_int_t lddl = n;
     magma_int_t nb   = magma_get_sgetri_nb(n);
     magma_int_t j, jmax, jb, jp;

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
-       @generated from zlabrd_gpu.cpp normal z -> c, Tue Sep  2 12:38:24 2014
+       @generated from zlabrd_gpu.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -173,14 +173,15 @@
     @ingroup magma_cgesvd_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_clabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
-                  magmaFloatComplex *A,  magma_int_t lda,
-                  magmaFloatComplex *dA, magma_int_t ldda,
-                  float *d, float *e, magmaFloatComplex *tauq, magmaFloatComplex *taup,
-                  magmaFloatComplex *X,  magma_int_t ldx,
-                  magmaFloatComplex *dX, magma_int_t lddx,
-                  magmaFloatComplex *Y,  magma_int_t ldy,
-                  magmaFloatComplex *dY, magma_int_t lddy)
+magma_clabrd_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t nb,
+    magmaFloatComplex     *A, magma_int_t lda,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    float *d, float *e, magmaFloatComplex *tauq, magmaFloatComplex *taup,
+    magmaFloatComplex     *X, magma_int_t ldx,
+    magmaFloatComplex_ptr dX, magma_int_t lddx,
+    magmaFloatComplex     *Y, magma_int_t ldy,
+    magmaFloatComplex_ptr dY, magma_int_t lddy)
 {
     #define A(i_,j_) (A + (i_) + (j_)*lda)
     #define X(i_,j_) (X + (i_) + (j_)*ldx)

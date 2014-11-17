@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zsymmetrize.cu normal z -> s, Tue Sep  2 12:38:16 2014
+       @generated from zsymmetrize.cu normal z -> s, Sat Nov 15 19:53:59 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -94,7 +94,8 @@ ssymmetrize_upper( int m, float *dA, int ldda )
     ********************************************************************/
 extern "C" void
 magmablas_ssymmetrize_q(
-    magma_uplo_t uplo, magma_int_t m, float *dA, magma_int_t ldda,
+    magma_uplo_t uplo, magma_int_t m,
+    magmaFloat_ptr dA, magma_int_t ldda,
     magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -132,7 +133,8 @@ magmablas_ssymmetrize_q(
     ********************************************************************/
 extern "C" void
 magmablas_ssymmetrize(
-    magma_uplo_t uplo, magma_int_t m, float *dA, magma_int_t ldda )
+    magma_uplo_t uplo, magma_int_t m,
+    magmaFloat_ptr dA, magma_int_t ldda )
 {
     magmablas_ssymmetrize_q( uplo, m, dA, ldda, magma_stream );
 }

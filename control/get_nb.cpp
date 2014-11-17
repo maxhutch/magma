@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Stan Tomov
        @author Mark Gates
@@ -94,6 +94,28 @@ magma_int_t magma_get_zpotrf_nb( magma_int_t m )
     else {                     // 1.x
         return 64;
     }
+}
+
+/* ///////////////////////////////////////////////////////////////////////// */
+
+magma_int_t magma_get_zpotrf_right_nb( magma_int_t m )
+{
+    return 128;
+}
+
+magma_int_t magma_get_cpotrf_right_nb( magma_int_t m )
+{
+    return 128;
+}
+
+magma_int_t magma_get_dpotrf_right_nb( magma_int_t m )
+{
+    return 320;
+}
+
+magma_int_t magma_get_spotrf_right_nb( magma_int_t m )
+{
+    return 128;
 }
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -392,6 +414,7 @@ magma_int_t magma_get_ssytrd_nb( magma_int_t /*m*/ )
 magma_int_t magma_get_dsytrd_nb( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
+
     if ( arch >= 200 ) {       // 2.x Fermi
         return 32;
     }
@@ -420,6 +443,50 @@ magma_int_t magma_get_zhetrd_nb( magma_int_t /*m*/ )
     else {                     // 1.x
         return 32;
     }
+}
+
+/* ////////////////////////////////////////////////////////////////////////////
+   -- Return nb for sytrf based on m
+*/
+magma_int_t magma_get_zhetrf_nb( magma_int_t m ) 
+{
+    return 256;
+}
+
+magma_int_t magma_get_chetrf_nb( magma_int_t m ) 
+{
+    return 256;
+}
+
+magma_int_t magma_get_dsytrf_nb( magma_int_t m ) 
+{
+    return 96; 
+}
+
+magma_int_t magma_get_ssytrf_nb( magma_int_t m ) 
+{
+    return 256;
+}
+
+/* //////////////////////////////////////////////////////////////////////// */
+magma_int_t magma_get_zhetrf_nopiv_nb( magma_int_t m ) 
+{
+    return 320; 
+}
+
+magma_int_t magma_get_chetrf_nopiv_nb( magma_int_t m ) 
+{
+    return 96; 
+}
+
+magma_int_t magma_get_dsytrf_nopiv_nb( magma_int_t m ) 
+{
+    return 320; 
+}
+
+magma_int_t magma_get_ssytrf_nopiv_nb( magma_int_t m ) 
+{
+    return 96;  
 }
 
 /* ////////////////////////////////////////////////////////////////////////////

@@ -45,6 +45,14 @@ integer function magmaf_get_zhetrd_nb( m )
     integer :: m
 end function magmaf_get_zhetrd_nb
 
+integer function magmaf_get_zhetrf_nb( m )
+    integer :: m
+end function magmaf_get_zhetrf_nb
+
+integer function magmaf_get_zhetrf_nopiv_nb( m )
+    integer :: m
+end function magmaf_get_zhetrf_nopiv_nb
+
 integer function magmaf_get_zgelqf_nb( m )
     integer :: m
 end function magmaf_get_zgelqf_nb
@@ -93,17 +101,23 @@ subroutine magmaf_zgebrd( m, n, A, lda, d, e, tauq, taup, work, lwork, info )
     integer          :: info
 end subroutine magmaf_zgebrd
 
-subroutine magmaf_zgehrd2( n, ilo, ihi, A, lda, tau, work, lwork, info )
+subroutine magmaf_zgeev( jobvl, jobvr, n, A, lda, w, VL, ldvl, VR, ldvr, work, lwork,  &
+        rwork, info )
+    character        :: jobvl
+    character        :: jobvr
     integer          :: n
-    integer          :: ilo
-    integer          :: ihi
     complex*16       :: A(*)
     integer          :: lda
-    complex*16       :: tau(*)
+    complex*16       :: w(*)
+    complex*16       :: VL(*)
+    integer          :: ldvl
+    complex*16       :: VR(*)
+    integer          :: ldvr
     complex*16       :: work(*)
     integer          :: lwork
+    double precision :: rwork(*)
     integer          :: info
-end subroutine magmaf_zgehrd2
+end subroutine magmaf_zgeev
 
 subroutine magmaf_zgehrd( n, ilo, ihi, A, lda, tau, work, lwork, dT, info )
     integer          :: n
@@ -117,6 +131,18 @@ subroutine magmaf_zgehrd( n, ilo, ihi, A, lda, tau, work, lwork, dT, info )
     magma_devptr_t   :: dT
     integer          :: info
 end subroutine magmaf_zgehrd
+
+subroutine magmaf_zgehrd2( n, ilo, ihi, A, lda, tau, work, lwork, info )
+    integer          :: n
+    integer          :: ilo
+    integer          :: ihi
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: tau(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    integer          :: info
+end subroutine magmaf_zgehrd2
 
 subroutine magmaf_zgelqf( m, n, A, lda, tau, work, lwork, info )
     integer          :: m
@@ -140,6 +166,19 @@ subroutine magmaf_zgeqlf( m, n, A, lda, tau, work, lwork, info )
     integer          :: info
 end subroutine magmaf_zgeqlf
 
+subroutine magmaf_zgeqp3( m, n, A, lda, jpvt, tau, work, lwork, rwork, info )
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: jpvt(*)
+    complex*16       :: tau(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: info
+end subroutine magmaf_zgeqp3
+
 subroutine magmaf_zgeqrf( m, n, A, lda, tau, work, lwork, info )
     integer          :: m
     integer          :: n
@@ -150,18 +189,6 @@ subroutine magmaf_zgeqrf( m, n, A, lda, tau, work, lwork, info )
     integer          :: lwork
     integer          :: info
 end subroutine magmaf_zgeqrf
-
-subroutine magmaf_zgeqrf4( num_gpus, m, n, a, lda, tau, work, lwork, info )
-    integer          :: num_gpus
-    integer          :: m
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: tau(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    integer          :: info
-end subroutine magmaf_zgeqrf4
 
 subroutine magmaf_zgeqrf_ooc( m, n, A, lda, tau, work, lwork, info )
     integer          :: m
@@ -174,6 +201,37 @@ subroutine magmaf_zgeqrf_ooc( m, n, A, lda, tau, work, lwork, info )
     integer          :: info
 end subroutine magmaf_zgeqrf_ooc
 
+subroutine magmaf_zgeqrf4( ngpu, m, n, A, lda, tau, work, lwork, info )
+    integer          :: ngpu
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: tau(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    integer          :: info
+end subroutine magmaf_zgeqrf4
+
+subroutine magmaf_zgesdd( jobz, m, n, A, lda, s, U, ldu, VT, ldvt, work, lwork, rwork,  &
+        iwork, info )
+    character        :: jobz
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: s(*)
+    complex*16       :: U(*)
+    integer          :: ldu
+    complex*16       :: VT(*)
+    integer          :: ldvt
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: iwork(*)
+    integer          :: info
+end subroutine magmaf_zgesdd
+
 subroutine magmaf_zgesv( n, nrhs, A, lda, ipiv, B, ldb, info )
     integer          :: n
     integer          :: nrhs
@@ -184,6 +242,36 @@ subroutine magmaf_zgesv( n, nrhs, A, lda, ipiv, B, ldb, info )
     integer          :: ldb
     integer          :: info
 end subroutine magmaf_zgesv
+
+subroutine magmaf_zgesv_rbt( ref, n, nrhs, A, lda, B, ldb, info )
+    character        :: ref
+    integer          :: n
+    integer          :: nrhs
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    integer          :: info
+end subroutine magmaf_zgesv_rbt
+
+subroutine magmaf_zgesvd( jobu, jobvt, m, n, A, lda, s, U, ldu, VT, ldvt, work, lwork,  &
+        rwork, info )
+    character        :: jobu
+    character        :: jobvt
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: s(*)
+    complex*16       :: U(*)
+    integer          :: ldu
+    complex*16       :: VT(*)
+    integer          :: ldvt
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: info
+end subroutine magmaf_zgesvd
 
 subroutine magmaf_zgetf2_nopiv( m, n, A, lda, info )
     integer          :: m
@@ -210,6 +298,345 @@ subroutine magmaf_zgetrf_nopiv( m, n, A, lda, info )
     integer          :: info
 end subroutine magmaf_zgetrf_nopiv
 
+subroutine magmaf_zgetrf_piv( m, n, NB, A, lda, ipiv, info )
+    integer          :: m
+    integer          :: n
+    integer          :: NB
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: ipiv(*)
+    integer          :: info
+end subroutine magmaf_zgetrf_piv
+
+subroutine magmaf_zheevd( jobz, uplo, n, A, lda, w, work, lwork, rwork, lrwork, iwork,  &
+        liwork, info )
+    character        :: jobz
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevd
+
+subroutine magmaf_zheevdx( jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w, work,  &
+        lwork, rwork, lrwork, iwork, liwork, info )
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevdx
+
+subroutine magmaf_zheevdx_2stage( jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w,  &
+        work, lwork, rwork, lrwork, iwork, liwork, info )
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevdx_2stage
+
+subroutine magmaf_zheevr( jobz, range, uplo, n, A, lda, vl, vu, il, iu, abstol, m, w, Z,  &
+        ldz, isuppz, work, lwork, rwork, lrwork, iwork, liwork, info )
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: abstol
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: Z(*)
+    integer          :: ldz
+    integer          :: isuppz(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevr
+
+subroutine magmaf_zheevx( jobz, range, uplo, n, A, lda, vl, vu, il, iu, abstol, m, w, Z,  &
+        ldz, work, lwork, rwork, iwork, ifail, info )
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: abstol
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: Z(*)
+    integer          :: ldz
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: iwork(*)
+    integer          :: ifail(*)
+    integer          :: info
+end subroutine magmaf_zheevx
+
+subroutine magmaf_zhegst( itype, uplo, n, A, lda, B, ldb, info )
+    integer          :: itype
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    integer          :: info
+end subroutine magmaf_zhegst
+
+subroutine magmaf_zhegvd( itype, jobz, uplo, n, A, lda, B, ldb, w, work, lwork, rwork,  &
+        lrwork, iwork, liwork, info )
+    integer          :: itype
+    character        :: jobz
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zhegvd
+
+subroutine magmaf_zhegvdx( itype, jobz, range, uplo, n, A, lda, B, ldb, vl, vu, il, iu,  &
+        m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
+    integer          :: itype
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zhegvdx
+
+subroutine magmaf_zhegvdx_2stage( itype, jobz, range, uplo, n, A, lda, B, ldb, vl, vu,  &
+        il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
+    integer          :: itype
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zhegvdx_2stage
+
+subroutine magmaf_zhegvr( itype, jobz, range, uplo, n, A, lda, B, ldb, vl, vu, il, iu,  &
+        abstol, m, w, Z, ldz, isuppz, work, lwork, rwork, lrwork, iwork, liwork, info )
+    integer          :: itype
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: abstol
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: Z(*)
+    integer          :: ldz
+    integer          :: isuppz(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zhegvr
+
+subroutine magmaf_zhegvx( itype, jobz, range, uplo, n, A, lda, B, ldb, vl, vu, il, iu,  &
+        abstol, m, w, Z, ldz, work, lwork, rwork, iwork, ifail, info )
+    integer          :: itype
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: abstol
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: Z(*)
+    integer          :: ldz
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: iwork(*)
+    integer          :: ifail(*)
+    integer          :: info
+end subroutine magmaf_zhegvx
+
+subroutine magmaf_zhesv( uplo, n, nrhs, A, lda, ipiv, B, ldb, info )
+    character        :: uplo
+    integer          :: n
+    integer          :: nrhs
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: ipiv(*)
+    complex*16       :: B(*)
+    integer          :: ldb
+    integer          :: info
+end subroutine magmaf_zhesv
+
+subroutine magmaf_zhetrd( uplo, n, A, lda, d, e, tau, work, lwork, info )
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: d(*)
+    double precision :: e(*)
+    complex*16       :: tau(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    integer          :: info
+end subroutine magmaf_zhetrd
+
+subroutine magmaf_zhetrf( uplo, n, A, lda, ipiv, info )
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: ipiv(*)
+    integer          :: info
+end subroutine magmaf_zhetrf
+
+subroutine magmaf_zhetrf_nopiv( uplo, n, a, lda, info )
+    character        :: uplo
+    integer          :: n
+    complex*16       :: a(*)
+    integer          :: lda
+    integer          :: info
+end subroutine magmaf_zhetrf_nopiv
+
+subroutine magmaf_zhetrd_hb2st( uplo, n, nb, Vblksiz, A, lda, d, e, V, ldv, TAU, compT,  &
+        T, ldt )
+    character        :: uplo
+    integer          :: n
+    integer          :: nb
+    integer          :: Vblksiz
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: d(*)
+    double precision :: e(*)
+    complex*16       :: V(*)
+    integer          :: ldv
+    complex*16       :: TAU(*)
+    integer          :: compT
+    complex*16       :: T(*)
+    integer          :: ldt
+end subroutine magmaf_zhetrd_hb2st
+
+subroutine magmaf_zhetrd_he2hb( uplo, n, nb, A, lda, tau, work, lwork, dT, info )
+    character        :: uplo
+    integer          :: n
+    integer          :: nb
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: tau(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    magma_devptr_t   :: dT
+    integer          :: info
+end subroutine magmaf_zhetrd_he2hb
+
 subroutine magmaf_zlatrsd( uplo, trans, diag, normin, n, A, lda, lambda, x, scale, cnorm,  &
         info )
     character        :: uplo
@@ -225,6 +652,14 @@ subroutine magmaf_zlatrsd( uplo, trans, diag, normin, n, A, lda, lambda, x, scal
     double precision :: cnorm(*)
     integer          :: info
 end subroutine magmaf_zlatrsd
+
+subroutine magmaf_zlauum( uplo, n, A, lda, info )
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: info
+end subroutine magmaf_zlauum
 
 subroutine magmaf_zposv( uplo, n, nrhs, A, lda, B, ldb, info )
     character        :: uplo
@@ -253,18 +688,30 @@ subroutine magmaf_zpotri( uplo, n, A, lda, info )
     integer          :: info
 end subroutine magmaf_zpotri
 
-subroutine magmaf_zlauum( uplo, n, A, lda, info )
-    character        :: uplo
+subroutine magmaf_zstedx( range, n, vl, vu, il, iu, d, e, Z, ldz, rwork, lrwork, iwork,  &
+        liwork, dwork, info )
+    character        :: range
     integer          :: n
-    complex*16       :: A(*)
-    integer          :: lda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: d(*)
+    double precision :: e(*)
+    complex*16       :: Z(*)
+    integer          :: ldz
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    magma_devptr_t   :: dwork
     integer          :: info
-end subroutine magmaf_zlauum
+end subroutine magmaf_zstedx
 
-subroutine magmaf_ztrevc3( side, howmny, select, n, T, ldt, VL, ldvl, VR, ldvr, mm, mout,  &
-        work, lwork, rwork, info )
+subroutine magmaf_ztrevc3( side, howmany, select, n, T, ldt, VL, ldvl, VR, ldvr, mm,  &
+        mout, work, lwork, rwork, info )
     character        :: side
-    character        :: howmny
+    character        :: howmany
     integer          :: select(*)
     integer          :: n
     complex*16       :: T(*)
@@ -281,10 +728,10 @@ subroutine magmaf_ztrevc3( side, howmny, select, n, T, ldt, VL, ldvl, VR, ldvr, 
     integer          :: info
 end subroutine magmaf_ztrevc3
 
-subroutine magmaf_ztrevc3_mt( side, howmny, select, n, T, ldt, VL, ldvl, VR, ldvr, mm,  &
+subroutine magmaf_ztrevc3_mt( side, howmany, select, n, T, ldt, VL, ldvl, VR, ldvr, mm,  &
         mout, work, lwork, rwork, info )
     character        :: side
-    character        :: howmny
+    character        :: howmany
     integer          :: select(*)
     integer          :: n
     complex*16       :: T(*)
@@ -310,24 +757,23 @@ subroutine magmaf_ztrtri( uplo, diag, n, A, lda, info )
     integer          :: info
 end subroutine magmaf_ztrtri
 
-subroutine magmaf_zhetrd( uplo, n, A, lda, d, e, tau, work, lwork, info )
-    character        :: uplo
+subroutine magmaf_zunghr( n, ilo, ihi, A, lda, tau, dT, nb, info )
     integer          :: n
+    integer          :: ilo
+    integer          :: ihi
     complex*16       :: A(*)
     integer          :: lda
-    double precision :: d(*)
-    double precision :: e(*)
     complex*16       :: tau(*)
-    complex*16       :: work(*)
-    integer          :: lwork
+    magma_devptr_t   :: dT
+    integer          :: nb
     integer          :: info
-end subroutine magmaf_zhetrd
+end subroutine magmaf_zunghr
 
-subroutine magmaf_zungqr( m, n, k, a, lda, tau, dT, nb, info )
+subroutine magmaf_zungqr( m, n, k, A, lda, tau, dT, nb, info )
     integer          :: m
     integer          :: n
     integer          :: k
-    complex*16       :: a(*)
+    complex*16       :: A(*)
     integer          :: lda
     complex*16       :: tau(*)
     magma_devptr_t   :: dT
@@ -335,11 +781,11 @@ subroutine magmaf_zungqr( m, n, k, a, lda, tau, dT, nb, info )
     integer          :: info
 end subroutine magmaf_zungqr
 
-subroutine magmaf_zungqr2( m, n, k, a, lda, tau, info )
+subroutine magmaf_zungqr2( m, n, k, A, lda, tau, info )
     integer          :: m
     integer          :: n
     integer          :: k
-    complex*16       :: a(*)
+    complex*16       :: A(*)
     integer          :: lda
     complex*16       :: tau(*)
     integer          :: info
@@ -379,413 +825,56 @@ subroutine magmaf_zunmlq( side, trans, m, n, k, A, lda, tau, C, ldc, work, lwork
     integer          :: info
 end subroutine magmaf_zunmlq
 
-subroutine magmaf_zunmql( side, trans, m, n, k, a, lda, tau, c, ldc, work, lwork, info )
+subroutine magmaf_zunmql( side, trans, m, n, k, A, lda, tau, C, ldc, work, lwork, info )
     character        :: side
     character        :: trans
     integer          :: m
     integer          :: n
     integer          :: k
-    complex*16       :: a(*)
+    complex*16       :: A(*)
     integer          :: lda
     complex*16       :: tau(*)
-    complex*16       :: c(*)
+    complex*16       :: C(*)
     integer          :: ldc
     complex*16       :: work(*)
     integer          :: lwork
     integer          :: info
 end subroutine magmaf_zunmql
 
-subroutine magmaf_zunmqr( side, trans, m, n, k, a, lda, tau, c, ldc, work, lwork, info )
+subroutine magmaf_zunmqr( side, trans, m, n, k, A, lda, tau, C, ldc, work, lwork, info )
     character        :: side
     character        :: trans
     integer          :: m
     integer          :: n
     integer          :: k
-    complex*16       :: a(*)
+    complex*16       :: A(*)
     integer          :: lda
     complex*16       :: tau(*)
-    complex*16       :: c(*)
+    complex*16       :: C(*)
     integer          :: ldc
     complex*16       :: work(*)
     integer          :: lwork
     integer          :: info
 end subroutine magmaf_zunmqr
 
-subroutine magmaf_zunmtr( side, uplo, trans, m, n, a, lda, tau, c, ldc, work, lwork, info  &
+subroutine magmaf_zunmtr( side, uplo, trans, m, n, A, lda, tau, C, ldc, work, lwork, info  &
         )
     character        :: side
     character        :: uplo
     character        :: trans
     integer          :: m
     integer          :: n
-    complex*16       :: a(*)
+    complex*16       :: A(*)
     integer          :: lda
     complex*16       :: tau(*)
-    complex*16       :: c(*)
+    complex*16       :: C(*)
     integer          :: ldc
     complex*16       :: work(*)
     integer          :: lwork
     integer          :: info
 end subroutine magmaf_zunmtr
 
-subroutine magmaf_zunghr( n, ilo, ihi, a, lda, tau, dT, nb, info )
-    integer          :: n
-    integer          :: ilo
-    integer          :: ihi
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: tau(*)
-    magma_devptr_t   :: dT
-    integer          :: nb
-    integer          :: info
-end subroutine magmaf_zunghr
-
-subroutine magmaf_zgeev( jobvl, jobvr, n, a, lda, w, vl, ldvl, vr, ldvr, work, lwork,  &
-        rwork, info )
-    character        :: jobvl
-    character        :: jobvr
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: w(*)
-    complex*16       :: vl(*)
-    integer          :: ldvl
-    complex*16       :: vr(*)
-    integer          :: ldvr
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: info
-end subroutine magmaf_zgeev
-
-subroutine magmaf_zgeqp3( m, n, a, lda, jpvt, tau, work, lwork, rwork, info )
-    integer          :: m
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    integer          :: jpvt(*)
-    complex*16       :: tau(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: info
-end subroutine magmaf_zgeqp3
-
-subroutine magmaf_zgesdd( jobz, m, n, A, lda, s, U, ldu, VT, ldvt, work, lwork, rwork,  &
-        iwork, info )
-    character        :: jobz
-    integer          :: m
-    integer          :: n
-    complex*16       :: A(*)
-    integer          :: lda
-    double precision :: s(*)
-    complex*16       :: U(*)
-    integer          :: ldu
-    complex*16       :: VT(*)
-    integer          :: ldvt
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: iwork(*)
-    integer          :: info
-end subroutine magmaf_zgesdd
-
-subroutine magmaf_zgesvd( jobu, jobvt, m, n, a, lda, s, u, ldu, vt, ldvt, work, lwork,  &
-        rwork, info )
-    character        :: jobu
-    character        :: jobvt
-    integer          :: m
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: s(*)
-    complex*16       :: u(*)
-    integer          :: ldu
-    complex*16       :: vt(*)
-    integer          :: ldvt
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: info
-end subroutine magmaf_zgesvd
-
-subroutine magmaf_zheevd( jobz, uplo, n, a, lda, w, work, lwork, rwork, lrwork, iwork,  &
-        liwork, info )
-    character        :: jobz
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevd
-
-subroutine magmaf_zheevdx( jobz, range, uplo, n, a, lda, vl, vu, il, iu, m, w, work,  &
-        lwork, rwork, lrwork, iwork, liwork, info )
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevdx
-
-subroutine magmaf_zheevdx_2stage( jobz, range, uplo, n, a, lda, vl, vu, il, iu, m, w,  &
-        work, lwork, rwork, lrwork, iwork, liwork, info )
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevdx_2stage
-
-subroutine magmaf_zheevx( jobz, range, uplo, n, a, lda, vl, vu, il, iu, abstol, m, w, z,  &
-        ldz, work, lwork, rwork, iwork, ifail, info )
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: abstol
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: z(*)
-    integer          :: ldz
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: iwork(*)
-    integer          :: ifail(*)
-    integer          :: info
-end subroutine magmaf_zheevx
-
-subroutine magmaf_zheevr( jobz, range, uplo, n, a, lda, vl, vu, il, iu, abstol, m, w, z,  &
-        ldz, isuppz, work, lwork, rwork, lrwork, iwork, liwork, info )
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: abstol
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: z(*)
-    integer          :: ldz
-    integer          :: isuppz(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevr
-
-subroutine magmaf_zhegvd( itype, jobz, uplo, n, a, lda, b, ldb, w, work, lwork, rwork,  &
-        lrwork, iwork, liwork, info )
-    integer          :: itype
-    character        :: jobz
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zhegvd
-
-subroutine magmaf_zhegvdx( itype, jobz, range, uplo, n, a, lda, b, ldb, vl, vu, il, iu,  &
-        m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
-    integer          :: itype
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zhegvdx
-
-subroutine magmaf_zhegvdx_2stage( itype, jobz, range, uplo, n, a, lda, b, ldb, vl, vu,  &
-        il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
-    integer          :: itype
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zhegvdx_2stage
-
-subroutine magmaf_zhegvx( itype, jobz, range, uplo, n, a, lda, b, ldb, vl, vu, il, iu,  &
-        abstol, m, w, z, ldz, work, lwork, rwork, iwork, ifail, info )
-    integer          :: itype
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: abstol
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: z(*)
-    integer          :: ldz
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: iwork(*)
-    integer          :: ifail(*)
-    integer          :: info
-end subroutine magmaf_zhegvx
-
-subroutine magmaf_zhegvr( itype, jobz, range, uplo, n, a, lda, b, ldb, vl, vu, il, iu,  &
-        abstol, m, w, z, ldz, isuppz, work, lwork, rwork, lrwork, iwork, liwork, info )
-    integer          :: itype
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: abstol
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: z(*)
-    integer          :: ldz
-    integer          :: isuppz(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zhegvr
-
-subroutine magmaf_zstedx( range, n, vl, vu, il, iu, D, E, Z, ldz, rwork, lrwork, iwork,  &
-        liwork, dwork, info )
-    character        :: range
-    integer          :: n
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: D(*)
-    double precision :: E(*)
-    complex*16       :: Z(*)
-    integer          :: ldz
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    double precision :: dwork(*)
-    integer          :: info
-end subroutine magmaf_zstedx
-
-subroutine magmaf_zhegst( itype, uplo, n, a, lda, b, ldb, info )
-    integer          :: itype
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    integer          :: info
-end subroutine magmaf_zhegst
-
-subroutine magmaf_zgeev_m( jobvl, jobvr, n, A, lda, w, vl, ldvl, vr, ldvr, work, lwork,  &
+subroutine magmaf_zgeev_m( jobvl, jobvr, n, A, lda, w, VL, ldvl, VR, ldvr, work, lwork,  &
         rwork, info )
     character        :: jobvl
     character        :: jobvr
@@ -793,9 +882,9 @@ subroutine magmaf_zgeev_m( jobvl, jobvr, n, A, lda, w, vl, ldvl, vr, ldvr, work,
     complex*16       :: A(*)
     integer          :: lda
     complex*16       :: w(*)
-    complex*16       :: vl(*)
+    complex*16       :: VL(*)
     integer          :: ldvl
-    complex*16       :: vr(*)
+    complex*16       :: VR(*)
     integer          :: ldvr
     complex*16       :: work(*)
     integer          :: lwork
@@ -815,6 +904,213 @@ subroutine magmaf_zgehrd_m( n, ilo, ihi, A, lda, tau, work, lwork, T, info )
     complex*16       :: T(*)
     integer          :: info
 end subroutine magmaf_zgehrd_m
+
+subroutine magmaf_zgetrf_m( ngpu, m, n, A, lda, ipiv, info )
+    integer          :: ngpu
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: ipiv(*)
+    integer          :: info
+end subroutine magmaf_zgetrf_m
+
+subroutine magmaf_zheevd_m( ngpu, jobz, uplo, n, A, lda, w, work, lwork, rwork, lrwork,  &
+        iwork, liwork, info )
+    integer          :: ngpu
+    character        :: jobz
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevd_m
+
+subroutine magmaf_zheevdx_2stage_m( ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu,  &
+        m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
+    integer          :: ngpu
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevdx_2stage_m
+
+subroutine magmaf_zheevdx_m( ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w,  &
+        work, lwork, rwork, lrwork, iwork, liwork, info )
+    integer          :: ngpu
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevdx_m
+
+subroutine magmaf_zhegst_m( ngpu, itype, uplo, n, A, lda, B, ldb, info )
+    integer          :: ngpu
+    integer          :: itype
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    integer          :: info
+end subroutine magmaf_zhegst_m
+
+subroutine magmaf_zhegvd_m( ngpu, itype, jobz, uplo, n, A, lda, B, ldb, w, work, lwork,  &
+        rwork, lrwork, iwork, liwork, info )
+    integer          :: ngpu
+    integer          :: itype
+    character        :: jobz
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zhegvd_m
+
+subroutine magmaf_zhegvdx_2stage_m( ngpu, itype, jobz, range, uplo, n, A, lda, B, ldb,  &
+        vl, vu, il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
+    integer          :: ngpu
+    integer          :: itype
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zhegvdx_2stage_m
+
+subroutine magmaf_zhegvdx_m( ngpu, itype, jobz, range, uplo, n, A, lda, B, ldb, vl, vu,  &
+        il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
+    integer          :: ngpu
+    integer          :: itype
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zhegvdx_m
+
+subroutine magmaf_zpotrf_m( ngpu, uplo, n, A, lda, info )
+    integer          :: ngpu
+    character        :: uplo
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+    integer          :: info
+end subroutine magmaf_zpotrf_m
+
+subroutine magmaf_zstedx_m( ngpu, range, n, vl, vu, il, iu, d, e, Z, ldz, rwork, lrwork,  &
+        iwork, liwork, info )
+    integer          :: ngpu
+    character        :: range
+    integer          :: n
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: d(*)
+    double precision :: e(*)
+    complex*16       :: Z(*)
+    integer          :: ldz
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zstedx_m
+
+subroutine magmaf_ztrsm_m( ngpu, side, uplo, transa, diag, m, n, alpha, A, lda, B, ldb )
+    integer          :: ngpu
+    character        :: side
+    character        :: uplo
+    character        :: transa
+    character        :: diag
+    integer          :: m
+    integer          :: n
+    complex*16       :: alpha
+    complex*16       :: A(*)
+    integer          :: lda
+    complex*16       :: B(*)
+    integer          :: ldb
+end subroutine magmaf_ztrsm_m
 
 subroutine magmaf_zunghr_m( n, ilo, ihi, A, lda, tau, T, nb, info )
     integer          :: n
@@ -840,238 +1136,41 @@ subroutine magmaf_zungqr_m( m, n, k, A, lda, tau, T, nb, info )
     integer          :: info
 end subroutine magmaf_zungqr_m
 
-subroutine magmaf_zpotrf_m( num_gpus, uplo, n, A, lda, info )
-    integer          :: num_gpus
-    character        :: uplo
-    integer          :: n
-    complex*16       :: A(*)
-    integer          :: lda
-    integer          :: info
-end subroutine magmaf_zpotrf_m
-
-subroutine magmaf_zstedx_m( nrgpu, range, n, vl, vu, il, iu, D, E, Z, ldz, rwork,  &
-        ldrwork, iwork, liwork, info )
-    integer          :: nrgpu
-    character        :: range
-    integer          :: n
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: D(*)
-    double precision :: E(*)
-    complex*16       :: Z(*)
-    integer          :: ldz
-    double precision :: rwork(*)
-    integer          :: ldrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zstedx_m
-
-subroutine magmaf_ztrsm_m( nrgpu, side, uplo, transa, diag, m, n, alpha, a, lda, b, ldb )
-    integer          :: nrgpu
-    character        :: side
-    character        :: uplo
-    character        :: transa
-    character        :: diag
-    integer          :: m
-    integer          :: n
-    complex*16       :: alpha
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-end subroutine magmaf_ztrsm_m
-
-subroutine magmaf_zunmqr_m( nrgpu, side, trans, m, n, k, a, lda, tau, c, ldc, work,  &
-        lwork, info )
-    integer          :: nrgpu
+subroutine magmaf_zunmqr_m( ngpu, side, trans, m, n, k, A, lda, tau, C, ldc, work, lwork,  &
+        info )
+    integer          :: ngpu
     character        :: side
     character        :: trans
     integer          :: m
     integer          :: n
     integer          :: k
-    complex*16       :: a(*)
+    complex*16       :: A(*)
     integer          :: lda
     complex*16       :: tau(*)
-    complex*16       :: c(*)
+    complex*16       :: C(*)
     integer          :: ldc
     complex*16       :: work(*)
     integer          :: lwork
     integer          :: info
 end subroutine magmaf_zunmqr_m
 
-subroutine magmaf_zunmtr_m( nrgpu, side, uplo, trans, m, n, a, lda, tau, c, ldc, work,  &
+subroutine magmaf_zunmtr_m( ngpu, side, uplo, trans, m, n, A, lda, tau, C, ldc, work,  &
         lwork, info )
-    integer          :: nrgpu
+    integer          :: ngpu
     character        :: side
     character        :: uplo
     character        :: trans
     integer          :: m
     integer          :: n
-    complex*16       :: a(*)
+    complex*16       :: A(*)
     integer          :: lda
     complex*16       :: tau(*)
-    complex*16       :: c(*)
+    complex*16       :: C(*)
     integer          :: ldc
     complex*16       :: work(*)
     integer          :: lwork
     integer          :: info
 end subroutine magmaf_zunmtr_m
-
-subroutine magmaf_zhegst_m( nrgpu, itype, uplo, n, a, lda, b, ldb, info )
-    integer          :: nrgpu
-    integer          :: itype
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    integer          :: info
-end subroutine magmaf_zhegst_m
-
-subroutine magmaf_zheevd_m( nrgpu, jobz, uplo, n, a, lda, w, work, lwork, rwork, lrwork,  &
-        iwork, liwork, info )
-    integer          :: nrgpu
-    character        :: jobz
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevd_m
-
-subroutine magmaf_zhegvd_m( nrgpu, itype, jobz, uplo, n, a, lda, b, ldb, w, work, lwork,  &
-        rwork, lrwork, iwork, liwork, info )
-    integer          :: nrgpu
-    integer          :: itype
-    character        :: jobz
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zhegvd_m
-
-subroutine magmaf_zheevdx_m( nrgpu, jobz, range, uplo, n, a, lda, vl, vu, il, iu, m, w,  &
-        work, lwork, rwork, lrwork, iwork, liwork, info )
-    integer          :: nrgpu
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevdx_m
-
-subroutine magmaf_zhegvdx_m( nrgpu, itype, jobz, range, uplo, n, a, lda, b, ldb, vl, vu,  &
-        il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
-    integer          :: nrgpu
-    integer          :: itype
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zhegvdx_m
-
-subroutine magmaf_zheevdx_2stage_m( nrgpu, jobz, range, uplo, n, a, lda, vl, vu, il, iu,  &
-        m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
-    integer          :: nrgpu
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevdx_2stage_m
-
-subroutine magmaf_zhegvdx_2stage_m( nrgpu, itype, jobz, range, uplo, n, a, lda, b, ldb,  &
-        vl, vu, il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info )
-    integer          :: nrgpu
-    integer          :: itype
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: b(*)
-    integer          :: ldb
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zhegvdx_2stage_m
 
 subroutine magmaf_zgegqr_gpu( ikind, m, n, dA, ldda, dwork, work, info )
     integer          :: ikind
@@ -1083,6 +1182,17 @@ subroutine magmaf_zgegqr_gpu( ikind, m, n, dA, ldda, dwork, work, info )
     complex*16       :: work(*)
     integer          :: info
 end subroutine magmaf_zgegqr_gpu
+
+subroutine magmaf_zgelqf_gpu( m, n, dA, ldda, tau, work, lwork, info )
+    integer          :: m
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    complex*16       :: tau(*)
+    complex*16       :: work(*)
+    integer          :: lwork
+    integer          :: info
+end subroutine magmaf_zgelqf_gpu
 
 subroutine magmaf_zgels_gpu( trans, m, n, nrhs, dA, ldda, dB, lddb, hwork, lwork, info )
     character        :: trans
@@ -1112,16 +1222,18 @@ subroutine magmaf_zgels3_gpu( trans, m, n, nrhs, dA, ldda, dB, lddb, hwork, lwor
     integer          :: info
 end subroutine magmaf_zgels3_gpu
 
-subroutine magmaf_zgelqf_gpu( m, n, dA, ldda, tau, work, lwork, info )
+subroutine magmaf_zgeqp3_gpu( m, n, dA, ldda, jpvt, tau, dwork, lwork, rwork, info )
     integer          :: m
     integer          :: n
     magma_devptr_t   :: dA
     integer          :: ldda
+    integer          :: jpvt(*)
     complex*16       :: tau(*)
-    complex*16       :: work(*)
+    magma_devptr_t   :: dwork
     integer          :: lwork
+    double precision :: rwork(*)
     integer          :: info
-end subroutine magmaf_zgelqf_gpu
+end subroutine magmaf_zgeqp3_gpu
 
 subroutine magmaf_zgeqr2x_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info )
     integer          :: m
@@ -1159,7 +1271,7 @@ subroutine magmaf_zgeqr2x3_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info )
     integer          :: info
 end subroutine magmaf_zgeqr2x3_gpu
 
-subroutine magmaf_zgeqr2x4_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info, stream )
+subroutine magmaf_zgeqr2x4_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, queue, info )
     integer          :: m
     integer          :: n
     magma_devptr_t   :: dA
@@ -1168,8 +1280,8 @@ subroutine magmaf_zgeqr2x4_gpu( m, n, dA, ldda, dtau, dT, ddA, dwork, info, stre
     magma_devptr_t   :: dT
     magma_devptr_t   :: ddA
     magma_devptr_t   :: dwork
+    integer          :: queue
     integer          :: info
-    integer          :: stream
 end subroutine magmaf_zgeqr2x4_gpu
 
 subroutine magmaf_zgeqrf_gpu( m, n, dA, ldda, tau, dT, info )
@@ -1201,8 +1313,8 @@ subroutine magmaf_zgeqrf3_gpu( m, n, dA, ldda, tau, dT, info )
     integer          :: info
 end subroutine magmaf_zgeqrf3_gpu
 
-subroutine magmaf_zgeqrs_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hwork, lhwork,  &
-        info )
+subroutine magmaf_zgeqrs_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hwork, lwork, info  &
+        )
     integer          :: m
     integer          :: n
     integer          :: nrhs
@@ -1213,11 +1325,11 @@ subroutine magmaf_zgeqrs_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hwork, lh
     magma_devptr_t   :: dB
     integer          :: lddb
     complex*16       :: hwork(*)
-    integer          :: lhwork
+    integer          :: lwork
     integer          :: info
 end subroutine magmaf_zgeqrs_gpu
 
-subroutine magmaf_zgeqrs3_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hwork, lhwork,  &
+subroutine magmaf_zgeqrs3_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hwork, lwork,  &
         info )
     integer          :: m
     integer          :: n
@@ -1229,9 +1341,22 @@ subroutine magmaf_zgeqrs3_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hwork, l
     magma_devptr_t   :: dB
     integer          :: lddb
     complex*16       :: hwork(*)
-    integer          :: lhwork
+    integer          :: lwork
     integer          :: info
 end subroutine magmaf_zgeqrs3_gpu
+
+subroutine magmaf_zgerbt_gpu( gen, n, nrhs, dA, ldda, dB, lddb, U, V, info )
+    character        :: gen
+    integer          :: n
+    integer          :: nrhs
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    magma_devptr_t   :: dB
+    integer          :: lddb
+    complex*16       :: U(*)
+    complex*16       :: V(*)
+    integer          :: info
+end subroutine magmaf_zgerbt_gpu
 
 subroutine magmaf_zgessm_gpu( order, m, n, k, ib, ipiv, dL1, lddl1, dL, lddl, dA, ldda,  &
         info )
@@ -1261,11 +1386,21 @@ subroutine magmaf_zgesv_gpu( n, nrhs, dA, ldda, ipiv, dB, lddb, info )
     integer          :: info
 end subroutine magmaf_zgesv_gpu
 
-subroutine magmaf_zgetf2_gpu( m, n, dA, lda, ipiv, info )
+subroutine magmaf_zgesv_nopiv_gpu( n, nrhs, dA, ldda, dB, lddb, info )
+    integer          :: n
+    integer          :: nrhs
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    magma_devptr_t   :: dB
+    integer          :: lddb
+    integer          :: info
+end subroutine magmaf_zgesv_nopiv_gpu
+
+subroutine magmaf_zgetf2_gpu( m, n, dA, ldda, ipiv, info )
     integer          :: m
     integer          :: n
     magma_devptr_t   :: dA
-    integer          :: lda
+    integer          :: ldda
     integer          :: ipiv(*)
     integer          :: info
 end subroutine magmaf_zgetf2_gpu
@@ -1278,26 +1413,6 @@ subroutine magmaf_zgetrf_gpu( m, n, dA, ldda, ipiv, info )
     integer          :: ipiv(*)
     integer          :: info
 end subroutine magmaf_zgetrf_gpu
-
-subroutine magmaf_zgetrf_m( num_gpus0, m, n, a, lda, ipiv, info )
-    integer          :: num_gpus0
-    integer          :: m
-    integer          :: n
-    complex*16       :: a(*)
-    integer          :: lda
-    integer          :: ipiv(*)
-    integer          :: info
-end subroutine magmaf_zgetrf_m
-
-subroutine magmaf_zgetrf_piv( m, n, NB, a, lda, ipiv, info )
-    integer          :: m
-    integer          :: n
-    integer          :: NB
-    complex*16       :: a(*)
-    integer          :: lda
-    integer          :: ipiv(*)
-    integer          :: info
-end subroutine magmaf_zgetrf_piv
 
 subroutine magmaf_zgetrf_nopiv_gpu( m, n, dA, ldda, info )
     integer          :: m
@@ -1329,86 +1444,204 @@ subroutine magmaf_zgetrs_gpu( trans, n, nrhs, dA, ldda, ipiv, dB, lddb, info )
     integer          :: info
 end subroutine magmaf_zgetrs_gpu
 
-subroutine magmaf_zlaqps2_gpu( m, n, offset, nb, kb, A, lda, jpvt, tau, vn1, vn2, auxv,  &
-        dF, lddf )
-    integer          :: m
+subroutine magmaf_zgetrs_nopiv_gpu( trans, n, nrhs, dA, ldda, dB, lddb, info )
+    character        :: trans
     integer          :: n
-    integer          :: offset
-    integer          :: nb
-    integer          :: kb(*)
-    complex*16       :: A(*)
-    integer          :: lda
-    integer          :: jpvt(*)
-    complex*16       :: tau(*)
-    double precision :: vn1(*)
-    double precision :: vn2(*)
-    complex*16       :: auxv(*)
-    magma_devptr_t   :: dF
-    integer          :: lddf
-end subroutine magmaf_zlaqps2_gpu
+    integer          :: nrhs
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    magma_devptr_t   :: dB
+    integer          :: lddb
+    integer          :: info
+end subroutine magmaf_zgetrs_nopiv_gpu
 
-subroutine magmaf_zlaqps3_gpu( m, n, offset, nb, kb, A, lda, jpvt, tau, vn1, vn2, auxv,  &
-        dF, lddf )
-    integer          :: m
+subroutine magmaf_zheevd_gpu( jobz, uplo, n, dA, ldda, w, wA, ldwa, work, lwork, rwork,  &
+        lrwork, iwork, liwork, info )
+    character        :: jobz
+    character        :: uplo
     integer          :: n
-    integer          :: offset
-    integer          :: nb
-    integer          :: kb(*)
-    complex*16       :: A(*)
-    integer          :: lda
-    integer          :: jpvt(*)
-    complex*16       :: tau(*)
-    double precision :: vn1(*)
-    double precision :: vn2(*)
-    complex*16       :: auxv(*)
-    magma_devptr_t   :: dF
-    integer          :: lddf
-end subroutine magmaf_zlaqps3_gpu
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    double precision :: w(*)
+    complex*16       :: wA(*)
+    integer          :: ldwa
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevd_gpu
 
-subroutine magmaf_zlarf_gpu( m, n, dv, dtau, dc, lddc )
+subroutine magmaf_zheevdx_gpu( jobz, range, uplo, n, dA, ldda, vl, vu, il, iu, m, w, wA,  &
+        ldwa, work, lwork, rwork, lrwork, iwork, liwork, info )
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    integer          :: m
+    double precision :: w(*)
+    complex*16       :: wA(*)
+    integer          :: ldwa
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevdx_gpu
+
+subroutine magmaf_zheevr_gpu( jobz, range, uplo, n, dA, ldda, vl, vu, il, iu, abstol, m,  &
+        w, dZ, lddz, isuppz, wA, ldwa, wZ, ldwz, work, lwork, rwork, lrwork, iwork,  &
+        liwork, info )
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: abstol
+    integer          :: m
+    double precision :: w(*)
+    magma_devptr_t   :: dZ
+    integer          :: lddz
+    integer          :: isuppz(*)
+    complex*16       :: wA(*)
+    integer          :: ldwa
+    complex*16       :: wZ(*)
+    integer          :: ldwz
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: lrwork
+    integer          :: iwork(*)
+    integer          :: liwork
+    integer          :: info
+end subroutine magmaf_zheevr_gpu
+
+subroutine magmaf_zheevx_gpu( jobz, range, uplo, n, dA, ldda, vl, vu, il, iu, abstol, m,  &
+        w, dZ, lddz, wA, ldwa, wZ, ldwz, work, lwork, rwork, iwork, ifail, info )
+    character        :: jobz
+    character        :: range
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    double precision :: vl
+    double precision :: vu
+    integer          :: il
+    integer          :: iu
+    double precision :: abstol
+    integer          :: m
+    double precision :: w(*)
+    magma_devptr_t   :: dZ
+    integer          :: lddz
+    complex*16       :: wA(*)
+    integer          :: ldwa
+    complex*16       :: wZ(*)
+    integer          :: ldwz
+    complex*16       :: work(*)
+    integer          :: lwork
+    double precision :: rwork(*)
+    integer          :: iwork(*)
+    integer          :: ifail(*)
+    integer          :: info
+end subroutine magmaf_zheevx_gpu
+
+subroutine magmaf_zhegst_gpu( itype, uplo, n, dA, ldda, dB, lddb, info )
+    integer          :: itype
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    magma_devptr_t   :: dB
+    integer          :: lddb
+    integer          :: info
+end subroutine magmaf_zhegst_gpu
+
+subroutine magmaf_zhetrd_gpu( uplo, n, dA, ldda, d, e, tau, wA, ldwa, work, lwork, info )
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    double precision :: d(*)
+    double precision :: e(*)
+    complex*16       :: tau(*)
+    complex*16       :: wA(*)
+    integer          :: ldwa
+    complex*16       :: work(*)
+    integer          :: lwork
+    integer          :: info
+end subroutine magmaf_zhetrd_gpu
+
+subroutine magmaf_zhetrd2_gpu( uplo, n, dA, ldda, d, e, tau, wA, ldwa, work, lwork,  &
+        dwork, ldwork, info )
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    double precision :: d(*)
+    double precision :: e(*)
+    complex*16       :: tau(*)
+    complex*16       :: wA(*)
+    integer          :: ldwa
+    complex*16       :: work(*)
+    integer          :: lwork
+    magma_devptr_t   :: dwork
+    integer          :: ldwork
+    integer          :: info
+end subroutine magmaf_zhetrd2_gpu
+
+subroutine magmaf_zhetrf_nopiv_gpu( uplo, n, da, ldda, info )
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: da
+    integer          :: ldda
+    integer          :: info
+end subroutine magmaf_zhetrf_nopiv_gpu
+
+subroutine magmaf_zlarf_gpu( m, n, dv, dtau, dC, lddc )
     integer          :: m
     integer          :: n
     magma_devptr_t   :: dv
     magma_devptr_t   :: dtau
-    magma_devptr_t   :: dc
+    magma_devptr_t   :: dC
     integer          :: lddc
 end subroutine magmaf_zlarf_gpu
 
-subroutine magmaf_zlarfb_gpu( side, trans, direct, storev, m, n, k, dv, ldv, dt, ldt, dc,  &
-        ldc, dwork, ldwork )
+subroutine magmaf_zlarfb_gpu( side, trans, direct, storev, m, n, k, dV, lddv, dT, lddt,  &
+        dC, lddc, dwork, ldwork )
     character        :: side
     character        :: trans
     character        :: direct
     character        :: storev
-    integer          :: m
-    integer          :: n
-    integer          :: k
-    magma_devptr_t   :: dv
-    integer          :: ldv
-    magma_devptr_t   :: dt
-    integer          :: ldt
-    magma_devptr_t   :: dc
-    integer          :: ldc
-    magma_devptr_t   :: dwork
-    integer          :: ldwork
-end subroutine magmaf_zlarfb_gpu
-
-subroutine magmaf_zlarfb2_gpu( m, n, k, dV, ldv, dT, ldt, dC, ldc, dwork, ldwork )
     integer          :: m
     integer          :: n
     integer          :: k
     magma_devptr_t   :: dV
-    integer          :: ldv
+    integer          :: lddv
     magma_devptr_t   :: dT
-    integer          :: ldt
+    integer          :: lddt
     magma_devptr_t   :: dC
-    integer          :: ldc
+    integer          :: lddc
     magma_devptr_t   :: dwork
     integer          :: ldwork
-end subroutine magmaf_zlarfb2_gpu
+end subroutine magmaf_zlarfb_gpu
 
-subroutine magmaf_zlarfb_gpu_gemm( side, trans, direct, storev, m, n, k, dv, ldv, dt,  &
-        ldt, dc, ldc, dwork, ldwork, dworkvt, ldworkvt )
+subroutine magmaf_zlarfb_gpu_gemm( side, trans, direct, storev, m, n, k, dV, lddv, dT,  &
+        lddt, dC, lddc, dwork, ldwork, dworkvt, ldworkvt )
     character        :: side
     character        :: trans
     character        :: direct
@@ -1416,17 +1649,39 @@ subroutine magmaf_zlarfb_gpu_gemm( side, trans, direct, storev, m, n, k, dv, ldv
     integer          :: m
     integer          :: n
     integer          :: k
-    complex*16       :: dv(*)
-    integer          :: ldv
-    complex*16       :: dt(*)
-    integer          :: ldt
-    complex*16       :: dc(*)
-    integer          :: ldc
-    complex*16       :: dwork(*)
+    magma_devptr_t   :: dV
+    integer          :: lddv
+    magma_devptr_t   :: dT
+    integer          :: lddt
+    magma_devptr_t   :: dC
+    integer          :: lddc
+    magma_devptr_t   :: dwork
     integer          :: ldwork
-    complex*16       :: dworkvt(*)
+    magma_devptr_t   :: dworkvt
     integer          :: ldworkvt
 end subroutine magmaf_zlarfb_gpu_gemm
+
+subroutine magmaf_zlarfb2_gpu( m, n, k, dV, lddv, dT, lddt, dC, lddc, dwork, ldwork )
+    integer          :: m
+    integer          :: n
+    integer          :: k
+    magma_devptr_t   :: dV
+    integer          :: lddv
+    magma_devptr_t   :: dT
+    integer          :: lddt
+    magma_devptr_t   :: dC
+    integer          :: lddc
+    magma_devptr_t   :: dwork
+    integer          :: ldwork
+end subroutine magmaf_zlarfb2_gpu
+
+subroutine magmaf_zlauum_gpu( uplo, n, dA, ldda, info )
+    character        :: uplo
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    integer          :: info
+end subroutine magmaf_zlauum_gpu
 
 subroutine magmaf_zposv_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info )
     character        :: uplo
@@ -1439,11 +1694,11 @@ subroutine magmaf_zposv_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info )
     integer          :: info
 end subroutine magmaf_zposv_gpu
 
-subroutine magmaf_zpotf2_gpu( uplo, n, dA, lda, info )
+subroutine magmaf_zpotf2_gpu( uplo, n, dA, ldda, info )
     character        :: uplo
     integer          :: n
     magma_devptr_t   :: dA
-    integer          :: lda
+    integer          :: ldda
     integer          :: info
 end subroutine magmaf_zpotf2_gpu
 
@@ -1463,87 +1718,6 @@ subroutine magmaf_zpotri_gpu( uplo, n, dA, ldda, info )
     integer          :: info
 end subroutine magmaf_zpotri_gpu
 
-subroutine magmaf_zlauum_gpu( uplo, n, dA, ldda, info )
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: dA
-    integer          :: ldda
-    integer          :: info
-end subroutine magmaf_zlauum_gpu
-
-subroutine magmaf_ztrtri_gpu( uplo, diag, n, dA, ldda, info )
-    character        :: uplo
-    character        :: diag
-    integer          :: n
-    magma_devptr_t   :: dA
-    integer          :: ldda
-    integer          :: info
-end subroutine magmaf_ztrtri_gpu
-
-subroutine magmaf_zhetrd_gpu( uplo, n, da, ldda, d, e, tau, wa, ldwa, work, lwork, info )
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: da
-    integer          :: ldda
-    double precision :: d(*)
-    double precision :: e(*)
-    complex*16       :: tau(*)
-    complex*16       :: wa(*)
-    integer          :: ldwa
-    complex*16       :: work(*)
-    integer          :: lwork
-    integer          :: info
-end subroutine magmaf_zhetrd_gpu
-
-subroutine magmaf_zhetrd2_gpu( uplo, n, da, ldda, d, e, tau, wa, ldwa, work, lwork,  &
-        dwork, ldwork, info )
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: da
-    integer          :: ldda
-    double precision :: d(*)
-    double precision :: e(*)
-    complex*16       :: tau(*)
-    complex*16       :: wa(*)
-    integer          :: ldwa
-    complex*16       :: work(*)
-    integer          :: lwork
-    magma_devptr_t   :: dwork
-    integer          :: ldwork
-    integer          :: info
-end subroutine magmaf_zhetrd2_gpu
-
-subroutine magmaf_zhetrd_hb2st( uplo, n, nb, Vblksiz, A, lda, D, E, V, ldv, TAU, compT,  &
-        T, ldt )
-    character        :: uplo
-    integer          :: n
-    integer          :: nb
-    integer          :: Vblksiz
-    complex*16       :: A(*)
-    integer          :: lda
-    double precision :: D(*)
-    double precision :: E(*)
-    complex*16       :: V(*)
-    integer          :: ldv
-    complex*16       :: TAU(*)
-    integer          :: compT
-    complex*16       :: T(*)
-    integer          :: ldt
-end subroutine magmaf_zhetrd_hb2st
-
-subroutine magmaf_zhetrd_he2hb( uplo, n, NB, a, lda, tau, work, lwork, dT, info )
-    character        :: uplo
-    integer          :: n
-    integer          :: NB
-    complex*16       :: a(*)
-    integer          :: lda
-    complex*16       :: tau(*)
-    complex*16       :: work(*)
-    integer          :: lwork
-    magma_devptr_t   :: dT
-    integer          :: info
-end subroutine magmaf_zhetrd_he2hb
-
 subroutine magmaf_zpotrs_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info )
     character        :: uplo
     integer          :: n
@@ -1556,7 +1730,7 @@ subroutine magmaf_zpotrs_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info )
 end subroutine magmaf_zpotrs_gpu
 
 subroutine magmaf_zssssm_gpu( order, m1, n1, m2, n2, k, ib, dA1, ldda1, dA2, ldda2, dL1,  &
-        lddl1, dL2, lddl2, IPIV, info )
+        lddl1, dL2, lddl2, ipiv, info )
     character        :: order
     integer          :: m1
     integer          :: n1
@@ -1572,35 +1746,44 @@ subroutine magmaf_zssssm_gpu( order, m1, n1, m2, n2, k, ib, dA1, ldda1, dA2, ldd
     integer          :: lddl1
     magma_devptr_t   :: dL2
     integer          :: lddl2
-    integer          :: IPIV(*)
+    integer          :: ipiv(*)
     integer          :: info
 end subroutine magmaf_zssssm_gpu
 
-subroutine magmaf_zungqr_gpu( m, n, k, da, ldda, tau, dwork, nb, info )
+subroutine magmaf_ztrtri_gpu( uplo, diag, n, dA, ldda, info )
+    character        :: uplo
+    character        :: diag
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+    integer          :: info
+end subroutine magmaf_ztrtri_gpu
+
+subroutine magmaf_zungqr_gpu( m, n, k, dA, ldda, tau, dT, nb, info )
     integer          :: m
     integer          :: n
     integer          :: k
-    magma_devptr_t   :: da
+    magma_devptr_t   :: dA
     integer          :: ldda
     complex*16       :: tau(*)
-    magma_devptr_t   :: dwork
+    magma_devptr_t   :: dT
     integer          :: nb
     integer          :: info
 end subroutine magmaf_zungqr_gpu
 
-subroutine magmaf_zunmql2_gpu( side, trans, m, n, k, da, ldda, tau, dc, lddc, wa, ldwa,  &
+subroutine magmaf_zunmql2_gpu( side, trans, m, n, k, dA, ldda, tau, dC, lddc, wA, ldwa,  &
         info )
     character        :: side
     character        :: trans
     integer          :: m
     integer          :: n
     integer          :: k
-    magma_devptr_t   :: da
+    magma_devptr_t   :: dA
     integer          :: ldda
     complex*16       :: tau(*)
-    magma_devptr_t   :: dc
+    magma_devptr_t   :: dC
     integer          :: lddc
-    complex*16       :: wa(*)
+    complex*16       :: wA(*)
     integer          :: ldwa
     integer          :: info
 end subroutine magmaf_zunmql2_gpu
@@ -1624,182 +1807,39 @@ subroutine magmaf_zunmqr_gpu( side, trans, m, n, k, dA, ldda, tau, dC, lddc, hwo
     integer          :: info
 end subroutine magmaf_zunmqr_gpu
 
-subroutine magmaf_zunmqr2_gpu( side, trans, m, n, k, da, ldda, tau, dc, lddc, wa, ldwa,  &
+subroutine magmaf_zunmqr2_gpu( side, trans, m, n, k, dA, ldda, tau, dC, lddc, wA, ldwa,  &
         info )
     character        :: side
     character        :: trans
     integer          :: m
     integer          :: n
     integer          :: k
-    magma_devptr_t   :: da
+    magma_devptr_t   :: dA
     integer          :: ldda
     complex*16       :: tau(*)
-    magma_devptr_t   :: dc
+    magma_devptr_t   :: dC
     integer          :: lddc
-    complex*16       :: wa(*)
+    complex*16       :: wA(*)
     integer          :: ldwa
     integer          :: info
 end subroutine magmaf_zunmqr2_gpu
 
-subroutine magmaf_zunmtr_gpu( side, uplo, trans, m, n, da, ldda, tau, dc, lddc, wa, ldwa,  &
+subroutine magmaf_zunmtr_gpu( side, uplo, trans, m, n, dA, ldda, tau, dC, lddc, wA, ldwa,  &
         info )
     character        :: side
     character        :: uplo
     character        :: trans
     integer          :: m
     integer          :: n
-    magma_devptr_t   :: da
+    magma_devptr_t   :: dA
     integer          :: ldda
     complex*16       :: tau(*)
-    magma_devptr_t   :: dc
+    magma_devptr_t   :: dC
     integer          :: lddc
-    complex*16       :: wa(*)
+    complex*16       :: wA(*)
     integer          :: ldwa
     integer          :: info
 end subroutine magmaf_zunmtr_gpu
-
-subroutine magmaf_zgeqp3_gpu( m, n, dA, ldda, jpvt, tau, dwork, lwork, rwork, info )
-    integer          :: m
-    integer          :: n
-    magma_devptr_t   :: dA
-    integer          :: ldda
-    integer          :: jpvt(*)
-    complex*16       :: tau(*)
-    magma_devptr_t   :: dwork
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: info
-end subroutine magmaf_zgeqp3_gpu
-
-subroutine magmaf_zheevd_gpu( jobz, uplo, n, da, ldda, w, wa, ldwa, work, lwork, rwork,  &
-        lrwork, iwork, liwork, info )
-    character        :: jobz
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: da
-    integer          :: ldda
-    double precision :: w(*)
-    complex*16       :: wa(*)
-    integer          :: ldwa
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevd_gpu
-
-subroutine magmaf_zheevdx_gpu( jobz, range, uplo, n, da, ldda, vl, vu, il, iu, m, w, wa,  &
-        ldwa, work, lwork, rwork, lrwork, iwork, liwork, info )
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: da
-    integer          :: ldda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    integer          :: m
-    double precision :: w(*)
-    complex*16       :: wa(*)
-    integer          :: ldwa
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevdx_gpu
-
-subroutine magmaf_zheevx_gpu( jobz, range, uplo, n, da, ldda, vl, vu, il, iu, abstol, m,  &
-        w, dz, lddz, wa, ldwa, wz, ldwz, work, lwork, rwork, iwork, ifail, info )
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: da
-    integer          :: ldda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: abstol
-    integer          :: m
-    double precision :: w(*)
-    magma_devptr_t   :: dz
-    integer          :: lddz
-    complex*16       :: wa(*)
-    integer          :: ldwa
-    complex*16       :: wz(*)
-    integer          :: ldwz
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: iwork(*)
-    integer          :: ifail(*)
-    integer          :: info
-end subroutine magmaf_zheevx_gpu
-
-subroutine magmaf_zheevr_gpu( jobz, range, uplo, n, da, ldda, vl, vu, il, iu, abstol, m,  &
-        w, dz, lddz, isuppz, wa, ldwa, wz, ldwz, work, lwork, rwork, lrwork, iwork,  &
-        liwork, info )
-    character        :: jobz
-    character        :: range
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: da
-    integer          :: ldda
-    double precision :: vl
-    double precision :: vu
-    integer          :: il
-    integer          :: iu
-    double precision :: abstol
-    integer          :: m
-    double precision :: w(*)
-    magma_devptr_t   :: dz
-    integer          :: lddz
-    integer          :: isuppz(*)
-    complex*16       :: wa(*)
-    integer          :: ldwa
-    complex*16       :: wz(*)
-    integer          :: ldwz
-    complex*16       :: work(*)
-    integer          :: lwork
-    double precision :: rwork(*)
-    integer          :: lrwork
-    integer          :: iwork(*)
-    integer          :: liwork
-    integer          :: info
-end subroutine magmaf_zheevr_gpu
-
-subroutine magmaf_zhegst_gpu( itype, uplo, n, da, ldda, db, lddb, info )
-    integer          :: itype
-    character        :: uplo
-    integer          :: n
-    magma_devptr_t   :: da
-    integer          :: ldda
-    magma_devptr_t   :: db
-    integer          :: lddb
-    integer          :: info
-end subroutine magmaf_zhegst_gpu
-
-subroutine magmaf_zprint( m, n, A, lda )
-    integer          :: m
-    integer          :: n
-    complex*16       :: A(*)
-    integer          :: lda
-end subroutine magmaf_zprint
-
-subroutine magmaf_zprint_gpu( m, n, dA, ldda )
-    integer          :: m
-    integer          :: n
-    magma_devptr_t   :: dA
-    integer          :: ldda
-end subroutine magmaf_zprint_gpu
 
 subroutine magmaf_znan_inf( uplo, m, n, A, lda, cnt_nan, cnt_inf )
     character        :: uplo
@@ -1820,6 +1860,20 @@ subroutine magmaf_znan_inf_gpu( uplo, m, n, dA, ldda, cnt_nan, cnt_inf )
     integer          :: cnt_nan(*)
     integer          :: cnt_inf(*)
 end subroutine magmaf_znan_inf_gpu
+
+subroutine magmaf_zprint( m, n, A, lda )
+    integer          :: m
+    integer          :: n
+    complex*16       :: A(*)
+    integer          :: lda
+end subroutine magmaf_zprint
+
+subroutine magmaf_zprint_gpu( m, n, dA, ldda )
+    integer          :: m
+    integer          :: n
+    magma_devptr_t   :: dA
+    integer          :: ldda
+end subroutine magmaf_zprint_gpu
 
 end interface
 

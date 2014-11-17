@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions mixed zc -> ds
 
@@ -49,8 +49,11 @@ zaxpycp_kernel(
 // copies w = b
 extern "C" void
 magmablas_zcaxpycp_q(
-    magma_int_t m, magmaFloatComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b, magmaDoubleComplex *w,
+    magma_int_t m,
+    magmaFloatComplex_ptr r,
+    magmaDoubleComplex_ptr x,
+    magmaDoubleComplex_const_ptr b,
+    magmaDoubleComplex_ptr w,
     magma_queue_t queue )
 {
     dim3 threads( NB );
@@ -61,8 +64,11 @@ magmablas_zcaxpycp_q(
 
 extern "C" void
 magmablas_zcaxpycp(
-    magma_int_t m, magmaFloatComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b, magmaDoubleComplex *w)
+    magma_int_t m,
+    magmaFloatComplex_ptr r,
+    magmaDoubleComplex_ptr x,
+    magmaDoubleComplex_const_ptr b,
+    magmaDoubleComplex_ptr w)
 {
     magmablas_zcaxpycp_q( m, r, x, b, w, magma_stream );
 }
@@ -73,8 +79,10 @@ magmablas_zcaxpycp(
 // copies r = b
 extern "C" void
 magmablas_zaxpycp_q(
-    magma_int_t m, magmaDoubleComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b,
+    magma_int_t m,
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr x,
+    magmaDoubleComplex_const_ptr b,
     magma_queue_t queue )
 {
     dim3 threads( NB );
@@ -84,8 +92,10 @@ magmablas_zaxpycp_q(
 
 extern "C" void
 magmablas_zaxpycp(
-    magma_int_t m, magmaDoubleComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b)
+    magma_int_t m,
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr x,
+    magmaDoubleComplex_const_ptr b)
 {
     magmablas_zaxpycp_q( m, r, x, b, magma_stream );
 }

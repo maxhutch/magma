@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -45,8 +45,10 @@
 /////////////////////////////////////
 // error checking 
 /////////////////////////////////////
-magma_int_t
-magma_zcheckerr(const char *label)
+extern "C" magma_int_t
+magma_zcheckerr(
+    const char *label,
+    magma_queue_t queue )
 {
     cudaThreadSynchronize();
     cudaError_t err = cudaGetLastError();
@@ -55,7 +57,7 @@ magma_zcheckerr(const char *label)
         const char *e = cudaGetErrorString(err);
         fprintf(stderr, "CUDA Error: %s (at %s)", e, label);
     }
-    return MAGMA_SUCCESS; 
+    return MAGMA_SUCCESS;
 }
 
 
@@ -68,22 +70,26 @@ magma_zcheckerr(const char *label)
     Arguments
     ---------
 
-    @param
+    @param[in]
     bw_bmark    magma_int_t*
                 input: run the benchmark (1/0)
 
-    @param
+    @param[in,out]
     num_gpus    magma_int_t*
                 output: number of GPUs
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zaux
     ********************************************************************/
 
-magma_int_t
-magma_z_initP2P ( magma_int_t *bw_bmark, magma_int_t *num_gpus ){
-
-
+extern "C" magma_int_t
+magma_z_initP2P(
+    magma_int_t *bw_bmark, magma_int_t *num_gpus,
+    magma_queue_t queue )
+{
     // Number of GPUs
     printf("Checking for multiple GPUs...\n");
     int gpu_n;
@@ -186,7 +192,7 @@ magma_z_initP2P ( magma_int_t *bw_bmark, magma_int_t *num_gpus ){
 
 
 
-  if(*bw_bmark==1){
+  if (*bw_bmark==1) {
 
 
     // P2P memcopy() benchmark
@@ -354,6 +360,5 @@ magma_z_initP2P ( magma_int_t *bw_bmark, magma_int_t *num_gpus ){
     magma_zcheckerr("P2P established");
 
     return MAGMA_SUCCESS;
-
 }
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zlacpy_batched.cpp normal z -> s, Tue Sep  2 12:38:27 2014
+       @generated from testing_zlacpy_batched.cpp normal z -> s, Sat Nov 15 19:54:18 2014
        @author Mark Gates
 
 */
@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "magma.h"
@@ -35,7 +33,7 @@ int main( int argc, char** argv)
     float           error, work[1];
     float  c_neg_one = MAGMA_S_NEG_ONE;
     float *h_A, *h_B;
-    float *d_A, *d_B;
+    magmaFloat_ptr d_A, d_B;
     float **hAarray, **hBarray, **dAarray, **dBarray;
     magma_int_t M, N, mb, nb, size, lda, ldda, mstride, nstride, ntile;
     magma_int_t ione     = 1;

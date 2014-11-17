@@ -11,7 +11,7 @@
  * @author Mathieu Faverge
  * @author Piotr Luszczek
  * @author Simplice Donfack (GPU adaptation)
- * @date September 2014
+ * @date November 2014
  *
  * @precisions normal z -> c d s
  *

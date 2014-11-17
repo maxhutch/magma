@@ -1,24 +1,24 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 */
 
+// includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
+// includes, project
+#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 
 #define PRECISION_z
 
@@ -40,11 +40,11 @@ int main(int argc, char **argv)
     magmaDoubleComplex alpha = MAGMA_Z_MAKE(  1.5, -2.3 );  // MAGMA_Z_ONE;
     magmaDoubleComplex beta  = MAGMA_Z_MAKE( -0.6,  0.8 );  // MAGMA_Z_ZERO;
     magmaDoubleComplex *A, *X, *Y[MagmaMaxGPUs], *Ycublas, *Ymagma;
-    magmaDoubleComplex *dA, *dX[MagmaMaxGPUs], *dY[MagmaMaxGPUs], *d_lA[MagmaMaxGPUs], *dYcublas;
+    magmaDoubleComplex_ptr dA, dX[MagmaMaxGPUs], dY[MagmaMaxGPUs], d_lA[MagmaMaxGPUs], dYcublas;
 
     //magma_queue_t stream[MagmaMaxGPUs][10];
     magmaDoubleComplex *C_work;
-    magmaDoubleComplex *dC_work[MagmaMaxGPUs];
+    magmaDoubleComplex_ptr dC_work[MagmaMaxGPUs];
     magma_int_t     status = 0;
     
     magma_opts opts;
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
             
             magma_setdevice(0);
             cuda_time = magma_wtime();
-            cublasZhemv( handle, cublas_uplo_const(opts.uplo), N-opts.offset,
+            cublasZhemv( opts.handle, cublas_uplo_const(opts.uplo), N-opts.offset,
                          &alpha, dA + opts.offset + opts.offset*lda, lda,
                                  dX[0] + opts.offset,    incx,
                          &beta,  dYcublas + opts.offset, incx );
@@ -162,7 +162,7 @@ int main(int argc, char **argv)
             // todo probably don't need sync here; getvector will sync
             for(d=1; d < opts.ngpu; d++) {
                 magma_setdevice(d);
-                cudaDeviceSynchronize();
+                magma_device_sync();
             }
             
             for(d=0; d < opts.ngpu; d++) {

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
 
-    @generated from testing_zhegvdx_2stage_m.cpp normal z -> d, Tue Sep  2 12:38:30 2014
+    @generated from testing_zhegvdx_2stage_m.cpp normal z -> d, Sat Nov 15 19:54:18 2014
 
 */
 
@@ -17,8 +17,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "magma.h"
@@ -35,7 +33,7 @@
 int main( int argc, char** argv)
 {
 
-    TESTING_INIT_MGPU();
+    TESTING_INIT();
 
     real_Double_t   mgpu_time;
     double *h_A, *h_Ainit, *h_B, *h_Binit, *h_work;
@@ -242,6 +240,6 @@ int main( int argc, char** argv)
     }
 
     /* Shutdown */
-    TESTING_FINALIZE_MGPU();
+    TESTING_FINALIZE();
     return status;
 }

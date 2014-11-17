@@ -1,19 +1,22 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from dsyevdx_m.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+       @generated from dsyevdx_m.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
+
+#define PRECISION_s
+#define REAL
 
 /**
     Purpose
@@ -32,8 +35,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     jobz    magma_vec_t
@@ -157,14 +160,19 @@
     @ingroup magma_ssyev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_ssyevdx_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
-                magma_int_t n,
-                float *A, magma_int_t lda,
-                float vl, float vu, magma_int_t il, magma_int_t iu,
-                magma_int_t *m, float *w,
-                float *work, magma_int_t lwork,
-                magma_int_t *iwork, magma_int_t liwork,
-                magma_int_t *info)
+magma_ssyevdx_m(
+    magma_int_t ngpu,
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
+    magma_int_t n,
+    float *A, magma_int_t lda,
+    float vl, float vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, float *w,
+    float *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
@@ -323,7 +331,7 @@ magma_ssyevdx_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range, magma_
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_ssytrd_mgpu(nrgpu, 1, uplo, n, A, lda, w, &work[inde],
+    magma_ssytrd_mgpu(ngpu, 1, uplo, n, A, lda, w, &work[inde],
                       &work[indtau], &work[indwrk], llwork, &iinfo);
 
     timer_stop( time );
@@ -339,7 +347,7 @@ magma_ssyevdx_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range, magma_
     else {
         timer_start( time );
 
-        magma_sstedx_m(nrgpu, range, n, vl, vu, il, iu, w, &work[inde],
+        magma_sstedx_m(ngpu, range, n, vl, vu, il, iu, w, &work[inde],
                        &work[indwrk], n, &work[indwk2],
                        llwrk2, iwork, liwork, info);
 
@@ -349,7 +357,7 @@ magma_ssyevdx_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range, magma_
 
         magma_smove_eig(range, n, w, &il, &iu, vl, vu, m);
 
-        magma_sormtr_m(nrgpu, MagmaLeft, uplo, MagmaNoTrans, n, *m, A, lda, &work[indtau],
+        magma_sormtr_m(ngpu, MagmaLeft, uplo, MagmaNoTrans, n, *m, A, lda, &work[indtau],
                        &work[indwrk + n * (il-1)], n, &work[indwk2], llwrk2, &iinfo);
 
         lapackf77_slacpy("A", &n, m, &work[indwrk + n * (il-1)], &n, A, &lda);

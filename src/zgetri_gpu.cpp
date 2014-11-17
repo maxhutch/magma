@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -70,9 +70,11 @@
     @ingroup magma_zgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgetri_gpu( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda,
-                  magma_int_t *ipiv, magmaDoubleComplex *dwork, magma_int_t lwork,
-                  magma_int_t *info )
+magma_zgetri_gpu(
+    magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magmaDoubleComplex_ptr dwork, magma_int_t lwork,
+    magma_int_t *info )
 {
     #define dA(i, j)  (dA + (i) + (j)*ldda)
     #define dL(i, j)  (dL + (i) + (j)*lddl)
@@ -81,7 +83,7 @@ magma_zgetri_gpu( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda,
     magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-    magmaDoubleComplex *dL = dwork;
+    magmaDoubleComplex_ptr dL = dwork;
     magma_int_t lddl = n;
     magma_int_t nb   = magma_get_zgetri_nb(n);
     magma_int_t j, jmax, jb, jp;

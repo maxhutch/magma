@@ -38,6 +38,9 @@ Collection: http://www.cise.ufl.edu/research/sparse/matrices/
 A suitable test matrix is given by Trefethen_2000:
 http://www.cise.ufl.edu/research/sparse/matrices/JGD_Trefethen/Trefethen_2000.html
 
+Another option is to generate a 2D Laplace problem of variable size on-the-fly:
+'LAPLACE2D 10' generates a 2D Laplacian of size 100x100.
+
 To run a solver:
 
 
@@ -49,7 +52,7 @@ double-complex version ("x"=c or z, respectively).
 
 
 For different solvers there exist different options, which are printed 
-when executing "./run_xsolver -h".
+when executing "./run_xsolver —help.
 
  Some options are:
 
@@ -63,9 +66,9 @@ when executing "./run_xsolver -h".
                6   GMRES
                7   preconditioned GMRES
                8   LOBPCG
-               9   Iterative Refinement
-               10  Jacobi
-               11  Block-asynchronous Iteration
+               9   Jacobi
+               10  Block-asynchronous Iteration
+               21  Iterative Refinement
 
 "--verbose k"
     k = 0 : solver is run in production mode, no additional characteristics 
@@ -75,21 +78,15 @@ when executing "./run_xsolver -h".
 
 "--format k"
     k = 0 : CSR
-    k = 1 : ELLPACK
-    k = 2 : SELLP
+    k = 1 : ELLPACK/ELL
+    k = 2 : SELL-P
 
 "--blocksize k"
-    for Magma_ELLPACKRT: denotes the number of rows in one slice of the matrix
-                      and the number of rows assigned to one multiprocessor
-    for Magma_SELLP: k denotes the number of rows in one slice of the matrix
-                      and the number of rows assigned to one multiprocessor
-    for Magma_SELLP: k denotes the number of rows in one slice of the matrix
+    for Magma_SELL-P: k denotes the number of rows in one slice of the matrix
                       and the number of rows assigned to one multiprocessor
 
 "--alignment k"
-    for Magma_ELLPACKRT: k denotes the number of threads assigned to one row
-                      notice: blocksize * alignment needs to fit into shared mem
-    for Magma_SELLCM: k denotes the number of threads assigned to one row
+    for Magma_SELL-P: k denotes the number of threads assigned to one row
                       notice: blocksize * alignment needs to fit into shared mem
 
 "--maxiter k"
@@ -105,17 +102,24 @@ when executing "./run_xsolver -h".
 "--mscale k"
    k = 0 no scaling
    k = 1 scale symmetrically to unit diagonal
-   k = 2 scale to unit rownorm
 
 "--preconditioner k"
-    k = 0 : Jacobi
-    k = 1 : ILU/IC
-    k = 2 : iterative ILU(0)/IC(0)
-    Other preconditiners are only available for the Iterative Refinement.
+    k = 0 : No
+    k = 1 : Jacobi
+    k = 2 : ILU/IC
+    Other preconditioners are only available for the Iterative Refinement.
 
 "--ev k"
-    k : number of egenvalue/eigenvectors to compute
+    k : number of eigenvalue/eigenvectors to compute
 
 
 The last argument is the traget matrices. These should be stored in MatrixMarket
 format, see http://math.nist.gov/MatrixMarket/formats.html.
+
+The solver info uses the following feedback:
+       0          Success.
+      -117        Not supported.
+      -201        No convergence within iteration limit. 
+      -202        No convergence.
+      -203        Operator A is not positive definite.
+ 

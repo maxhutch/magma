@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
 
-       @generated from zstedx_m.cpp normal z -> c, Tue Sep  2 12:38:22 2014
+       @generated from zstedx_m.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 */
 #include "common_magma.h"
 
@@ -27,8 +27,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     range   magma_range_t
@@ -78,8 +78,7 @@
             The leading dimension of the array Z. LDZ >= max(1,N).
 
     @param[out]
-    rwork   (workspace) REAL array,
-                                           dimension (LRWORK)
+    rwork   (workspace) REAL array, dimension (LRWORK)
             On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
 
     @param[in]
@@ -131,12 +130,14 @@
     @ingroup magma_cheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, float vl, float vu,
-               magma_int_t il, magma_int_t iu, float* d, float* e,
-               magmaFloatComplex* Z, magma_int_t ldz,
-               float* rwork, magma_int_t lrwork,
-               magma_int_t* iwork, magma_int_t liwork,
-               magma_int_t* info)
+magma_cstedx_m(
+    magma_int_t ngpu,
+    magma_range_t range, magma_int_t n, float vl, float vu,
+    magma_int_t il, magma_int_t iu, float *d, float *e,
+    magmaFloatComplex *Z, magma_int_t ldz,
+    float *rwork, magma_int_t lrwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     magma_int_t alleig, indeig, valeig, lquery;
     magma_int_t i, j, smlsiz;
@@ -213,7 +214,7 @@ magma_cstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, float vl, 
         lapackf77_csteqr("I", &n, d, e, Z, &ldz, rwork, info);
     } else {
         // We simply call SSTEDX instead.
-        magma_sstedx_m(nrgpu, range, n, vl, vu, il, iu, d, e, rwork, n,
+        magma_sstedx_m(ngpu, range, n, vl, vu, il, iu, d, e, rwork, n,
                        rwork+n*n, lrwork-n*n, iwork, liwork, info);
 
         for (j=0; j < n; ++j)

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
 
-       @generated from testing_zhetrd_gpu.cpp normal z -> d, Tue Sep  2 12:38:30 2014
+       @generated from testing_zhetrd_gpu.cpp normal z -> d, Sat Nov 15 19:54:18 2014
 
 */
 
@@ -18,8 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -39,7 +37,7 @@ int main( int argc, char** argv)
     real_Double_t    gflops, gpu_perf, cpu_perf, gpu_time, cpu_time;
     double           eps;
     double *h_A, *h_R, *h_Q, *h_work, *work;
-    double *d_R, *dwork;
+    magmaDouble_ptr d_R, dwork;
     double *tau;
     double          *diag, *offdiag;
     double           result[2] = {0., 0.};

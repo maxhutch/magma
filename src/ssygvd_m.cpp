@@ -1,19 +1,22 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
 
-       @generated from dsygvd_m.cpp normal d -> s, Tue Sep  2 12:38:24 2014
+       @generated from dsygvd_m.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
+
+#define PRECISION_s
+#define REAL
 
 /**
     Purpose
@@ -34,8 +37,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     itype   INTEGER
@@ -165,10 +168,17 @@
     @ingroup magma_ssygv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t n,
-               float *A, magma_int_t lda, float *B, magma_int_t ldb,
-               float *w, float *work, magma_int_t lwork,
-               magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)
+magma_ssygvd_m(
+    magma_int_t ngpu,
+    magma_int_t itype, magma_vec_t jobz, magma_uplo_t uplo, magma_int_t n,
+    float *A, magma_int_t lda,
+    float *B, magma_int_t ldb,
+    float *w, float *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_ = lapack_uplo_const( uplo );
     const char* jobz_ = lapack_vec_const( jobz );
@@ -259,7 +269,7 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_spotrf_m(nrgpu, uplo, n, B, ldb, info);
+    magma_spotrf_m(ngpu, uplo, n, B, ldb, info);
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -270,13 +280,13 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
     timer_start( time );
 
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_ssygst_m(nrgpu, itype, uplo, n, A, lda, B, ldb, info);
+    magma_ssygst_m(ngpu, itype, uplo, n, A, lda, B, ldb, info);
 
     timer_stop( time );
     timer_printf( "time ssygst = %6.2f\n", time );
     timer_start( time );
 
-    magma_ssyevd_m(nrgpu, jobz, uplo, n, A, lda, w, work, lwork, iwork, liwork, info);
+    magma_ssyevd_m(ngpu, jobz, uplo, n, A, lda, w, work, lwork, iwork, liwork, info);
 
     timer_stop( time );
     timer_printf( "time ssyevd = %6.2f\n", time );
@@ -294,7 +304,7 @@ magma_ssygvd_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_upl
                 trans = MagmaNoTrans;
             }
 
-            magma_strsm_m(nrgpu, MagmaLeft, uplo, trans, MagmaNonUnit,
+            magma_strsm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
                           n, n, d_one, B, ldb, A, lda);
         }
         else if (itype == 3) {

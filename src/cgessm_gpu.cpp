@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgessm_gpu.cpp normal z -> c, Tue Sep  2 12:38:20 2014
+       @generated from zgessm_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -70,12 +70,13 @@
     @ingroup magma_cgesv_tile
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgessm_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t k, magma_int_t ib,
-                  magma_int_t *ipiv,
-                  magmaFloatComplex *dL1, magma_int_t lddl1,
-                  magmaFloatComplex *dL,  magma_int_t lddl,
-                  magmaFloatComplex *dA,  magma_int_t ldda,
-                  magma_int_t *info)
+magma_cgessm_gpu(
+    magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t k, magma_int_t ib,
+    magma_int_t *ipiv,
+    magmaFloatComplex_ptr dL1, magma_int_t lddl1,
+    magmaFloatComplex_ptr dL,  magma_int_t lddl,
+    magmaFloatComplex_ptr dA,  magma_int_t ldda,
+    magma_int_t *info)
 {
 #define AT(i,j) (dAT + (i)*ldda + (j)      )
 #define L(i,j)  (dL  + (i)      + (j)*lddl )
@@ -85,7 +86,7 @@ magma_cgessm_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
     int i, s, sb;
-    magmaFloatComplex *dAT;
+    magmaFloatComplex_ptr dAT;
 
     /* Check arguments */
     *info = 0;

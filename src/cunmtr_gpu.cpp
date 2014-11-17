@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmtr_gpu.cpp normal z -> c, Tue Sep  2 12:38:22 2014
+       @generated from zunmtr_gpu.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -106,13 +106,14 @@
     @ingroup magma_cheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cunmtr_gpu(magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
-                 magma_int_t m, magma_int_t n,
-                 magmaFloatComplex *dA,    magma_int_t ldda,
-                 magmaFloatComplex *tau,
-                 magmaFloatComplex *dC,    magma_int_t lddc,
-                 magmaFloatComplex *wA,    magma_int_t ldwa,
-                 magma_int_t *info)
+magma_cunmtr_gpu(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex_ptr dA,    magma_int_t ldda,
+    magmaFloatComplex   *tau,
+    magmaFloatComplex_ptr dC,    magma_int_t lddc,
+    magmaFloatComplex    *wA,    magma_int_t ldwa,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)

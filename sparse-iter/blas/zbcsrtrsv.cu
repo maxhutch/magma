@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -27,63 +27,72 @@
     Arguments
     ---------
 
-    @param
+    @param[in]
     uplo        magma_uplo_t
                 upper/lower fill structure
 
-    @param
+    @param[in]
     r_blocks    magma_int_t
                 number of blocks in row
                 
-    @param
+    @param[in]
     c_blocks    magma_int_t
                 number of blocks in column    
                 
-    @param
+    @param[in]
     size_b      magma_int_t
                 blocksize in BCSR
  
-    @param
-    A           magmaDoubleComplex*
+    @param[in]
+    A           magmaDoubleComplex_ptr 
                 upper/lower factor
 
-    @param
+    @param[in]
     blockinfo   magma_int_t*
                 array containing matrix information
 
-    @param
-    x           magmaDoubleComplex*
+    @param[in]
+    x           magmaDoubleComplex_ptr 
                 input/output vector x
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zbcsrtrsv( magma_uplo_t uplo,
-                 magma_int_t r_blocks,
-                 magma_int_t c_blocks,
-                 magma_int_t size_b, 
-                 magmaDoubleComplex *A,
-                 magma_index_t *blockinfo,   
-                 magmaDoubleComplex *x ){
+magma_zbcsrtrsv(
+    magma_uplo_t uplo,
+    magma_int_t r_blocks,
+    magma_int_t c_blocks,
+    magma_int_t size_b, 
+    magmaDoubleComplex_ptr A,
+    magma_index_t *blockinfo,   
+    magmaDoubleComplex_ptr x,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     // some useful variables
     magmaDoubleComplex one = MAGMA_Z_MAKE(1.0, 0.0);
     magmaDoubleComplex mone = MAGMA_Z_MAKE(-1.0, 0.0);
     magma_int_t j,k;
 
-    if( uplo==MagmaLower ){ 
+    if ( uplo==MagmaLower ) { 
         // forward solve
-        for( k=0; k<r_blocks; k++){
+        for( k=0; k<r_blocks; k++) {
             // do the forward triangular solve for block M(k,k): L(k,k)y = b
             magma_ztrsv(MagmaLower, MagmaNoTrans, MagmaUnit, size_b, A(k,k), 
                                                              size_b, x(k), 1 );
 
              // update for all nonzero blocks below M(k,k) 
                     // the respective values of y
-            for( j=k+1; j<c_blocks; j++ ){
-                if( (blockinfo(j,k)!=0) ){
+            for( j=k+1; j<c_blocks; j++ ) {
+                if ( (blockinfo(j,k)!=0) ) {
                     magmablas_zgemv( MagmaNoTrans, size_b, size_b, 
                                      mone, A(j,k), size_b,
                                      x(k), 1, one,  x(j), 1 );
@@ -92,17 +101,17 @@ magma_zbcsrtrsv( magma_uplo_t uplo,
             }
         }
     }
-    else if( uplo==MagmaUpper ){
+    else if ( uplo==MagmaUpper ) {
         // backward solve
-        for( k=r_blocks-1; k>=0; k--){
+        for( k=r_blocks-1; k>=0; k--) {
             // do the backward triangular solve for block M(k,k): U(k,k)x = y
             magma_ztrsv(MagmaUpper, MagmaNoTrans, MagmaNonUnit, size_b, A(k,k), 
                                                              size_b, x(k), 1 );
 
             // update for all nonzero blocks above M(k,k) 
                     // the respective values of y
-            for( j=k-1; j>=0; j-- ){
-                if( (blockinfo(j,k)!=0) ){
+            for( j=k-1; j>=0; j-- ) {
+                if ( (blockinfo(j,k)!=0) ) {
                     magmablas_zgemv( MagmaNoTrans, size_b, size_b, 
                                      mone, A(j,k), size_b,
                                      x(k), 1, one,  x(j), 1 );
@@ -112,6 +121,7 @@ magma_zbcsrtrsv( magma_uplo_t uplo,
         }
     }
 
+    magmablasSetKernelStream( orig_queue );
     return MAGMA_SUCCESS;
 }
 

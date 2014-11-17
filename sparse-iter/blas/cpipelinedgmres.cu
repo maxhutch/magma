@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zpipelinedgmres.cu normal z -> c, Tue Sep  2 12:38:33 2014
+       @generated from zpipelinedgmres.cu normal z -> c, Sat Nov 15 19:54:21 2014
        @author Hartwig Anzt
 
 */
@@ -48,12 +48,14 @@ __device__ void sum_reduce( /*int n,*/ int i, float* x )
         __syncthreads(); }
 }
 
-__global__ void 
-magma_cpipelined_correction( int n,  
-                             int k,
-                             magmaFloatComplex *skp, 
-                             magmaFloatComplex *r,
-                             magmaFloatComplex *v ){
+__global__ void
+magma_cpipelined_correction( 
+    int n,  
+    int k,
+    magmaFloatComplex_ptr skp, 
+    magmaFloatComplex_ptr r,
+    magmaFloatComplex_ptr v )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     float zz= 0.0, tmp= 0.0;
 
@@ -77,12 +79,14 @@ magma_cpipelined_correction( int n,
     }
 }
 
-__global__ void 
-magma_cpipelined_copyscale( int n,  
-                             int k,
-                             magmaFloatComplex *skp, 
-                             magmaFloatComplex *r,
-                             magmaFloatComplex *v ){
+__global__ void
+magma_cpipelined_copyscale( 
+    int n,  
+    int k,
+    magmaFloatComplex_ptr skp, 
+    magmaFloatComplex_ptr r,
+    magmaFloatComplex_ptr v )
+{
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -97,12 +101,14 @@ magma_cpipelined_copyscale( int n,
 //----------------------------------------------------------------------------//
 
 __global__ void
-magma_cpipelined_scnrm2_kernel( int m, 
-                                magmaFloatComplex *da, 
-                                int ldda, 
-                                magmaFloatComplex *dxnorm ){
+magma_cpipelinedscnrm2_kernel( 
+    int m, 
+    magmaFloatComplex_ptr da, 
+    int ldda, 
+    magmaFloatComplex_ptr dxnorm )
+{
     const int i = threadIdx.x;
-    magmaFloatComplex *dx = da + blockIdx.x * ldda;
+    magmaFloatComplex_ptr dx = da + blockIdx.x * ldda;
 
     __shared__ float sum[ 512 ];
     float re, lsum;
@@ -130,10 +136,12 @@ magma_cpipelined_scnrm2_kernel( int m,
 
 //----------------------------------------------------------------------------//
 
-__global__ void 
-magma_cpipelined_scale( int n, 
-                        magmaFloatComplex *r, 
-                        magmaFloatComplex *drnorm ){
+__global__ void
+magma_cpipelinesscale( 
+    int n, 
+    magmaFloatComplex_ptr r, 
+    magmaFloatComplex_ptr drnorm )
+{
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -154,38 +162,42 @@ magma_cpipelined_scale( int n,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i
 
-    @param
+    @param[in]
     k           int
                 # skp entries v_i^T * r ( without r )
 
-    @param
-    r           magmaFloatComplex*
+    @param[in]
+    r           magmaFloatComplex_ptr 
                 vector of length n
 
-    @param
-    v           magmaFloatComplex*
+    @param[in]
+    v           magmaFloatComplex_ptr 
                 vector of length n
                 
-    @param  
-    skp         magmaFloatComplex*
+    @param[in]  
+    skp         magmaFloatComplex_ptr 
                 array of parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_caux
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_ccopyscale(   int n, 
-                    int k,
-                    magmaFloatComplex *r, 
-                    magmaFloatComplex *v,
-                    magmaFloatComplex *skp ){
-
-    
+magma_ccopyscale(
+    int n, 
+    int k,
+    magmaFloatComplex_ptr r, 
+    magmaFloatComplex_ptr v,
+    magmaFloatComplex_ptr skp,
+    magma_queue_t queue )
+{
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs( (k+BLOCK_SIZE-1)/BLOCK_SIZE );
     unsigned int Ms =   Bs.x * sizeof( magmaFloatComplex ); 
@@ -193,9 +205,9 @@ magma_ccopyscale(   int n,
     dim3 Gs2( (n+BLOCK_SIZE-1)/BLOCK_SIZE );
 
 
-    magma_cpipelined_correction<<<Gs, Bs, Ms, magma_stream>>>
+    magma_cpipelined_correction<<<Gs, Bs, Ms, queue >>>
                                             ( n, k, skp, r, v );
-    magma_cpipelined_copyscale<<<Gs2, Bs, 0, magma_stream>>>
+    magma_cpipelined_copyscale<<<Gs2, Bs, 0, queue >>>
                                             ( n, k, skp, r, v );
 
     return MAGMA_SUCCESS;
@@ -203,19 +215,21 @@ magma_ccopyscale(   int n,
 
 
 extern "C" magma_int_t
-magma_scnrm2scale(  int m, 
-                    magmaFloatComplex *r, 
-                    int lddr, 
-                    magmaFloatComplex *drnorm) {
-
+magma_scnrm2scale(
+    int m, 
+    magmaFloatComplex_ptr r, 
+    int lddr, 
+    magmaFloatComplex_ptr drnorm,
+    magma_queue_t queue )
+{
     dim3  blocks( 1 );
     dim3 threads( 512 );
-    magma_cpipelined_scnrm2_kernel<<< blocks, threads, 0, magma_stream >>>
+    magma_cpipelinedscnrm2_kernel<<< blocks, threads, 0, queue >>>
                                 ( m, r, lddr, drnorm );
 
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs2( (m+BLOCK_SIZE-1)/BLOCK_SIZE );
-    magma_cpipelined_scale<<<Gs2, Bs, 0, magma_stream>>>( m, r, drnorm );
+    magma_cpipelinesscale<<<Gs2, Bs, 0, queue >>>( m, r, drnorm );
 
     return MAGMA_SUCCESS;
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztrsm.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from ztrsm.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
        @author Peng Du
        @author Tingxing Dong
@@ -124,14 +124,14 @@
     @ingroup magma_dblas3
     ********************************************************************/
 extern "C"
-void magmablas_dtrsm_work(
+void magmablas_dtrsm_outofplace(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
-    const double* dA, magma_int_t ldda,
-    double* dB, magma_int_t lddb,
+    magmaDouble_const_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr       dB, magma_int_t lddb,
     magma_int_t flag,
-    double* d_dinvA, double *dX)
+    magmaDouble_ptr d_dinvA, magmaDouble_ptr dX)
 {
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
     #define dB(i_, j_) (dB + (i_) + (j_)*lddb)
@@ -337,11 +337,28 @@ void magmablas_dtrsm_work(
             }
         }
     }
+}
 
+/**
+    @see magmablas_dtrsm_outofplace
+    @ingroup magma_dblas3
+    ********************************************************************/
+extern "C"
+void magmablas_dtrsm_work(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t m, magma_int_t n,
+    double alpha,
+    magmaDouble_const_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr       dB, magma_int_t lddb,
+    magma_int_t flag,
+    magmaDouble_ptr d_dinvA, magmaDouble_ptr dX)
+{
+
+    magmablas_dtrsm_outofplace( side, uplo, transA, diag, m, n, alpha,
+                                dA, ldda, dB, lddb, 1, d_dinvA, dX );
     // copy X to B
     magmablas_dlacpy( MagmaFull, m, n, dX, m, dB, lddb );
 }
-
 
 /**
     @see magmablas_dtrsm_work
@@ -352,8 +369,8 @@ void magmablas_dtrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     double alpha,
-    const double* dA, magma_int_t ldda,
-    double* dB, magma_int_t lddb )
+    magmaDouble_const_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr       dB, magma_int_t lddb )
 {
     magma_int_t nrowA = (side == MagmaLeft ? m : n);
 
@@ -381,7 +398,7 @@ void magmablas_dtrsm(
         return;
     }
 
-    double *d_dinvA, *dX;
+    magmaDouble_ptr d_dinvA, dX;
     magma_int_t size_dinvA;
     magma_int_t size_x = m*n;
     if ( side == MagmaLeft ) {

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd.cpp normal z -> c, Tue Sep  2 12:38:22 2014
+       @generated from zhetrd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -134,11 +134,12 @@
     @ingroup magma_cheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_chetrd(magma_uplo_t uplo, magma_int_t n,
-             magmaFloatComplex *A, magma_int_t lda,
-             float *d, float *e, magmaFloatComplex *tau,
-             magmaFloatComplex *work, magma_int_t lwork,
-             magma_int_t *info)
+magma_chetrd(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex *A, magma_int_t lda,
+    float *d, float *e, magmaFloatComplex *tau,
+    magmaFloatComplex *work, magma_int_t lwork,
+    magma_int_t *info)
 {
 #define  A(i, j) ( A + (j)*lda  + (i))
 #define dA(i, j) (dA + (j)*ldda + (i))

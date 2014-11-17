@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
 
@@ -27,8 +27,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     range   magma_range_t
@@ -78,8 +78,7 @@
             The leading dimension of the array Z. LDZ >= max(1,N).
 
     @param[out]
-    rwork   (workspace) DOUBLE PRECISION array,
-                                           dimension (LRWORK)
+    rwork   (workspace) DOUBLE PRECISION array, dimension (LRWORK)
             On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
 
     @param[in]
@@ -131,12 +130,14 @@
     @ingroup magma_zheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, double vl, double vu,
-               magma_int_t il, magma_int_t iu, double* d, double* e,
-               magmaDoubleComplex* Z, magma_int_t ldz,
-               double* rwork, magma_int_t lrwork,
-               magma_int_t* iwork, magma_int_t liwork,
-               magma_int_t* info)
+magma_zstedx_m(
+    magma_int_t ngpu,
+    magma_range_t range, magma_int_t n, double vl, double vu,
+    magma_int_t il, magma_int_t iu, double *d, double *e,
+    magmaDoubleComplex *Z, magma_int_t ldz,
+    double *rwork, magma_int_t lrwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     magma_int_t alleig, indeig, valeig, lquery;
     magma_int_t i, j, smlsiz;
@@ -213,7 +214,7 @@ magma_zstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, double vl,
         lapackf77_zsteqr("I", &n, d, e, Z, &ldz, rwork, info);
     } else {
         // We simply call DSTEDX instead.
-        magma_dstedx_m(nrgpu, range, n, vl, vu, il, iu, d, e, rwork, n,
+        magma_dstedx_m(ngpu, range, n, vl, vu, il, iu, d, e, rwork, n,
                        rwork+n*n, lrwork-n*n, iwork, liwork, info);
 
         for (j=0; j < n; ++j)

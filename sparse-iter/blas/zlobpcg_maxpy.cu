@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -16,11 +16,13 @@
 
 
 
-__global__ void 
-magma_zlobpcg_maxpy_kernel( magma_int_t num_rows, 
-                            magma_int_t num_vecs, 
-                            magmaDoubleComplex *X, 
-                            magmaDoubleComplex *Y){
+__global__ void
+magma_zlobpcg_maxpy_kernel( 
+    magma_int_t num_rows, 
+    magma_int_t num_vecs, 
+    magmaDoubleComplex_ptr X, 
+    magmaDoubleComplex_ptr Y)
+{
 
     int row = blockIdx.x * blockDim.x + threadIdx.x; // global row index
 
@@ -56,40 +58,45 @@ magma_zlobpcg_maxpy_kernel( magma_int_t num_rows,
     Arguments
     ---------
 
-    @param
+    @param[in]
     num_rows    magma_int_t
                 number of rows
 
-    @param
+    @param[in]
     num_vecs    magma_int_t
                 number of vectors
 
-    @param
-    X           magmaDoubleComplex*
+    @param[in]
+    X           magmaDoubleComplex_ptr 
                 input vector X
 
-    @param
-    Y           magmaDoubleComplex*
+    @param[in/out]
+    Y           magmaDoubleComplex_ptr 
                 input/output vector Y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zlobpcg_maxpy(    magma_int_t num_rows,
-                        magma_int_t num_vecs, 
-                        magmaDoubleComplex *X,
-                        magmaDoubleComplex *Y){
-
+magma_zlobpcg_maxpy(
+    magma_int_t num_rows,
+    magma_int_t num_vecs, 
+    magmaDoubleComplex_ptr X,
+    magmaDoubleComplex_ptr Y,
+    magma_queue_t queue )
+{
     // every thread handles one row
 
     magma_int_t block_size = BLOCK_SIZE;
- 
+     magma_int_t threads = BLOCK_SIZE;
     dim3 block( block_size );
     dim3 grid( (num_rows+block_size-1)/block_size );
 
-    magma_zlobpcg_maxpy_kernel<<< grid, block, 0, magma_stream >>>
+    magma_zlobpcg_maxpy_kernel<<< grid, threads, 0, queue >>>
                                 ( num_rows, num_vecs, X, Y );
 
 

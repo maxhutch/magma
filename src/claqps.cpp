@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlaqps.cpp normal z -> c, Tue Sep  2 12:38:21 2014
+       @generated from zlaqps.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
        @author Mitch Horton
 */
@@ -96,14 +96,15 @@
     @ingroup magma_cgeqp3_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_claqps(magma_int_t m, magma_int_t n, magma_int_t offset,
-             magma_int_t nb, magma_int_t *kb,
-             magmaFloatComplex *A,  magma_int_t lda,
-             magmaFloatComplex *dA, magma_int_t ldda,
-             magma_int_t *jpvt, magmaFloatComplex *tau, float *vn1, float *vn2,
-             magmaFloatComplex *auxv,
-             magmaFloatComplex *F,  magma_int_t ldf,
-             magmaFloatComplex *dF, magma_int_t lddf)
+magma_claqps(
+    magma_int_t m, magma_int_t n, magma_int_t offset,
+    magma_int_t nb, magma_int_t *kb,
+    magmaFloatComplex     *A, magma_int_t lda,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magma_int_t *jpvt, magmaFloatComplex *tau, float *vn1, float *vn2,
+    magmaFloatComplex *auxv,
+    magmaFloatComplex     *F, magma_int_t ldf,
+    magmaFloatComplex_ptr dF, magma_int_t lddf)
 {
 #define  A(i, j) (A  + (i) + (j)*(lda ))
 #define dA(i, j) (dA + (i) + (j)*(ldda))

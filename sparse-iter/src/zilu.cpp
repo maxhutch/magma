@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hartwig Anzt 
 
@@ -18,8 +18,8 @@
 
 #define  blockinfo(i,j)  A.blockinfo[(i)*c_blocks   + (j)]
 #define M(i,j) M->val+((blockinfo(i,j)-1)*size_b*size_b)
-#define A(i,j) A.val+((blockinfo(i,j)-1)*size_b*size_b)
-#define x(i) x->val+(i*size_b)
+#define A(i,j) A.dval+((blockinfo(i,j)-1)*size_b*size_b)
+#define x(i) x->dval+(i*size_b)
 
 /**
     Purpose
@@ -31,24 +31,32 @@
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_z_sparse_matrix
                 input matrix A (on DEV)
 
-    @param
+    @param[in]
     M           magma_z_sparse_matrix*
                 output matrix M approx. (LU)^{-1} (on DEV)
 
-    @param
+    @param[out]
     ipiv        magma_int_t* 
                 pivoting vector
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgesv
     ********************************************************************/
 
-magma_int_t
-magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t *ipiv ){
-
+extern "C" magma_int_t
+magma_zilusetup(
+    magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t *ipiv,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     // some useful variables
     magmaDoubleComplex c_zero = MAGMA_Z_ZERO, c_one = MAGMA_Z_ONE, c_mone = MAGMA_Z_NEG_ONE;
@@ -74,27 +82,40 @@ magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t 
 
     // memory allocation
     stat = magma_zmalloc( &M->val, size_b*size_b*A.numblocks );
-    if( stat != 0 ) {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
+    if ( stat != 0 ) {printf("Memory Allocation Error transferring matrix\n"); magma_z_mfree(M, queue); return MAGMA_ERR_DEVICE_ALLOC; }
     stat = magma_imalloc( &M->row, r_blocks + 1  );
-    if( stat != 0 ) {printf("Memory Allocation Error transferring matrix\n"); exit(0); } 
+    if ( stat != 0 ) {printf("Memory Allocation Error transferring matrix\n"); magma_z_mfree(M, queue); return MAGMA_ERR_DEVICE_ALLOC;} 
     stat = magma_imalloc( &M->col, A.numblocks );
-    if( stat != 0 ) {printf("Memory Allocation Error transferring matrix\n"); exit(0); }
-    magma_imalloc_cpu( &M->blockinfo, r_blocks * c_blocks );
+    if ( stat != 0 ) {printf("Memory Allocation Error transferring matrix\n"); magma_z_mfree(M, queue); return MAGMA_ERR_DEVICE_ALLOC;}
+    stat = magma_imalloc_cpu( &M->blockinfo, r_blocks * c_blocks );
+    if ( stat != 0 ) {printf("Memory Allocation Error transferring matrix\n"); magma_z_mfree(M, queue); return MAGMA_ERR_DEVICE_ALLOC;}
     // data transfer
-    magma_zcopyvector( size_b*size_b*A.numblocks, A.val, 1, M->val, 1 );
-    magma_icopyvector( (r_blocks+1), A.row, 1, M->row, 1 );
-    magma_icopyvector( A.numblocks, A.col, 1, M->col, 1 );
-    for( magma_int_t i=0; i<r_blocks * c_blocks; i++ ){
+    magma_zcopyvector( size_b*size_b*A.numblocks, A.dval, 1, M->val, 1 );
+    magma_icopyvector( (r_blocks+1), A.drow, 1, M->row, 1 );
+    magma_icopyvector( A.numblocks, A.dcol, 1, M->col, 1 );
+    for( magma_int_t i=0; i<r_blocks * c_blocks; i++ ) {
         M->blockinfo[i] = A.blockinfo[i];
     }
 
 
     magma_index_t *cpu_row, *cpu_col;
-
-    magma_imalloc_cpu( &cpu_row, r_blocks+1 );
-    magma_imalloc_cpu( &cpu_col, A.numblocks );
-    magma_igetvector( r_blocks+1, A.row, 1, cpu_row, 1 );            
-    magma_igetvector( A.numblocks, A.col, 1, cpu_col, 1 );
+    cpu_row = NULL;
+    cpu_col= NULL;
+    
+    stat = magma_imalloc_cpu( &cpu_row, r_blocks+1 );
+    if ( stat != 0 ) {
+        magma_free_CPU(cpu_row);
+        magma_free_CPU(cpu_row);
+        return MAGMA_ERR_HOST_ALLOC;
+    }
+    stat = magma_imalloc_cpu( &cpu_col, A.numblocks );
+    if ( stat != 0 ) {
+        magma_free_CPU(cpu_row);
+        magma_free_CPU(cpu_row);
+        return MAGMA_ERR_HOST_ALLOC;
+    }    
+    magma_igetvector( r_blocks+1, A.drow, 1, cpu_row, 1 );            
+    magma_igetvector( A.numblocks, A.dcol, 1, cpu_col, 1 );
 
 
     magma_int_t ldda, lddb, lddc, ldwork, lwork;
@@ -142,12 +163,12 @@ magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t 
     */
 
     // kij-version
-    for( k=0; k<r_blocks; k++){
+    for( k=0; k<r_blocks; k++) {
 
         magma_zgetrf_gpu( size_b, size_b, M(k,k), ldda, ipiv+k*size_b, &info );
 
-        for( j=k+1; j<c_blocks; j++ ){
-            if( (blockinfo(k,j)!=0) ){
+        for( j=k+1; j<c_blocks; j++ ) {
+            if ( (blockinfo(k,j)!=0) ) {
                 // Swap elements on the right before update
                 magmablas_zlaswpx(size_b, M(k,j), 1, size_b,
                           1, size_b, ipiv+k*size_b, 1);
@@ -160,8 +181,8 @@ magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t 
         // ------ in one routine (merged blocks)------
     /*
         magma_int_t count = 0;
-        for( j=k+1; j<c_blocks; j++ ){
-            if( (blockinfo(k,j)!=0) ){
+        for( j=k+1; j<c_blocks; j++ ) {
+            if ( (blockinfo(k,j)!=0) ) {
                    count++;
             }
         }
@@ -176,23 +197,23 @@ magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t 
         // ------- in one routine --------------------
 
         // Swap elements on the left
-        for( j=0; j<k; j++ ){
-            if( (blockinfo(k,j)!=0) ){
+        for( j=0; j<k; j++ ) {
+            if ( (blockinfo(k,j)!=0) ) {
                 magmablas_zlaswpx(size_b, M(k,j), 1, size_b,
                   1, size_b,
                   ipiv+k*size_b, 1);                  
             }
         }
 
-        for( i=k+1; i<c_blocks; i++ ){
-            if( (blockinfo(i,k)!=0) && (i!=k) ){
+        for( i=k+1; i<c_blocks; i++ ) {
+            if ( (blockinfo(i,k)!=0) && (i!=k) ) {
                 // update blocks below
                 magma_ztrsm(MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                     size_b, size_b, c_one,
                     M(k,k), ldda, M(i,k), size_b);
                 // update the blocks in the respective rows
-                for( j=k+1; j<c_blocks; j++ ){
-                    if( (blockinfo(i,j)!=0) && (blockinfo(k,j)!=0) ){
+                for( j=k+1; j<c_blocks; j++ ) {
+                    if ( (blockinfo(i,j)!=0) && (blockinfo(k,j)!=0) ) {
                         magmablas_zgemm( MagmaNoTrans, MagmaNoTrans, size_b, size_b, size_b,
                                          c_mone, M(i,k), size_b,
                                          M(k,j), size_b, c_one,  M(i,j), size_b );
@@ -202,7 +223,7 @@ magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t 
         }
     }
     
-    //magma_z_mvisu( *M );
+    //magma_z_mvisu( *M, queue );
 
 
     magma_free(inverse);
@@ -216,6 +237,7 @@ magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t 
     free(cpu_row);
     free(cpu_col);
 
+    magmablasSetKernelStream( orig_queue );
     return MAGMA_SUCCESS;
 }   /* magma_zilusetup */
 
@@ -224,9 +246,18 @@ magma_zilusetup( magma_z_sparse_matrix A, magma_z_sparse_matrix *M, magma_int_t 
 
 
 
-magma_int_t
-magma_zilu( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,  
-           magma_z_solver_par *solver_par, magma_int_t *ipiv ){
+extern "C" magma_int_t
+magma_zilu(
+    magma_z_sparse_matrix A, 
+    magma_z_vector b, 
+    magma_z_vector *x,  
+    magma_z_solver_par *solver_par, 
+    magmaInt_ptr ipiv,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     // some useful variables
     magmaDoubleComplex one = MAGMA_Z_MAKE(1.0, 0.0);
@@ -238,13 +269,13 @@ magma_zilu( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
     magma_int_t r_blocks = ceil( (float)A.num_rows / (float)size_b );     // max number of blocks per column
 
     // set x = b
-    magma_zcopyvector( A.num_rows, b.val, 1, x->val, 1 );
+    magma_zcopyvector( A.num_rows, b.dval, 1, x->dval, 1 );
 
 
     // now solve
     /*
     // First pivot the RHS
-    for( k=0; k<r_blocks; k++){
+    for( k=0; k<r_blocks; k++) {
       magmablas_zlaswpx(1, x(k), 1, size_b,
             1, size_b,
             ipiv+k*size_b, 1);
@@ -262,14 +293,14 @@ magma_zilu( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
     magma_free_cpu(work);
 
     // forward solve
-    for( k=0; k<r_blocks; k++){
+    for( k=0; k<r_blocks; k++) {
 
         // do the forward triangular solve for block M(k,k): L(k,k)y = b
         magma_ztrsv(MagmaLower, MagmaNoTrans, MagmaUnit, size_b, A(k,k), size_b, x(k), 1 );
 
          // update for all nonzero blocks below M(k,k) the respective values of y
-        for( j=k+1; j<c_blocks; j++ ){
-            if( (blockinfo(j,k)!=0) ){
+        for( j=k+1; j<c_blocks; j++ ) {
+            if ( (blockinfo(j,k)!=0) ) {
                 //
                 magmablas_zgemv( MagmaNoTrans, size_b, size_b, 
                                  mone, A(j,k), size_b,
@@ -280,13 +311,13 @@ magma_zilu( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
     }
 
     // backward solve
-    for( k=r_blocks-1; k>=0; k--){
+    for( k=r_blocks-1; k>=0; k--) {
         // do the backward triangular solve for block M(k,k): L(k,k)y = b
         magma_ztrsv(MagmaUpper, MagmaNoTrans, MagmaNonUnit, size_b, A(k,k), size_b, x(k), 1 );
 
         // update for all nonzero blocks above M(k,k) the respective values of y
-        for( j=k-1; j>=0; j-- ){
-            if( (blockinfo(j,k)!=0) ){
+        for( j=k-1; j>=0; j-- ) {
+            if ( (blockinfo(j,k)!=0) ) {
                 magmablas_zgemv( MagmaNoTrans, size_b, size_b, 
                                  mone, A(j,k), size_b,
                                  x(k), 1, one,  x(j), 1 );
@@ -296,5 +327,6 @@ magma_zilu( magma_z_sparse_matrix A, magma_z_vector b, magma_z_vector *x,
     }
 
 
+    magmablasSetKernelStream( orig_queue );
     return MAGMA_SUCCESS;
 }

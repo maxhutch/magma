@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zhetrd_gpu.cpp normal z -> c, Tue Sep  2 12:38:22 2014
+       @generated from zhetrd_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -143,12 +143,13 @@
     @ingroup magma_cheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_chetrd_gpu(magma_uplo_t uplo, magma_int_t n,
-                 magmaFloatComplex *dA, magma_int_t ldda,
-                 float *d, float *e, magmaFloatComplex *tau,
-                 magmaFloatComplex *wA,  magma_int_t ldwa,
-                 magmaFloatComplex *work, magma_int_t lwork,
-                 magma_int_t *info)
+magma_chetrd_gpu(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    float *d, float *e, magmaFloatComplex *tau,
+    magmaFloatComplex *wA,  magma_int_t ldwa,
+    magmaFloatComplex *work, magma_int_t lwork,
+    magma_int_t *info)
 {
 #define  A(i, j) (wA + (j)*ldwa + (i))
 #define dA(i, j) (dA + (j)*ldda + (i))
@@ -202,7 +203,7 @@ magma_chetrd_gpu(magma_uplo_t uplo, magma_int_t n,
         return *info;
     }
 
-    magmaFloatComplex *dwork;
+    magmaFloatComplex_ptr dwork;
     
     if (n < 2048)
         nx = n;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -12,9 +12,12 @@
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 #include "magma_bulge.h"
 #include "magma_dbulge.h"
+
+#define PRECISION_d
+#define REAL
 
 /**
     Purpose
@@ -36,8 +39,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     itype   INTEGER
@@ -197,11 +200,19 @@
     @ingroup magma_dsygv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_dsygvdx_2stage_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-                       double *A, magma_int_t lda, double *B, magma_int_t ldb,
-                       double vl, double vu, magma_int_t il, magma_int_t iu,
-                       magma_int_t *m, double *w, double *work, magma_int_t lwork,
-                       magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)
+magma_dsygvdx_2stage_m(
+    magma_int_t ngpu,
+    magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+    double *A, magma_int_t lda,
+    double *B, magma_int_t ldb,
+    double vl, double vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, double *w,
+    double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
@@ -310,7 +321,7 @@ magma_dsygvdx_2stage_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, m
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_dpotrf_m(nrgpu, uplo, n, B, ldb, info);
+    magma_dpotrf_m(ngpu, uplo, n, B, ldb, info);
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -321,13 +332,13 @@ magma_dsygvdx_2stage_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, m
     timer_start( time );
 
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_dsygst_m(nrgpu, itype, uplo, n, A, lda, B, ldb, info);
+    magma_dsygst_m(ngpu, itype, uplo, n, A, lda, B, ldb, info);
 
     timer_stop( time );
     timer_printf( "time dsygst_m = %6.2f\n", time );
     timer_start( time );
 
-    magma_dsyevdx_2stage_m(nrgpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w, work, lwork, iwork, liwork, info);
+    magma_dsyevdx_2stage_m(ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w, work, lwork, iwork, liwork, info);
 
     timer_stop( time );
     timer_printf( "time dsyevdx_2stage_m = %6.2f\n", time );
@@ -345,7 +356,7 @@ magma_dsygvdx_2stage_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, m
                 trans = MagmaNoTrans;
             }
 
-            magma_dtrsm_m(nrgpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, d_one, B, ldb, A, lda);
+            magma_dtrsm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, d_one, B, ldb, A, lda);
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -356,7 +367,7 @@ magma_dsygvdx_2stage_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, m
                 trans = MagmaTrans;
             }
 
-            //magma_dtrmm_m(nrgpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, d_one, B, ldb, A, lda);
+            //magma_dtrmm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, d_one, B, ldb, A, lda);
             printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
             double *dA=NULL, *dB=NULL;
             magma_int_t ldda = n;

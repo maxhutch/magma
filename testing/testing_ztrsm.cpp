@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -13,14 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
 // includes, project
+#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 
 #define h_A(i,j) (h_A + (i) + (j)*lda)
 
@@ -42,7 +40,7 @@ int main( int argc, char** argv)
     magma_int_t *ipiv;
 
     magmaDoubleComplex *h_A, *h_B, *h_Bcublas, *h_Bmagma, *h_Blapack, *h_X;
-    magmaDoubleComplex *d_A, *d_B;
+    magmaDoubleComplex_ptr d_A, d_B;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex c_one = MAGMA_Z_ONE;
     magmaDoubleComplex alpha = MAGMA_Z_MAKE(  0.29, -0.86 );
@@ -128,7 +126,7 @@ int main( int argc, char** argv)
             magma_zsetmatrix( M, N, h_B, ldb, d_B, lddb );
             
             cublas_time = magma_sync_wtime( NULL );
-            cublasZtrsm( handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
+            cublasZtrsm( opts.handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
                          cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
                          M, N, 
                          &alpha, d_A, ldda,

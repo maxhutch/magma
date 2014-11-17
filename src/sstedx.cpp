@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
-       @generated from dstedx.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+       @generated from dstedx.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 */
 #include "common_magma.h"
 
@@ -128,10 +128,14 @@
     @ingroup magma_ssyev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sstedx(magma_range_t range, magma_int_t n, float vl, float vu,
-             magma_int_t il, magma_int_t iu, float* d, float* e, float* Z, magma_int_t ldz,
-             float* work, magma_int_t lwork, magma_int_t* iwork, magma_int_t liwork,
-             float* dwork, magma_int_t* info)
+magma_sstedx(
+    magma_range_t range, magma_int_t n, float vl, float vu,
+    magma_int_t il, magma_int_t iu, float *d, float *e,
+    float *Z, magma_int_t ldz,
+    float *work, magma_int_t lwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magmaFloat_ptr dwork,
+    magma_int_t *info)
 {
 #define Z(i_,j_) (Z + (i_) + (j_)*ldz)
 

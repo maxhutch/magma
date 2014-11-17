@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgehrd.cpp normal z -> s, Tue Sep  2 12:38:24 2014
+       @generated from zgehrd.cpp normal z -> s, Sat Nov 15 19:54:10 2014
        
        @author Stan Tomov
        @author Mark Gates
@@ -127,12 +127,13 @@
     @ingroup magma_sgeev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgehrd(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
-             float *A, magma_int_t lda,
-             float *tau,
-             float *work, magma_int_t lwork,
-             float *dT,
-             magma_int_t *info)
+magma_sgehrd(
+    magma_int_t n, magma_int_t ilo, magma_int_t ihi,
+    float *A, magma_int_t lda,
+    float *tau,
+    float *work, magma_int_t lwork,
+    magmaFloat_ptr dT,
+    magma_int_t *info)
 {
     #define  A(i_,j_) ( A + (i_) + (j_)*lda)
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)

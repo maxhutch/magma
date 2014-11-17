@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqrs_gpu.cpp normal z -> s, Tue Sep  2 12:38:20 2014
+       @generated from zgeqrs_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -87,12 +87,14 @@
     @ingroup magma_sgels_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
-                 float *dA,    magma_int_t ldda,
-                 float *tau,   float *dT,
-                 float *dB,    magma_int_t lddb,
-                 float *hwork, magma_int_t lwork,
-                 magma_int_t *info)
+magma_sgeqrs_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t nrhs,
+    magmaFloat_ptr dA,    magma_int_t ldda,
+    float *tau,
+    magmaFloat_ptr dT,
+    magmaFloat_ptr dB,    magma_int_t lddb,
+    float *hwork, magma_int_t lwork,
+    magma_int_t *info)
 {
     #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
     #define dT(a_1)     (dT + (lddwork+(a_1))*nb)
@@ -100,7 +102,7 @@ magma_sgeqrs_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     float c_zero    = MAGMA_S_ZERO;
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
-    float *dwork;
+    magmaFloat_ptr dwork;
     magma_int_t i, k, lddwork, rows, ib;
     magma_int_t ione = 1;
 

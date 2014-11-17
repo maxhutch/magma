@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -17,8 +17,12 @@
 
 
 // initialize arrays with zero
-__global__ void 
-magma_zgpumemzero(  magmaDoubleComplex *d, int n, int k ){
+__global__ void
+magma_zgpumemzero(  
+    magmaDoubleComplex_ptr d, 
+    int n, 
+    int k )
+{
 
    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -29,12 +33,14 @@ magma_zgpumemzero(  magmaDoubleComplex *d, int n, int k ){
 }
 
 // dot product
-__global__ void 
-magma_zdot_kernel( int Gs,
-                        int n, 
-                        magmaDoubleComplex *v,
-                        magmaDoubleComplex *r,
-                        magmaDoubleComplex *vtmp){
+__global__ void
+magma_zdot_kernel( 
+    int Gs,
+    int n, 
+    magmaDoubleComplex_ptr v,
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr vtmp)
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -88,13 +94,15 @@ magma_zdot_kernel( int Gs,
 }
 
 // dot product for multiple vectors
-__global__ void 
-magma_zblockdot_kernel( int Gs,
-                        int n, 
-                        int k,
-                        magmaDoubleComplex *v,
-                        magmaDoubleComplex *r,
-                        magmaDoubleComplex *vtmp){
+__global__ void
+magma_zblockdot_kernel( 
+    int Gs,
+    int n, 
+    int k,
+    magmaDoubleComplex_ptr v,
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr vtmp)
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -179,12 +187,14 @@ magma_zblockdot_kernel( int Gs,
 }
 
 // block reduction for multiple vectors
-__global__ void 
-magma_zblockreduce_kernel( int Gs,
-                           int n, 
-                           int k,
-                           magmaDoubleComplex *vtmp,
-                           magmaDoubleComplex *vtmp2 ){
+__global__ void
+magma_zblockreduce_kernel( 
+    int Gs,
+    int n, 
+    int k,
+    magmaDoubleComplex_ptr vtmp,
+    magmaDoubleComplex_ptr vtmp2 )
+{
 
     extern __shared__ magmaDoubleComplex temp[];    
     int Idx = threadIdx.x;
@@ -263,11 +273,11 @@ magma_zblockreduce_kernel( int Gs,
 }
 
 // accelerated reduction for one vector
-__global__ void 
+__global__ void
 magma_zreduce_kernel_fast( int Gs,
                            int n, 
-                           magmaDoubleComplex *vtmp,
-                           magmaDoubleComplex *vtmp2 ){
+                           magmaDoubleComplex_ptr vtmp,
+                           magmaDoubleComplex_ptr vtmp2 ){
 
     extern __shared__ magmaDoubleComplex temp[];    
     int Idx = threadIdx.x;
@@ -324,12 +334,14 @@ magma_zreduce_kernel_fast( int Gs,
 }
 
 // accelerated block reduction for multiple vectors
-__global__ void 
-magma_zblockreduce_kernel_fast( int Gs,
-                           int n, 
-                           int k,
-                           magmaDoubleComplex *vtmp,
-                           magmaDoubleComplex *vtmp2 ){
+__global__ void
+magma_zblockreduce_kernel_fast( 
+    int Gs,
+    int n, 
+    int k,
+    magmaDoubleComplex_ptr vtmp,
+    magmaDoubleComplex_ptr vtmp2 )
+{
 
     extern __shared__ magmaDoubleComplex temp[];    
     int Idx = threadIdx.x;
@@ -423,58 +435,68 @@ magma_zblockreduce_kernel_fast( int Gs,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i and r
 
-    @param
+    @param[in]
     k           int
                 # vectors v_i
 
-    @param
-    v           magmaDoubleComplex*
+    @param[in]
+    v           magmaDoubleComplex_ptr 
                 v = (v_0 .. v_i.. v_k)
 
-    @param
-    r           magmaDoubleComplex*
+    @param[in]
+    r           magmaDoubleComplex_ptr 
                 r
 
-    @param
-    d1          magmaDoubleComplex*
+    @param[in]
+    d1          magmaDoubleComplex_ptr 
                 workspace
 
-    @param
-    d2          magmaDoubleComplex*
+    @param[in]
+    d2          magmaDoubleComplex_ptr 
                 workspace
 
-    @param
-    skp         magmaDoubleComplex*
+    @param[out]
+    skp         magmaDoubleComplex_ptr 
                 vector[k] of scalar products (<v_i,r>...)
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zmdotc(       int n, 
-                    int k, 
-                    magmaDoubleComplex *v, 
-                    magmaDoubleComplex *r,
-                    magmaDoubleComplex *d1,
-                    magmaDoubleComplex *d2,
-                    magmaDoubleComplex *skp ){
+magma_zmdotc(
+    int n, 
+    int k, 
+    magmaDoubleComplex_ptr v, 
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr d1,
+    magmaDoubleComplex_ptr d2,
+    magmaDoubleComplex_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
+
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  (k)* (local_block_size) * sizeof( magmaDoubleComplex ); // k vecs 
-    magmaDoubleComplex *aux1 = d1, *aux2 = d2;
+    magmaDoubleComplex_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
 
-    if(k>1){
+    if (k>1) {
         magma_zblockdot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, k, v, r, d1 );
     }
-    else{
+    else {
         magma_zdot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, v, r, d1 );
     }
 /*
@@ -483,52 +505,53 @@ magma_zmdotc(       int n,
     magma_zgpumemzero<<<Gs, Bs, 0>>>( d2, n*k,1 );
     //magmablas_zlaset( MagmaUpperLower, n, k, d1, n );
     //magmablas_zlaset( MagmaUpperLower, n, k, d2, n );
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
         magma_zblockreduce_kernel<<< Gs_next.x, Bs.x, Ms >>> 
                                         ( Gs.x, n, k, aux1, aux2 );
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
-    for( int j=0; j<k; j++){
+    for( int j=0; j<k; j++) {
             magma_zcopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
 */
    
-    if( k>1){
-        while( Gs.x > 1 ){
+    if ( k>1) {
+        while( Gs.x > 1 ) {
             Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-            if( Gs_next.x == 1 ) Gs_next.x = 2;
+            if ( Gs_next.x == 1 ) Gs_next.x = 2;
             magma_zblockreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                         ( Gs.x, n, k, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
             b = 1 - b;
-            if( b ){ aux1 = d1; aux2 = d2; }
+            if ( b ) { aux1 = d1; aux2 = d2; }
             else   { aux2 = d1; aux1 = d2; }
         }
     }
-    else{
-        while( Gs.x > 1 ){
+    else {
+        while( Gs.x > 1 ) {
             Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-            if( Gs_next.x == 1 ) Gs_next.x = 2;
+            if ( Gs_next.x == 1 ) Gs_next.x = 2;
             magma_zreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                         ( Gs.x, n, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
             b = 1 - b;
-            if( b ){ aux1 = d1; aux2 = d2; }
+            if ( b ) { aux1 = d1; aux2 = d2; }
             else   { aux2 = d1; aux1 = d2; }
         }
     }
 
 
-    for( int j=0; j<k; j++){
+    for( int j=0; j<k; j++) {
             magma_zcopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -548,59 +571,64 @@ magma_zmdotc(       int n,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i and r
 
-    @param
+    @param[in]
     k           int
                 # vectors v_i
 
-    @param
-    v           magmaDoubleComplex*
+    @param[in]
+    v           magmaDoubleComplex_ptr 
                 v = (v_0 .. v_i.. v_k)
 
-    @param
-    r           magmaDoubleComplex*
+    @param[in]
+    r           magmaDoubleComplex_ptr 
                 r
 
-    @param
-    d1          magmaDoubleComplex*
+    @param[in]
+    d1          magmaDoubleComplex_ptr 
                 workspace
 
-    @param
-    d2          magmaDoubleComplex*
+    @param[in]
+    d2          magmaDoubleComplex_ptr 
                 workspace
 
-    @param
-    skp         magmaDoubleComplex*
+    @param[out]
+    skp         magmaDoubleComplex_ptr 
                 vector[k] of scalar products (<v_i,r>...)
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_z
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zgemvmdot(    int n, 
-                    int k, 
-                    magmaDoubleComplex *v, 
-                    magmaDoubleComplex *r,
-                    magmaDoubleComplex *d1,
-                    magmaDoubleComplex *d2,
-                    magmaDoubleComplex *skp ){
-     
+magma_zgemvmdot(
+    int n, 
+    int k, 
+    magmaDoubleComplex_ptr v, 
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr d1,
+    magmaDoubleComplex_ptr d2,
+    magmaDoubleComplex_ptr skp,
+    magma_queue_t queue )
+{
     int rows_left = k;
     int offset = 0;
     int chunk_size = 4;
     // process in chunks of 10 - has to be adapted to hardware and precision
-    while( rows_left > (chunk_size) ){
-        magma_zmdotc( n, chunk_size, v+offset*n, r, d1, d2, skp+offset );
+    while( rows_left > (chunk_size) ) {
+        magma_zmdotc( n, chunk_size, v+offset*n, r, d1, d2, skp+offset, queue );
         offset = offset + chunk_size;
         rows_left = rows_left-chunk_size;
 
     }
     // process rest
-    magma_zmdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset ); 
+    magma_zmdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset, queue ); 
 
 
    return MAGMA_SUCCESS;

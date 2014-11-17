@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 */
@@ -12,8 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -32,7 +30,7 @@ int main( int argc, char** argv )
     double           error, work[1];
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *h_A, *h_R;
-    magmaDoubleComplex *d_lA[ MagmaMaxGPUs ];
+    magmaDoubleComplex_ptr d_lA[ MagmaMaxGPUs ];
     magma_int_t N, n2, lda, ldda, max_size, ngpu;
     magma_int_t info, nb;
     magma_int_t ione     = 1;

@@ -1,24 +1,49 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
 -include $(MAGMA_DIR)/make.icl
 
 #
-# If not set, use deprecated OPTS variable names
+# Check if both new CFLAGS and deprecated OPTS are set -- causes havoc.
+#
+ifdef CFLAGS
+  ifdef OPTS
+    $(error Both CFLAGS and OPTS are defined. Update your make.inc file to use standard variables: CFLAGS, CXXFLAGS, FFLAGS, F90FLAGS, NVCCFLAGS, LDFLAGS, ARCHFLAGS.)
+  endif
+else
+  ifndef OPTS
+    $(error Neither CFLAGS nor OPTS are defined. Check your make.inc file.)
+  endif
+endif
+
+#
+# If CFLAGS, etc. are not set, use deprecated OPTS variable names
 #
 CXX             ?= $(CC)
 CFLAGS          ?= $(OPTS)
-CXXFLAGS        ?= $(CFLAGS)
 FFLAGS          ?= $(F77OPTS)
 F90FLAGS        ?= $(FOPTS)
 NVCCFLAGS       ?= $(NVOPTS)
 LDFLAGS         ?= $(LDOPTS)
+
+#
+# If not set, make CXXFLAGS same as CFLAGS
+#
+CXXFLAGS        ?= $(CFLAGS)
+
+#
+# Assume CUBLAS
+# This is also set in include/magma_types.h, but is needed before
+# then for some testers (e.g., testing_zgemm) to include cublas_v2.h.
+#
+CFLAGS          += -DHAVE_CUBLAS
+CXXFLAGS        += -DHAVE_CUBLAS
 
 #
 # Set default values if they are not set in make.inc

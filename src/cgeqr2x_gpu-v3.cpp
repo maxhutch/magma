@@ -1,21 +1,22 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqr2x_gpu-v3.cpp normal z -> c, Tue Sep  2 12:38:20 2014
+       @generated from zgeqr2x_gpu-v3.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
 
 extern "C" magma_int_t
-magma_clarfb2_gpu( magma_int_t m, magma_int_t n, magma_int_t k,
-                   const magmaFloatComplex *dV,    magma_int_t ldv,
-                   const magmaFloatComplex *dT,    magma_int_t ldt,
-                   magmaFloatComplex *dC,          magma_int_t ldc,
-                   magmaFloatComplex *dwork,       magma_int_t ldwork )
+magma_clarfb2_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaFloatComplex_const_ptr dV,    magma_int_t lddv,
+    magmaFloatComplex_const_ptr dT,    magma_int_t lddt,
+    magmaFloatComplex_ptr       dC,    magma_int_t lddc,
+    magmaFloatComplex_ptr       dwork, magma_int_t ldwork )
 {
     magmaFloatComplex c_zero    = MAGMA_C_ZERO;
     magmaFloatComplex c_one     = MAGMA_C_ONE;
@@ -28,22 +29,22 @@ magma_clarfb2_gpu( magma_int_t m, magma_int_t n, magma_int_t k,
     magma_cgemm( MagmaConjTrans, MagmaNoTrans,
     //magmablas_cgemm_reduce(
                            n, k, m,
-                           c_one,  dC,    ldc,
-                           dV,    ldv,
+                           c_one,  dC,    lddc,
+                                   dV,    lddv,
                            c_zero, dwork, ldwork);
 
     // W = W T^H = C^H V T^H
     magma_ctrmm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                  n, k,
-                 c_one, dT,    ldt,
-                 dwork, ldwork);
+                 c_one, dT,    lddt,
+                        dwork, ldwork);
 
     // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
     magma_cgemm( MagmaNoTrans, MagmaConjTrans,
                  m, n, k,
-                 c_neg_one, dV,    ldv,
-                 dwork, ldwork,
-                 c_one,     dC,    ldc);
+                 c_neg_one, dV,    lddv,
+                            dwork, ldwork,
+                 c_one,     dC,    lddc);
     
     return MAGMA_SUCCESS;
 }
@@ -133,17 +134,21 @@ magma_clarfb2_gpu( magma_int_t m, magma_int_t n, magma_int_t k,
     @ingroup magma_cgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgeqr2x3_gpu(magma_int_t m, magma_int_t n, magmaFloatComplex *dA,
-                   magma_int_t ldda, magmaFloatComplex *dtau,
-                   magmaFloatComplex *dT, magmaFloatComplex *ddA,
-                   float *dwork, magma_int_t *info)
+magma_cgeqr2x3_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dtau,
+    magmaFloatComplex_ptr dT,
+    magmaFloatComplex_ptr ddA,
+    magmaFloat_ptr        dwork,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
     #define BLOCK_SIZE 32
 
     magma_int_t i, k;
 
-    float *dnorm = dwork;
+    magmaFloat_ptr dnorm = dwork;
     magmaFloatComplex *work = (magmaFloatComplex *)(dwork+2*(n));
 
     *info = 0;

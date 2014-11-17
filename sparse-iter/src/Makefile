@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/src
@@ -32,6 +32,7 @@ ZSRC += \
 	zjacobi.cpp		\
 	zbaiter.cpp 	        \
 	zpcg.cpp		\
+	zbpcg.cpp		\
  	zgmres.cpp	\
 	zpgmres.cpp	\
  	zpbicgstab.cpp		\
@@ -60,9 +61,8 @@ ZSRC += \
 
 # ILU and sparse direct
 ZSRC += \
-    zcuilu.cpp          \
-	zpastix.cpp     	\
-
+    zcumilu.cpp          \
+    zpastix.cpp		\
 
 
 # orthogonalization schemes
@@ -77,6 +77,7 @@ ZSRC += \
 	magma_z_precond_wrapper.cpp \
 	magma_z_solver_wrapper.cpp \
     magma_zcuspmm.cpp   \
+    magma_zcuspaxpy.cpp   \
 	zresidual.cpp		\
 
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeadd.cu normal z -> d, Tue Sep  2 12:38:15 2014
+       @generated from zgeadd.cu normal z -> d, Sat Nov 15 19:53:57 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -98,8 +98,8 @@ extern "C" void
 magmablas_dgeadd_q(
     magma_int_t m, magma_int_t n,
     double alpha,
-    const double *dA, magma_int_t ldda,
-    double       *dB, magma_int_t lddb,
+    magmaDouble_const_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr       dB, magma_int_t lddb,
     magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -136,8 +136,8 @@ extern "C" void
 magmablas_dgeadd(
     magma_int_t m, magma_int_t n,
     double alpha,
-    const double *dA, magma_int_t ldda,
-    double       *dB, magma_int_t lddb )
+    magmaDouble_const_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr       dB, magma_int_t lddb )
 {
     magmablas_dgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magma_stream );
 }

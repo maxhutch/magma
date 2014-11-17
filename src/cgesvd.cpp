@@ -1,18 +1,19 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from zgesvd.cpp normal z -> c, Tue Sep  2 12:38:25 2014
+       @generated from zgesvd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
 
 #define PRECISION_c
+#define COMPLEX
 
 /**
     Purpose
@@ -149,13 +150,16 @@
     @ingroup magma_cgesvd_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
-             magmaFloatComplex *A,    magma_int_t lda, float *s,
-             magmaFloatComplex *U,    magma_int_t ldu,
-             magmaFloatComplex *VT,   magma_int_t ldvt,
-             magmaFloatComplex *work, magma_int_t lwork,
-             float *rwork,
-             magma_int_t *info )
+magma_cgesvd(
+    magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
+    magmaFloatComplex *A,    magma_int_t lda, float *s,
+    magmaFloatComplex *U,    magma_int_t ldu,
+    magmaFloatComplex *VT,   magma_int_t ldvt,
+    magmaFloatComplex *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define A(i_,j_)  (A  + (i_) + (j_)*lda)
     #define U(i_,j_)  (U  + (i_) + (j_)*ldu)

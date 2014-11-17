@@ -4,8 +4,7 @@
 -----------------------------------------------------
 
 MAGMA is intended for CUDA enabled NVIDIA GPUs.  It supports
-Tesla, Fermi, and Kepler GPUs. For more details see the MAGMA 1.4 presentation:
-http://icl.cs.utk.edu/projectsfiles/magma/pubs/MAGMA_1.4.pdf
+Tesla, Fermi, and Kepler GPUs. 
 
 Included are routines for the following algorithms:
 
@@ -16,15 +15,37 @@ Included are routines for the following algorithms:
     * Generalized Hermitian-definite eigenproblem solver
     * Mixed-precision iterative refinement solvers based on LU, QR, and Cholesky
     * MAGMA BLAS including gemm, gemv, symv, and trsm
+    * BATCHED MAGMA BLAS including gemm, gemv, herk, and trsm
+    * BATCHED LU, GETRI, and Cholesky factorizations
+    * MAGMA SPARSE including CG, GMRES, BiCGSTAB, LOBPCG, and Iterative refinement,
+      preconditioners, sparse kernels (SpMV, SpMM), and support for CSR, ELL, and 
+      SELL-P data formats
 
 Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
-Sparse routines have recently been added as a beta release, in the sparse-iter
-directory. We would appreciate any feedback that you may have on them.
 
- 1.5.0
-       - final:  Aug   30, 2014
+ 1.6.0 - November 16, 2014
+    * Added MAGMA Batched linear algebra routines:
+        * BATCHED MAGMA BLAS including gemm, gemv, herk, and trsm
+        * BATCHED LU, GETRI, and Cholesky factorizations
+    * Added Bunch-Kaufman factorization (and solver) for symmetric 
+      indefinite matrices
+      {z|c|d|s}{he|sy}trf 
+    * Added non-pivoted LDLt 
+    * Added a Random Butterfly Transformation (RBT) and a new solver based
+      on RBT + LU without pivoting + iterative refinement
+    * Comprehensive release of sparse routines:
+        * All sparse routines equipped with a queue.
+        * Enhanced debugging routines.
+        * Interface to cuSPARSE functions.
+        * Added interface to pass data structures located in main/device memory.
+        * Added generic interface to call any solver/eigensolver.
+        * Added testscript checking correctness of routines.
+        * Added capability to iterate in block-wise fashion.
+        * Checks for memory leaks.
+
+ 1.5.0 - final:  Aug   30, 2014
        - beta 3: July  18, 2014
        - beta 2: May   30, 2014
        - beta 1: April 25, 2014

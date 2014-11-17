@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztranspose_inplace.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from ztranspose_inplace.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -166,7 +166,8 @@ __global__ void dtranspose_inplace_even( int n, double *matrix, int lda )
     ********************************************************************/
 extern "C" void
 magmablas_dtranspose_inplace_q(
-    magma_int_t n, double *dA, magma_int_t ldda,
+    magma_int_t n,
+    magmaDouble_ptr dA, magma_int_t ldda,
     magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -201,7 +202,9 @@ magmablas_dtranspose_inplace_q(
     @ingroup magma_daux2
     ********************************************************************/
 extern "C" void
-magmablas_dtranspose_inplace( magma_int_t n, double *dA, magma_int_t ldda )
+magmablas_dtranspose_inplace(
+    magma_int_t n,
+    magmaDouble_ptr dA, magma_int_t ldda )
 {
     magmablas_dtranspose_inplace_q( n, dA, ldda, magma_stream );
 }

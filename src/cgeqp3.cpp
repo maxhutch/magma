@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
   
-       @generated from zgeqp3.cpp normal z -> c, Tue Sep  2 12:38:21 2014
+       @generated from zgeqp3.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
        @author Mitch Horton
 */
@@ -97,14 +97,15 @@
     @ingroup magma_cgeqp3_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgeqp3( magma_int_t m, magma_int_t n,
-              magmaFloatComplex *A, magma_int_t lda,
-              magma_int_t *jpvt, magmaFloatComplex *tau,
-              magmaFloatComplex *work, magma_int_t lwork,
-              #ifdef COMPLEX
-              float *rwork,
-              #endif
-              magma_int_t *info )
+magma_cgeqp3(
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex *A, magma_int_t lda,
+    magma_int_t *jpvt, magmaFloatComplex *tau,
+    magmaFloatComplex *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork,
+    #endif
+    magma_int_t *info )
 {
 #define  A(i, j) (A     + (i) + (j)*(lda ))
 #define dA(i, j) (dwork + (i) + (j)*(ldda))

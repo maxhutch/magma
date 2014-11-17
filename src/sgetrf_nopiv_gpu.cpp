@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgetrf_nopiv_gpu.cpp normal z -> s, Tue Sep  2 12:38:19 2014
+       @generated from zgetrf_nopiv_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -57,9 +57,10 @@
     @ingroup magma_sgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgetrf_nopiv_gpu(magma_int_t m, magma_int_t n,
-                       float *dA, magma_int_t ldda,
-                       magma_int_t *info)
+magma_sgetrf_nopiv_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magma_int_t *info)
 {
 #define dA(i,j) (dA + (i)*nb + (j)*nb*ldda)
 

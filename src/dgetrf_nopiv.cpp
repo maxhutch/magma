@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgetrf_nopiv.cpp normal z -> d, Tue Sep  2 12:38:20 2014
+       @generated from zgetrf_nopiv.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -60,7 +60,8 @@
 extern "C" magma_int_t
 magma_dgetrf_nopiv(
     magma_int_t m, magma_int_t n,
-    double *A, magma_int_t lda, magma_int_t *info)
+    double *A, magma_int_t lda,
+    magma_int_t *info)
 {
     #define A(i_,j_) (A + (i_) + (j_)*lda)
     

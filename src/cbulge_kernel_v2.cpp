@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel_v2.cpp normal z -> c, Tue Sep  2 12:38:23 2014
+ *     @generated from zbulge_kernel_v2.cpp normal z -> c, Sat Nov 15 19:54:10 2014
  *
  */
 
@@ -17,17 +17,19 @@
 #define PRECISION_c
 
 inline static void
-magma_clarfxsym_v2(magma_int_t n,
-                magmaFloatComplex *A, magma_int_t lda,
-                magmaFloatComplex *V, magmaFloatComplex *TAU,
-                magmaFloatComplex *work);
+magma_clarfxsym_v2(
+    magma_int_t n,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *V, magmaFloatComplex *TAU,
+    magmaFloatComplex *work);
 ///////////////////////////////////////////////////////////
 
 inline static void
-magma_clarfxsym_v2(magma_int_t n,
-                magmaFloatComplex *A, magma_int_t lda,
-                magmaFloatComplex *V, magmaFloatComplex *TAU,
-                magmaFloatComplex *work)
+magma_clarfxsym_v2(
+    magma_int_t n,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *V, magmaFloatComplex *TAU,
+    magmaFloatComplex *work)
 {
 /*
     WORK (workspace) float complex array, dimension N
@@ -63,13 +65,14 @@ magma_clarfxsym_v2(magma_int_t n,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_ctrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
-                                magmaFloatComplex *A, magma_int_t lda,
-                                magmaFloatComplex *V, magma_int_t ldv,
-                                magmaFloatComplex *TAU,
-                                magma_int_t st, magma_int_t ed,
-                                magma_int_t sweep, magma_int_t Vblksiz,
-                                magmaFloatComplex *work)
+magma_ctrdtype1cbHLsym_withQ_v2(
+    magma_int_t n, magma_int_t nb,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *V, magma_int_t ldv,
+    magmaFloatComplex *TAU,
+    magma_int_t st, magma_int_t ed,
+    magma_int_t sweep, magma_int_t Vblksiz,
+    magmaFloatComplex *work)
 {
 /*
     WORK (workspace) float complex array, dimension N
@@ -109,13 +112,14 @@ magma_ctrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_ctrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
-                                magmaFloatComplex *A, magma_int_t lda,
-                                magmaFloatComplex *V, magma_int_t ldv,
-                                magmaFloatComplex *TAU,
-                                magma_int_t st, magma_int_t ed,
-                                magma_int_t sweep, magma_int_t Vblksiz,
-                                magmaFloatComplex *work)
+magma_ctrdtype2cbHLsym_withQ_v2(
+    magma_int_t n, magma_int_t nb,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *V, magma_int_t ldv,
+    magmaFloatComplex *TAU,
+    magma_int_t st, magma_int_t ed,
+    magma_int_t sweep, magma_int_t Vblksiz,
+    magmaFloatComplex *work)
 {
     /*
      WORK (workspace) float complex array, dimension NB
@@ -169,13 +173,14 @@ magma_ctrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_ctrdtype3cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
-                                magmaFloatComplex *A, magma_int_t lda,
-                                magmaFloatComplex *V, magma_int_t ldv,
-                                magmaFloatComplex *TAU,
-                                magma_int_t st, magma_int_t ed,
-                                magma_int_t sweep, magma_int_t Vblksiz,
-                                magmaFloatComplex *work)
+magma_ctrdtype3cbHLsym_withQ_v2(
+    magma_int_t n, magma_int_t nb,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *V, magma_int_t ldv,
+    magmaFloatComplex *TAU,
+    magma_int_t st, magma_int_t ed,
+    magma_int_t sweep, magma_int_t Vblksiz,
+    magmaFloatComplex *work)
 {
     /*
      WORK (workspace) float complex array, dimension N

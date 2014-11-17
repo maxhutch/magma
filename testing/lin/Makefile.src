@@ -1,17 +1,18 @@
+# Automatically generated from Makefile ZHDR and ZSRC
 CHDR = \
-
+	
 
 DHDR = \
-
+	
 
 SHDR = \
-
+	
 
 CSRC = \
-magma_c_no_fortran.c
+	magma_c_no_fortran.c
 
 DSRC = \
-magma_d_no_fortran.c
+	magma_d_no_fortran.c
 
 SSRC = \
-magma_s_no_fortran.c
+	magma_s_no_fortran.c

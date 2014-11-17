@@ -19,8 +19,8 @@ MAGMA_LIBS   := -L$(MAGMADIR)/lib -L$(CUDADIR)/lib64 -L$(OPENBLASDIR)/lib \
                 -lmagma -lcublas -lcudart -lopenblas
 
 # Alternatively, using pkg-config (see README.txt):
-MAGMA_CFLAGS := $(shell pkg-config --cflags magma)
-MAGMA_LIBS   := $(shell pkg-config --libs   magma)
+# MAGMA_CFLAGS := $(shell pkg-config --cflags magma)
+# MAGMA_LIBS   := $(shell pkg-config --libs   magma)
 
 all: example
 
@@ -28,7 +28,7 @@ all: example
 	$(CC) $(CFLAGS) $(MAGMA_CFLAGS) -c -o $@ $<
 
 example: example.o zfill.o
-	$(LD) $(LDFLAGS) $(MAGMA_LIBS) -o $@ $^
+	$(LD) $(LDFLAGS) -o $@ $^ $(MAGMA_LIBS)
 
 clean:
 	-rm -f example *.o

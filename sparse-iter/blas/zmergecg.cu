@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -23,11 +23,13 @@
 // Solution of Linear Systems on GPUs (ICPP '13)
 
 // accelerated reduction for one vector
-__global__ void 
-magma_zcgreduce_kernel_spmv1( int Gs,
-                           int n, 
-                           magmaDoubleComplex *vtmp,
-                           magmaDoubleComplex *vtmp2 ){
+__global__ void
+magma_zcgreduce_kernel_spmv1( 
+    int Gs,
+    int n, 
+    magmaDoubleComplex_ptr vtmp,
+    magmaDoubleComplex_ptr vtmp2 )
+{
 
     extern __shared__ magmaDoubleComplex temp[];    
     int Idx = threadIdx.x;
@@ -84,16 +86,16 @@ magma_zcgreduce_kernel_spmv1( int Gs,
 }
 
 // computes the SpMV using CSR and the first step of the reduction
-__global__ void 
+__global__ void
 magma_zcgmerge_spmvcsr_kernel(  
-                 int n,
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_rowptr, 
-                 magma_index_t *d_colind,
-                 magmaDoubleComplex *d,
-                 magmaDoubleComplex *z,
-                 magmaDoubleComplex *vtmp
-                                           ){
+    int n,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr vtmp )
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -104,10 +106,10 @@ magma_zcgmerge_spmvcsr_kernel(
 
     if( i<n ){
         magmaDoubleComplex dot = MAGMA_Z_ZERO;
-        int start = d_rowptr[ i ];
-        int end = d_rowptr[ i+1 ];
+        int start = drowptr[ i ];
+        int end = drowptr[ i+1 ];
         for( j=start; j<end; j++)
-            dot += d_val[ j ] * d[ d_colind[j] ];
+            dot += dval[ j ] * d[ dcolind[j] ];
         z[ i ] =  dot;
         temp[ Idx ] =  d[ i ] * dot;
     }
@@ -160,16 +162,16 @@ magma_zcgmerge_spmvcsr_kernel(
 }
 
 // computes the SpMV using ELL and the first step of the reduction
-__global__ void 
-magma_zcgmerge_spmvellpackt_kernel(  
-                 int n,
-                 int num_cols_per_row,
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magmaDoubleComplex *d,
-                 magmaDoubleComplex *z,
-                 magmaDoubleComplex *vtmp
-                                           ){
+__global__ void
+magma_zcgmerge_spmvell_kernel(  
+    int n,
+    int num_cols_per_row,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr vtmp )
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -180,8 +182,8 @@ magma_zcgmerge_spmvellpackt_kernel(
     if(i < n ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         for ( int k = 0; k < num_cols_per_row ; k ++){
-            int col = d_colind [ n * k + i ];
-            magmaDoubleComplex val = d_val [ n * k + i ];
+            int col = dcolind [ n * k + i ];
+            magmaDoubleComplex val = dval [ n * k + i ];
             if( val != 0)
                 dot += val * d[ col ];
         }
@@ -237,16 +239,16 @@ magma_zcgmerge_spmvellpackt_kernel(
 }
 
 // computes the SpMV using ELLPACK and the first step of the reduction
-__global__ void 
+__global__ void
 magma_zcgmerge_spmvellpack_kernel(  
-                 int n,
-                 int num_cols_per_row,
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magmaDoubleComplex *d,
-                 magmaDoubleComplex *z,
-                 magmaDoubleComplex *vtmp
-                                           ){
+    int n,
+    int num_cols_per_row,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr vtmp )
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -257,8 +259,8 @@ magma_zcgmerge_spmvellpack_kernel(
     if(i < n ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         for ( int k = 0; k < num_cols_per_row ; k ++){
-            int col = d_colind [ num_cols_per_row * i + k ];
-            magmaDoubleComplex val = d_val [ num_cols_per_row * i + k ];
+            int col = dcolind [ num_cols_per_row * i + k ];
+            magmaDoubleComplex val = dval [ num_cols_per_row * i + k ];
             if( val != 0)
                 dot += val * d[ col ];
         }
@@ -314,17 +316,18 @@ magma_zcgmerge_spmvellpack_kernel(
 }
 
 // computes the SpMV using ELLRT 8 threads per row
-__global__ void 
+__global__ void
 magma_zcgmerge_spmvellpackrt_kernel_8(  
-                 int n,
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magma_index_t *d_rowlength,
-                 magmaDoubleComplex *d,
-                 magmaDoubleComplex *z,
-                 magmaDoubleComplex *vtmp,
-                 magma_int_t T, 
-                 magma_int_t alignment  ){
+    int n,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr vtmp,
+    magma_int_t T, 
+    magma_int_t alignment  )
+{
 
 int idx = blockIdx.y * gridDim.x * blockDim.x + 
           blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
@@ -336,18 +339,18 @@ extern __shared__ magmaDoubleComplex shared[];
 
     if(i < n ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int max_ = (d_rowlength[i]+T-1)/T;  
+        int max_ = (drowlength[i]+T-1)/T;  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
 
             // original code in paper (not working for me)
-            //magmaDoubleComplex val = d_val[ k*(T*alignment)+(i*T)+idp ];  
-            //int col = d_colind [ k*(T*alignment)+(i*T)+idp ];    
+            //magmaDoubleComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
+            //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
 
             // new code (working for me)        
-            magmaDoubleComplex val = d_val[ k*(T)+(i*alignment)+idp ];
-            int col = d_colind [ k*(T)+(i*alignment)+idp ];
+            magmaDoubleComplex val = dval[ k*(T)+(i*alignment)+idp ];
+            int col = dcolind [ k*(T)+(i*alignment)+idp ];
 
             dot += val * d[ col ];
         }
@@ -365,17 +368,18 @@ extern __shared__ magmaDoubleComplex shared[];
 }
 
 // computes the SpMV using ELLRT 8 threads per row
-__global__ void 
+__global__ void
 magma_zcgmerge_spmvellpackrt_kernel_16(  
-                 int n,
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magma_index_t *d_rowlength,
-                 magmaDoubleComplex *d,
-                 magmaDoubleComplex *z,
-                 magmaDoubleComplex *vtmp,
-                 magma_int_t T, 
-                 magma_int_t alignment  ){
+    int n,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr vtmp,
+    magma_int_t T, 
+    magma_int_t alignment  )
+{
 
 int idx = blockIdx.y * gridDim.x * blockDim.x + 
           blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
@@ -387,18 +391,18 @@ extern __shared__ magmaDoubleComplex shared[];
 
     if(i < n ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int max_ = (d_rowlength[i]+T-1)/T;  
+        int max_ = (drowlength[i]+T-1)/T;  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
 
             // original code in paper (not working for me)
-            //magmaDoubleComplex val = d_val[ k*(T*alignment)+(i*T)+idp ];  
-            //int col = d_colind [ k*(T*alignment)+(i*T)+idp ];    
+            //magmaDoubleComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
+            //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
 
             // new code (working for me)        
-            magmaDoubleComplex val = d_val[ k*(T)+(i*alignment)+idp ];
-            int col = d_colind [ k*(T)+(i*alignment)+idp ];
+            magmaDoubleComplex val = dval[ k*(T)+(i*alignment)+idp ];
+            int col = dcolind [ k*(T)+(i*alignment)+idp ];
 
             dot += val * d[ col ];
         }
@@ -417,17 +421,18 @@ extern __shared__ magmaDoubleComplex shared[];
 }
 
 // computes the SpMV using ELLRT 8 threads per row
-__global__ void 
+__global__ void
 magma_zcgmerge_spmvellpackrt_kernel_32(  
-                 int n,
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magma_index_t *d_rowlength,
-                 magmaDoubleComplex *d,
-                 magmaDoubleComplex *z,
-                 magmaDoubleComplex *vtmp,
-                 magma_int_t T, 
-                 magma_int_t alignment  ){
+    int n,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr vtmp,
+    magma_int_t T, 
+    magma_int_t alignment  )
+{
 
 int idx = blockIdx.y * gridDim.x * blockDim.x + 
           blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
@@ -439,18 +444,18 @@ extern __shared__ magmaDoubleComplex shared[];
 
     if(i < n ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int max_ = (d_rowlength[i]+T-1)/T;  
+        int max_ = (drowlength[i]+T-1)/T;  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
 
             // original code in paper (not working for me)
-            //magmaDoubleComplex val = d_val[ k*(T*alignment)+(i*T)+idp ];  
-            //int col = d_colind [ k*(T*alignment)+(i*T)+idp ];    
+            //magmaDoubleComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
+            //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
 
             // new code (working for me)        
-            magmaDoubleComplex val = d_val[ k*(T)+(i*alignment)+idp ];
-            int col = d_colind [ k*(T)+(i*alignment)+idp ];
+            magmaDoubleComplex val = dval[ k*(T)+(i*alignment)+idp ];
+            int col = dcolind [ k*(T)+(i*alignment)+idp ];
 
             dot += val * d[ col ];
         }
@@ -474,13 +479,13 @@ extern __shared__ magmaDoubleComplex shared[];
 
 
 // additional kernel necessary to compute first reduction step
-__global__ void 
+__global__ void
 magma_zcgmerge_spmvellpackrt_kernel2(  
-                 int n,
-                 magmaDoubleComplex *z,
-                 magmaDoubleComplex *d,
-                 magmaDoubleComplex *vtmp2
-                                           ){
+    int n,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr vtmp2 )
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -538,22 +543,23 @@ magma_zcgmerge_spmvellpackrt_kernel2(
 
 
 // computes the SpMV using SELLC
-__global__ void 
+__global__ void
 magma_zcgmerge_spmvsellc_kernel(   
-                     int num_rows, 
-                     int blocksize,
-                     magmaDoubleComplex *d_val, 
-                     magma_index_t *d_colind,
-                     magma_index_t *d_rowptr,
-                     magmaDoubleComplex *d,
-                     magmaDoubleComplex *z,
-                     magmaDoubleComplex *vtmp){
+    int num_rows, 
+    int blocksize,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr vtmp)
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
-    int offset = d_rowptr[ blockIdx.x ];
-    int border = (d_rowptr[ blockIdx.x+1 ]-offset)/blocksize;
+    int offset = drowptr[ blockIdx.x ];
+    int border = (drowptr[ blockIdx.x+1 ]-offset)/blocksize;
 
  temp[ Idx ] = MAGMA_Z_MAKE( 0.0, 0.0);
 
@@ -561,8 +567,8 @@ magma_zcgmerge_spmvsellc_kernel(
     if(i < num_rows ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         for ( int n = 0; n < border; n ++){
-            int col = d_colind [offset+ blocksize * n + Idx ];
-            magmaDoubleComplex val = d_val[offset+ blocksize * n + Idx];
+            int col = dcolind [offset+ blocksize * n + Idx ];
+            magmaDoubleComplex val = dval[offset+ blocksize * n + Idx];
             if( val != 0){
                   dot=dot+val*d[col];
             }
@@ -623,15 +629,16 @@ magma_zcgmerge_spmvsellc_kernel(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
-__global__ void 
-magma_zcgmerge_spmvsellpt_kernel_8( int num_rows, 
-                     int blocksize,
-                     int T,
-                     magmaDoubleComplex *d_val, 
-                     magma_index_t *d_colind,
-                     magma_index_t *d_rowptr,
-                     magmaDoubleComplex *d,
-                     magmaDoubleComplex *z)
+__global__ void
+magma_zcgmerge_spmvsellpt_kernel_8( 
+    int num_rows, 
+    int blocksize,
+    int T,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -644,16 +651,16 @@ magma_zcgmerge_spmvsellpt_kernel_8( int num_rows,
 
     if(row < num_rows ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int offset = d_rowptr[ bdx ];
+        int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
-        int max_ = (d_rowptr[ bdx+1 ]-offset)/block;  
+        int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
         for ( int k = 0; k < max_ ; k++ ){
             magmaDoubleComplex val = 
-                        d_val[ offset + ldx + block*k ];
+                        dval[ offset + ldx + block*k ];
             int col = 
-                    d_colind[ offset + ldx + block*k ];
+                    dcolind[ offset + ldx + block*k ];
             dot += val * d[ col ];
         }
         shared[ldx]  = dot;
@@ -678,15 +685,16 @@ magma_zcgmerge_spmvsellpt_kernel_8( int num_rows,
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
-__global__ void 
-magma_zcgmerge_spmvsellpt_kernel_16( int num_rows, 
-                     int blocksize,
-                     int T,
-                     magmaDoubleComplex *d_val, 
-                     magma_index_t *d_colind,
-                     magma_index_t *d_rowptr,
-                     magmaDoubleComplex *d,
-                     magmaDoubleComplex *z)
+__global__ void
+magma_zcgmerge_spmvsellpt_kernel_16( 
+    int num_rows, 
+    int blocksize,
+    int T,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -699,16 +707,16 @@ magma_zcgmerge_spmvsellpt_kernel_16( int num_rows,
 
     if(row < num_rows ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int offset = d_rowptr[ bdx ];
+        int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
-        int max_ = (d_rowptr[ bdx+1 ]-offset)/block;  
+        int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
         for ( int k = 0; k < max_ ; k++ ){
             magmaDoubleComplex val = 
-                        d_val[ offset + ldx + block*k ];
+                        dval[ offset + ldx + block*k ];
             int col = 
-                    d_colind[ offset + ldx + block*k ];
+                    dcolind[ offset + ldx + block*k ];
             dot += val * d[ col ];
         }
         shared[ldx]  = dot;
@@ -737,15 +745,16 @@ magma_zcgmerge_spmvsellpt_kernel_16( int num_rows,
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
-__global__ void 
-magma_zcgmerge_spmvsellpt_kernel_32( int num_rows, 
-                     int blocksize,
-                     int T,
-                     magmaDoubleComplex *d_val, 
-                     magma_index_t *d_colind,
-                     magma_index_t *d_rowptr,
-                     magmaDoubleComplex *d,
-                     magmaDoubleComplex *z)
+__global__ void
+magma_zcgmerge_spmvsellpt_kernel_32( 
+    int num_rows, 
+    int blocksize,
+    int T,
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -758,16 +767,16 @@ magma_zcgmerge_spmvsellpt_kernel_32( int num_rows,
 
     if(row < num_rows ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int offset = d_rowptr[ bdx ];
+        int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
-        int max_ = (d_rowptr[ bdx+1 ]-offset)/block;  
+        int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
         for ( int k = 0; k < max_ ; k++ ){
             magmaDoubleComplex val = 
-                        d_val[ offset + ldx + block*k ];
+                        dval[ offset + ldx + block*k ];
             int col = 
-                    d_colind[ offset + ldx + block*k ];
+                    dcolind[ offset + ldx + block*k ];
             dot += val * d[ col ];
         }
         shared[ldx]  = dot;
@@ -796,7 +805,7 @@ magma_zcgmerge_spmvsellpt_kernel_32( int num_rows,
 // kernel to handle scalars
 __global__ void // rho = beta/tmp; gamma = beta;
 magma_zcg_rhokernel(  
-                    magmaDoubleComplex *skp ){
+                    magmaDoubleComplex_ptr skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -816,70 +825,69 @@ magma_zcg_rhokernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_z_sparse_matrix
                 input matrix 
 
-    @param
-    d1          magmaDoubleComplex*
+    @param[in]
+    d1          magmaDoubleComplex_ptr 
                 temporary vector
 
-    @param
-    d2          magmaDoubleComplex*
+    @param[in]
+    d2          magmaDoubleComplex_ptr 
                 temporary vector
 
-    @param
-    d_d         magmaDoubleComplex*
+    @param[in]
+    dd          magmaDoubleComplex_ptr 
                 input vector d
 
-    @param
-    d_z         magmaDoubleComplex*
+    @param[out]
+    dz          magmaDoubleComplex_ptr 
                 input vector z
 
-    @param
-    skp         magmaDoubleComplex*
+    @param[out]
+    skp         magmaDoubleComplex_ptr 
                 array for parameters ( skp[3]=rho )
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zcgmerge_spmv1(  
-                 magma_z_sparse_matrix A,
-                 magmaDoubleComplex *d1,
-                 magmaDoubleComplex *d2,
-                 magmaDoubleComplex *d_d,
-                 magmaDoubleComplex *d_z,
-                 magmaDoubleComplex *skp ){
+magma_zcgmerge_spmv1(
+    magma_z_sparse_matrix A,
+    magmaDoubleComplex_ptr d1,
+    magmaDoubleComplex_ptr d2,
+    magmaDoubleComplex_ptr dd,
+    magmaDoubleComplex_ptr dz,
+    magmaDoubleComplex_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( (A.num_rows+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  local_block_size * sizeof( magmaDoubleComplex ); 
-    magmaDoubleComplex *aux1 = d1, *aux2 = d2;
+    magmaDoubleComplex_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
 
-    if( A.storage_type == Magma_CSR )
-        magma_zcgmerge_spmvcsr_kernel<<<Gs, Bs, Ms, magma_stream >>>
-        ( A.num_rows, A.val, A.row, A.col, d_d, d_z, d1 );
-    else if( A.storage_type == Magma_ELLPACK )
-        magma_zcgmerge_spmvellpack_kernel<<<Gs, Bs, Ms, magma_stream >>>
-        ( A.num_rows, A.max_nnz_row, A.val, A.col, d_d, d_z, d1 );
-    else if( A.storage_type == Magma_ELL )
-        magma_zcgmerge_spmvellpackt_kernel<<<Gs, Bs, Ms, magma_stream >>>
-        ( A.num_rows, A.max_nnz_row, A.val, A.col, d_d, d_z, d1 );
-    else if( A.storage_type == Magma_SELLC || A.storage_type == Magma_SELLP ){
-        if( A.blocksize==256){
-            magma_zcgmerge_spmvsellc_kernel<<<Gs, Bs, Ms, magma_stream >>>
-            ( A.num_rows, A.blocksize, A. val, A.col, A.row,  
-                d_d, d_z, d1 );
-        }
-        else
-            printf("error: SELLC only for blocksize 256.\n");
-    }
-    else if( A.storage_type == Magma_SELLP ){
+    if ( A.storage_type == Magma_CSR )
+        magma_zcgmerge_spmvcsr_kernel<<<Gs, Bs, Ms, queue >>>
+        ( A.num_rows, A.dval, A.drow, A.dcol, dd, dz, d1 );
+    else if ( A.storage_type == Magma_ELLPACKT )
+        magma_zcgmerge_spmvellpack_kernel<<<Gs, Bs, Ms, queue >>>
+        ( A.num_rows, A.max_nnz_row, A.dval, A.dcol, dd, dz, d1 );
+    else if ( A.storage_type == Magma_ELL )
+        magma_zcgmerge_spmvell_kernel<<<Gs, Bs, Ms, queue >>>
+        ( A.num_rows, A.max_nnz_row, A.dval, A.dcol, dd, dz, d1 );
+    else if ( A.storage_type == Magma_SELLP ) {
             int num_threadssellp = A.blocksize*A.alignment;
             magma_int_t arch = magma_getdevice_arch();
             if ( arch < 200 && num_threadssellp > 256 )
@@ -892,23 +900,23 @@ magma_zcgmerge_spmv1(
             dim3 gridsellp( dimgrid1, dimgrid2, 1);
             int Mssellp = num_threadssellp * sizeof( magmaDoubleComplex );
 
-            if( A.alignment == 8)
+            if ( A.alignment == 8)
                 magma_zcgmerge_spmvsellpt_kernel_8
-                <<< gridsellp, block, Mssellp, magma_stream >>>
+                <<< gridsellp, block, Mssellp, queue >>>
                 ( A.num_rows, A.blocksize, A.alignment, 
-                    A.val, A.col, A.row, d_d, d_z);
+                    A.dval, A.dcol, A.drow, dd, dz);
 
-            else if( A.alignment == 16)
+            else if ( A.alignment == 16)
                 magma_zcgmerge_spmvsellpt_kernel_16
-                <<< gridsellp, block, Mssellp, magma_stream >>>
+                <<< gridsellp, block, Mssellp, queue >>>
                 ( A.num_rows, A.blocksize, A.alignment, 
-                    A.val, A.col, A.row, d_d, d_z);
+                    A.dval, A.dcol, A.drow, dd, dz);
 
-            else if( A.alignment == 32)
+            else if ( A.alignment == 32)
                 magma_zcgmerge_spmvsellpt_kernel_32
-                <<< gridsellp, block, Mssellp, magma_stream >>>
+                <<< gridsellp, block, Mssellp, queue >>>
                 ( A.num_rows, A.blocksize, A.alignment, 
-                    A.val, A.col, A.row, d_d, d_z);
+                    A.dval, A.dcol, A.drow, dd, dz);
 
             else
                 printf("error: alignment not supported.\n");
@@ -916,11 +924,11 @@ magma_zcgmerge_spmv1(
         // in case of using SELLP, we can't efficiently merge the 
         // dot product and the first reduction loop into the SpMV kernel
         // as the SpMV grid would result in low occupancy.
-        magma_zcgmerge_spmvellpackrt_kernel2<<<Gs, Bs, Ms, magma_stream >>>
-                              ( A.num_rows, d_z, d_d, d1 );
+        magma_zcgmerge_spmvellpackrt_kernel2<<<Gs, Bs, Ms, queue >>>
+                              ( A.num_rows, dz, dd, d1 );
 
     }
-    else if( A.storage_type == Magma_ELLRT ){
+    else if ( A.storage_type == Magma_ELLRT ) {
         // in case of using ELLRT, we need a different grid, assigning
         // threads_per_row processors to each row
         // the block size is num_threads
@@ -945,45 +953,45 @@ magma_zcgmerge_spmv1(
     int Mellrt = A.alignment * A.blocksize * sizeof( magmaDoubleComplex );
     // printf("launch kernel: %dx%d %d %d\n", grid.x, grid.y, num_threads , Ms);
 
-    if( A.alignment == 32 ){
+    if ( A.alignment == 32 ) {
         magma_zcgmerge_spmvellpackrt_kernel_32
-                <<< gridellrt, num_threads , Mellrt, magma_stream >>>
-                 ( A.num_rows, A.val, A.col, A.row, d_d, d_z, d1, 
+                <<< gridellrt, num_threads , Mellrt, queue >>>
+                 ( A.num_rows, A.dval, A.dcol, A.drow, dd, dz, d1, 
                                                  A.alignment, real_row_length );
     }
-    else if( A.alignment == 16 ){
+    else if ( A.alignment == 16 ) {
         magma_zcgmerge_spmvellpackrt_kernel_16
-                <<< gridellrt, num_threads , Mellrt, magma_stream >>>
-                 ( A.num_rows, A.val, A.col, A.row, d_d, d_z, d1, 
+                <<< gridellrt, num_threads , Mellrt, queue >>>
+                 ( A.num_rows, A.dval, A.dcol, A.drow, dd, dz, d1, 
                                                  A.alignment, real_row_length );
     }
-    else if( A.alignment == 8 ){
+    else if ( A.alignment == 8 ) {
         magma_zcgmerge_spmvellpackrt_kernel_8
-                <<< gridellrt, num_threads , Mellrt, magma_stream >>>
-                 ( A.num_rows, A.val, A.col, A.row, d_d, d_z, d1, 
+                <<< gridellrt, num_threads , Mellrt, queue >>>
+                 ( A.num_rows, A.dval, A.dcol, A.drow, dd, dz, d1, 
                                                  A.alignment, real_row_length );
     }
-    else{
+    else {
         printf("error: alignment %d not supported.\n", A.alignment);
-        exit(-1);
+        return MAGMA_ERR_NOT_SUPPORTED;
     }
         // in case of using ELLRT, we can't efficiently merge the 
         // dot product and the first reduction loop into the SpMV kernel
         // as the SpMV grid would result in low occupancy.
 
-        magma_zcgmerge_spmvellpackrt_kernel2<<<Gs, Bs, Ms, magma_stream >>>
-                              ( A.num_rows, d_z, d_d, d1 );
+        magma_zcgmerge_spmvellpackrt_kernel2<<<Gs, Bs, Ms, queue >>>
+                              ( A.num_rows, dz, dd, d1 );
     }
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_zcgreduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                                         ( Gs.x,  A.num_rows, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -993,6 +1001,7 @@ magma_zcgmerge_spmv1(
     dim3 Gs2( 1 );
     magma_zcg_rhokernel<<<Gs2, Bs2, 0>>>( skp );
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -1000,16 +1009,16 @@ magma_zcgmerge_spmv1(
 /* -------------------------------------------------------------------------- */
 
 // updates x and r and computes the first part of the dot product r*r
-__global__ void 
+__global__ void
 magma_zcgmerge_xrbeta_kernel(  
-                    int n, 
-                    magmaDoubleComplex *x, 
-                    magmaDoubleComplex *r,
-                    magmaDoubleComplex *d,
-                    magmaDoubleComplex *z,
-                    magmaDoubleComplex *skp,
-                    magmaDoubleComplex *vtmp
-                                            ){
+    int n, 
+    magmaDoubleComplex_ptr x, 
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr d,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr skp,
+    magmaDoubleComplex_ptr vtmp )
+{
 
     extern __shared__ magmaDoubleComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -1076,7 +1085,8 @@ magma_zcgmerge_xrbeta_kernel(
 // kernel to handle scalars
 __global__ void //alpha = beta / gamma
 magma_zcg_alphabetakernel(  
-                    magmaDoubleComplex *skp ){
+    magmaDoubleComplex_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -1087,13 +1097,13 @@ magma_zcg_alphabetakernel(
 }
 
 // update search Krylov vector d
-__global__ void 
+__global__ void
 magma_zcg_d_kernel(  
-                    int n, 
-                    magmaDoubleComplex *skp,
-                    magmaDoubleComplex *r,
-                    magmaDoubleComplex *d
-                                           ){
+    int n, 
+    magmaDoubleComplex_ptr skp,
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr d )
+{
   
     int i   = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -1117,73 +1127,81 @@ magma_zcg_d_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    d1          magmaDoubleComplex*
+    @param[in]
+    d1          magmaDoubleComplex_ptr 
                 temporary vector
 
-    @param
-    d2          magmaDoubleComplex*
+    @param[in]
+    d2          magmaDoubleComplex_ptr 
                 temporary vector
 
-    @param
-    d_x         magmaDoubleComplex*
+    @param[in/out]
+    dx          magmaDoubleComplex_ptr
                 input vector x
 
-    @param
-    d_r         magmaDoubleComplex*
+    @param[in/out]
+    dr          magmaDoubleComplex_ptr 
                 input/output vector r
 
-    @param
-    d_d         magmaDoubleComplex*
+    @param[in]
+    dd          magmaDoubleComplex_ptr 
                 input vector d
 
-    @param
-    d_z         magmaDoubleComplex*
+    @param[in]
+    dz          magmaDoubleComplex_ptr 
                 input vector z
-    @param
-    skp         magmaDoubleComplex*
+    @param[in]
+    skp         magmaDoubleComplex_ptr 
                 array for parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zsygpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zcgmerge_xrbeta(  
-                 int n,
-                 magmaDoubleComplex *d1,
-                 magmaDoubleComplex *d2,
-                 magmaDoubleComplex *d_x,
-                 magmaDoubleComplex *d_r,
-                 magmaDoubleComplex *d_d,
-                 magmaDoubleComplex *d_z, 
-                 magmaDoubleComplex *skp ){
+magma_zcgmerge_xrbeta(
+    int n,
+    magmaDoubleComplex_ptr d1,
+    magmaDoubleComplex_ptr d2,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex_ptr dr,
+    magmaDoubleComplex_ptr dd,
+    magmaDoubleComplex_ptr dz, 
+    magmaDoubleComplex_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( magmaDoubleComplex ); 
-    magmaDoubleComplex *aux1 = d1, *aux2 = d2;
+    magmaDoubleComplex_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
     magma_zcgmerge_xrbeta_kernel<<<Gs, Bs, Ms>>>
-                                    ( n, d_x, d_r, d_d, d_z, skp, d1);  
+                                    ( n, dx, dr, dd, dz, skp, d1);  
 
 
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_zcgreduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                                     ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -1195,8 +1213,9 @@ magma_zcgmerge_xrbeta(
 
     dim3 Bs3( local_block_size );
     dim3 Gs3( (n+local_block_size-1)/local_block_size );
-    magma_zcg_d_kernel<<<Gs3, Bs3, 0>>>( n, skp, d_r, d_d );  
+    magma_zcg_d_kernel<<<Gs3, Bs3, 0>>>( n, skp, dr, dd );  
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 

@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel_v2.cpp normal z -> d, Tue Sep  2 12:38:23 2014
+ *     @generated from zbulge_kernel_v2.cpp normal z -> d, Sat Nov 15 19:54:09 2014
  *
  */
 
@@ -17,17 +17,19 @@
 #define PRECISION_d
 
 inline static void
-magma_dlarfxsym_v2(magma_int_t n,
-                double *A, magma_int_t lda,
-                double *V, double *TAU,
-                double *work);
+magma_dlarfxsym_v2(
+    magma_int_t n,
+    double *A, magma_int_t lda,
+    double *V, double *TAU,
+    double *work);
 ///////////////////////////////////////////////////////////
 
 inline static void
-magma_dlarfxsym_v2(magma_int_t n,
-                double *A, magma_int_t lda,
-                double *V, double *TAU,
-                double *work)
+magma_dlarfxsym_v2(
+    magma_int_t n,
+    double *A, magma_int_t lda,
+    double *V, double *TAU,
+    double *work)
 {
 /*
     WORK (workspace) double real array, dimension N
@@ -63,13 +65,14 @@ magma_dlarfxsym_v2(magma_int_t n,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_dtrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
-                                double *A, magma_int_t lda,
-                                double *V, magma_int_t ldv,
-                                double *TAU,
-                                magma_int_t st, magma_int_t ed,
-                                magma_int_t sweep, magma_int_t Vblksiz,
-                                double *work)
+magma_dtrdtype1cbHLsym_withQ_v2(
+    magma_int_t n, magma_int_t nb,
+    double *A, magma_int_t lda,
+    double *V, magma_int_t ldv,
+    double *TAU,
+    magma_int_t st, magma_int_t ed,
+    magma_int_t sweep, magma_int_t Vblksiz,
+    double *work)
 {
 /*
     WORK (workspace) double real array, dimension N
@@ -109,13 +112,14 @@ magma_dtrdtype1cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_dtrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
-                                double *A, magma_int_t lda,
-                                double *V, magma_int_t ldv,
-                                double *TAU,
-                                magma_int_t st, magma_int_t ed,
-                                magma_int_t sweep, magma_int_t Vblksiz,
-                                double *work)
+magma_dtrdtype2cbHLsym_withQ_v2(
+    magma_int_t n, magma_int_t nb,
+    double *A, magma_int_t lda,
+    double *V, magma_int_t ldv,
+    double *TAU,
+    magma_int_t st, magma_int_t ed,
+    magma_int_t sweep, magma_int_t Vblksiz,
+    double *work)
 {
     /*
      WORK (workspace) double real array, dimension NB
@@ -169,13 +173,14 @@ magma_dtrdtype2cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
 #define V(i)     &(V[(i)])
 #define TAU(i)   &(TAU[(i)])
 extern "C" void
-magma_dtrdtype3cbHLsym_withQ_v2(magma_int_t n, magma_int_t nb,
-                                double *A, magma_int_t lda,
-                                double *V, magma_int_t ldv,
-                                double *TAU,
-                                magma_int_t st, magma_int_t ed,
-                                magma_int_t sweep, magma_int_t Vblksiz,
-                                double *work)
+magma_dtrdtype3cbHLsym_withQ_v2(
+    magma_int_t n, magma_int_t nb,
+    double *A, magma_int_t lda,
+    double *V, magma_int_t ldv,
+    double *TAU,
+    magma_int_t st, magma_int_t ed,
+    magma_int_t sweep, magma_int_t Vblksiz,
+    double *work)
 {
     /*
      WORK (workspace) double real array, dimension N

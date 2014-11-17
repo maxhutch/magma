@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zungqr_gpu.cpp normal z -> s, Tue Sep  2 12:38:21 2014
+       @generated from zungqr_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -77,11 +77,12 @@
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
-                 float *dA, magma_int_t ldda,
-                 float *tau,
-                 float *dT, magma_int_t nb,
-                 magma_int_t *info)
+magma_sorgqr_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    float *tau,
+    magmaFloat_ptr dT, magma_int_t nb,
+    magma_int_t *info)
 {
 #define dA(i,j) (dA + (i) + (j)*ldda)
 #define dT(j)   (dT + (j)*nb)
@@ -93,7 +94,7 @@ magma_sorgqr_gpu(magma_int_t m, magma_int_t n, magma_int_t k,
     magma_int_t lwork, lpanel;
     magma_int_t i, ib, ki, kk, iinfo;
     magma_int_t lddwork;
-    float *dV, *dW;
+    magmaFloat_ptr dV, dW;
     float *work, *panel;
 
     *info = 0;

@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
+
 #include <cblas.h>
 
 // make sure that asserts are enabled
@@ -24,7 +24,6 @@
 #include <assert.h>
 
 // includes, project
-#include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
@@ -39,7 +38,6 @@
 // ----------------------------------------
 // These may not be portable to different Fortran implementations,
 // hence why MAGMA does not rely on them.
-//#include "magma_mangling.h"
 
 #define blasf77_dzasum FORTRAN_NAME( dzasum, DZASUM )
 #define blasf77_dznrm2 FORTRAN_NAME( dznrm2, DZNRM2 )

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zunmqr_m.cpp normal z -> s, Tue Sep  2 12:38:21 2014
+       @generated from zunmqr_m.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -36,8 +36,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     side    magma_side_t
@@ -116,13 +116,15 @@
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sormqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
-               magma_int_t m, magma_int_t n, magma_int_t k,
-               float *A,    magma_int_t lda,
-               float *tau,
-               float *C,    magma_int_t ldc,
-               float *work, magma_int_t lwork,
-               magma_int_t *info)
+magma_sormqr_m(
+    magma_int_t ngpu,
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    float *A,    magma_int_t lda,
+    float *tau,
+    float *C,    magma_int_t ldc,
+    float *work, magma_int_t lwork,
+    magma_int_t *info)
 {
 #define  A(i, j) (A + (j)*lda  + (i))
 #define  C(i, j) (C + (j)*ldc  + (i))
@@ -227,15 +229,15 @@ magma_sormqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
 
     magma_int_t nb_l=256;
     magma_int_t nbl = (n-1)/nb_l+1; // number of blocks
-    magma_int_t maxnlocal = (nbl+nrgpu-1)/nrgpu*nb_l;
+    magma_int_t maxnlocal = (nbl+ngpu-1)/ngpu*nb_l;
 
-    nrgpu = min(nrgpu, (n+nb_l-1)/nb_l); // Don't use GPU that will not have data.
+    ngpu = min(ngpu, (n+nb_l-1)/nb_l); // Don't use GPU that will not have data.
 
     magma_int_t ldw = maxnlocal*lddc // dC
                     + 2*lddac*lddar // 2*dA
                     + 2*(nb + 1 + lddwork)*nb; // 2*(dT and dwork)
 
-    for (igpu = 0; igpu < nrgpu; ++igpu) {
+    for (igpu = 0; igpu < ngpu; ++igpu) {
         magma_setdevice(igpu);
         if (MAGMA_SUCCESS != magma_smalloc( &dw[igpu], ldw )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -252,12 +254,12 @@ magma_sormqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
     if (left) {
         //copy C to mgpus
         for (magma_int_t i = 0; i < nbl; ++i) {
-            magma_int_t igpu = i%nrgpu;
+            magma_int_t igpu = i%ngpu;
             magma_setdevice(igpu);
             magma_int_t kb = min(nb_l, n-i*nb_l);
             magma_ssetmatrix_async( m, kb,
                                    C(0, i*nb_l), ldc,
-                                   dC(igpu, 0, i/nrgpu*nb_l), lddc, stream[igpu][0] );
+                                   dC(igpu, 0, i/ngpu*nb_l), lddc, stream[igpu][0] );
             nlocal[igpu] += kb;
         }
 
@@ -277,7 +279,7 @@ magma_sormqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
         for (magma_int_t i = i1; (i3 < 0 ? i >= i2 : i < i2); i += i3) {
             // start the copy of A panel
             magma_int_t kb = min(nb, k - i);
-            for (igpu = 0; igpu < nrgpu; ++igpu) {
+            for (igpu = 0; igpu < ngpu; ++igpu) {
                 magma_setdevice(igpu);
                 magma_event_sync(event[igpu][ind_c]); // check if the new data can be copied
                 magma_ssetmatrix_async(nq-i, kb,
@@ -296,14 +298,14 @@ magma_sormqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
             /* H or H' is applied to C(1:m,i:n) */
 
             /* Apply H or H'; First copy T to the GPU */
-            for (igpu = 0; igpu < nrgpu; ++igpu) {
+            for (igpu = 0; igpu < ngpu; ++igpu) {
                 magma_setdevice(igpu);
                 magma_ssetmatrix_async(kb, kb,
                                        T,               kb,
                                        dT(igpu, ind_c), kb, stream[igpu][0] );
             }
 
-            for (igpu = 0; igpu < nrgpu; ++igpu) {
+            for (igpu = 0; igpu < ngpu; ++igpu) {
                 magma_setdevice(igpu);
                 magma_queue_sync( stream[igpu][0] ); // check if the data was copied
                 magmablasSetKernelStream(stream[igpu][1]);
@@ -318,21 +320,21 @@ magma_sormqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
             ind_c = (ind_c+1)%2;
         }
 
-        for (igpu = 0; igpu < nrgpu; ++igpu) {
+        for (igpu = 0; igpu < ngpu; ++igpu) {
             magma_setdevice(igpu);
             magma_queue_sync( stream[igpu][1] );
         }
 
         //copy C from mgpus
         for (magma_int_t i = 0; i < nbl; ++i) {
-            magma_int_t igpu = i%nrgpu;
+            magma_int_t igpu = i%ngpu;
             magma_setdevice(igpu);
             magma_int_t kb = min(nb_l, n-i*nb_l);
             magma_sgetmatrix( m, kb,
-                              dC(igpu, 0, i/nrgpu*nb_l), lddc,
+                              dC(igpu, 0, i/ngpu*nb_l), lddc,
                               C(0, i*nb_l), ldc );
 //            magma_sgetmatrix_async( m, kb,
-//                                   dC(igpu, 0, i/nrgpu*nb_l), lddc,
+//                                   dC(igpu, 0, i/ngpu*nb_l), lddc,
 //                                   C(0, i*nb_l), ldc, stream[igpu][0] );
         }
     } else {
@@ -386,7 +388,7 @@ magma_sormqr_m(magma_int_t nrgpu, magma_side_t side, magma_trans_t trans,
 
     work[0] = MAGMA_S_MAKE( lwkopt, 0 );
 
-    for (igpu = 0; igpu < nrgpu; ++igpu) {
+    for (igpu = 0; igpu < ngpu; ++igpu) {
         magma_setdevice(igpu);
         magma_event_destroy( event[igpu][0] );
         magma_event_destroy( event[igpu][1] );

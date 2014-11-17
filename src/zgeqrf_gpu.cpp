@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 */
@@ -113,10 +113,12 @@ void zsplit_diag_block(magma_int_t ib, magmaDoubleComplex *a, magma_int_t lda, m
     @ingroup magma_zgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgeqrf_gpu( magma_int_t m, magma_int_t n,
-                  magmaDoubleComplex *dA,   magma_int_t ldda,
-                  magmaDoubleComplex *tau, magmaDoubleComplex *dT,
-                  magma_int_t *info )
+magma_zgeqrf_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_ptr dA,   magma_int_t ldda,
+    magmaDoubleComplex *tau,
+    magmaDoubleComplex_ptr dT,
+    magma_int_t *info )
 {
     #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
     #define dT(a_1)     (dT + (a_1)*nb)

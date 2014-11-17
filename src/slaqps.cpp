@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlaqps.cpp normal z -> s, Tue Sep  2 12:38:21 2014
+       @generated from zlaqps.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
        @author Mitch Horton
 */
@@ -96,14 +96,15 @@
     @ingroup magma_sgeqp3_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_slaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
-             magma_int_t nb, magma_int_t *kb,
-             float *A,  magma_int_t lda,
-             float *dA, magma_int_t ldda,
-             magma_int_t *jpvt, float *tau, float *vn1, float *vn2,
-             float *auxv,
-             float *F,  magma_int_t ldf,
-             float *dF, magma_int_t lddf)
+magma_slaqps(
+    magma_int_t m, magma_int_t n, magma_int_t offset,
+    magma_int_t nb, magma_int_t *kb,
+    float     *A, magma_int_t lda,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magma_int_t *jpvt, float *tau, float *vn1, float *vn2,
+    float *auxv,
+    float     *F, magma_int_t ldf,
+    magmaFloat_ptr dF, magma_int_t lddf)
 {
 #define  A(i, j) (A  + (i) + (j)*(lda ))
 #define dA(i, j) (dA + (i) + (j)*(ldda))

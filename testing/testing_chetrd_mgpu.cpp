@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
 
-       @generated from testing_zhetrd_mgpu.cpp normal z -> c, Tue Sep  2 12:38:30 2014
+       @generated from testing_zhetrd_mgpu.cpp normal z -> c, Sat Nov 15 19:54:18 2014
 
 */
 
@@ -16,8 +16,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"

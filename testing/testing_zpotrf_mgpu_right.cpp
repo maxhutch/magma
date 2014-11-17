@@ -1,9 +1,9 @@
 /*
- *  -- MAGMA (version 1.5.0) --
+ *  -- MAGMA (version 1.6.0) --
  *     Univ. of Tennessee, Knoxville
  *     Univ. of California, Berkeley
  *     Univ. of Colorado, Denver
- *     @date September 2014
+ *     @date November 2014
  *
  * @precisions normal z -> c d s
  *
@@ -20,9 +20,7 @@
 #include "magma_lapack.h"
 #include "magma_types.h"
 #include "testings.h"
-extern "C" magma_int_t
-magma_zpotrf_mgpu_right(int num_gpus, char uplo, magma_int_t n,
-                        magmaDoubleComplex **d_lA, magma_int_t ldda, magma_int_t *info );
+
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zpotrf_mgpu
@@ -30,14 +28,14 @@ magma_zpotrf_mgpu_right(int num_gpus, char uplo, magma_int_t n,
 int main( int argc, char** argv) 
 {
     /* Initialize */
-    TESTING_INIT_MGPU();
+    TESTING_INIT();
 
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double      work[1], error;
     magmaDoubleComplex *h_A, *h_R;
-    magmaDoubleComplex *d_lA[4] = {NULL, NULL, NULL, NULL};
+    magmaDoubleComplex_ptr d_lA[4] = {NULL, NULL, NULL, NULL};
     magma_int_t N, n2, lda, ldda, info;
-    magma_int_t j, k, num_gpus0 = 1, num_gpus;
+    magma_int_t j, k, ngpu0 = 1, ngpu;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -45,7 +43,7 @@ int main( int argc, char** argv)
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
-    num_gpus0 = opts.ngpu;
+    ngpu0 = opts.ngpu;
 
     printf("ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
     printf("  N     CPU GFlop/s (sec)   MAGMA GFlop/s (sec)   ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
@@ -64,19 +62,19 @@ int main( int argc, char** argv)
 
             //TESTING_MALLOC_DEV(  d_A, magmaDoubleComplex, ldda*N );
             nb = magma_get_zpotrf_nb(N);
-            if( num_gpus0 > N / nb ) {
-                num_gpus = N / nb;
-                if( N % nb != 0 ) num_gpus++;
-                printf( " * too many gpus for the matrix size, using %d gpus\n", (int) num_gpus );
+            if( ngpu0 > N / nb ) {
+                ngpu = N / nb;
+                if( N % nb != 0 ) ngpu++;
+                printf( " * too many gpus for the matrix size, using %d gpus\n", (int) ngpu );
             } else {
-                num_gpus = num_gpus0;
+                ngpu = ngpu0;
             }
 
-            for(j = 0; j < num_gpus; j++){
-                n_local = nb*(N /(nb * num_gpus));
-                if (j < (N / nb) % num_gpus)
+            for(j = 0; j < ngpu; j++){
+                n_local = nb*(N /(nb * ngpu));
+                if (j < (N / nb) % ngpu)
                     n_local += nb;
-                else if (j == (N / nb) % num_gpus)
+                else if (j == (N / nb) % ngpu)
                     n_local += N % nb;
 
                 ldn_local = ((n_local + 31) / 32) * 32;
@@ -103,19 +101,19 @@ int main( int argc, char** argv)
             //magma_zprint( N,N, h_A, lda );
             //if( opts.uplo == MagmaUpper) {
                 for(j = 0; j < N; j += nb){
-                    k = (j / nb) % num_gpus;
+                    k = (j / nb) % ngpu;
                     magma_setdevice(k);
                     nk = min(nb, N - j);
                     magma_zsetmatrix( N, nk,
                             h_A + j * lda,                       lda,
-                            d_lA[k] + j / (nb * num_gpus) * nb * ldda, ldda);
+                            d_lA[k] + j / (nb * ngpu) * nb * ldda, ldda);
                 }
             /*} else {
             }*/
 
             gpu_time = magma_wtime();
-            //magma_zpotrf_mgpu(num_gpus, opts.uplo, N, d_lA, ldda, &info);
-            magma_zpotrf_mgpu_right(num_gpus, opts.uplo, N, d_lA, ldda, &info);
+            //magma_zpotrf_mgpu(ngpu, opts.uplo, N, d_lA, ldda, &info);
+            magma_zpotrf_mgpu_right(ngpu, opts.uplo, N, d_lA, ldda, &info);
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0)
                 printf("magma_zpotrf_gpu returned error %d.\n", (int) info);
@@ -140,11 +138,11 @@ int main( int argc, char** argv)
                 /* gather matrix from gpus */
                 //if( opts.uplo == MagmaUpper ) {
                     for(j = 0; j < N; j += nb){
-                        k = (j / nb) % num_gpus;
+                        k = (j / nb) % ngpu;
                         magma_setdevice(k);
                         nk = min(nb, N - j);
                         magma_zgetmatrix( N, nk,
-                                d_lA[k] + j / (nb * num_gpus) * nb * ldda, ldda,
+                                d_lA[k] + j / (nb * ngpu) * nb * ldda, ldda,
                                 h_R + j * lda,                        lda );
                     }
                 /*} else {
@@ -168,7 +166,7 @@ int main( int argc, char** argv)
                         (int) N, gpu_perf, gpu_time );
             }
 
-            for(j = 0; j < num_gpus; j++) {
+            for(j = 0; j < ngpu; j++) {
                 magma_setdevice(j);
                 TESTING_DEVFREE( d_lA[j] );
             }
@@ -183,7 +181,7 @@ int main( int argc, char** argv)
     }
 
     /* Shutdown */
-    TESTING_FINALIZE_MGPU();
+    TESTING_FINALIZE();
 
     return 0;
 }

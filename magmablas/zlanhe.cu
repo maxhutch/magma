@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @precisions normal z -> s d c
@@ -15,12 +15,6 @@
 #define max_bs 64
 
 #define PRECISION_z
-
-
-__global__ void
-zlanhe_inf_kernel_generic_upper(
-    int n, const magmaDoubleComplex* A, int lda, double *dwork,
-    int n_full_block, int n_mod_bs );
 
 
 /* ====================================================================== */
@@ -453,7 +447,9 @@ zlanhe_inf_kernel_generic_upper(
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf */
 extern "C" void
 zlanhe_inf(
-    magma_uplo_t uplo, int n, const magmaDoubleComplex *A, int lda, double *dwork )
+    magma_uplo_t uplo, int n,
+    magmaDoubleComplex_const_ptr A, int lda,
+    magmaDouble_ptr dwork )
 {
     int blocks = (n - 1)/inf_bs + 1;
     dim3 grid(blocks, 1, 1);
@@ -521,7 +517,9 @@ zlanhe_max_kernel_upper(
 /* Computes dwork[i] = max( abs( A(i,:) )), i=0:n-1, for ||A||_max */
 extern "C" void
 zlanhe_max(
-    magma_uplo_t uplo, int n, const magmaDoubleComplex *A, int lda, double *dwork )
+    magma_uplo_t uplo, int n,
+    magmaDoubleComplex_const_ptr A, int lda,
+    magmaDouble_ptr dwork )
 {
     int blocks = (n - 1)/max_bs + 1;
     dim3 grid(blocks, 1, 1);
@@ -606,7 +604,8 @@ zlanhe_max(
 extern "C" double
 magmablas_zlanhe(
     magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
-    const magmaDoubleComplex *A, magma_int_t lda, double *dwork )
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr dwork )
 {
     magma_int_t info = 0;
     magma_int_t arch = magma_getdevice_arch();
@@ -627,7 +626,7 @@ magmablas_zlanhe(
         info = -2;
     else if ( n < 0 )
         info = -3;
-    else if ( lda < n )
+    else if ( ldda < n )
         info = -5;
     
     if ( info != 0 ) {
@@ -641,10 +640,10 @@ magmablas_zlanhe(
         
     double res = 0;
     if ( inf_norm ) {
-        zlanhe_inf( uplo, n, A, lda, dwork );
+        zlanhe_inf( uplo, n, dA, ldda, dwork );
     }
     else {
-        zlanhe_max( uplo, n, A, lda, dwork );
+        zlanhe_max( uplo, n, dA, ldda, dwork );
     }
     int i = magma_idamax( n, dwork, 1 ) - 1;
     cudaMemcpy( &res, &dwork[i], sizeof(double), cudaMemcpyDeviceToHost );

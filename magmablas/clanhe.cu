@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
-       @generated from zlanhe.cu normal z -> c, Tue Sep  2 12:38:15 2014
+       @generated from zlanhe.cu normal z -> c, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -15,12 +15,6 @@
 #define max_bs 64
 
 #define PRECISION_c
-
-
-__global__ void
-clanhe_inf_kernel_generic_upper(
-    int n, const magmaFloatComplex* A, int lda, float *dwork,
-    int n_full_block, int n_mod_bs );
 
 
 /* ====================================================================== */
@@ -453,7 +447,9 @@ clanhe_inf_kernel_generic_upper(
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf */
 extern "C" void
 clanhe_inf(
-    magma_uplo_t uplo, int n, const magmaFloatComplex *A, int lda, float *dwork )
+    magma_uplo_t uplo, int n,
+    magmaFloatComplex_const_ptr A, int lda,
+    magmaFloat_ptr dwork )
 {
     int blocks = (n - 1)/inf_bs + 1;
     dim3 grid(blocks, 1, 1);
@@ -521,7 +517,9 @@ clanhe_max_kernel_upper(
 /* Computes dwork[i] = max( abs( A(i,:) )), i=0:n-1, for ||A||_max */
 extern "C" void
 clanhe_max(
-    magma_uplo_t uplo, int n, const magmaFloatComplex *A, int lda, float *dwork )
+    magma_uplo_t uplo, int n,
+    magmaFloatComplex_const_ptr A, int lda,
+    magmaFloat_ptr dwork )
 {
     int blocks = (n - 1)/max_bs + 1;
     dim3 grid(blocks, 1, 1);
@@ -606,7 +604,8 @@ clanhe_max(
 extern "C" float
 magmablas_clanhe(
     magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
-    const magmaFloatComplex *A, magma_int_t lda, float *dwork )
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dwork )
 {
     magma_int_t info = 0;
     magma_int_t arch = magma_getdevice_arch();
@@ -627,7 +626,7 @@ magmablas_clanhe(
         info = -2;
     else if ( n < 0 )
         info = -3;
-    else if ( lda < n )
+    else if ( ldda < n )
         info = -5;
     
     if ( info != 0 ) {
@@ -641,10 +640,10 @@ magmablas_clanhe(
         
     float res = 0;
     if ( inf_norm ) {
-        clanhe_inf( uplo, n, A, lda, dwork );
+        clanhe_inf( uplo, n, dA, ldda, dwork );
     }
     else {
-        clanhe_max( uplo, n, A, lda, dwork );
+        clanhe_max( uplo, n, dA, ldda, dwork );
     }
     int i = magma_isamax( n, dwork, 1 ) - 1;
     cudaMemcpy( &res, &dwork[i], sizeof(float), cudaMemcpyDeviceToHost );

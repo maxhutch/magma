@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
 */
 
 #include "thread_queue.hpp"
-#include "common_magma.h"  // after thread_queue.hpp
 
 // If err, prints error and throws exception.
 static void check( int err )

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Azzam Haidar
 
@@ -16,8 +16,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -50,7 +48,7 @@ extern "C" void zcheck_eig_(char *JOBZ, int  *MATYPE, int  *N, int  *NB,
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT_MGPU();
+    TESTING_INIT();
 
     real_Double_t    gpu_time, gpu_perf, gflops;
     magmaDoubleComplex *h_A, *h_R, *h_work, *dT1;
@@ -378,6 +376,6 @@ int main( int argc, char** argv)
         }
     }
 
-    TESTING_FINALIZE_MGPU();
+    TESTING_FINALIZE();
     return EXIT_SUCCESS;
 }

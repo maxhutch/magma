@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        Note: [ds] precisions generated from zhemv.cu
        zsymv.cu is nearly identical to zhemv.cu, just change names and drop cuConj.
@@ -451,22 +451,22 @@ zsymv_kernel_L_sum(
 extern "C"
 void magmablas_zsymv_L(
     magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    const magmaDoubleComplex *x, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
     magmaDoubleComplex beta,
-    magmaDoubleComplex *y, magma_int_t incy,
-    magmaDoubleComplex *dwork)
+    magmaDoubleComplex_ptr dy, magma_int_t incy,
+    magmaDoubleComplex_ptr dwork)
 {
     magma_int_t blocks = (n - 1)/NB_X + 1;
     dim3 grid( blocks, 1, 1 );
 
     dim3 threads( NB_X, NB_Y, 1 );
     zsymv_kernel_L<<< grid, threads, 0, magma_stream >>>
-        (n, A, lda, x, incx, dwork);
+        (n, dA, ldda, dx, incx, dwork);
 
     dim3 threads_sum( NB_X, 1, 1 );
     zsymv_kernel_L_sum<<< grid, threads_sum, 0, magma_stream >>>
-        (n, alpha, lda, beta, y, incy, dwork);
+        (n, alpha, ldda, beta, dy, incy, dwork);
 }
 
 
@@ -500,7 +500,7 @@ void magmablas_zsymv_L(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    A       COMPLEX*16 array of DIMENSION ( LDA, n ).
+    dA      COMPLEX*16 array of DIMENSION ( LDA, n ).
             Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the symmetric matrix and the strictly
@@ -513,7 +513,7 @@ void magmablas_zsymv_L(
             not be set and are assumed to be zero.
 
     @param[in]
-    lda     INTEGER.
+    ldda    INTEGER.
             On entry, LDA specifies the first dimension of A as declared
             in the calling (sub) program. LDA must be at least
             max( 1, n ).
@@ -522,7 +522,7 @@ void magmablas_zsymv_L(
             would not be fully coalescent.
 
     @param[in]
-    x       COMPLEX*16 array of dimension at least
+    dx      COMPLEX*16 array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
@@ -537,8 +537,8 @@ void magmablas_zsymv_L(
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
-    @param[in, out]
-    y       COMPLEX*16 array of dimension at least
+    @param[in,out]
+    dy      COMPLEX*16 array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
@@ -579,17 +579,17 @@ magma_int_t
 magmablas_zsymv_work(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    const magmaDoubleComplex *x, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
     magmaDoubleComplex beta,
-    magmaDoubleComplex *y, magma_int_t incy,
-    magmaDoubleComplex *dwork, magma_int_t lwork)
+    magmaDoubleComplex_ptr dy, magma_int_t incy,
+    magmaDoubleComplex_ptr dwork, magma_int_t lwork)
 {
 #if defined(PRECISION_z)
     // z precision requires CUDA ARCH 2.x; call CUBLAS version instead.
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
-        //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
+        //magma_zsymv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
         //return MAGMA_SUCCESS;
         fprintf(stderr, "%s: %s\n", __func__, "not supported on CUDA ARCH 1.x");
         return MAGMA_ERR_NOT_SUPPORTED;
@@ -601,7 +601,7 @@ magmablas_zsymv_work(
     int upper = (uplo == MagmaUpper);
 
     magma_int_t blocks = (n - 1)/NB_X + 1;
-    magma_int_t lwmin  = lda*blocks;
+    magma_int_t lwmin  = ldda*blocks;
 
     /*
      * Test the input parameters.
@@ -611,7 +611,7 @@ magmablas_zsymv_work(
         info = -1;
     } else if ( n < 0 ) {
         info = -2;
-    } else if ( lda < max(1, n) ) {
+    } else if ( ldda < max(1, n) ) {
         info = -5;
     } else if ( incx == 0 ) {
         info = -7;
@@ -634,12 +634,12 @@ magmablas_zsymv_work(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper ) {
-        //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        //magma_zsymv( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
     else {
-        magmablas_zsymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+        magmablas_zsymv_L(n, alpha, dA, ldda, dx, incx, beta, dy, incy, dwork);
     }
     return info;
 }
@@ -675,7 +675,7 @@ magmablas_zsymv_work(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    A       COMPLEX*16 array of DIMENSION ( LDA, n ).
+    dA      COMPLEX*16 array of DIMENSION ( LDA, n ).
             Before entry with UPLO = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular part of the symmetric matrix and the strictly
@@ -688,16 +688,16 @@ magmablas_zsymv_work(
             not be set and are assumed to be zero.
 
     @param[in]
-    lda     INTEGER.
+    ldda    INTEGER.
             On entry, LDA specifies the first dimension of A as declared
             in the calling (sub) program. LDA must be at least
             max( 1, n ).
-            It is recommended that lda is multiple of 16. Otherwise
+            It is recommended that ldda is multiple of 16. Otherwise
             performance would be deteriorated as the memory accesses
             would not be fully coalescent.
 
     @param[in]
-    x       COMPLEX*16 array of dimension at least
+    dx      COMPLEX*16 array of dimension at least
             ( 1 + ( n - 1 )*abs( INCX ) ).
             Before entry, the incremented array X must contain the n
             element vector x.
@@ -712,8 +712,8 @@ magmablas_zsymv_work(
             On entry, BETA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
-    @param[in, out]
-    y       COMPLEX*16 array of dimension at least
+    @param[in,out]
+    dy      COMPLEX*16 array of dimension at least
             ( 1 + ( n - 1 )*abs( INCY ) ).
             Before entry, the incremented array Y must contain the n
             element vector y. On exit, Y is overwritten by the updated
@@ -731,16 +731,16 @@ magma_int_t
 magmablas_zsymv(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    const magmaDoubleComplex *x, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
     magmaDoubleComplex beta,
-    magmaDoubleComplex *y, magma_int_t incy)
+    magmaDoubleComplex_ptr dy, magma_int_t incy)
 {
 #if defined(PRECISION_z)
     // z precision requires CUDA ARCH 2.x; call CUBLAS version instead.
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 ) {
-        //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy );
+        //magma_zsymv( uplo, n, alpha, A, ldda, dx, incx, beta, dy, incy );
         //return MAGMA_SUCCESS;
         fprintf(stderr, "%s: %s\n", __func__, "not supported on CUDA ARCH 1.x");
         return MAGMA_ERR_NOT_SUPPORTED;
@@ -759,7 +759,7 @@ magmablas_zsymv(
         info = -1;
     } else if ( n < 0 ) {
         info = -2;
-    } else if ( lda < max(1, n) ) {
+    } else if ( ldda < max(1, n) ) {
         info = -5;
     } else if ( incx == 0 ) {
         info = -7;
@@ -780,14 +780,14 @@ magmablas_zsymv(
 
     /* TODO: Upper case is not implemented in MAGMA */
     if ( upper ) {
-        //magma_zsymv( uplo, n, alpha, A, lda, x, incx, beta, y, incy);
+        //magma_zsymv( uplo, n, alpha, A, ldda, dx, incx, beta, dy, incy);
         fprintf(stderr, "%s: %s\n", __func__, "Upper case not implemented");
         info = MAGMA_ERR_NOT_IMPLEMENTED;
     }
     else {
-        magmaDoubleComplex *dwork;
+        magmaDoubleComplex_ptr dwork;
         magma_int_t blocks = (n - 1)/NB_X + 1;
-        magma_int_t lwork  = lda*blocks;
+        magma_int_t lwork  = ldda*blocks;
 
         magma_zmalloc( &dwork, lwork );
         if ( dwork == NULL ) {
@@ -795,7 +795,7 @@ magmablas_zsymv(
             magma_xerbla( __func__, -(info) );
         }
         else {
-            magmablas_zsymv_L(n, alpha, A, lda, x, incx, beta, y, incy, dwork);
+            magmablas_zsymv_L(n, alpha, dA, ldda, dx, incx, beta, dy, incy, dwork);
         }
         magma_free( dwork );
     }

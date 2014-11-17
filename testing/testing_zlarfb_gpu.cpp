@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 #include <assert.h>
 
 #include <algorithm>  // std::swap
@@ -82,7 +80,7 @@ int main( int argc, char** argv )
             TESTING_MALLOC_CPU( T, magmaDoubleComplex, ldt*K );
             TESTING_MALLOC_CPU( W, magmaDoubleComplex, ldw*K );
             
-            magmaDoubleComplex *dC, *dV, *dT, *dW;
+            magmaDoubleComplex_ptr dC, dV, dT, dW;
             TESTING_MALLOC_DEV( dC, magmaDoubleComplex, ldc*N );
             TESTING_MALLOC_DEV( dV, magmaDoubleComplex, ldv*K );
             TESTING_MALLOC_DEV( dT, magmaDoubleComplex, ldt*K );

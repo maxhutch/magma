@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -173,14 +173,15 @@
     @ingroup magma_zgesvd_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_zlabrd_gpu( magma_int_t m, magma_int_t n, magma_int_t nb,
-                  magmaDoubleComplex *A,  magma_int_t lda,
-                  magmaDoubleComplex *dA, magma_int_t ldda,
-                  double *d, double *e, magmaDoubleComplex *tauq, magmaDoubleComplex *taup,
-                  magmaDoubleComplex *X,  magma_int_t ldx,
-                  magmaDoubleComplex *dX, magma_int_t lddx,
-                  magmaDoubleComplex *Y,  magma_int_t ldy,
-                  magmaDoubleComplex *dY, magma_int_t lddy)
+magma_zlabrd_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t nb,
+    magmaDoubleComplex     *A, magma_int_t lda,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    double *d, double *e, magmaDoubleComplex *tauq, magmaDoubleComplex *taup,
+    magmaDoubleComplex     *X, magma_int_t ldx,
+    magmaDoubleComplex_ptr dX, magma_int_t lddx,
+    magmaDoubleComplex     *Y, magma_int_t ldy,
+    magmaDoubleComplex_ptr dY, magma_int_t lddy)
 {
     #define A(i_,j_) (A + (i_) + (j_)*lda)
     #define X(i_,j_) (X + (i_) + (j_)*ldx)

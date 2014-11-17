@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Stan Tomov
 
@@ -20,9 +20,9 @@
 __global__ void
 zgemv_conjv_kernel(
     int m, int n, magmaDoubleComplex alpha,
-    magmaDoubleComplex_const_ptr __restrict__ A, int lda,
-    magmaDoubleComplex_const_ptr __restrict__ x, int incx, magmaDoubleComplex beta,
-    magmaDoubleComplex_ptr       __restrict__ y, int incy)
+    const magmaDoubleComplex * __restrict__ A, int lda,
+    const magmaDoubleComplex * __restrict__ x, int incx, magmaDoubleComplex beta,
+    magmaDoubleComplex *       __restrict__ y, int incy)
 {
     int ind = blockIdx.x*num_threads + threadIdx.x;
     
@@ -68,14 +68,14 @@ zgemv_conjv_kernel(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    A       COMPLEX_16 array of dimension ( LDA, n ) on the GPU.
+    dA      COMPLEX_16 array of dimension ( LDA, n ) on the GPU.
 
     @param[in]
     lda     INTEGER
             LDA specifies the leading dimension of A.
 
     @param[in]
-    x       COMPLEX_16 array of dimension n
+    dx      COMPLEX_16 array of dimension n
 
     @param[in]
     incx    Specifies the increment for the elements of X.
@@ -87,7 +87,7 @@ zgemv_conjv_kernel(
             supplied as zero then Y need not be set on input.
 
     @param[out]
-    y       DOUBLE PRECISION array of dimension m
+    dy      DOUBLE PRECISION array of dimension m
 
     @param[in]
     incy    Specifies the increment for the elements of Y.
@@ -98,17 +98,17 @@ zgemv_conjv_kernel(
 extern "C" void
 magmablas_zgemv_conjv(
     magma_int_t m, magma_int_t n, magmaDoubleComplex alpha,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    const magmaDoubleComplex *x, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
     magmaDoubleComplex beta,
-    magmaDoubleComplex *y, magma_int_t incy)
+    magmaDoubleComplex_ptr dy, magma_int_t incy)
 {
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;
     else if ( n < 0 )
         info = -2;
-    else if ( lda < m )
+    else if ( ldda < m )
         info = -5;
     else if ( incx == 0 )
         info = -7;
@@ -125,7 +125,7 @@ magmablas_zgemv_conjv(
     dim3 threads(num_threads, 1, 1);
 
     zgemv_conjv_kernel<<< grid, threads, 0, magma_stream >>>
-            (m, n, alpha, A, lda, x, incx, beta, y, incy);
+            (m, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
 
 }
 

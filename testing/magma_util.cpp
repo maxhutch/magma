@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        
@@ -16,8 +16,26 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+#include <cuda_runtime_api.h>
+
 #include "testings.h"
 #include "common_magma.h"
+
+// --------------------
+// global variable
+#if   defined(HAVE_CUBLAS)
+    const char* g_platform_str = "cuBLAS";
+
+#elif defined(HAVE_clAmdBlas)
+    const char* g_platform_str = "clBLAS";
+
+#elif defined(HAVE_MIC)
+    const char* g_platform_str = "Xeon Phi";
+
+#else
+    #error "unknown platform"
+#endif
+
 
 // --------------------
 // If condition is false, print error message and exit.
@@ -134,6 +152,7 @@ const char *usage =
 "  -x  --exclusive  Lock file for exclusive use (internal ICL functionality).\n"
 "\n"
 "The following options apply to only some routines.\n"
+"  --batch x        number of matrices for the batched routines, default is 1.\n"
 "  --nb x           Block size, default set automatically.\n"
 "  --nrhs x         Number of right hand sides, default 1.\n"
 "  --nstream x      Number of CUDA streams, default 1.\n"
@@ -169,6 +188,7 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
     int k = -1;
     
     // fill in default values
+    opts->batchcount = 1;
     opts->device   = 0;
     opts->pad      = 32;
     opts->nb       = 0;  // auto
@@ -311,9 +331,13 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
                           "error: --ngpu %s exceeds number of CUDA devices, %d.\n", argv[i], ndevices );
             magma_assert( opts->ngpu > 0,
                           "error: --ngpu %s is invalid; ensure ngpu > 0.\n", argv[i] );
-            #ifndef _MSC_VER  // not Windows
             // save in environment variable, so magma_num_gpus() picks it up
-            setenv( "MAGMA_NUM_GPUS", argv[i], true );
+            #if defined( _WIN32 ) || defined( _WIN64 )
+                char env_num_gpus[20] = "MAGMA_NUM_GPUS=";  // space for 4 digits & nil
+                strncat( env_num_gpus, argv[i], sizeof(env_num_gpus) - strlen(env_num_gpus) - 1 );
+                putenv( env_num_gpus );
+            #else
+                setenv( "MAGMA_NUM_GPUS", argv[i], true );
             #endif
         }
         else if ( strcmp("--nstream", argv[i]) == 0 && i+1 < argc ) {
@@ -365,6 +389,11 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
             opts->fraction_dcpu = atof( argv[++i] );
             magma_assert( opts->fraction_dcpu > 0 && opts->fraction_dcpu<=1,
                           "error: --fraction_dcpu %s is invalid; ensure fraction_dcpu in [0, 1]\n", argv[i] );
+        }
+        else if ( strcmp("--batch", argv[i]) == 0 && i+1 < argc ) {
+            opts->batchcount = atof( argv[++i] );
+            magma_assert( opts->batchcount > 0,
+                          "error: --batch %s is invalid; ensure batch > 0.\n", argv[i] );
         }
         // ----- boolean arguments
         // check results
@@ -498,8 +527,23 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
     opts->flock_fd = open_lockfile( lockfile, opts->flock_op );
     #endif
     
-    // set device
+    #ifdef HAVE_CUBLAS
+    // handle for directly calling cublas
     magma_setdevice( opts->device );
+    cublasCreate( &opts->handle );
+    #endif
+    
+    // create queues on this device
+    magma_int_t num;
+    magma_device_t devices[ MagmaMaxGPUs ];
+    magma_getdevices( devices, MagmaMaxGPUs, &num );
+    
+    // 2 queues + 1 extra NULL entry to catch errors
+    magma_queue_create( /*devices[ opts->device ],*/ &opts->queues2[ 0 ] );
+    magma_queue_create( /*devices[ opts->device ],*/ &opts->queues2[ 1 ] );
+    opts->queues2[ 2 ] = NULL;
+    
+    opts->queue = opts->queues2[ 0 ];
 }
 // end parse_opts
 

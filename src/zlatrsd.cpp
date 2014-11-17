@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @precisions normal z -> c
@@ -137,12 +137,12 @@
     where CNORM(j+1) is greater than or equal to the infinity-norm of
     column j+1 of A, not counting the diagonal.  Hence
 
-       G(j) <= G(0) product ( 1 + CNORM(i) / | A(i,i) | )
-                    1<=i<=j
+       G(j) <= G(0) product     ( 1 + CNORM(i) / | A(i,i) | )
+                    1 <= i <= j
     and
 
-       |x(j)| <= ( G(0) / |A(j,j)| ) product ( 1 + CNORM(i) / |A(i,i)| )
-                                     1<=i< j
+       |x(j)| <= ( G(0) / |A(j,j)| ) product     ( 1 + CNORM(i) / |A(i,i)| )
+                                     1 <= i < j
 
     Since |x(j)| <= M(j), we use the Level 2 BLAS routine ZTRSV if the
     reciprocal of the largest M(j), j=1,..,n, is larger than
@@ -162,8 +162,8 @@
          end
 
     We simultaneously compute two bounds
-         G(j) = bound on ( b(i) - A[1:i-1,i]' * x[1:i-1] ), 1<=i<=j
-         M(j) = bound on x(i), 1<=i<=j
+         G(j) = bound on ( b(i) - A[1:i-1,i]' * x[1:i-1] ), 1 <= i <= j
+         M(j) = bound on x(i), 1 <= i <= j
 
     The initial values are G(0) = 0, M(0) = max{b(i), i=1,..,n}, and we
     add the constraint G(j) >= G(j-1) and M(j) >= M(j-1) for j >= 1.
@@ -171,8 +171,8 @@
 
          M(j) <= M(j-1) * ( 1 + CNORM(j) ) / | A(j,j) |
 
-              <= M(0) * product ( ( 1 + CNORM(i) ) / |A(i,i)| )
-                        1<=i<=j
+              <= M(0) * product      ( ( 1 + CNORM(i) ) / |A(i,i)| )
+                        1 <= i <= j
 
     and we can safely call ZTRSV if 1/M(n) and 1/G(n) are both greater
     than max(underflow, 1/overflow).
@@ -185,7 +185,8 @@ magma_int_t magma_zlatrsd(
     magma_int_t n, const magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex lambda,
     magmaDoubleComplex *x,
-    double *scale, double *cnorm, magma_int_t *info)
+    double *scale, double *cnorm,
+    magma_int_t *info)
 {
 #define A(i,j) (A + (i) + (j)*lda)
 

@@ -1,23 +1,23 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 */
+// includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
+// includes, project
+#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 
 #define PRECISION_z
 
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     magmaDoubleComplex alpha = MAGMA_Z_MAKE(  1.5, -2.3 );
     magmaDoubleComplex beta  = MAGMA_Z_MAKE( -0.6,  0.8 );
     magmaDoubleComplex *A, *X, *Y, *Yatomics, *Ycublas, *Ymagma;
-    magmaDoubleComplex *dA, *dX, *dY, *dwork;
+    magmaDoubleComplex_ptr dA, dX, dY, dwork;
     magma_int_t status = 0;
     
     magma_opts opts;
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
             magma_zsetvector( N, Y, incy, dY, incy );
             
             cublas_time = magma_sync_wtime( 0 );
-            cublasZhemv( handle, cublas_uplo_const(opts.uplo),
+            cublasZhemv( opts.handle, cublas_uplo_const(opts.uplo),
                          N, &alpha, dA, ldda, dX, incx, &beta, dY, incy );
             cublas_time = magma_sync_wtime( 0 ) - cublas_time;
             cublas_perf = gflops / cublas_time;
@@ -104,17 +104,17 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using CUBLAS - using atomics
                =================================================================== */
-            cublasSetAtomicsMode( handle, CUBLAS_ATOMICS_ALLOWED );
+            cublasSetAtomicsMode( opts.handle, CUBLAS_ATOMICS_ALLOWED );
             magma_zsetvector( N, Y, incy, dY, incy );
             
             atomics_time = magma_sync_wtime( 0 );
-            cublasZhemv( handle, cublas_uplo_const(opts.uplo),
+            cublasZhemv( opts.handle, cublas_uplo_const(opts.uplo),
                          N, &alpha, dA, ldda, dX, incx, &beta, dY, incy );
             atomics_time = magma_sync_wtime( 0 ) - atomics_time;
             atomics_perf = gflops / atomics_time;
             
             magma_zgetvector( N, dY, incy, Yatomics, incy );
-            cublasSetAtomicsMode( handle, CUBLAS_ATOMICS_NOT_ALLOWED );
+            cublasSetAtomicsMode( opts.handle, CUBLAS_ATOMICS_NOT_ALLOWED );
             
             /* =====================================================================
                Performs operation using MAGMABLAS

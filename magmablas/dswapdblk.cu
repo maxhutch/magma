@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zswapdblk.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from zswapdblk.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -97,8 +97,8 @@ dswapdblk_kernel( int nb,
 extern "C" void 
 magmablas_dswapdblk_q(
     magma_int_t n, magma_int_t nb,
-    double *dA, magma_int_t ldda, magma_int_t inca,
-    double *dB, magma_int_t lddb, magma_int_t incb,
+    magmaDouble_ptr dA, magma_int_t ldda, magma_int_t inca,
+    magmaDouble_ptr dB, magma_int_t lddb, magma_int_t incb,
     magma_queue_t queue )
 {
     magma_int_t nblocks = n / nb;
@@ -138,8 +138,8 @@ magmablas_dswapdblk_q(
 extern "C" void 
 magmablas_dswapdblk(
     magma_int_t n, magma_int_t nb,
-    double *dA, magma_int_t ldda, magma_int_t inca,
-    double *dB, magma_int_t lddb, magma_int_t incb )
+    magmaDouble_ptr dA, magma_int_t ldda, magma_int_t inca,
+    magmaDouble_ptr dB, magma_int_t lddb, magma_int_t incb )
 {
     magmablas_dswapdblk_q( n, nb, dA, ldda, inca, dB, lddb, incb, magma_stream );
 }

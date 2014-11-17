@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @precisions normal z -> s d c
@@ -11,7 +11,7 @@
 */
 #include "common_magma.h"
 
-#define PRECISION_z
+#define COMPLEX
 
 /**
     Purpose
@@ -42,7 +42,9 @@
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C"
-void magma_zprint( magma_int_t m, magma_int_t n, const magmaDoubleComplex *A, magma_int_t lda )
+void magma_zprint(
+    magma_int_t m, magma_int_t n,
+    const magmaDoubleComplex *A, magma_int_t lda )
 {
     #define A(i,j) (A + (i) + (j)*lda)
     
@@ -51,8 +53,6 @@ void magma_zprint( magma_int_t m, magma_int_t n, const magmaDoubleComplex *A, ma
         info = -1;
     else if ( n < 0 )
         info = -2;
-    else if ( magma_is_devptr( A ) == 1 )
-        info = -3;
     else if ( lda < max(1,m) )
         info = -4;
     
@@ -72,18 +72,18 @@ void magma_zprint( magma_int_t m, magma_int_t n, const magmaDoubleComplex *A, ma
     for( int i = 0; i < m; ++i ) {
         for( int j = 0; j < n; ++j ) {
             if ( MAGMA_Z_EQUAL( *A(i,j), c_zero )) {
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 printf( "   0.              " );
-#else
+                #else
                 printf( "   0.    " );
-#endif
+                #endif
             }
             else {
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 printf( " %8.4f+%8.4fi", MAGMA_Z_REAL( *A(i,j) ), MAGMA_Z_IMAG( *A(i,j) ));
-#else
+                #else
                 printf( " %8.4f", MAGMA_Z_REAL( *A(i,j) ));
-#endif
+                #endif
             }
         }
         if ( m > 1 ) {
@@ -125,15 +125,15 @@ void magma_zprint( magma_int_t m, magma_int_t n, const magmaDoubleComplex *A, ma
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C"
-void magma_zprint_gpu( magma_int_t m, magma_int_t n, const magmaDoubleComplex *dA, magma_int_t ldda )
+void magma_zprint_gpu(
+    magma_int_t m, magma_int_t n,
+    const magmaDoubleComplex *dA, magma_int_t ldda )
 {
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;
     else if ( n < 0 )
         info = -2;
-    else if ( magma_is_devptr( dA ) == 0 )
-        info = -3;
     else if ( ldda < max(1,m) )
         info = -4;
     

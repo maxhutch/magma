@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztrtri_lower.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from ztrtri_lower.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
        @author Peng Du
        @author Tingxing Dong
@@ -17,16 +17,14 @@
 
 #include "common_magma.h"
 #include "dtrtri.h"
-
-
 /*
     This inverts the diagonal IB by IB inner blocks of A,
     and stores the results in d_dinvA.
     Each thread block with IB threads does one inner block.
     Each thread deals with one row of the inner block.
 */
-__global__ void
-dtrtri_diag_kernel_lower(
+static __device__ void
+dtrtri_diag_lower_device(
     magma_diag_t diag, int n, const double *A, int lda, double *d_dinvA)
 {
     int tx = threadIdx.x;
@@ -134,8 +132,8 @@ dtrtri_diag_kernel_lower(
 /*
  * B21 = A21 * B11
  */
-__global__ void
-triple_dgemm16_part1_lower(
+static __device__ void
+triple_dgemm16_part1_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     // emulate 3D grid: NX * (NY*npages)
@@ -243,8 +241,8 @@ triple_dgemm16_part1_lower(
 /*
  * B21 = -B22 * B21
  */
-__global__ void
-triple_dgemm16_part2_lower(
+static __device__ void
+triple_dgemm16_part2_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -354,8 +352,8 @@ triple_dgemm16_part2_lower(
 /*
  * B21 = A21 * B11
  */
-__global__ void
-triple_dgemm32_part1_lower(
+static __device__ void
+triple_dgemm32_part1_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -457,8 +455,8 @@ triple_dgemm32_part1_lower(
 /*
  * B21 = -B22 * B21
  */
-__global__ void
-triple_dgemm32_part2_lower(
+static __device__ void
+triple_dgemm32_part2_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -561,8 +559,8 @@ triple_dgemm32_part2_lower(
 /*
  * B21 = A21 * B11
  */
-__global__ void
-triple_dgemm64_part1_lower(
+static __device__ void
+triple_dgemm64_part1_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -664,8 +662,8 @@ triple_dgemm64_part1_lower(
 /*
  * B21 = -B22 * B21
  */
-__global__ void
-triple_dgemm64_part2_lower(
+static __device__ void
+triple_dgemm64_part2_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -768,8 +766,8 @@ triple_dgemm64_part2_lower(
 /*
  * B21 = A21 * B11
  */
-__global__ void
-triple_dgemm_above64_part1_lower(
+static __device__ void
+triple_dgemm_above64_part1_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -880,8 +878,8 @@ triple_dgemm_above64_part1_lower(
 /*
  * B21 = -B22 * B21
  */
-__global__ void
-triple_dgemm_above64_part2_lower(
+static __device__ void
+triple_dgemm_above64_part2_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -984,8 +982,8 @@ triple_dgemm_above64_part2_lower(
 /*
  * zero out B12 temp location
  */
-__global__ void
-triple_dgemm_above64_part3_lower(
+static __device__ void
+triple_dgemm_above64_part3_lower_device(
     int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -1017,3 +1015,170 @@ triple_dgemm_above64_part3_lower(
         }
     }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+dtrtri_diag_lower_kernel(
+    magma_diag_t diag, int n, const double *A, int lda, double *d_dinvA)
+{
+    dtrtri_diag_lower_device(diag, n, A, lda, d_dinvA);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm16_part1_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm16_part1_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm16_part2_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm16_part2_lower_device( n,  Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm32_part1_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm32_part1_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm32_part2_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm32_part2_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm64_part1_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm64_part1_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm64_part2_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm64_part2_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm_above64_part1_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm_above64_part1_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm_above64_part2_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm_above64_part2_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm_above64_part3_lower_kernel(
+    int n, const double *Ain, int lda, double *d_dinvA, int jb, int npages)
+{
+    triple_dgemm_above64_part3_lower_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+dtrtri_diag_lower_kernel_batched(
+    magma_diag_t diag, int n, double const * const * dA_array, int lda, double **dinvA_array)
+{
+    int batchid = blockIdx.z;
+    dtrtri_diag_lower_device(diag, n, dA_array[batchid], lda, dinvA_array[batchid]);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm16_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm16_part1_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm16_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm16_part2_lower_device( n,  Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm32_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm32_part1_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm32_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm32_part2_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm64_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm64_part1_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm64_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm64_part2_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm_above64_part1_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm_above64_part1_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm_above64_part2_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm_above64_part2_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_dgemm_above64_part3_lower_kernel_batched(
+    int n, double const * const * Ain_array, int lda, double **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_dgemm_above64_part3_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+

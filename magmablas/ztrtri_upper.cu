@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
+       @author Azzam Haidar
        
        This file implements upper case, and is called by ztrtri_kernel.cu.
        It's convenient to have separate files for lower & upper, to diff the sources.
@@ -25,8 +26,8 @@
     Each thread block with IB threads does one inner block.
     Each thread deals with one row of the inner block.
 */
-__global__ void
-ztrtri_diag_kernel_upper(
+static __device__ void
+ztrtri_diag_upper_device(
     magma_diag_t diag, int n, const magmaDoubleComplex *A, int lda, magmaDoubleComplex *d_dinvA)
 {
     int tx   = threadIdx.x;
@@ -136,8 +137,8 @@ ztrtri_diag_kernel_upper(
 /*
  * B12 =  A12 * B22
  */
-__global__ void
-triple_zgemm16_part1_upper(
+static __device__ void
+triple_zgemm16_part1_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -237,8 +238,8 @@ triple_zgemm16_part1_upper(
 /*
  * B12 = -B11 * B12
  */
-__global__ void
-triple_zgemm16_part2_upper(
+static __device__ void
+triple_zgemm16_part2_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -338,8 +339,8 @@ triple_zgemm16_part2_upper(
 /*
  * B12 =  A12 * B22
  */
-__global__ void
-triple_zgemm32_part1_upper(
+static __device__ void
+triple_zgemm32_part1_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -439,8 +440,8 @@ triple_zgemm32_part1_upper(
 /*
  * B12 = -B11 * B12
  */
-__global__ void
-triple_zgemm32_part2_upper(
+static __device__ void
+triple_zgemm32_part2_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -541,8 +542,8 @@ triple_zgemm32_part2_upper(
 /*
  * B12 =  A12 * B22
  */
-__global__ void
-triple_zgemm64_part1_upper(
+static __device__ void
+triple_zgemm64_part1_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -642,8 +643,8 @@ triple_zgemm64_part1_upper(
 /*
  * B12 = -B11 * B12
  */
-__global__ void
-triple_zgemm64_part2_upper(
+static __device__ void
+triple_zgemm64_part2_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -744,8 +745,8 @@ triple_zgemm64_part2_upper(
 /*
  * B12 =  A12 * B22
  */
-__global__ void
-triple_zgemm_above64_part1_upper(
+static __device__ void
+triple_zgemm_above64_part1_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -854,8 +855,8 @@ triple_zgemm_above64_part1_upper(
 /*
  * B12 = -B11 * B12
  */
-__global__ void
-triple_zgemm_above64_part2_upper(
+static __device__ void
+triple_zgemm_above64_part2_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -956,8 +957,8 @@ triple_zgemm_above64_part2_upper(
 /*
  * zero out B21 temp location
  */
-__global__ void
-triple_zgemm_above64_part3_upper(
+static __device__ void
+triple_zgemm_above64_part3_upper_device(
     int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
 {
     const int by   = blockIdx.y / npages;
@@ -989,3 +990,167 @@ triple_zgemm_above64_part3_upper(
         }
     }
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+ztrtri_diag_upper_kernel(
+    magma_diag_t diag, int n, const magmaDoubleComplex *A, int lda, magmaDoubleComplex *d_dinvA)
+{
+    ztrtri_diag_upper_device(diag, n, A, lda, d_dinvA);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm16_part1_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm16_part1_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm16_part2_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm16_part2_upper_device( n,  Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm32_part1_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm32_part1_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm32_part2_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm32_part2_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm64_part1_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm64_part1_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm64_part2_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm64_part2_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm_above64_part1_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm_above64_part1_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm_above64_part2_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm_above64_part2_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm_above64_part3_upper_kernel(
+    int n, const magmaDoubleComplex *Ain, int lda, magmaDoubleComplex *d_dinvA, int jb, int npages)
+{
+    triple_zgemm_above64_part3_upper_device( n, Ain, lda, d_dinvA, jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+ztrtri_diag_upper_kernel_batched(
+    magma_diag_t diag, int n, magmaDoubleComplex const * const * dA_array, int lda, magmaDoubleComplex **dinvA_array)
+{
+    int batchid = blockIdx.z;
+    ztrtri_diag_upper_device(diag, n, dA_array[batchid], lda, dinvA_array[batchid]);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm16_part1_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm16_part1_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm16_part2_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm16_part2_upper_device( n,  Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm32_part1_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm32_part1_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm32_part2_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm32_part2_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm64_part1_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm64_part1_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm64_part2_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm64_part2_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm_above64_part1_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm_above64_part1_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm_above64_part2_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm_above64_part2_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+__global__ void
+triple_zgemm_above64_part3_upper_kernel_batched(
+    int n, magmaDoubleComplex const * const * Ain_array, int lda, magmaDoubleComplex **dinvA_array, int jb, int npages)
+{
+    int batchid = blockIdx.z;
+    triple_zgemm_above64_part3_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+

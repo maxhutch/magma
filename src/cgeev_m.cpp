@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeev_m.cpp normal z -> c, Tue Sep  2 12:38:24 2014
+       @generated from zgeev_m.cpp normal z -> c, Sat Nov 15 19:54:10 2014
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
 
 #define PRECISION_c
+#define COMPLEX
 
 /*
  * Version1 - LAPACK              (lapack_cgehrd and lapack_cunghr)
@@ -133,11 +134,18 @@ extern "C" magma_int_t
 magma_cgeev_m(
     magma_vec_t jobvl, magma_vec_t jobvr, magma_int_t n,
     magmaFloatComplex *A, magma_int_t lda,
+    #ifdef COMPLEX
     magmaFloatComplex *w,
+    #else
+    float *wr, float *wi,
+    #endif
     magmaFloatComplex *VL, magma_int_t ldvl,
     magmaFloatComplex *VR, magma_int_t ldvr,
     magmaFloatComplex *work, magma_int_t lwork,
-    float *rwork, magma_int_t *info )
+    #ifdef COMPLEX
+    float *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define VL(i,j)  (VL + (i) + (j)*ldvl)
     #define VR(i,j)  (VR + (i) + (j)*ldvr)

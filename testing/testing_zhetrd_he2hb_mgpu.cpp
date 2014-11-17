@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 #include <assert.h>
 
 // includes, project
@@ -45,7 +43,7 @@ extern "C" void zcheck_eig_(char *JOBZ, int  *MATYPE, int  *N, int  *NB,
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT_MGPU();
+    TESTING_INIT();
 
     real_Double_t gflops, gpu_time, gpu_perf;
     magmaDoubleComplex *h_A, *h_R, *h_work;
@@ -73,7 +71,7 @@ int main( int argc, char** argv)
 
     nstream = max(3, opts.ngpu+2);
     magma_queue_t streams[MagmaMaxGPUs][20];
-    magmaDoubleComplex *da[MagmaMaxGPUs], *dT1[MagmaMaxGPUs];
+    magmaDoubleComplex_ptr da[MagmaMaxGPUs], dT1[MagmaMaxGPUs];
     if ((distblk == 0) || (distblk < opts.nb))
         distblk = max(256, opts.nb);
     printf("voici ngpu %d distblk %d NB %d nstream %d\n ",
@@ -127,7 +125,7 @@ int main( int argc, char** argv)
                =================================================================== */
             /* Copy the matrix to the GPU */
             magma_zsetmatrix_1D_col_bcyclic( N, N, h_R, lda, da, ldda, opts.ngpu, distblk);
-            //magmaDoubleComplex *dabis;
+            //magmaDoubleComplex_ptr dabis;
             //TESTING_MALLOC_DEV( dabis,  magmaDoubleComplex, ldda*N );
             //magma_zsetmatrix(N, N, h_R, lda, dabis, ldda);
 
@@ -301,6 +299,6 @@ int main( int argc, char** argv)
         }
     }
 
-    TESTING_FINALIZE_MGPU();
+    TESTING_FINALIZE();
     return status;
 }

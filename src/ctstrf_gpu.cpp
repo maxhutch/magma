@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from ztstrf_gpu.cpp normal z -> c, Tue Sep  2 12:38:20 2014
+       @generated from ztstrf_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -132,13 +132,19 @@
     @ingroup magma_cgesv_tile
     ********************************************************************/
 extern "C" magma_int_t
-magma_ctstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t ib, magma_int_t nb,
-                  magmaFloatComplex *hU, magma_int_t ldhu, magmaFloatComplex *dU, magma_int_t lddu,
-                  magmaFloatComplex *hA, magma_int_t ldha, magmaFloatComplex *dA, magma_int_t ldda,
-                  magmaFloatComplex *hL, magma_int_t ldhl, magmaFloatComplex *dL, magma_int_t lddl,
-                  magma_int_t *ipiv,
-                  magmaFloatComplex *hwork, magma_int_t ldhwork, magmaFloatComplex *dwork, magma_int_t lddwork,
-                  magma_int_t *info)
+magma_ctstrf_gpu(
+    magma_order_t order, magma_int_t m, magma_int_t n,
+    magma_int_t ib, magma_int_t nb,
+    magmaFloatComplex    *hU, magma_int_t ldhu,
+    magmaFloatComplex_ptr dU, magma_int_t lddu,
+    magmaFloatComplex    *hA, magma_int_t ldha,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex    *hL, magma_int_t ldhl,
+    magmaFloatComplex_ptr dL, magma_int_t lddl,
+    magma_int_t *ipiv,
+    magmaFloatComplex    *hwork, magma_int_t ldhwork,
+    magmaFloatComplex_ptr dwork, magma_int_t lddwork,
+    magma_int_t *info)
 {
 #define UT(i,j) (dUT + (i)*ib*lddu + (j)*ib )
 #define AT(i,j) (dAT + (i)*ib*ldda + (j)*ib )
@@ -155,10 +161,10 @@ magma_ctstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
     int iinfo = 0;
     int maxm, mindim;
     int i, j, im, s, ip, ii, sb, p = 1;
-    magmaFloatComplex *dAT, *dUT;
-    magmaFloatComplex *dAp, *dUp;
+    magmaFloatComplex_ptr dAT, dUT;
+    magmaFloatComplex_ptr dAp, dUp;
 #ifndef WITHOUTTRTRI
-    magmaFloatComplex *dL2 = dL + ib;
+    magmaFloatComplex_ptr dL2 = dL + ib;
     magmaFloatComplex *hL2 = hL + ib;
     p = 2;
 #endif

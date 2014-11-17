@@ -1,20 +1,21 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from ztrevc3_mt.cpp normal z -> c, Tue Sep  2 12:38:24 2014
+       @generated from ztrevc3_mt.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 */
 #include "thread_queue.hpp"
-#include "timer.h"
+#include "magma_timer.h"
 
 #include "common_magma.h"  // after thread.hpp, so max, min are defined
 
+#define COMPLEX
 
 // ---------------------------------------------
 // stores arguments and executes call to clatrsd (on CPU)
@@ -24,11 +25,11 @@ public:
     magma_clatrsd_task(
         magma_uplo_t in_uplo, magma_trans_t in_trans, magma_diag_t in_diag, magma_bool_t in_normin,
         magma_int_t in_n,
-        const magmaFloatComplex* in_T, magma_int_t in_ldt,
+        const magmaFloatComplex *in_T, magma_int_t in_ldt,
         magmaFloatComplex  in_lambda,
-        magmaFloatComplex* in_x, //magma_int_t in_incx,
-        magmaFloatComplex* in_scale,
-        float* in_cnorm
+        magmaFloatComplex *in_x, //magma_int_t in_incx,
+        magmaFloatComplex *in_scale,
+        float *in_cnorm
     ):
         uplo  ( in_uplo   ),
         trans ( in_trans  ),
@@ -65,13 +66,13 @@ private:
     magma_diag_t  diag;
     magma_bool_t  normin;
     magma_int_t   n;
-    const magmaFloatComplex* T;
+    const magmaFloatComplex *T;
     magma_int_t   ldt;
     magmaFloatComplex lambda;
-    magmaFloatComplex* x;
-    magmaFloatComplex* scale;
+    magmaFloatComplex *x;
+    magmaFloatComplex *scale;
     //magma_int_t   incx;
-    float* cnorm;
+    float *cnorm;
 };
 
 
@@ -86,10 +87,10 @@ public:
         magma_trans_t in_transA, magma_trans_t in_transB,
         magma_int_t in_m, magma_int_t in_n, magma_int_t in_k,
         magmaFloatComplex  in_alpha,
-        const magmaFloatComplex* in_A, magma_int_t in_lda,
-        const magmaFloatComplex* in_B, magma_int_t in_ldb,
+        const magmaFloatComplex *in_A, magma_int_t in_lda,
+        const magmaFloatComplex *in_B, magma_int_t in_ldb,
         magmaFloatComplex  in_beta,
-        magmaFloatComplex* in_C, magma_int_t in_ldc
+        magmaFloatComplex *in_C, magma_int_t in_ldc
     ):
         transA( in_transA ),
         transB( in_transB ),
@@ -104,7 +105,7 @@ public:
         beta  ( in_beta   ),
         C     ( in_C      ),
         ldc   ( in_ldc    )
-    {}               
+    {}
     
     virtual void run()
     {
@@ -119,12 +120,12 @@ private:
     magma_int_t   n;
     magma_int_t   k;
     magmaFloatComplex        alpha;
-    const magmaFloatComplex* A;
+    const magmaFloatComplex *A;
     magma_int_t   lda;
-    const magmaFloatComplex* B;
+    const magmaFloatComplex *B;
     magma_int_t   ldb;
     magmaFloatComplex        beta;
-    magmaFloatComplex*       C;
+    magmaFloatComplex       *C;
     magma_int_t   ldc;
 };
 
@@ -278,7 +279,10 @@ magma_int_t magma_ctrevc3_mt(
     magmaFloatComplex *VR, magma_int_t ldvr,
     magma_int_t mm, magma_int_t *mout,
     magmaFloatComplex *work, magma_int_t lwork,
-    float *rwork, magma_int_t *info )
+    #ifdef COMPLEX
+    float *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define  T(i,j)  ( T + (i) + (j)*ldt )
     #define VL(i,j)  (VL + (i) + (j)*ldvl)
@@ -390,11 +394,11 @@ magma_int_t magma_ctrevc3_mt(
     queue.launch( nthread );
     //printf( "nthread %d, %d\n", nthread, lapack_nthread );
     
-    // NB = N/thread, rounded up to multiple of 16,
+    // gemm_nb = N/thread, rounded up to multiple of 16,
     // but avoid multiples of page size, e.g., 512*8 bytes = 4096.
-    magma_int_t NB = magma_int_t( ceil( ceil( ((float)n) / nthread ) / 16. ) * 16. );
-    if ( NB % 512 == 0 ) {
-        NB += 32;
+    magma_int_t gemm_nb = magma_int_t( ceil( ceil( ((float)n) / nthread ) / 16. ) * 16. );
+    if ( gemm_nb % 512 == 0 ) {
+        gemm_nb += 32;
     }
     
     magma_timer_t time_total=0, time_trsv=0, time_gemm=0, time_gemv=0, time_trsv_sum=0, time_gemm_sum=0, time_gemv_sum=0;
@@ -493,8 +497,8 @@ magma_int_t magma_ctrevc3_mt(
                     n2  = ki+nb-iv+1;
                     
                     // split gemm into multiple tasks, each doing one block row
-                    for( i=0; i < n; i += NB ) {
-                        magma_int_t ib = min( NB, n-i );
+                    for( i=0; i < n; i += gemm_nb ) {
+                        magma_int_t ib = min( gemm_nb, n-i );
                         queue.push_task( new cgemm_task(
                             MagmaNoTrans, MagmaNoTrans, ib, nb2, n2, c_one,
                             VR(i,0), ldvr,
@@ -614,8 +618,8 @@ magma_int_t magma_ctrevc3_mt(
                     n2 = n-(ki+1)+iv;
                     
                     // split gemm into multiple tasks, each doing one block row
-                    for( i=0; i < n; i += NB ) {
-                        magma_int_t ib = min( NB, n-i );
+                    for( i=0; i < n; i += gemm_nb ) {
+                        magma_int_t ib = min( gemm_nb, n-i );
                         queue.push_task( new cgemm_task(
                             MagmaNoTrans, MagmaNoTrans, ib, iv, n2, c_one,
                             VL(i,ki-iv+1), ldvl,

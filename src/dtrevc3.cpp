@@ -1,18 +1,20 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @author Azzam Haidar
 
        @precisions normal d -> s
 */
-#include "timer.h"
+#include "magma_timer.h"
 
 #include "common_magma.h"
+
+#define REAL
 
 /**
     Purpose
@@ -172,6 +174,9 @@ magma_int_t magma_dtrevc3(
     double *VR, magma_int_t ldvr,
     magma_int_t mm, magma_int_t *mout,
     double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
     magma_int_t *info )
 {
 #define T(i,j)  (T  + (i) + (j)*ldt)
@@ -404,7 +409,7 @@ magma_int_t magma_dtrevc3(
                     iscomplex[ iv ] = ip;
                     // back-transform and normalization is done below
                 }
-            }  // end real eigenvector 
+            }  // end real eigenvector
             else {
                 // ------------------------------------------------------------
                 // Complex right eigenvector

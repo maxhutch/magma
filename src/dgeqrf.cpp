@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
-       @generated from zgeqrf.cpp normal z -> d, Tue Sep  2 12:38:21 2014
+       @generated from zgeqrf.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -93,10 +93,11 @@
     @ingroup magma_dgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dgeqrf(magma_int_t m, magma_int_t n,
-             double *A,    magma_int_t lda, double *tau,
-             double *work, magma_int_t lwork,
-             magma_int_t *info )
+magma_dgeqrf(
+    magma_int_t m, magma_int_t n,
+    double *A,    magma_int_t lda, double *tau,
+    double *work, magma_int_t lwork,
+    magma_int_t *info )
 {
     #define  A(i,j) ( A + (i) + (j)*lda )
     #define dA(i,j) (dA + (i) + (j)*ldda)
@@ -141,10 +142,10 @@ magma_dgeqrf(magma_int_t m, magma_int_t n,
     lddwork = ((n+31)/32)*32 - nb;
     ldda    = ((m+31)/32)*32;
 
-    magma_int_t num_gpus = magma_num_gpus();
-    if ( num_gpus > 1 ) {
+    magma_int_t ngpu = magma_num_gpus();
+    if ( ngpu > 1 ) {
         /* call multiple-GPU interface  */
-        return magma_dgeqrf4(num_gpus, m, n, A, lda, tau, work, lwork, info);
+        return magma_dgeqrf4(ngpu, m, n, A, lda, tau, work, lwork, info);
     }
 
     // allocate space for dA, dwork, and dT

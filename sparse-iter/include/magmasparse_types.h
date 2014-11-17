@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 */
 
 #ifndef MAGMASPARSE_TYPES_H
@@ -34,95 +34,159 @@ extern "C" {
 
 typedef struct magma_z_sparse_matrix{
 
-    magma_storage_t    storage_type;
-    magma_location_t   memory_location;
-    magma_symmetry_t   sym;
-    magma_diagorder_t  diagorder_type;
-    magma_int_t        num_rows;
-    magma_int_t        num_cols; 
-    magma_int_t        nnz; 
-    magma_int_t        max_nnz_row;
-    magma_int_t        diameter;
-    magmaDoubleComplex *val;
-    magmaDoubleComplex *diag;
-    magma_index_t      *row; 
-    magma_index_t      *rowidx; 
-    magma_index_t      *col;
-    magma_index_t      *blockinfo;
-    magma_int_t        blocksize;
-    magma_int_t        numblocks;
-    magma_int_t        alignment;
+    magma_storage_t    storage_type;            // matrix format - CSR, ELL, SELL-P
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_symmetry_t   sym;                     // opt: indicate symmetry
+    magma_diagorder_t  diagorder_type;          // opt: only needed for factorization matrices
+    magma_fillmode_t   fill_mode;               // fill mode full/lower/upper
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
+    magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    union {
+        magmaDoubleComplex      *val;           // array containing values in CPU case
+        magmaDoubleComplex_ptr  dval;           // array containing values in DEV case
+    };
+    union {
+        magmaDoubleComplex      *diag;          // opt: diagonal entries in CPU case
+        magmaDoubleComplex_ptr  ddiag;          // opt: diagonal entries in DEV case
+    };
+    union {
+        magma_index_t           *row;           // row pointer CPU case
+        magmaIndex_ptr          drow;           // row pointer DEV case
+    };
+    union {
+        magma_index_t           *rowidx;        // opt: array containing row indices CPU case
+        magmaIndex_ptr          drowidx;        // opt: array containing row indices DEV case
+    };
+    union {
+        magma_index_t           *col;           // array containing col indices CPU case
+        magmaIndex_ptr          dcol;           // array containing col indices DEV case
+    };
+    magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
+    magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
+    magma_int_t        numblocks;               // opt: info for SELL-P/BCSR
+    magma_int_t        alignment;               // opt: info for SELL-P/BCSR
 
 }magma_z_sparse_matrix;
 
 typedef struct magma_c_sparse_matrix{
 
-    magma_storage_t    storage_type;
-    magma_location_t   memory_location;
-    magma_symmetry_t   sym;
-    magma_diagorder_t  diagorder_type;
-    magma_int_t        num_rows;
-    magma_int_t        num_cols; 
-    magma_int_t        nnz; 
-    magma_int_t        max_nnz_row;
-    magma_int_t        diameter;
-    magmaFloatComplex  *val;
-    magmaFloatComplex  *diag;
-    magma_index_t      *row; 
-    magma_index_t      *rowidx; 
-    magma_index_t      *col;
-    magma_index_t      *blockinfo;
-    magma_int_t        blocksize;
-    magma_int_t        numblocks;
-    magma_int_t        alignment;
+    magma_storage_t    storage_type;            // matrix format - CSR, ELL, SELL-P
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_symmetry_t   sym;                     // opt: indicate symmetry
+    magma_diagorder_t  diagorder_type;          // opt: only needed for factorization matrices
+    magma_fillmode_t   fill_mode;               // fill mode full/lower/upper
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
+    magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    union {
+        magmaFloatComplex       *val;           // array containing values in CPU case
+        magmaFloatComplex_ptr   dval;           // array containing values in DEV case
+    };
+    union {
+        magmaFloatComplex       *diag;          // opt: diagonal entries in CPU case
+        magmaFloatComplex_ptr   ddiag;          // opt: diagonal entries in DEV case
+    };
+    union {
+        magma_index_t           *row;           // row pointer CPU case
+        magmaIndex_ptr          drow;           // row pointer DEV case
+    };
+    union {
+        magma_index_t           *rowidx;        // opt: array containing row indices CPU case
+        magmaIndex_ptr          drowidx;        // opt: array containing row indices DEV case
+    };
+    union {
+        magma_index_t           *col;           // array containing col indices CPU case
+        magmaIndex_ptr          dcol;           // array containing col indices DEV case
+    };
+    magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
+    magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
+    magma_int_t        numblocks;               // opt: info for SELL-P/BCSR
+    magma_int_t        alignment;               // opt: info for SELL-P/BCSR
 
 }magma_c_sparse_matrix;
 
 
 typedef struct magma_d_sparse_matrix{
 
-    magma_storage_t    storage_type;
-    magma_location_t   memory_location;
-    magma_symmetry_t   sym;
-    magma_diagorder_t  diagorder_type;
-    magma_int_t        num_rows;
-    magma_int_t        num_cols; 
-    magma_int_t        nnz; 
-    magma_int_t        max_nnz_row;
-    magma_int_t        diameter;
-    double             *val;
-    double             *diag;
-    magma_index_t      *row; 
-    magma_index_t      *rowidx; 
-    magma_index_t      *col;
-    magma_index_t      *blockinfo;
-    magma_int_t        blocksize;
-    magma_int_t        numblocks;
-    magma_int_t        alignment;
+    magma_storage_t    storage_type;            // matrix format - CSR, ELL, SELL-P
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_symmetry_t   sym;                     // opt: indicate symmetry
+    magma_diagorder_t  diagorder_type;          // opt: only needed for factorization matrices
+    magma_fillmode_t   fill_mode;               // fill mode full/lower/upper
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
+    magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    union {
+        double                  *val;           // array containing values in CPU case
+        magmaDouble_ptr         dval;           // array containing values in DEV case
+    };
+    union {
+        double                  *diag;          // opt: diagonal entries in CPU case
+        magmaDouble_ptr         ddiag;          // opt: diagonal entries in DEV case
+    };
+    union {
+        magma_index_t           *row;           // row pointer CPU case
+        magmaIndex_ptr          drow;           // row pointer DEV case
+    };
+    union {
+        magma_index_t           *rowidx;        // opt: array containing row indices CPU case
+        magmaIndex_ptr          drowidx;        // opt: array containing row indices DEV case
+    };
+    union {
+        magma_index_t           *col;           // array containing col indices CPU case
+        magmaIndex_ptr          dcol;           // array containing col indices DEV case
+    };
+    magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
+    magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
+    magma_int_t        numblocks;               // opt: info for SELL-P/BCSR
+    magma_int_t        alignment;               // opt: info for SELL-P/BCSR
 
 }magma_d_sparse_matrix;
 
 
 typedef struct magma_s_sparse_matrix{
 
-    magma_storage_t    storage_type;
-    magma_location_t   memory_location;
-    magma_symmetry_t   sym;
-    magma_diagorder_t  diagorder_type;
-    magma_int_t        num_rows;
-    magma_int_t        num_cols; 
-    magma_int_t        nnz; 
-    magma_int_t        max_nnz_row;
-    magma_int_t        diameter;
-    float              *val;
-    float              *diag;
-    magma_index_t      *row; 
-    magma_index_t      *rowidx; 
-    magma_index_t      *col;
-    magma_index_t      *blockinfo;
-    magma_int_t        blocksize;
-    magma_int_t        numblocks;
-    magma_int_t        alignment;
+    magma_storage_t    storage_type;            // matrix format - CSR, ELL, SELL-P
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_symmetry_t   sym;                     // opt: indicate symmetry
+    magma_diagorder_t  diagorder_type;          // opt: only needed for factorization matrices
+    magma_fillmode_t   fill_mode;               // fill mode full/lower/upper
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
+    magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    union {
+        float                   *val;           // array containing values in CPU case
+        magmaFloat_ptr          dval;           // array containing values in DEV case
+    };
+    union {
+        float                   *diag;          // opt: diagonal entries in CPU case
+        magmaFloat_ptr          ddiag;          // opt: diagonal entries in DEV case
+    };
+    union {
+        magma_index_t           *row;           // row pointer CPU case
+        magmaIndex_ptr          drow;           // row pointer DEV case
+    };
+    union {
+        magma_index_t           *rowidx;        // opt: array containing row indices CPU case
+        magmaIndex_ptr          drowidx;        // opt: array containing row indices DEV case
+    };
+    union {
+        magma_index_t           *col;           // array containing col indices CPU case
+        magmaIndex_ptr          dcol;           // array containing col indices DEV case
+    };
+    magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
+    magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
+    magma_int_t        numblocks;               // opt: info for SELL-P/BCSR
+    magma_int_t        alignment;               // opt: info for SELL-P/BCSR
 
 }magma_s_sparse_matrix;
 
@@ -130,39 +194,59 @@ typedef struct magma_s_sparse_matrix{
 
 typedef struct magma_z_vector{
 
-    magma_location_t   memory_location;
-    magma_int_t        num_rows;
-    magma_int_t        nnz; 
-    magmaDoubleComplex *val;
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns (in case of a block of vectors)
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    union {
+        magmaDoubleComplex      *val;           // array containing values in CPU case
+        magmaDoubleComplex_ptr  dval;           // array containing values in DEV case
+    };
+    magma_order_t      major;                   // storage type:Row/Column-Major
 
 }magma_z_vector;
 
 typedef struct magma_c_vector{
 
-    magma_location_t   memory_location;
-    magma_int_t        num_rows;
-    magma_int_t        nnz; 
-    magmaFloatComplex  *val;
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns (in case of a block of vectors)
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    union {
+        magmaFloatComplex       *val;           // array containing values in CPU case
+        magmaFloatComplex_ptr   dval;           // array containing values in DEV case
+    };
+    magma_order_t      major;                   // storage type:Row/Column-Major
 
 }magma_c_vector;
 
 
 typedef struct magma_d_vector{
 
-    magma_location_t   memory_location;
-    magma_int_t        num_rows;
-    magma_int_t        nnz; 
-    double             *val;
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns (in case of a block of vectors)
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    union {
+        double                  *val;           // array containing values in CPU case
+        magmaDouble_ptr         dval;           // array containing values in DEV case
+    };
+    magma_order_t      major;                   // storage type:Row/Column-Major
 
 }magma_d_vector;
 
 
 typedef struct magma_s_vector{
 
-    magma_location_t   memory_location;
-    magma_int_t        num_rows;
-    magma_int_t        nnz; 
-    float              *val;
+    magma_location_t   memory_location;         // CPU or DEV
+    magma_int_t        num_rows;                // number of rows
+    magma_int_t        num_cols;                // number of columns (in case of a block of vectors)
+    magma_int_t        nnz;                     // opt: number of nonzeros
+    union {
+        float                   *val;           // array containing values in CPU case
+        magmaFloat_ptr          dval;           // array containing values in DEV case
+    };
+    magma_order_t      major;                   // storage type:Row/Column-Major
 
 }magma_s_vector;
 
@@ -170,25 +254,25 @@ typedef struct magma_s_vector{
 
 typedef struct magma_z_solver_par{
 
-    magma_solver_type  solver;
-    magma_int_t        version;
-    double             epsilon;  
-    magma_int_t        maxiter;
-    magma_int_t        restart; 
-    magma_ortho_t      ortho;
-    magma_int_t        numiter;
-    double             init_res;
-    double             final_res;
-    double             iter_res;
-    real_Double_t      runtime;
-    real_Double_t      *res_vec;
-    real_Double_t      *timing;
-    magma_int_t        verbose;
-    magma_int_t        num_eigenvalues;
-    magma_int_t        ev_length;
-    double             *eigenvalues;
-    magmaDoubleComplex *eigenvectors;
-    magma_int_t        info;
+    magma_solver_type  solver;                  // solver type
+    magma_int_t        version;                 // sometimes there are different versions
+    double             epsilon;                 // relative residual stopping criterion
+    magma_int_t        maxiter;                 // upper iteration limit
+    magma_int_t        restart;                 // for GMRES
+    magma_ortho_t      ortho;                   // for GMRES
+    magma_int_t        numiter;                 // feedback: number of needed iterations
+    double             init_res;                // feedback: initial residual
+    double             final_res;               // feedback: final residual
+    double             iter_res;                // feedback: iteratively computed residual
+    real_Double_t      runtime;                 // feedback: runtime needed
+    real_Double_t      *res_vec;                // feedback: array containing residuals
+    real_Double_t      *timing;                 // feedback: detailed timing
+    magma_int_t        verbose;                 // print residual ever 'verbose' iterations
+    magma_int_t        num_eigenvalues;         // number of EV for eigensolvers
+    magma_int_t        ev_length;               // needed for framework
+    double             *eigenvalues;            // feedback: array containing eigenvalues
+    magmaDoubleComplex_ptr      eigenvectors;   // feedback: array containing eigenvectors on DEV
+    magma_int_t        info;                    // feedback: did the solver converge etc.
 
 //---------------------------------
 // the input for verbose is:
@@ -208,25 +292,25 @@ typedef struct magma_z_solver_par{
 
 typedef struct magma_c_solver_par{
 
-    magma_solver_type  solver;
-    magma_int_t        version;
-    float              epsilon;  
-    magma_int_t        maxiter;
-    magma_int_t        restart; 
-    magma_ortho_t      ortho;
-    magma_int_t        numiter;
-    float              init_res;
-    float              final_res;
-    float              iter_res;
-    real_Double_t      runtime;
-    real_Double_t      *res_vec;
-    real_Double_t      *timing;
-    magma_int_t        verbose;
-    magma_int_t        num_eigenvalues;
-    magma_int_t        ev_length;
-    float              *eigenvalues;
-    magmaFloatComplex  *eigenvectors;
-    magma_int_t        info;
+    magma_solver_type  solver;                  // solver type
+    magma_int_t        version;                 // sometimes there are different versions
+    float              epsilon;                 // relative residual stopping criterion
+    magma_int_t        maxiter;                 // upper iteration limit
+    magma_int_t        restart;                 // for GMRES
+    magma_ortho_t      ortho;                   // for GMRES
+    magma_int_t        numiter;                 // feedback: number of needed iterations
+    float              init_res;                // feedback: initial residual
+    float              final_res;               // feedback: final residual
+    float              iter_res;                // feedback: iteratively computed residual
+    real_Double_t      runtime;                 // feedback: runtime needed
+    real_Double_t      *res_vec;                // feedback: array containing residuals
+    real_Double_t      *timing;                 // feedback: detailed timing
+    magma_int_t        verbose;                 // print residual ever 'verbose' iterations
+    magma_int_t        num_eigenvalues;         // number of EV for eigensolvers
+    magma_int_t        ev_length;               // needed for framework
+    float              *eigenvalues;            // feedback: array containing eigenvalues
+    magmaFloatComplex_ptr       eigenvectors;   // feedback: array containing eigenvectors on DEV
+    magma_int_t        info;                    // feedback: did the solver converge etc.
 
 //---------------------------------
 // the input for verbose is:
@@ -246,25 +330,25 @@ typedef struct magma_c_solver_par{
 
 typedef struct magma_d_solver_par{
 
-    magma_solver_type  solver;
-    magma_int_t        version;
-    double             epsilon;  
-    magma_int_t        maxiter;
-    magma_int_t        restart; 
-    magma_ortho_t      ortho;
-    magma_int_t        numiter;
-    double             init_res;
-    double             final_res;
-    double             iter_res;
-    real_Double_t      runtime;
-    real_Double_t      *res_vec;
-    real_Double_t      *timing;
-    magma_int_t        verbose;
-    magma_int_t        num_eigenvalues;
-    magma_int_t        ev_length;
-    double             *eigenvalues;
-    double             *eigenvectors;
-    magma_int_t        info;
+    magma_solver_type  solver;                  // solver type
+    magma_int_t        version;                 // sometimes there are different versions
+    double             epsilon;                 // relative residual stopping criterion
+    magma_int_t        maxiter;                 // upper iteration limit
+    magma_int_t        restart;                 // for GMRES
+    magma_ortho_t      ortho;                   // for GMRES
+    magma_int_t        numiter;                 // feedback: number of needed iterations
+    double             init_res;                // feedback: initial residual
+    double             final_res;               // feedback: final residual
+    double             iter_res;                // feedback: iteratively computed residual
+    real_Double_t      runtime;                 // feedback: runtime needed
+    real_Double_t      *res_vec;                // feedback: array containing residuals
+    real_Double_t      *timing;                 // feedback: detailed timing
+    magma_int_t        verbose;                 // print residual ever 'verbose' iterations
+    magma_int_t        num_eigenvalues;         // number of EV for eigensolvers
+    magma_int_t        ev_length;               // needed for framework
+    double             *eigenvalues;            // feedback: array containing eigenvalues
+    magmaDouble_ptr             eigenvectors;   // feedback: array containing eigenvectors on DEV
+    magma_int_t        info;                    // feedback: did the solver converge etc.
 
 //---------------------------------
 // the input for verbose is:
@@ -284,25 +368,25 @@ typedef struct magma_d_solver_par{
 
 typedef struct magma_s_solver_par{
 
-    magma_solver_type  solver;
-    magma_int_t        version;
-    float              epsilon;  
-    magma_int_t        maxiter;
-    magma_int_t        restart; 
-    magma_ortho_t      ortho;
-    magma_int_t        numiter;
-    float              init_res;
-    float              final_res;
-    float              iter_res;
-    real_Double_t      runtime;
-    real_Double_t      *res_vec;
-    real_Double_t      *timing;
-    magma_int_t        verbose;
-    magma_int_t        num_eigenvalues;
-    magma_int_t        ev_length;
-    float              *eigenvalues;
-    float              *eigenvectors;
-    magma_int_t        info;
+    magma_solver_type  solver;                  // solver type
+    magma_int_t        version;                 // sometimes there are different versions
+    float              epsilon;                 // relative residual stopping criterion
+    magma_int_t        maxiter;                 // upper iteration limit
+    magma_int_t        restart;                 // for GMRES
+    magma_ortho_t      ortho;                   // for GMRES
+    magma_int_t        numiter;                 // feedback: number of needed iterations
+    float              init_res;                // feedback: initial residual
+    float              final_res;               // feedback: final residual
+    float              iter_res;                // feedback: iteratively computed residual
+    real_Double_t      runtime;                 // feedback: runtime needed
+    real_Double_t      *res_vec;                // feedback: array containing residuals
+    real_Double_t      *timing;                 // feedback: detailed timing
+    magma_int_t        verbose;                 // print residual ever 'verbose' iterations
+    magma_int_t        num_eigenvalues;         // number of EV for eigensolvers
+    magma_int_t        ev_length;               // needed for framework
+    float              *eigenvalues;            // feedback: array containing eigenvalues
+    magmaFloat_ptr              eigenvectors;   // feedback: array containing eigenvectors on DEV
+    magma_int_t        info;                    // feedback: did the solver converge etc.
 
 //---------------------------------
 // the input for verbose is:
@@ -311,9 +395,11 @@ typedef struct magma_s_solver_par{
 // k-th iteration 
 //
 // the output of info is:
-//  0 = convergence (stopping criterion met)
-// -1 = no convergence
-// -2 = convergence but stopping criterion not met within maxiter
+//       0          Success.
+//      -117        Not supported.
+//      -201        No convergence within iteration limit. 
+//      -202        No convergence.
+//      -203        Operator A is not positive definite.
 //--------------------------------
 
 }magma_s_solver_par;

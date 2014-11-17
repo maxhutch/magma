@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
-       @generated from zlanhe.cu normal z -> s, Tue Sep  2 12:38:15 2014
+       @generated from zlanhe.cu normal z -> s, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -15,12 +15,6 @@
 #define max_bs 64
 
 #define PRECISION_s
-
-
-__global__ void
-slansy_inf_kernel_generic_upper(
-    int n, const float* A, int lda, float *dwork,
-    int n_full_block, int n_mod_bs );
 
 
 /* ====================================================================== */
@@ -453,7 +447,9 @@ slansy_inf_kernel_generic_upper(
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf */
 extern "C" void
 slansy_inf(
-    magma_uplo_t uplo, int n, const float *A, int lda, float *dwork )
+    magma_uplo_t uplo, int n,
+    magmaFloat_const_ptr A, int lda,
+    magmaFloat_ptr dwork )
 {
     int blocks = (n - 1)/inf_bs + 1;
     dim3 grid(blocks, 1, 1);
@@ -521,7 +517,9 @@ slansy_max_kernel_upper(
 /* Computes dwork[i] = max( abs( A(i,:) )), i=0:n-1, for ||A||_max */
 extern "C" void
 slansy_max(
-    magma_uplo_t uplo, int n, const float *A, int lda, float *dwork )
+    magma_uplo_t uplo, int n,
+    magmaFloat_const_ptr A, int lda,
+    magmaFloat_ptr dwork )
 {
     int blocks = (n - 1)/max_bs + 1;
     dim3 grid(blocks, 1, 1);
@@ -606,7 +604,8 @@ slansy_max(
 extern "C" float
 magmablas_slansy(
     magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
-    const float *A, magma_int_t lda, float *dwork )
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dwork )
 {
     magma_int_t info = 0;
     magma_int_t arch = magma_getdevice_arch();
@@ -627,7 +626,7 @@ magmablas_slansy(
         info = -2;
     else if ( n < 0 )
         info = -3;
-    else if ( lda < n )
+    else if ( ldda < n )
         info = -5;
     
     if ( info != 0 ) {
@@ -641,10 +640,10 @@ magmablas_slansy(
         
     float res = 0;
     if ( inf_norm ) {
-        slansy_inf( uplo, n, A, lda, dwork );
+        slansy_inf( uplo, n, dA, ldda, dwork );
     }
     else {
-        slansy_max( uplo, n, A, lda, dwork );
+        slansy_max( uplo, n, dA, ldda, dwork );
     }
     int i = magma_isamax( n, dwork, 1 ) - 1;
     cudaMemcpy( &res, &dwork[i], sizeof(float), cudaMemcpyDeviceToHost );

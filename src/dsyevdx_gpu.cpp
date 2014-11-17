@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -14,8 +14,9 @@
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 
+#define REAL
 
 /**
     Purpose
@@ -166,15 +167,19 @@
     @ingroup magma_dsyev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_dsyevdx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
-                  magma_int_t n,
-                  double *dA, magma_int_t ldda,
-                  double vl, double vu, magma_int_t il, magma_int_t iu,
-                  magma_int_t *m, double *w,
-                  double *wA,  magma_int_t ldwa,
-                  double *work, magma_int_t lwork,
-                  magma_int_t *iwork, magma_int_t liwork,
-                  magma_int_t *info)
+magma_dsyevdx_gpu(
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
+    magma_int_t n,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    double vl, double vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, double *w,
+    double *wA,  magma_int_t ldwa,
+    double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     magma_int_t ione = 1;
 
@@ -199,7 +204,7 @@ magma_dsyevdx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     magma_int_t lquery;
     magma_int_t alleig, valeig, indeig;
 
-    double *dwork;
+    magmaDouble_ptr dwork;
     magma_int_t lddc = ldda;
 
     wantz = (jobz == MagmaVec);

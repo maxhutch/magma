@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -13,9 +13,10 @@
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 
 #define PRECISION_z
+#define COMPLEX
 
 /**
     Purpose
@@ -36,8 +37,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     itype   INTEGER
@@ -213,12 +214,19 @@
     @ingroup magma_zhegv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_zhegvdx_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-                magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex *B, magma_int_t ldb,
-                double vl, double vu, magma_int_t il, magma_int_t iu,
-                magma_int_t *m, double *w, magmaDoubleComplex *work, magma_int_t lwork,
-                double *rwork, magma_int_t lrwork,
-                magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)
+magma_zhegvdx_m(
+    magma_int_t ngpu,
+    magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex *B, magma_int_t ldb,
+    double vl, double vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, double *w,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
@@ -337,7 +345,7 @@ magma_zhegvdx_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_ra
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_zpotrf_m(nrgpu, uplo, n, B, ldb, info);
+    magma_zpotrf_m(ngpu, uplo, n, B, ldb, info);
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -348,13 +356,13 @@ magma_zhegvdx_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_ra
     timer_start( time );
 
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_zhegst_m(nrgpu, itype, uplo, n, A, lda, B, ldb, info);
+    magma_zhegst_m(ngpu, itype, uplo, n, A, lda, B, ldb, info);
 
     timer_stop( time );
     timer_printf( "time zhegst = %6.2f\n", time );
     timer_start( time );
 
-    magma_zheevdx_m(nrgpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info);
+    magma_zheevdx_m(ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info);
 
     timer_stop( time );
     timer_printf( "time zheevd = %6.2f\n", time );
@@ -372,7 +380,7 @@ magma_zhegvdx_m(magma_int_t nrgpu, magma_int_t itype, magma_vec_t jobz, magma_ra
                 trans = MagmaNoTrans;
             }
 
-            magma_ztrsm_m(nrgpu, MagmaLeft, uplo, trans, MagmaNonUnit,
+            magma_ztrsm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
                           n, *m, c_one, B, ldb, A, lda);
         }
         else if (itype == 3) {

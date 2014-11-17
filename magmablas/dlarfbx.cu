@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlarfbx.cu normal z -> d, Tue Sep  2 12:38:15 2014
+       @generated from zlarfbx.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -31,7 +31,7 @@ magma_dgemv_kernel1(int m, const double * __restrict__ V, int ldv,
     __shared__ double sum[ BLOCK_SIZE ];
     double lsum;
 
-    /*  lsum := v' * C  */
+    /*  lsum := v**H * C  */
     lsum = MAGMA_D_ZERO;
     for( int j = i; j < m; j += BLOCK_SIZE )
        lsum += MAGMA_D_MUL( MAGMA_D_CNJG( dV[j] ), c[j] );
@@ -52,7 +52,7 @@ magma_dgemv_kernel1(int m, const double * __restrict__ V, int ldv,
         DGEMV( "Conjugate transpose", m, n, -tau[0], V, ldv, c, 1, zero, dwork, 1)
         and to set c[0] to 1.
     i.e., 
-        work = -tau[0] V' c
+        work = -tau[0] V**H c
     ----------------------------------------------------------------------------- */
 extern "C"
 __global__ void
@@ -68,7 +68,7 @@ magma_dgemv_kernel3(int m, const double * __restrict__ V, int ldv, double *c,
     if (i==0)
        c[0] = MAGMA_D_ONE;           
 
-    /*  lsum := v' * C  */
+    /*  lsum := v**H * C  */
     lsum = MAGMA_D_ZERO;
     for( int j = i; j < m; j += BLOCK_SIZE )
        lsum += MAGMA_D_MUL( MAGMA_D_CNJG( dV[j] ), c[j] );
@@ -107,23 +107,26 @@ magma_dgemv_kernel2(int m, int n, const double * __restrict__ V, int ldv,
 /*
     Apply a real block reflector H to a real vector C from the left
     (i.e., C = H C). H is represented in the form
-          H = I - V T V'
+          H = I - V T V**H
     where T is the real k-by-k upper triangular matrix in the 
     representation of the block reflector, and V is a real block of
     k elementary reflectors. 
 */
 extern "C" void
-magma_dlarfbx_gpu(magma_int_t m, magma_int_t k, double *V, magma_int_t ldv,
-                  double *T, magma_int_t ldt, double *c,
-                  double *dwork)
+magma_dlarfbx_gpu(
+    magma_int_t m, magma_int_t k,
+    magmaDouble_ptr V,  magma_int_t ldv,
+    magmaDouble_ptr dT, magma_int_t ldt,
+    magmaDouble_ptr c,
+    magmaDouble_ptr dwork)
 {
-    /* dwork = V' c                   */
+    /* dwork = V**H c     */
     magma_dgemv_kernel1<<< k, BLOCK_SIZE, 0, magma_stream >>>(m, V, ldv, c, dwork); 
 
-    /* dwork = T' dwork               */
-    magma_dtrmv_tkernel<<< k, k, 0, magma_stream >>>( T, ldt, dwork, dwork+k);
+    /* dwork = T**H dwork */
+    magma_dtrmv_tkernel<<< k, k, 0, magma_stream >>>( dT, ldt, dwork, dwork+k);
  
-    /* c = c - V dwork                */
+    /* c = c - V dwork    */
     dim3  blocks3( (m + BLOCK_SIZE-1) / BLOCK_SIZE );
     dim3 threads3( BLOCK_SIZE );     
     magma_dgemv_kernel2<<< blocks3, threads3, 0, magma_stream >>>( m, k, V, ldv, dwork+k, c);

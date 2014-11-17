@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from magma_zlapack.h normal z -> c, Tue Sep  2 12:38:14 2014
+       @generated from magma_zlapack.h normal z -> c, Sat Nov 15 19:53:54 2014
 */
 
 #ifndef MAGMA_CLAPACK_H
@@ -79,6 +79,7 @@ extern "C" {
 #define lapackf77_cgetrf   FORTRAN_NAME( cgetrf, CGETRF )
 #define lapackf77_cgetri   FORTRAN_NAME( cgetri, CGETRI )
 #define lapackf77_cgetrs   FORTRAN_NAME( cgetrs, CGETRS )
+#define lapackf77_chetf2   FORTRAN_NAME( chetf2, CHETF2 )
 #define lapackf77_chetrs   FORTRAN_NAME( chetrs, CHETRS )
 #define lapackf77_chbtrd   FORTRAN_NAME( chbtrd, CHBTRD )
 #define lapackf77_cheev    FORTRAN_NAME( cheev,  CHEEV  )
@@ -88,6 +89,7 @@ extern "C" {
 #define lapackf77_chegs2   FORTRAN_NAME( chegs2, CHEGS2 )
 #define lapackf77_chegst   FORTRAN_NAME( chegst, CHEGST )
 #define lapackf77_chegvd   FORTRAN_NAME( chegvd, CHEGVD )
+#define lapackf77_chesv    FORTRAN_NAME( chesv,  CHESV  )
 #define lapackf77_chetd2   FORTRAN_NAME( chetd2, CHETD2 )
 #define lapackf77_chetrd   FORTRAN_NAME( chetrd, CHETRD )
 #define lapackf77_chetrf   FORTRAN_NAME( chetrf, CHETRF )
@@ -283,18 +285,18 @@ void blasf77_csyrk(  const char *uplo, const char *trans,
                      const magmaFloatComplex *beta,
                            magmaFloatComplex *C, const magma_int_t *ldc );
 
-void blasf77_crotg(  magmaFloatComplex* ca, const magmaFloatComplex* cb,
-                     float* c, magmaFloatComplex* s );
+void blasf77_crotg(  magmaFloatComplex *ca, const magmaFloatComplex *cb,
+                     float *c, magmaFloatComplex *s );
                      
-void blasf77_crot(   const magma_int_t* n,
-                     magmaFloatComplex* x, const magma_int_t* incx,
-                     magmaFloatComplex* y, const magma_int_t* incy,
-                     const float* c, const magmaFloatComplex* s );
+void blasf77_crot(   const magma_int_t *n,
+                     magmaFloatComplex *x, const magma_int_t *incx,
+                     magmaFloatComplex *y, const magma_int_t *incy,
+                     const float *c, const magmaFloatComplex *s );
                      
-void blasf77_csrot(  const magma_int_t* n,
-                     magmaFloatComplex* x, const magma_int_t* incx,
-                     magmaFloatComplex* y, const magma_int_t* incy,
-                     const float* c, const float* s );
+void blasf77_csrot(  const magma_int_t *n,
+                     magmaFloatComplex *x, const magma_int_t *incx,
+                     magmaFloatComplex *y, const magma_int_t *incy,
+                     const float *c, const float *s );
 
 void blasf77_ctrmm(  const char *side, const char *uplo, const char *transa, const char *diag,
                      const magma_int_t *m, const magma_int_t *n,
@@ -347,7 +349,7 @@ magmaFloatComplex magma_cblas_cdotu(
  * LAPACK functions (alphabetical order)
  */
 #ifdef REAL
-void   lapackf77_sbdsdc( const char *uplo, const char* compq,
+void   lapackf77_sbdsdc( const char *uplo, const char *compq,
                          const magma_int_t *n,
                          float *d, float *e,
                          float *U,  const magma_int_t *ldu,
@@ -523,6 +525,9 @@ void   lapackf77_cgetrs( const char *trans,
                          magmaFloatComplex *B, const magma_int_t *ldb,
                          magma_int_t *info );
 
+void   lapackf77_chetf2( const char*, magma_int_t*, 
+                         magmaFloatComplex*, magma_int_t*, magma_int_t*, magma_int_t* );
+
 void   lapackf77_chetrs( const char *uplo,
                          const magma_int_t *n, const magma_int_t *nrhs,
                          const magmaFloatComplex *A, const magma_int_t *lda,
@@ -602,6 +607,13 @@ void   lapackf77_chegvd( const magma_int_t *itype, const char *jobz, const char 
                          #endif
                          magma_int_t *iwork, const magma_int_t *liwork,
                          magma_int_t *info );
+
+void   lapackf77_chesv( const char *uplo, 
+                        const magma_int_t *n, const magma_int_t *nrhs,
+                        magmaFloatComplex *A, const magma_int_t *lda, magma_int_t *ipiv,
+                        magmaFloatComplex *B, const magma_int_t *ldb,
+                        magmaFloatComplex *work, const magma_int_t *lwork,
+                        magma_int_t *info );
 
 void   lapackf77_chetd2( const char *uplo,
                          const magma_int_t *n,

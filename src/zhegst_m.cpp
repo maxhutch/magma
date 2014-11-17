@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -36,8 +36,8 @@ static void magma_zhegst_m_1_U_row_update(magma_int_t nk, magma_int_t nb, magmaD
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     itype   INTEGER
@@ -88,9 +88,12 @@ static void magma_zhegst_m_1_U_row_update(magma_int_t nk, magma_int_t nb, magmaD
     @ingroup magma_zheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
-               magmaDoubleComplex *A, magma_int_t lda,
-               magmaDoubleComplex *B, magma_int_t ldb, magma_int_t *info)
+magma_zhegst_m(
+    magma_int_t ngpu,
+    magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda,
+    magmaDoubleComplex *B, magma_int_t ldb,
+    magma_int_t *info)
 {
 #define A(i, j) (A + (j)*nb*lda + (i)*nb)
 #define B(i, j) (B + (j)*nb*ldb + (i)*nb)
@@ -148,16 +151,16 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
     magma_int_t dima = 0;
 
     if ( (itype == 1 && upper) || (itype != 1 && !upper) ) {
-        ldda = ((nbl-1)/nrgpu+1)*nb;
+        ldda = ((nbl-1)/ngpu+1)*nb;
         dima = n;
     } else {
         ldda = n;
-        dima = ((nbl-1)/nrgpu+1)*nb;
+        dima = ((nbl-1)/ngpu+1)*nb;
     }
     magma_int_t lddbr = 2 * nb;
     magma_int_t lddbc = n;
 
-    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
         magma_setdevice(igpu);
 
         if (MAGMA_SUCCESS != magma_zmalloc( &dw[igpu], (dima*ldda + lddbc*lddbr + n*nb) )) {
@@ -179,12 +182,12 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
             //copy A to mgpu
             for (magma_int_t k = 0; k < nbl; ++k) {
-                magma_int_t igpu = k%nrgpu;
+                magma_int_t igpu = k%ngpu;
                 magma_setdevice(igpu);
                 magma_int_t kb = min(nb, n-k*nb);
                 magma_zsetmatrix_async(kb, n-k*nb,
                                        A(k, k),              lda,
-                                       dA(igpu, k/nrgpu, k), ldda, stream[igpu][0] );
+                                       dA(igpu, k/ngpu, k), ldda, stream[igpu][0] );
             }
 
             for (magma_int_t k = 0; k < nbl; ++k) {
@@ -193,7 +196,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 magma_int_t kb= min(n-k*nb,nb);
 
                 // Copy B panel
-                for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                     magma_setdevice(igpu);
                     magma_queue_sync( stream[igpu][0] ); // sync previous B panel copy
 
@@ -205,7 +208,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                                            dB_r(igpu, ind_k, k), lddbr, stream[igpu][0] );
                 }
 
-                magma_int_t igpu_p = k%nrgpu;
+                magma_int_t igpu_p = k%ngpu;
 
                 if (k > 0) {
                     // Update the next panel
@@ -216,29 +219,29 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_zher2k(MagmaUpper, MagmaConjTrans, kb, nb,
                                  c_neg_one, dwork(igpu_p, 0, k), nb, dB_r(igpu_p, ind_k1, k), lddbr,
-                                 d_one, dA(igpu_p, k/nrgpu, k), ldda);
+                                 d_one, dA(igpu_p, k/ngpu, k), ldda);
 
                     // copy Akk block on the CPU
                     magma_zgetmatrix_async(kb, kb,
-                                           dA(igpu_p, k/nrgpu, k), ldda,
+                                           dA(igpu_p, k/ngpu, k), ldda,
                                            A(k, k),                lda, stream[igpu_p][2] );
 
                     magma_event_record( event[igpu_p][0], stream[igpu_p][2]);
 
                     magma_zgemm(MagmaConjTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dwork(igpu_p, 0, k), nb,
-                                dB_r(igpu_p, ind_k1, k+1), lddbr, c_one, dA(igpu_p, k/nrgpu, k+1), ldda );
+                                dB_r(igpu_p, ind_k1, k+1), lddbr, c_one, dA(igpu_p, k/ngpu, k+1), ldda );
 
                     magma_zgemm(MagmaConjTrans, MagmaNoTrans, kb, nk-kb, nb, c_neg_one, dB_r(igpu_p, ind_k1, k), lddbr,
-                                dwork(igpu_p, 0, k+1), nb, c_one, dA(igpu_p, k/nrgpu, k+1), ldda );
+                                dwork(igpu_p, 0, k+1), nb, c_one, dA(igpu_p, k/ngpu, k+1), ldda );
 
                     // Update the panels of the other GPUs
                     for (magma_int_t j=k+1; j < nbl; ++j) {
-                        magma_int_t igpu = j%nrgpu;
+                        magma_int_t igpu = j%ngpu;
                         if (igpu != igpu_p) {
                             magma_setdevice(igpu);
                             magmablasSetKernelStream(stream[igpu][1]);
 
-                            magma_zhegst_m_1_U_row_update(n-j*nb, nb, dA(igpu, j/nrgpu, j), ldda,
+                            magma_zhegst_m_1_U_row_update(n-j*nb, nb, dA(igpu, j/ngpu, j), ldda,
                                                           dwork(igpu, 0, j), nb, dB_r(igpu, ind_k1, j), lddbr); // zher2k on j-th row
                         }
                     }
@@ -253,7 +256,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     magma_ztrsm(MagmaLeft, uplo, MagmaConjTrans, MagmaNonUnit,
                                 kb, n-(k+1)*nb,
                                 c_one, dB_r(igpu_p, ind_k, k), lddbr,
-                                dA(igpu_p, k/nrgpu, k+1), ldda);
+                                dA(igpu_p, k/ngpu, k+1), ldda);
                 }
 
                 magma_event_sync( event[igpu_p][0] ); // sync Akk copy
@@ -262,26 +265,26 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 if (k+1 < nbl) {
                     magma_zsetmatrix_async(kb, kb,
                                            A(k, k),              lda,
-                                           dA(igpu_p, k/nrgpu, k), ldda, stream[igpu_p][2] );
+                                           dA(igpu_p, k/ngpu, k), ldda, stream[igpu_p][2] );
 
                     magma_zhemm(MagmaLeft, uplo,
                                 kb, n-(k+1)*nb,
-                                c_neg_half, dA(igpu_p, k/nrgpu, k), ldda,
+                                c_neg_half, dA(igpu_p, k/ngpu, k), ldda,
                                 dB_r(igpu_p, ind_k, k+1), lddbr,
-                                c_one, dA(igpu_p, k/nrgpu, k+1), ldda);
+                                c_one, dA(igpu_p, k/ngpu, k+1), ldda);
 
                     magma_zgetmatrix_async(kb, n-(k+1)*nb,
-                                           dA(igpu_p, k/nrgpu, k+1), ldda,
+                                           dA(igpu_p, k/ngpu, k+1), ldda,
                                            A(k, k+1),                lda, stream[igpu_p][2] );
                 }
 
                 if (k > 0) {
                     // Update the remaining panels of GPU igpu_p
-                    for (magma_int_t j=k+nrgpu; j < nbl; j += nrgpu) {
+                    for (magma_int_t j=k+ngpu; j < nbl; j += ngpu) {
                         magma_setdevice(igpu_p);
                         magmablasSetKernelStream(stream[igpu_p][1]);
 
-                        magma_zhegst_m_1_U_row_update(n-j*nb, nb, dA(igpu_p, j/nrgpu, j), ldda,
+                        magma_zhegst_m_1_U_row_update(n-j*nb, nb, dA(igpu_p, j/ngpu, j), ldda,
                                                       dwork(igpu_p, 0, j), nb, dB_r(igpu_p, ind_k1, j), lddbr); // zher2k on j-th row
                     }
                 }
@@ -291,7 +294,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     magma_setdevice(igpu_p);
                     magma_queue_sync( stream[igpu_p][2] );
 
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
                         magma_zsetmatrix_async(kb, n-(k+1)*nb,
                                                A(k, k+1),          lda,
@@ -305,13 +308,13 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_zhemm(MagmaLeft, uplo,
                                 kb, n-(k+1)*nb,
-                                c_neg_half, dA(igpu_p, k/nrgpu, k), ldda,
+                                c_neg_half, dA(igpu_p, k/ngpu, k), ldda,
                                 dB_r(igpu_p, ind_k, k+1), lddbr,
-                                c_one, dA(igpu_p, k/nrgpu, k+1), ldda);
+                                c_one, dA(igpu_p, k/ngpu, k+1), ldda);
                 }
             }
 
-            for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+            for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                 magma_queue_sync( stream[igpu][1] );
             }
 
@@ -319,11 +322,11 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 magma_int_t nloc[MagmaMaxGPUs] = { 0 };
 
                 for (magma_int_t j = 1; j < nbl; ++j) {
-                    nloc[(j-1)%nrgpu] += nb;
+                    nloc[(j-1)%ngpu] += nb;
 
                     magma_int_t jb = min(nb, n-j*nb);
 
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
                         if (nloc[igpu] > 0) {
                             magma_zsetmatrix_async(jb, n-j*nb,
@@ -345,11 +348,11 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     }
 
                     for (magma_int_t k = 0; k < j; ++k) {
-                        magma_int_t igpu = k%nrgpu;
+                        magma_int_t igpu = k%ngpu;
                         magma_setdevice(igpu);
                         magma_int_t kb = min(nb, n-k*nb);
                         magma_zgetmatrix_async(kb, jb,
-                                               dA(igpu, k/nrgpu, j), ldda,
+                                               dA(igpu, k/ngpu, j), ldda,
                                                A(k, j),              lda, stream[igpu][j%2] );
                     }
                 }
@@ -359,12 +362,12 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
             // Copy A to mgpu
             for (magma_int_t k = 0; k < nbl; ++k) {
-                magma_int_t igpu = k%nrgpu;
+                magma_int_t igpu = k%ngpu;
                 magma_setdevice(igpu);
                 magma_int_t kb = min(nb, n-k*nb);
                 magma_zsetmatrix_async((n-k*nb), kb,
                                        A(k, k),              lda,
-                                       dA(igpu, k, k/nrgpu), ldda, stream[igpu][0] );
+                                       dA(igpu, k, k/ngpu), ldda, stream[igpu][0] );
             }
 
             for (magma_int_t k = 0; k < nbl; ++k) {
@@ -373,7 +376,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 magma_int_t kb= min(n-k*nb,nb);
 
                 // Copy B panel
-                for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                     magma_setdevice(igpu);
                     magma_queue_sync( stream[igpu][0] ); // sync previous B panel copy
 
@@ -385,7 +388,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                                            dB_c(igpu, k, ind_k), lddbc, stream[igpu][0] );
                 }
 
-                magma_int_t igpu_p = k%nrgpu;
+                magma_int_t igpu_p = k%ngpu;
 
                 if (k > 0) {
                     // Update the next panel
@@ -396,29 +399,29 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_zher2k(MagmaLower, MagmaNoTrans, kb, nb,
                                  c_neg_one, dwork(igpu_p, k, 0), n, dB_c(igpu_p, k, ind_k1), lddbc,
-                                 d_one, dA(igpu_p, k, k/nrgpu), ldda);
+                                 d_one, dA(igpu_p, k, k/ngpu), ldda);
 
                     // copy Akk block on the CPU
                     magma_zgetmatrix_async(kb, kb,
-                                           dA(igpu_p, k, k/nrgpu), ldda,
+                                           dA(igpu_p, k, k/ngpu), ldda,
                                            A(k, k),                lda, stream[igpu_p][2] );
 
                     magma_event_record( event[igpu_p][0], stream[igpu_p][2]);
 
                     magma_zgemm(MagmaNoTrans, MagmaConjTrans, nk-kb, kb, nb, c_neg_one, dwork(igpu_p, k+1, 0), n,
-                                dB_c(igpu_p, k, ind_k1), lddbc, c_one, dA(igpu_p, k+1, k/nrgpu), ldda );
+                                dB_c(igpu_p, k, ind_k1), lddbc, c_one, dA(igpu_p, k+1, k/ngpu), ldda );
 
                     magma_zgemm(MagmaNoTrans, MagmaConjTrans, nk-kb, kb, nb, c_neg_one, dB_c(igpu_p, k+1, ind_k1), lddbc,
-                                dwork(igpu_p, k, 0), n, c_one, dA(igpu_p, k+1, k/nrgpu), ldda );
+                                dwork(igpu_p, k, 0), n, c_one, dA(igpu_p, k+1, k/ngpu), ldda );
 
                     // Update the panels of the other GPUs
                     for (magma_int_t j=k+1; j < nbl; ++j) {
-                        magma_int_t igpu = j%nrgpu;
+                        magma_int_t igpu = j%ngpu;
                         if (igpu != igpu_p) {
                             magma_setdevice(igpu);
                             magmablasSetKernelStream(stream[igpu][1]);
 
-                            magma_zhegst_m_1_L_col_update(n-j*nb, nb, dA(igpu, j, j/nrgpu), ldda,
+                            magma_zhegst_m_1_L_col_update(n-j*nb, nb, dA(igpu, j, j/ngpu), ldda,
                                                           dwork(igpu, j, 0), n, dB_c(igpu, j, ind_k1), lddbc); // zher2k on j-th column
                         }
                     }
@@ -433,7 +436,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     magma_ztrsm(MagmaRight, uplo, MagmaConjTrans, MagmaNonUnit,
                                 n-(k+1)*nb, kb,
                                 c_one, dB_c(igpu_p, k, ind_k), lddbc,
-                                dA(igpu_p, k+1, k/nrgpu), ldda);
+                                dA(igpu_p, k+1, k/ngpu), ldda);
                 }
 
                 magma_event_sync( event[igpu_p][0] ); // sync Akk copy
@@ -442,26 +445,26 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 if (k+1 < nbl) {
                     magma_zsetmatrix_async(kb, kb,
                                            A(k, k),                lda,
-                                           dA(igpu_p, k, k/nrgpu), ldda, stream[igpu_p][2] );
+                                           dA(igpu_p, k, k/ngpu), ldda, stream[igpu_p][2] );
 
                     magma_zhemm(MagmaRight, uplo,
                                 n-(k+1)*nb, kb,
-                                c_neg_half, dA(igpu_p, k, k/nrgpu), ldda,
+                                c_neg_half, dA(igpu_p, k, k/ngpu), ldda,
                                 dB_c(igpu_p, k+1, ind_k), lddbc,
-                                c_one, dA(igpu_p, k+1, k/nrgpu), ldda);
+                                c_one, dA(igpu_p, k+1, k/ngpu), ldda);
 
                     magma_zgetmatrix_async(n-(k+1)*nb, kb,
-                                           dA(igpu_p, k+1, k/nrgpu), ldda,
+                                           dA(igpu_p, k+1, k/ngpu), ldda,
                                            A(k+1, k),                lda, stream[igpu_p][2] );
                 }
 
                 if (k > 0) {
                     // Update the remaining panels of GPU igpu_p
-                    for (magma_int_t j=k+nrgpu; j < nbl; j += nrgpu) {
+                    for (magma_int_t j=k+ngpu; j < nbl; j += ngpu) {
                         magma_setdevice(igpu_p);
                         magmablasSetKernelStream(stream[igpu_p][1]);
 
-                        magma_zhegst_m_1_L_col_update(n-j*nb, nb, dA(igpu_p, j, j/nrgpu), ldda,
+                        magma_zhegst_m_1_L_col_update(n-j*nb, nb, dA(igpu_p, j, j/ngpu), ldda,
                                                       dwork(igpu_p, j, 0), n, dB_c(igpu_p, j, ind_k1), lddbc); // zher2k on j-th column
                     }
                 }
@@ -471,7 +474,7 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     magma_setdevice(igpu_p);
                     magma_queue_sync( stream[igpu_p][2] );
 
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
                         magma_zsetmatrix_async((n-(k+1)*nb), kb,
                                                A(k+1, k),          lda,
@@ -485,13 +488,13 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_zhemm(MagmaRight, uplo,
                                 n-(k+1)*nb, kb,
-                                c_neg_half, dA(igpu_p, k, k/nrgpu), ldda,
+                                c_neg_half, dA(igpu_p, k, k/ngpu), ldda,
                                 dB_c(igpu_p, k+1, ind_k), lddbc,
-                                c_one, dA(igpu_p, k+1, k/nrgpu), ldda);
+                                c_one, dA(igpu_p, k+1, k/ngpu), ldda);
                 }
             }
 
-            for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+            for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                 magma_queue_sync( stream[igpu][1] );
             }
 
@@ -499,11 +502,11 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 magma_int_t nloc[MagmaMaxGPUs] = { 0 };
 
                 for (magma_int_t j = 1; j < nbl; ++j) {
-                    nloc[(j-1)%nrgpu] += nb;
+                    nloc[(j-1)%ngpu] += nb;
 
                     magma_int_t jb = min(nb, n-j*nb);
 
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
                         if (nloc[igpu] > 0) {
                             magma_zsetmatrix_async((n-j*nb), jb,
@@ -525,11 +528,11 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                     }
 
                     for (magma_int_t k = 0; k < j; ++k) {
-                        magma_int_t igpu = k%nrgpu;
+                        magma_int_t igpu = k%ngpu;
                         magma_setdevice(igpu);
                         magma_int_t kb = min(nb, n-k*nb);
                         magma_zgetmatrix_async(jb, kb,
-                                               dA(igpu, j, k/nrgpu), ldda,
+                                               dA(igpu, j, k/ngpu), ldda,
                                                A(j, k),              lda, stream[igpu][j%2] );
                     }
                 }
@@ -545,27 +548,27 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                 for (magma_int_t j = 0; j < nbl; ++j) {
                     magma_int_t jb = min(nb, n-j*nb);
-                    nloc[j%nrgpu] += jb;
+                    nloc[j%ngpu] += jb;
                 }
 
                 for (magma_int_t k = 0; k < nbl; ++k) {
                     magma_int_t kb = min(nb, n-k*nb);
 
                     for (magma_int_t j = k; j < nbl; ++j) {
-                        magma_int_t igpu = j%nrgpu;
+                        magma_int_t igpu = j%ngpu;
                         magma_setdevice(igpu);
                         magma_int_t jb = min(nb, n-j*nb);
                         magma_zsetmatrix_async(kb, jb,
                                                A(k, j),              lda,
-                                               dA(igpu, k, j/nrgpu), ldda, stream[igpu][k%2] );
+                                               dA(igpu, k, j/ngpu), ldda, stream[igpu][k%2] );
                     }
 
-                    magma_int_t igpu_p = k % nrgpu;
+                    magma_int_t igpu_p = k % ngpu;
 
                     ++iloc[igpu_p];
                     nloc[igpu_p] -= kb;
 
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
                         magma_zsetmatrix_async(k*nb + kb, kb,
                                                B(0, k),            ldb,
@@ -578,9 +581,9 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                         if (igpu == igpu_p) {
                             magma_zhemm(MagmaRight, uplo,
                                         k*nb, kb,
-                                        c_half, dA(igpu, k, k/nrgpu), ldda,
+                                        c_half, dA(igpu, k, k/ngpu), ldda,
                                         dB_c(igpu, 0, k%2), lddbc,
-                                        c_one, dA(igpu, 0, k/nrgpu), ldda);
+                                        c_one, dA(igpu, 0, k/ngpu), ldda);
                         }
 
                         magma_zgemm(MagmaNoTrans, MagmaNoTrans, k*nb, nloc[igpu], kb, c_one, dB_c(igpu, 0, k%2), lddbc,
@@ -593,14 +596,14 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                         if (igpu == igpu_p) {
                             magma_zgetmatrix_async(k*nb, kb,
-                                                   dA(igpu, 0, k/nrgpu), ldda,
+                                                   dA(igpu, 0, k/ngpu), ldda,
                                                    A(0, k),              lda, stream[igpu][k%2] );
                         }
                     }
                 }
             }
 
-            for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+            for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                 magma_queue_sync( stream[igpu][0] );
                 magma_queue_sync( stream[igpu][1] );
             }
@@ -610,10 +613,10 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 magma_int_t ind_k1 = (k+1) % 2;
                 magma_int_t kb= min(n-k*nb,nb);
 
-                magma_int_t igpu_p = k%nrgpu;
+                magma_int_t igpu_p = k%ngpu;
 
                 if (k > 0) {
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
 
                         magma_queue_wait_event( stream[igpu][0], event[igpu][ind_k] ); // sync computation that use the B panel of next copy
@@ -639,20 +642,20 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_zhemm(MagmaRight, uplo,
                                 k*nb, kb,
-                                c_half, dA(igpu_p, k, k/nrgpu), ldda,
+                                c_half, dA(igpu_p, k, k/ngpu), ldda,
                                 dB_c(igpu_p, 0, ind_k), lddbc,
-                                c_one, dA(igpu_p, 0, k/nrgpu), ldda);
+                                c_one, dA(igpu_p, 0, k/ngpu), ldda);
 
                     magma_ztrmm(MagmaRight, uplo, MagmaConjTrans, MagmaNonUnit,
                                 k*nb, kb,
                                 c_one, dB_c(igpu_p, k, ind_k), lddbc,
-                                dA(igpu_p, 0, k/nrgpu), ldda);
+                                dA(igpu_p, 0, k/ngpu), ldda);
 
                     magma_event_record(event[igpu_p][ind_k], stream[igpu_p][2]);
                     magma_queue_wait_event(stream[igpu_p][1], event[igpu_p][ind_k]);
 
                     for (magma_int_t j = 0; j < k; ++j) {
-                        magma_int_t igpu = j%nrgpu;
+                        magma_int_t igpu = j%ngpu;
                         magma_setdevice(igpu);
                         magmablasSetKernelStream(stream[igpu][1]);
 
@@ -660,17 +663,17 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                                      nb, kb,
                                      c_one, dwork(igpu, j, 0), n,
                                      dB_c(igpu, j, ind_k), lddbc,
-                                     d_one, dA(igpu, j, j/nrgpu), ldda);
+                                     d_one, dA(igpu, j, j/ngpu), ldda);
 
                         magma_zgemm(MagmaNoTrans, MagmaConjTrans, j*nb, nb, kb, c_one, dB_c(igpu, 0, ind_k), lddbc,
-                                    dwork(igpu, j, 0), n, c_one, dA(igpu, 0, j/nrgpu), ldda );
+                                    dwork(igpu, j, 0), n, c_one, dA(igpu, 0, j/ngpu), ldda );
 
                         magma_zgemm(MagmaNoTrans, MagmaConjTrans, j*nb, nb, kb, c_one, dwork(igpu, 0, 0), n,
-                                    dB_c(igpu, j, ind_k), lddbc, c_one, dA(igpu, 0, j/nrgpu), ldda );
+                                    dB_c(igpu, j, ind_k), lddbc, c_one, dA(igpu, 0, j/ngpu), ldda );
                     }
                 }
 
-                for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                     magma_setdevice(igpu);
                     magma_event_record(event[igpu][ind_k], stream[igpu][1]);
                     magma_queue_sync(stream[igpu][0]); // sync B copy (conflicts with zhegst)
@@ -682,20 +685,20 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                 magma_zsetmatrix_async(kb, kb,
                                        A(k, k),                lda,
-                                       dA(igpu_p, k, k/nrgpu), ldda, stream[igpu_p][1] );
+                                       dA(igpu_p, k, k/ngpu), ldda, stream[igpu_p][1] );
             }
 
-            for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+            for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                 magma_queue_sync( stream[igpu][1] );
             }
 
             //copy A from mgpus
             for (magma_int_t j = 0; j < nbl; ++j) {
-                magma_int_t igpu = j%nrgpu;
+                magma_int_t igpu = j%ngpu;
                 magma_setdevice(igpu);
                 magma_int_t jb = min(nb, n-j*nb);
                 magma_zgetmatrix_async(j*nb+jb, jb,
-                                       dA(igpu, 0, j/nrgpu), ldda,
+                                       dA(igpu, 0, j/ngpu), ldda,
                                        A(0, j),              lda, stream[igpu][0] );
             }
         } else {
@@ -707,28 +710,28 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                 for (magma_int_t j = 0; j < nbl; ++j) {
                     magma_int_t jb = min(nb, n-j*nb);
-                    nloc[j%nrgpu] += jb;
+                    nloc[j%ngpu] += jb;
                 }
 
                 for (magma_int_t k = 0; k < nbl; ++k) {
                     magma_int_t kb = min(nb, n-k*nb);
 
                     for (magma_int_t j = k; j < nbl; ++j) {
-                        magma_int_t igpu = j%nrgpu;
+                        magma_int_t igpu = j%ngpu;
                         magma_setdevice(igpu);
                         magma_int_t jb = min(nb, n-j*nb);
 
                         magma_zsetmatrix_async(jb, kb,
                                                A(j, k),              lda,
-                                               dA(igpu, j/nrgpu, k), ldda, stream[igpu][k%2] );
+                                               dA(igpu, j/ngpu, k), ldda, stream[igpu][k%2] );
                     }
 
-                    magma_int_t igpu_p = k % nrgpu;
+                    magma_int_t igpu_p = k % ngpu;
 
                     ++iloc[igpu_p];
                     nloc[igpu_p] -= kb;
 
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
                         magma_zsetmatrix_async(kb, k*nb +kb,
                                                B(k, 0),            ldb,
@@ -741,9 +744,9 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                         if (igpu == igpu_p) {
                             magma_zhemm(MagmaLeft, uplo,
                                         kb, k*nb,
-                                        c_half, dA(igpu, k/nrgpu, k), ldda,
+                                        c_half, dA(igpu, k/ngpu, k), ldda,
                                         dB_r(igpu, k%2, 0), lddbr,
-                                        c_one, dA(igpu, k/nrgpu, 0), ldda);
+                                        c_one, dA(igpu, k/ngpu, 0), ldda);
                         }
 
                         magma_zgemm(MagmaNoTrans, MagmaNoTrans, nloc[igpu], k*nb, kb, c_one, dA(igpu, iloc[igpu], k), ldda,
@@ -756,14 +759,14 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                         if (igpu == igpu_p) {
                             magma_zgetmatrix_async(kb, k*nb,
-                                                   dA(igpu, k/nrgpu, 0), ldda,
+                                                   dA(igpu, k/ngpu, 0), ldda,
                                                    A(k, 0),              lda, stream[igpu][k%2] );
                         }
                     }
                 }
             }
 
-            for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+            for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                 magma_queue_sync( stream[igpu][0] );
                 magma_queue_sync( stream[igpu][1] );
             }
@@ -773,10 +776,10 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                 magma_int_t ind_k1 = (k+1) % 2;
                 magma_int_t kb= min(n-k*nb,nb);
 
-                magma_int_t igpu_p = k%nrgpu;
+                magma_int_t igpu_p = k%ngpu;
 
                 if (k > 0) {
-                    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                         magma_setdevice(igpu);
 
                         magma_queue_wait_event( stream[igpu][0], event[igpu][ind_k] ); // sync computation that use the B panel of next copy
@@ -802,20 +805,20 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                     magma_zhemm(MagmaLeft, uplo,
                                 kb, k*nb,
-                                c_half, dA(igpu_p, k/nrgpu, k), ldda,
+                                c_half, dA(igpu_p, k/ngpu, k), ldda,
                                 dB_r(igpu_p, ind_k, 0), lddbr,
-                                c_one, dA(igpu_p, k/nrgpu, 0), ldda);
+                                c_one, dA(igpu_p, k/ngpu, 0), ldda);
 
                     magma_ztrmm(MagmaLeft, uplo, MagmaConjTrans, MagmaNonUnit,
                                 kb, k*nb,
                                 c_one, dB_r(igpu_p, ind_k, k), lddbr,
-                                dA(igpu_p, k/nrgpu, 0), ldda);
+                                dA(igpu_p, k/ngpu, 0), ldda);
 
                     magma_event_record(event[igpu_p][ind_k], stream[igpu_p][2]);
                     magma_queue_wait_event(stream[igpu_p][1], event[igpu_p][ind_k]);
 
                     for (magma_int_t j = 0; j < k; ++j) {
-                        magma_int_t igpu = j%nrgpu;
+                        magma_int_t igpu = j%ngpu;
                         magma_setdevice(igpu);
                         magmablasSetKernelStream(stream[igpu][1]);
 
@@ -823,17 +826,17 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
                                      nb, kb,
                                      c_one, dwork(igpu, 0, j), nb,
                                      dB_r(igpu, ind_k, j), lddbr,
-                                     d_one, dA(igpu, j/nrgpu, j), ldda);
+                                     d_one, dA(igpu, j/ngpu, j), ldda);
 
                         magma_zgemm(MagmaConjTrans, MagmaNoTrans, nb, j*nb, kb, c_one, dwork(igpu, 0, j), nb,
-                                    dB_r(igpu, ind_k, 0), lddbr, c_one, dA(igpu, j/nrgpu, 0), ldda );
+                                    dB_r(igpu, ind_k, 0), lddbr, c_one, dA(igpu, j/ngpu, 0), ldda );
 
                         magma_zgemm(MagmaConjTrans, MagmaNoTrans, nb, j*nb, kb, c_one, dB_r(igpu, ind_k, j), lddbr,
-                                    dwork(igpu, 0, 0), nb, c_one, dA(igpu, j/nrgpu, 0), ldda );
+                                    dwork(igpu, 0, 0), nb, c_one, dA(igpu, j/ngpu, 0), ldda );
                     }
                 }
 
-                for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+                for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                     magma_setdevice(igpu);
                     magma_event_record(event[igpu][ind_k], stream[igpu][1]);
                     magma_queue_sync(stream[igpu][0]); // sync B copy (conflicts with zhegst)
@@ -845,26 +848,26 @@ magma_zhegst_m(magma_int_t nrgpu, magma_int_t itype, magma_uplo_t uplo, magma_in
 
                 magma_zsetmatrix_async(kb, kb,
                                        A(k, k),                lda,
-                                       dA(igpu_p, k/nrgpu, k), ldda, stream[igpu_p][1] );
+                                       dA(igpu_p, k/ngpu, k), ldda, stream[igpu_p][1] );
             }
 
-            for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+            for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
                 magma_queue_sync( stream[igpu][1] );
             }
 
             //copy A from mgpus
             for (magma_int_t j = 0; j < nbl; ++j) {
-                magma_int_t igpu = j%nrgpu;
+                magma_int_t igpu = j%ngpu;
                 magma_setdevice(igpu);
                 magma_int_t jb = min(nb, n-j*nb);
                 magma_zgetmatrix_async(jb, j*nb+jb,
-                                       dA(igpu, j/nrgpu, 0), ldda,
+                                       dA(igpu, j/ngpu, 0), ldda,
                                        A(j, 0),              lda, stream[igpu][0] );
             }
         }
     }
 
-    for (magma_int_t igpu = 0; igpu < nrgpu; ++igpu) {
+    for (magma_int_t igpu = 0; igpu < ngpu; ++igpu) {
         magma_setdevice(igpu);
         magma_event_destroy( event[igpu][0] );
         magma_event_destroy( event[igpu][1] );

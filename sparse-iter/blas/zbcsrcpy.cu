@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -22,10 +22,11 @@
 // every multiprocessor handles one BCSR-block to copy from A
 __global__ void 
 zbcsrvalcpy_kernel( 
-                  int size_b,
-                  magma_int_t num_blocks,
-                  magmaDoubleComplex **Aval, 
-                  magmaDoubleComplex **Bval ){
+    int size_b,
+    magma_int_t num_blocks,
+    magmaDoubleComplex_ptr *Aval, 
+    magmaDoubleComplex_ptr *Bval )
+{
     if(blockIdx.x*65535+blockIdx.y < num_blocks){
         magmaDoubleComplex *dA = Aval[ blockIdx.x*65535+blockIdx.y ];
         magmaDoubleComplex *dB = Bval[ blockIdx.x*65535+blockIdx.y ];
@@ -41,9 +42,10 @@ zbcsrvalcpy_kernel(
 // every multiprocessor handles one BCSR-block to initialize with 0
 __global__ void 
 zbcsrvalzro_kernel( 
-                  int size_b,
-                  magma_int_t num_blocks,
-                  magmaDoubleComplex **Bval ){
+    int size_b,
+    magma_int_t num_blocks,
+    magmaDoubleComplex_ptr *Bval )
+{
     if(blockIdx.x*65535+blockIdx.y < num_blocks){
         magmaDoubleComplex *dB = Bval[ blockIdx.x*65535+blockIdx.y ];
         int i = threadIdx.x;
@@ -71,44 +73,48 @@ zbcsrvalzro_kernel(
     ---------
 
 
-    @param
+    @param[in]
     size_b      magma_int_t
                 blocksize in BCSR
 
-    @param
+    @param[in]
     num_blocks  magma_int_t
                 number of nonzero blocks
 
-    @param
+    @param[in]
     num_zblocks magma_int_t
                 number of zero-blocks (will later be filled)
 
-    @param
-    Aval        magmaDoubleComplex**
+    @param[in]
+    Aval        magmaDoubleComplex_ptr *
                 pointers to the nonzero blocks in A
 
-    @param
-    Bval        magmaDoubleComplex**
+    @param[in]
+    Bval        magmaDoubleComplex_ptr *
                 pointers to the nonzero blocks in B
 
-    @param
-    Bval2        magmaDoubleComplex**
+    @param[in]
+    Bval2       magmaDoubleComplex_ptr *
                 pointers to the zero blocks in B
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zbcsrvalcpy(  magma_int_t size_b, 
-                    magma_int_t num_blocks, 
-                    magma_int_t num_zblocks, 
-                    magmaDoubleComplex **Aval, 
-                    magmaDoubleComplex **Bval,
-                    magmaDoubleComplex **Bval2 ){
-
- 
-        dim3 dimBlock( BLOCK_SIZE, 1, 1 );
+magma_zbcsrvalcpy(
+    magma_int_t size_b, 
+    magma_int_t num_blocks, 
+    magma_int_t num_zblocks, 
+    magmaDoubleComplex_ptr *Aval, 
+    magmaDoubleComplex_ptr *Bval,
+    magmaDoubleComplex_ptr *Bval2,
+    magma_queue_t queue )
+{
+    dim3 dimBlock( BLOCK_SIZE, 1, 1 );
 
         // the grids are adapted to the number of nonzero/zero blocks 
         // the upper block-number the kernels can handle is 65535*65535
@@ -117,16 +123,15 @@ magma_zbcsrvalcpy(  magma_int_t size_b,
         int dimgrid3 = (num_zblocks+65535-1)/65535;
         dim3 dimGrid( dimgrid2, dimgrid1, 1 );
 
-        zbcsrvalcpy_kernel<<<dimGrid,dimBlock, 0, magma_stream >>>
+        zbcsrvalcpy_kernel<<<dimGrid,dimBlock, 0, queue >>>
                             ( size_b, num_blocks, Aval, Bval );
 
         dim3 dimGrid2( dimgrid3, dimgrid1, 1 );
 
-        zbcsrvalzro_kernel<<<dimGrid2,dimBlock, 0, magma_stream >>>
+        zbcsrvalzro_kernel<<<dimGrid2,dimBlock, 0, queue >>>
                             ( size_b, num_zblocks, Bval2 );
 
         return MAGMA_SUCCESS;
-
 }
 
 

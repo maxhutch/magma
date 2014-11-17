@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -93,10 +93,11 @@
     @ingroup magma_zgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgeqrf(magma_int_t m, magma_int_t n,
-             magmaDoubleComplex *A,    magma_int_t lda, magmaDoubleComplex *tau,
-             magmaDoubleComplex *work, magma_int_t lwork,
-             magma_int_t *info )
+magma_zgeqrf(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex *A,    magma_int_t lda, magmaDoubleComplex *tau,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    magma_int_t *info )
 {
     #define  A(i,j) ( A + (i) + (j)*lda )
     #define dA(i,j) (dA + (i) + (j)*ldda)
@@ -141,10 +142,10 @@ magma_zgeqrf(magma_int_t m, magma_int_t n,
     lddwork = ((n+31)/32)*32 - nb;
     ldda    = ((m+31)/32)*32;
 
-    magma_int_t num_gpus = magma_num_gpus();
-    if ( num_gpus > 1 ) {
+    magma_int_t ngpu = magma_num_gpus();
+    if ( ngpu > 1 ) {
         /* call multiple-GPU interface  */
-        return magma_zgeqrf4(num_gpus, m, n, A, lda, tau, work, lwork, info);
+        return magma_zgeqrf4(ngpu, m, n, A, lda, tau, work, lwork, info);
     }
 
     // allocate space for dA, dwork, and dT

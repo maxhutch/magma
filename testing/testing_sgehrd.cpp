@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zgehrd.cpp normal z -> s, Tue Sep  2 12:38:30 2014
+       @generated from testing_zgehrd.cpp normal z -> s, Sat Nov 15 19:54:18 2014
 
 */
 
@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -33,7 +31,8 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    float *h_A, *h_R, *h_Q, *h_work, *tau, *twork, *dT;
+    float *h_A, *h_R, *h_Q, *h_work, *tau, *twork;
+    magmaFloat_ptr dT;
     #if defined(PRECISION_z) || defined(PRECISION_c)
     float      *rwork;
     #endif

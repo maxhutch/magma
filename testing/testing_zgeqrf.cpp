@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 */
@@ -12,8 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -81,8 +79,10 @@ int main( int argc, char** argv)
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             
-            magma_zgeqrf(M, N, h_R, lda, tau, h_work, lwork, &info);
-            lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+            if ( opts.warmup ) {
+                magma_zgeqrf(M, N, h_R, lda, tau, h_work, lwork, &info);
+                lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+            }
 
             /* ====================================================================
                Performs operation using MAGMA

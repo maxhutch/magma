@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        
@@ -15,8 +15,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 #include <assert.h>
 
 // includes, project
@@ -43,7 +41,7 @@ int main( int argc, char** argv)
     real_Double_t    gflops, gpu_perf, cpu_perf, gpu_time, cpu_time;
     double           error, work[1];
     magmaDoubleComplex *hA, *hR, *hR2, *hV, *hW;
-    magmaDoubleComplex *dV[MagmaMaxGPUs], *dW[MagmaMaxGPUs], *dA[MagmaMaxGPUs];
+    magmaDoubleComplex_ptr dV[MagmaMaxGPUs], dW[MagmaMaxGPUs], dA[MagmaMaxGPUs];
     magma_int_t n, k, size, lda, ldda, nb, ngpu, nstream;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
     
        @author Raffaele Solca
        @author Azzam Haidar
@@ -12,8 +12,9 @@
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 
+#define COMPLEX
 
 /**
     Purpose
@@ -181,16 +182,19 @@
     @ingroup magma_zheev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_zheevdx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
-                  magma_int_t n,
-                  magmaDoubleComplex *dA, magma_int_t ldda,
-                  double vl, double vu, magma_int_t il, magma_int_t iu,
-                  magma_int_t *m, double *w,
-                  magmaDoubleComplex *wA,  magma_int_t ldwa,
-                  magmaDoubleComplex *work, magma_int_t lwork,
-                  double *rwork, magma_int_t lrwork,
-                  magma_int_t *iwork, magma_int_t liwork,
-                  magma_int_t *info)
+magma_zheevdx_gpu(
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
+    magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    double vl, double vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, double *w,
+    magmaDoubleComplex *wA,  magma_int_t ldwa,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
@@ -219,8 +223,8 @@ magma_zheevdx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
     magma_int_t lquery;
     magma_int_t alleig, valeig, indeig;
 
-    double *dwork;
-    magmaDoubleComplex *dC;
+    magmaDouble_ptr dwork;
+    magmaDoubleComplex_ptr dC;
     magma_int_t lddc = ldda;
 
     wantz = (jobz == MagmaVec);

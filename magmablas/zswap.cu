@@ -1,64 +1,86 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
+       
+       @author Mark Gates
 
        @precisions normal z -> s d c
 
 */
 #include "common_magma.h"
 
-#define BLOCK_SIZE 64
+#define NB 64
 
-/*********************************************************
- *
- * SWAP BLAS: permute to set of N elements
- *
- ********************************************************/
-/*
- *  First version: line per line
- */
-typedef struct {
-    magmaDoubleComplex *A1;
-    magmaDoubleComplex *A2;
-    int n, lda1, lda2;
-} magmagpu_zswap_params_t;
 
-__global__ void magmagpu_zswap( magmagpu_zswap_params_t params )
+/* Vector is divided into ceil(n/nb) blocks.
+   Each thread swaps one element, x[tid] <---> y[tid].
+*/
+__global__ void zswap_kernel(
+    int n,
+    magmaDoubleComplex *x, int incx,
+    magmaDoubleComplex *y, int incy )
 {
-    unsigned int x = threadIdx.x + blockDim.x*blockIdx.x;
-    unsigned int offset1 = x*params.lda1;
-    unsigned int offset2 = x*params.lda2;
-    if( x < params.n )
-    {
-        magmaDoubleComplex *A1  = params.A1 + offset1;
-        magmaDoubleComplex *A2  = params.A2 + offset2;
-        magmaDoubleComplex temp = *A1;
-        *A1 = *A2;
-        *A2 = temp;
+    magmaDoubleComplex tmp;
+    int ind = threadIdx.x + blockDim.x*blockIdx.x;
+    if ( ind < n ) {
+        x += ind*incx;
+        y += ind*incy;
+        tmp = *x;
+        *x  = *y;
+        *y  = tmp;
     }
 }
 
 
+/**
+    Purpose:
+    =============
+    Swap vector x and y; \f$ x <-> y \f$.
+
+    @param[in]
+    n       Number of elements in vector x and y. n >= 0.
+
+    @param[in,out]
+    dx      COMPLEX_16 array on GPU device.
+            The n element vector x of dimension (1 + (n-1)*incx).
+
+    @param[in]
+    incx    Stride between consecutive elements of dx. incx != 0.
+
+    @param[in,out]
+    dy      COMPLEX_16 array on GPU device.
+            The n element vector y of dimension (1 + (n-1)*incy).
+
+    @param[in]
+    incy    Stride between consecutive elements of dy. incy != 0.
+
+    @ingroup magma_zblas1
+    ********************************************************************/
 extern "C" void 
 magmablas_zswap_q(
-    magma_int_t n, magmaDoubleComplex *dA1T, magma_int_t lda1, 
-    magmaDoubleComplex *dA2T, magma_int_t lda2,
+    magma_int_t n,
+    magmaDoubleComplex_ptr dx, magma_int_t incx, 
+    magmaDoubleComplex_ptr dy, magma_int_t incy,
     magma_queue_t queue )
 {
-    int blocksize = 64;
-    dim3 blocks( (n+blocksize-1) / blocksize, 1, 1);
-    magmagpu_zswap_params_t params = { dA1T, dA2T, n, lda1, lda2 };
-    magmagpu_zswap<<< blocks, blocksize, 0, queue >>>( params );
+    dim3 blocks( (n+NB-1) / NB );
+    dim3 threads( NB );
+    zswap_kernel<<< blocks, threads, 0, queue >>>( n, dx, incx, dy, incy );
 }
 
 
+/**
+    @see magmablas_zswap_q
+    @ingroup magma_zblas1
+    ********************************************************************/
 extern "C" void 
 magmablas_zswap(
-    magma_int_t n, magmaDoubleComplex *dA1T, magma_int_t lda1, 
-    magmaDoubleComplex *dA2T, magma_int_t lda2)
+    magma_int_t n,
+    magmaDoubleComplex_ptr dx, magma_int_t incx, 
+    magmaDoubleComplex_ptr dy, magma_int_t incy)
 {
-    magmablas_zswap_q( n, dA1T, lda1, dA2T, lda2, magma_stream );
+    magmablas_zswap_q( n, dx, incx, dy, incy, magma_stream );
 }

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
-       @generated from zgeqr2.cu normal z -> c, Tue Sep  2 12:38:17 2014
+       @generated from zgeqr2.cu normal z -> c, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -63,7 +63,7 @@
 
     Each H(i) has the form
 
-       H(i) = I - tau * v * v'
+       H(i) = I - tau * v * v**H
 
     where tau is a complex scalar, and v is a complex vector with
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
@@ -74,8 +74,9 @@
 extern "C" magma_int_t
 magma_cgeqr2_gpu(
     magma_int_t m, magma_int_t n,
-    magmaFloatComplex *dA, magma_int_t ldda,
-    magmaFloatComplex *dtau, float *dwork,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dtau,
+    magmaFloat_ptr        dwork,
     magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*(ldda))

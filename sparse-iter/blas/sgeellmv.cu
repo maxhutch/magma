@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeellmv.cu normal z -> s, Tue Sep  2 12:38:32 2014
+       @generated from zgeellmv.cu normal z -> s, Sat Nov 15 19:54:21 2014
 
 */
 
@@ -21,59 +21,61 @@
 // ELLPACK SpMV kernel
 //Michael Garland
 __global__ void 
-sgeellmv_kernel( int num_rows, 
-                 int num_cols,
-                 int num_cols_per_row,
-                 float alpha, 
-                 float *d_val, 
-                 magma_index_t *d_colind,
-                 float *d_x,
-                 float beta, 
-                 float *d_y)
+sgeellmv_kernel( 
+    int num_rows, 
+    int num_cols,
+    int num_cols_per_row,
+    float alpha, 
+    magmaFloat_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaFloat_ptr dx,
+    float beta, 
+    magmaFloat_ptr dy)
 {
 int row = blockDim.x * blockIdx.x + threadIdx.x ;
     if(row < num_rows ){
         float dot = MAGMA_S_MAKE(0.0, 0.0);
         for ( int n = 0; n < num_cols_per_row ; n ++){
-            int col = d_colind [ num_cols_per_row * row + n ];
-            float val = d_val [ num_cols_per_row * row + n ];
+            int col = dcolind [ num_cols_per_row * row + n ];
+            float val = dval [ num_cols_per_row * row + n ];
             if( val != 0)
-                dot += val * d_x[col ];
+                dot += val * dx[col ];
         }
-        d_y[ row ] = dot * alpha + beta * d_y [ row ];
+        dy[ row ] = dot * alpha + beta * dy [ row ];
     }
 }
 
 // shifted ELLPACK SpMV kernel
 //Michael Garland
 __global__ void 
-sgeellmv_kernel_shift( int num_rows, 
-                       int num_cols,
-                       int num_cols_per_row,
-                       float alpha, 
-                       float lambda, 
-                       float *d_val, 
-                       magma_index_t *d_colind,
-                       float *d_x,
-                       float beta, 
-                       int offset,
-                       int blocksize,
-                       magma_index_t *add_rows,
-                       float *d_y)
+sgeellmv_kernel_shift( 
+    int num_rows, 
+    int num_cols,
+    int num_cols_per_row,
+    float alpha, 
+    float lambda, 
+    magmaFloat_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaFloat_ptr dx,
+    float beta, 
+    int offset,
+    int blocksize,
+    magmaIndex_ptr addrows,
+    magmaFloat_ptr dy)
 {
 int row = blockDim.x * blockIdx.x + threadIdx.x ;
     if(row < num_rows ){
         float dot = MAGMA_S_MAKE(0.0, 0.0);
         for ( int n = 0; n < num_cols_per_row ; n ++){
-            int col = d_colind [ num_cols_per_row * row + n ];
-            float val = d_val [ num_cols_per_row * row + n ];
+            int col = dcolind [ num_cols_per_row * row + n ];
+            float val = dval [ num_cols_per_row * row + n ];
             if( val != 0)
-                dot += val * d_x[col ];
+                dot += val * dx[col ];
         }
         if( row<blocksize )
-            d_y[ row ] = dot * alpha - lambda * d_x[ offset+row ] + beta * d_y [ row ];
+            dy[ row ] = dot * alpha - lambda * dx[ offset+row ] + beta * dy [ row ];
         else
-            d_y[ row ] = dot * alpha - lambda * d_x[ add_rows[row-blocksize] ] + beta * d_y [ row ];   
+            dy[ row ] = dot * alpha - lambda * dx[ addrows[row-blocksize] ] + beta * dy [ row ];   
     }
 }
 
@@ -91,67 +93,70 @@ int row = blockDim.x * blockIdx.x + threadIdx.x ;
     Arguments
     ---------
     
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
                 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
                 
-    @param
+    @param[in]
     nnz_per_row magma_int_t
                 number of elements in the longest row 
 
-    @param
+    @param[in]
     alpha       float
                 scalar multiplier
 
-    @param
-    d_val       float*
+    @param[in]
+    dval        magmaFloat_ptr
                 array containing values of A in ELLPACK
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in ELLPACK
 
-    @param
-    d_x         float*
+    @param[in]
+    dx          magmaFloat_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        float
                 scalar multiplier
 
-    @param
-    d_y         float*
+    @param[out]
+    dy          magmaFloat_ptr
                 input/output vector y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_sblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_sgeellmv(magma_trans_t transA,
-               magma_int_t m, magma_int_t n,
-               magma_int_t nnz_per_row,
-               float alpha,
-               float *d_val,
-               magma_index_t *d_colind,
-               float *d_x,
-               float beta,
-               float *d_y ){
-
-
-
-   dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
-
-   sgeellmv_kernel<<< grid, BLOCK_SIZE, 0, magma_stream >>>
-                  ( m, n, nnz_per_row, alpha, d_val, d_colind, d_x, beta, d_y );
+magma_sgeellmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    float alpha,
+    magmaFloat_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaFloat_ptr dx,
+    float beta,
+    magmaFloat_ptr dy,
+    magma_queue_t queue )
+{
+    dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    magma_int_t threads = BLOCK_SIZE;
+   sgeellmv_kernel<<< grid, threads, 0, queue >>>
+                  ( m, n, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
 
 
    return MAGMA_SUCCESS;
@@ -170,87 +175,90 @@ magma_sgeellmv(magma_trans_t transA,
     Arguments
     ---------
     
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
-    @param
+    @param[in]
     nnz_per_row magma_int_t
                 number of elements in the longest row 
                 
-    @param
+    @param[in]
     alpha       float
                 scalar multiplier
                 
-    @param
+    @param[in]
     lambda      float
                 scalar multiplier
 
-    @param
-    d_val       float*
+    @param[in]
+    dval        magmaFloat_ptr
                 array containing values of A in ELLPACK
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in ELLPACK
 
-    @param
-    d_x         float*
+    @param[in]
+    dx          magmaFloat_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        float
                 scalar multiplier
                 
-    @param
+    @param[in]
     offset      magma_int_t 
                 in case not the main diagonal is scaled
                 
-    @param
+    @param[in]
     blocksize   magma_int_t 
                 in case of processing multiple vectors  
                 
-    @param
-    add_rows    magma_int_t*
+    @param[in]
+    addrows    magma_int_t*
                 in case the matrixpowerskernel is used
 
-    @param
-    d_y         float*
+    @param[out]
+    dy          magmaFloat_ptr
                 input/output vector y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_sblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_sgeellmv_shift( magma_trans_t transA,
-                      magma_int_t m, magma_int_t n,
-                      magma_int_t nnz_per_row,
-                      float alpha,
-                      float lambda,
-                      float *d_val,
-                      magma_index_t *d_colind,
-                      float *d_x,
-                      float beta,
-                      int offset,
-                      int blocksize,
-                      magma_index_t *add_rows,
-                      float *d_y ){
-
-
-
-   dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
-
-   sgeellmv_kernel_shift<<< grid, BLOCK_SIZE, 0, magma_stream >>>
-                  ( m, n, nnz_per_row, alpha, lambda, d_val, d_colind, d_x, 
-                                    beta, offset, blocksize, add_rows, d_y );
+magma_sgeellmv_shift(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    float alpha,
+    float lambda,
+    magmaFloat_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaFloat_ptr dx,
+    float beta,
+    int offset,
+    int blocksize,
+    magma_index_t *addrows,
+    magmaFloat_ptr dy,
+    magma_queue_t queue )
+{
+    dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    magma_int_t threads = BLOCK_SIZE;
+   sgeellmv_kernel_shift<<< grid, threads, 0, queue >>>
+                  ( m, n, nnz_per_row, alpha, lambda, dval, dcolind, dx, 
+                                    beta, offset, blocksize, addrows, dy );
 
 
    return MAGMA_SUCCESS;

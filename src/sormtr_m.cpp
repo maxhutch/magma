@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmtr_m.cpp normal z -> s, Tue Sep  2 12:38:22 2014
+       @generated from zunmtr_m.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -33,8 +33,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     side    magma_side_t
@@ -115,13 +115,15 @@
     @ingroup magma_ssyev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sormtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
-               magma_int_t m, magma_int_t n,
-               float *A,    magma_int_t lda,
-               float *tau,
-               float *C,    magma_int_t ldc,
-               float *work, magma_int_t lwork,
-               magma_int_t *info)
+magma_sormtr_m(
+    magma_int_t ngpu,
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t trans,
+    magma_int_t m, magma_int_t n,
+    float *A,    magma_int_t lda,
+    float *tau,
+    float *C,    magma_int_t ldc,
+    float *work, magma_int_t lwork,
+    magma_int_t *info)
 {
     #define A(i_,j_) (A + (i_) + (j_)*lda)
     #define C(i_,j_) (C + (i_) + (j_)*ldc)
@@ -204,7 +206,7 @@ magma_sormtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
         // TODO: upper case is not yet implemented -- see above
         //lapackf77_sormql(side_, trans_, &mi, &ni, &i__2, A(0,1), &lda,
         //                 tau, C, &ldc, work, &lwork, &iinfo);
-        //magma_sormql_m(nrgpu, side, trans, mi, ni, i__2, A(0,1), lda, tau,
+        //magma_sormql_m(ngpu, side, trans, mi, ni, i__2, A(0,1), lda, tau,
         //               C, ldc, work, lwork, &iinfo);
     }
     else {
@@ -217,7 +219,7 @@ magma_sormtr_m(magma_int_t nrgpu, magma_side_t side, magma_uplo_t uplo, magma_tr
             i2 = 1;
         }
         i__2 = nq - 1;
-        magma_sormqr_m(nrgpu, side, trans, mi, ni, i__2, A(1,0), lda, tau,
+        magma_sormqr_m(ngpu, side, trans, mi, ni, i__2, A(1,0), lda, tau,
                        C(i1,i2), ldc, work, lwork, &iinfo);
     }
 

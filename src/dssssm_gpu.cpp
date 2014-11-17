@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zssssm_gpu.cpp normal z -> d, Tue Sep  2 12:38:20 2014
+       @generated from zssssm_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -91,13 +91,15 @@
     @ingroup magma_dgesv_tile
     ********************************************************************/
 extern "C" magma_int_t
-magma_dssssm_gpu(magma_order_t order, magma_int_t m1, magma_int_t n1,
-                 magma_int_t m2, magma_int_t n2, magma_int_t k, magma_int_t ib,
-                 double *dA1, magma_int_t ldda1,
-                 double *dA2, magma_int_t ldda2,
-                 double *dL1, magma_int_t lddl1,
-                 double *dL2, magma_int_t lddl2,
-                 magma_int_t *ipiv, magma_int_t *info)
+magma_dssssm_gpu(
+    magma_order_t order, magma_int_t m1, magma_int_t n1,
+    magma_int_t m2, magma_int_t n2, magma_int_t k, magma_int_t ib,
+    magmaDouble_ptr dA1, magma_int_t ldda1,
+    magmaDouble_ptr dA2, magma_int_t ldda2,
+    magmaDouble_ptr dL1, magma_int_t lddl1,
+    magmaDouble_ptr dL2, magma_int_t lddl2,
+    magma_int_t *ipiv,
+    magma_int_t *info)
 {
 #define A1T(i,j) (dA1T + (i)*ldda1 + (j))
 #define A2T(i,j) (dA2T + (i)*ldda2 + (j))
@@ -108,7 +110,7 @@ magma_dssssm_gpu(magma_order_t order, magma_int_t m1, magma_int_t n1,
     double c_neg_one = MAGMA_D_NEG_ONE;
 
     int ip, ii, sb;
-    double *dA1T, *dA2T;
+    magmaDouble_ptr dA1T, dA2T;
     magma_trans_t transL;
     int lddl2i, lddl2j;
 

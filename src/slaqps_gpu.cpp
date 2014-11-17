@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlaqps_gpu.cpp normal z -> s, Tue Sep  2 12:38:21 2014
+       @generated from zlaqps_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -52,7 +52,7 @@
             The number of columns actually factorized.
 
     @param[in,out]
-    A       REAL array, dimension (LDA,N)
+    dA      REAL array, dimension (LDDA,N), on the GPU.
             On entry, the M-by-N matrix A.
             On exit, block A(OFFSET+1:M,1:KB) is the triangular
             factor obtained and block A(1:OFFSET,1:N) has been
@@ -61,8 +61,8 @@
             been updated.
 
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array A. LDA >= max(1,M).
+    ldda    INTEGER
+            The leading dimension of the array A. LDDA >= max(1,M).
 
     @param[in,out]
     jpvt    INTEGER array, dimension (N)
@@ -82,30 +82,31 @@
             The vector with the exact column norms.
 
     @param[in,out]
-    auxv    REAL array, dimension (NB)
-            Auxiliar vector.
+    dauxv   REAL array, dimension (NB), on the GPU
+            Auxiliary vector.
 
     @param[in,out]
-    F       REAL array, dimension (LDF,NB)
+    dF      REAL array, dimension (LDDF,NB), on the GPU
             Matrix F' = L*Y'*A.
 
     @param[in]
-    ldf     INTEGER
-            The leading dimension of the array F. LDF >= max(1,N).
+    lddf    INTEGER
+            The leading dimension of the array F. LDDF >= max(1,N).
 
     @ingroup magma_sgeqp3_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
-             magma_int_t nb, magma_int_t *kb,
-             float *A,  magma_int_t lda,
-             magma_int_t *jpvt, float *tau,
-             float *vn1, float *vn2,
-             float *auxv,
-             float *F,  magma_int_t ldf)
+magma_slaqps_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t offset,
+    magma_int_t nb, magma_int_t *kb,
+    magmaFloat_ptr dA,  magma_int_t ldda,
+    magma_int_t *jpvt, float *tau,
+    float *vn1, float *vn2,
+    magmaFloat_ptr dauxv,
+    magmaFloat_ptr dF,  magma_int_t lddf)
 {
-#define  A(i, j) (A  + (i) + (j)*(lda ))
-#define  F(i, j) (F  + (i) + (j)*(ldf ))
+#define  dA(i, j) (dA  + (i) + (j)*(ldda))
+#define  dF(i, j) (dF  + (i) + (j)*(lddf))
 
     float c_zero    = MAGMA_S_MAKE( 0.,0.);
     float c_one     = MAGMA_S_MAKE( 1.,0.);
@@ -119,23 +120,24 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
     //magma_int_t j;
     magma_int_t k, rk;
     //float Akk;
-    float *Aks;
+    magmaFloat_ptr dAks;
     float tauk = MAGMA_S_ZERO;
     magma_int_t pvt;
     //float temp, temp2;
     float tol3z;
     magma_int_t itemp;
 
-    float lsticc, *lsticcs;
+    float lsticc;
+    magmaFloat_ptr dlsticcs;
     magma_int_t lastrk;
-    magma_smalloc( &lsticcs, 1+256*(n+255)/256 );
+    magma_smalloc( &dlsticcs, 1+256*(n+255)/256 );
 
     lastrk = min( m, n + offset );
     tol3z = magma_ssqrt( lapackf77_slamch("Epsilon"));
 
     lsticc = 0;
     k = 0;
-    magma_smalloc( &Aks, nb );
+    magma_smalloc( &dAks, nb );
 
     while( k < nb && lsticc == 0 ) {
         rk = offset + k;
@@ -170,10 +172,10 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
                                         A (offset + nb, pvt), lda,
                                         dA(offset + nb, pvt), ldda, stream);
             }*/
-            magmablas_sswap( m, A(0, pvt), ione, A(0, k), ione );
+            magmablas_sswap( m, dA(0, pvt), ione, dA(0, k), ione );
 
             //blasf77_sswap( &i__1, F(pvt,0), &ldf, F(k,0), &ldf );
-            magmablas_sswap( i__1, F(pvt, 0), ldf, F(k, 0), ldf);
+            magmablas_sswap( i__1, dF(pvt, 0), lddf, dF(k, 0), lddf);
             itemp     = jpvt[pvt];
             jpvt[pvt] = jpvt[k];
             jpvt[k]   = itemp;
@@ -214,11 +216,11 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             /*blasf77_sgemv( MagmaNoTransStr, &i__1, &i__2,
                            &c_neg_one, A(rk, 0), &lda,
                                        F(k,  0), &ldf,
-                           &c_one,     A(rk, k), &ione );*/
+                           &c_one,     A(rk, k), &ione ); */
             magma_sgemv( MagmaNoTrans, i__1, i__2,
-                         c_neg_one, A(rk, 0), lda,
-                                    F(k,  0), ldf,
-                         c_one,     A(rk, k), ione );
+                         c_neg_one, dA(rk, 0), ldda,
+                                    dF(k,  0), lddf,
+                         c_one,     dA(rk, k), ione );
 #endif
 
             /*#if (defined(PRECISION_c) || defined(PRECISION_z))
@@ -229,15 +231,15 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
         }
         
         /*  Generate elementary reflector H(k). */
-        magma_slarfg_gpu(m-rk, A(rk, k), A(rk + 1, k), &tau[k], &vn1[k], &Aks[k]);
+        magma_slarfg_gpu( m-rk, dA(rk, k), dA(rk + 1, k), &tau[k], &vn1[k], &dAks[k]);
 
         //Akk = *A(rk, k);
         //*A(rk, k) = c_one;
-        //magma_sgetvector( 1, &Aks[k],  1, &Akk,     1 );
+        //magma_sgetvector( 1, &dAks[k],  1, &Akk,     1 );
 
         /* needed to avoid the race condition */
-        if (k == 0) magma_ssetvector(  1,    &c_one,       1, A(rk, k), 1 );
-        else        magma_scopymatrix( 1, 1, A(offset, 0), 1, A(rk, k), 1 );
+        if (k == 0) magma_ssetvector(  1,    &c_one,        1, dA(rk, k), 1 );
+        else        magma_scopymatrix( 1, 1, dA(offset, 0), 1, dA(rk, k), 1 );
 
         /* Compute Kth column of F:
            Compute  F(K+1:N,K) := tau(K)*A(RK:M,K+1:N)'*A(RK:M,K) on the GPU */
@@ -256,9 +258,9 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             //                 CZERO,    F( K+1, K   ), 1 )
             //magma_sgetvector( 1, &tau[k], 1, &tauk, 1 );
             magma_sgemv( MagmaConjTrans, m-rk, n-k-1,
-                         tauk,   A( rk,  k+1 ), lda,
-                                 A( rk,  k   ), 1,
-                         c_zero, F( k+1, k   ), 1 );
+                         tauk,   dA( rk,  k+1 ), ldda,
+                                 dA( rk,  k   ), 1,
+                         c_zero, dF( k+1, k   ), 1 );
             //magma_sscal( m-rk, tau[k], F( k+1, k), 1 );
             //magma_int_t i__3 = nb-k-1;
             //magma_int_t i__4 = i__2 - i__3;
@@ -302,14 +304,14 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             i__1 = m - offset - nb;
             i__2 = k;
             magma_sgemv( MagmaConjTrans, i__1, i__2,
-                         z__1,   A(offset+nb, 0), lda,
-                                 A(offset+nb, k), ione,
-                         c_zero, auxv, ione );
+                         z__1,   dA(offset+nb, 0), lda,
+                                 dA(offset+nb, k), ione,
+                         c_zero, dauxv, ione );
             
             i__1 = k;
             magma_sgemv( MagmaNoTrans, n-k-1, i__1,
                          c_one, F(k+1,0), ldf,
-                                auxv,     ione,
+                                dauxv,     ione,
                          c_one, F(k+1,k), ione );
 #else
             i__1 = m - rk;
@@ -320,9 +322,9 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             //               &c_zero, auxv, &ione );
 
             magma_sgemv( MagmaConjTrans, i__1, i__2,
-                         z__1,   A(rk, 0), lda,
-                                 A(rk, k), ione,
-                         c_zero, auxv, ione );
+                         z__1,   dA(rk, 0), ldda,
+                                 dA(rk, k), ione,
+                         c_zero, dauxv, ione );
             
             //i__1 = k;
             //blasf77_sgemv( MagmaNoTransStr, &n, &i__1,
@@ -332,12 +334,12 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
             /*magma_sgemv( MagmaNoTrans, n, i__1,
                            c_one, F(0,0), ldf,
                                   auxv,   ione,
-                           c_one, F(0,k), ione );*/
+                           c_one, F(0,k), ione ); */
             /* I think we only need stricly lower-triangular part :) */
             magma_sgemv( MagmaNoTrans, n-k-1, i__2,
-                         c_one, F(k+1,0), ldf,
-                                auxv,     ione,
-                         c_one, F(k+1,k), ione );
+                         c_one, dF(k+1,0), lddf,
+                                dauxv,     ione,
+                         c_one, dF(k+1,k), ione );
 #endif
         }
         
@@ -355,28 +357,28 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
 #ifdef RIGHT_UPDATE
             /* right-looking update of rows,                     */
             magma_sgemm( MagmaNoTrans, MagmaConjTrans, nb-k, i__1, ione,
-                         c_neg_one, A(rk,  k  ), lda,
-                                    F(k+1, k  ), ldf,
-                         c_one,     A(rk,  k+1), lda );
+                         c_neg_one, dA(rk,  k  ), ldda,
+                                    dF(k+1, k  ), lddf,
+                         c_one,     dA(rk,  k+1), ldda );
 #else
             /* left-looking update of rows,                     *
              * since F=A'v with original A, so no right-looking */
             magma_sgemm( MagmaNoTrans, MagmaConjTrans, ione, i__1, i__2,
-                         c_neg_one, A(rk, 0  ), lda,
-                                    F(k+1,0  ), ldf,
-                         c_one,     A(rk, k+1), lda );
+                         c_neg_one, dA(rk, 0  ), ldda,
+                                    dF(k+1,0  ), lddf,
+                         c_one,     dA(rk, k+1), ldda );
 #endif
         }
         
         /* Update partial column norms. */
         if (rk < min(m, n+offset)-1 ) {
-            magmablas_snrm2_row_check_adjust(n-k-1, tol3z, &vn1[k+1], &vn2[k+1], A(rk,k+1), lda, lsticcs);
+            magmablas_snrm2_row_check_adjust(n-k-1, tol3z, &vn1[k+1], &vn2[k+1], dA(rk,k+1), ldda, dlsticcs);
 
             magma_device_sync();
             #if defined(PRECISION_d) || defined(PRECISION_z)
-            magma_sgetvector( 1, &lsticcs[0], 1, &lsticc, 1 );
+            magma_sgetvector( 1, &dlsticcs[0], 1, &lsticc, 1 );
             #else
-            magma_sgetvector( 1, &lsticcs[0], 1, &lsticc, 1 );
+            magma_sgetvector( 1, &dlsticcs[0], 1, &lsticc, 1 );
             #endif
         }
 
@@ -404,11 +406,11 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
         
         //*A(rk, k) = Akk;
         //magma_ssetvector( 1, &Akk, 1, A(rk, k), 1 );
-        //magma_sswap( 1, &Aks[k], 1, A(rk, k), 1 );
+        //magma_sswap( 1, &dAks[k], 1, A(rk, k), 1 );
         
         ++k;
     }
-    magma_scopymatrix( 1, k, Aks, 1, A(offset, 0), lda+1 );
+    magma_scopymatrix( 1, k, dAks, 1, dA(offset, 0), ldda+1 );
 
     // leave k as the last column done
     --k;
@@ -424,19 +426,19 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
         /* Send F to the GPU
         magma_ssetmatrix( i__2, *kb,
                           F (*kb, 0), ldf,
-                          dF(*kb, 0), i__2 );*/
+                          dF(*kb, 0), i__2 ); */
 
         magma_sgemm( MagmaNoTrans, MagmaConjTrans, i__1, i__2, *kb,
-                     c_neg_one, A(rk+1, 0  ), lda,
-                                F(*kb,  0  ), ldf,
-                     c_one,     A(rk+1, *kb), lda );
+                     c_neg_one, dA(rk+1, 0  ), ldda,
+                                dF(*kb,  0  ), lddf,
+                     c_one,     dA(rk+1, *kb), ldda );
     }
     /* Recomputation of difficult columns. */
     if ( lsticc > 0 ) {
         // printf( " -- recompute dnorms --\n" );
-        magmablas_snrm2_check(m-rk-1, n-*kb, A(rk+1,*kb), lda,
-                               &vn1[*kb], lsticcs);
-        magma_scopymatrix( n-*kb, 1, &vn1[*kb], *kb, &vn2[*kb], *kb);
+        magmablas_snrm2_check( m-rk-1, n-*kb, dA(rk+1,*kb), ldda,
+                                &vn1[*kb], dlsticcs );
+        magma_scopymatrix( n-*kb, 1, &vn1[*kb], *kb, &vn2[*kb], *kb );
     /*while( lsticc > 0 ) {
         itemp = (magma_int_t)(vn2[lsticc] >= 0. ? floor(vn2[lsticc] + .5) : -floor(.5 - vn2[lsticc]));
         i__1 = m - rk - 1;
@@ -455,10 +457,10 @@ magma_slaqps_gpu(magma_int_t m, magma_int_t n, magma_int_t offset,
         // NOTE: The computation of VN1( LSTICC ) relies on the fact that
         //   SNRM2 does not fail on vectors with norm below the value of SQRT(SLAMCH('S'))
         vn2[lsticc] = vn1[lsticc];
-        lsticc = itemp;*/
+        lsticc = itemp; */
     }
-    magma_free(Aks);
-    magma_free(lsticcs);
+    magma_free(dAks);
+    magma_free(dlsticcs);
 
     return MAGMA_SUCCESS;
 } /* magma_slaqps */

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgecsrmv.cu normal z -> d, Tue Sep  2 12:38:32 2014
+       @generated from zgecsrmv.cu normal z -> d, Sat Nov 15 19:54:21 2014
 
 */
 #include "common_magma.h"
@@ -19,58 +19,64 @@
 
 // CSR-SpMV kernel
 __global__ void 
-dgecsrmv_kernel( int num_rows, int num_cols, 
-                 double alpha, 
-                 double *d_val, 
-                 magma_index_t *d_rowptr, 
-                 magma_index_t *d_colind,
-                 double *d_x,
-                 double beta, 
-                 double *d_y){
+dgecsrmv_kernel( 
+    int num_rows, 
+    int num_cols, 
+    double alpha, 
+    magmaDouble_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta, 
+    magmaDouble_ptr dy)
+{
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
     if(row<num_rows){
         double dot = MAGMA_D_ZERO;
-        int start = d_rowptr[ row ];
-        int end = d_rowptr[ row+1 ];
+        int start = drowptr[ row ];
+        int end = drowptr[ row+1 ];
         for( j=start; j<end; j++)
-            dot += d_val[ j ] * d_x[ d_colind[j] ];
-        d_y[ row ] =  dot *alpha + beta * d_y[ row ];
+            dot += dval[ j ] * dx[ dcolind[j] ];
+        dy[ row ] =  dot *alpha + beta * dy[ row ];
     }
 }
 
 // shifted CSR-SpMV kernel
 __global__ void 
-dgecsrmv_kernel_shift( int num_rows, int num_cols, 
-                       double alpha, 
-                       double lambda, 
-                       double *d_val, 
-                       magma_index_t *d_rowptr, 
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta, 
-                       int offset,
-                       int blocksize,
-                       magma_index_t *add_rows,
-                       double *d_y){
+dgecsrmv_kernel_shift( 
+    int num_rows, 
+    int num_cols, 
+    double alpha, 
+    double lambda, 
+    magmaDouble_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta, 
+    int offset,
+    int blocksize,
+    magmaIndex_ptr addrows,
+    magmaDouble_ptr dy)
+{
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
     if(row<num_rows){
         double dot = MAGMA_D_ZERO;
-        int start = d_rowptr[ row ];
-        int end = d_rowptr[ row+1 ];
+        int start = drowptr[ row ];
+        int end = drowptr[ row+1 ];
         for( j=start; j<end; j++)
-            dot += d_val[ j ] * d_x[ d_colind[j] ];
+            dot += dval[ j ] * dx[ dcolind[j] ];
         if( row<blocksize )
-            d_y[ row ] = dot * alpha - lambda 
-                        * d_x[ offset+row ] + beta * d_y [ row ];
+            dy[ row ] = dot * alpha - lambda 
+                        * dx[ offset+row ] + beta * dy [ row ];
         else
-            d_y[ row ] = dot * alpha - lambda 
-                        * d_x[ add_rows[row-blocksize] ] + beta * d_y [ row ];   
+            dy[ row ] = dot * alpha - lambda 
+                        * dx[ addrows[row-blocksize] ] + beta * dy [ row ];   
     }
 }
 
@@ -85,65 +91,70 @@ dgecsrmv_kernel_shift( int num_rows, int num_cols,
     Arguments
     ---------
     
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
                 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
 
-    @param
+    @param[in]
     alpha       double
                 scalar multiplier
 
-    @param
-    d_val       double*
+    @param[in]
+    dval        magmaDouble_ptr
                 array containing values of A in CSR
 
-    @param
-    d_rowptr    magma_int_t*
+    @param[in]
+    drowptr    magma_int_t*
                 rowpointer of A in CSR
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in CSR
 
-    @param
-    d_x         double*
+    @param[in]
+    dx          magmaDouble_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        double
                 scalar multiplier
 
-    @param
-    d_y         double*
+    @param[out]
+    dy          magmaDouble_ptr
                 input/output vector y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dgecsrmv(     magma_trans_t transA,
-                    magma_int_t m, magma_int_t n,
-                    double alpha,
-                    double *d_val,
-                    magma_index_t *d_rowptr,
-                    magma_index_t *d_colind,
-                    double *d_x,
-                    double beta,
-                    double *d_y ){
-
+magma_dgecsrmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr drowptr,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue )
+{
     dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
-
-    dgecsrmv_kernel<<< grid, BLOCK_SIZE, 0, magma_stream >>>
-                    (m, n, alpha, d_val, d_rowptr, d_colind, d_x, beta, d_y);
+    magma_int_t threads = BLOCK_SIZE;
+    dgecsrmv_kernel<<< grid, threads, 0, queue >>>
+                    (m, n, alpha, dval, drowptr, dcolind, dx, beta, dy);
 
     return MAGMA_SUCCESS;
 }
@@ -160,85 +171,90 @@ magma_dgecsrmv(     magma_trans_t transA,
     Arguments
     ---------
     
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
 
-    @param
+    @param[in]
     alpha       double
                 scalar multiplier
 
-    @param
+    @param[in]
     lambda      double
                 scalar multiplier
 
-    @param
-    d_val       double*
+    @param[in]
+    dval        magmaDouble_ptr
                 array containing values of A in CSR
 
-    @param
-    d_rowptr    magma_int_t*
+    @param[in]
+    drowptr    magma_int_t*
                 rowpointer of A in CSR
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in CSR
 
-    @param
-    d_x         double*
+    @param[in]
+    dx          magmaDouble_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        double
                 scalar multiplier
 
-    @param
+    @param[in]
     offset      magma_int_t 
                 in case not the main diagonal is scaled
                 
-    @param
+    @param[in]
     blocksize   magma_int_t 
                 in case of processing multiple vectors  
                 
-    @param
-    add_rows    magma_int_t*
+    @param[in]
+    addrows     magmaIndex_ptr
                 in case the matrixpowerskernel is used
                 
-    @param
-    d_y         double*
+    @param[out]
+    dy          magmaDouble_ptr
                 output vector y  
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_dblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dgecsrmv_shift( magma_trans_t transA,
-                      magma_int_t m, magma_int_t n,
-                      double alpha,
-                      double lambda,
-                      double *d_val,
-                      magma_index_t *d_rowptr,
-                      magma_index_t *d_colind,
-                      double *d_x,
-                      double beta,
-                      int offset,
-                      int blocksize,
-                      magma_index_t *add_rows,
-                      double *d_y ){
-
+magma_dgecsrmv_shift(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    double alpha,
+    double lambda,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr drowptr,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    int offset,
+    int blocksize,
+    magmaIndex_ptr addrows,
+    magmaDouble_ptr dy,
+    magma_queue_t queue )
+{
     dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
-
-    dgecsrmv_kernel_shift<<< grid, BLOCK_SIZE, 0, magma_stream >>>
-                         (m, n, alpha, lambda, d_val, d_rowptr, d_colind, d_x, 
-                                    beta, offset, blocksize, add_rows, d_y);
+    magma_int_t threads = BLOCK_SIZE;
+    dgecsrmv_kernel_shift<<< grid, threads, 0, queue >>>
+                         (m, n, alpha, lambda, dval, drowptr, dcolind, dx, 
+                                    beta, offset, blocksize, addrows, dy);
 
     return MAGMA_SUCCESS;
 }

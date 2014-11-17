@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zcaxpycp.cu mixed zc -> ds, Tue Sep  2 12:38:15 2014
+       @generated from zcaxpycp.cu mixed zc -> ds, Sat Nov 15 19:53:57 2014
 
 */
 #include "common_magma.h"
@@ -49,8 +49,11 @@ daxpycp_kernel(
 // copies w = b
 extern "C" void
 magmablas_dsaxpycp_q(
-    magma_int_t m, float *r, double *x,
-    const double *b, double *w,
+    magma_int_t m,
+    magmaFloat_ptr r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b,
+    magmaDouble_ptr w,
     magma_queue_t queue )
 {
     dim3 threads( NB );
@@ -61,8 +64,11 @@ magmablas_dsaxpycp_q(
 
 extern "C" void
 magmablas_dsaxpycp(
-    magma_int_t m, float *r, double *x,
-    const double *b, double *w)
+    magma_int_t m,
+    magmaFloat_ptr r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b,
+    magmaDouble_ptr w)
 {
     magmablas_dsaxpycp_q( m, r, x, b, w, magma_stream );
 }
@@ -73,8 +79,10 @@ magmablas_dsaxpycp(
 // copies r = b
 extern "C" void
 magmablas_daxpycp_q(
-    magma_int_t m, double *r, double *x,
-    const double *b,
+    magma_int_t m,
+    magmaDouble_ptr r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b,
     magma_queue_t queue )
 {
     dim3 threads( NB );
@@ -84,8 +92,10 @@ magmablas_daxpycp_q(
 
 extern "C" void
 magmablas_daxpycp(
-    magma_int_t m, double *r, double *x,
-    const double *b)
+    magma_int_t m,
+    magmaDouble_ptr r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b)
 {
     magmablas_daxpycp_q( m, r, x, b, magma_stream );
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from clag2z.cu mixed zc -> ds, Tue Sep  2 12:38:15 2014
+       @generated from clag2z.cu mixed zc -> ds, Sat Nov 15 19:53:59 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -104,8 +104,8 @@ void slag2d_kernel(
 extern "C" void
 magmablas_slag2d_q(
     magma_int_t m, magma_int_t n,
-    const float *SA, magma_int_t ldsa,
-    double       *A, magma_int_t lda,
+    magmaFloat_const_ptr SA, magma_int_t ldsa,
+    magmaDouble_ptr       A, magma_int_t lda,
     magma_int_t *info,
     magma_queue_t queue)
 {
@@ -142,8 +142,8 @@ magmablas_slag2d_q(
 extern "C" void
 magmablas_slag2d(
     magma_int_t m, magma_int_t n,
-    const float *SA, magma_int_t ldsa,
-    double       *A, magma_int_t lda,
+    magmaFloat_const_ptr SA, magma_int_t ldsa,
+    magmaDouble_ptr       A, magma_int_t lda,
     magma_int_t *info)
 {
     magmablas_slag2d_q( m, n, SA, ldsa, A, lda, info, magma_stream );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlahr2_m.cpp normal z -> c, Tue Sep  2 12:38:24 2014
+       @generated from zlahr2_m.cpp normal z -> c, Sat Nov 15 19:54:10 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -131,7 +131,7 @@ magma_clahr2_m(
     magmaFloatComplex *tau,
     magmaFloatComplex *T, magma_int_t ldt,
     magmaFloatComplex *Y, magma_int_t ldy,
-    struct cgehrd_data* data )
+    struct cgehrd_data *data )
 {
     #define  A(  i, j ) ( A + (i) + (j)*lda)
     #define  Y(  i, j ) ( Y + (i) + (j)*ldy)

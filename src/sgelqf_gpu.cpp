@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgelqf_gpu.cpp normal z -> s, Tue Sep  2 12:38:20 2014
+       @generated from zgelqf_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -27,7 +27,7 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      REAL array on the GPU, dimension (LDA,N)
+    dA      REAL array on the GPU, dimension (LDDA,N)
             On entry, the M-by-N matrix dA.
             On exit, the elements on and below the diagonal of the array
             contain the m-by-min(m,n) lower trapezoidal matrix L (L is
@@ -36,8 +36,8 @@
             product of elementary reflectors (see Further Details).
 
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array dA.  LDA >= max(1,M).
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= max(1,M).
 
     @param[out]
     tau     REAL array, dimension (min(M,N))
@@ -85,9 +85,12 @@
     @ingroup magma_sgelqf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgelqf_gpu( magma_int_t m, magma_int_t n,
-                  float *dA,   magma_int_t lda,   float *tau,
-                  float *work, magma_int_t lwork, magma_int_t *info)
+magma_sgelqf_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    float *tau,
+    float *work, magma_int_t lwork,
+    magma_int_t *info)
 {
     float *dAT;
     float c_one = MAGMA_S_ONE;
@@ -104,7 +107,7 @@ magma_sgelqf_gpu( magma_int_t m, magma_int_t n,
         *info = -1;
     } else if (n < 0) {
         *info = -2;
-    } else if (lda < max(1,m)) {
+    } else if (ldda < max(1,m)) {
         *info = -4;
     } else if (lwork < max(1,m) && ! lquery) {
         *info = -7;
@@ -127,13 +130,13 @@ magma_sgelqf_gpu( magma_int_t m, magma_int_t n,
     maxn = ((n + 31)/32)*32;
     maxdim = max(maxm, maxn);
 
-    int ldat   = maxn;
+    magma_int_t lddat = maxn;
 
     dAT = dA;
     
     if ( m == n ) {
-        ldat = lda;
-        magmablas_stranspose_inplace( m, dAT, lda );
+        lddat = ldda;
+        magmablas_stranspose_inplace( m, dAT, ldda );
     }
     else {
         if (MAGMA_SUCCESS != magma_smalloc( &dAT, maxm*maxn ) ) {
@@ -141,16 +144,16 @@ magma_sgelqf_gpu( magma_int_t m, magma_int_t n,
             return *info;
         }
         
-        magmablas_stranspose( m, n, dA, lda, dAT, ldat );
+        magmablas_stranspose( m, n, dA, ldda, dAT, lddat );
     }
     
-    magma_sgeqrf2_gpu(n, m, dAT, ldat, tau, &iinfo);
+    magma_sgeqrf2_gpu(n, m, dAT, lddat, tau, &iinfo);
 
     if ( m == n ) {
-        magmablas_stranspose_inplace( m, dAT, ldat );
+        magmablas_stranspose_inplace( m, dAT, lddat );
     }
     else {
-        magmablas_stranspose( n, m, dAT, ldat, dA, lda );
+        magmablas_stranspose( n, m, dAT, lddat, dA, ldda );
         magma_free( dAT );
     }
 

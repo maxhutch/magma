@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zgesv_gpu.cpp normal z -> d, Tue Sep  2 12:38:28 2014
+       @generated from testing_zgesv_gpu.cpp normal z -> d, Sat Nov 15 19:54:18 2014
        @author Mark Gates
 */
 // includes, system
@@ -13,8 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -34,7 +32,7 @@ int main(int argc, char **argv)
     double c_one     = MAGMA_D_ONE;
     double c_neg_one = MAGMA_D_NEG_ONE;
     double *h_A, *h_B, *h_X;
-    double *d_A, *d_B;
+    magmaDouble_ptr d_A, d_B;
     magma_int_t *ipiv;
     magma_int_t N, nrhs, lda, ldb, ldda, lddb, info, sizeA, sizeB;
     magma_int_t ione     = 1;

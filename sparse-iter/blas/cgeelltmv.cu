@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeelltmv.cu normal z -> c, Tue Sep  2 12:38:32 2014
+       @generated from zgeelltmv.cu normal z -> c, Sat Nov 15 19:54:21 2014
 
 */
 
@@ -21,61 +21,64 @@
 // ELL SpMV kernel
 //Michael Garland
 __global__ void 
-cgeelltmv_kernel( int num_rows, 
-                 int num_cols,
-                 int num_cols_per_row,
-                 magmaFloatComplex alpha, 
-                 magmaFloatComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magmaFloatComplex *d_x,
-                 magmaFloatComplex beta, 
-                 magmaFloatComplex *d_y)
+cgeelltmv_kernel( 
+    int num_rows, 
+    int num_cols,
+    int num_cols_per_row,
+    magmaFloatComplex alpha, 
+    magmaFloatComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaFloatComplex_ptr dx,
+    magmaFloatComplex beta, 
+    magmaFloatComplex_ptr dy)
 {
     int row = blockDim.x * blockIdx.x + threadIdx.x ;
     if(row < num_rows ){
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         for ( int n = 0; n < num_cols_per_row ; n ++){
-            int col = d_colind [ num_rows * n + row ];
-            magmaFloatComplex val = d_val [ num_rows * n + row ];
+            int col = dcolind [ num_rows * n + row ];
+            magmaFloatComplex val = dval [ num_rows * n + row ];
             if( val != 0)
-                dot += val * d_x[col ];
+                dot += val * dx[col ];
         }
-        d_y[ row ] = dot * alpha + beta * d_y [ row ];
+        dy[ row ] = dot * alpha + beta * dy [ row ];
     }
 }
 
 // shifted ELL SpMV kernel
 //Michael Garland
 __global__ void 
-cgeelltmv_kernel_shift( int num_rows, 
-                        int num_cols,
-                        int num_cols_per_row,
-                        magmaFloatComplex alpha, 
-                        magmaFloatComplex lambda, 
-                        magmaFloatComplex *d_val, 
-                        magma_index_t *d_colind,
-                        magmaFloatComplex *d_x,
-                        magmaFloatComplex beta, 
-                        int offset,
-                        int blocksize,
-                        magma_index_t *add_rows,
-                        magmaFloatComplex *d_y){
+cgeelltmv_kernel_shift( 
+    int num_rows, 
+    int num_cols,
+    int num_cols_per_row,
+    magmaFloatComplex alpha, 
+    magmaFloatComplex lambda, 
+    magmaFloatComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaFloatComplex_ptr dx,
+    magmaFloatComplex beta, 
+    int offset,
+    int blocksize,
+    magmaIndex_ptr addrows,
+    magmaFloatComplex_ptr dy)
+{
 
     int row = blockDim.x * blockIdx.x + threadIdx.x ;
     if(row < num_rows ){
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         for ( int n = 0; n < num_cols_per_row ; n ++){
-            int col = d_colind [ num_rows * n + row ];
-            magmaFloatComplex val = d_val [ num_rows * n + row ];
+            int col = dcolind [ num_rows * n + row ];
+            magmaFloatComplex val = dval [ num_rows * n + row ];
             if( val != 0)
-                dot += val * d_x[col ];
+                dot += val * dx[col ];
         }
         if( row<blocksize )
-            d_y[ row ] = dot * alpha - lambda 
-                    * d_x[ offset+row ] + beta * d_y [ row ];
+            dy[ row ] = dot * alpha - lambda 
+                    * dx[ offset+row ] + beta * dy [ row ];
         else
-            d_y[ row ] = dot * alpha - lambda 
-                    * d_x[ add_rows[row-blocksize] ] + beta * d_y [ row ];            
+            dy[ row ] = dot * alpha - lambda 
+                    * dx[ addrows[row-blocksize] ] + beta * dy [ row ];            
     }
 }
 
@@ -92,67 +95,70 @@ cgeelltmv_kernel_shift( int num_rows,
     Arguments
     ---------
     
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
                 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
                 
-    @param
+    @param[in]
     nnz_per_row magma_int_t
                 number of elements in the longest row 
 
-    @param
+    @param[in]
     alpha       magmaFloatComplex
                 scalar multiplier
 
-    @param
-    d_val       magmaFloatComplex*
+    @param[in]
+    dval        magmaFloatComplex_ptr
                 array containing values of A in ELL
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in ELL
 
-    @param
-    d_x         magmaFloatComplex*
+    @param[in]
+    dx          magmaFloatComplex_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        magmaFloatComplex
                 scalar multiplier
 
-    @param
-    d_y         magmaFloatComplex*
+    @param[out]
+    dy          magmaFloatComplex_ptr
                 input/output vector y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_c
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_cgeelltmv(   magma_trans_t transA,
-                   magma_int_t m, magma_int_t n,
-                   magma_int_t nnz_per_row,
-                   magmaFloatComplex alpha,
-                   magmaFloatComplex *d_val,
-                   magma_index_t *d_colind,
-                   magmaFloatComplex *d_x,
-                   magmaFloatComplex beta,
-                   magmaFloatComplex *d_y ){
-
-
-
-   dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
-
-   cgeelltmv_kernel<<< grid, BLOCK_SIZE, 0, magma_stream >>>
-                  ( m, n, nnz_per_row, alpha, d_val, d_colind, d_x, beta, d_y );
+magma_cgeelltmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    magmaFloatComplex alpha,
+    magmaFloatComplex_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaFloatComplex_ptr dx,
+    magmaFloatComplex beta,
+    magmaFloatComplex_ptr dy,
+    magma_queue_t queue )
+{
+    dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    magma_int_t threads = BLOCK_SIZE;
+    cgeelltmv_kernel<<< grid, threads, 0, queue >>>
+                  ( m, n, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
 
 
    return MAGMA_SUCCESS;
@@ -169,90 +175,94 @@ magma_cgeelltmv(   magma_trans_t transA,
     Arguments
     ---------
 
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A    
 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
                 
-    @param
+    @param[in]
     nnz_per_row magma_int_t
                 number of elements in the longest row 
 
-    @param
+    @param[in]
     alpha       magmaFloatComplex
                 scalar multiplier
 
-    @param
+    @param[in]
     lambda      magmaFloatComplex
                 scalar multiplier
 
-    @param
-    d_val       magmaFloatComplex*
+    @param[in]
+    dval        magmaFloatComplex_ptr
                 array containing values of A in ELL
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in ELL
 
-    @param
-    d_x         magmaFloatComplex*
+    @param[in]
+    dx          magmaFloatComplex_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        magmaFloatComplex
                 scalar multiplier
                 
-    @param
+    @param[in]
     offset      magma_int_t 
                 in case not the main diagonal is scaled
                 
-    @param
+    @param[in]
     blocksize   magma_int_t 
                 in case of processing multiple vectors  
                 
-    @param
-    add_rows    magma_int_t*
+    @param[in]
+    addrows    magma_int_t*
                 in case the matrixpowerskernel is used
 
-    @param
-    d_y         magmaFloatComplex*
+    @param[out]
+    dy          magmaFloatComplex_ptr
                 input/output vector y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_cblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_cgeelltmv_shift( magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t nnz_per_row,
-                       magmaFloatComplex alpha,
-                       magmaFloatComplex lambda,
-                       magmaFloatComplex *d_val,
-                       magma_index_t *d_colind,
-                       magmaFloatComplex *d_x,
-                       magmaFloatComplex beta,
-                       int offset,
-                       int blocksize,
-                       magma_index_t *add_rows,
-                       magmaFloatComplex *d_y ){
-
-
-
-   dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
-   magmaFloatComplex tmp_shift;
-   //magma_csetvector(1,&lambda,1,&tmp_shift,1); 
-   tmp_shift = lambda;
-   cgeelltmv_kernel_shift<<< grid, BLOCK_SIZE, 0, magma_stream >>>
-                  ( m, n, nnz_per_row, alpha, tmp_shift, d_val, d_colind, d_x, 
-                            beta, offset, blocksize, add_rows, d_y );
+magma_cgeelltmv_shift(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    magmaFloatComplex alpha,
+    magmaFloatComplex lambda,
+    magmaFloatComplex_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaFloatComplex_ptr dx,
+    magmaFloatComplex beta,
+    int offset,
+    int blocksize,
+    magma_index_t *addrows,
+    magmaFloatComplex_ptr dy,
+    magma_queue_t queue )
+{
+    dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    magma_int_t threads = BLOCK_SIZE;
+    magmaFloatComplex tmp_shift;
+    //magma_csetvector(1,&lambda,1,&tmp_shift,1); 
+    tmp_shift = lambda;
+    cgeelltmv_kernel_shift<<< grid, threads, 0, queue >>>
+                  ( m, n, nnz_per_row, alpha, tmp_shift, dval, dcolind, dx, 
+                            beta, offset, blocksize, addrows, dy );
 
 
    return MAGMA_SUCCESS;

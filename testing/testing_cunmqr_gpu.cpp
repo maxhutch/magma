@@ -1,20 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
-       @generated from testing_zunmqr_gpu.cpp normal z -> c, Tue Sep  2 12:38:29 2014
+       @generated from testing_zunmqr_gpu.cpp normal z -> c, Sat Nov 15 19:54:18 2014
 */
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 #include <assert.h>
 
 // includes, project
@@ -38,7 +36,7 @@ int main( int argc, char** argv )
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t nb, ldc, lda, lwork, lwork_max, dt_size;
     magmaFloatComplex *C, *R, *A, *W, *tau;
-    magmaFloatComplex *dC, *dA, *dT;
+    magmaFloatComplex_ptr dC, dA, dT;
     magma_int_t status = 0;
     
     magma_opts opts;

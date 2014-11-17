@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlarfg-v2.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from zlarfg-v2.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -97,8 +97,13 @@ void magma_dlarfg_gpu_kernel( int n, double* dx0, double* dx,
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
-magma_dlarfg_gpu( magma_int_t n, double *dx0, double *dx,
-                  double *dtau, double *dxnorm, double *dAkk)
+magma_dlarfg_gpu(
+    magma_int_t n,
+    magmaDouble_ptr dx0,
+    magmaDouble_ptr dx,
+    magmaDouble_ptr dtau,
+    magmaDouble_ptr        dxnorm,
+    magmaDouble_ptr dAkk)
 {
     dim3 blocks((n+BLOCK_SIZE-1) / BLOCK_SIZE);
     dim3 threads( BLOCK_SIZE );

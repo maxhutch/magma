@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
-       @generated from zgesdd.cpp normal z -> c, Tue Sep  2 12:38:24 2014
+       @generated from zgesdd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
 
 #define PRECISION_c
+#define COMPLEX
 
 // Version 1 - LAPACK
 // Version 2 - MAGMA
@@ -52,7 +53,7 @@
       -     = MagmaSomeVec: the first min(M,N) columns of U and
                             the first min(M,N) rows of V**H are
                             returned in the arrays U and VT;
-      -     = MagmaOverwriteVec: 
+      -     = MagmaOverwriteVec:
                     If M >= N, the first N columns of U are overwritten
                     on the array A and all rows of V**H are returned in
                     the array VT;
@@ -185,8 +186,11 @@ magma_int_t magma_cgesdd(
     magmaFloatComplex *U, magma_int_t ldu,
     magmaFloatComplex *VT, magma_int_t ldvt,
     magmaFloatComplex *work, magma_int_t lwork,
+    #ifdef COMPLEX
     float *rwork,
-    magma_int_t *iwork, magma_int_t *info)
+    #endif
+    magma_int_t *iwork,
+    magma_int_t *info)
 {
     #define A(i_,j_) (A + (i_) + (j_)*lda)
     #define U(i_,j_) (U + (i_) + (j_)*ldu)
@@ -609,7 +613,7 @@ magma_int_t magma_cgesdd(
                 /* storing result in WORK[IR] and copying to A */
                 /* (CWorkspace: need 2*N*N, prefer N*N + M*N) */
                 /* (RWorkspace: need 0) */
-                for (i = 1; (ldwrkr < 0 ? i >= m : i <= m); i += ldwrkr) {
+                for (i = 1; i <= m; i += ldwrkr) {
                     chunk = min(m - i + 1, ldwrkr);
                     blasf77_cgemm("N", "N", &chunk, &n, &n, &c_one, A(i,1), &lda, &work[iu], &ldwrku, &c_zero, &work[ir], &ldwrkr);
                     lapackf77_clacpy("F", &chunk, &n, &work[ir], &ldwrkr, A(i,1), &lda);
@@ -1274,7 +1278,7 @@ magma_int_t magma_cgesdd(
                 /* storing result in WORK[IL] and copying to A */
                 /* (CWorkspace: need 2*M*M, prefer M*M + M*N) */
                 /* (RWorkspace: need 0) */
-                for (i = 1; (chunk < 0 ? i >= n : i <= n); i += chunk) {
+                for (i = 1; i <= n; i += chunk) {
                     blk = min(n - i + 1, chunk);
                     blasf77_cgemm("N", "N", &m, &blk, &m, &c_one, &work[ivt], &m, A(1,i), &lda, &c_zero, &work[il], &ldwrkl);
                     lapackf77_clacpy("F", &m, &blk, &work[il], &ldwrkl, A(1,i), &lda);
@@ -1532,7 +1536,7 @@ magma_int_t magma_cgesdd(
                 /* (was:        need 2*M*M, prefer 2*M*N) */
                 /* (RWorkspace: need [M] + 3*M*M, prefer [M] + M*M + 2*M*N) < M + 5*M*M since N < 2*M here */
                 nrwork = iru;
-                for (i = 1; (chunk < 0 ? i >= n : i <= n); i += chunk) {
+                for (i = 1; i <= n; i += chunk) {
                     blk = min(n - i + 1, chunk);
                     lapackf77_clarcm(&m, &blk, &rwork[irvt], &m, A(1,i), &lda, &work[ivt], &ldwkvt, &rwork[nrwork]);
                     lapackf77_clacpy("F", &m, &blk, &work[ivt], &ldwkvt, A(1,i), &lda);
@@ -1718,7 +1722,7 @@ magma_int_t magma_cgesdd(
                     /* (CWorkspace: need [2*M] + M*M, prefer [2*M] + M*N) */
                     /* (RWorkspace: need [M] + 3*M*M, prefer [M] + M*M + 2*M*N) < 5*M*M since N < 2*M here */
                     nrwork = iru;
-                    for (i = 1; (chunk < 0 ? i >= n : i <= n); i += chunk) {
+                    for (i = 1; i <= n; i += chunk) {
                         blk = min(n - i + 1, chunk);
                         lapackf77_clarcm(&m, &blk, &rwork[irvt], &m, A(1,i), &lda, &work[ivt], &ldwkvt, &rwork[nrwork]);
                         lapackf77_clacpy("F", &m, &blk, &work[ivt], &ldwkvt, A(1,i), &lda);

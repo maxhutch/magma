@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
 */
 #include <stdio.h>
 
-#include <cublas_v2.h>
-
+#include "testings.h"
 #include "magma.h"
 
 int gStatus;
@@ -33,7 +32,7 @@ int main( int argc, char** argv )
 {
     gStatus = 0;
     int s;
-    
+
     // ------------------------------------------------------------
     s = gStatus;
     check( lapack_bool_const(   MagmaFalse         )[0] == 'N' );

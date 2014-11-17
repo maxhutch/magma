@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hartwig Anzt 
 
@@ -45,26 +45,31 @@
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_z_sparse_matrix
                 input matrix A
 
-    @param
+    @param[in]
     b           magma_z_vector
                 RHS b
 
-    @param
+    @param[in]
     precond     magma_z_preconditioner*
                 preconditioner parameter
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgesv
     ********************************************************************/
 
-magma_int_t
-magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
-                        magma_z_preconditioner *precond ){
-
-#if defined(HAVE_PASTIX)
+extern "C" magma_int_t
+magma_zpastixsetup(
+    magma_z_sparse_matrix A, magma_z_vector b,
+    magma_z_preconditioner *precond,
+    magma_queue_t queue )
+{
+    #if defined(HAVE_PASTIX)
 
     #if defined(PRECISION_d)
 
@@ -82,24 +87,24 @@ magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
 
         magma_z_sparse_matrix A_h1, B;
         magma_z_vector diag, c_t, b_h;
-        magma_z_vinit( &c_t, Magma_CPU, A.num_rows, MAGMA_Z_ZERO );
-        magma_z_vinit( &diag, Magma_CPU, A.num_rows, MAGMA_Z_ZERO );
-        magma_z_vtransfer( b, &b_h, A.memory_location, Magma_CPU);
+        magma_z_vinit( &c_t, Magma_CPU, A.num_rows, MAGMA_Z_ZERO, queue );
+        magma_z_vinit( &diag, Magma_CPU, A.num_rows, MAGMA_Z_ZERO, queue );
+        magma_z_vtransfer( b, &b_h, A.memory_location, Magma_CPU, queue );
 
-        if( A.storage_type != Magma_CSR ){
-            magma_z_mtransfer( A, &A_h1, A.memory_location, Magma_CPU);
-            magma_z_mconvert( A_h1, &B, A_h1.storage_type, Magma_CSR);
+        if ( A.storage_type != Magma_CSR ) {
+            magma_z_mtransfer( A, &A_h1, A.memory_location, Magma_CPU, queue );
+            magma_z_mconvert( A_h1, &B, A_h1.storage_type, Magma_CSR, queue );
         }
-        else{
-            magma_z_mtransfer( A, &B, A.memory_location, Magma_CPU);
+        else {
+            magma_z_mtransfer( A, &B, A.memory_location, Magma_CPU, queue );
         }
 
 
-        rhs = (pastix_float_t*) b_h.val;
+        rhs = (pastix_float_t*) b_h.dval;
         ncol = B.num_rows;
-        colptr = B.row;
-        rows = B.col;
-        values = (pastix_float_t*) B.val;
+        colptr = B.drow;
+        rows = B.dcol;
+        values = (pastix_float_t*) B.dval;
 
         mat_type = API_SYM_NO;
 
@@ -176,9 +181,9 @@ magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
         precond->int_array_1 = (magma_int_t*) perm;
         precond->int_array_2 = (magma_int_t*) invp;
 
-        precond->M.val = (magmaDoubleComplex*) values;
-        precond->M.col = (magma_int_t*) colptr;
-        precond->M.row = (magma_int_t*) rows;
+        precond->M.dval = (magmaDoubleComplex*) values;
+        precond->M.dcol = (magma_int_t*) colptr;
+        precond->M.drow = (magma_int_t*) rows;
         precond->M.num_rows = A.num_rows;
         precond->M.num_cols = A.num_cols;
         precond->M.memory_location = Magma_CPU;
@@ -186,11 +191,11 @@ magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
         precond->iparm = iparm;
         precond->dparm = dparm;
 
-        if( A.storage_type != Magma_CSR){
-            magma_z_mfree( &A_h1 );
+        if ( A.storage_type != Magma_CSR) {
+            magma_z_mfree( &A_h1, queue );
         }   
-        magma_z_vfree( &b_h);
-        magma_z_mfree( &B );
+        magma_z_vfree( &b_h, queue );
+        magma_z_mfree( &B, queue );
 
     #else
         printf( "error: only double precision supported yet.\n");
@@ -201,7 +206,6 @@ magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
 #endif
 
     return MAGMA_SUCCESS;
-
 }
 
 
@@ -220,26 +224,31 @@ magma_zpastixsetup( magma_z_sparse_matrix A, magma_z_vector b,
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_z_sparse_matrix
                 input matrix A
 
-    @param
+    @param[in]
     b           magma_z_vector
                 RHS b
 
-    @param
+    @param[in]
     precond     magma_z_preconditioner*
                 preconditioner parameter
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_
     ********************************************************************/
 
-magma_int_t
-magma_zapplypastix( magma_z_vector b, magma_z_vector *x, 
-                    magma_z_preconditioner *precond ){
-
-#if defined(HAVE_PASTIX)
+extern "C" magma_int_t
+magma_zapplypastix(
+    magma_z_vector b, magma_z_vector *x, 
+    magma_z_preconditioner *precond,
+    magma_queue_t queue )
+{
+    #if defined(HAVE_PASTIX)
 
     #if defined(PRECISION_d)
 
@@ -255,13 +264,13 @@ magma_zapplypastix( magma_z_vector b, magma_z_vector *x,
 
         magma_z_vector b_h;
 
-        magma_z_vtransfer( b, &b_h, b.memory_location, Magma_CPU);
+        magma_z_vtransfer( b, &b_h, b.memory_location, Magma_CPU, queue );
 
-        rhs = (pastix_float_t*) b_h.val;
+        rhs = (pastix_float_t*) b_h.dval;
         ncol = precond->M.num_rows;
-        colptr = (pastix_int_t*) precond->M.col;
-        rows = (pastix_int_t*) precond->M.row;
-        values = (pastix_float_t*) precond->M.val;
+        colptr = (pastix_int_t*) precond->M.dcol;
+        rows = (pastix_int_t*) precond->M.drow;
+        values = (pastix_float_t*) precond->M.dval;
         iparm = precond->iparm;
         dparm = precond->dparm;
 
@@ -281,16 +290,16 @@ magma_zapplypastix( magma_z_vector b, magma_z_vector *x,
 
         pastix(&(precond->pastix_data), MPI_COMM_WORLD,
              ncol, colptr, rows, values,
-             perm, invp, b_h.val, 1, iparm, dparm);
+             perm, invp, b_h.dval, 1, iparm, dparm);
 
         // fix that x is not allocated every time
         //  in case of many iterations, it might be faster to use
         // magma_zsetvector( ncol, 
-        //                                    b_h.val, 1, x->val, 1 );
-        magma_z_vfree( x );
-        magma_z_vtransfer( b_h, x, Magma_CPU, b.memory_location);
+        //                                    b_h.dval, 1, x->dval, 1 );
+        magma_z_vfree( x, queue );
+        magma_z_vtransfer( b_h, x, Magma_CPU, b.memory_location, queue );
 
-        magma_z_vfree( &b_h);
+        magma_z_vfree( &b_h, queue );
 
     #else
         printf( "error: only double precision supported yet.\n");
@@ -301,5 +310,4 @@ magma_zapplypastix( magma_z_vector b, magma_z_vector *x,
 #endif
 
     return MAGMA_SUCCESS;
-
 }

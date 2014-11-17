@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -13,11 +13,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
-#include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
 #include "testings.h"
@@ -34,8 +31,8 @@ int main( int argc, char** argv)
     real_Double_t   gbytes, gpu_perf, gpu_time, cpu_perf, cpu_time;
     magmaDoubleComplex *h_A;
     double *h_work;
-    magmaDoubleComplex *d_A;
-    double *d_work;
+    magmaDoubleComplex_ptr d_A;
+    magmaDouble_ptr d_work;
     magma_int_t N, n2, lda, ldda;
     magma_int_t idist    = 3;  // normal distribution (otherwise max norm is always ~ 1)
     magma_int_t ISEED[4] = {0,0,0,1};

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -96,14 +96,15 @@
     @ingroup magma_zgeqp3_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_zlaqps(magma_int_t m, magma_int_t n, magma_int_t offset,
-             magma_int_t nb, magma_int_t *kb,
-             magmaDoubleComplex *A,  magma_int_t lda,
-             magmaDoubleComplex *dA, magma_int_t ldda,
-             magma_int_t *jpvt, magmaDoubleComplex *tau, double *vn1, double *vn2,
-             magmaDoubleComplex *auxv,
-             magmaDoubleComplex *F,  magma_int_t ldf,
-             magmaDoubleComplex *dF, magma_int_t lddf)
+magma_zlaqps(
+    magma_int_t m, magma_int_t n, magma_int_t offset,
+    magma_int_t nb, magma_int_t *kb,
+    magmaDoubleComplex     *A, magma_int_t lda,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_int_t *jpvt, magmaDoubleComplex *tau, double *vn1, double *vn2,
+    magmaDoubleComplex *auxv,
+    magmaDoubleComplex     *F, magma_int_t ldf,
+    magmaDoubleComplex_ptr dF, magma_int_t lddf)
 {
 #define  A(i, j) (A  + (i) + (j)*(lda ))
 #define dA(i, j) (dA + (i) + (j)*(ldda))

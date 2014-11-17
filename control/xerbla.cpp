@@ -1,3 +1,12 @@
+/*
+    -- MAGMA (version 1.6.0) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       @date November 2014
+
+       @author Mark Gates
+*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

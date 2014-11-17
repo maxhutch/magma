@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @precisions normal d -> s
@@ -12,6 +12,7 @@
 #include "common_magma.h"
 
 #define PRECISION_d
+#define REAL
 
 // Version 1 - LAPACK
 // Version 2 - MAGMA
@@ -171,7 +172,11 @@ magma_int_t magma_dgesdd(
     double *U, magma_int_t ldu,
     double *VT, magma_int_t ldvt,
     double *work, magma_int_t lwork,
-    magma_int_t *iwork, magma_int_t *info)
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
+    magma_int_t *iwork,
+    magma_int_t *info)
 {
     #define A(i_,j_)  (A  + (i_) + (j_)*lda)
     #define U(i_,j_)  (U  + (i_) + (j_)*ldu)

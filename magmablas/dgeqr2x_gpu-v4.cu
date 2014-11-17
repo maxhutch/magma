@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqr2x_gpu-v4.cu normal z -> d, Tue Sep  2 12:38:17 2014
+       @generated from zgeqr2x_gpu-v4.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -89,7 +89,7 @@
 
     Each H(i) has the form
 
-        H(i) = I - tau * v * v'
+        H(i) = I - tau * v * v**H
 
     where tau is a real scalar, and v is a real vector with
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
@@ -100,9 +100,13 @@
 extern "C" magma_int_t
 magma_dgeqr2x4_gpu(
     magma_int_t m, magma_int_t n,
-    double *dA, magma_int_t ldda,
-    double *dtau, double *dT, double *ddA,
-    double *dwork, magma_int_t *info, magma_queue_t stream)
+    magmaDouble_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr dtau,
+    magmaDouble_ptr dT,
+    magmaDouble_ptr ddA,
+    magmaDouble_ptr dwork,
+    magma_queue_t queue,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
     #define dT(i_,j_) (dT + (j_)*(k)    + (i_))
@@ -115,7 +119,7 @@ magma_dgeqr2x4_gpu(
 
     magma_queue_t cstream;
     magmablasGetKernelStream(&cstream);
-    magmablasSetKernelStream(stream);
+    magmablasSetKernelStream(queue);
 
     *info = 0;
     if (m < 0) {
@@ -137,7 +141,7 @@ magma_dgeqr2x4_gpu(
     for (magma_int_t b=0; b < k; b += BS) {
         for (i = b; i < min(k, b+BS); ++i) {
 
-            /*   Apply H' to A(:,i) from the left */
+            /*   Apply H**H to A(:,i) from the left */
             if (i-b > 0) {
                 /* Compute the (i-1)th column of T */
                 if ( i-1 > 0 ) {
@@ -147,11 +151,11 @@ magma_dgeqr2x4_gpu(
                         ( dT(0,0), k, work, dT(0,i-1), dtau+i-1);
                 }
 
-                /* dwork = V' c */
+                /* dwork = V**H c */
                 magma_dgemv_kernel1<<< i-b, BLOCK_SIZE, 0, magma_stream >>>
                     (m-b, dA(b, b),  ldda, dA(b,i), work);
 
-                /* dwork = T' work */
+                /* dwork = T**H work */
                 magma_dtrmv_tkernel<<< i-b, i-b, 0, magma_stream >>>
                     (dT(b,b), k, work, work+i-b);
 

@@ -1,17 +1,84 @@
+# Automatically generated from Makefile ZHDR and ZSRC
 CHDR = \
-
+	
 
 DHDR = \
-
+	
 
 SHDR = \
-
+	
 
 CSRC = \
-magma_c_blaswrapper.cpp cbajac_csr.cu cbcsrswp.cu cbcsrtrsv.cu cbcsrcpy.cu cbcsrlugemm.cu cbcsrlupivloc.cu cgecsrmv.cu cgeellmv.cu cgeelltmv.cu cgeellrtmv.cu cgesellcmv.cu cgesellcmmv.cu cjacobisetup.cu clobpcg_shift.cu clobpcg_residuals.cu clobpcg_maxpy.cu cmdot.cu cmergebicgstab.cu cmergebicgstab2.cu cmergecg.cu cmgecsrmv.cu cmgeellmv.cu cmgeelltmv.cu cmgesellcmmv.cu cpipelinedgmres.cu ccompact.cu
+	magma_c_blaswrapper.cpp \
+	cbajac_csr.cu \
+	cgecsrmv.cu \
+	cgeellmv.cu \
+	cgeelltmv.cu \
+	cgeellrtmv.cu \
+	cgesellcmv.cu \
+	cgesellcmmv.cu \
+	cjacobisetup.cu \
+	clobpcg_shift.cu \
+	clobpcg_residuals.cu \
+	clobpcg_maxpy.cu \
+	cmdot.cu \
+	cmergebicgstab.cu \
+	cmergebicgstab2.cu \
+	cmergecg.cu \
+	cmgecsrmv.cu \
+	cmgeellmv.cu \
+	cmgeelltmv.cu \
+	cmgesellcmmv.cu \
+	cpipelinedgmres.cu \
+	ccompact.cu \
+	magma_cmcsrcompressor_gpu.cu
 
 DSRC = \
-slag2d_sparse.cu magma_d_blaswrapper.cpp magma_slag2d.cpp magma_dlag2s.cpp dbajac_csr.cu dbcsrswp.cu dbcsrtrsv.cu dbcsrcpy.cu dbcsrlugemm.cu dbcsrlupivloc.cu dgecsrmv.cu dgeellmv.cu dgeelltmv.cu dgeellrtmv.cu dgesellcmv.cu dgesellcmmv.cu djacobisetup.cu dlag2s_sparse.cu dlobpcg_shift.cu dlobpcg_residuals.cu dlobpcg_maxpy.cu dmdot.cu dmergebicgstab.cu dmergebicgstab2.cu dmergecg.cu dmgecsrmv.cu dmgeellmv.cu dmgeelltmv.cu dmgesellcmmv.cu dpipelinedgmres.cu dcompact.cu
+	magma_d_blaswrapper.cpp \
+	dbajac_csr.cu \
+	dgecsrmv.cu \
+	dgeellmv.cu \
+	dgeelltmv.cu \
+	dgeellrtmv.cu \
+	dgesellcmv.cu \
+	dgesellcmmv.cu \
+	djacobisetup.cu \
+	dlobpcg_shift.cu \
+	dlobpcg_residuals.cu \
+	dlobpcg_maxpy.cu \
+	dmdot.cu \
+	dmergebicgstab.cu \
+	dmergebicgstab2.cu \
+	dmergecg.cu \
+	dmgecsrmv.cu \
+	dmgeellmv.cu \
+	dmgeelltmv.cu \
+	dmgesellcmmv.cu \
+	dpipelinedgmres.cu \
+	dcompact.cu \
+	magma_dmcsrcompressor_gpu.cu
 
 SSRC = \
-magma_s_blaswrapper.cpp sbajac_csr.cu sbcsrswp.cu sbcsrtrsv.cu sbcsrcpy.cu sbcsrlugemm.cu sbcsrlupivloc.cu sgecsrmv.cu sgeellmv.cu sgeelltmv.cu sgeellrtmv.cu sgesellcmv.cu sgesellcmmv.cu sjacobisetup.cu slobpcg_shift.cu slobpcg_residuals.cu slobpcg_maxpy.cu smdot.cu smergebicgstab.cu smergebicgstab2.cu smergecg.cu smgecsrmv.cu smgeellmv.cu smgeelltmv.cu smgesellcmmv.cu spipelinedgmres.cu scompact.cu
+	magma_s_blaswrapper.cpp \
+	sbajac_csr.cu \
+	sgecsrmv.cu \
+	sgeellmv.cu \
+	sgeelltmv.cu \
+	sgeellrtmv.cu \
+	sgesellcmv.cu \
+	sgesellcmmv.cu \
+	sjacobisetup.cu \
+	slobpcg_shift.cu \
+	slobpcg_residuals.cu \
+	slobpcg_maxpy.cu \
+	smdot.cu \
+	smergebicgstab.cu \
+	smergebicgstab2.cu \
+	smergecg.cu \
+	smgecsrmv.cu \
+	smgeellmv.cu \
+	smgeelltmv.cu \
+	smgesellcmmv.cu \
+	spipelinedgmres.cu \
+	scompact.cu \
+	magma_smcsrcompressor_gpu.cu

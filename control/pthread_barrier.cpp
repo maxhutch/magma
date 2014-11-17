@@ -1,6 +1,6 @@
 // MacOS doesn't provide pthread_barrier
 // magmawinthread.c doesn't provide pthread_barrier
-#if defined( _WIN32 ) || defined( _WIN64 ) || defined( __APPLE__ )
+#if (defined( _WIN32 ) || defined( _WIN64 ) || defined( __APPLE__ )) && ! defined( __MINGW32__ )
 
 #include <errno.h>
 
@@ -53,4 +53,4 @@ int pthread_barrier_wait( pthread_barrier_t *barrier )
     }
 }
 
-#endif // _WIN32 || _WIN64 || __APPLE__
+#endif // (_WIN32 || _WIN64 || __APPLE__) && ! __MINGW32__

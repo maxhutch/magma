@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @author Azzam Haidar
-       @generated from zlarfb_gpu_gemm.cpp normal z -> d, Tue Sep  2 12:38:20 2014
+       @generated from zlarfb_gpu_gemm.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 */
 #include "common_magma.h"
 
@@ -61,34 +61,34 @@
 
     @param[in]
     dV      DOUBLE_PRECISION array on the GPU, dimension
-                (LDV,K) if STOREV = MagmaColumnwise
-                (LDV,M) if STOREV = MagmaRowwise and SIDE = MagmaLeft
-                (LDV,N) if STOREV = MagmaRowwise and SIDE = MagmaRight
+                (LDDV,K) if STOREV = MagmaColumnwise
+                (LDDV,M) if STOREV = MagmaRowwise and SIDE = MagmaLeft
+                (LDDV,N) if STOREV = MagmaRowwise and SIDE = MagmaRight
             The matrix V. See further details.
 
     @param[in]
-    ldv     INTEGER
+    lddv    INTEGER
             The leading dimension of the array V.
-            If STOREV = MagmaColumnwise and SIDE = MagmaLeft, LDV >= max(1,M);
-            if STOREV = MagmaColumnwise and SIDE = MagmaRight, LDV >= max(1,N);
-            if STOREV = MagmaRowwise, LDV >= K.
+            If STOREV = MagmaColumnwise and SIDE = MagmaLeft, LDDV >= max(1,M);
+            if STOREV = MagmaColumnwise and SIDE = MagmaRight, LDDV >= max(1,N);
+            if STOREV = MagmaRowwise, LDDV >= K.
 
     @param[in]
-    dT      DOUBLE_PRECISION array on the GPU, dimension (LDT,K)
+    dT      DOUBLE_PRECISION array on the GPU, dimension (LDDT,K)
             The triangular k by k matrix T in the representation of the
             block reflector.
 
     @param[in]
-    ldt     INTEGER
-            The leading dimension of the array T. LDT >= K.
+    lddt    INTEGER
+            The leading dimension of the array T. LDDT >= K.
 
     @param[in,out]
-    dC      DOUBLE_PRECISION array on the GPU, dimension (LDC,N)
+    dC      DOUBLE_PRECISION array on the GPU, dimension (LDDC,N)
             On entry, the m by n matrix C.
             On exit, C is overwritten by H*C, or H^H*C, or C*H, or C*H^H.
 
     @param[in]
-    ldc     INTEGER
+    lddc    INTEGER
             The leading dimension of the array C. LDA >= max(1,M).
 
     @param
@@ -124,7 +124,7 @@
                      ( v1 v2 v3 )
                      ( v1 v2 v3 )
 
-        DIRECT = MagmaBackward and        DIRECT = MagmaBackward and 
+        DIRECT = MagmaBackward and        DIRECT = MagmaBackward and
         STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
 
                  V = ( v1 v2 v3 )                 V = ( v1 v1  1  0  0 )
@@ -136,13 +136,14 @@
     @ingroup magma_daux3
     ********************************************************************/
 extern "C" magma_int_t
-magma_dlarfb_gpu_gemm( magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
-                  magma_int_t m, magma_int_t n, magma_int_t k,
-                  const double *dV,    magma_int_t ldv,
-                  const double *dT,    magma_int_t ldt,
-                  double *dC,          magma_int_t ldc,
-                  double *dwork,       magma_int_t ldwork,
-                  double *dworkvt,     magma_int_t ldworkvt)
+magma_dlarfb_gpu_gemm(
+    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDouble_const_ptr dV,    magma_int_t lddv,
+    magmaDouble_const_ptr dT,    magma_int_t lddt,
+    magmaDouble_ptr dC,          magma_int_t lddc,
+    magmaDouble_ptr dwork,       magma_int_t ldwork,
+    magmaDouble_ptr dworkvt,     magma_int_t ldworkvt)
 {
     double c_zero    = MAGMA_D_ZERO;
     double c_one     = MAGMA_D_ONE;
@@ -153,8 +154,8 @@ magma_dlarfb_gpu_gemm( magma_side_t side, magma_trans_t trans, magma_direct_t di
     if (m <= 0 || n <= 0) {
         return info;
     }
-    //internal variable
-    magma_int_t ldwvt = m > n ?  k : m;
+    // internal variable
+    magma_int_t ldwvt = (m > n ?  k : m);
     magma_int_t ldw;
     if ( side == MagmaLeft ) {
         ldw = k;
@@ -194,36 +195,36 @@ magma_dlarfb_gpu_gemm( magma_side_t side, magma_trans_t trans, magma_direct_t di
         // W = V' C
         magma_dgemm( MagmaTrans,notransV,
                      k, n, m,
-                     c_one,  dV,    ldv,
-                             dC,    ldc,
+                     c_one,  dV,    lddv,
+                             dC,    lddc,
                      c_zero, dwork, ldw);
 
         if (m <= n) {
             // W2 = V T
             magma_dgemm( notransV, trans,
                          m, k, k,
-                         c_one,  dV, ldv,
-                                 dT, ldt,
+                         c_one,  dV, lddv,
+                                 dT, lddt,
                          c_zero, dworkvt, ldwvt);
             // C = C - W2 W = C - V T V' C = (I - V T V') C = H C
             magma_dgemm( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dworkvt,  ldwvt,
                                     dwork,    ldw,
-                         c_one,     dC,       ldc);
+                         c_one,     dC,       lddc);
         } else {
             // W2 = T W  = T  V' C
             magma_dgemm( trans, MagmaNoTrans,
                          k, n, k,
-                         c_one,  dT, ldt,
+                         c_one,  dT, lddt,
                                  dwork, ldw,
                          c_zero, dworkvt, ldwvt);
             // C = C - V W2 = C - V T V' C = (I - V T V') C = H C
             magma_dgemm( notransV, MagmaNoTrans,
                          m, n, k,
-                         c_neg_one, dV,  ldv,
+                         c_neg_one, dV,  lddv,
                                     dworkvt,  ldwvt,
-                         c_one,     dC,       ldc);
+                         c_one,     dC,       lddc);
         }
     }
     else {
@@ -234,35 +235,35 @@ magma_dlarfb_gpu_gemm( magma_side_t side, magma_trans_t trans, magma_direct_t di
         // W = C V
         magma_dgemm( MagmaNoTrans, notransV,
                      m, k, n,
-                     c_one,  dC,    ldc,
-                             dV,    ldv,
+                     c_one,  dC,    lddc,
+                             dV,    lddv,
                      c_zero, dwork, ldw);
         if (m <= n) {
             // W2 = W T = C V T
             magma_dgemm( MagmaNoTrans, trans,
                          m, k, k,
                          c_one,  dwork, ldw,
-                                 dT, ldt,
+                                 dT, lddt,
                          c_zero, dworkvt, ldwvt);
             // C = C - W2 V' = C - C V T V' = C (I - V T V') = C H
             magma_dgemm( MagmaNoTrans, transV,
                          m, n, k,
                          c_neg_one, dworkvt, ldwvt,
-                                    dV,    ldv,
-                         c_one,     dC,    ldc);
+                                    dV,    lddv,
+                         c_one,     dC,    lddc);
         } else {
             // W2 = T V'
             magma_dgemm( trans, transV,
                          k, n, k,
-                         c_one,  dT, ldt,
-                                 dV, ldv,
+                         c_one,  dT, lddt,
+                                 dV, lddv,
                          c_zero, dworkvt, ldwvt);
             // C = C - W W2 = C - C V T V' = C (I - V T V') = C H
             magma_dgemm( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dwork,   ldw,
                                     dworkvt, ldwvt,
-                         c_one,     dC,      ldc);
+                         c_one,     dC,      lddc);
         }
     }
 

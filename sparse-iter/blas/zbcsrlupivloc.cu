@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -47,10 +47,10 @@
 // every multiprocessor handles one BCSR-block
 __global__ void 
 zbcsrlupivloc_kernel( 
-                       int size_b,
-                       int kblocks,   
-                       double **A,  
-                       magma_int_t *ipiv)
+    int size_b,
+    int kblocks,   
+    magmaDouble_ptr *A,  
+    magmaInt_ptr ipiv)
 {
     if( blockIdx.x < kblocks ) {
         if(threadIdx.x < size_b ){
@@ -84,36 +84,41 @@ zbcsrlupivloc_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     size_b      magma_int_t
                 blocksize in BCSR
     
-    @param
+    @param[in]
     kblocks     magma_int_t
                 number of blocks
                 
-    @param
-    dA          magmaDoubleComplex**
+    @param[in]
+    dA          magmaDoubleComplex_ptr *
                 matrix in BCSR
 
-    @param
-    ipiv        magma_int_t*
+    @param[in]
+    ipiv        magmaInt_ptr
                 array containing pivots
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zbcsrlupivloc( magma_int_t size_b, 
-                    magma_int_t kblocks,
-                    magmaDoubleComplex **dA,  
-                    magma_int_t *ipiv ){
-
-#if defined(PRECISION_d)
+magma_zbcsrlupivloc(
+    magma_int_t size_b, 
+    magma_int_t kblocks,
+    magmaDoubleComplex_ptr *dA,  
+    magmaInt_ptr ipiv,
+    magma_queue_t queue )
+{
+    #if defined(PRECISION_d)
     dim3 threads( 64, 1 );
 
     dim3 grid(kblocks, 1, 1);
-    zbcsrlupivloc_kernel<<< grid, threads, 0, magma_stream >>>( 
+    zbcsrlupivloc_kernel<<< grid, threads, 0, queue >>>( 
                   size_b, kblocks, dA, ipiv );
 
 #endif

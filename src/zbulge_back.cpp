@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Azzam Haidar
        @author Stan Tomov
@@ -45,10 +45,11 @@ typedef struct magma_zapplyQ_data_s {
     pthread_barrier_t barrier;
 } magma_zapplyQ_data;
 
-void magma_zapplyQ_data_init(magma_zapplyQ_data *zapplyQ_data, magma_int_t threads_num, magma_int_t n, magma_int_t ne, magma_int_t n_gpu,
-        magma_int_t nb, magma_int_t Vblksiz, magmaDoubleComplex *E, magma_int_t lde,
-        magmaDoubleComplex *V, magma_int_t ldv, magmaDoubleComplex *TAU,
-        magmaDoubleComplex *T, magma_int_t ldt, magmaDoubleComplex *dE, magma_int_t ldde)
+void magma_zapplyQ_data_init(
+    magma_zapplyQ_data *zapplyQ_data, magma_int_t threads_num, magma_int_t n, magma_int_t ne, magma_int_t n_gpu,
+    magma_int_t nb, magma_int_t Vblksiz, magmaDoubleComplex *E, magma_int_t lde,
+    magmaDoubleComplex *V, magma_int_t ldv, magmaDoubleComplex *TAU,
+    magmaDoubleComplex *T, magma_int_t ldt, magmaDoubleComplex *dE, magma_int_t ldde)
 {
 
     zapplyQ_data->threads_num = threads_num;
@@ -75,7 +76,8 @@ void magma_zapplyQ_data_init(magma_zapplyQ_data *zapplyQ_data, magma_int_t threa
     pthread_barrier_init(&(zapplyQ_data->barrier), NULL, count);
 }
 
-void magma_zapplyQ_data_destroy(magma_zapplyQ_data *zapplyQ_data)
+void magma_zapplyQ_data_destroy(
+    magma_zapplyQ_data *zapplyQ_data)
 {
     pthread_barrier_destroy(&(zapplyQ_data->barrier));
 }
@@ -85,8 +87,9 @@ typedef struct magma_zapplyQ_id_data {
     magma_zapplyQ_data* data;
 } magma_zapplyQ_id_data;
 
-void magma_zapplyQ_id_data_init(magma_zapplyQ_id_data *zapplyQ_id_data,
-        magma_int_t id, magma_zapplyQ_data* data)
+void magma_zapplyQ_id_data_init(
+    magma_zapplyQ_id_data *zapplyQ_id_data,
+    magma_int_t id, magma_zapplyQ_data* data)
 {
     zapplyQ_id_data->id = id;
     zapplyQ_id_data->data = data;
@@ -94,15 +97,16 @@ void magma_zapplyQ_id_data_init(magma_zapplyQ_id_data *zapplyQ_id_data,
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C" magma_int_t
-magma_zbulge_back(magma_uplo_t uplo,
-                magma_int_t n, magma_int_t nb,
-                magma_int_t ne, magma_int_t Vblksiz,
-                magmaDoubleComplex *Z, magma_int_t ldz,
-                magmaDoubleComplex *dZ, magma_int_t lddz,
-                magmaDoubleComplex *V, magma_int_t ldv,
-                magmaDoubleComplex *TAU,
-                magmaDoubleComplex *T, magma_int_t ldt,
-                magma_int_t* info)
+magma_zbulge_back(
+    magma_uplo_t uplo,
+    magma_int_t n, magma_int_t nb,
+    magma_int_t ne, magma_int_t Vblksiz,
+    magmaDoubleComplex *Z, magma_int_t ldz,
+    magmaDoubleComplex_ptr dZ, magma_int_t lddz,
+    magmaDoubleComplex *V, magma_int_t ldv,
+    magmaDoubleComplex *TAU,
+    magmaDoubleComplex *T, magma_int_t ldt,
+    magma_int_t* info)
 {
     magma_int_t threads = magma_get_parallel_numthreads();
     magma_int_t mklth   = magma_get_lapack_numthreads();
@@ -254,7 +258,7 @@ static void *magma_zapplyQ_parallel_section(void *arg)
     // bind threads
     CPU_ZERO(&new_set);
     CPU_SET(my_core_id, &new_set);
-    sched_setaffinity( 0, sizeof(new_set), &new_set) ;       
+    sched_setaffinity( 0, sizeof(new_set), &new_set);
 #ifdef PRINTAFFINITY
     print_set.print_affinity(my_core_id, "set affinity");
 #endif
@@ -319,9 +323,12 @@ static void *magma_zapplyQ_parallel_section(void *arg)
 #define V(m)     &(V[(m)])
 #define TAU(m)   &(TAU[(m)])
 #define T(m)     &(T[(m)])
-static void magma_ztile_bulge_applyQ(magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
-                                     magmaDoubleComplex *E, magma_int_t lde, magmaDoubleComplex *V, magma_int_t ldv,
-                                     magmaDoubleComplex *TAU, magmaDoubleComplex *T, magma_int_t ldt)//, magma_int_t* info)
+static void magma_ztile_bulge_applyQ(
+    magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+    magmaDoubleComplex *E, magma_int_t lde,
+    magmaDoubleComplex *V, magma_int_t ldv,
+    magmaDoubleComplex *TAU, magmaDoubleComplex *T, magma_int_t ldt)
+    //, magma_int_t* info)
 {
     //%===========================
     //%   local variables

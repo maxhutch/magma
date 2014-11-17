@@ -1,17 +1,19 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
+#include "magma_timer.h"
 
 #define PRECISION_z
+#define COMPLEX
 
 /*
  * Version1 - LAPACK              (lapack_zgehrd and lapack_zunghr)
@@ -36,10 +38,10 @@
     eigenvalues and, optionally, the left and/or right eigenvectors.
 
     The right eigenvector v(j) of A satisfies
-                     A * v(j) = lambda(j) * v(j)
+        A * v(j) = lambda(j) * v(j)
     where lambda(j) is its eigenvalue.
     The left eigenvector u(j) of A satisfies
-                  u(j)**H * A = lambda(j) * u(j)**H
+        u(j)**H * A = lambda(j) * u(j)**H
     where u(j)**H denotes the conjugate transpose of u(j).
 
     The computed eigenvectors are normalized to have Euclidean norm
@@ -71,8 +73,8 @@
             The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
-    W       COMPLEX_16 array, dimension (N)
-            W contains the computed eigenvalues.
+    w       COMPLEX_16 array, dimension (N)
+            w contains the computed eigenvalues.
 
     @param[out]
     VL      COMPLEX_16 array, dimension (LDVL,N)
@@ -107,6 +109,7 @@
     @param[in]
     lwork   INTEGER
             The dimension of the array WORK.  LWORK >= (1+nb)*N.
+            For optimal performance, LWORK >= (1+2*nb)*N.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -122,7 +125,7 @@
       -     < 0:  if INFO = -i, the i-th argument had an illegal value.
       -     > 0:  if INFO = i, the QR algorithm failed to compute all the
                   eigenvalues, and no eigenvectors have been computed;
-                  elements and i+1:N of W contain eigenvalues which have
+                  elements and i+1:N of w contain eigenvalues which have
                   converged.
 
     @ingroup magma_zgeev_driver
@@ -131,11 +134,18 @@ extern "C" magma_int_t
 magma_zgeev(
     magma_vec_t jobvl, magma_vec_t jobvr, magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
-    magmaDoubleComplex *W,
+    #ifdef COMPLEX
+    magmaDoubleComplex *w,
+    #else
+    double *wr, double *wi,
+    #endif
     magmaDoubleComplex *VL, magma_int_t ldvl,
     magmaDoubleComplex *VR, magma_int_t ldvr,
     magmaDoubleComplex *work, magma_int_t lwork,
-    double *rwork, magma_int_t *info )
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define VL(i,j)  (VL + (i) + (j)*ldvl)
     #define VR(i,j)  (VR + (i) + (j)*ldvr)
@@ -150,10 +160,15 @@ magma_zgeev(
     double anrm, cscale, bignum, smlnum;
     magma_int_t i, k, ilo, ihi;
     magma_int_t ibal, ierr, itau, iwrk, nout, liwrk, nb;
-    magma_int_t scalea, minwrk, irwork, lquery, wantvl, wantvr, select[1];
+    magma_int_t scalea, minwrk, optwrk, irwork, lquery, wantvl, wantvr, select[1];
 
     magma_side_t side = MagmaRight;
 
+    magma_timer_t time_total=0, time_gehrd=0, time_unghr=0, time_hseqr=0, time_trevc=0, time_sum=0;
+    magma_flops_t flop_total=0, flop_gehrd=0, flop_unghr=0, flop_hseqr=0, flop_trevc=0, flop_sum=0;
+    timer_start( time_total );
+    flops_start( flop_total );
+    
     irwork = 0;
     *info = 0;
     lquery = (lwork == -1);
@@ -176,8 +191,9 @@ magma_zgeev(
     /* Compute workspace */
     nb = magma_get_zgehrd_nb( n );
     if (*info == 0) {
-        minwrk = (1+nb)*n;
-        work[0] = MAGMA_Z_MAKE( minwrk, 0 );
+        minwrk = (1+  nb)*n;
+        optwrk = (1+2*nb)*n;
+        work[0] = MAGMA_Z_MAKE( optwrk, 0 );
 
         if (lwork < minwrk && ! lquery) {
             *info = -12;
@@ -198,7 +214,7 @@ magma_zgeev(
     }
     
     #if defined(VERSION3)
-    magmaDoubleComplex *dT;
+    magmaDoubleComplex_ptr dT;
     if (MAGMA_SUCCESS != magma_zmalloc( &dT, nb*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
@@ -242,6 +258,8 @@ magma_zgeev(
     iwrk = itau + n;
     liwrk = lwork - iwrk;
 
+    timer_start( time_gehrd );
+    flops_start( flop_gehrd );
     #if defined(VERSION1)
         // Version 1 - LAPACK
         lapackf77_zgehrd( &n, &ilo, &ihi, A, &lda,
@@ -255,6 +273,8 @@ magma_zgeev(
         magma_zgehrd( n, ilo, ihi, A, lda,
                       &work[itau], &work[iwrk], liwrk, dT, &ierr );
     #endif
+    time_sum += timer_stop( time_gehrd );
+    flop_sum += flops_stop( flop_gehrd );
 
     if (wantvl) {
         /* Want left eigenvectors
@@ -266,6 +286,8 @@ magma_zgeev(
          * (CWorkspace: need 2*N-1, prefer N + (N-1)*NB)
          * (RWorkspace: N)
          *  - including N reserved for gebal/gebak, unused by zunghr */
+        timer_start( time_unghr );
+        flops_start( flop_unghr );
         #if defined(VERSION1) || defined(VERSION2)
             // Version 1 & 2 - LAPACK
             lapackf77_zunghr( &n, &ilo, &ihi, VL, &ldvl, &work[itau],
@@ -274,15 +296,21 @@ magma_zgeev(
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_zunghr( n, ilo, ihi, VL, ldvl, &work[itau], dT, nb, &ierr );
         #endif
-
+        time_sum += timer_stop( time_unghr );
+        flop_sum += flops_stop( flop_unghr );
+        
+        timer_start( time_hseqr );
+        flops_start( flop_hseqr );
         /* Perform QR iteration, accumulating Schur vectors in VL
          * (CWorkspace: need 1, prefer HSWORK (see comments) )
          * (RWorkspace: N)
          *  - including N reserved for gebal/gebak, unused by zhseqr */
         iwrk = itau;
         liwrk = lwork - iwrk;
-        lapackf77_zhseqr( "S", "V", &n, &ilo, &ihi, A, &lda, W,
+        lapackf77_zhseqr( "S", "V", &n, &ilo, &ihi, A, &lda, w,
                           VL, &ldvl, &work[iwrk], &liwrk, info );
+        time_sum += timer_stop( time_hseqr );
+        flop_sum += flops_stop( flop_hseqr );
 
         if (wantvr) {
             /* Want left and right eigenvectors
@@ -301,6 +329,8 @@ magma_zgeev(
          * (CWorkspace: need 2*N-1, prefer N + (N-1)*NB)
          * (RWorkspace: N)
          *  - including N reserved for gebal/gebak, unused by zunghr */
+        timer_start( time_unghr );
+        flops_start( flop_unghr );
         #if defined(VERSION1) || defined(VERSION2)
             // Version 1 & 2 - LAPACK
             lapackf77_zunghr( &n, &ilo, &ihi, VR, &ldvr, &work[itau],
@@ -309,25 +339,35 @@ magma_zgeev(
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_zunghr( n, ilo, ihi, VR, ldvr, &work[itau], dT, nb, &ierr );
         #endif
+        time_sum += timer_stop( time_unghr );
+        flop_sum += flops_stop( flop_unghr );
 
         /* Perform QR iteration, accumulating Schur vectors in VR
          * (CWorkspace: need 1, prefer HSWORK (see comments) )
          * (RWorkspace: N)
          *  - including N reserved for gebal/gebak, unused by zhseqr */
+        timer_start( time_hseqr );
+        flops_start( flop_hseqr );
         iwrk = itau;
         liwrk = lwork - iwrk;
-        lapackf77_zhseqr( "S", "V", &n, &ilo, &ihi, A, &lda, W,
+        lapackf77_zhseqr( "S", "V", &n, &ilo, &ihi, A, &lda, w,
                           VR, &ldvr, &work[iwrk], &liwrk, info );
+        time_sum += timer_stop( time_hseqr );
+        flop_sum += flops_stop( flop_hseqr );
     }
     else {
         /* Compute eigenvalues only
          * (CWorkspace: need 1, prefer HSWORK (see comments) )
          * (RWorkspace: N)
          *  - including N reserved for gebal/gebak, unused by zhseqr */
+        timer_start( time_hseqr );
+        flops_start( flop_hseqr );
         iwrk = itau;
         liwrk = lwork - iwrk;
-        lapackf77_zhseqr( "E", "N", &n, &ilo, &ihi, A, &lda, W,
+        lapackf77_zhseqr( "E", "N", &n, &ilo, &ihi, A, &lda, w,
                           VR, &ldvr, &work[iwrk], &liwrk, info );
+        time_sum += timer_stop( time_hseqr );
+        flop_sum += flops_stop( flop_hseqr );
     }
 
     /* If INFO > 0 from ZHSEQR, then quit */
@@ -335,6 +375,8 @@ magma_zgeev(
         goto CLEANUP;
     }
 
+    timer_start( time_trevc );
+    flops_start( flop_trevc );
     if (wantvl || wantvr) {
         /* Compute left and/or right eigenvectors
          * (CWorkspace: need 2*N)
@@ -361,6 +403,8 @@ magma_zgeev(
         #error Unknown TREVC_VERSION
         #endif
     }
+    time_sum += timer_stop( time_trevc );
+    flop_sum += flops_stop( flop_trevc );
 
     if (wantvl) {
         /* Undo balancing of left eigenvectors
@@ -416,12 +460,12 @@ CLEANUP:
         // converged eigenvalues, stored in WR[i+1:n] and WI[i+1:n] for i = INFO
         magma_int_t nval = n - (*info);
         magma_int_t ld   = max( nval, 1 );
-        lapackf77_zlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, W + (*info), &ld, &ierr );
+        lapackf77_zlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, w + (*info), &ld, &ierr );
         if (*info > 0) {
             // first ilo columns were already upper triangular,
             // so the corresponding eigenvalues are also valid.
             nval = ilo - 1;
-            lapackf77_zlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, W, &n, &ierr );
+            lapackf77_zlascl( "G", &izero, &izero, &cscale, &anrm, &nval, &ione, w, &n, &ierr );
         }
     }
 
@@ -429,7 +473,14 @@ CLEANUP:
     magma_free( dT );
     #endif
     
-    work[0] = MAGMA_Z_MAKE( (double) minwrk, 0. );  // TODO use optwrk as in dgeev
+    timer_stop( time_total );
+    flops_stop( flop_total );
+    timer_printf( "dgeev times n %5d, gehrd %7.3f, unghr %7.3f, hseqr %7.3f, trevc %7.3f, total %7.3f, sum %7.3f\n",
+                  (int) n, time_gehrd, time_unghr, time_hseqr, time_trevc, time_total, time_sum );
+    timer_printf( "dgeev flops n %5d, gehrd %7lld, unghr %7lld, hseqr %7lld, trevc %7lld, total %7lld, sum %7lld\n",
+                  (int) n, flop_gehrd, flop_unghr, flop_hseqr, flop_trevc, flop_total, flop_sum );
+
+    work[0] = MAGMA_Z_MAKE( (double) optwrk, 0. );
 
     return *info;
 } /* magma_zgeev */

@@ -1,19 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Jakub Kurzak
        @author Stan Tomov
        @author Mark Gates
 
-       [zcds]gemm_fermi.cu        defines the CPU driver.
-       [zcds]gemm_fermi_kernels.h defines the block sizes for each precision.
-       gemm_stencil_defs.h        defines types and functions for precision-independent code.
-       gemm_stencil.cu            defines the GPU kernel. It gets included
-                                  multiple times, once for each transpose version.
+       See [zcds]gemm_fermi.cu for description of related files.
 */
 #include "common_magma.h"
 
@@ -26,16 +22,20 @@
 #include "gemm_stencil_defs.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+// currently, CPU driver assumes all transpose versions have same DIM_X, DIM_Y
+
+// size of thread block for calculating C (innermost loop)
+#define DIM_X  16
+#define DIM_Y  16
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // A x B
 // size of work for a thread block
 #define BLK_M_nn  64
 #define BLK_N_nn  64
 
 #define BLK_K  16
-
-// size of thread block for calculating C (innermost loop)
-#define DIM_X  16
-#define DIM_Y  16
 
 // size of thread block for reading A (dev->regs->shmem)
 #define DIM_XA 32
@@ -45,8 +45,10 @@
 #define DIM_XB  16
 #define DIM_YB  16
 
+#undef  version
 #define version trans_nn
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
 //#undef BLK_M
 //#undef BLK_N
@@ -70,10 +72,6 @@
 
 #define BLK_K  16
 
-// size of thread block for calculating C (innermost loop)
-//#define DIM_X  16
-//#define DIM_Y  16
-
 // size of thread block for reading A (dev->regs->shmem)
 #define DIM_XA  16
 #define DIM_YA  16
@@ -82,11 +80,15 @@
 #define DIM_XB  16
 #define DIM_YB  16
 
+#undef  version
 #define version trans_nt
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
+#undef  version
 #define version trans_nc
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
 //#undef BLK_M
 //#undef BLK_N
@@ -116,10 +118,6 @@
 
 #define BLK_K  16
 
-// size of thread block for calculating C (innermost loop)
-//#define DIM_X  16
-//#define DIM_Y  16
-
 // size of thread block for reading A (dev->regs->shmem)
 #define DIM_XA  16
 #define DIM_YA  16
@@ -128,17 +126,25 @@
 #define DIM_XB 32
 #define DIM_YB 8
 
+#undef  version
 #define version trans_tt
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
+#undef  version
 #define version trans_tc
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
+#undef  version
 #define version trans_ct
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
+#undef  version
 #define version trans_cc
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
 //#undef BLK_M
 //#undef BLK_N
@@ -162,10 +168,6 @@
 
 #define BLK_K  16
 
-// size of thread block for calculating C (innermost loop)
-//#define DIM_X  16
-//#define DIM_Y  16
-
 // size of thread block for reading A (dev->regs->shmem)
 #define DIM_XA  16
 #define DIM_YA  16
@@ -174,8 +176,12 @@
 #define DIM_XB  16
 #define DIM_YB  16
 
+#undef  version
 #define version trans_tn
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"
 
+#undef  version
 #define version trans_cn
-#include "gemm_stencil.cu"
+#include "gemm_stencil.cuh"
+#include "gemm_kernel.cuh"

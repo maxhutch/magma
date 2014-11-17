@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zunghr.cpp normal z -> c, Tue Sep  2 12:38:24 2014
+       @generated from zunghr.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -69,11 +69,12 @@
     @ingroup magma_cgeev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cunghr(magma_int_t n, magma_int_t ilo, magma_int_t ihi,
-             magmaFloatComplex *A, magma_int_t lda,
-             magmaFloatComplex *tau,
-             magmaFloatComplex *dT, magma_int_t nb,
-             magma_int_t *info)
+magma_cunghr(
+    magma_int_t n, magma_int_t ilo, magma_int_t ihi,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *tau,
+    magmaFloatComplex_ptr dT, magma_int_t nb,
+    magma_int_t *info)
 {
     #define A(i,j) (A + (j)*lda+ (i))
 

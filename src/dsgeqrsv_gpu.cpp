@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zcgeqrsv_gpu.cpp mixed zc -> ds, Tue Sep  2 12:38:20 2014
+       @generated from zcgeqrsv_gpu.cpp mixed zc -> ds, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -113,11 +113,13 @@
     @ingroup magma_dgels_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_dsgeqrsv_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
-                   double *dA,  magma_int_t ldda,
-                   double *dB,  magma_int_t lddb,
-                   double *dX,  magma_int_t lddx,
-                   magma_int_t *iter, magma_int_t *info)
+magma_dsgeqrsv_gpu(
+    magma_int_t m, magma_int_t n, magma_int_t nrhs,
+    magmaDouble_ptr dA,  magma_int_t ldda,
+    magmaDouble_ptr dB,  magma_int_t lddb,
+    magmaDouble_ptr dX,  magma_int_t lddx,
+    magma_int_t *iter,
+    magma_int_t *info)
 {
     #define dB(i,j)     (dB + (i) + (j)*lddb)
     #define dX(i,j)     (dX + (i) + (j)*lddx)
@@ -127,10 +129,14 @@ magma_dsgeqrsv_gpu(magma_int_t m, magma_int_t n, magma_int_t nrhs,
     double c_neg_one = MAGMA_D_NEG_ONE;
     double c_one     = MAGMA_D_ONE;
     magma_int_t     ione  = 1;
-    double *dworkd, *hworkd;
-    float  *dworks, *hworks;
-    double *dR, *tau, *dT;
-    float  *dSA, *dSX, *dST, *stau;
+    double *hworkd;
+    float  *hworks;
+    double *tau;
+    float  *stau;
+    magmaDouble_ptr dworkd;
+    magmaFloat_ptr  dworks;
+    magmaDouble_ptr dR, dT;
+    magmaFloat_ptr  dSA, dSX, dST;
     double Xnrmv, Rnrmv;
     double          Anrm, Xnrm, Rnrm, cte, eps;
     magma_int_t     i, j, iiter, lddsa, lddsx, lddr, nb, lhwork, minmn, size, ldworkd;

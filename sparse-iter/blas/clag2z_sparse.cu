@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions mixed zc -> ds
 
@@ -86,15 +86,21 @@ magmaint_clag2z_sparse(  int M, int N,
       -     = 1:  an entry of the matrix A is greater than the COMPLEX
                   overflow threshold, in this case, the content
                   of SA in exit is unspecified.
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_caux
     ********************************************************************/
 
 extern "C" void
-magmablas_clag2z_sparse( magma_int_t M, magma_int_t N , 
-                  const magmaFloatComplex *SA, magma_int_t ldsa, 
-                  magmaDoubleComplex *A,       magma_int_t lda, 
-                  magma_int_t *info ){    
+magmablas_clag2z_sparse(
+    magma_int_t M, magma_int_t N, 
+    const magmaFloatComplex *SA, magma_int_t ldsa, 
+    magmaDoubleComplex *A,       magma_int_t lda, 
+    magma_int_t *info,
+    magma_queue_t queue )
+{
     /*
     (TODO note from original dense source)
     
@@ -127,15 +133,14 @@ magmablas_clag2z_sparse( magma_int_t M, magma_int_t N ,
     int block;
     dim3 dimBlock(blksize);// Number of Threads per Block
     block = (M/blksize)/blksize;
-    if(block*blksize*blksize<(M))block++;
+    if (block*blksize*blksize<(M))block++;
     dim3 dimGrid(block);// Number of Blocks
    
 
     dim3 threads( blksize, 1, 1 );
     dim3 grid( (M+blksize-1)/blksize, 1, 1);
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    magmaint_clag2z_sparse<<< dimGrid , dimBlock, 0, magma_stream >>>
+    magmaint_clag2z_sparse<<< dimGrid , dimBlock, 0, queue >>>
                                         ( M, N, SA, lda, A, ldsa, RMAX ) ; 
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
-     
 }

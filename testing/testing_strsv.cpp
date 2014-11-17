@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_ztrsv.cpp normal z -> s, Tue Sep  2 12:38:27 2014
+       @generated from testing_ztrsv.cpp normal z -> s, Sat Nov 15 19:54:18 2014
        @author Chongxiao Cao
 */
 // includes, system
@@ -13,14 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
 // includes, project
+#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 
 #define h_A(i,j) (h_A + (i) + (j)*lda)
 
@@ -41,7 +39,7 @@ int main( int argc, char** argv)
     magma_int_t *ipiv;
 
     float *h_A, *h_b, *h_x, *h_xcublas;
-    float *d_A, *d_x;
+    magmaFloat_ptr d_A, d_x;
     float c_neg_one = MAGMA_S_NEG_ONE;
     magma_int_t status = 0;
     
@@ -93,7 +91,7 @@ int main( int argc, char** argv)
             magma_ssetvector( N, h_x, 1, d_x, 1 );
             
             cublas_time = magma_sync_wtime( NULL );
-            cublasStrsv( handle, cublas_uplo_const(opts.uplo),
+            cublasStrsv( opts.handle, cublas_uplo_const(opts.uplo),
                          cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
                          N,
                          d_A, ldda,

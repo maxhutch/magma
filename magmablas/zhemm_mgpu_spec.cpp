@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        @author Azzam Haidar
@@ -16,16 +16,16 @@ extern "C"
 void magmablas_zhemm_mgpu_spec(
     magma_side_t side, magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    magmaDoubleComplex *dA[],    magma_int_t ldda,  magma_int_t offset,
-    magmaDoubleComplex *dB[],    magma_int_t lddb,
+    magmaDoubleComplex_ptr dA[],    magma_int_t ldda,  magma_int_t offset,
+    magmaDoubleComplex_ptr dB[],    magma_int_t lddb,
     magmaDoubleComplex beta,
-    magmaDoubleComplex *dC[],    magma_int_t lddc,
-    magmaDoubleComplex *dwork[], magma_int_t dworksiz,
-    magmaDoubleComplex *C,       magma_int_t ldc,
-    magmaDoubleComplex *work[],  magma_int_t ldwork,
+    magmaDoubleComplex_ptr dC[],    magma_int_t lddc,
+    magmaDoubleComplex_ptr dwork[], magma_int_t dworksiz,
+    magmaDoubleComplex *C,          magma_int_t ldc,
+    magmaDoubleComplex *work[],     magma_int_t worksiz,  // TODO unused
     magma_int_t ngpu, magma_int_t nb, 
-    magma_queue_t streams[][20], magma_int_t nstream, 
-    magma_event_t redevents[][MagmaMaxGPUs*MagmaMaxGPUs+10],magma_int_t nbevents, 
+    magma_queue_t queues[][20], magma_int_t nqueue, 
+    magma_event_t redevents[][MagmaMaxGPUs*MagmaMaxGPUs+10], magma_int_t nbevents, 
     magma_int_t gnode[MagmaMaxGPUs][MagmaMaxGPUs+2], magma_int_t nbcmplx )
 {
     #define dA(dev, i, j) (dA[dev] + (i) + (j)*ldda)
@@ -41,11 +41,11 @@ void magmablas_zhemm_mgpu_spec(
     assert( ldda >= m );
     assert( lddb >= m );
     assert( lddc >= m );
-    assert( nstream >= ngpu );
+    assert( nqueue >= ngpu );
     assert( nbevents >= ngpu*ngpu );
     
-    magmaDoubleComplex *dwork1[MagmaMaxGPUs];
-    magmaDoubleComplex *dwork2[MagmaMaxGPUs];
+    magmaDoubleComplex_ptr dwork1[MagmaMaxGPUs];
+    magmaDoubleComplex_ptr dwork2[MagmaMaxGPUs];
 
 
     magma_int_t lddwork = lddc;
@@ -65,9 +65,9 @@ void magmablas_zhemm_mgpu_spec(
     magmablasGetKernelStream(&cstream);
 
 
-    magma_int_t dev,devperm,myblk,mycolsize,myblkoffst;
-    magma_int_t gdev,gcolsize,gmaster,gngpu;
-    magma_int_t masterdev,lcdev,lccolsize,myngpu;
+    magma_int_t dev, devperm, myblk, mycolsize, myblkoffst;
+    magma_int_t gdev, gcolsize, gmaster, gngpu;
+    magma_int_t masterdev, lcdev, lccolsize, myngpu;
 
     magma_int_t stdev       = (offset/nb)%ngpu;  
     magma_int_t blockoffset = offset % nb;  
@@ -75,9 +75,9 @@ void magmablas_zhemm_mgpu_spec(
     if(blockoffset>0){
         fstblksiz   = min(m, (nb - blockoffset));
     }
-    //magma_int_t nbblk       = magma_ceildiv(m,nb);
-    magma_int_t nbblk       = magma_ceildiv((m+blockoffset),nb);
-    magma_int_t maxgsize    = n*nb*magma_ceildiv(nbblk,ngpu);
+    //magma_int_t nbblk       = magma_ceildiv(m, nb);
+    magma_int_t nbblk       = magma_ceildiv((m+blockoffset), nb);
+    magma_int_t maxgsize    = n*nb*magma_ceildiv(nbblk, ngpu);
     magma_int_t remm        = m- fstblksiz;
     magma_int_t nbblkoffst  = offset/nb;
 
@@ -102,17 +102,17 @@ void magmablas_zhemm_mgpu_spec(
     //  transpose of its blocks to compute
     //  a final portion of X=A*VT
     //*******************************
-    /* dB = V*T already ==> dB' = T'*V'
-     * compute T'*V'*X is equal to compute locally (VT)'_i*X_i 
+    /* dB = V*T already ==> dB**H = T**H * V**H
+     * compute T**H * V**H * X is equal to compute locally (VT)**H_i*X_i 
      * then  each GPU broadcast its X_i to assemble the full X which is used
-     * to compute W  =  X  - 0.5 * V * T'*V'*X  = X - 0.5 * V *dwork3
+     * to compute W  =  X  - 0.5 * V * T**H * V**H * X  = X - 0.5 * V *dwork3
      */
     if(ngpu ==1){
         magma_setdevice( 0 );
-        magmablasSetKernelStream( streams[ 0 ][ 0 ] );
+        magmablasSetKernelStream( queues[ 0 ][ 0 ] );
         // compute X[me] = A*VT = A[me]^tr *VT;
         magma_zgemm( MagmaConjTrans, MagmaNoTrans, m, n, m,
-                     alpha, dA(0,offset,offset), ldda,
+                     alpha, dA(0, offset, offset), ldda,
                             dB[0],         lddb,
                      beta,  dC[0], lddc );
         return;
@@ -135,21 +135,21 @@ void magmablas_zhemm_mgpu_spec(
             if((devperm==devlstblk)&&(lstblksiz>0)){
                 mycolsize -=  (nb-(remm%nb));
             }
-            mycolsize = min(mycolsize,m);
+            mycolsize = min(mycolsize, m);
 
         
             if(mycolsize>0){
                 if(masterdev==-1) masterdev     = dev;
-                //printf("dev %d devperm %d on cmplx %d  master %d nbblk %d myblk %d m %d n %d mycolsize %d stdev %d fstblksize %d lastdev %d lastsize %d dA(%d,%d,%d) ==> dwork(%d,%d)\n",dev,devperm,cmplxid,masterdev,nbblk,myblk,m,n,mycolsize,stdev,fstblksiz,devlstblk,remm%nb,dev,offset,myblkoffst,dev,maxgsize*dev);
+                //printf("dev %d devperm %d on cmplx %d  master %d nbblk %d myblk %d m %d n %d mycolsize %d stdev %d fstblksize %d lastdev %d lastsize %d dA(%d, %d, %d) ==> dwork(%d, %d)\n", dev, devperm, cmplxid, masterdev, nbblk, myblk, m, n, mycolsize, stdev, fstblksiz, devlstblk, remm%nb, dev, offset, myblkoffst, dev, maxgsize*dev);
                 gpuisactive[dev] = mycolsize;
                 magma_setdevice( dev );
-                magmablasSetKernelStream( streams[ dev ][ dev ] );    
+                magmablasSetKernelStream( queues[ dev ][ dev ] );    
 
                 magma_zgemm( MagmaConjTrans, MagmaNoTrans, mycolsize, n, m,
-                             alpha, dA(dev,offset,myblkoffst), ldda,
-                                    dB(dev,0,0),    lddb,
+                             alpha, dA(dev, offset, myblkoffst), ldda,
+                                    dB(dev, 0, 0),    lddb,
                              beta,  &dwork[dev][maxgsize*dev], mycolsize );
-                magma_event_record(redevents[dev][dev*ngpu+dev], streams[dev][dev]);
+                magma_event_record(redevents[dev][dev*ngpu+dev], queues[dev][dev]);
             }
             if(dev == masterdev){
                 nbcmplxactive = nbcmplxactive +1;
@@ -164,7 +164,7 @@ void magmablas_zhemm_mgpu_spec(
 /*
     for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
-        magma_queue_sync( streams[ dev ][ dev ] );
+        magma_queue_sync( queues[ dev ][ dev ] );
     }
 */
 
@@ -196,19 +196,19 @@ void magmablas_zhemm_mgpu_spec(
                 //==============================================
                 // sending to the master of the active complex
                 //==============================================
-                //printf     ("\n\n**************GPU %d\n ",dev);
-                //printf     ("             GPU %d sending to cmplx masters\n",dev);
+                //printf     ("\n\n**************GPU %d\n ", dev);
+                //printf     ("             GPU %d sending to cmplx masters\n", dev);
                 for( magma_int_t k = 0; k < nbcmplx; ++k ) {
                     if(k!=cmplxid){
                         gmaster = gnode[k][MagmaMaxGPUs+1];
                         if(gmaster!=-1){ //complex is active
-                            //printf     ("                    device %d from cmplx %d is sending to master %d on cmplx %d block of size %d event %d\n",dev,cmplxid,gmaster,k,mycolsize,redevents[dev][gmaster*ngpu+dev]);
-                            magma_queue_wait_event(streams[ dev ][ gmaster ], redevents[dev][dev*ngpu+dev]);
+                            //printf     ("                    device %d from cmplx %d is sending to master %d on cmplx %d block of size %d event %d\n", dev, cmplxid, gmaster, k, mycolsize, redevents[dev][gmaster*ngpu+dev]);
+                            magma_queue_wait_event(queues[ dev ][ gmaster ], redevents[dev][dev*ngpu+dev]);
                             magma_zcopymatrix_async(
                                 mycolsize, n,
                                 &dwork[dev    ][maxgsize*dev], mycolsize,
-                                &dwork[gmaster][maxgsize*dev], mycolsize, streams[dev][gmaster] );
-                            magma_event_record(redevents[dev][gmaster*ngpu+dev], streams[dev][gmaster]);
+                                &dwork[gmaster][maxgsize*dev], mycolsize, queues[dev][gmaster] );
+                            magma_event_record(redevents[dev][gmaster*ngpu+dev], queues[dev][gmaster]);
                         }
                     }
                 }
@@ -217,18 +217,18 @@ void magmablas_zhemm_mgpu_spec(
                 //==============================================
                 // sending to the active GPUs of my complex
                 //==============================================
-                //printf     ("              GPU %d sending internal\n",dev);                
+                //printf     ("              GPU %d sending internal\n", dev);                
                 for( magma_int_t l = 0; l < myngpu; ++l ) {
                     lcdev         = gnode[cmplxid][l];
                     lccolsize     = gpuisactive[lcdev];
                     if((lcdev!=dev)&&(lccolsize>0)){
-                        //printf     ("                    device %d from cmplx %d is sending internal to dev %d block of size %d event %d\n",dev,cmplxid,lcdev,mycolsize,redevents[dev][lcdev*ngpu+dev]);
-                        magma_queue_wait_event(streams[ dev ][ lcdev ], redevents[dev][dev*ngpu+dev]);
+                        //printf     ("                    device %d from cmplx %d is sending internal to dev %d block of size %d event %d\n", dev, cmplxid, lcdev, mycolsize, redevents[dev][lcdev*ngpu+dev]);
+                        magma_queue_wait_event(queues[ dev ][ lcdev ], redevents[dev][dev*ngpu+dev]);
                         magma_zcopymatrix_async(
                             mycolsize, n,
                             &dwork[dev  ][maxgsize*dev], mycolsize,
-                            &dwork[lcdev][maxgsize*dev], mycolsize, streams[dev][lcdev] );
-                        magma_event_record(redevents[dev][lcdev*ngpu+dev], streams[dev][lcdev]);
+                            &dwork[lcdev][maxgsize*dev], mycolsize, queues[dev][lcdev] );
+                        magma_event_record(redevents[dev][lcdev*ngpu+dev], queues[dev][lcdev]);
                     }
                 }
                 //==============================================
@@ -251,7 +251,7 @@ void magmablas_zhemm_mgpu_spec(
         if(masterdev != -1){
             mycolsize   = gpuisactive[masterdev];
             magma_setdevice( masterdev );
-            //printf("              GPU %d distributing internal\n",masterdev);
+            //printf("              GPU %d distributing internal\n", masterdev);
             for( magma_int_t k = 0; k < nbcmplx; ++k ) {
                 if(k!=cmplxid){
                     gngpu   = gnode[k][MagmaMaxGPUs];
@@ -261,17 +261,17 @@ void magmablas_zhemm_mgpu_spec(
                         // check if I received from this GPU,
                         // if yes send it to my group
                         if(gcolsize>0){
-                           magma_queue_wait_event(streams[ masterdev ][ gdev ], redevents[gdev][masterdev*ngpu+gdev]);
+                           magma_queue_wait_event(queues[ masterdev ][ gdev ], redevents[gdev][masterdev*ngpu+gdev]);
                            for( magma_int_t l = 0; l < myngpu; ++l ) {
                                 lcdev         = gnode[cmplxid][l];
                                 lccolsize     = gpuisactive[lcdev];
                                 if((lcdev!=masterdev)&&(lccolsize>0)){
-                                    //printf("                    Master %d on cmplx %d waiting on event %d is distributing internal results of %d to lcdev %d block of size %d event %d\n", masterdev,cmplxid,redevents[gdev][masterdev*ngpu+gdev],gdev,lcdev,gcolsize,redevents[masterdev][lcdev*ngpu+gdev]);
+                                    //printf("                    Master %d on cmplx %d waiting on event %d is distributing internal results of %d to lcdev %d block of size %d event %d\n", masterdev, cmplxid, redevents[gdev][masterdev*ngpu+gdev], gdev, lcdev, gcolsize, redevents[masterdev][lcdev*ngpu+gdev]);
                                     magma_zcopymatrix_async(
                                         gcolsize, n,
                                         &dwork[masterdev][maxgsize*gdev], gcolsize,
-                                        &dwork[lcdev    ][maxgsize*gdev], gcolsize, streams[masterdev][gdev] );
-                                    magma_event_record(redevents[masterdev][lcdev*ngpu+gdev], streams[masterdev][gdev]);
+                                        &dwork[lcdev    ][maxgsize*gdev], gcolsize, queues[masterdev][gdev] );
+                                    magma_event_record(redevents[masterdev][lcdev*ngpu+gdev], queues[masterdev][gdev]);
                                 }
                             }
                         }
@@ -290,9 +290,9 @@ void magmablas_zhemm_mgpu_spec(
 
     for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
-                magma_queue_sync( streams[ dev ][ 0 ] );
+                magma_queue_sync( queues[ dev ][ 0 ] );
         for( magma_int_t s = 0; s < ngpu; ++s ) {
-                magma_queue_sync( streams[ dev ][ s ] );
+                magma_queue_sync( queues[ dev ][ s ] );
         }
     }
 */
@@ -300,7 +300,7 @@ void magmablas_zhemm_mgpu_spec(
     //printf("                           distributing                                \n");
     //printf("=======================================================================\n");
 
-    magma_int_t lcblki,gbblki,gblk,ib;
+    magma_int_t lcblki, gbblki, gblk, ib;
     
     for( magma_int_t cmplxid = 0; cmplxid < nbcmplx; ++cmplxid ) {
         myngpu    = gnode[cmplxid][MagmaMaxGPUs];
@@ -309,7 +309,7 @@ void magmablas_zhemm_mgpu_spec(
             dev         = gnode[cmplxid][idev];
             mycolsize   = gpuisactive[dev];
             if(mycolsize>0){ // I am an active GPU
-                //printf("\n\n==============GPU %d collecting\n",dev);
+                //printf("\n\n==============GPU %d collecting\n", dev);
                 magma_setdevice( dev );        
                 // collect my results first as tyhere is no need to wait to   
                 // receive nothing, just wait that my gemm are done.
@@ -324,13 +324,13 @@ void magmablas_zhemm_mgpu_spec(
                 if(gcolsize>0){
                     devperm     = (gdev-stdev+ngpu)%ngpu;
                     gblk        = (nbblk/ngpu) + (nbblk%ngpu > devperm ?  1:0 );
-                    magmablasSetKernelStream( streams[ dev ][ gdev ] );
-                    magma_queue_wait_event(streams[ dev ][ gdev ], redevents[gdev][dev*ngpu+gdev]);
-                    //printf     ("              GPU %d stream %d doing zlacpy\n",dev,streams[ dev ][ gdev ]);
+                    magmablasSetKernelStream( queues[ dev ][ gdev ] );
+                    magma_queue_wait_event(queues[ dev ][ gdev ], redevents[gdev][dev*ngpu+gdev]);
+                    //printf     ("              GPU %d stream %d doing zlacpy\n", dev, queues[ dev ][ gdev ]);
                     for( magma_int_t blki = 0; blki < gblk; ++blki){
                         gbblki = (blki*ngpu + devperm)*nb - blockoffset;
                         lcblki = blki*nb;
-                        ib     = nb;//min(nb,m-gbblki);
+                        ib     = nb;//min(nb, m-gbblki);
                         if(gdev==stdev){
                             lcblki = blki*nb-blockoffset;
                             if(blki==0){
@@ -339,8 +339,8 @@ void magmablas_zhemm_mgpu_spec(
                                 ib     = nb-blockoffset;
                             }
                         }
-                        ib     = min(ib,m-gbblki);
-                        //printf("                    blockoffset %d nbblk %d stdev %d  receiving from gdev %d gblk %d  gcolsize %d copying blki %d of size ibxn %dx%d from work[%d] to C[%d]\n", blockoffset,nbblk,stdev,gdev,gblk,gcolsize,blki,ib,n,lcblki,gbblki);
+                        ib     = min(ib, m-gbblki);
+                        //printf("                    blockoffset %d nbblk %d stdev %d  receiving from gdev %d gblk %d  gcolsize %d copying blki %d of size ibxn %dx%d from work[%d] to C[%d]\n", blockoffset, nbblk, stdev, gdev, gblk, gcolsize, blki, ib, n, lcblki, gbblki);
                         magmablas_zlacpy( MagmaFull, ib, n, &dwork[dev][maxgsize*gdev+lcblki], gcolsize, &dC[dev][gbblki], lddc);
                     }// end blki
                 }
@@ -359,26 +359,26 @@ void magmablas_zhemm_mgpu_spec(
                             if(gcolsize>0){
                                 devperm     = (gdev-stdev+ngpu)%ngpu;
                                 gblk        = (nbblk/ngpu) + (nbblk%ngpu > devperm ?  1:0 );
-                                magmablasSetKernelStream( streams[ dev ][ gdev ] );
+                                magmablasSetKernelStream( queues[ dev ][ gdev ] );
                                 if(k==cmplxid){
                                     //we are on the same group so wait on event issued by gdev for me citing his id
-                                    magma_queue_wait_event(streams[ dev ][ gdev ], redevents[gdev][dev*ngpu+gdev]);
-                                    //printf     ("              GPU %d stream %d waiting on event %d to collecte from %d the size of gcolsize %d\n",dev,streams[ dev ][ gdev ],redevents[gdev][dev*ngpu+gdev],gdev,gcolsize);
+                                    magma_queue_wait_event(queues[ dev ][ gdev ], redevents[gdev][dev*ngpu+gdev]);
+                                    //printf     ("              GPU %d queue %d waiting on event %d to collecte from %d the size of gcolsize %d\n", dev, queues[ dev ][ gdev ], redevents[gdev][dev*ngpu+gdev], gdev, gcolsize);
                                 }else{
                                     //we are on different group so:
                                     //if I am the master wait on the event issued by gdev for me citing his id
                                     //else  wait event issued by my master for me on the behalf of gdev
-                                    //printf     ("              GPU %d stream %d waiting on event %d to collecte from %d the size of gcolsize %d\n",dev,streams[ dev ][ gdev ],redevents[masterdev][dev*ngpu+gdev],gdev,gcolsize);
+                                    //printf     ("              GPU %d queue %d waiting on event %d to collecte from %d the size of gcolsize %d\n", dev, queues[ dev ][ gdev ], redevents[masterdev][dev*ngpu+gdev], gdev, gcolsize);
                                     if(dev==masterdev)
-                                        magma_queue_wait_event(streams[ dev ][ gdev ], redevents[gdev][dev*ngpu+gdev]);
+                                        magma_queue_wait_event(queues[ dev ][ gdev ], redevents[gdev][dev*ngpu+gdev]);
                                     else
-                                        magma_queue_wait_event(streams[ dev ][ gdev ], redevents[masterdev][dev*ngpu+gdev]);
+                                        magma_queue_wait_event(queues[ dev ][ gdev ], redevents[masterdev][dev*ngpu+gdev]);
                                 }
-                                //printf     ("              GPU %d stream %d doing zlacpy\n",dev,streams[ dev ][ gdev ]);
+                                //printf     ("              GPU %d stream %d doing zlacpy\n", dev, queues[ dev ][ gdev ]);
                                 for( magma_int_t blki = 0; blki < gblk; ++blki){
                                     gbblki = (blki*ngpu + devperm)*nb - blockoffset;
                                     lcblki = blki*nb;
-                                    ib     = nb;//min(nb,m-gbblki);
+                                    ib     = nb;//min(nb, m-gbblki);
                                     if(gdev==stdev){
                                         lcblki = blki*nb-blockoffset;
                                         if(blki==0){
@@ -387,8 +387,8 @@ void magmablas_zhemm_mgpu_spec(
                                             ib     = nb-blockoffset;
                                         }
                                     }
-                                    ib     = min(ib,m-gbblki);
-                                    //printf("                    blockoffset %d nbblk %d stdev %d  receiving from gdev %d gblk %d  gcolsize %d copying blki %d of size ibxn %dx%d from work[%d] to C[%d]\n", blockoffset,nbblk,stdev,gdev,gblk,gcolsize,blki,ib,n,lcblki,gbblki);
+                                    ib     = min(ib, m-gbblki);
+                                    //printf("                    blockoffset %d nbblk %d stdev %d  receiving from gdev %d gblk %d  gcolsize %d copying blki %d of size ibxn %dx%d from work[%d] to C[%d]\n", blockoffset, nbblk, stdev, gdev, gblk, gcolsize, blki, ib, n, lcblki, gbblki);
                                     magmablas_zlacpy( MagmaFull, ib, n, &dwork[dev][maxgsize*gdev+lcblki], gcolsize, &dC[dev][gbblki], lddc);
                                 }// end blki
                             }// en gcolsize>0 meaning gdev is active

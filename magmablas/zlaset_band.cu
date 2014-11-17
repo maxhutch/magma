@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Mark Gates
@@ -179,7 +179,8 @@ extern "C" void
 magmablas_zlaset_band_q(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex offdiag, magmaDoubleComplex diag,
-    magmaDoubleComplex *dA, magma_int_t ldda, magma_queue_t queue)
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_queue_t queue)
 {
     magma_int_t info = 0;
     if ( uplo != MagmaLower && uplo != MagmaUpper )
@@ -219,7 +220,7 @@ extern "C" void
 magmablas_zlaset_band(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex offdiag, magmaDoubleComplex diag,
-    magmaDoubleComplex *dA, magma_int_t ldda)
+    magmaDoubleComplex_ptr dA, magma_int_t ldda)
 {
     magmablas_zlaset_band_q(uplo, m, n, k, offdiag, diag, dA, ldda, magma_stream);
 }

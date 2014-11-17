@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlat2c.cu mixed zc -> ds, Tue Sep  2 12:38:16 2014
+       @generated from zlat2c.cu mixed zc -> ds, Sat Nov 15 19:53:59 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -198,8 +198,8 @@ void dlat2s_upper(
 extern "C" void
 magmablas_dlat2s_q(
     magma_uplo_t uplo, magma_int_t n,
-    const double *A, magma_int_t lda,
-    float *SA,       magma_int_t ldsa,
+    magmaDouble_const_ptr  A, magma_int_t lda,
+    magmaFloat_ptr        SA, magma_int_t ldsa,
     magma_int_t *info,
     magma_queue_t queue )
 {
@@ -225,8 +225,8 @@ magmablas_dlat2s_q(
     
     double rmax = (double)lapackf77_slamch("O");
 
-    dim3 threads( BLK_X );
-    dim3 grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    dim3 threads( BLK_X, 1 );
+    dim3    grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
     if (uplo == MagmaLower)
@@ -245,8 +245,8 @@ magmablas_dlat2s_q(
 extern "C" void
 magmablas_dlat2s(
     magma_uplo_t uplo, magma_int_t n,
-    const double *A, magma_int_t lda,
-    float *SA,       magma_int_t ldsa,
+    magmaDouble_const_ptr  A, magma_int_t lda,
+    magmaFloat_ptr        SA, magma_int_t ldsa,
     magma_int_t *info )
 {
     magmablas_dlat2s_q( uplo, n, A, lda, SA, ldsa, info, magma_stream );

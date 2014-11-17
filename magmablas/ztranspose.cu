@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -41,8 +41,8 @@
 //     load 16x32 subtile as 4   blocks of 16x8 columns: (A11  A12  A13  A14)
 //     save 32x16 subtile as 2*2 blocks of 16x8 columns: (AT11 AT12)
 //                                                       (AT21 AT22)
-__global__ void
-ztranspose_kernel(
+static __device__ void
+ztranspose_device(
     int m, int n,
     const magmaDoubleComplex *A, int lda,
     magmaDoubleComplex *AT,      int ldat)
@@ -96,6 +96,29 @@ ztranspose_kernel(
 }
 
 
+/*
+    kernel wrapper to call the device function.
+*/
+__global__
+void ztranspose_kernel(
+    int m, int n,
+    const magmaDoubleComplex *A, int lda,
+    magmaDoubleComplex *AT,      int ldat)
+{
+    ztranspose_device(m, n, A, lda, AT, ldat);
+}
+
+__global__
+void ztranspose_kernel_batched(
+    int m, int n,
+    magmaDoubleComplex **dA_array, int lda,
+    magmaDoubleComplex **dAT_array,      int ldat)
+{
+    int batchid = blockIdx.z;
+    ztranspose_device(m, n, dA_array[batchid], lda, dAT_array[batchid], ldat);
+}
+
+
 /**
     Purpose
     -------
@@ -122,7 +145,7 @@ ztranspose_kernel(
             The leading dimension of the array dA.  LDDA >= M.
     
     @param[in]
-    dAT     COMPLEX_16 array, dimension (LDDA,N)
+    dAT     COMPLEX_16 array, dimension (LDDAT,M)
             The N-by-M matrix dAT.
     
     @param[in]
@@ -138,8 +161,9 @@ ztranspose_kernel(
 extern "C" void
 magmablas_ztranspose_q(
     magma_int_t m, magma_int_t n,
-    const magmaDoubleComplex *dA,  magma_int_t ldda,
-    magmaDoubleComplex       *dAT, magma_int_t lddat, magma_queue_t queue )
+    magmaDoubleComplex_const_ptr dA,  magma_int_t ldda,
+    magmaDoubleComplex_ptr       dAT, magma_int_t lddat,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -174,8 +198,103 @@ magmablas_ztranspose_q(
 extern "C" void
 magmablas_ztranspose(
     magma_int_t m, magma_int_t n,
-    const magmaDoubleComplex *dA,  magma_int_t ldda,
-    magmaDoubleComplex       *dAT, magma_int_t lddat )
+    magmaDoubleComplex_const_ptr dA,  magma_int_t ldda,
+    magmaDoubleComplex_ptr       dAT, magma_int_t lddat )
 {
     magmablas_ztranspose_q( m, n, dA, ldda, dAT, lddat, magma_stream );
 }
+
+
+
+
+/**
+    Purpose
+    -------
+    ztranspose_batched_q copies and transposes a matrix dA_array[i] to matrix dAT_array[i].
+    
+    Same as ztranspose_batched, but adds queue argument.
+        
+    Arguments
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of rows of the matrix dA.  M >= 0.
+    
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix dA.  N >= 0.
+    
+    @param[in]
+    dA_array 
+            COMPLEX_16* array, dimension (batchCount)
+            array of pointers to the matrices dA, where each dA is of dimension (LDDA,N)
+            The M-by-N matrix dA.
+    
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dA.  LDDA >= M.
+    
+    @param[in]
+    dAT_array     
+            COMPLEX_16* array, dimension (batchCount)
+            array of pointers to the matrices dAT, where each dAT is of dimension (LDDAT,M)
+            The N-by-M matrix dAT.
+    
+    @param[in]
+    lddat   INTEGER
+            The leading dimension of the array dAT.  LDDAT >= N.
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+    
+    @param[in]
+    batchCount  Number of matrices in dA_array and dAT_array
+
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_ztranspose_batched_q(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex **dA_array,  magma_int_t ldda,
+    magmaDoubleComplex **dAT_array, magma_int_t lddat, magma_int_t batchCount, magma_queue_t queue )
+{
+    magma_int_t info = 0;
+    if ( m < 0 )
+        info = -1;
+    else if ( n < 0 )
+        info = -2;
+    else if ( ldda < m )
+        info = -4;
+    else if ( lddat < n )
+        info = -6;
+    
+    if ( info != 0 ) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    /* Quick return */
+    if ( (m == 0) || (n == 0) )
+        return;
+
+    dim3 threads( NX, NY );
+    dim3 grid( (m+NB-1)/NB, (n+NB-1)/NB, batchCount );
+    ztranspose_kernel_batched<<< grid, threads, 0, queue >>>
+        ( m, n, dA_array, ldda, dAT_array, lddat );
+}
+
+
+/**
+    @see magmablas_ztranspose_batched_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" void
+magmablas_ztranspose_batched(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex **dA_array,  magma_int_t ldda,
+    magmaDoubleComplex **dAT_array, magma_int_t lddat, magma_int_t batchCount )
+{
+    magmablas_ztranspose_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magma_stream );
+}
+

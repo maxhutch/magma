@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
   
-       @generated from zgeqp3_gpu.cpp normal z -> c, Tue Sep  2 12:38:21 2014
+       @generated from zgeqp3_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -93,14 +93,15 @@
     @ingroup magma_cgeqp3_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgeqp3_gpu( magma_int_t m, magma_int_t n,
-                  magmaFloatComplex *dA, magma_int_t ldda,
-                  magma_int_t *jpvt, magmaFloatComplex *tau,
-                  magmaFloatComplex *dwork, magma_int_t lwork,
-                  #ifdef COMPLEX
-                  float *rwork,
-                  #endif
-                  magma_int_t *info )
+magma_cgeqp3_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magma_int_t *jpvt, magmaFloatComplex *tau,
+    magmaFloatComplex_ptr dwork, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
@@ -147,7 +148,7 @@ magma_cgeqp3_gpu( magma_int_t m, magma_int_t n,
     #ifdef REAL
     float *rwork = dwork + (n + 1)*nb;
     #endif
-    magmaFloatComplex   *df;
+    magmaFloatComplex_ptr df;
     if (MAGMA_SUCCESS != magma_cmalloc( &df, (n+1)*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
@@ -174,7 +175,7 @@ magma_cgeqp3_gpu( magma_int_t m, magma_int_t n,
         }
     }
 
-    /*  
+    /*
         // TODO:
            Factorize fixed columns
            =======================

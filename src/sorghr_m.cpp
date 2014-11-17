@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zunghr_m.cpp normal z -> s, Tue Sep  2 12:38:24 2014
+       @generated from zunghr_m.cpp normal z -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -71,11 +71,12 @@
     @ingroup magma_sgeev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sorghr_m( magma_int_t n, magma_int_t ilo, magma_int_t ihi,
-                float *A, magma_int_t lda,
-                float *tau,
-                float *T, magma_int_t nb,
-                magma_int_t *info)
+magma_sorghr_m(
+    magma_int_t n, magma_int_t ilo, magma_int_t ihi,
+    float *A, magma_int_t lda,
+    float *tau,
+    float *T, magma_int_t nb,
+    magma_int_t *info)
 {
     #define A(i,j) (A + (i) + (j)*lda)
 

@@ -8,7 +8,7 @@ This file is processed with Doxygen. See docs/html/index.html for formatted vers
 Univ. of Tennessee, Knoxville \n
 Univ. of California, Berkeley \n
 Univ. of Colorado, Denver
-@date September 2014
+@date November 2014
 
 The goal of the MAGMA project is to create a new generation of linear algebra
 libraries that achieves the fastest possible time to an accurate solution on
@@ -472,6 +472,25 @@ so negative incx are not allowed; incx > 0.
 ********************************************************************************
 @page constants     Constants
 
+MAGMA defines a few constant parameters, such as `MagmaTrans, MagmaNoTrans`,
+that are equivalent of CBLAS and LAPACK parameters. The
+naming and numbering of these parameters follow that of
+[CBLAS from Netlib](http://www.netlib.org/blas/blast-forum/cblas.tgz) and the
+[C Interface to LAPACK from Netlib](http://www.netlib.org/lapack/lapwrapc/), and
+[PLASMA](http://icl.utk.edu/plasma/).
+
+MAGMA includes functions, `lapack_xyz_const()`, which take MAGMA's integer
+constants and return LAPACK's string constants, where `xyz` is a MAGMA type such
+as `uplo`, `trans`, etc. From the standpoint of LAPACK, only the first letter of
+each string is significant. Nevertheless, the functions return meaningful
+strings, such as "No transpose", "Transpose", "Upper", "Lower",
+etc. Similarly, there are functions to go from MAGMA's integer constants to
+CBLAS, OpenCL's clBLAS, and CUDA's cuBLAS integer constants.
+
+There are also functions, `magma_xyz_const()`, to go in the opposite direction,
+from LAPACK's string constants to MAGMA's integer constants.
+
+
 The most common constants are those defined for BLAS routines:
 
 - enum { MagmaNoTrans, MagmaTrans, MagmaConjTrans } magma_order_t
@@ -519,12 +538,29 @@ magma_direct_t | magma_direct_const  | ( character )  |  Map 'F', 'B'      \n to
 magma_storev_t | magma_storev_const  | ( character )  |  Map 'C', 'R'      \n to MagmaColumnwise, MagmaRowwise
 
 
-To convert MAGMA to LAPACK constants:
+These do the inverse map, converting MAGMA to LAPACK constants.
+From the standpoint of LAPACK, only the first letter of
+each string is significant. Nevertheless, the functions return meaningful
+strings, such as "No transpose", "Transpose".
+Substitute `lapacke` for `lapack` to get version that returns single char instead of string (const char*).
 
-.           | Function      | .             |  Description
------------ | ----          | ----          |  -----------
-const char* | lapack_const  | ( constant )  |  Map any MAGMA constant, Magma*, to an LAPACK string constant.
-char        | lapacke_const | ( constant )  |  Map any MAGMA constant, Magma*, to an LAPACKe character constant.
+.           | Function             | .                   |  Description
+----------- | ----                 | ----                |  -----------
+const char* | lapack_bool_const    | ( magma_bool_t   )  |  Inverse of magma_bool_const()
+const char* | lapack_order_const   | ( magma_order_t  )  |  Inverse of magma_order_const()
+const char* | lapack_trans_const   | ( magma_trans_t  )  |  Inverse of magma_trans_const()
+const char* | lapack_uplo_const    | ( magma_uplo_t   )  |  Inverse of magma_uplo_const()
+const char* | lapack_diag_const    | ( magma_diag_t   )  |  Inverse of magma_diag_const()
+const char* | lapack_side_const    | ( magma_side_t   )  |  Inverse of magma_side_const()
+const char* | lapack_norm_const    | ( magma_norm_t   )  |  Inverse of magma_norm_const()
+const char* | lapack_dist_const    | ( magma_dist_t   )  |  Inverse of magma_dist_const()
+const char* | lapack_vec_const     | ( magma_vec_t    )  |  Inverse of magma_vec_const()
+const char* | lapack_range_const   | ( magma_range_t  )  |  Inverse of magma_range_const()
+const char* | lapack_vect_const    | ( magma_vect_t   )  |  Inverse of magma_vect_const()
+const char* | lapack_direct_const  | ( magma_direct_t )  |  Inverse of magma_direct_const()
+const char* | lapack_storev_const  | ( magma_storev_t )  |  Inverse of magma_storev_const()
+const char* | lapack_const         | ( constant )        |  Map any MAGMA constant, Magma*, to an LAPACK string constant
+char        | lapacke_const        | ( constant )        |  Map any MAGMA constant, Magma*, to an LAPACKE character
 
 
 To convert MAGMA to Nvidia's CUBLAS constants:
@@ -539,13 +575,13 @@ cublasSideMode_t  | cublas_side_const  | ( side  )  |  Map MagmaLeft,    MagmaRi
 
 To convert MAGMA to AMD's clBlas constants:
 
-.                  | Function            | .          |  Description
------------        | ----                | ----       |  -----------
-clAmdBlasOrder     | amdblas_order_const | ( order )  |  Map MagmaRowMajor, MagmaColMajor \n to clAmdBlasRowMajor, clAmdBlasColumnMajor
-clAmdBlasTranspose | amdblas_trans_const | ( trans )  |  Map MagmaNoTrans,  MagmaTrans, MagmaConjTrans \n to clAmdBlasNoTrans, clAmdBlasTrans, clAmdBlasConjTrans
-clAmdBlasUplo      | amdblas_uplo_const  | ( uplo  )  |  Map MagmaLower,    MagmaUpper    \n to clAmdBlasLower,    clAmdBlasUpper
-clAmdBlasDiag      | amdblas_diag_const  | ( diag  )  |  Map MagmaNonUnit,  MagmaUnit     \n to clAmdBlasNonUnit,  clAmdBlasUnit
-clAmdBlasSide      | amdblas_side_const  | ( side  )  |  Map MagmaLeft,     MagmaRight    \n to clAmdBlasLeft,     clAmdBlasRight
+.                 | Function           | .          |  Description
+-----------       | ----               | ----       |  -----------
+clblasOrder       | clblas_order_const | ( order )  |  Map MagmaRowMajor, MagmaColMajor \n to clAmdBlasRowMajor, clAmdBlasColumnMajor
+clblasTranspose   | clblas_trans_const | ( trans )  |  Map MagmaNoTrans,  MagmaTrans, MagmaConjTrans \n to clAmdBlasNoTrans, clAmdBlasTrans, clAmdBlasConjTrans
+clblasUplo        | clblas_uplo_const  | ( uplo  )  |  Map MagmaLower,    MagmaUpper    \n to clAmdBlasLower,    clAmdBlasUpper
+clblasDiag        | clblas_diag_const  | ( diag  )  |  Map MagmaNonUnit,  MagmaUnit     \n to clAmdBlasNonUnit,  clAmdBlasUnit
+clblasSide        | clblas_side_const  | ( side  )  |  Map MagmaLeft,     MagmaRight    \n to clAmdBlasLeft,     clAmdBlasRight
 
 
 To convert MAGMA to CBLAS constants:

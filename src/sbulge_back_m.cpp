@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
        
-       @generated from zbulge_back_m.cpp normal z -> s, Tue Sep  2 12:38:23 2014
+       @generated from zbulge_back_m.cpp normal z -> s, Sat Nov 15 19:54:10 2014
 
  */
 #include "common_magma.h"
@@ -25,9 +25,12 @@
 
 static void *magma_sapplyQ_m_parallel_section(void *arg);
 
-static void magma_stile_bulge_applyQ(magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
-                                     float *E, magma_int_t lde, float *V, magma_int_t ldv,
-                                     float *TAU, float *T, magma_int_t ldt);
+static void magma_stile_bulge_applyQ(
+    magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+    float *E, magma_int_t lde,
+    float *V, magma_int_t ldv,
+    float *TAU,
+    float *T, magma_int_t ldt);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,12 +38,12 @@ class magma_sapplyQ_m_data {
 
 public:
 
-    magma_sapplyQ_m_data(magma_int_t nrgpu_, magma_int_t threads_num_, magma_int_t n_, magma_int_t ne_, magma_int_t n_gpu_,
+    magma_sapplyQ_m_data(magma_int_t ngpu_, magma_int_t threads_num_, magma_int_t n_, magma_int_t ne_, magma_int_t n_gpu_,
                          magma_int_t nb_, magma_int_t Vblksiz_, float *E_, magma_int_t lde_,
                          float *V_, magma_int_t ldv_, float *TAU_,
                          float *T_, magma_int_t ldt_)
     :
-    nrgpu(nrgpu_),
+    ngpu(ngpu_),
     threads_num(threads_num_),
     n(n_),
     ne(ne_),
@@ -67,7 +70,7 @@ public:
     {
         pthread_barrier_destroy(&barrier);
     }
-    const magma_int_t nrgpu;
+    const magma_int_t ngpu;
     const magma_int_t threads_num;
     const magma_int_t n;
     const magma_int_t ne;
@@ -107,14 +110,16 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C" magma_int_t
-magma_sbulge_back_m(magma_int_t nrgpu, magma_uplo_t uplo,
-                        magma_int_t n, magma_int_t nb,
-                        magma_int_t ne, magma_int_t Vblksiz,
-                        float *Z, magma_int_t ldz,
-                        float *V, magma_int_t ldv,
-                        float *TAU,
-                        float *T, magma_int_t ldt,
-                        magma_int_t* info)
+magma_sbulge_back_m(
+    magma_int_t ngpu,
+    magma_uplo_t uplo,
+    magma_int_t n, magma_int_t nb,
+    magma_int_t ne, magma_int_t Vblksiz,
+    float *Z, magma_int_t ldz,
+    float *V, magma_int_t ldv,
+    float *TAU,
+    float *T, magma_int_t ldt,
+    magma_int_t* info)
 {
     magma_int_t threads = magma_get_parallel_numthreads();
     magma_int_t mklth   = magma_get_lapack_numthreads();
@@ -133,7 +138,7 @@ magma_sbulge_back_m(magma_int_t nrgpu, magma_uplo_t uplo,
 
     float perf_temp= .85;
     float perf_temp2= perf_temp;
-    for (magma_int_t itmp=1; itmp < nrgpu; ++itmp)
+    for (magma_int_t itmp=1; itmp < ngpu; ++itmp)
         perf_temp2 *= perf_temp;
     magma_int_t gpu_cpu_perf = magma_get_sbulge_gcperf();
     if (threads > 1) {
@@ -162,7 +167,7 @@ magma_sbulge_back_m(magma_int_t nrgpu, magma_uplo_t uplo,
         #ifdef ENABLE_DEBUG
         printf("---> calling GPU + CPU(if N_CPU > 0) to apply V2 to Z with NE %d     N_GPU %d   N_CPU %d\n",ne, n_gpu, ne-n_gpu);
         #endif
-        magma_sapplyQ_m_data data_applyQ(nrgpu, threads, n, ne, n_gpu, nb, Vblksiz, Z, ldz, V, ldv, TAU, T, ldt);
+        magma_sapplyQ_m_data data_applyQ(ngpu, threads, n, ne, n_gpu, nb, Vblksiz, Z, ldz, V, ldv, TAU, T, ldt);
 
         magma_sapplyQ_m_id_data* arg;
         magma_malloc_cpu((void**) &arg, threads*sizeof(magma_sapplyQ_m_id_data));
@@ -201,7 +206,7 @@ magma_sbulge_back_m(magma_int_t nrgpu, magma_uplo_t uplo,
          *  use only GPU
          *==========================*/
     } else {
-        magma_sbulge_applyQ_v2_m(nrgpu, MagmaLeft, ne, n, nb, Vblksiz, Z, ldz, V, ldv, T, ldt, info);
+        magma_sbulge_applyQ_v2_m(ngpu, MagmaLeft, ne, n, nb, Vblksiz, Z, ldz, V, ldv, T, ldt, info);
         magma_device_sync();
     }
 
@@ -217,7 +222,7 @@ static void *magma_sapplyQ_m_parallel_section(void *arg)
     magma_int_t my_core_id     = ((magma_sapplyQ_m_id_data*)arg) -> id;
     magma_sapplyQ_m_data* data = ((magma_sapplyQ_m_id_data*)arg) -> data;
 
-    magma_int_t nrgpu          = data -> nrgpu;
+    magma_int_t ngpu          = data -> ngpu;
     magma_int_t allcores_num   = data -> threads_num;
     magma_int_t n              = data -> n;
     magma_int_t ne             = data -> ne;
@@ -279,7 +284,7 @@ static void *magma_sapplyQ_m_parallel_section(void *arg)
         timeQgpu = magma_wtime();
         #endif
 
-        magma_sbulge_applyQ_v2_m(nrgpu, MagmaLeft, n_gpu, n, nb, Vblksiz, E, lde, V, ldv, T, ldt, &info);
+        magma_sbulge_applyQ_v2_m(ngpu, MagmaLeft, n_gpu, n, nb, Vblksiz, E, lde, V, ldv, T, ldt, &info);
         magma_device_sync();
 
         #ifdef ENABLE_TIMER
@@ -332,9 +337,13 @@ static void *magma_sapplyQ_m_parallel_section(void *arg)
 #define V(m)     &(V[(m)])
 #define TAU(m)   &(TAU[(m)])
 #define T(m)     &(T[(m)])
-static void magma_stile_bulge_applyQ(magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
-                                     float *E, magma_int_t lde, float *V, magma_int_t ldv,
-                                     float *TAU, float *T, magma_int_t ldt)//, magma_int_t* info)
+static void magma_stile_bulge_applyQ(
+    magma_int_t core_id, magma_side_t side, magma_int_t n_loc, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz,
+    float *E, magma_int_t lde,
+    float *V, magma_int_t ldv,
+    float *TAU,
+    float *T, magma_int_t ldt)
+    //, magma_int_t* info)
 {
     //%===========================
     //%   local variables

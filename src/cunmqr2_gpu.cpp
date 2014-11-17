@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmqr2_gpu.cpp normal z -> c, Tue Sep  2 12:38:21 2014
+       @generated from zunmqr2_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -106,20 +106,21 @@
     @ingroup magma_cgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cunmqr2_gpu(magma_side_t side, magma_trans_t trans,
-                  magma_int_t m, magma_int_t n, magma_int_t k,
-                  magmaFloatComplex *dA, magma_int_t ldda,
-                  magmaFloatComplex *tau,
-                  magmaFloatComplex *dC, magma_int_t lddc,
-                  magmaFloatComplex *wA, magma_int_t ldwa,
-                  magma_int_t *info)
+magma_cunmqr2_gpu(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex    *tau,
+    magmaFloatComplex_ptr dC, magma_int_t lddc,
+    magmaFloatComplex    *wA, magma_int_t ldwa,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
     /* Allocate work space on the GPU */
-    magmaFloatComplex *dwork;
+    magmaFloatComplex_ptr dwork;
 
     magmaFloatComplex c_zero = MAGMA_C_ZERO;
     magmaFloatComplex c_one  = MAGMA_C_ONE;

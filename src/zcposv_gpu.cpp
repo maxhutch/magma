@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions mixed zc -> ds
 
@@ -134,12 +134,14 @@
     @ingroup magma_zposv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_zcposv_gpu(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
-                 magmaDoubleComplex *dA, magma_int_t ldda,
-                 magmaDoubleComplex *dB, magma_int_t lddb,
-                 magmaDoubleComplex *dX, magma_int_t lddx,
-                 magmaDoubleComplex *dworkd, magmaFloatComplex *dworks,
-                 magma_int_t *iter, magma_int_t *info)
+magma_zcposv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magmaDoubleComplex_ptr dX, magma_int_t lddx,
+    magmaDoubleComplex_ptr dworkd, magmaFloatComplex_ptr dworks,
+    magma_int_t *iter,
+    magma_int_t *info)
 {
     #define dB(i,j)     (dB + (i) + (j)*lddb)
     #define dX(i,j)     (dX + (i) + (j)*lddx)
@@ -149,8 +151,8 @@ magma_zcposv_gpu(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magma_int_t     ione  = 1;
-    magmaDoubleComplex *dR;
-    magmaFloatComplex  *dSA, *dSX;
+    magmaDoubleComplex_ptr dR;
+    magmaFloatComplex_ptr dSA, dSX;
     magmaDoubleComplex Xnrmv, Rnrmv;
     double          Anrm, Xnrm, Rnrm, cte, eps;
     magma_int_t     i, j, iiter, lddsa, lddsx, lddr;

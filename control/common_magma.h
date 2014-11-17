@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
  
        @author Mathieu Faverge
  
@@ -21,8 +21,6 @@
 #include <math.h>
 #include <string.h>
 #include <ctype.h>
-
-#include <cuda_runtime_api.h>
 
 #if defined( _WIN32 ) || defined( _WIN64 )
 

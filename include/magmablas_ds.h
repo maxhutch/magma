@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from magmablas_zc.h mixed zc -> ds, Tue Sep  2 12:38:14 2014
+       @generated from magmablas_zc.h mixed zc -> ds, Sat Nov 15 19:53:54 2014
 */
 
 #ifndef MAGMABLAS_DS_H
@@ -18,44 +18,55 @@ extern "C" {
 #endif
 
   /* Mixed precision */
-void magmablas_dsaxpycp(
+void
+magmablas_dsaxpycp(
     magma_int_t m,
-    float *R, double *X,
-    const double *B, double *W );
+    magmaFloat_ptr  r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b,
+    magmaDouble_ptr w );
 
-void magmablas_daxpycp(
+void
+magmablas_daxpycp(
     magma_int_t m,
-    double *R, double *X,
-    const double *B );
+    magmaDouble_ptr r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b );
 
-void magmablas_dslaswp(
+// TODO add ldsa
+void
+magmablas_dslaswp(
     magma_int_t n,
-    double *A, magma_int_t lda,
-    float *SA, magma_int_t m,
-    const magma_int_t *ipiv, magma_int_t incx );
+    magmaDouble_ptr  A, magma_int_t lda,
+    magmaFloat_ptr  SA,
+    magma_int_t m, const magma_int_t *ipiv, magma_int_t incx );
 
-void magmablas_dlag2s(
+void
+magmablas_dlag2s(
     magma_int_t m, magma_int_t n,
-    const double *A,  magma_int_t lda,
-          float  *SA, magma_int_t ldsa,
+    magmaDouble_const_ptr  A, magma_int_t lda,
+    magmaFloat_ptr        SA, magma_int_t ldsa,
     magma_int_t *info );
 
-void magmablas_slag2d(
+void
+magmablas_slag2d(
     magma_int_t m, magma_int_t n,
-    const float  *SA, magma_int_t ldsa,
-          double *A,  magma_int_t lda,
+    magmaFloat_const_ptr  SA, magma_int_t ldsa,
+    magmaDouble_ptr        A, magma_int_t lda,
     magma_int_t *info );
 
-void magmablas_dlat2s(
+void
+magmablas_dlat2s(
     magma_uplo_t uplo, magma_int_t n,
-    const double *A,  magma_int_t lda,
-          float  *SA, magma_int_t ldsa,
+    magmaDouble_const_ptr  A, magma_int_t lda,
+    magmaFloat_ptr        SA, magma_int_t ldsa,
     magma_int_t *info );
 
-void magmablas_slat2d(
+void
+magmablas_slat2d(
     magma_uplo_t uplo, magma_int_t n,
-    const float  *SA, magma_int_t ldsa,
-          double *A,  magma_int_t lda,
+    magmaFloat_const_ptr  SA, magma_int_t ldsa,
+    magmaDouble_ptr        A, magma_int_t lda,
     magma_int_t *info );
 
 #ifdef __cplusplus

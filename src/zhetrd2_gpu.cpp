@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -154,13 +154,14 @@
     @ingroup magma_zheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zhetrd2_gpu(magma_uplo_t uplo, magma_int_t n,
-                  magmaDoubleComplex *dA, magma_int_t ldda,
-                  double *d, double *e, magmaDoubleComplex *tau,
-                  magmaDoubleComplex *wA,  magma_int_t ldwa,
-                  magmaDoubleComplex *work, magma_int_t lwork,
-                  magmaDoubleComplex *dwork, magma_int_t ldwork,
-                  magma_int_t *info)
+magma_zhetrd2_gpu(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    double *d, double *e, magmaDoubleComplex *tau,
+    magmaDoubleComplex *wA,  magma_int_t ldwa,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    magmaDoubleComplex_ptr dwork, magma_int_t ldwork,
+    magma_int_t *info)
 {
 #define  A(i, j) (wA + (j)*ldwa + (i))
 #define dA(i, j) (dA + (j)*ldda + (i))

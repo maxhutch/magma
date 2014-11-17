@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Mark Gates
 
-       @generated from zgemv_fermi.cu normal z -> s, Tue Sep  2 12:38:17 2014
+       @generated from zgemv_fermi.cu normal z -> s, Sat Nov 15 19:53:59 2014
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -231,14 +231,14 @@ sgemvc_kernel_fermi(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    A       REAL array of dimension ( LDA, n ) on the GPU.
+    dA      REAL array of dimension ( LDA, n ) on the GPU.
    
     @param[in]
     lda     INTEGER
             LDA specifies the leading dimension of A.
 
     @param[in]
-    x       REAL array of dimension
+    dx      REAL array of dimension
             n if trans == MagmaNoTrans
             m if trans == MagmaTrans or MagmaConjTrans
      
@@ -252,7 +252,7 @@ sgemvc_kernel_fermi(
             supplied as zero then Y need not be set on input.
 
     @param[out]
-    y       REAL array of dimension
+    dy      REAL array of dimension
             m if trans == MagmaNoTrans
             n if trans == MagmaTrans or MagmaConjTrans
 
@@ -265,10 +265,10 @@ sgemvc_kernel_fermi(
 extern "C" void
 magmablas_sgemv(
     magma_trans_t trans, magma_int_t m, magma_int_t n, float alpha,
-    const float *A, magma_int_t lda,
-    const float *x, magma_int_t incx,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
-    float *y, magma_int_t incy)
+    magmaFloat_ptr dy, magma_int_t incy)
 {
     magma_int_t info = 0;
     if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
@@ -277,7 +277,7 @@ magmablas_sgemv(
         info = -2;
     else if ( n < 0 )
         info = -3;
-    else if ( lda < m )
+    else if ( ldda < m )
         info = -6;
     else if ( incx == 0 )
         info = -8;
@@ -295,9 +295,9 @@ magmablas_sgemv(
         // call CUDA ARCH 1.x version
         // magmablas for [sd] precisions, cublas for [zc] precisions.
         #if defined(PRECISION_z) || defined(PRECISION_c)
-        magma_sgemv( trans, m, n, alpha, A, lda, x, incx, beta, y, incy );
+        magma_sgemv( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
         #else
-        magmablas_sgemv_tesla( trans, m, n, alpha, A, lda, x, incx, beta, y, incy );
+        magmablas_sgemv_tesla( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
         #endif
         return;
     }
@@ -308,18 +308,18 @@ magmablas_sgemv(
         dim3 grid( (m - 1)/BLK_X + 1 );
         dim3 threads( BLK_X, 1, 1 );
         sgemvn_kernel1_fermi<<< grid, threads, 0, magma_stream >>>
-            ( m, n, alpha, A, lda, x, incx, beta, y, incy );
+            ( m, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
     }
     else if ( trans == MagmaTrans ) {
         dim3 grid    ( 1, n, 1 );
         dim3 threads ( BLK_X, 1, 1 );
         sgemvt_kernel_fermi<<< grid, threads, 0, magma_stream >>>
-            ( m, n, alpha, A, lda, x, incx, beta, y, incy );
+            ( m, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
     }
     else if ( trans == MagmaConjTrans ) {
         dim3 grid    ( 1, n, 1 );
         dim3 threads ( BLK_X, 1, 1 );
         sgemvc_kernel_fermi<<< grid, threads, 0, magma_stream >>>
-            ( m, n, alpha, A, lda, x, incx, beta, y, incy );
+            ( m, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
     }
 }

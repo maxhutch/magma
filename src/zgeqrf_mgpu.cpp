@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -70,10 +70,12 @@
     @ingroup magma_zgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
-                    magmaDoubleComplex **dlA, magma_int_t ldda,
-                    magmaDoubleComplex *tau,
-                    magma_int_t *info )
+magma_zgeqrf2_mgpu(
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_ptr dlA[], magma_int_t ldda,
+    magmaDoubleComplex *tau,
+    magma_int_t *info )
 {
     #define dlA(dev, i, j)   (dlA[dev] + (i) + (j)*(ldda))
     #define hpanel(i)        (hpanel + (i))
@@ -121,7 +123,7 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
      * on other GPUs,          set dpanel = dwork[dev] + dpanel_offset. */
     lddwork = n;
     dpanel_offset = lddwork*nb;
-    for( dev=0; dev < num_gpus; dev++ ) {
+    for( dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         if ( MAGMA_SUCCESS != magma_zmalloc( &(dwork[dev]), (lddwork + ldda)*nb )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -142,15 +144,15 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
     hpanel = hwork + lhwork;
 
     /* Set the number of local n for each GPU */
-    for( dev=0; dev < num_gpus; dev++ ) {
-        n_local[dev] = ((n/nb)/num_gpus)*nb;
-        if (dev < (n/nb) % num_gpus)
+    for( dev=0; dev < ngpu; dev++ ) {
+        n_local[dev] = ((n/nb)/ngpu)*nb;
+        if (dev < (n/nb) % ngpu)
             n_local[dev] += nb;
-        else if (dev == (n/nb) % num_gpus)
+        else if (dev == (n/nb) % ngpu)
             n_local[dev] += n % nb;
     }
 
-    for( dev=0; dev < num_gpus; dev++ ) {
+    for( dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         magma_queue_create( &stream[dev][0] );
         magma_queue_create( &stream[dev][1] );
@@ -162,10 +164,10 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
         // Note: as written, ib cannot be < nb.
         for( i = 0; i < min_mn-nb; i += nb ) {
             /* Set the GPU number that holds the current panel */
-            panel_dev = (i/nb) % num_gpus;
+            panel_dev = (i/nb) % ngpu;
             
             /* Set the local index where the current panel is (j == i) */
-            i_local = i/(nb*num_gpus)*nb;
+            i_local = i/(nb*ngpu)*nb;
             
             ib = min(min_mn-i, nb);
             rows = m-i;
@@ -193,7 +195,7 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
 
             zpanel_to_q( MagmaUpper, ib, hpanel(i), ldhpanel, hwork + ib*ib );
             // Send the current panel back to the GPUs
-            for( dev=0; dev < num_gpus; dev++ ) {
+            for( dev=0; dev < ngpu; dev++ ) {
                 magma_setdevice( dev );
                 if (dev == panel_dev)
                     dpanel[dev] = dlA(dev, i, i_local);
@@ -203,7 +205,7 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
                                         hpanel(i),   ldhpanel,
                                         dpanel[dev], ldda, stream[dev][0] );
             }
-            for( dev=0; dev < num_gpus; dev++ ) {
+            for( dev=0; dev < ngpu; dev++ ) {
                 magma_setdevice( dev );
                 magma_queue_sync( stream[dev][0] );
             }
@@ -217,21 +219,21 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
 
             if (i + ib < n) {
                 /* Send the T matrix to the GPU. */
-                for( dev=0; dev < num_gpus; dev++ ) {
+                for( dev=0; dev < ngpu; dev++ ) {
                     magma_setdevice( dev );
                     magma_zsetmatrix_async( ib, ib,
                                             hwork,      ib,
                                             dwork[dev], lddwork, stream[dev][0] );
                 }
                 
-                la_dev = (panel_dev+1) % num_gpus;
-                for( dev=0; dev < num_gpus; dev++ ) {
+                la_dev = (panel_dev+1) % ngpu;
+                for( dev=0; dev < ngpu; dev++ ) {
                     magma_setdevice( dev );
                     magmablasSetKernelStream( stream[dev][0] );
                     if (dev == la_dev && i+nb < min_mn-nb) {
                         // If not last panel,
                         // for look-ahead panel, apply H' to A(i:m,i+ib:i+2*ib)
-                        i_nb_local = (i+nb)/(nb*num_gpus)*nb;
+                        i_nb_local = (i+nb)/(nb*ngpu)*nb;
                         magma_zlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                           rows, ib, ib,
                                           dpanel[dev],             ldda,       // V
@@ -277,8 +279,8 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
     if (i < min_mn) {
         rows = m-i;
         for( j=i; j < n; j += nb ) {
-            panel_dev = (j/nb) % num_gpus;
-            i_local = j/(nb*num_gpus)*nb;
+            panel_dev = (j/nb) % ngpu;
+            i_local = j/(nb*ngpu)*nb;
             ib = min( n-j, nb );
             magma_setdevice( panel_dev );
             magma_zgetmatrix( rows, ib,
@@ -297,8 +299,8 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
         }
         
         for( j=i; j < n; j += nb ) {
-            panel_dev = (j/nb) % num_gpus;
-            i_local = j/(nb*num_gpus)*nb;
+            panel_dev = (j/nb) % ngpu;
+            i_local = j/(nb*ngpu)*nb;
             ib = min( n-j, nb );
             magma_setdevice( panel_dev );
             magma_zsetmatrix( rows, ib,
@@ -309,7 +311,7 @@ magma_zgeqrf2_mgpu( magma_int_t num_gpus, magma_int_t m, magma_int_t n,
 
 CLEANUP:
     // free(NULL) does nothing.
-    for( dev=0; dev < num_gpus; dev++ ) {
+    for( dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         magma_queue_destroy( stream[dev][0]   );
         magma_queue_destroy( stream[dev][1]   );

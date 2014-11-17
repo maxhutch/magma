@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/blas
@@ -14,16 +14,8 @@ ZHDR  =
 
 # alphabetic order by base name (ignoring precision)
 ZSRC := \
-	clag2z_sparse.cu	\
 	magma_z_blaswrapper.cpp	\
-	magma_clag2z.cpp	\
-	magma_zlag2c.cpp	\
 	zbajac_csr.cu		\
-	zbcsrswp.cu		\
-	zbcsrtrsv.cu		\
-	zbcsrcpy.cu		\
-	zbcsrlugemm.cu		\
-	zbcsrlupivloc.cu	\
 	zgecsrmv.cu		\
 	zgeellmv.cu		\
 	zgeelltmv.cu		\
@@ -31,7 +23,6 @@ ZSRC := \
 	zgesellcmv.cu		\
 	zgesellcmmv.cu		\
 	zjacobisetup.cu		\
-	zlag2c_sparse.cu	\
 	zlobpcg_shift.cu	\
 	zlobpcg_residuals.cu	\
 	zlobpcg_maxpy.cu	\
@@ -45,10 +36,16 @@ ZSRC := \
 	zmgesellcmmv.cu		\
 	zpipelinedgmres.cu	\
 
+	#zbcsrswp.cu		\
+	#zbcsrtrsv.cu		\
+	#zbcsrcpy.cu		\
+	#zbcsrlugemm.cu		\
+	#zbcsrlupivloc.cu	\
 
 # Auxiliary routines
 ZSRC += \
 	zcompact.cu		\
+	magma_zmcsrcompressor_gpu.cu		\
 
 
 -include Makefile.local

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @author Azzam Haidar
@@ -11,10 +11,11 @@
        @precisions normal d -> s
 */
 #include "thread_queue.hpp"
-#include "timer.h"
+#include "magma_timer.h"
 
 #include "common_magma.h"  // after thread.hpp, so max, min are defined
 
+#define REAL
 
 // ---------------------------------------------
 // stores arguments and executes call to dlaqtrsd (on CPU)
@@ -23,9 +24,9 @@ class magma_dlaqtrsd_task: public magma_task
 public:
     magma_dlaqtrsd_task(
         magma_trans_t in_trans, magma_int_t in_n,
-        const double* in_T, magma_int_t in_ldt,
-        double*       in_x, magma_int_t in_incx,
-        const double* in_cnorm
+        const double *in_T, magma_int_t in_ldt,
+        double       *in_x, magma_int_t in_incx,
+        const double *in_cnorm
     ):
         trans( in_trans ),
         n    ( in_n     ),
@@ -48,11 +49,11 @@ public:
 private:
     magma_trans_t trans;
     magma_int_t   n;
-    const double* T;
+    const double *T;
     magma_int_t   ldt;
-    double*       x;
+    double       *x;
     magma_int_t   incx;
-    const double* cnorm;
+    const double *cnorm;
 };
 
 
@@ -67,10 +68,10 @@ public:
         magma_trans_t in_transA, magma_trans_t in_transB,
         magma_int_t in_m, magma_int_t in_n, magma_int_t in_k,
         double  in_alpha,
-        const double* in_A, magma_int_t in_lda,
-        const double* in_B, magma_int_t in_ldb,
+        const double *in_A, magma_int_t in_lda,
+        const double *in_B, magma_int_t in_ldb,
         double  in_beta,
-        double* in_C, magma_int_t in_ldc
+        double *in_C, magma_int_t in_ldc
     ):
         transA( in_transA ),
         transB( in_transB ),
@@ -85,7 +86,7 @@ public:
         beta  ( in_beta   ),
         C     ( in_C      ),
         ldc   ( in_ldc    )
-    {}               
+    {}
     
     virtual void run()
     {
@@ -100,12 +101,12 @@ private:
     magma_int_t   n;
     magma_int_t   k;
     double        alpha;
-    const double* A;
+    const double *A;
     magma_int_t   lda;
-    const double* B;
+    const double *B;
     magma_int_t   ldb;
     double        beta;
-    double*       C;
+    double       *C;
     magma_int_t   ldc;
 };
 
@@ -262,14 +263,17 @@ private:
 extern "C"
 magma_int_t magma_dtrevc3_mt(
     magma_side_t side, magma_vec_t howmany,
-    magma_int_t* select,  // logical in fortran
+    magma_int_t *select,  // logical in fortran
     magma_int_t n,
-    double* T,  magma_int_t ldt,
-    double* VL, magma_int_t ldvl,
-    double* VR, magma_int_t ldvr,
-    magma_int_t mm, magma_int_t* mout,
-    double* work, magma_int_t lwork,
-    magma_int_t* info )
+    double *T,  magma_int_t ldt,
+    double *VL, magma_int_t ldvl,
+    double *VR, magma_int_t ldvr,
+    magma_int_t mm, magma_int_t *mout,
+    double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
+    magma_int_t *info )
 {
 #define T(i,j)  (T  + (i) + (j)*ldt)
 #define VL(i,j) (VL + (i) + (j)*ldvl)
@@ -401,11 +405,11 @@ magma_int_t magma_dtrevc3_mt(
     queue.launch( nthread );
     //printf( "nthread %d, %d\n", nthread, lapack_nthread );
     
-    // NB = N/thread, rounded up to multiple of 16,
+    // gemm_nb = N/thread, rounded up to multiple of 16,
     // but avoid multiples of page size, e.g., 512*8 bytes = 4096.
-    magma_int_t NB = magma_int_t( ceil( ceil( ((double)n) / nthread ) / 16. ) * 16. );
-    if ( NB % 512 == 0 ) {
-        NB += 32;
+    magma_int_t gemm_nb = magma_int_t( ceil( ceil( ((double)n) / nthread ) / 16. ) * 16. );
+    if ( gemm_nb % 512 == 0 ) {
+        gemm_nb += 32;
     }
     
     magma_timer_t time_total=0, time_trsv=0, time_gemm=0, time_gemv=0, time_trsv_sum=0, time_gemm_sum=0, time_gemv_sum=0;
@@ -518,7 +522,7 @@ magma_int_t magma_dtrevc3_mt(
                     iscomplex[ iv ] = ip;
                     // back-transform and normalization is done below
                 }
-            }  // end real eigenvector 
+            }  // end real eigenvector
             else {
                 // ------------------------------------------------------------
                 // Complex right eigenvector
@@ -618,8 +622,8 @@ magma_int_t magma_dtrevc3_mt(
                     n2  = ki2+nb-iv+1;
                     
                     // split gemm into multiple tasks, each doing one block row
-                    for( i=0; i < n; i += NB ) {
-                        magma_int_t ib = min( NB, n-i );
+                    for( i=0; i < n; i += gemm_nb ) {
+                        magma_int_t ib = min( gemm_nb, n-i );
                         queue.push_task( new dgemm_task(
                             MagmaNoTrans, MagmaNoTrans, ib, nb2, n2, c_one,
                             VR(i,0), ldvr,
@@ -856,8 +860,8 @@ magma_int_t magma_dtrevc3_mt(
                     n2 = n-(ki2+1)+iv;
                     
                     // split gemm into multiple tasks, each doing one block row
-                    for( i=0; i < n; i += NB ) {
-                        magma_int_t ib = min( NB, n-i );
+                    for( i=0; i < n; i += gemm_nb ) {
+                        magma_int_t ib = min( gemm_nb, n-i );
                         queue.push_task( new dgemm_task(
                             MagmaNoTrans, MagmaNoTrans, ib, iv, n2, c_one,
                             VL(i,ki2-iv+1), ldvl,

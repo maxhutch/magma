@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgelqf.cpp normal z -> s, Tue Sep  2 12:38:21 2014
+       @generated from zgelqf.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -88,9 +88,11 @@
     @ingroup magma_sgelqf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgelqf( magma_int_t m, magma_int_t n,
-              float *A,    magma_int_t lda,   float *tau,
-              float *work, magma_int_t lwork, magma_int_t *info)
+magma_sgelqf(
+    magma_int_t m, magma_int_t n,
+    float *A,    magma_int_t lda,   float *tau,
+    float *work, magma_int_t lwork,
+    magma_int_t *info)
 {
     float *dA, *dAT;
     float c_one = MAGMA_S_ONE;

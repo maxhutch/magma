@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqrf_gpu.cpp normal z -> s, Tue Sep  2 12:38:20 2014
+       @generated from zgeqrf_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 */
 #include "common_magma.h"
 
@@ -113,10 +113,12 @@ void ssplit_diag_block(magma_int_t ib, float *a, magma_int_t lda, float *work)
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgeqrf_gpu( magma_int_t m, magma_int_t n,
-                  float *dA,   magma_int_t ldda,
-                  float *tau, float *dT,
-                  magma_int_t *info )
+magma_sgeqrf_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_ptr dA,   magma_int_t ldda,
+    float *tau,
+    magmaFloat_ptr dT,
+    magma_int_t *info )
 {
     #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
     #define dT(a_1)     (dT + (a_1)*nb)

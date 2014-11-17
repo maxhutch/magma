@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions mixed zc -> ds
 
@@ -103,8 +103,9 @@ zclaswp_inv_kernel(int n, magmaDoubleComplex *A, int lda, magmaFloatComplex *SA,
     ********************************************************************/
 extern "C" void
 magmablas_zclaswp_q(
-    magma_int_t n, magmaDoubleComplex *A, magma_int_t lda,
-    magmaFloatComplex *SA, magma_int_t m,
+    magma_int_t n,
+    magmaDoubleComplex_ptr A, magma_int_t lda,
+    magmaFloatComplex_ptr SA, magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx,
     magma_queue_t queue )
 {
@@ -125,8 +126,9 @@ magmablas_zclaswp_q(
     ********************************************************************/
 extern "C" void
 magmablas_zclaswp(
-    magma_int_t n, magmaDoubleComplex *A, magma_int_t lda,
-    magmaFloatComplex *SA, magma_int_t m,
+    magma_int_t n,
+    magmaDoubleComplex_ptr A, magma_int_t lda,
+    magmaFloatComplex_ptr SA, magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx )
 {
     magmablas_zclaswp_q( n, A, lda, SA, m, ipiv, incx, magma_stream );

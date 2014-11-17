@@ -1,29 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex0_m.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+       @generated from dlaex0_m.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 */
 #include "common_magma.h"
-#include "timer.h"
-
-extern "C" {
-
-magma_int_t magma_slaex1_m(magma_int_t nrgpu, magma_int_t n, float* d, float* Q, magma_int_t ldq,
-                           magma_int_t* indxq, float rho, magma_int_t cutpnt,
-                           float* work, magma_int_t* iwork, float** dwork,
-                           magma_queue_t stream[MagmaMaxGPUs][2],
-                           magma_range_t range, float vl, float vu,
-                           magma_int_t il, magma_int_t iu, magma_int_t* info);
-
-magma_int_t magma_get_slaex3_m_nb();       // defined in slaex3_m.cpp
-
-}  // end extern "C"
+#include "magma_timer.h"
 
 /**
     Purpose
@@ -34,8 +21,8 @@ magma_int_t magma_get_slaex3_m_nb();       // defined in slaex3_m.cpp
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     n       INTEGER
@@ -111,10 +98,14 @@ magma_int_t magma_get_slaex3_m_nb();       // defined in slaex3_m.cpp
     @ingroup magma_ssyev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, magma_int_t ldq,
-               float* work, magma_int_t* iwork,
-               magma_range_t range, float vl, float vu,
-               magma_int_t il, magma_int_t iu, magma_int_t* info)
+magma_slaex0_m(
+    magma_int_t ngpu,
+    magma_int_t n, float *d, float *e,
+    float *Q, magma_int_t ldq,
+    float *work, magma_int_t *iwork,
+    magma_range_t range, float vl, float vu,
+    magma_int_t il, magma_int_t iu,
+    magma_int_t *info)
 {
 #define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
@@ -123,7 +114,7 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
     magma_int_t curlvl, i, indxq;
     magma_int_t igpu, j, k, matsiz, msd2, smlsiz;
     magma_int_t submat, subpbs, tlvls;
-    float* dw[MagmaMaxGPUs];
+    float *dw[MagmaMaxGPUs];
     magma_queue_t stream [MagmaMaxGPUs][2];
 
     // Test the input parameters.
@@ -144,16 +135,16 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
     
-    // workspace dimension for nrgpu > 1
+    // workspace dimension for ngpu > 1
     size_t tmp = (n-1)/2+1;
-    if (nrgpu > 1) {
-        size_t tmp2 = (tmp-1) / (nrgpu/2) + 1;
+    if (ngpu > 1) {
+        size_t tmp2 = (tmp-1) / (ngpu/2) + 1;
         tmp = tmp * tmp2 + 2 * magma_get_slaex3_m_nb()*(tmp + tmp2);
     }
 
-    for (igpu = 0; igpu < nrgpu; ++igpu) {
+    for (igpu = 0; igpu < ngpu; ++igpu) {
         magma_setdevice(igpu);
-        if (nrgpu == 1) {
+        if (ngpu == 1) {
             if (MAGMA_SUCCESS != magma_smalloc( &dw[igpu], 3*n*(n/2 + 1) )) {
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
@@ -259,7 +250,7 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
                 // We need all the eigenvectors if it is not last step
                 range2 = MagmaRangeAll;
 
-            magma_slaex1_m(nrgpu, matsiz, &d[submat], Q(submat, submat), ldq,
+            magma_slaex1_m(ngpu, matsiz, &d[submat], Q(submat, submat), ldq,
                            &iwork[indxq+submat], e[submat+msd2-1], msd2,
                            work, &iwork[subpbs], dw, stream,
                            range2, vl, vu, il, iu, info);
@@ -286,9 +277,9 @@ magma_slaex0_m(magma_int_t nrgpu, magma_int_t n, float* d, float* e, float* Q, m
         blasf77_scopy(&n, Q(0, j), &ione, &work[ n*(i+1) ], &ione);
     }
     blasf77_scopy(&n, work, &ione, d, &ione);
-    lapackf77_slacpy ( "A", &n, &n, &work[n], &n, Q, &ldq );
+    lapackf77_slacpy( "A", &n, &n, &work[n], &n, Q, &ldq );
 
-    for (igpu = 0; igpu < nrgpu; ++igpu) {
+    for (igpu = 0; igpu < ngpu; ++igpu) {
         magma_setdevice(igpu);
         magma_queue_destroy( stream[igpu][0] );
         magma_queue_destroy( stream[igpu][1] );

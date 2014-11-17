@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex3.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+       @generated from dlaex3.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 */
 
 #ifdef _OPENMP
@@ -15,13 +15,14 @@
 #endif
 
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 
 extern "C" {
 
 int magma_get_slaed3_k() { return 512; }
 
-void magma_svrange(magma_int_t k, float *d, magma_int_t *il, magma_int_t *iu, float vl, float vu)
+void magma_svrange(
+    magma_int_t k, float *d, magma_int_t *il, magma_int_t *iu, float vl, float vu)
 {
     magma_int_t i;
 
@@ -32,28 +33,32 @@ void magma_svrange(magma_int_t k, float *d, magma_int_t *il, magma_int_t *iu, fl
             *iu = i;
             break;
         }
-        else if (d[i] < vl)
+        else if (d[i] < vl) {
             ++*il;
+        }
     }
     return;
 }
 
-void magma_sirange(magma_int_t k, magma_int_t* indxq, magma_int_t *iil, magma_int_t *iiu, magma_int_t il, magma_int_t iu)
+void magma_sirange(
+    magma_int_t k, magma_int_t *indxq, magma_int_t *iil, magma_int_t *iiu, magma_int_t il, magma_int_t iu)
 {
     magma_int_t i;
 
     *iil = 1;
     *iiu = 0;
-    for (i = il; i <= iu; ++i)
+    for (i = il; i <= iu; ++i) {
         if (indxq[i-1] <= k) {
             *iil = indxq[i-1];
             break;
         }
-    for (i = iu; i >= il; --i)
+    }
+    for (i = iu; i >= il; --i) {
         if (indxq[i-1] <= k) {
             *iiu = indxq[i-1];
             break;
         }
+    }
     return;
 }
 
@@ -207,13 +212,15 @@ void magma_sirange(magma_int_t k, magma_int_t* indxq, magma_int_t *iil, magma_in
     @ingroup magma_ssyev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
-             float* Q, magma_int_t ldq, float rho,
-             float* dlamda, float* Q2, magma_int_t* indx,
-             magma_int_t* ctot, float* w, float* s, magma_int_t* indxq,
-             float* dwork,
-             magma_range_t range, float vl, float vu, magma_int_t il, magma_int_t iu,
-             magma_int_t* info )
+magma_slaex3(
+    magma_int_t k, magma_int_t n, magma_int_t n1,
+    float *d,
+    float *Q, magma_int_t ldq, float rho,
+    float *dlamda, float *Q2, magma_int_t *indx,
+    magma_int_t *ctot, float *w, float *s, magma_int_t *indxq,
+    magmaFloat_ptr dwork,
+    magma_range_t range, float vl, float vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *info )
 {
 #define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
@@ -224,9 +231,9 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
 
     magma_int_t iil, iiu, rk;
 
-    float* dq2= dwork;
-    float* ds = dq2  + n*(n/2+1);
-    float* dq = ds   + n*(n/2+1);
+    float *dq2= dwork;
+    float *ds = dq2  + n*(n/2+1);
+    float *dq = ds   + n*(n/2+1);
     magma_int_t lddq = n/2 + 1;
 
     magma_int_t i, iq2, j, n12, n2, n23, tmp, lq2;
@@ -512,7 +519,10 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
                               s, &n23, &d_zero, Q(n1,iil-1), &ldq );
             } else {
                 magma_ssetmatrix( n23, rk, Q(ctot[0],iil-1), ldq, ds, n23 );
-                magma_sgemm( MagmaNoTrans, MagmaNoTrans, n2, rk, n23, d_one, &dq2[iq2], n2, ds, n23, d_zero, dq, lddq);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, n2, rk, n23,
+                             d_one,  &dq2[iq2], n2,
+                                     ds, n23,
+                             d_zero, dq, lddq);
                 magma_sgetmatrix( n2, rk, dq, lddq, Q(n1,iil-1), ldq );
             }
         } else
@@ -525,7 +535,10 @@ magma_slaex3(magma_int_t k, magma_int_t n, magma_int_t n1, float* d,
                               s, &n12, &d_zero, Q(0,iil-1), &ldq);
             } else {
                 magma_ssetmatrix( n12, rk, Q(0,iil-1), ldq, ds, n12 );
-                magma_sgemm( MagmaNoTrans, MagmaNoTrans, n1, rk, n12, d_one, dq2, n1, ds, n12, d_zero, dq, lddq);
+                magma_sgemm( MagmaNoTrans, MagmaNoTrans, n1, rk, n12,
+                             d_one,  dq2, n1,
+                                     ds, n12,
+                             d_zero, dq, lddq);
                 magma_sgetmatrix( n1, rk, dq, lddq, Q(0,iil-1), ldq );
             }
         } else

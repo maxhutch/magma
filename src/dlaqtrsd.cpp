@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
        @precisions normal d -> s
@@ -31,7 +31,7 @@
     and it solves
         ( [ That u      ] - lambda*I ) * x = 0,
         ( [ 0    lambda ]            )
-    which becomes (That - lambda*I) * w = -s*u, with x = [ w ; 1 ] and scaling s.
+    which becomes (That - lambda*I) * w = -s*u, with x = [ w; 1 ] and scaling s.
     If the lower block is 1x1, lambda and x are real;
     if the lower block is 2x2, lambda and x are complex.
     
@@ -39,7 +39,7 @@
     and it solves
         ( [ lambda v^T  ] - lambda I )**T * x = 0,
         ( [ 0      That ]            )
-    which becomes (That - lambda*I)**T * w = -s*v, with x = [ 1 ; w ] and scaling s.
+    which becomes (That - lambda*I)**T * w = -s*v, with x = [ 1; w ] and scaling s.
     If the upper block is 1x1, lambda and x are real;
     if the upper block is 2x2, lambda and x are complex.
 
@@ -93,10 +93,11 @@
     ********************************************************************/
 extern "C"
 magma_int_t magma_dlaqtrsd(
-    magma_trans_t trans,
-    magma_int_t n, const double *T, magma_int_t ldt,
-    double *x, magma_int_t ldx,
-    const double *cnorm, magma_int_t *info)
+    magma_trans_t trans, magma_int_t n,
+    const double *T, magma_int_t ldt,
+    double *x,       magma_int_t ldx,
+    const double *cnorm,
+    magma_int_t *info)
 {
 #define T(i,j)  (T + (i) + (j)*ldt)
 #define x(i,j)  (x + (i) + (j)*ldx)
@@ -205,7 +206,7 @@ magma_int_t magma_dlaqtrsd(
                         c_false, ione, ione, smin, c_one,
                         T(j,j), ldt, c_one, c_one, x(j,0), ldx,
                         wr, c_zero, W, itwo, &scale, &xnorm, &ierr );
-                    #endif         
+                    #endif
                     
                     // Scale W(0,0) to avoid overflow when updating
                     // the right-hand side.
@@ -240,7 +241,7 @@ magma_int_t magma_dlaqtrsd(
                         c_false, itwo, ione, smin, c_one,
                         T(j-1,j-1), ldt, c_one, c_one, x(j-1,0), ldx,
                         wr, c_zero, W, itwo, &scale, &xnorm, &ierr );
-                    #endif         
+                    #endif
                     
                     // Scale W(0,0) and W(1,0) to avoid overflow when
                     // updating the right-hand side.
@@ -325,7 +326,7 @@ magma_int_t magma_dlaqtrsd(
                         c_false, ione, itwo, smin, c_one,
                         T(j,j), ldt, c_one, c_one, x(j,0), ldx,
                         wr, wi, W, itwo, &scale, &xnorm, &ierr );
-                    #endif         
+                    #endif
                     
                     // Scale W(0,0) and W(0,1) to avoid overflow when
                     // updating the right-hand side.
@@ -363,7 +364,7 @@ magma_int_t magma_dlaqtrsd(
                         c_false, itwo, itwo, smin, c_one,
                         T(j-1,j-1), ldt, c_one, c_one, x(j-1,0), ldx,
                         wr, wi, W, itwo, &scale, &xnorm, &ierr );
-                    #endif         
+                    #endif
                     
                     // Scale W to avoid overflow when updating
                     // the right-hand side.

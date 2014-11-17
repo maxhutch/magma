@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zmgeelltmv.cu normal z -> s, Tue Sep  2 12:38:33 2014
+       @generated from zmgeelltmv.cu normal z -> s, Sat Nov 15 19:54:21 2014
 
 */
 
@@ -20,16 +20,17 @@
 
 
 __global__ void 
-smgeelltmv_kernel( int num_rows, 
-                 int num_cols,
-                 int num_vecs,
-                 int num_cols_per_row,
-                 float alpha, 
-                 float *d_val, 
-                 magma_index_t *d_colind,
-                 float *d_x,
-                 float beta, 
-                 float *d_y)
+smgeelltmv_kernel( 
+        int num_rows, 
+        int num_cols,
+        int num_vecs,
+        int num_cols_per_row,
+        float alpha, 
+        magmaFloat_ptr dval, 
+        magmaIndex_ptr dcolind,
+        magmaFloat_ptr dx,
+        float beta, 
+        magmaFloat_ptr dy)
 {
     extern __shared__ float dot[];
     int row = blockDim.x * blockIdx.x + threadIdx.x ;
@@ -37,17 +38,17 @@ smgeelltmv_kernel( int num_rows,
         for( int i=0; i<num_vecs; i++ )
                 dot[ threadIdx.x+ i*blockDim.x ] = MAGMA_S_MAKE(0.0, 0.0);
         for ( int n = 0; n < num_cols_per_row ; n ++){
-            int col = d_colind [ num_rows * n + row ];
-            float val = d_val [ num_rows * n + row ];
+            int col = dcolind [ num_rows * n + row ];
+            float val = dval [ num_rows * n + row ];
             if( val != 0){
                 for( int i=0; i<num_vecs; i++ )
                     dot[ threadIdx.x + i*blockDim.x ] += 
-                                        val * d_x[col + i * num_cols ];
+                                        val * dx[col + i * num_cols ];
             }
         }
         for( int i=0; i<num_vecs; i++ )
-                d_y[ row + i*num_cols ] = dot[ threadIdx.x + i*blockDim.x ] 
-                                * alpha + beta * d_y [ row + i*num_cols ];
+                dy[ row + i*num_cols ] = dot[ threadIdx.x + i*blockDim.x ] 
+                                * alpha + beta * dy [ row + i*num_cols ];
     }
 }
 
@@ -65,73 +66,77 @@ smgeelltmv_kernel( int num_rows,
     Arguments
     ---------
 
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
                 
-    @param
+    @param[in]
     num_vecs    mama_int_t
                 number of vectors
                 
-    @param
+    @param[in]
     nnz_per_row magma_int_t
                 number of elements in the longest row 
                 
-    @param
+    @param[in]
     alpha       float
                 scalar multiplier
 
-    @param
-    d_val       float*
+    @param[in]
+    dval        magmaFloat_ptr
                 array containing values of A in ELL
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in ELL
 
-    @param
-    d_x         float*
+    @param[in]
+    dx          magmaFloat_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        float
                 scalar multiplier
 
-    @param
-    d_y         float*
+    @param[out]
+    dy          magmaFloat_ptr
                 input/output vector y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_sblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_smgeelltmv(  magma_trans_t transA,
-                   magma_int_t m, magma_int_t n,
-                   magma_int_t num_vecs,
-                   magma_int_t nnz_per_row,
-                   float alpha,
-                   float *d_val,
-                   magma_index_t *d_colind,
-                   float *d_x,
-                   float beta,
-                   float *d_y ){
-
-
-
+magma_smgeelltmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t num_vecs,
+    magma_int_t nnz_per_row,
+    float alpha,
+    magmaFloat_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaFloat_ptr dx,
+    float beta,
+    magmaFloat_ptr dy,
+    magma_queue_t queue )
+{
     dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    magma_int_t threads = BLOCK_SIZE;
     unsigned int MEM_SIZE =  num_vecs* BLOCK_SIZE 
                 * sizeof( float ); // num_vecs vectors 
-    smgeelltmv_kernel<<< grid, BLOCK_SIZE, MEM_SIZE >>>
-        ( m, n, num_vecs, nnz_per_row, alpha, d_val, d_colind, d_x, beta, d_y );
+    smgeelltmv_kernel<<< grid, threads, MEM_SIZE, queue >>>
+        ( m, n, num_vecs, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
 
 
     return MAGMA_SUCCESS;

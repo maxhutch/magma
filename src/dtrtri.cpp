@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztrtri.cpp normal z -> d, Tue Sep  2 12:38:19 2014
+       @generated from ztrtri.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -62,8 +62,10 @@
     @ingroup magma_dgesv_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_dtrtri(magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-              double *A, magma_int_t lda, magma_int_t *info)
+magma_dtrtri(
+    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
+    double *A, magma_int_t lda,
+    magma_int_t *info)
 {
     #define  A(i, j) ( A + (i) + (j)*lda )
     #define dA(i, j) (dA + (i) + (j)*ldda)

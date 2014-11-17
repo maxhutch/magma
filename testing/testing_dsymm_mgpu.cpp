@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zhemm_mgpu.cpp normal z -> d, Tue Sep  2 12:38:27 2014
+       @generated from testing_zhemm_mgpu.cpp normal z -> d, Sat Nov 15 19:54:18 2014
        
        @author Mark Gates
        @author Azzam Haidar
@@ -16,8 +16,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 #include <assert.h>
 
 // includes, project
@@ -26,7 +24,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-//#include "trace.h"
+#include "trace.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing magma_dsymm_mgpu
@@ -43,8 +41,8 @@ int main( int argc, char** argv)
     real_Double_t    gpu_perf2=0., gpu_time2=0.;
     double           error=0., errorbis=0., work[1];
     double *hA, *hX, *hB, *hR;
-    double *dA[MagmaMaxGPUs], *dX[MagmaMaxGPUs], *dB[MagmaMaxGPUs], *dwork[MagmaMaxGPUs], *hwork[MagmaMaxGPUs+1];
-    double *dA2;
+    magmaDouble_ptr dA[MagmaMaxGPUs], dX[MagmaMaxGPUs], dB[MagmaMaxGPUs], dwork[MagmaMaxGPUs], hwork[MagmaMaxGPUs+1];
+    magmaDouble_ptr dA2;
     magma_int_t M, N, size, lda, ldda, msize, nb, nstream;
     magma_int_t ione     = 1;
     magma_int_t iseed[4] = {0,0,0,1};
@@ -148,7 +146,7 @@ int main( int argc, char** argv)
         
             //memset(hR, 0, lda*N*sizeof(double));
     
-            //trace_init( 1, opts.ngpu, nstream, (magma_queue_t*) streams );
+            trace_init( 1, opts.ngpu, nstream, (magma_queue_t*) streams );
     
             //magma_int_t offset = 0; //nb;
     
@@ -167,7 +165,7 @@ int main( int argc, char** argv)
             #ifdef TRACING
             char buf[80];
             snprintf( buf, sizeof(buf), "dsymm-m%d-n%d-nb%d-stream%d-ngpu%d-run%d.svg",
-                      (int) M, (int) N, (int) nb, (int) nstream, (int) opts.ngpu, (int) j );
+                      (int) M, (int) N, (int) nb, (int) nstream, (int) opts.ngpu, (int) iter );
             trace_finalize( buf, "trace.css" );
             #endif
             

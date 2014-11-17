@@ -1,17 +1,81 @@
+# Automatically generated from Makefile ZHDR and ZSRC
 CHDR = \
-
+	
 
 DHDR = \
-
+	
 
 SHDR = \
-
+	
 
 CSRC = \
-magma_cutil_sparse.cpp magma_c_free.cpp magma_c_init.cpp magma_c_matrixchar.cpp magma_c_mconverter.cpp magma_c_transfer.cpp magma_c_vio.cpp magma_cgeneratematrix.cpp matrix_cio.cpp magma_csolverinfo.cpp magma_ctranspose.cpp magma_cp2p.cpp magma_ccsrsplit.cpp magma_cmscale.cpp magma_cmdiff.cpp
+	magma_cutil_sparse.cpp \
+	magma_c_free.cpp \
+	magma_c_init.cpp \
+	magma_c_matrixchar.cpp \
+	magma_cmconverter.cpp \
+	magma_cmtransfer.cpp \
+	magma_c_vio.cpp \
+	magma_cgeneratematrix.cpp \
+	magma_cmio.cpp \
+	magma_csolverinfo.cpp \
+	magma_ccsrsplit.cpp \
+	magma_cmcsrpass.cpp \
+	magma_cmcsrpass_gpu.cpp \
+	magma_cmcsrcompressor.cpp \
+	magma_cmscale.cpp \
+	magma_cmdiff.cpp \
+	magma_cmlumerge.cpp \
+	magma_cvtranspose.cpp \
+	magma_cmtranspose.cpp \
+	magma_cvtransfer.cpp \
+	magma_cvpass.cpp \
+	magma_cvpass_gpu.cpp
 
 DSRC = \
-magma_dutil_sparse.cpp magma_d_free.cpp magma_d_init.cpp magma_d_matrixchar.cpp magma_d_mconverter.cpp magma_d_transfer.cpp magma_d_vio.cpp magma_dgeneratematrix.cpp matrix_dio.cpp magma_dsolverinfo.cpp magma_dtranspose.cpp magma_dp2p.cpp magma_dcsrsplit.cpp magma_dmscale.cpp magma_dmdiff.cpp
+	magma_dutil_sparse.cpp \
+	magma_d_free.cpp \
+	magma_d_init.cpp \
+	magma_d_matrixchar.cpp \
+	magma_dmconverter.cpp \
+	magma_dmtransfer.cpp \
+	magma_d_vio.cpp \
+	magma_dgeneratematrix.cpp \
+	magma_dmio.cpp \
+	magma_dsolverinfo.cpp \
+	magma_dcsrsplit.cpp \
+	magma_dmcsrpass.cpp \
+	magma_dmcsrpass_gpu.cpp \
+	magma_dmcsrcompressor.cpp \
+	magma_dmscale.cpp \
+	magma_dmdiff.cpp \
+	magma_dmlumerge.cpp \
+	magma_dvtranspose.cpp \
+	magma_dmtranspose.cpp \
+	magma_dvtransfer.cpp \
+	magma_dvpass.cpp \
+	magma_dvpass_gpu.cpp
 
 SSRC = \
-magma_sutil_sparse.cpp magma_s_free.cpp magma_s_init.cpp magma_s_matrixchar.cpp magma_s_mconverter.cpp magma_s_transfer.cpp magma_s_vio.cpp magma_sgeneratematrix.cpp matrix_sio.cpp magma_ssolverinfo.cpp magma_stranspose.cpp magma_sp2p.cpp magma_scsrsplit.cpp magma_smscale.cpp magma_smdiff.cpp
+	magma_sutil_sparse.cpp \
+	magma_s_free.cpp \
+	magma_s_init.cpp \
+	magma_s_matrixchar.cpp \
+	magma_smconverter.cpp \
+	magma_smtransfer.cpp \
+	magma_s_vio.cpp \
+	magma_sgeneratematrix.cpp \
+	magma_smio.cpp \
+	magma_ssolverinfo.cpp \
+	magma_scsrsplit.cpp \
+	magma_smcsrpass.cpp \
+	magma_smcsrpass_gpu.cpp \
+	magma_smcsrcompressor.cpp \
+	magma_smscale.cpp \
+	magma_smdiff.cpp \
+	magma_smlumerge.cpp \
+	magma_svtranspose.cpp \
+	magma_smtranspose.cpp \
+	magma_svtransfer.cpp \
+	magma_svpass.cpp \
+	magma_svpass_gpu.cpp

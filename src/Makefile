@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = src
@@ -34,7 +34,7 @@ ZSRC += \
 	ztrtri_gpu.cpp		\
 	\
 	zpotrf_mgpu.cpp		\
-	zpotrf2_mgpu.cpp	\
+	zpotrf_mgpu_right.cpp	\
 	zpotrf3_mgpu.cpp	\
 
 # Cholesky, CPU interface
@@ -54,17 +54,21 @@ ZSRC += \
 	zcgetrs_gpu.cpp		\
 	\
 	zgesv_gpu.cpp		\
+	zgesv_nopiv_gpu.cpp     \
 	zgetrf_gpu.cpp		\
 	zgetrf_nopiv_gpu.cpp	\
 	zgetri_gpu.cpp		\
 	zgetrs_gpu.cpp		\
+	zgetrs_nopiv_gpu.cpp	\
 	\
 	zgetrf_mgpu.cpp		\
 	zgetrf2_mgpu.cpp	\
+	zgerbt_gpu.cpp          \
 
 # LU, CPU interface
 ZSRC += \
 	zgesv.cpp		\
+	zgesv_rbt.cpp           \
 	zgetrf.cpp		\
 	zgetf2_nopiv.cpp	\
 	zgetrf_nopiv.cpp	\
@@ -125,6 +129,16 @@ ZSRC += \
 	\
 	zungqr_m.cpp		\
 	zunmqr_m.cpp		\
+
+# ----------
+# symmetric indefinite factorization, CPU interface
+ZSRC += \
+	zhesv.cpp		 \
+	zhetrf.cpp		 \
+	zhetrf_nopiv.cpp     \
+	zhetrf_nopiv_cpu.cpp \
+	zhetrf_nopiv_gpu.cpp \
+	zlahef_gpu.cpp		\
 
 # ----------
 # symmetric eigenvalues, GPU interface
@@ -262,6 +276,29 @@ ZSRC += \
 	zlabrd_gpu.cpp		\
 	zunmbr.cpp		\
 
+# ----------
+# Batched, GPU interface
+ZSRC += \
+	zgetf2_batched.cpp				\
+	zgetf2_nopiv_batched.cpp		\
+	zgetrf_panel_batched.cpp		\
+	zgetrf_panel_nopiv_batched.cpp	\
+	zgetrf_batched.cpp				\
+	zgetrf_nopiv_batched.cpp		\
+	zgetrs_batched.cpp				\
+	zgetrs_nopiv_batched.cpp		\
+	zgesv_batched.cpp				\
+	zgesv_nopiv_batched.cpp			\
+	zgerbt_batched.cpp          	\
+	zgesv_rbt_batched.cpp			\
+	\
+	zgetri_outofplace_batched.cpp				\
+	\
+	zpotf2_batched.cpp				\
+	zpotrf_batched.cpp				\
+	zpotrf_panel_batched.cpp		\
+	zpotrs_batched.cpp				\
+	zposv_batched.cpp				\
 
 # ------------------------------------------------------------
 -include Makefile.local
@@ -289,4 +326,5 @@ clean:
 	rm -f *.o *~ *.linkinfo stamp
 
 cleanall: clean
+	
 	rm -f $(LIBMAGMA)

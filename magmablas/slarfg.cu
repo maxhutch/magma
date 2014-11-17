@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlarfg.cu normal z -> s, Tue Sep  2 12:38:16 2014
+       @generated from zlarfg.cu normal z -> s, Sat Nov 15 19:53:57 2014
        
        @author Mark Gates
 */
@@ -154,12 +154,38 @@ slarfg_kernel(
     @param[out]
     dtau    REAL* on the GPU.
             Pointer to the value tau.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_saux1
+    ********************************************************************/
+extern "C"
+void magmablas_slarfg_q(
+    magma_int_t n,
+    magmaFloat_ptr dalpha,
+    magmaFloat_ptr dx, magma_int_t incx,
+    magmaFloat_ptr dtau,
+    magma_queue_t queue )
+{
+    dim3 blocks( 1 );
+    dim3 threads( NB );
+    //dim3 threads( min( NB, max( n-1, 1 )));
+    slarfg_kernel<<< blocks, threads, 0, queue >>>( n, dalpha, dx, incx, dtau );
+}
+
+
+/**
+    @see magmablas_slarfg_q
+    @ingroup magma_saux1
     ********************************************************************/
 extern "C"
 void magmablas_slarfg(
     magma_int_t n,
-    float* dalpha, float* dx, magma_int_t incx,
-    float* dtau )
+    magmaFloat_ptr dalpha,
+    magmaFloat_ptr dx, magma_int_t incx,
+    magmaFloat_ptr dtau )
 {
     dim3 blocks( 1 );
     dim3 threads( NB );

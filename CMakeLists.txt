@@ -204,14 +204,16 @@ if ( WIN32 )
 		${CUDA_CUBLAS_LIBRARIES}
 	)
 	
+	# no Fortran files at the moment (how to test ALLSRC_f is not empty?),
+	# but keep this around for future.
 	# ...so make a separate library out of Fortran files. Ugh.
-	add_library( magmaf ${ALLSRC_f} )
-	target_link_libraries( magmaf
-		${LAPACK_LIBRARIES}
-		${CUDA_CUDART_LIBRARY}
-		${CUDA_CUBLAS_LIBRARIES}
-	)
-	set( LIBS test lapacktest magma magmaf )
+	#add_library( magmaf ${ALLSRC_f} )
+	#target_link_libraries( magmaf
+	#	${LAPACK_LIBRARIES}
+	#	${CUDA_CUDART_LIBRARY}
+	#	${CUDA_CUBLAS_LIBRARIES}
+	#)
+	set( LIBS testing lapacktest magma )  #magmaf )
 else()
 	# Unix doesn't seem to have a problem with mixing C, CUDA, and Fortran files
 	cuda_add_library( magma ${ALLSRC} )
@@ -220,7 +222,7 @@ else()
 		${CUDA_CUDART_LIBRARY}
 		${CUDA_CUBLAS_LIBRARIES}
 	)
-	set( LIBS test lapacktest magma )
+	set( LIBS testing lapacktest magma )
 endif()
 
 
@@ -233,7 +235,7 @@ set( TEST_SRC
 	testing/magma_sutil.cpp
 	testing/magma_util.cpp
 )
-add_library( test ${TEST_SRC} )
+add_library( testing ${TEST_SRC} )
 
 
 # ----------------------------------------

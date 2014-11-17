@@ -1,0 +1,356 @@
+This file is processed with Doxygen. See docs/html/index.html for formatted version.
+
+/**
+
+********************************************************************************
+
+@page contributors-guide    Contributor's Guide
+
+Coding Style {#style}
+=================================
+
+The following coding style should be followed in all MAGMA code. **Consistency
+is important, and clarity of code is paramount.** There are rare occasions to
+ignore a particular guideline, when following it would make the code less
+readable. The overriding goal is to make code easy-to-read and maintainable.
+This guide is based on the PLASMA coding style guide, though slightly different.
+
+- **ISO C++ standard:**
+  CPU code should conform to ISO C++ (`C++11`) or ISO C (`C99`).
+  GPU code should conform to the CUDA or OpenCL specs.
+  One way to check for compliance is to use the following commands:
+
+      g++ -std=c++11 -Wall -pedantic -c magma.cpp
+      gcc -std=c99   -Wall -pedantic -c magma.c
+
+  This can be done by setting CFLAGS and CXXFLAGS appropriately in make.inc.
+  MAGMA code needs to be portable and work on Unix, MacOS, and Windows. Most
+  MAGMA code is compiled as C++, but uses essentially C style conventions. For
+  example, all externally visible functions are declared `extern "C"` and
+  C-style malloc routines are used, instead of the C++ `new` operator.
+
+- **No Trailing Whitespace:**
+  There should be no trailing whitespace characters at the end of lines
+  and no whitespace characters at the end of files
+  (the last closing curly brace should be followed by a single newline).
+
+- **Whitespace Separators:**
+  There should be a space between a C language keyword (`if, for, while`) and
+  the left parenthesis, and a space before the left curly brace.
+  There should be a space after the start of a comment (`// foo`).
+  There should not be space between a function name and the left parenthesis.
+
+  There should be a space before and after boolean operators (`<, <=, >, >=, ==, !=`)
+  and assignment operators (`=, +=, -=, *=, /=`),
+  except when declaring a variable or initializing a loop variable.
+  There should not be space between increment operators (`++, --`) and the variable.
+  Space may be used around other operators (`+, -,` etc.) to aid readability.
+
+  Semi-colons are not preceded by a space, and are followed by a space
+  inside for loop headers.
+  Similarly, commas are not preceded by a space, and are followed by a space.
+  Occasionally, additional spaces can be used after the comma to line up items on
+  consecutive lines for better readability.
+
+- **Blank Lines:**
+  Two blank lines between functions. Single blank lines may be used, sparingly,
+  inside functions to separate major sections.
+  There should not be excessive blank lines. In particular, there should not be
+  blank lines after an opening curly brace, or before a closing curly brace.
+  There should not be multiple consecutive blank lines inside a function.
+
+- **Indentation and Braces:**
+  Every function, if block, and loop should be indented by four spaces. For
+  functions, the opening and closing braces are on lines by themselves, in the
+  first column. For control flow (`if, else, for, while`), the left curly brace follows
+  the control flow statement on the same line. There is no newline between the
+  control flow statement and the block enclosed by curly braces. The closing curly
+  brace is on a new line right after the end of the enclosed block.
+
+  Even when the body of a block is only one line, it should be on a separate line
+  from the control flow statement, and it is preferred to enclose it with curly
+  braces to avoid errors when adding code (`goto fail; goto fail;`). Especially,
+  loops and if statements containing more than one line of text should have curly
+  braces, regardless of the number of C statements.
+
+- **Examples:**
+
+  \code
+      void func( magma_int_t n, double *A, magma_int_t lda )
+      {
+          if (m <= 0 || n <= 0 || k <= 0) return;  // Avoid
+          code_not_inside_if();
+
+          if (m <= 0 || n <= 0 || k <= 0)          // Okay
+              return;
+
+          if (m <= 0 || n <= 0 || k <= 0) {        // Better
+              return;
+          }
+
+          if (condition)      // Avoid single statement, multi-line if and loops!
+              magma_zherk( uplo, trans, n, k,
+                           alpha, dA(0,0), ldda,
+                           beta,  dB(0,0), lddb );
+
+          if (condition) {    // Better
+              magma_zherk( uplo, trans, n, k,
+                           alpha, dA(0,0), ldda,
+                           beta,  dB(0,0), lddb );
+          }
+
+          if (condition)      // Avoid single block, multi-statement if and loops!
+              for (i=0; i < n; ++i) {
+                  A(i,i) = 0;
+                  cnt += 1;
+              }
+
+          if (condition) {    // Avoid inconsistent indentation! Always use 4 spaces.
+            for (i=0; i < n; ++i) {
+                  A(i,i) = 0;
+                   cnt += 1;
+             }
+          }
+
+          if (condition) {    // Better
+              for (i=0; i < n; ++i) {
+                  A(i,i) = 0;
+                  cnt += 1;
+              }
+          }
+
+          if (condition) {    // Avoid excessive newlines
+
+              norm = magma_dnrm2( n, dx(0), incx );
+
+          }
+      }
+  \endcode
+
+- **Matrix macros:**
+  C does not understand 2D matrices, other than some limited, fixed size
+  constructs (`int foo[4][4]`). We use macros to implement 2D matrices. The
+  macro returns a pointer to the element, not the element itself, unlike
+  `A[i][j]`. For CUDA and Xeon Phi, `dA(i,j)` yields the pointer to element i,j.
+  In OpenCL, `dA(i,j)` yields two values: the cl_mem object dA, and the offset
+  to element i,j. This significantly improves the ease of writing code,
+  readability, and porting to platforms such as OpenCL.
+
+  \code
+      // host pointers are the same for clBLAS, CUDA, and Xeon Phi.
+      #define  A(i_,j_)  (A + (i_) + (j_)*lda)
+
+      // for clBLAS, return cl_mem object and offset (2 values);
+      // for others, return (pointer + offset) (1 value).
+      #ifdef HAVE_clBLAS
+          #define dA(i_,j_)  dA , (i_) + ((size_t) j_)*lda
+      #else
+          #define dA(i_,j_) (dA + (i_) + ((size_t) j_)*lda)
+      #endif
+
+      // for host pointers, A == A(0,0).
+      blasf77_zherk( lapack_uplo_const(uplo), lapack_trans_const(trans), &n, &k,
+                     &alpha, A,      &lda,
+                     &beta,  B(i,j), &ldb );
+
+      // for device pointers, use dA(0,0) instead of dA, to aid porting to OpenCL.
+      magma_zherk( uplo, trans, n, k,
+                   alpha, dA(0,0), ldda,
+                   beta,  dB(i,j), lddb );
+  \endcode
+
+- **Documentation:**
+  Each function should be documented using Doxygen, using a C-style
+  comment block immediately before the function. Generally follow the
+  traditional LAPACK documentation style, with added Doxygen markup.
+
+  A _Purpose_ section gives an overall description of the routine.
+
+  An _Arguments_ section specifies each argument --- spelled and capitalized
+  exactly as in the C code --- with its type, dimensions, description,
+  and valid values (e.g., n >= 0).
+
+  Each function should be placed in a group using `@``ingroup`, which groups
+  routines by the related driver routine
+  (e.g., `zgetrf`, `zgetri`, `zgetf2` are all in one of the `magma_zgesv` groups),
+  and whether it is a driver, computational, or auxiliary routine.
+  There are also groups for  BLAS and auxiliary routines.
+  See `docs/doxygen-modules.h` for a list of groups (modules).
+
+  After compiling documentation (`cd docs ; make`), check `docs/output_err` for
+  missing parameters or other issues.
+
+- **Kernel documentation:**
+  For computational kernels, the CPU driver function (e.g., `magmablas_zlacpy`)
+  should be documented with Doxygen, as above. The low-level, internal
+  CUDA/OpenCL kernel itself (e.g., `zlacpy_device_full`) should have a short
+  paragraph describing how the matrix or computation is divided into blocks, and
+  what each thread does. This tremendously increases the readability and
+  maintainability of GPU device code, which is inherently difficult to
+  understand. For instance:
+
+  \code
+      /*
+          Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
+          Each block has BLK_X threads.
+          Each thread loops across one row, updating BLK_Y entries.
+
+          Code similar to zlaset.
+      */
+      static __device__ void
+      zlacpy_device_full(
+  \endcode
+
+- **Internal comments:**
+  Comments inside functions should be used to provide additional insight into
+  what each section of code is doing, sufficient that another person can quickly
+  follow the code.
+
+- **Line length:**
+  There is no specific limit on the length of lines. Up to 90 columns is
+  fine. Clarity is paramount. For multi-line function calls it is recommended
+  that new lines start either after the left paranthesis or indented 4 spaces,
+  always aligned with the first argument.
+  
+  \code
+      magma_zherk(                           // Okay; preferred style for prototypes
+          uplo, trans, n, k,
+          alpha, dA(0,0), ldda,
+          beta,  dB(i,j), lddb );
+
+      magma_zherk( uplo, trans, n, k,        // Okay
+                   alpha, dA(0,0), ldda,
+                   beta,  dB(i,j), lddb );
+
+      magma_zherk( uplo, trans, n, k,        // Avoid
+          alpha, dA(0,0), ldda,
+          beta,  dB(i,j), lddb );
+  \endcode
+
+- **Newlines:**
+  Only Unix newlines (\\n, ASCII 10) should be used;
+  Windows newlines (\\r\\n) and returns (\\r) should not be used.
+  Every file should have an end-of-line character at the end unless it's a
+  zero-length file.
+
+- **Tabs:**
+  Tab characters should not be used. Tabs should always be emulated by four
+  spaces, a feature available in almost any text editor.
+
+  For vim, sample ~/.vimrc file:
+
+      " see http://stackoverflow.com/questions/19835905
+      set shiftwidth=4
+      set softtabstop=4
+      set expandtab
+      set shiftround
+
+  For emacs, sample ~/.emacs file:
+
+      ; see http://www.emacswiki.org/emacs/NoTabs
+      ; see http://www.emacswiki.org/emacs/IndentingC
+      (setq-default indent-tabs-mode nil)
+      (setq c-default-style "k&r"
+            c-basic-offset 4)
+
+- **Variable Declarations:**
+  For the most part, variables should be declared at the beginning of each
+  function, unless doing otherwise significantly improves code clarity in
+  a specific case.
+  Loop variables may be declared inside the `for` statement itself.
+
+- **Constants:**
+  Constants should have appropriate types.
+  In most cases, floating point constants need not have a decimal point ---
+  e.g., 2 will get converted to 2.0 or 2.0f as appropriate, while 2.0 sometimes
+  gives a warning if double is not supported (e.g., on some OpenCL devices).
+  If a constant is a bit mask, it is recommended that it is given in
+  hexadecimal notation.
+
+- **printf Strings:**
+  C concatenates strings separated by whitespace. There is no need for
+  multiple `printf` calls to print a multi-line message. One `printf`
+  can be used with multiple strings:
+
+  \code
+      printf( "Usage: %s\n"
+              "  --flag1  description\n"
+              "  --flag2  description\n"
+              "  --flag3  description\n",
+              argv[0] );
+  \endcode
+
+- **F77 Trailing Underscore:**
+  When calling a FORTRAN function the trailing underscore should never be used.
+  If the underscore is needed it should be added by an appropriate conditional
+  preprocessor definition in an appropriate header file (e.g., `magma_zlapack.h`).
+
+- **Special Characters:**
+  No special characters should be used used in the code. The ASCII
+  codes allowed in files are between 32 and 127, plus code 10 for new line.
+
+
+Naming Conventions {#naming}
+=================================
+
+- **Functions:** follow the names used by LAPACK.
+  Externally visible C functions are prefixed with `magma_` or `magmablas_`,
+  and are all lowercase (e.g., `magma_zgetrf`).
+
+- **Constants:** are prefixed with Magma (e.g., `MagmaNoTrans`), and are CamelCase.
+
+- **Macros:** are prefixed with MAGMA_ (e.g., `MAGMA_Z_ADD`), and are all uppercase.
+
+- **Filenames:** C files are named after the function each contains,
+  e.g., `zgetrf.cpp` contains `magma_zgetrf()`.
+  External header filenames should be prefixed with `magma_` or `magmablas_`;
+  they are in the `include` directory.
+
+- **Variables:** follow general math typesetting rules:
+  matrices are uppercase (`A, B, C`),
+  vectors  are lowercase (`x, y, z`),
+  matrix sizes are lowercase (`m, n, k`),
+  loop indices are lowercase (`i, j, k`),
+  scalars are often Greek (`alpha, beta`).
+
+  Variables on the CPU should follow LAPACK names.
+
+  Variables on the GPU are similar but have "d" prepended. The corresponding
+  leading dimension likewise has an added "d": `dA` and `ldda`, `dB` and `lddb`,
+  etc.
+
+
+Coding Practices {#coding}
+=================================
+
+- **Prototypes:**
+  All function prototypes should be placed in appropriate header files. A
+  prototype should not be placed in any C file (except perhaps the one its
+  function is defined in). This avoids bugs by ensuring that all code uses the
+  same prototype for each function.
+
+- **Preprocessor Macros:**
+  Conditional compilation, through the `#define` directive,
+  should be used only for portability reasons,
+  and never for making choices that can be decided at runtime.
+  Excessive use of `#define` macros leads to frequent recompilations and obscure code.
+
+- **Dead Code:**
+  There should be no dead code: no code that is never executed, no including
+  of header files that are not necessary, no unused variables. Dead code can
+  be justified if it serves as a comment, e.g., canonical form of optimized
+  code. In such case the code should be in comments.
+
+- **OS Interactions:**
+  Error checks have to follow each interaction with the OS.
+  The code should never be terminated by the OS.
+  In particular each memory allocation should be checked.
+  The code cannot produce a segmentation fault.
+
+- **User Interactions:**
+  User input needs to be checked for correctness.
+  The user should not be able to cause undefined behavior
+  (except by lying about an allocation size).
+  In particular the user should not be able to cause termination of the code by the OS.
+
+*/

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from ztstrf_gpu.cpp normal z -> s, Tue Sep  2 12:38:20 2014
+       @generated from ztstrf_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -132,13 +132,19 @@
     @ingroup magma_sgesv_tile
     ********************************************************************/
 extern "C" magma_int_t
-magma_ststrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t ib, magma_int_t nb,
-                  float *hU, magma_int_t ldhu, float *dU, magma_int_t lddu,
-                  float *hA, magma_int_t ldha, float *dA, magma_int_t ldda,
-                  float *hL, magma_int_t ldhl, float *dL, magma_int_t lddl,
-                  magma_int_t *ipiv,
-                  float *hwork, magma_int_t ldhwork, float *dwork, magma_int_t lddwork,
-                  magma_int_t *info)
+magma_ststrf_gpu(
+    magma_order_t order, magma_int_t m, magma_int_t n,
+    magma_int_t ib, magma_int_t nb,
+    float    *hU, magma_int_t ldhu,
+    magmaFloat_ptr dU, magma_int_t lddu,
+    float    *hA, magma_int_t ldha,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    float    *hL, magma_int_t ldhl,
+    magmaFloat_ptr dL, magma_int_t lddl,
+    magma_int_t *ipiv,
+    float    *hwork, magma_int_t ldhwork,
+    magmaFloat_ptr dwork, magma_int_t lddwork,
+    magma_int_t *info)
 {
 #define UT(i,j) (dUT + (i)*ib*lddu + (j)*ib )
 #define AT(i,j) (dAT + (i)*ib*ldda + (j)*ib )
@@ -155,10 +161,10 @@ magma_ststrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
     int iinfo = 0;
     int maxm, mindim;
     int i, j, im, s, ip, ii, sb, p = 1;
-    float *dAT, *dUT;
-    float *dAp, *dUp;
+    magmaFloat_ptr dAT, dUT;
+    magmaFloat_ptr dAp, dUp;
 #ifndef WITHOUTTRTRI
-    float *dL2 = dL + ib;
+    magmaFloat_ptr dL2 = dL + ib;
     float *hL2 = hL + ib;
     p = 2;
 #endif

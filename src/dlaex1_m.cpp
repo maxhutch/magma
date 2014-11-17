@@ -1,28 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
        @precisions normal d -> s
 */
 #include "common_magma.h"
-
-extern "C" {
-
-magma_int_t magma_dlaex3_m(magma_int_t nrgpu,
-                           magma_int_t k, magma_int_t n, magma_int_t n1, double* d,
-                           double* Q, magma_int_t ldq, double rho,
-                           double* dlamda, double* q2, magma_int_t* indx,
-                           magma_int_t* ctot, double* w, double* s, magma_int_t* indxq,
-                           double** dwork, magma_queue_t stream[MagmaMaxGPUs][2],
-                           magma_range_t range, double vl, double vu, magma_int_t il, magma_int_t iu,
-                           magma_int_t* info );
-
-}  // end extern "C"
 
 /**
     Purpose
@@ -58,8 +45,8 @@ magma_int_t magma_dlaex3_m(magma_int_t nrgpu,
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     n       INTEGER
@@ -108,11 +95,11 @@ magma_int_t magma_dlaex3_m(magma_int_t nrgpu,
             if NRGPU = 1 the dimension of the first workspace
             should be (3*N*N/2+3*N)
             otherwise the NRGPU workspaces should have the size
-            ceil((N-N1) * (N-N1) / floor(nrgpu/2)) +
-            NB * ((N-N1) + (N-N1) / floor(nrgpu/2))
+            ceil((N-N1) * (N-N1) / floor(ngpu/2)) +
+            NB * ((N-N1) + (N-N1) / floor(ngpu/2))
 
     @param
-    stream  (device stream) magma_queue_t array,
+    queues  (device queues) magma_queue_t array,
             dimension (MagmaMaxGPUs,2)
 
     @param[in]
@@ -155,12 +142,17 @@ magma_int_t magma_dlaex3_m(magma_int_t nrgpu,
     @ingroup magma_dsyev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_dlaex1_m(magma_int_t nrgpu, magma_int_t n, double* d, double* Q, magma_int_t ldq,
-               magma_int_t* indxq, double rho, magma_int_t cutpnt,
-               double* work, magma_int_t* iwork, double** dwork,
-               magma_queue_t stream[MagmaMaxGPUs][2],
-               magma_range_t range, double vl, double vu,
-               magma_int_t il, magma_int_t iu, magma_int_t* info)
+magma_dlaex1_m(
+    magma_int_t ngpu,
+    magma_int_t n, double *d,
+    double *Q, magma_int_t ldq,
+    magma_int_t *indxq, double rho, magma_int_t cutpnt,
+    double *work, magma_int_t *iwork,
+    magmaDouble_ptr dwork[],
+    magma_queue_t queues[MagmaMaxGPUs][2],
+    magma_range_t range, double vl, double vu,
+    magma_int_t il, magma_int_t iu,
+    magma_int_t *info)
 {
 #define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
@@ -223,10 +215,10 @@ magma_dlaex1_m(magma_int_t nrgpu, magma_int_t n, double* d, double* Q, magma_int
 
     if ( k != 0 ) {
         is = (iwork[coltyp]+iwork[coltyp+1])*cutpnt + (iwork[coltyp+1]+iwork[coltyp+2])*(n-cutpnt) + iq2;
-        magma_dlaex3_m(nrgpu, k, n, cutpnt, d, Q, ldq, rho,
+        magma_dlaex3_m(ngpu, k, n, cutpnt, d, Q, ldq, rho,
                        &work[idlmda], &work[iq2], &iwork[indxc],
                        &iwork[coltyp], &work[iw], &work[is],
-                       indxq, dwork, stream, range, vl, vu, il, iu, info );
+                       indxq, dwork, queues, range, vl, vu, il, iu, info );
         if ( *info != 0 )
             return *info;
     }

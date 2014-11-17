@@ -7,12 +7,12 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from dbulge_aux.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+ *     @generated from dbulge_aux.cpp normal d -> s, Sat Nov 15 19:54:10 2014
  *
  */
 
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 #include "magma_sbulgeinc.h"
 
 //////////////////////////////////////////////////////////////

@@ -1,10 +1,10 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @generated from testing_cblas_z.cpp normal z -> s, Tue Sep  2 12:38:27 2014
+       @generated from testing_cblas_z.cpp normal z -> s, Sat Nov 15 19:54:18 2014
        @author Mark Gates
        
        These tests ensure that the MAGMA wrappers around (CPU) CBLAS calls are
@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
+
 #include <cblas.h>
 
 // make sure that asserts are enabled
@@ -24,7 +24,6 @@
 #include <assert.h>
 
 // includes, project
-#include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
 #include "magma_operators.h"
@@ -39,7 +38,6 @@
 // ----------------------------------------
 // These may not be portable to different Fortran implementations,
 // hence why MAGMA does not rely on them.
-//#include "magma_mangling.h"
 
 #define blasf77_sasum FORTRAN_NAME( sasum, SASUM )
 #define blasf77_snrm2 FORTRAN_NAME( snrm2, SNRM2 )

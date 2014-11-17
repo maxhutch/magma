@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        
@@ -154,12 +154,38 @@ zlarfg_kernel(
     @param[out]
     dtau    COMPLEX_16* on the GPU.
             Pointer to the value tau.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_zaux1
+    ********************************************************************/
+extern "C"
+void magmablas_zlarfg_q(
+    magma_int_t n,
+    magmaDoubleComplex_ptr dalpha,
+    magmaDoubleComplex_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr dtau,
+    magma_queue_t queue )
+{
+    dim3 blocks( 1 );
+    dim3 threads( NB );
+    //dim3 threads( min( NB, max( n-1, 1 )));
+    zlarfg_kernel<<< blocks, threads, 0, queue >>>( n, dalpha, dx, incx, dtau );
+}
+
+
+/**
+    @see magmablas_zlarfg_q
+    @ingroup magma_zaux1
     ********************************************************************/
 extern "C"
 void magmablas_zlarfg(
     magma_int_t n,
-    magmaDoubleComplex* dalpha, magmaDoubleComplex* dx, magma_int_t incx,
-    magmaDoubleComplex* dtau )
+    magmaDoubleComplex_ptr dalpha,
+    magmaDoubleComplex_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr dtau )
 {
     dim3 blocks( 1 );
     dim3 threads( NB );

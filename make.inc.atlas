@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
@@ -33,7 +33,7 @@ LDFLAGS   = -fopenmp
 
 # Depending on how ATLAS and LAPACK were compiled, you may need one or more of:
 # -lifcore -ldl -lf2c -lgfortran
-LIB       = -llapack -lf77blas -latlas -lcblas -lcublas -lcudart -lstdc++ -lm -lgfortran -lifcore
+LIB       = -llapack -lf77blas -lcblas -latlas -lcublas -lcudart -lstdc++ -lm -lgfortran -lifcore
 
 # define library directories here or in your environment
 #LAPACKDIR ?= /opt/lapack

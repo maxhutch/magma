@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       @date September 2014
+ -- MAGMA (version 1.6.0) --
+ Univ. of Tennessee, Knoxville
+ Univ. of California, Berkeley
+ Univ. of Colorado, Denver
+ @date November 2014
 
-       @generated from magmasparse_z.h normal z -> d, Tue Sep  2 12:38:31 2014
-       @author Hartwig Anzt
+ @generated from magmasparse_z.h normal z -> d, Sat Nov 15 19:54:20 2014
+ @author Hartwig Anzt
 */
 
 #ifndef MAGMASPARSE_D_H
@@ -18,904 +18,1270 @@
 #define PRECISION_d
 
 
-/* ////////////////////////////////////////////////////////////////////////////
-   -- MAGMA_SPARSE Matrix Descriptors
-*/
-/* CSR Matrix descriptor */
-typedef struct {
-    int type;
-
-    magma_int_t   m;
-    magma_int_t   n;
-    magma_int_t nnz;
-
-    double *d_val;
-    magma_int_t *d_rowptr;
-    magma_int_t *d_colind;
-
-} magma_dmatrix_t;
-
-
-/* BCSR Matrix descriptor */
-typedef struct {
-    int type;
-
-    magma_int_t   rows_block;
-    magma_int_t   cols_block;
-
-    magma_int_t nrow_blocks;
-    magma_int_t  nnz_blocks;
-
-    double *d_val;
-    magma_int_t *d_rowptr;
-    magma_int_t *d_colind;
-
-} magma_dbcsr_t;
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- MAGMA_SPARSE Auxiliary functions
+ -- MAGMA_SPARSE Auxiliary functions
 */
 
 
 magma_int_t
-magma_dparse_opts(      int argc, 
-                        char** argv, 
-                        magma_dopts *opts, 
-                        int *matrices );
+magma_dparse_opts( 
+    int argc, 
+    char** argv, 
+    magma_dopts *opts, 
+    int *matrices, 
+    magma_queue_t queue );
 
 magma_int_t 
-read_d_csr_from_binary( magma_int_t* n_row, 
-                        magma_int_t* n_col, 
-                        magma_int_t* nnz, 
-                        double **val, 
-                        magma_index_t **row, 
-                        magma_index_t **col,
-                        const char * filename);
+read_d_csr_from_binary( 
+    magma_int_t* n_row, 
+    magma_int_t* n_col, 
+    magma_int_t* nnz, 
+    double **val, 
+    magma_index_t **row, 
+    magma_index_t **col,
+    const char * filename,
+    magma_queue_t queue );
 
 magma_int_t 
-read_d_csr_from_mtx(    magma_storage_t *type, 
-                        magma_location_t *location,
-                        magma_int_t* n_row, 
-                        magma_int_t* n_col, 
-                        magma_int_t* nnz, 
-                        double **val, 
-                        magma_index_t **row, 
-                        magma_index_t **col, 
-                        const char *filename);
+read_d_csr_from_mtx( 
+    magma_storage_t *type, 
+    magma_location_t *location,
+    magma_int_t* n_row, 
+    magma_int_t* n_col, 
+    magma_int_t* nnz, 
+    double **val, 
+    magma_index_t **row, 
+    magma_index_t **col, 
+    const char *filename,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_d_csr_mtx(        magma_d_sparse_matrix *A, 
-                        const char *filename );
+magma_d_csr_mtx( 
+    magma_d_sparse_matrix *A, 
+    const char *filename,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_d_csr_mtxsymm(    magma_d_sparse_matrix *A, 
-                        const char *filename );
+magma_dcsrset( 
+    magma_int_t m, 
+    magma_int_t n, 
+    magma_index_t *row, 
+    magma_index_t *col, 
+    double *val,
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_d_csr_compressor( double ** val, 
-                        magma_index_t ** row, 
-                        magma_index_t ** col, 
-                        double ** valn, 
-                        magma_index_t ** rown, 
-                        magma_index_t ** coln, 
-                        magma_int_t *n );
+magma_dcsrget( 
+    magma_d_sparse_matrix A,
+    magma_int_t *m, 
+    magma_int_t *n, 
+    magma_index_t **row, 
+    magma_index_t **col, 
+    double **val,
+    magma_queue_t queue );
+
 
 magma_int_t 
-magma_d_csrtranspose(   magma_d_sparse_matrix A, 
-                        magma_d_sparse_matrix *B );
+magma_dvset( 
+    magma_int_t m, 
+    magma_int_t n, 
+    double *val,
+    magma_d_vector *v,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_d_cucsrtranspose( magma_d_sparse_matrix A, 
-                        magma_d_sparse_matrix *B );
+magma_dvget( 
+    magma_d_vector v,
+    magma_int_t *m, 
+    magma_int_t *n, 
+    double **val,
+    magma_queue_t queue );
 
 magma_int_t 
-d_transpose_csr(        magma_int_t n_rows, 
-                        magma_int_t n_cols, 
-                        magma_int_t nnz,
-                        double *val, 
-                        magma_index_t *row, 
-                        magma_index_t *col, 
-                        magma_int_t *new_n_rows, 
-                        magma_int_t *new_n_cols, 
-                        magma_int_t *new_nnz, 
-                        double **new_val, 
-                        magma_index_t **new_row, 
-                        magma_index_t **new_col );
+magma_dvset_gpu( 
+    magma_int_t m, 
+    magma_int_t n, 
+    magmaDouble_ptr val,
+    magma_d_vector *v,
+    magma_queue_t queue );
+
+magma_int_t 
+magma_dvget_gpu( 
+    magma_d_vector v,
+    magma_int_t *m, 
+    magma_int_t *n, 
+    magmaDouble_ptr *val,
+    magma_queue_t queue );
+
+
+magma_int_t 
+magma_d_csr_mtxsymm( 
+    magma_d_sparse_matrix *A, 
+    const char *filename,
+    magma_queue_t queue );
+
+magma_int_t 
+magma_d_csr_compressor( 
+    double ** val, 
+    magma_index_t ** row, 
+    magma_index_t ** col, 
+    double ** valn, 
+    magma_index_t ** rown, 
+    magma_index_t ** coln, 
+    magma_int_t *n,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dcsrsplit(        magma_int_t bsize,
-                        magma_d_sparse_matrix A,
-                        magma_d_sparse_matrix *D,
-                        magma_d_sparse_matrix *R );
+magma_dmcsrcompressor( 
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dmscale(          magma_d_sparse_matrix *A, 
-                        magma_scale_t scaling );
+magma_dmcsrcompressor_gpu( 
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dmdiff(           magma_d_sparse_matrix A, 
-                        magma_d_sparse_matrix B, 
-                        real_Double_t *res );
-
-magma_int_t
-magma_dmdiagadd(        magma_d_sparse_matrix *A, 
-                        double add );
+magma_d_mtranspose( 
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix *B,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dmsort(           magma_d_sparse_matrix *A );
+magma_dvtranspose( 
+    magma_d_vector x,
+    magma_d_vector *y,
+    magma_queue_t queue );
+
+magma_int_t 
+magma_d_cucsrtranspose( 
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix *B,
+    magma_queue_t queue );
+
+magma_int_t 
+d_transpose_csr( 
+    magma_int_t n_rows, 
+    magma_int_t n_cols, 
+    magma_int_t nnz,
+    double *val, 
+    magma_index_t *row, 
+    magma_index_t *col, 
+    magma_int_t *new_n_rows, 
+    magma_int_t *new_n_cols, 
+    magma_int_t *new_nnz, 
+    double **new_val, 
+    magma_index_t **new_row, 
+    magma_index_t **new_col,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dcsrsplit( 
+    magma_int_t bsize,
+    magma_d_sparse_matrix A,
+    magma_d_sparse_matrix *D,
+    magma_d_sparse_matrix *R,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dmscale( 
+    magma_d_sparse_matrix *A, 
+    magma_scale_t scaling,
+    magma_queue_t queue );
+
+magma_int_t 
+magma_dmdiff( 
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix B, 
+ real_Double_t *res,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dmdiagadd( 
+    magma_d_sparse_matrix *A, 
+    double add,
+    magma_queue_t queue );
+
+magma_int_t 
+magma_dmsort( 
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_dsymbilu(         magma_d_sparse_matrix *A, 
-                        magma_int_t levels,
-                        magma_d_sparse_matrix *L,
-                        magma_d_sparse_matrix *U );
+magma_dsymbilu( 
+    magma_d_sparse_matrix *A, 
+    magma_int_t levels,
+    magma_d_sparse_matrix *L,
+    magma_d_sparse_matrix *U,
+    magma_queue_t queue );
 
 
 magma_int_t 
-write_d_csr_mtx(        magma_int_t n_row, 
-                        magma_int_t n_col, 
-                        magma_int_t nnz, 
-                        double **val, 
-                        magma_index_t **row, 
-                        magma_index_t **col, 
-                        magma_order_t MajorType,
-                        const char *filename );
+write_d_csr_mtx( 
+    magma_int_t n_row, 
+    magma_int_t n_col, 
+    magma_int_t nnz, 
+    double **val, 
+    magma_index_t **row, 
+    magma_index_t **col, 
+    magma_order_t MajorType,
+ const char *filename,
+    magma_queue_t queue );
 
 magma_int_t 
-write_d_csrtomtx(        magma_d_sparse_matrix A,
-                        const char *filename );
+write_d_csrtomtx( 
+    magma_d_sparse_matrix A,
+ const char *filename,
+    magma_queue_t queue );
 
 magma_int_t 
-print_d_csr(            magma_int_t n_row, 
-                        magma_int_t n_col, 
-                        magma_int_t nnz, 
-                        double **val, 
-                        magma_index_t **row, 
-                        magma_index_t **col );
+print_d_csr( 
+    magma_int_t n_row, 
+    magma_int_t n_col, 
+    magma_int_t nnz, 
+    double **val, 
+    magma_index_t **row, 
+    magma_index_t **col,
+    magma_queue_t queue );
 
 magma_int_t 
-print_d_csr_mtx(        magma_int_t n_row, 
-                        magma_int_t n_col, 
-                        magma_int_t nnz, 
-                        double **val, 
-                        magma_index_t **row, 
-                        magma_index_t **col, 
-                        magma_order_t MajorType );
+print_d_csr_mtx( 
+    magma_int_t n_row, 
+    magma_int_t n_col, 
+    magma_int_t nnz, 
+    double **val, 
+    magma_index_t **row, 
+    magma_index_t **col, 
+    magma_order_t MajorType,
+    magma_queue_t queue );
 
 
 magma_int_t 
-magma_d_mtranspose(     magma_d_sparse_matrix A, 
-                        magma_d_sparse_matrix *B );
+magma_d_mtranspose(
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix *B,
+    magma_queue_t queue );
 
 
 magma_int_t 
-magma_d_mtransfer(      magma_d_sparse_matrix A, 
-                        magma_d_sparse_matrix *B, 
-                        magma_location_t src, 
-                        magma_location_t dst );
+magma_d_mtransfer(
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix *B, 
+    magma_location_t src, 
+    magma_location_t dst,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_d_vtransfer(      magma_d_vector x, 
-                        magma_d_vector *y, 
-                        magma_location_t src, 
-                        magma_location_t dst );
+magma_d_vtransfer(
+    magma_d_vector x, 
+    magma_d_vector *y, 
+    magma_location_t src, 
+    magma_location_t dst,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_d_mconvert(       magma_d_sparse_matrix A, 
-                        magma_d_sparse_matrix *B, 
-                        magma_storage_t old_format, 
-                        magma_storage_t new_format );
+magma_d_mconvert(
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix *B, 
+    magma_storage_t old_format, 
+    magma_storage_t new_format,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_d_vinit(          magma_d_vector *x, 
-                        magma_location_t memory_location,
-                        magma_int_t num_rows, 
-                        double values );
+magma_d_vinit(
+    magma_d_vector *x, 
+    magma_location_t memory_location,
+    magma_int_t num_rows, 
+    double values,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_vvisu(          magma_d_vector x, 
-                        magma_int_t offset, 
-                        magma_int_t displaylength );
+magma_d_vvisu(
+    magma_d_vector x, 
+    magma_int_t offset, 
+    magma_int_t displaylength,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_vread(          magma_d_vector *x, 
-                        magma_int_t length,
-                        char * filename );
+magma_d_vread(
+    magma_d_vector *x, 
+    magma_int_t length,
+    char * filename,
+    magma_queue_t queue );
+
 magma_int_t
-magma_d_mvisu(          magma_d_sparse_matrix A );
+magma_d_vspread(
+    magma_d_vector *x, 
+    const char * filename,
+    magma_queue_t queue );
+
+magma_int_t
+magma_d_mvisu(
+    magma_d_sparse_matrix A,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_ddiameter(        magma_d_sparse_matrix *A );
+magma_ddiameter(
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_drowentries(      magma_d_sparse_matrix *A );
+magma_drowentries(
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_mfree(          magma_d_sparse_matrix *A );
+magma_d_mfree(
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_vfree(          magma_d_vector *x );
+magma_d_vfree(
+    magma_d_vector *x,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dresidual(        magma_d_sparse_matrix A, 
-                        magma_d_vector b, 
-                        magma_d_vector x, 
-                        double *res );
-magma_int_t
-magma_dmgenerator(  magma_int_t n,
-                    magma_int_t offdiags,
-                    magma_index_t *diag_offset,
-                    double *diag_vals,
-                    magma_d_sparse_matrix *A );
+magma_dresidual(
+    magma_d_sparse_matrix A, 
+    magma_d_vector b, 
+    magma_d_vector x, 
+    double *res,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dm_27stencil(  magma_int_t n,
-                     magma_d_sparse_matrix *A );
+magma_dmgenerator(
+    magma_int_t n,
+    magma_int_t offdiags,
+    magma_index_t *diag_offset,
+    double *diag_vals,
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dm_5stencil(  magma_int_t n,
-                     magma_d_sparse_matrix *A );
+magma_dm_27stencil(
+    magma_int_t n,
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dsolverinfo(  magma_d_solver_par *solver_par, 
-                    magma_d_preconditioner *precond_par );
+magma_dm_5stencil(
+    magma_int_t n,
+    magma_d_sparse_matrix *A,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dsolverinfo_init( magma_d_solver_par *solver_par, 
-                        magma_d_preconditioner *precond );
+magma_dsolverinfo(
+    magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dsolverinfo_free( magma_d_solver_par *solver_par, 
-                        magma_d_preconditioner *precond );
+magma_dsolverinfo_init(
+    magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_deigensolverinfo_init(
+    magma_d_solver_par *solver_par,
+    magma_queue_t queue );
+
+
+magma_int_t
+magma_dsolverinfo_free(
+    magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- MAGMA_SPARSE function definitions / Data on CPU
+ -- MAGMA_SPARSE function definitions / Data on CPU
 */
 
 
 
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- MAGMA_SPARSE function definitions / Data on CPU / Multi-GPU
+ -- MAGMA_SPARSE function definitions / Data on CPU / Multi-GPU
 */
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- MAGMA_SPARSE solvers (Data on GPU)
+ -- MAGMA_SPARSE solvers (Data on GPU)
 */
 
 magma_int_t 
-magma_dcg(             magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dcg(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dcg_res(         magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dcg_res(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dcg_merge(       magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dcg_merge(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dgmres(          magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dgmres(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbicgstab(       magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x,  
-                       magma_d_solver_par *solver_par );
+magma_dbicgstab(
+    magma_d_sparse_matrix A, magma_d_vector b, magma_d_vector *x, 
+    magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbicgstab_merge( magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dbicgstab_merge(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbicgstab_merge2( magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dbicgstab_merge2(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dpcg(            magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par, 
-                       magma_d_preconditioner *precond_par );
+magma_dpcg(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dpbicgstab(      magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par, 
-                       magma_d_preconditioner *precond_par );
+magma_dbpcg(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dpgmres(         magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par, 
-                       magma_d_preconditioner *precond_par );
-magma_int_t
-magma_djacobi(         magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dpbicgstab(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbaiter(         magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dpgmres(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_diterref(        magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par, 
-                       magma_d_preconditioner *precond_par );
+magma_djacobi(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dilu(            magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par, 
-                       magma_int_t *ipiv );
+magma_dbaiter(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrlu(         magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
-
-
-magma_int_t
-magma_dbcsrlutrf(      magma_d_sparse_matrix A, 
-                       magma_d_sparse_matrix *M,
-                       magma_int_t *ipiv, 
-                       magma_int_t version );
+magma_diterref(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond_par,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrlusv(       magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par, 
-                       magma_int_t *ipiv );
-
-
-
-magma_int_t
-magma_dilucg(          magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par );
+magma_dilu(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par, 
+    magma_int_t *ipiv,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dilugmres(       magma_d_sparse_matrix A, magma_d_vector b, 
-                       magma_d_vector *x, magma_d_solver_par *solver_par ); 
+magma_dbcsrlu(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_dlobpcg_shift(    magma_int_t num_rows,
-                        magma_int_t num_vecs, 
-                        magma_int_t shift,
-                        double *x );
-magma_int_t
-magma_dlobpcg_res(      magma_int_t num_rows,
-                        magma_int_t num_vecs, 
-                        double *evalues, 
-                        double *X,
-                        double *R, 
-                        double *res );
+magma_dbcsrlutrf(
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix *M,
+    magma_int_t *ipiv, 
+    magma_int_t version,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dlobpcg_maxpy(    magma_int_t num_rows,
-                        magma_int_t num_vecs, 
-                        double *X,
-                        double *Y);
+magma_dbcsrlusv(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par, 
+    magma_int_t *ipiv,
+    magma_queue_t queue );
+
+
+
+magma_int_t
+magma_dilucg(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dilugmres(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_solver_par *solver_par,
+    magma_queue_t queue ); 
+
+
+magma_int_t
+magma_dlobpcg_shift(
+    magma_int_t num_rows,
+    magma_int_t num_vecs, 
+    magma_int_t shift,
+    magmaDouble_ptr x,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dlobpcg_res(
+    magma_int_t num_rows,
+    magma_int_t num_vecs, 
+    double *evalues, 
+    magmaDouble_ptr X,
+    magmaDouble_ptr R, 
+    double *res,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dlobpcg_maxpy(
+    magma_int_t num_rows,
+    magma_int_t num_vecs, 
+    magmaDouble_ptr X,
+    magmaDouble_ptr Y,
+    magma_queue_t queue );
 
 
 /*/////////////////////////////////////////////////////////////////////////////
-    -- MAGMA_SPARSE eigensolvers (Data on GPU)
+ -- MAGMA_SPARSE eigensolvers (Data on GPU)
 */
 magma_int_t
-magma_dlobpcg(          magma_d_sparse_matrix A,
-                        magma_d_solver_par *solver_par );
+magma_dlobpcg(
+    magma_d_sparse_matrix A,
+    magma_d_solver_par *solver_par,
+    magma_queue_t queue );
 
 
 
 
 /*/////////////////////////////////////////////////////////////////////////////
-    -- MAGMA_SPARSE preconditioners (Data on GPU)
+ -- MAGMA_SPARSE preconditioners (Data on GPU)
 */
 
 magma_int_t
-magma_djacobisetup(     magma_d_sparse_matrix A, 
-                        magma_d_vector b, 
-                        magma_d_sparse_matrix *M, 
-                        magma_d_vector *c );
-magma_int_t
-magma_djacobisetup_matrix(  magma_d_sparse_matrix A, 
-                            magma_d_sparse_matrix *M, 
-                            magma_d_vector *d );
-magma_int_t
-magma_djacobisetup_vector(  magma_d_vector b,  
-                            magma_d_vector d, 
-                            magma_d_vector *c );
+magma_djacobisetup(
+    magma_d_sparse_matrix A, 
+    magma_d_vector b, 
+    magma_d_sparse_matrix *M, 
+    magma_d_vector *c,
+    magma_queue_t queue );
 
 magma_int_t
-magma_djacobiiter(      magma_d_sparse_matrix M, 
-                        magma_d_vector c, 
-                        magma_d_vector *x,  
-                        magma_d_solver_par *solver_par );
+magma_djacobisetup_matrix(
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix *M, 
+    magma_d_vector *d,
+    magma_queue_t queue );
 
 magma_int_t
-magma_djacobiiter_precond(      
-                        magma_d_sparse_matrix M, 
-                        magma_d_vector *x,  
-                        magma_d_solver_par *solver_par, 
-                        magma_d_preconditioner *precond );
+magma_djacobisetup_vector(
+    magma_d_vector b, 
+    magma_d_vector d, 
+    magma_d_vector *c,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dpastixsetup(     magma_d_sparse_matrix A, magma_d_vector b,
-                        magma_d_preconditioner *precond );
+magma_djacobiiter(
+    magma_d_sparse_matrix M, 
+    magma_d_vector c, 
+    magma_d_vector *x, 
+    magma_d_solver_par *solver_par,
+    magma_queue_t queue );
+
+magma_int_t
+magma_djacobiiter_precond( 
+    magma_d_sparse_matrix M, 
+    magma_d_vector *x, 
+    magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dpastixsetup(
+    magma_d_sparse_matrix A, magma_d_vector b,
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_dapplypastix(     magma_d_vector b, magma_d_vector *x, 
-                        magma_d_preconditioner *precond );
+magma_dapplypastix(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 
 // CUSPARSE preconditioner
 
 magma_int_t
-magma_dcuilusetup( magma_d_sparse_matrix A, magma_d_preconditioner *precond );
+magma_dcuilusetup(
+    magma_d_sparse_matrix A, magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dapplycuilu_l( magma_d_vector b, magma_d_vector *x, 
-                    magma_d_preconditioner *precond );
+magma_dapplycuilu_l(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
 magma_int_t
-magma_dapplycuilu_r( magma_d_vector b, magma_d_vector *x, 
-                    magma_d_preconditioner *precond );
+magma_dapplycuilu_r(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_dcuiccsetup( magma_d_sparse_matrix A, magma_d_preconditioner *precond );
+magma_dcuiccsetup(
+    magma_d_sparse_matrix A, magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dapplycuicc_l( magma_d_vector b, magma_d_vector *x, 
-                    magma_d_preconditioner *precond );
+magma_dapplycuicc_l(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
 magma_int_t
-magma_dapplycuicc_r( magma_d_vector b, magma_d_vector *x, 
-                    magma_d_preconditioner *precond );
+magma_dapplycuicc_r(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+
+magma_int_t
+magma_dcumilusetup(
+    magma_d_sparse_matrix A, magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dapplycumilu_l(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dapplycumilu_r(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+
+magma_int_t
+magma_dcumiccsetup(
+    magma_d_sparse_matrix A, magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dapplycumicc_l(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dapplycumicc_r(
+    magma_d_vector b, magma_d_vector *x, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 
 // block-asynchronous iteration
 
 magma_int_t
-magma_dbajac_csr(   magma_int_t localiters,
-                    magma_d_sparse_matrix D,
-                    magma_d_sparse_matrix R,
-                    magma_d_vector b,
-                    magma_d_vector *x );
+magma_dbajac_csr(
+    magma_int_t localiters,
+    magma_d_sparse_matrix D,
+    magma_d_sparse_matrix R,
+    magma_d_vector b,
+    magma_d_vector *x,
+    magma_queue_t queue );
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- MAGMA_SPARSE utility function definitions
+ -- MAGMA_SPARSE utility function definitions
 */
 
 magma_int_t
-magma_d_spmv(           double alpha, 
-                        magma_d_sparse_matrix A, 
-                        magma_d_vector x, 
-                        double beta, 
-                        magma_d_vector y );
+magma_d_spmv(
+    double alpha, 
+    magma_d_sparse_matrix A, 
+    magma_d_vector x, 
+    double beta, 
+    magma_d_vector y,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_spmv_shift(     double alpha, 
-                        magma_d_sparse_matrix A, 
-                        double lambda,
-                        magma_d_vector x, 
-                        double beta, 
-                        magma_int_t offset,     
-                        magma_int_t blocksize,
-                        magma_index_t *add_vecs, 
-                        magma_d_vector y );
+magma_d_spmv_shift(
+    double alpha, 
+    magma_d_sparse_matrix A, 
+    double lambda,
+    magma_d_vector x, 
+    double beta, 
+    magma_int_t offset, 
+    magma_int_t blocksize,
+    magmaIndex_ptr dadd_vecs, 
+    magma_d_vector y,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dcuspmm(          magma_d_sparse_matrix A, 
-                        magma_d_sparse_matrix B, 
-                        magma_d_sparse_matrix *AB );
+magma_dcuspmm(
+    magma_d_sparse_matrix A, 
+    magma_d_sparse_matrix B, 
+    magma_d_sparse_matrix *AB,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_precond(        magma_d_sparse_matrix A, 
-                        magma_d_vector b, magma_d_vector *x,
-                        magma_d_preconditioner *precond );
+magma_dcuspaxpy(
+    magmaDouble_ptr alpha, magma_d_sparse_matrix A, 
+    magmaDouble_ptr beta, magma_d_sparse_matrix B, 
+    magma_d_sparse_matrix *AB,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_solver(         magma_d_sparse_matrix A, magma_d_vector b, 
-                        magma_d_vector *x, magma_dopts *zopts );
+magma_d_precond(
+    magma_d_sparse_matrix A, 
+    magma_d_vector b, magma_d_vector *x,
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_precondsetup( magma_d_sparse_matrix A, magma_d_vector b, 
-                      magma_d_preconditioner *precond );
+magma_d_solver(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_dopts *zopts,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_applyprecond( magma_d_sparse_matrix A, magma_d_vector b, 
-                      magma_d_vector *x, magma_d_preconditioner *precond );
+magma_d_precondsetup(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_d_applyprecond(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_d_applyprecond_left( magma_d_sparse_matrix A, magma_d_vector b, 
-                      magma_d_vector *x, magma_d_preconditioner *precond );
+magma_d_applyprecond_left(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_d_applyprecond_right( magma_d_sparse_matrix A, magma_d_vector b, 
-                      magma_d_vector *x, magma_d_preconditioner *precond );
+magma_d_applyprecond_right(
+    magma_d_sparse_matrix A, magma_d_vector b, 
+    magma_d_vector *x, magma_d_preconditioner *precond,
+    magma_queue_t queue );
 
 magma_int_t
-magma_d_initP2P(        magma_int_t *bandwidth_benchmark,
-                        magma_int_t *num_gpus );
+magma_d_initP2P(
+    magma_int_t *bandwidth_benchmark,
+    magma_int_t *num_gpus,
+    magma_queue_t queue );
 
+magma_int_t
+magma_dcompact(
+    magma_int_t m, magma_int_t n,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    double *dnorms, double tol, 
+    magma_int_t *activeMask, magma_int_t *cBlockSize,
+    magma_queue_t queue );
 
+magma_int_t
+magma_dcompactActive(
+    magma_int_t m, magma_int_t n,
+    magmaDouble_ptr dA, magma_int_t ldda, 
+    magma_int_t *active,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dmlumerge(    
+    magma_d_sparse_matrix L, 
+    magma_d_sparse_matrix U,
+    magma_d_sparse_matrix *A, 
+    magma_queue_t queue );
 
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- MAGMA_SPARSE BLAS function definitions
+ -- MAGMA_SPARSE BLAS function definitions
 */
 magma_int_t 
-magma_dgecsrmv(        magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_rowptr,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       double *d_y );
+magma_dgecsrmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr drowptr,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dgecsrmv_shift(  magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       double alpha,
-                       double lambda,
-                       double *d_val,
-                       magma_index_t *d_rowptr,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       int offset,
-                       int blocksize,
-                       magma_index_t *add_rows,
-                       double *d_y );
+magma_dgecsrmv_shift(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    double alpha,
+    double lambda,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr drowptr,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    int offset,
+    int blocksize,
+    magmaIndex_ptr dadd_rows,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dmgecsrmv(       magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t num_vecs,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_rowptr,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       double *d_y );
+magma_dmgecsrmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t num_vecs,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr drowptr,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dgeellmv(        magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t nnz_per_row,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       double *d_y );
+magma_dgeellmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dgeellmv_shift(  magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t nnz_per_row,
-                       double alpha,
-                       double lambda,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       int offset,
-                       int blocksize,
-                       magma_index_t *add_rows,
-                       double *d_y );
-
-
-magma_int_t 
-magma_dmgeellmv(       magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t num_vecs,
-                       magma_int_t nnz_per_row,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       double *d_y );
+magma_dgeellmv_shift(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    double alpha,
+    double lambda,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    int offset,
+    int blocksize,
+    magmaIndex_ptr dadd_rows,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 
 magma_int_t 
-magma_dgeelltmv(       magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t nnz_per_row,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       double *d_y );
-
-magma_int_t 
-magma_dgeelltmv_shift( magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t nnz_per_row,
-                       double alpha,
-                       double lambda,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       int offset,
-                       int blocksize,
-                       magma_index_t *add_rows,
-                       double *d_y );
+magma_dmgeellmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t num_vecs,
+    magma_int_t nnz_per_row,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 
 magma_int_t 
-magma_dmgeelltmv(      magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t num_vecs,
-                       magma_int_t nnz_per_row,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       double *d_x,
-                       double beta,
-                       double *d_y );
+magma_dgeelltmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t 
-magma_dgeellrtmv(      magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t nnz_per_row,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       magma_index_t *d_rowlength,
-                       double *d_x,
-                       double beta,
-                       double *d_y,
-                       magma_int_t num_threads,
-                       magma_int_t threads_per_row );
+magma_dgeelltmv_shift(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    double alpha,
+    double lambda,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    int offset,
+    int blocksize,
+    magmaIndex_ptr dadd_rows,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
+
 
 magma_int_t 
-magma_dgesellcmv(      magma_trans_t transA,
-                       magma_int_t m, magma_int_t n,
-                       magma_int_t blocksize,
-                       magma_int_t slices,
-                       magma_int_t alignment,
-                       double alpha,
-                       double *d_val,
-                       magma_index_t *d_colind,
-                       magma_index_t *d_rowptr,
-                       double *d_x,
-                       double beta,
-                       double *d_y );
+magma_dmgeelltmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t num_vecs,
+    magma_int_t nnz_per_row,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
+
+magma_int_t 
+magma_dgeellrtmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_int_t num_threads,
+    magma_int_t threads_per_row,
+    magma_queue_t queue );
+
+magma_int_t 
+magma_dgesellcmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t blocksize,
+    magma_int_t slices,
+    magma_int_t alignment,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dgesellpmv(  magma_trans_t transA,
-                    magma_int_t m, magma_int_t n,
-                    magma_int_t blocksize,
-                    magma_int_t slices,
-                    magma_int_t alignment,
-                    double alpha,
-                    double *d_val,
-                    magma_index_t *d_colind,
-                    magma_index_t *d_rowptr,
-                    double *d_x,
-                    double beta,
-                    double *d_y );
+magma_dgesellpmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t blocksize,
+    magma_int_t slices,
+    magma_int_t alignment,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dmgesellpmv( magma_trans_t transA,
-                    magma_int_t m, magma_int_t n,
-                    magma_int_t num_vecs,
-                    magma_int_t blocksize,
-                    magma_int_t slices,
-                    magma_int_t alignment,
-                    double alpha,
-                    double *d_val,
-                    magma_index_t *d_colind,
-                    magma_index_t *d_rowptr,
-                    double *d_x,
-                    double beta,
-                    double *d_y );
+magma_dmgesellpmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t num_vecs,
+    magma_int_t blocksize,
+    magma_int_t slices,
+    magma_int_t alignment,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dmgesellpmv_blocked( magma_trans_t transA,
-                    magma_int_t m, magma_int_t n,
-                    magma_int_t num_vecs,
-                    magma_int_t blocksize,
-                    magma_int_t slices,
-                    magma_int_t alignment,
-                    double alpha,
-                    double *d_val,
-                    magma_index_t *d_colind,
-                    magma_index_t *d_rowptr,
-                    double *d_x,
-                    double beta,
-                    double *d_y );
-
-
-magma_int_t
-magma_dmergedgs(        magma_int_t n, 
-                        magma_int_t ldh,
-                        magma_int_t k, 
-                        double *v, 
-                        double *r,
-                        double *skp );
-
-magma_int_t
-magma_dcopyscale(       int n, 
-                        int k,
-                        double *r, 
-                        double *v,
-                        double *skp );
-
-magma_int_t
-magma_dnrm2scale(      int m, 
-                        double *r, int lddr, 
-                        double *drnorm);
-
-
-magma_int_t
-magma_djacobisetup_vector_gpu( int num_rows, 
-                               double *b, 
-                               double *d, 
-                               double *c,
-                               double *x );
-
-magma_int_t
-magma_djacobi_diagscal(         int num_rows, 
-                                double *b, 
-                                double *d, 
-                                double *c);
-
-magma_int_t
-magma_djacobisetup_diagscal( magma_d_sparse_matrix A, magma_d_vector *d );
-
-
-magma_int_t
-magma_dbicgmerge1(  int n, 
-                    double *skp,
-                    double *v, 
-                    double *r, 
-                    double *p );
+magma_dmgesellpmv_blocked(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t num_vecs,
+    magma_int_t blocksize,
+    magma_int_t slices,
+    magma_int_t alignment,
+    double alpha,
+    magmaDouble_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowptr,
+    magmaDouble_ptr dx,
+    double beta,
+    magmaDouble_ptr dy,
+    magma_queue_t queue );
 
 
 magma_int_t
-magma_dbicgmerge2(  int n, 
-                    double *skp, 
-                    double *r,
-                    double *v, 
-                    double *s );
+magma_dmergedgs(
+    magma_int_t n, 
+    magma_int_t ldh,
+    magma_int_t k, 
+    magmaDouble_ptr dv, 
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbicgmerge3(  int n, 
-                    double *skp, 
-                    double *p,
-                    double *s,
-                    double *t,
-                    double *x, 
-                    double *r );
-magma_int_t
-magma_dbicgmerge4(  int type, 
-                    double *skp );
+magma_dcopyscale(    
+    int n, 
+    int k,
+    magmaDouble_ptr dr, 
+    magmaDouble_ptr dv,
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dcgmerge_spmv1(  
-                 magma_d_sparse_matrix A,
-                 double *d1,
-                 double *d2,
-                 double *d_d,
-                 double *d_z,
-                 double *skp );
+magma_dnrm2scale(    
+    int m, 
+    magmaDouble_ptr dr,    
+    int lddr, 
+    double *drnorm,
+    magma_queue_t queue );
+
 
 magma_int_t
-magma_dcgmerge_xrbeta(  
-                 int n,
-                 double *d1,
-                 double *d2,
-                 double *x,
-                 double *r,
-                 double *d,
-                 double *z, 
-                 double *skp );
+magma_djacobisetup_vector_gpu(
+    int num_rows, 
+    magma_d_vector b, 
+    magma_d_vector d, 
+    magma_d_vector c,
+    magma_d_vector *x,
+    magma_queue_t queue );
+
 
 magma_int_t
-magma_dmdotc(       magma_int_t n, 
-                    magma_int_t k, 
-                    double *v, 
-                    double *r,
-                    double *d1,
-                    double *d2,
-                    double *skp );
+magma_djacobi_diagscal(    
+    int num_rows, 
+    magma_d_vector d, 
+    magma_d_vector b, 
+    magma_d_vector *c,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dgemvmdot(    int n, 
-                    int k, 
-                    double *v, 
-                    double *r,
-                    double *d1,
-                    double *d2,
-                    double *skp );
+magma_djacobisetup_diagscal(
+    magma_d_sparse_matrix A, magma_d_vector *d,
+    magma_queue_t queue );
+
 
 magma_int_t
-magma_dbicgmerge_spmv1(  
-                 magma_d_sparse_matrix A,
-                 double *d1,
-                 double *d2,
-                 double *d_p,
-                 double *d_r,
-                 double *d_v,
-                 double *skp );
+magma_dbicgmerge1(    
+    int n, 
+    magmaDouble_ptr dskp,
+    magmaDouble_ptr dv, 
+    magmaDouble_ptr dr, 
+    magmaDouble_ptr dp,
+    magma_queue_t queue );
+
 
 magma_int_t
-magma_dbicgmerge_spmv2(  
-                 magma_d_sparse_matrix A,
-                 double *d1,
-                 double *d2,
-                 double *d_s,
-                 double *d_t,
-                 double *skp );
+magma_dbicgmerge2(
+    int n, 
+    magmaDouble_ptr dskp, 
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dv, 
+    magmaDouble_ptr ds,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbicgmerge_xrbeta(  
-                 int n,
-                 double *d1,
-                 double *d2,
-                 double *rr,
-                 double *r,
-                 double *p,
-                 double *s,
-                 double *t,
-                 double *x, 
-                 double *skp );
+magma_dbicgmerge3(
+    int n, 
+    magmaDouble_ptr dskp, 
+    magmaDouble_ptr dp,
+    magmaDouble_ptr ds,
+    magmaDouble_ptr dt,
+    magmaDouble_ptr dx, 
+    magmaDouble_ptr dr,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrswp(  magma_int_t n,
-                 magma_int_t size_b, 
-                 magma_int_t *ipiv,
-                 double *x );
+magma_dbicgmerge4(
+    int type, 
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrtrsv( magma_uplo_t uplo,
-                 magma_int_t r_blocks,
-                 magma_int_t c_blocks,
-                 magma_int_t size_b, 
-                 double *A,
-                 magma_index_t *blockinfo,   
-                 double *x );
+magma_dcgmerge_spmv1( 
+    magma_d_sparse_matrix A,
+    magmaDouble_ptr d1,
+    magmaDouble_ptr d2,
+    magmaDouble_ptr dd,
+    magmaDouble_ptr dz,
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrvalcpy(  magma_int_t size_b, 
-                    magma_int_t num_blocks, 
-                    magma_int_t num_zero_blocks, 
-                    double **Aval, 
-                    double **Bval,
-                    double **Bval2 );
+magma_dcgmerge_xrbeta( 
+    int n,
+    magmaDouble_ptr d1,
+    magmaDouble_ptr d2,
+    magmaDouble_ptr dx,
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dd,
+    magmaDouble_ptr dz, 
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrluegemm( magma_int_t size_b, 
-                    magma_int_t num_block_rows,
-                    magma_int_t kblocks,
-                    double **dA,  
-                    double **dB,  
-                    double **dC );
+magma_dmdotc(
+    magma_int_t n, 
+    magma_int_t k, 
+    magmaDouble_ptr dv, 
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dd1,
+    magmaDouble_ptr dd2,
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrlupivloc( magma_int_t size_b, 
-                    magma_int_t kblocks,
-                    double **dA,  
-                    magma_int_t *ipiv );
+magma_dgemvmdot(
+    int n, 
+    int k, 
+    magmaDouble_ptr dv, 
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dd1,
+    magmaDouble_ptr dd2,
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
 
 magma_int_t
-magma_dbcsrblockinfo5(  magma_int_t lustep,
-                        magma_int_t num_blocks, 
-                        magma_int_t c_blocks, 
-                        magma_int_t size_b,
-                        magma_index_t *blockinfo,
-                        double *val,
-                        double **AII );
+magma_dbicgmerge_spmv1( 
+    magma_d_sparse_matrix A,
+    magmaDouble_ptr dd1,
+    magmaDouble_ptr dd2,
+    magmaDouble_ptr dp,
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dv,
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbicgmerge_spmv2( 
+    magma_d_sparse_matrix A,
+    magmaDouble_ptr dd1,
+    magmaDouble_ptr dd2,
+    magmaDouble_ptr ds,
+    magmaDouble_ptr dt,
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbicgmerge_xrbeta( 
+    int n,
+    magmaDouble_ptr dd1,
+    magmaDouble_ptr dd2,
+    magmaDouble_ptr drr,
+    magmaDouble_ptr dr,
+    magmaDouble_ptr dp,
+    magmaDouble_ptr ds,
+    magmaDouble_ptr dt,
+    magmaDouble_ptr dx, 
+    magmaDouble_ptr dskp,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbcsrswp(
+    magma_int_t n,
+    magma_int_t size_b, 
+    magma_int_t *ipiv,
+    magmaDouble_ptr dx,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbcsrtrsv(
+    magma_uplo_t uplo,
+    magma_int_t r_blocks,
+    magma_int_t c_blocks,
+    magma_int_t size_b, 
+    magmaDouble_ptr dA,
+    magma_index_t *blockinfo, 
+    magmaDouble_ptr dx,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbcsrvalcpy(
+    magma_int_t size_b, 
+    magma_int_t num_blocks, 
+    magma_int_t num_zero_blocks, 
+    magmaDouble_ptr *dAval, 
+    magmaDouble_ptr *dBval,
+    magmaDouble_ptr *dBval2,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbcsrluegemm(
+    magma_int_t size_b, 
+    magma_int_t num_block_rows,
+    magma_int_t kblocks,
+    magmaDouble_ptr *dA, 
+    magmaDouble_ptr *dB, 
+    magmaDouble_ptr *dC,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbcsrlupivloc(
+    magma_int_t size_b, 
+    magma_int_t kblocks,
+    magmaDouble_ptr *dA, 
+    magma_int_t *ipiv,
+    magma_queue_t queue );
+
+magma_int_t
+magma_dbcsrblockinfo5(
+    magma_int_t lustep,
+    magma_int_t num_blocks, 
+    magma_int_t c_blocks, 
+    magma_int_t size_b,
+    magma_index_t *blockinfo,
+    magmaDouble_ptr dval,
+    magmaDouble_ptr *AII,
+    magma_queue_t queue );
 
  
 #ifdef __cplusplus

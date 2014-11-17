@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
     
        @author Raffaele Solca
     
@@ -203,12 +203,14 @@
     @ingroup magma_zhegv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_zhegvx(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-             magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex *B, magma_int_t ldb,
-             double vl, double vu, magma_int_t il, magma_int_t iu, double abstol,
-             magma_int_t *m, double *w,  magmaDoubleComplex *Z, magma_int_t ldz,
-             magmaDoubleComplex *work, magma_int_t lwork, double *rwork,
-             magma_int_t *iwork, magma_int_t *ifail, magma_int_t *info)
+magma_zhegvx(
+    magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex *B, magma_int_t ldb,
+    double vl, double vu, magma_int_t il, magma_int_t iu, double abstol,
+    magma_int_t *m, double *w,  magmaDoubleComplex *Z, magma_int_t ldz,
+    magmaDoubleComplex *work, magma_int_t lwork, double *rwork,
+    magma_int_t *iwork, magma_int_t *ifail,
+    magma_int_t *info)
 {
     magmaDoubleComplex c_one = MAGMA_Z_ONE;
     

@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
-       @generated from zgetrf_gpu.cpp normal z -> s, Tue Sep  2 12:38:19 2014
+       @generated from zgetrf_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 */
 #include "common_magma.h"
+
 
 /**
     Purpose
@@ -65,18 +66,19 @@
     @ingroup magma_sgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgetrf_gpu(magma_int_t m, magma_int_t n,
-                 float *dA, magma_int_t ldda,
-                 magma_int_t *ipiv, magma_int_t *info)
+magma_sgetrf_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magma_int_t *info)
 {
-    #define dAT(i,j) (dAT + (i)*nb*lddat + (j)*nb)
+    #define dAT(i_, j_) (dAT + (i_)*nb*lddat + (j_)*nb)
 
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
 
     magma_int_t iinfo, nb;
     magma_int_t maxm, maxn, mindim;
-    magma_int_t i, rows, cols, s, lddat, ldwork;
+    magma_int_t i, j, rows, cols, s, lddat, ldwork;
     float *dAT, *dAP, *work;
 
     /* Check arguments */
@@ -165,93 +167,100 @@ magma_sgetrf_gpu(magma_int_t m, magma_int_t n,
             stream[1] = orig_stream;
         }
   
-        for( i=0; i < s; i++ ) {
-            // download i-th panel
-            cols = maxm - i*nb;
-            //magmablas_stranspose( nb, cols, dAT(i,i), lddat, dAP, cols );
-            magmablas_stranspose( nb, m-i*nb, dAT(i,i), lddat, dAP, cols );
+        for( j=0; j < s; j++ ) {
+            // download j-th panel
+            cols = maxm - j*nb;
+            magmablas_stranspose( nb, m-j*nb, dAT(j,j), lddat, dAP, cols );
 
-            // make sure that that the transpose has completed
+            // make sure that the transpose has completed
             magma_queue_sync( stream[1] );
-            magma_sgetmatrix_async( m-i*nb, nb, dAP, cols, work, ldwork,
+            magma_sgetmatrix_async( m-j*nb, nb, dAP, cols, work, ldwork,
                                     stream[0]);
 
-            if ( i > 0 ) {
+            if ( j > 0 ) {
                 magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
-                             n - (i+1)*nb, nb,
-                             c_one, dAT(i-1,i-1), lddat,
-                                    dAT(i-1,i+1), lddat );
+                             n - (j+1)*nb, nb,
+                             c_one, dAT(j-1,j-1), lddat,
+                                    dAT(j-1,j+1), lddat );
                 magma_sgemm( MagmaNoTrans, MagmaNoTrans,
-                             n-(i+1)*nb, m-i*nb, nb,
-                             c_neg_one, dAT(i-1,i+1), lddat,
-                                        dAT(i,  i-1), lddat,
-                             c_one,     dAT(i,  i+1), lddat );
+                             n-(j+1)*nb, m-j*nb, nb,
+                             c_neg_one, dAT(j-1,j+1), lddat,
+                                        dAT(j,  j-1), lddat,
+                             c_one,     dAT(j,  j+1), lddat );
             }
 
             // do the cpu part
-            rows = m - i*nb;
+            rows = m - j*nb;
             magma_queue_sync( stream[0] );
-            lapackf77_sgetrf( &rows, &nb, work, &ldwork, ipiv+i*nb, &iinfo);
-            if ( (*info == 0) && (iinfo > 0) )
-                *info = iinfo + i*nb;
+            lapackf77_sgetrf( &rows, &nb, work, &ldwork, ipiv+j*nb, &iinfo);
+            if ( *info == 0 && iinfo > 0 )
+                *info = iinfo + j*nb;
 
-            // upload i-th panel
-            magma_ssetmatrix_async( m-i*nb, nb, work, ldwork, dAP, maxm,
+            // upload j-th panel
+            magma_ssetmatrix_async( m-j*nb, nb, work, ldwork, dAP, maxm,
                                     stream[0]);
 
-            magmablas_spermute_long2( n, dAT, lddat, ipiv, nb, i*nb );
+            for( i=j*nb; i < j*nb + nb; ++i ) {
+                ipiv[i] += j*nb;
+            }
+            magmablas_slaswp( n, dAT, lddat, j*nb + 1, j*nb + nb, ipiv, 1 );
 
             magma_queue_sync( stream[0] );
-            //magmablas_stranspose( cols, nb, dAP, maxm, dAT(i,i), lddat );
-            magmablas_stranspose( m-i*nb, nb, dAP, maxm, dAT(i,i), lddat );
+            magmablas_stranspose( m-j*nb, nb, dAP, maxm, dAT(j,j), lddat );
 
             // do the small non-parallel computations (next panel update)
-            if ( s > (i+1) ) {
+            if ( s > (j+1) ) {
                 magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
                              nb, nb,
-                             c_one, dAT(i, i  ), lddat,
-                                    dAT(i, i+1), lddat);
+                             c_one, dAT(j, j  ), lddat,
+                                    dAT(j, j+1), lddat);
                 magma_sgemm( MagmaNoTrans, MagmaNoTrans,
-                             nb, m-(i+1)*nb, nb,
-                             c_neg_one, dAT(i,   i+1), lddat,
-                                        dAT(i+1, i  ), lddat,
-                             c_one,     dAT(i+1, i+1), lddat );
+                             nb, m-(j+1)*nb, nb,
+                             c_neg_one, dAT(j,   j+1), lddat,
+                                        dAT(j+1, j  ), lddat,
+                             c_one,     dAT(j+1, j+1), lddat );
             }
             else {
                 magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
                              n-s*nb, nb,
-                             c_one, dAT(i, i  ), lddat,
-                                    dAT(i, i+1), lddat);
+                             c_one, dAT(j, j  ), lddat,
+                                    dAT(j, j+1), lddat);
                 magma_sgemm( MagmaNoTrans, MagmaNoTrans,
-                             n-(i+1)*nb, m-(i+1)*nb, nb,
-                             c_neg_one, dAT(i,   i+1), lddat,
-                                        dAT(i+1, i  ), lddat,
-                             c_one,     dAT(i+1, i+1), lddat );
+                             n-(j+1)*nb, m-(j+1)*nb, nb,
+                             c_neg_one, dAT(j,   j+1), lddat,
+                                        dAT(j+1, j  ), lddat,
+                             c_one,     dAT(j+1, j+1), lddat );
             }
         }
 
         magma_int_t nb0 = min(m - s*nb, n - s*nb);
-        rows = m - s*nb;
-        cols = maxm - s*nb;
-
-        magmablas_stranspose( nb0, rows, dAT(s,s), lddat, dAP, maxm );
-        magma_sgetmatrix( rows, nb0, dAP, maxm, work, ldwork );
-
-        // do the cpu part
-        lapackf77_sgetrf( &rows, &nb0, work, &ldwork, ipiv+s*nb, &iinfo);
-        if ( (*info == 0) && (iinfo > 0) )
-            *info = iinfo + s*nb;
-        magmablas_spermute_long2( n, dAT, lddat, ipiv, nb0, s*nb );
-
-        // upload i-th panel
-        magma_ssetmatrix( rows, nb0, work, ldwork, dAP, maxm );
-        magmablas_stranspose( rows, nb0, dAP, maxm, dAT(s,s), lddat );
-
-        magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
-                     n-s*nb-nb0, nb0,
-                     c_one, dAT(s,s),     lddat,
-                            dAT(s,s)+nb0, lddat);
-
+        if ( nb0 > 0 ) {
+            rows = m - s*nb;
+            cols = maxm - s*nb;
+    
+            magmablas_stranspose( nb0, rows, dAT(s,s), lddat, dAP, maxm );
+            magma_sgetmatrix( rows, nb0, dAP, maxm, work, ldwork );
+    
+            // do the cpu part
+            lapackf77_sgetrf( &rows, &nb0, work, &ldwork, ipiv+s*nb, &iinfo);
+            if ( *info == 0 && iinfo > 0 )
+                *info = iinfo + s*nb;
+                
+            for( i=s*nb; i < s*nb + nb0; ++i ) {
+                ipiv[i] += s*nb;
+            }
+            magmablas_slaswp( n, dAT, ldda, s*nb + 1, s*nb + nb0, ipiv, 1 );
+    
+            // upload j-th panel
+            magma_ssetmatrix( rows, nb0, work, ldwork, dAP, maxm );
+            magmablas_stranspose( rows, nb0, dAP, maxm, dAT(s,s), lddat );
+    
+            magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaUnit,
+                         n-s*nb-nb0, nb0,
+                         c_one, dAT(s,s),     lddat,
+                                dAT(s,s)+nb0, lddat);
+        }
+        
         // undo transpose
         if ( m == n ) {
             magmablas_stranspose_inplace( m, dAT, lddat );
@@ -270,5 +279,8 @@ magma_sgetrf_gpu(magma_int_t m, magma_int_t n,
         }
         magmablasSetKernelStream( orig_stream );
     }
+    
     return *info;
 } /* magma_sgetrf_gpu */
+
+#undef dAT

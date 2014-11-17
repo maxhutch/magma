@@ -1,17 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgetf2.cu normal z -> c, Tue Sep  2 12:38:17 2014
+       @generated from zgetf2.cu normal z -> c, Sat Nov 15 19:53:59 2014
 */
 #include "common_magma.h"
 
 #define PRECISION_c
-
-#define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
 #define cswap_bs 64
 
@@ -21,7 +19,7 @@
 //#define cgeru_bs 1024
 //#endif
 
-void magma_cswap(
+void magma_cgetf2_swap(
     magma_int_t n, magmaFloatComplex *x, magma_int_t i, magma_int_t j, magma_int_t incx);
 
 void magma_cscal_cgeru(
@@ -81,16 +79,18 @@ void magma_cscal_cgeru(
 extern "C" magma_int_t
 magma_cgetf2_gpu(
     magma_int_t m, magma_int_t n,
-    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
     magma_int_t *ipiv,
-    magma_int_t* info )
+    magma_int_t *info )
 {
+    #define dA(i, j)  (dA + (i) + (j)*ldda)
+
     *info = 0;
     if (m < 0) {
         *info = -1;
     } else if (n < 0 || n > cgeru_bs) {
         *info = -2;
-    } else if (lda < max(1,m)) {
+    } else if (ldda < max(1,m)) {
         *info = -4;
     }
 
@@ -111,20 +111,20 @@ magma_cgetf2_gpu(
         cudaDeviceSetCacheConfig( cudaFuncCachePreferShared );
 
         // Find pivot and test for singularity.
-        jp = j - 1 + magma_icamax(m-j, A(j,j), 1);
+        jp = j - 1 + magma_icamax(m-j, dA(j,j), 1);
         ipiv[j] = jp + 1;  // ipiv uses Fortran one-based index
-        // Can't check value of A since it is on GPU
-        //if ( A(jp, j) != 0.0) {
+        // Can't check value of dA since it is on GPU
+        //if ( dA(jp, j) != 0.0) {
             cudaDeviceSetCacheConfig( cudaFuncCachePreferL1 );
             
             // Apply the interchange to columns 1:N.
             if (jp != j) {
-                magma_cswap(n, A, j, jp, lda);
+                magma_cgetf2_swap(n, dA, j, jp, ldda);
             }
             
             // Compute elements J+1:M of J-th column.
             if (j < m) {
-                magma_cscal_cgeru(m-j, n-j, A(j, j), lda);
+                magma_cscal_cgeru(m-j, n-j, dA(j, j), ldda);
             }
         //}
         //else if (*info == 0) {
@@ -149,7 +149,7 @@ void kernel_cswap(int n, magmaFloatComplex *x, int i, int j, int incx)
 }
 
 
-void magma_cswap(magma_int_t n, magmaFloatComplex *x, magma_int_t i, magma_int_t j, magma_int_t incx)
+void magma_cgetf2_swap(magma_int_t n, magmaFloatComplex *x, magma_int_t i, magma_int_t j, magma_int_t incx)
 {
 /*
     cswap two row vectors: ith and jth

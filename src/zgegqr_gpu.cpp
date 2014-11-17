@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -37,14 +37,14 @@
     ---------
     @param[in]
     ikind   INTEGER
-            Several versions are implemented indiceted by the ikind value:  
-            1:  This version uses normal equations and SVD in an iterative process 
+            Several versions are implemented indiceted by the ikind value:
+            1:  This version uses normal equations and SVD in an iterative process
                 that makes the computation numerically accurate.
             2:  This version uses a standard LAPACK-based orthogonalization through
                 MAGMA's QR panel factorization (magma_zgeqr2x3_gpu) and magma_zungqr
             3:  MGS
-            4.  Cholesky QR [ Note: this method uses the normal equations which 
-                                    squares the condition number of A, therefore 
+            4.  Cholesky QR [ Note: this method uses the normal equations which
+                                    squares the condition number of A, therefore
                                     ||I - Q'Q|| < O(eps cond(A)^2)               ]
 
     @param[in]
@@ -67,11 +67,11 @@
             divisible by 16.
 
     @param
-    dwork   (GPU workspace) COMPLEX_16 array, dimension: 
+    dwork   (GPU workspace) COMPLEX_16 array, dimension:
             n^2                    for ikind = 1
-            3 n^2 + min(m, n) + 2  for ikind = 2 
+            3 n^2 + min(m, n) + 2  for ikind = 2
             0 (not used)           for ikind = 3
-            n^2                    for ikind = 4           
+            n^2                    for ikind = 4
 
     @param[out]
     work    (CPU workspace) COMPLEX_16 array, dimension 3 n^2.
@@ -88,10 +88,11 @@
     @ingroup magma_zgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
-                  magmaDoubleComplex *dA,   magma_int_t ldda,
-                  magmaDoubleComplex *dwork, magmaDoubleComplex *work,
-                  magma_int_t *info )
+magma_zgegqr_gpu(
+    magma_int_t ikind, magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_ptr dA,   magma_int_t ldda,
+    magmaDoubleComplex_ptr dwork, magmaDoubleComplex *work,
+    magma_int_t *info )
 {
     #define work(i_,j_) (work + (i_) + (j_)*n)
     #define dA(i_,j_)   (dA   + (i_) + (j_)*ldda)
@@ -201,7 +202,9 @@ magma_zgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
         magma_int_t min_mn = min(m, n);
         magma_int_t nb = n;
 
-        magmaDoubleComplex *dtau = dwork + 2*n*n, *d_T = dwork, *ddA = dwork + n*n;
+        magmaDoubleComplex_ptr dtau = dwork + 2*n*n;
+        magmaDoubleComplex_ptr d_T  = dwork;
+        magmaDoubleComplex_ptr ddA  = dwork + n*n;
         magmaDoubleComplex *tau  = work+n*n;
 
         magmablas_zlaset( MagmaFull, n, n, c_zero, c_zero, d_T, n );
@@ -210,16 +213,16 @@ magma_zgegqr_gpu( magma_int_t ikind, magma_int_t m, magma_int_t n,
         magma_zgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn);
         magma_zgetmatrix( n, n, ddA, n, work, n);
         magma_zungqr_gpu( m, n, n, dA, ldda, tau, d_T, nb, info );
-        // ================== end of ikind == 2 ===================================================       
+        // ================== end of ikind == 2 ===================================================
     }
     else if (ikind == 3) {
         // ================== MGS               ===================================================
-        for(magma_int_t j = 0; j<n; j++){
-            for(magma_int_t i = 0; i<j; i++){
+        for (magma_int_t j = 0; j < n; j++) {
+            for (magma_int_t i = 0; i < j; i++) {
                 *work(i, j) = magma_zdotc(m, dA(0,i), 1, dA(0,j), 1);
                 magma_zaxpy(m, -(*work(i,j)),  dA(0,i), 1, dA(0,j), 1);
             }
-            for(magma_int_t i = j; i<n; i++)
+            for (magma_int_t i = j; i < n; i++)
                 *work(i, j) = MAGMA_Z_ZERO;
             //*work(j,j) = MAGMA_Z_MAKE( magma_dznrm2(m, dA(0,j), 1), 0. );
             *work(j,j) = magma_zdotc(m, dA(0,j), 1, dA(0,j), 1);

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqrf_ooc.cpp normal z -> s, Tue Sep  2 12:38:21 2014
+       @generated from zgeqrf_ooc.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -92,10 +92,11 @@
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sgeqrf_ooc(magma_int_t m, magma_int_t n,
-                 float *A,    magma_int_t lda, float *tau,
-                 float *work, magma_int_t lwork,
-                 magma_int_t *info )
+magma_sgeqrf_ooc(
+    magma_int_t m, magma_int_t n,
+    float *A,    magma_int_t lda, float *tau,
+    float *work, magma_int_t lwork,
+    magma_int_t *info )
 {
     #define  A(a_1,a_2) ( A + (a_2)*(lda) + (a_1))
     #define dA(a_1,a_2) (dA + (a_2)*ldda  + (a_1))

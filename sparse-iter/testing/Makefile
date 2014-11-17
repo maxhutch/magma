@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/testing
@@ -16,6 +16,9 @@ LIB += -lcusparse
 # utility functions
 ZSRC += \
     testing_zmatrix.cpp     \
+    testing_zio.cpp     \
+    testing_zmcompressor.cpp     \
+    testing_zmconverter.cpp     \
 
 
 # ----------
@@ -23,6 +26,8 @@ ZSRC += \
 ZSRC += \
     testing_zdot.cpp        \
     testing_zspmv.cpp       \
+    testing_zspmm.cpp       \
+    testing_zmadd.cpp     \
 
 # ----------
 # low level LA operations

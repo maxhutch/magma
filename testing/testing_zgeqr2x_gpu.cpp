@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -36,9 +34,9 @@ int main( int argc, char** argv)
 
     magmaDoubleComplex  c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *h_A, *h_T, *h_R, *tau, *h_work, tmp[1];
-    magmaDoubleComplex *d_A,  *d_T, *ddA, *dtau;
-    magmaDoubleComplex *d_A2, *d_T2, *ddA2, *dtau2;
-    double *dwork, *dwork2;
+    magmaDoubleComplex_ptr d_A,  d_T, ddA, dtau;
+    magmaDoubleComplex_ptr d_A2, d_T2, ddA2, dtau2;
+    magmaDouble_ptr dwork, dwork2;
 
     magma_int_t M, N, lda, ldda, lwork, n2, info, min_mn;
     magma_int_t ione     = 1;
@@ -140,7 +138,7 @@ int main( int argc, char** argv)
                   Doing two streams in parallel is slower than doing them sequentially
                   Queuing happens on the NULL stream - user defined buffers are smaller?
                 */
-                magma_zgeqr2x4_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info, NULL);
+                magma_zgeqr2x4_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, NULL, &info);
                 //magma_zgeqr2x4_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info, stream[1]);
                 //magma_zgeqr2x4_gpu(M, N, d_A2, ldda, dtau2, d_T2, ddA2, dwork2, &info, stream[0]);
                 //magma_zgeqr2x4_gpu(M, N, d_A2, ldda, dtau2, d_T2, ddA2, dwork2, &info, NULL);

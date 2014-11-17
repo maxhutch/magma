@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zhetrd_he2hb.cpp normal z -> s, Tue Sep  2 12:38:23 2014
+       @generated from zhetrd_he2hb.cpp normal z -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -137,12 +137,13 @@
     @ingroup magma_ssyev_2stage
     ********************************************************************/
 extern "C" magma_int_t
-magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
-                    float *A, magma_int_t lda,
-                    float *tau,
-                    float *work, magma_int_t lwork,
-                    float *dT,
-                    magma_int_t *info)
+magma_ssytrd_sy2sb(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
+    float *A, magma_int_t lda,
+    float *tau,
+    float *work, magma_int_t lwork,
+    magmaFloat_ptr dT,
+    magma_int_t *info)
 {
     #define  A(a_1,a_2)  ( A + ((a_2)-1)*( lda) + (a_1)-1)
     #define dA(a_1,a_2)  (dA + ((a_2)-1)*(ldda) + (a_1)-1)
@@ -427,7 +428,7 @@ magma_ssytrd_sy2sb( magma_uplo_t uplo, magma_int_t n, magma_int_t nb,
     magma_free( dA );
     work[0] = MAGMA_S_MAKE( lwkopt, 0 );
 
-    magmablasSetKernelStream( orig_stream );    
+    magmablasSetKernelStream( orig_stream );
     magma_set_lapack_numthreads( orig_threads );
 
     return *info;

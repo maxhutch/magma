@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zlarfg.cpp normal z -> c, Tue Sep  2 12:38:27 2014
+       @generated from testing_zlarfg.cpp normal z -> c, Sat Nov 15 19:54:18 2014
        @author Mark Gates
 */
 
@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 #include "flops.h"
 #include "magma.h"
@@ -29,7 +27,7 @@ int main( int argc, char** argv)
 
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     magmaFloatComplex *h_x, *h_x2, *h_tau, *h_tau2;
-    magmaFloatComplex *d_x, *d_tau;
+    magmaFloatComplex_ptr d_x, d_tau;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     float      error, error2, work[1];
     magma_int_t N, nb, lda, ldda, size;

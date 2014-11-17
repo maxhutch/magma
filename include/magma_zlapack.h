@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 */
@@ -79,6 +79,7 @@ extern "C" {
 #define lapackf77_zgetrf   FORTRAN_NAME( zgetrf, ZGETRF )
 #define lapackf77_zgetri   FORTRAN_NAME( zgetri, ZGETRI )
 #define lapackf77_zgetrs   FORTRAN_NAME( zgetrs, ZGETRS )
+#define lapackf77_zhetf2   FORTRAN_NAME( zhetf2, ZHETF2 )
 #define lapackf77_zhetrs   FORTRAN_NAME( zhetrs, ZHETRS )
 #define lapackf77_zhbtrd   FORTRAN_NAME( zhbtrd, ZHBTRD )
 #define lapackf77_zheev    FORTRAN_NAME( zheev,  ZHEEV  )
@@ -88,6 +89,7 @@ extern "C" {
 #define lapackf77_zhegs2   FORTRAN_NAME( zhegs2, ZHEGS2 )
 #define lapackf77_zhegst   FORTRAN_NAME( zhegst, ZHEGST )
 #define lapackf77_zhegvd   FORTRAN_NAME( zhegvd, ZHEGVD )
+#define lapackf77_zhesv    FORTRAN_NAME( zhesv,  ZHESV  )
 #define lapackf77_zhetd2   FORTRAN_NAME( zhetd2, ZHETD2 )
 #define lapackf77_zhetrd   FORTRAN_NAME( zhetrd, ZHETRD )
 #define lapackf77_zhetrf   FORTRAN_NAME( zhetrf, ZHETRF )
@@ -283,18 +285,18 @@ void blasf77_zsyrk(  const char *uplo, const char *trans,
                      const magmaDoubleComplex *beta,
                            magmaDoubleComplex *C, const magma_int_t *ldc );
 
-void blasf77_zrotg(  magmaDoubleComplex* ca, const magmaDoubleComplex* cb,
-                     double* c, magmaDoubleComplex* s );
+void blasf77_zrotg(  magmaDoubleComplex *ca, const magmaDoubleComplex *cb,
+                     double *c, magmaDoubleComplex *s );
                      
-void blasf77_zrot(   const magma_int_t* n,
-                     magmaDoubleComplex* x, const magma_int_t* incx,
-                     magmaDoubleComplex* y, const magma_int_t* incy,
-                     const double* c, const magmaDoubleComplex* s );
+void blasf77_zrot(   const magma_int_t *n,
+                     magmaDoubleComplex *x, const magma_int_t *incx,
+                     magmaDoubleComplex *y, const magma_int_t *incy,
+                     const double *c, const magmaDoubleComplex *s );
                      
-void blasf77_zdrot(  const magma_int_t* n,
-                     magmaDoubleComplex* x, const magma_int_t* incx,
-                     magmaDoubleComplex* y, const magma_int_t* incy,
-                     const double* c, const double* s );
+void blasf77_zdrot(  const magma_int_t *n,
+                     magmaDoubleComplex *x, const magma_int_t *incx,
+                     magmaDoubleComplex *y, const magma_int_t *incy,
+                     const double *c, const double *s );
 
 void blasf77_ztrmm(  const char *side, const char *uplo, const char *transa, const char *diag,
                      const magma_int_t *m, const magma_int_t *n,
@@ -347,7 +349,7 @@ magmaDoubleComplex magma_cblas_zdotu(
  * LAPACK functions (alphabetical order)
  */
 #ifdef REAL
-void   lapackf77_dbdsdc( const char *uplo, const char* compq,
+void   lapackf77_dbdsdc( const char *uplo, const char *compq,
                          const magma_int_t *n,
                          double *d, double *e,
                          double *U,  const magma_int_t *ldu,
@@ -523,6 +525,9 @@ void   lapackf77_zgetrs( const char *trans,
                          magmaDoubleComplex *B, const magma_int_t *ldb,
                          magma_int_t *info );
 
+void   lapackf77_zhetf2( const char*, magma_int_t*, 
+                         magmaDoubleComplex*, magma_int_t*, magma_int_t*, magma_int_t* );
+
 void   lapackf77_zhetrs( const char *uplo,
                          const magma_int_t *n, const magma_int_t *nrhs,
                          const magmaDoubleComplex *A, const magma_int_t *lda,
@@ -602,6 +607,13 @@ void   lapackf77_zhegvd( const magma_int_t *itype, const char *jobz, const char 
                          #endif
                          magma_int_t *iwork, const magma_int_t *liwork,
                          magma_int_t *info );
+
+void   lapackf77_zhesv( const char *uplo, 
+                        const magma_int_t *n, const magma_int_t *nrhs,
+                        magmaDoubleComplex *A, const magma_int_t *lda, magma_int_t *ipiv,
+                        magmaDoubleComplex *B, const magma_int_t *ldb,
+                        magmaDoubleComplex *work, const magma_int_t *lwork,
+                        magma_int_t *info );
 
 void   lapackf77_zhetd2( const char *uplo,
                          const magma_int_t *n,

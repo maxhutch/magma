@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -13,12 +13,12 @@
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 #include "magma_bulge.h"
 #include "magma_dbulge.h"
 
-
 #define PRECISION_d
+#define REAL
 
 /**
     Purpose
@@ -37,8 +37,8 @@
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     jobz    magma_vec_t
@@ -164,14 +164,19 @@
     @ingroup magma_dsyev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
-                       magma_int_t n,
-                       double *A, magma_int_t lda,
-                       double vl, double vu, magma_int_t il, magma_int_t iu,
-                       magma_int_t *m, double *w,
-                       double *work, magma_int_t lwork,
-                       magma_int_t *iwork, magma_int_t liwork,
-                       magma_int_t *info)
+magma_dsyevdx_2stage_m(
+    magma_int_t ngpu,
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
+    magma_int_t n,
+    double *A, magma_int_t lda,
+    double vl, double vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, double *w,
+    double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     #define A(i_,j_)  (A  + (i_) + (j_)*lda)
     #define A2(i_,j_) (A2 + (i_) + (j_)*lda2)
@@ -353,7 +358,7 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
     magma_dsytrd_sy2sb(uplo, n, nb, A, lda, &work[indtau1], &work[indwrk], llwork, dT1, info);
     magma_free(dT1);
 #else
-    magma_int_t nstream = max(3,nrgpu+2);
+    magma_int_t nstream = max(3,ngpu+2);
     magma_queue_t streams[MagmaMaxGPUs][20];
     double *dA[MagmaMaxGPUs], *dT1[MagmaMaxGPUs];
     magma_int_t ldda = ((n+31)/32)*32;
@@ -362,12 +367,12 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
     magma_int_t distblk = max(256, 4*nb);
 
     #ifdef ENABLE_DEBUG
-    printf("voici ngpu %d distblk %d NB %d nstream %d version %d \n ", nrgpu, distblk, nb, nstream, ver);
+    printf("voici ngpu %d distblk %d NB %d nstream %d version %d \n ", ngpu, distblk, nb, nstream, ver);
     #endif
 
     timer_start( time_alloc );
-    for( magma_int_t dev = 0; dev < nrgpu; ++dev ) {
-        magma_int_t mlocal = ((n / distblk) / nrgpu + 1) * distblk;
+    for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+        magma_int_t mlocal = ((n / distblk) / ngpu + 1) * distblk;
         magma_setdevice( dev );
         // TODO check malloc
         magma_dmalloc(&dA[dev], ldda*mlocal );
@@ -379,20 +384,20 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
     timer_stop( time_alloc );
 
     timer_start( time_dist );
-    magma_dsetmatrix_1D_col_bcyclic( n, n, A, lda, dA, ldda, nrgpu, distblk );
+    magma_dsetmatrix_1D_col_bcyclic( n, n, A, lda, dA, ldda, ngpu, distblk );
     magma_setdevice(0);
     timer_stop( time_dist );
 
     timer_start( time_band );
     if (ver == 30) {
-        magma_dsytrd_sy2sb_mgpu_spec(uplo, n, nb, A, lda, &work[indtau1], &work[indwrk], llwork, dA, ldda, dT1, nb, nrgpu, distblk, streams, nstream, info);
+        magma_dsytrd_sy2sb_mgpu_spec(uplo, n, nb, A, lda, &work[indtau1], &work[indwrk], llwork, dA, ldda, dT1, nb, ngpu, distblk, streams, nstream, info);
     } else {
-        magma_dsytrd_sy2sb_mgpu(uplo, n, nb, A, lda, &work[indtau1], &work[indwrk], llwork, dA, ldda, dT1, nb, nrgpu, distblk, streams, nstream, info);
+        magma_dsytrd_sy2sb_mgpu(uplo, n, nb, A, lda, &work[indtau1], &work[indwrk], llwork, dA, ldda, dT1, nb, ngpu, distblk, streams, nstream, info);
     }
     timer_stop( time_band );
     timer_printf("  time alloc %7.4f, ditribution %7.4f, dsytrd_he2hb only = %7.4f\n", time_alloc, time_dist, time_band );
 
-    for( magma_int_t dev = 0; dev < nrgpu; ++dev ) {
+    for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magma_free( dA[dev] );
         magma_free( dT1[dev] );
@@ -453,7 +458,7 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
         timer_start( time_total );
         timer_start( time );
 
-        magma_dstedx_m(nrgpu, range, n, vl, vu, il, iu, w, &work[inde],
+        magma_dstedx_m(ngpu, range, n, vl, vu, il, iu, w, &work[inde],
                        &work[indwrk], n, &work[indwk2],
                        llwrk2, iwork, liwork, info);
 
@@ -463,14 +468,14 @@ magma_dsyevdx_2stage_m(magma_int_t nrgpu, magma_vec_t jobz, magma_range_t range,
 
         magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
 
-        magma_dbulge_back_m(nrgpu, uplo, n, nb, *m, Vblksiz, &work[indwrk + n * (il-1)], n,
+        magma_dbulge_back_m(ngpu, uplo, n, nb, *m, Vblksiz, &work[indwrk + n * (il-1)], n,
                             &work[indV2], ldv, &work[indTAU2], &work[indT2], ldt, info);
 
         timer_stop( time );
         timer_printf( "  time dbulge_back_m = %6.2f\n", time );
         timer_start( time );
         
-        magma_dormqr_m(nrgpu, MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, A+nb, lda, &work[indtau1],
+        magma_dormqr_m(ngpu, MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, A+nb, lda, &work[indtau1],
                        &work[indwrk + n * (il-1) + nb], n, &work[indwk2], llwrk2, info);
 
         lapackf77_dlacpy("A", &n, m, &work[indwrk  + n * (il-1)], &n, A, &lda);

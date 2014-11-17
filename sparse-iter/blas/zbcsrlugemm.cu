@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -42,12 +42,12 @@
 // every multiprocessor handles one BCSR-block
 __global__ void 
 zbcsr_gemm_kernel32( 
-                  int m,
-                  int n,
-                  int kblocks,   
-                  double **Avals, 
-                  double **Bval,
-                  double **Cval)
+    int m,
+    int n,
+    int kblocks,   
+    magmaDouble_ptr *Avals, 
+    magmaDouble_ptr *Bval,
+    magmaDouble_ptr *Cval)
 {
 #if (__CUDA_ARCH__ >= 200)
 
@@ -61,10 +61,10 @@ zbcsr_gemm_kernel32(
     const int ty2 = idt/16;
 
     double xxB[4];
-    double *B;
+    magmaDouble_ptr B;
 
     int trackA = __mul24( ty2, lda) + tx2 ;
-    double *Aval = Avals[blockIdx.z];
+    magmaDouble_ptr Aval = Avals[blockIdx.z];
 
     __shared__ double Abs[64][65];
     __shared__ double  Bb[16][65];
@@ -131,7 +131,7 @@ zbcsr_gemm_kernel32(
                 __syncthreads();     // this is necessary!!!
         }
         // Prepare where to write the result
-        double *C = Cval[blockIdx.z * kblocks + k];
+        magmaDouble_ptr C = Cval[blockIdx.z * kblocks + k];
         C += tx2 + __mul24 (ty2 ,ldc);
 
         #pragma unroll
@@ -179,12 +179,12 @@ zbcsr_gemm_kernel32(
 // every multiprocessor handles one BCSR-block
 __global__ void 
 zbcsr_gemm_kernel64( 
-                  int m,
-                  int n,
-                  int kblocks,   
-                  double **Avals, 
-                  double **Bval,
-                  double **Cval)
+    int m,
+    int n,
+    int kblocks,   
+    magmaDouble_ptr *Avals, 
+    magmaDouble_ptr *Bval,
+    magmaDouble_ptr *Cval)
 {
 #if (__CUDA_ARCH__ >= 200)
 
@@ -199,10 +199,10 @@ zbcsr_gemm_kernel64(
 
     double xxB[4];
 
-    double *B;
+    magmaDouble_ptr B;
 
     int trackA = __mul24( ty2, lda) + tx2 ;
-    double *Aval = Avals[blockIdx.z];
+    magmaDouble_ptr Aval = Avals[blockIdx.z];
 
     __shared__ double Abs[64][65];
     __shared__ double  Bb[16][65];
@@ -277,7 +277,7 @@ zbcsr_gemm_kernel64(
 
         }
         // Prepare where to write the result
-        double *C = Cval[blockIdx.z * kblocks + k];
+        magmaDouble_ptr C = Cval[blockIdx.z * kblocks + k];
         C += tx2 + __mul24 (ty2 ,ldc);
 
         #pragma unroll
@@ -339,42 +339,47 @@ zbcsr_gemm_kernel64(
     Arguments
     ---------
 
-    @param
+    @param[in]
     size_b      magma_int_t
                 blocksize in BCSR
 
-    @param
+    @param[in]
     num_brows   magma_int_t
                 number of block rows
 
-    @param
+    @param[in]
     kblocks     magma_int_t
                 number of blocks in row
 
-    @param
+    @param[in]
     dA          magmaDoubleComplex**
                 input blocks of matrix A
                 
-    @param
+    @param[in]
     dB          magmaDoubleComplex**
                 input blocks of matrix B
                 
-    @param
+    @param[in]
     dC          magmaDoubleComplex**
                 output blocks of matrix C
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zbcsrluegemm( magma_int_t size_b, 
-                    magma_int_t num_brows,
-                    magma_int_t kblocks,
-                    magmaDoubleComplex **dA,  
-                    magmaDoubleComplex **dB,  
-                    magmaDoubleComplex **dC ){
-
-#if defined(PRECISION_d)
+magma_zbcsrluegemm(
+    magma_int_t size_b, 
+    magma_int_t num_brows,
+    magma_int_t kblocks,
+    magmaDoubleComplex_ptr *dA,  
+    magmaDoubleComplex_ptr *dB,  
+    magmaDoubleComplex_ptr *dC,
+    magma_queue_t queue )
+{
+    #if defined(PRECISION_d)
 
     magma_int_t arch = magma_getdevice_arch();
 
@@ -389,7 +394,7 @@ magma_zbcsrluegemm( magma_int_t size_b,
     dim3 threads( 64, 4 );
 
     dim3 grid(1, 1, num_brows);
-    zbcsr_gemm_kernel64<<< grid, threads, 0, magma_stream >>>( 
+    zbcsr_gemm_kernel64<<< grid, threads, 0, queue >>>( 
                   size_b, size_b, kblocks, dA, dB, dC );
 
     }

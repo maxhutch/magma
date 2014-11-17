@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from zbcyclic.cu normal z -> c, Tue Sep  2 12:38:17 2014
+       @generated from zbcyclic.cu normal z -> c, Sat Nov 15 19:53:59 2014
 */
 #include "common_magma.h"
 
@@ -21,9 +21,9 @@
 extern "C" void
 magma_csetmatrix_1D_col_bcyclic(
     magma_int_t m, magma_int_t n,
-    const magmaFloatComplex *hA,   magma_int_t lda,
-    magmaFloatComplex       *dA[], magma_int_t ldda,
-    magma_int_t num_gpus, magma_int_t nb )
+    const magmaFloatComplex    *hA,   magma_int_t lda,
+    magmaFloatComplex_ptr       dA[], magma_int_t ldda,
+    magma_int_t ngpu, magma_int_t nb )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -34,7 +34,7 @@ magma_csetmatrix_1D_col_bcyclic(
         info = -4;
     else if ( ldda < m )
         info = -6;
-    else if ( num_gpus < 1 )
+    else if ( ngpu < 1 )
         info = -7;
     else if ( nb < 1 )
         info = -8;
@@ -50,12 +50,12 @@ magma_csetmatrix_1D_col_bcyclic(
     magma_getdevice( &cdevice );
 
     for( j = 0; j < n; j += nb ) {
-        dev = (j/nb) % num_gpus;
+        dev = (j/nb) % ngpu;
         magma_setdevice( dev );
         jb = min(nb, n-j);
         magma_csetmatrix_async( m, jb,
                                 hA + j*lda, lda,
-                                dA[dev] + j/(nb*num_gpus)*nb*ldda, ldda, NULL );
+                                dA[dev] + j/(nb*ngpu)*nb*ldda, ldda, NULL );
     }
 
     magma_setdevice( cdevice );
@@ -69,9 +69,9 @@ magma_csetmatrix_1D_col_bcyclic(
 extern "C" void
 magma_cgetmatrix_1D_col_bcyclic(
     magma_int_t m, magma_int_t n,
-    magmaFloatComplex  *dA[], magma_int_t ldda,
-    magmaFloatComplex  *hA,   magma_int_t lda,
-    magma_int_t num_gpus, magma_int_t nb )
+    magmaFloatComplex_const_ptr const dA[], magma_int_t ldda,
+    magmaFloatComplex                *hA,   magma_int_t lda,
+    magma_int_t ngpu, magma_int_t nb )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -82,7 +82,7 @@ magma_cgetmatrix_1D_col_bcyclic(
         info = -4;
     else if ( lda < m )
         info = -6;
-    else if ( num_gpus < 1 )
+    else if ( ngpu < 1 )
         info = -7;
     else if ( nb < 1 )
         info = -8;
@@ -98,11 +98,11 @@ magma_cgetmatrix_1D_col_bcyclic(
     magma_getdevice( &cdevice );
 
     for( j = 0; j < n; j += nb ) {
-        dev = (j/nb) % num_gpus;
+        dev = (j/nb) % ngpu;
         magma_setdevice( dev );
         jb = min(nb, n-j);
         magma_cgetmatrix_async( m, jb,
-                                dA[dev] + j/(nb*num_gpus)*nb*ldda, ldda,
+                                dA[dev] + j/(nb*ngpu)*nb*ldda, ldda,
                                 hA + j*lda, lda, NULL );
     }
 
@@ -117,9 +117,9 @@ magma_cgetmatrix_1D_col_bcyclic(
 extern "C" void
 magma_csetmatrix_1D_row_bcyclic(
     magma_int_t m, magma_int_t n,
-    const magmaFloatComplex *hA,   magma_int_t lda,
-    magmaFloatComplex       *dA[], magma_int_t ldda,
-    magma_int_t num_gpus, magma_int_t nb )
+    const magmaFloatComplex    *hA,   magma_int_t lda,
+    magmaFloatComplex_ptr       dA[], magma_int_t ldda,
+    magma_int_t ngpu, magma_int_t nb )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -130,7 +130,7 @@ magma_csetmatrix_1D_row_bcyclic(
         info = -4;
     else if ( ldda < m )
         info = -6;
-    else if ( num_gpus < 1 )
+    else if ( ngpu < 1 )
         info = -7;
     else if ( nb < 1 )
         info = -8;
@@ -146,12 +146,12 @@ magma_csetmatrix_1D_row_bcyclic(
     magma_getdevice( &cdevice );
 
     for( i = 0; i < m; i += nb ) {
-        dev = (i/nb) % num_gpus;
+        dev = (i/nb) % ngpu;
         magma_setdevice( dev );
         jb = min(nb, m-i);
         magma_csetmatrix_async( jb, n,
                                 hA + i, lda,
-                                dA[dev] + i/(nb*num_gpus)*nb, ldda, NULL );
+                                dA[dev] + i/(nb*ngpu)*nb, ldda, NULL );
     }
 
     magma_setdevice( cdevice );
@@ -165,9 +165,9 @@ magma_csetmatrix_1D_row_bcyclic(
 extern "C" void
 magma_cgetmatrix_1D_row_bcyclic(
     magma_int_t m, magma_int_t n,
-    magmaFloatComplex  *dA[], magma_int_t ldda,
-    magmaFloatComplex  *hA,   magma_int_t lda,
-    magma_int_t num_gpus, magma_int_t nb )
+    magmaFloatComplex_const_ptr const dA[], magma_int_t ldda,
+    magmaFloatComplex                *hA,   magma_int_t lda,
+    magma_int_t ngpu, magma_int_t nb )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -178,7 +178,7 @@ magma_cgetmatrix_1D_row_bcyclic(
         info = -4;
     else if ( lda < m )
         info = -6;
-    else if ( num_gpus < 1 )
+    else if ( ngpu < 1 )
         info = -7;
     else if ( nb < 1 )
         info = -8;
@@ -194,11 +194,11 @@ magma_cgetmatrix_1D_row_bcyclic(
     magma_getdevice( &cdevice );
 
     for( i = 0; i < m; i += nb ) {
-        dev = (i/nb) % num_gpus;
+        dev = (i/nb) % ngpu;
         magma_setdevice( dev );
         jb = min(nb, m-i);
         magma_cgetmatrix_async( jb, n,
-                                dA[dev] + i/(nb*num_gpus)*nb, ldda,
+                                dA[dev] + i/(nb*ngpu)*nb, ldda,
                                 hA + i, lda, NULL );
     }
 

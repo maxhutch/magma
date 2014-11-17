@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
 */
@@ -11,10 +11,9 @@
 #ifndef MAGMA_THREAD_HPP
 #define MAGMA_THREAD_HPP
 
-#include <pthread.h>
 #include <queue>
 
-#include "magma.h"
+#include "common_magma.h"
 
 
 // ---------------------------------------------

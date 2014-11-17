@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -148,8 +148,8 @@ void clat2z_upper(
 extern "C" void
 magmablas_clat2z_q(
     magma_uplo_t uplo, magma_int_t n,
-    const magmaFloatComplex *SA, magma_int_t ldsa,
-    magmaDoubleComplex      *A,  magma_int_t lda,
+    magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
+    magmaDoubleComplex_ptr      A,  magma_int_t lda,
     magma_int_t *info,
     magma_queue_t queue )
 {
@@ -190,8 +190,8 @@ magmablas_clat2z_q(
 extern "C" void
 magmablas_clat2z(
     magma_uplo_t uplo, magma_int_t n,
-    const magmaFloatComplex *SA, magma_int_t ldsa,
-    magmaDoubleComplex      *A,  magma_int_t lda,
+    magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
+    magmaDoubleComplex_ptr      A,  magma_int_t lda,
     magma_int_t *info )
 {
     magmablas_clat2z_q( uplo, n, SA, ldsa, A, lda, info, magma_stream );

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Mark Gates
@@ -121,14 +121,15 @@
     @ingroup magma_zgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zunmqr_gpu(magma_side_t side, magma_trans_t trans,
-                 magma_int_t m, magma_int_t n, magma_int_t k,
-                 magmaDoubleComplex *dA,    magma_int_t ldda,
-                 magmaDoubleComplex *tau,
-                 magmaDoubleComplex *dC,    magma_int_t lddc,
-                 magmaDoubleComplex *hwork, magma_int_t lwork,
-                 magmaDoubleComplex *dT,    magma_int_t nb,
-                 magma_int_t *info)
+magma_zunmqr_gpu(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex_ptr dA,    magma_int_t ldda,
+    magmaDoubleComplex    *tau,
+    magmaDoubleComplex_ptr dC,    magma_int_t lddc,
+    magmaDoubleComplex    *hwork, magma_int_t lwork,
+    magmaDoubleComplex_ptr dT,    magma_int_t nb,
+    magma_int_t *info)
 {
     #define dA(a_1,a_2) (dA + (a_1) + (a_2)*ldda)
     #define dC(a_1,a_2) (dC + (a_1) + (a_2)*lddc)
@@ -139,7 +140,7 @@ magma_zunmqr_gpu(magma_side_t side, magma_trans_t trans,
     const char* side_  = lapack_side_const( side  );
     const char* trans_ = lapack_trans_const( trans );
 
-    magmaDoubleComplex *dwork;
+    magmaDoubleComplex_ptr dwork;
     magma_int_t i, lddwork;
     magma_int_t i1, i2, step, ib, ic, jc, ma, mi, ni, nq, nw;
     int left, notran, lquery;

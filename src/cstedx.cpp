@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
     
        @author Raffaele Solca
     
-       @generated from zstedx.cpp normal z -> c, Tue Sep  2 12:38:22 2014
+       @generated from zstedx.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -130,12 +130,14 @@
     @ingroup magma_cheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cstedx(magma_range_t range, magma_int_t n, float vl, float vu,
-             magma_int_t il, magma_int_t iu, float* d, float* e,
-             magmaFloatComplex* Z, magma_int_t ldz,
-             float* rwork, magma_int_t lrwork,
-             magma_int_t* iwork, magma_int_t liwork,
-             float* dwork, magma_int_t* info)
+magma_cstedx(
+    magma_range_t range, magma_int_t n, float vl, float vu,
+    magma_int_t il, magma_int_t iu, float *d, float *e,
+    magmaFloatComplex *Z, magma_int_t ldz,
+    float *rwork, magma_int_t lrwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magmaFloat_ptr dwork,
+    magma_int_t *info)
 {
     magma_int_t alleig, indeig, valeig, lquery;
     magma_int_t i, j, smlsiz;

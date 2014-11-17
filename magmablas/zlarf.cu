@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        @author Azzam Haidar
@@ -33,7 +33,7 @@ void magma_zlarf_kernel( int m, const magmaDoubleComplex *dv, const magmaDoubleC
         __shared__ magmaDoubleComplex sum[ BLOCK_SIZE ];
         magmaDoubleComplex tmp;
 
-        /* perform  w := v' * C  */
+        /* perform  w := v**H * C  */
         if (tx==0)
             tmp = dc[0]; //since V[0] should be one
         else
@@ -70,7 +70,7 @@ void magma_zlarf_smkernel( int m, int n, magmaDoubleComplex *dv, magmaDoubleComp
             __shared__ magmaDoubleComplex sum[ BLOCK_SIZEx ][ BLOCK_SIZEy + 1];
             magmaDoubleComplex lsum;
     
-            /*  w := v' * C  */
+            /*  w := v**H * C  */
             lsum = MAGMA_Z_ZERO;
             for( int j = i; j < m; j += BLOCK_SIZEx ){
                 if (j==0)
@@ -99,11 +99,11 @@ void magma_zlarf_smkernel( int m, int n, magmaDoubleComplex *dv, magmaDoubleComp
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
-          H = I - tau * v * v'
+          H = I - tau * v * v**H
     where tau is a complex scalar and v is a complex vector.
     If tau = 0, then H is taken to be the unit matrix.
 
-    To apply H' (the conjugate transpose of H), supply conjg(tau)
+    To apply H**H (the conjugate transpose of H), supply conjg(tau)
     instead tau.
 
     This routine uses only one SM (block).
@@ -121,11 +121,11 @@ magma_zlarf_sm(magma_int_t m, magma_int_t n, magmaDoubleComplex *dv, magmaDouble
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
-          H = I - tau * v * v'
+          H = I - tau * v * v**H
     where tau is a complex scalar and v is a complex vector.
     If tau = 0, then H is taken to be the unit matrix.
 
-    To apply H' (the conjugate transpose of H), supply conjg(tau) 
+    To apply H**H (the conjugate transpose of H), supply conjg(tau) 
     instead tau.
 
  */
@@ -133,13 +133,14 @@ magma_zlarf_sm(magma_int_t m, magma_int_t n, magmaDoubleComplex *dv, magmaDouble
 extern "C" magma_int_t
 magma_zlarf_gpu(
     magma_int_t m,  magma_int_t n,
-    const magmaDoubleComplex *dv, const magmaDoubleComplex *dtau,
-    magmaDoubleComplex *dc,  magma_int_t lddc)
+    magmaDoubleComplex_const_ptr dv,
+    magmaDoubleComplex_const_ptr dtau,
+    magmaDoubleComplex_ptr dC,  magma_int_t lddc)
 {
     dim3 grid( n, 1, 1 );
     dim3 threads( BLOCK_SIZE );
-    if ( n>0 ){
-        magma_zlarf_kernel<<< grid, threads, 0, magma_stream >>>( m, dv, dtau, dc, lddc);
+    if ( n > 0 ) {
+        magma_zlarf_kernel<<< grid, threads, 0, magma_stream >>>( m, dv, dtau, dC, lddc);
     }
 
     // The computation can be done on 1 SM with the following routine.

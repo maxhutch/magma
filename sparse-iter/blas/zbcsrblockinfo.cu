@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -26,9 +26,10 @@
 // every thread initializes one entry
 __global__ void 
 zbcsrblockinfo5_kernel( 
-                  magma_int_t num_blocks,
-                  magmaDoubleComplex *address,
-                  magmaDoubleComplex **AII ){
+    magma_int_t num_blocks,
+    magmaDoubleComplex_ptr address,
+    magmaDoubleComplex_ptr *AII )
+{
     int i = blockIdx.x*blockDim.x + threadIdx.x;
     if( i < num_blocks ){
         *AII[ i ] = *address;
@@ -51,49 +52,53 @@ zbcsrblockinfo5_kernel(
     ---------
 
 
-    @param
+    @param[in]
     lustep      magma_int_t
                 lustep
 
-    @param
+    @param[in]
     num_blocks  magma_int_t
                 number of nonzero blocks
 
-    @param
+    @param[in]
     c_blocks    magma_int_t
                 number of column-blocks
                 
-    @param
+    @param[in]
     size_b      magma_int_t
                 blocksize
                 
-    @param
+    @param[in]
     blockinfo   magma_int_t*
                 block filled? location?
 
-    @param
+    @param[in]
     val         magmaDoubleComplex*
                 pointers to the nonzero blocks in A
 
-    @param
+    @param[in]
     AII         magmaDoubleComplex**
                 pointers to the respective nonzero blocks in B
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zbcsrblockinfo5(  magma_int_t lustep,
-                        magma_int_t num_blocks, 
-                        magma_int_t c_blocks, 
-                        magma_int_t size_b,
-                        magma_index_t *blockinfo,
-                        magmaDoubleComplex *val,
-                        magmaDoubleComplex **AII ){
-
- 
-        dim3 dimBlock( BLOCK_SIZE, 1, 1 );
+magma_zbcsrblockinfo5(
+    magma_int_t lustep,
+    magma_int_t num_blocks, 
+    magma_int_t c_blocks, 
+    magma_int_t size_b,
+    magma_index_t *blockinfo,
+    magmaDoubleComplex_ptr val,
+    magmaDoubleComplex_ptr *AII,
+    magma_queue_t queue )
+{
+    dim3 dimBlock( BLOCK_SIZE, 1, 1 );
 
         int dimgrid = (num_blocks+BLOCK_SIZE-1)/BLOCK_SIZE;
         dim3 dimGrid( dimgrid, 1, 1 );
@@ -103,19 +108,18 @@ magma_zbcsrblockinfo5(  magma_int_t lustep,
         magmaDoubleComplex **hAII;
         magma_malloc((void **)&hAII, num_blocks*sizeof(magmaDoubleComplex*));
 
-        for(int i=0; i<num_blocks; i++){
+        for(int i=0; i<num_blocks; i++) {
            hAII[i] = val(lustep,lustep);
         }
         magma_setvector( num_blocks, sizeof(magmaDoubleComplex*), 
                                                             hAII, 1, AII, 1 );
 /*
     magma_setvector( 1, sizeof(magmaDoubleComplex*), address, 1, daddress, 1 );
-    zbcsrblockinfo5_kernel<<<dimGrid,dimBlock, 0, magma_stream >>>
+    zbcsrblockinfo5_kernel<<<dimGrid,dimBlock, 0, queue >>>
                         ( num_blocks, daddress, AII );
 
 */
         return MAGMA_SUCCESS;
-
 }
 
 

@@ -1,25 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
        @precisions normal d -> s
 */
 #include "common_magma.h"
-
-
-extern "C" {
-
-magma_int_t magma_dlaex0_m(magma_int_t nrgpu, magma_int_t n, double* d, double* e, double* q, magma_int_t ldq,
-                           double* work, magma_int_t* iwork,
-                           magma_range_t range, double vl, double vu,
-                           magma_int_t il, magma_int_t iu, magma_int_t* info);
-
-}  // end extern "C"
 
 /**
     Purpose
@@ -37,8 +27,8 @@ magma_int_t magma_dlaex0_m(magma_int_t nrgpu, magma_int_t n, double* d, double* 
     Arguments
     ---------
     @param[in]
-    nrgpu   INTEGER
-            Number of GPUs to use.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     range   magma_range_t
@@ -140,10 +130,14 @@ magma_int_t magma_dlaex0_m(magma_int_t nrgpu, magma_int_t n, double* d, double* 
     @ingroup magma_dsyev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, double vl, double vu,
-               magma_int_t il, magma_int_t iu, double* d, double* e, double* Z, magma_int_t ldz,
-               double* work, magma_int_t lwork, magma_int_t* iwork, magma_int_t liwork,
-               magma_int_t* info)
+magma_dstedx_m(
+    magma_int_t ngpu,
+    magma_range_t range, magma_int_t n, double vl, double vu,
+    magma_int_t il, magma_int_t iu, double *d, double *e,
+    double *Z, magma_int_t ldz,
+    double *work, magma_int_t lwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
 #define Z(i_,j_) (Z + (i_) + (j_)*ldz)
 
@@ -283,7 +277,7 @@ magma_dstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, double vl,
                     magma_int_t mm = m-1;
                     lapackf77_dlascl("G", &izero, &izero, &orgnrm, &d_one, &mm, &ione, &e[start], &mm, info);
 
-                    magma_dlaex0_m( nrgpu, m, &d[start], &e[start], Z(start, start), ldz, work, iwork, MagmaRangeAll, vl, vu, il, iu, info);
+                    magma_dlaex0_m( ngpu, m, &d[start], &e[start], Z(start, start), ldz, work, iwork, MagmaRangeAll, vl, vu, il, iu, info);
 
                     if ( *info != 0) {
                         return *info;
@@ -330,7 +324,7 @@ magma_dstedx_m(magma_int_t nrgpu, magma_range_t range, magma_int_t n, double vl,
             magma_int_t nm = n-1;
             lapackf77_dlascl("G", &izero, &izero, &orgnrm, &d_one, &nm, &ione, e, &nm, info);
 
-            magma_dlaex0_m(nrgpu, n, d, e, Z, ldz, work, iwork, range, vl, vu, il, iu, info);
+            magma_dlaex0_m(ngpu, n, d, e, Z, ldz, work, iwork, range, vl, vu, il, iu, info);
 
             if ( *info != 0) {
                 return *info;

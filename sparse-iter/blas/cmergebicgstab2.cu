@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zmergebicgstab2.cu normal z -> c, Tue Sep  2 12:38:33 2014
+       @generated from zmergebicgstab2.cu normal z -> c, Sat Nov 15 19:54:21 2014
        @author Hartwig Anzt
 
 */
@@ -24,11 +24,13 @@
 
 
 // accelerated reduction for one vector
-__global__ void 
-magma_creduce_kernel_spmv1(    int Gs,
-                               int n, 
-                               magmaFloatComplex *vtmp,
-                               magmaFloatComplex *vtmp2 ){
+__global__ void
+magma_creduce_kernel_spmv1(    
+    int Gs,
+    int n, 
+    magmaFloatComplex_ptr vtmp,
+    magmaFloatComplex_ptr vtmp2 )
+{
 
     extern __shared__ magmaFloatComplex temp[];    
     int Idx = threadIdx.x;
@@ -85,17 +87,17 @@ magma_creduce_kernel_spmv1(    int Gs,
 }
 
 
-__global__ void 
+__global__ void
 magma_cbicgmerge_spmv1_kernel(  
-                 int n,
-                 magmaFloatComplex *d_val, 
-                 magma_index_t *d_rowptr, 
-                 magma_index_t *d_colind,
-                 magmaFloatComplex *p,
-                 magmaFloatComplex *r,
-                 magmaFloatComplex *v,
-                 magmaFloatComplex *vtmp
-                                            ){
+    int n,
+    magmaFloatComplex_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaFloatComplex_ptr p,
+    magmaFloatComplex_ptr r,
+    magmaFloatComplex_ptr v,
+    magmaFloatComplex_ptr vtmp)
+{
 
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -104,10 +106,10 @@ magma_cbicgmerge_spmv1_kernel(
 
     if( i<n ){
         magmaFloatComplex dot = MAGMA_C_ZERO;
-        int start = d_rowptr[ i ];
-        int end = d_rowptr[ i+1 ];
+        int start = drowptr[ i ];
+        int end = drowptr[ i+1 ];
         for( j=start; j<end; j++)
-            dot += d_val[ j ] * p[ d_colind[j] ];
+            dot += dval[ j ] * p[ dcolind[j] ];
         v[ i ] =  dot;
     }
 
@@ -161,9 +163,9 @@ magma_cbicgmerge_spmv1_kernel(
     }
 }
 
-__global__ void 
+__global__ void
 magma_cbicgstab_alphakernel(  
-                    magmaFloatComplex *skp ){
+                    magmaFloatComplex_ptr skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -182,46 +184,55 @@ magma_cbicgstab_alphakernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_c_sparse_matrix
                 system matrix
 
-    @param
-    d1          magmaFloatComplex*
+    @param[in]
+    d1          magmaFloatComplex_ptr 
                 temporary vector
 
-    @param
-    d2          magmaFloatComplex*
+    @param[in]
+    d2          magmaFloatComplex_ptr 
                 temporary vector
 
-    @param
-    d_p         magmaFloatComplex*
+    @param[in]
+    dp          magmaFloatComplex_ptr 
                 input vector p
 
-    @param
-    d_r         magmaFloatComplex*
+    @param[in]
+    dr          magmaFloatComplex_ptr 
                 input vector r
 
-    @param
-    d_v         magmaFloatComplex*
+    @param[in]
+    dv          magmaFloatComplex_ptr 
                 output vector v
 
-    @param
-    skp         magmaFloatComplex*
+    @param[in/out]
+    skp         magmaFloatComplex_ptr 
                 array for parameters ( skp[0]=alpha )
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_cgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_cbicgmerge_spmv1(  magma_c_sparse_matrix A,
-                         magmaFloatComplex *d1,
-                         magmaFloatComplex *d2,
-                         magmaFloatComplex *d_p,
-                         magmaFloatComplex *d_r,
-                         magmaFloatComplex *d_v,
-                         magmaFloatComplex *skp ){
+magma_cbicgmerge_spmv1(
+    magma_c_sparse_matrix A,
+    magmaFloatComplex_ptr d1,
+    magmaFloatComplex_ptr d2,
+    magmaFloatComplex_ptr dp,
+    magmaFloatComplex_ptr dr,
+    magmaFloatComplex_ptr dv,
+    magmaFloatComplex_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int n = A.num_rows;
     int local_block_size=256;
@@ -229,24 +240,24 @@ magma_cbicgmerge_spmv1(  magma_c_sparse_matrix A,
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  local_block_size * sizeof( magmaFloatComplex ); 
-    magmaFloatComplex *aux1 = d1, *aux2 = d2;
+    magmaFloatComplex_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
 
-    if( A.storage_type == Magma_CSR)
+    if ( A.storage_type == Magma_CSR)
         magma_cbicgmerge_spmv1_kernel<<<Gs, Bs, Ms>>>
-                    ( n, A.val, A.row, A.col, d_p, d_r, d_v, d1 );
+                    ( n, A.dval, A.drow, A.dcol, dp, dr, dv, d1 );
     else
         printf("error: only CSR format supported.\n");
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_creduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                             ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -256,17 +267,20 @@ magma_cbicgmerge_spmv1(  magma_c_sparse_matrix A,
     dim3 Gs2( 1 );
     magma_cbicgstab_alphakernel<<<Gs2, Bs2, 0>>>( skp );
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
 
 // accelerated block reduction for multiple vectors
-__global__ void 
-magma_creduce_kernel_spmv2( int Gs,
-                           int n, 
-                           magmaFloatComplex *vtmp,
-                           magmaFloatComplex *vtmp2 ){
+__global__ void
+magma_creduce_kernel_spmv2( 
+    int Gs,
+    int n, 
+    magmaFloatComplex_ptr vtmp,
+    magmaFloatComplex_ptr vtmp2 )
+{
 
     extern __shared__ magmaFloatComplex temp[];    
     int Idx = threadIdx.x;
@@ -347,16 +361,16 @@ magma_creduce_kernel_spmv2( int Gs,
     }
 }
 
-__global__ void 
+__global__ void
 magma_cbicgmerge_spmv2_kernel(  
-                 int n,
-                 magmaFloatComplex *d_val, 
-                 magma_index_t *d_rowptr, 
-                 magma_index_t *d_colind,
-                 magmaFloatComplex *s,
-                 magmaFloatComplex *t,
-                 magmaFloatComplex *vtmp
-                                            ){
+    int n,
+    magmaFloatComplex_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaFloatComplex_ptr s,
+    magmaFloatComplex_ptr t,
+    magmaFloatComplex_ptr vtmp )
+{
 
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -365,10 +379,10 @@ magma_cbicgmerge_spmv2_kernel(
 
     if( i<n ){
         magmaFloatComplex dot = MAGMA_C_ZERO;
-        int start = d_rowptr[ i ];
-        int end = d_rowptr[ i+1 ];
+        int start = drowptr[ i ];
+        int end = drowptr[ i+1 ];
         for( j=start; j<end; j++)
-            dot += d_val[ j ] * s[ d_colind[j] ];
+            dot += dval[ j ] * s[ dcolind[j] ];
         t[ i ] =  dot;
     }
 
@@ -452,9 +466,9 @@ magma_cbicgmerge_spmv2_kernel(
     }
 }
 
-__global__ void 
+__global__ void
 magma_cbicgstab_omegakernel(  
-                    magmaFloatComplex *skp ){
+                    magmaFloatComplex_ptr skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -473,42 +487,50 @@ magma_cbicgstab_omegakernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_c_sparse_matrix
                 input matrix 
 
-    @param
-    d1          magmaFloatComplex*
+    @param[in]
+    d1          magmaFloatComplex_ptr 
                 temporary vector
 
-    @param
-    d2          magmaFloatComplex*
+    @param[in]
+    d2          magmaFloatComplex_ptr 
                 temporary vector
 
-    @param
-    d_s         magmaFloatComplex*
+    @param[in]
+    ds          magmaFloatComplex_ptr 
                 input vector s
 
-    @param
-    d_t         magmaFloatComplex*
+    @param[in]
+    dt          magmaFloatComplex_ptr 
                 output vector t
 
-    @param
-    skp         magmaFloatComplex*
+    @param[in/out]
+    skp         magmaFloatComplex_ptr 
                 array for parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_cgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_cbicgmerge_spmv2(  
-                 magma_c_sparse_matrix A,
-                 magmaFloatComplex *d1,
-                 magmaFloatComplex *d2,
-                 magmaFloatComplex *d_s,
-                 magmaFloatComplex *d_t,
-                 magmaFloatComplex *skp ){
+magma_cbicgmerge_spmv2(
+    magma_c_sparse_matrix A,
+    magmaFloatComplex_ptr d1,
+    magmaFloatComplex_ptr d2,
+    magmaFloatComplex_ptr ds,
+    magmaFloatComplex_ptr dt,
+    magmaFloatComplex_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int n = A.num_rows;
     int local_block_size=256;
@@ -516,23 +538,23 @@ magma_cbicgmerge_spmv2(
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( magmaFloatComplex ); 
-    magmaFloatComplex *aux1 = d1, *aux2 = d2;
+    magmaFloatComplex_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
-    if( A.storage_type == Magma_CSR)
+    if ( A.storage_type == Magma_CSR)
         magma_cbicgmerge_spmv2_kernel<<<Gs, Bs, Ms>>>
-                    ( n, A.val, A.row, A.col, d_s, d_t, d1 );
+                    ( n, A.dval, A.drow, A.dcol, ds, dt, d1 );
     else
         printf("error: only CSR format supported.\n");
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_creduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                     ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -543,23 +565,24 @@ magma_cbicgmerge_spmv2(
     dim3 Gs2( 1 );
     magma_cbicgstab_omegakernel<<<Gs2, Bs2, 0>>>( skp );
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_cbicgmerge_xrbeta_kernel(  
-                    int n, 
-                    magmaFloatComplex *rr,
-                    magmaFloatComplex *r,
-                    magmaFloatComplex *p,
-                    magmaFloatComplex *s,
-                    magmaFloatComplex *t,
-                    magmaFloatComplex *x, 
-                    magmaFloatComplex *skp,
-                    magmaFloatComplex *vtmp
-                                            ){
+    int n, 
+    magmaFloatComplex_ptr rr,
+    magmaFloatComplex_ptr r,
+    magmaFloatComplex_ptr p,
+    magmaFloatComplex_ptr s,
+    magmaFloatComplex_ptr t,
+    magmaFloatComplex_ptr x, 
+    magmaFloatComplex_ptr skp,
+    magmaFloatComplex_ptr vtmp )
+{
 
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
@@ -656,9 +679,10 @@ magma_cbicgmerge_xrbeta_kernel(
     }
 }
 
-__global__ void 
+__global__ void
 magma_cbicgstab_betakernel(  
-                    magmaFloatComplex *skp ){
+    magmaFloatComplex_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -678,82 +702,90 @@ magma_cbicgstab_betakernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    d1          magmaFloatComplex*
+    @param[in]
+    d1          magmaFloatComplex_ptr 
                 temporary vector
 
-    @param
-    d2          magmaFloatComplex*
+    @param[in]
+    d2          magmaFloatComplex_ptr 
                 temporary vector
 
-    @param
-    rr        magmaFloatComplex*
+    @param[in]
+    rr          magmaFloatComplex_ptr 
                 input vector rr
 
-    @param
-    r         magmaFloatComplex*
+    @param[in]
+    r           magmaFloatComplex_ptr 
                 input/output vector r
 
-    @param
-    p         magmaFloatComplex*
+    @param[in]
+    p           magmaFloatComplex_ptr 
                 input vector p
 
-    @param
-    s         magmaFloatComplex*
+    @param[in]
+    s           magmaFloatComplex_ptr 
                 input vector s
 
-    @param
-    t         magmaFloatComplex*
+    @param[in]
+    t           magmaFloatComplex_ptr 
                 input vector t
 
-    @param
-    x         magmaFloatComplex*
+    @param[out]
+    x           magmaFloatComplex_ptr 
                 output vector x
 
-    @param
-    skp         magmaFloatComplex*
+    @param[in]
+    skp         magmaFloatComplex_ptr 
                 array for parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_cgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_cbicgmerge_xrbeta(  
-                 int n,
-                 magmaFloatComplex *d1,
-                 magmaFloatComplex *d2,
-                 magmaFloatComplex *rr,
-                 magmaFloatComplex *r,
-                 magmaFloatComplex *p,
-                 magmaFloatComplex *s,
-                 magmaFloatComplex *t,
-                 magmaFloatComplex *x, 
-                 magmaFloatComplex *skp ){
+magma_cbicgmerge_xrbeta(
+    int n,
+    magmaFloatComplex_ptr d1,
+    magmaFloatComplex_ptr d2,
+    magmaFloatComplex_ptr rr,
+    magmaFloatComplex_ptr r,
+    magmaFloatComplex_ptr p,
+    magmaFloatComplex_ptr s,
+    magmaFloatComplex_ptr t,
+    magmaFloatComplex_ptr x, 
+    magmaFloatComplex_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( magmaFloatComplex ); 
-    magmaFloatComplex *aux1 = d1, *aux2 = d2;
+    magmaFloatComplex_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
     magma_cbicgmerge_xrbeta_kernel<<<Gs, Bs, Ms>>>
                     ( n, rr, r, p, s, t, x, skp, d1);  
 
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-        if( Gs_next.x == 1 ) Gs_next.x = 2;
+        if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_creduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                             ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
 
@@ -764,6 +796,7 @@ magma_cbicgmerge_xrbeta(
     dim3 Gs2( 1 );
     magma_cbicgstab_betakernel<<<Gs2, Bs2, 0>>>( skp );
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 

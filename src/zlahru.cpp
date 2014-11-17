@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -112,11 +112,11 @@ extern "C" magma_int_t
 magma_zlahru(
     magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
     magmaDoubleComplex *A,  magma_int_t lda,
-    magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex *dY, magma_int_t lddy,
-    magmaDoubleComplex *dV, magma_int_t lddv,
-    magmaDoubleComplex *dT,
-    magmaDoubleComplex *dwork )
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dY, magma_int_t lddy,
+    magmaDoubleComplex_ptr dV, magma_int_t lddv,
+    magmaDoubleComplex_ptr dT,
+    magmaDoubleComplex_ptr dwork )
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     

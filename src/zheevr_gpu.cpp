@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
  
        @author Raffaele Solca
        @author Azzam Haidar
@@ -13,7 +13,7 @@
 */
 #include "common_magma.h"
 
-/**   
+/**
     Purpose
     -------
     ZHEEVR computes selected eigenvalues and, optionally, eigenvectors
@@ -248,15 +248,19 @@
     @ingroup magma_zheev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_zheevr_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-                 magmaDoubleComplex *dA, magma_int_t ldda, double vl, double vu,
-                 magma_int_t il, magma_int_t iu, double abstol, magma_int_t *m,
-                 double *w, magmaDoubleComplex *dZ, magma_int_t lddz, magma_int_t *isuppz,
-                 magmaDoubleComplex *wA, magma_int_t ldwa,
-                 magmaDoubleComplex *wZ, magma_int_t ldwz,
-                 magmaDoubleComplex *work, magma_int_t lwork,
-                 double *rwork, magma_int_t lrwork, magma_int_t *iwork,
-                 magma_int_t liwork, magma_int_t *info)
+magma_zheevr_gpu(
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    double vl, double vu,
+    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *m,
+    double *w,
+    magmaDoubleComplex_ptr dZ, magma_int_t lddz, magma_int_t *isuppz,
+    magmaDoubleComplex *wA,    magma_int_t ldwa,
+    magmaDoubleComplex *wZ,    magma_int_t ldwz,
+    magmaDoubleComplex *work,  magma_int_t lwork,
+    double *rwork, magma_int_t lrwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
@@ -286,7 +290,7 @@ magma_zheevr_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma
     double anrm;
     double sigma, d__1;
     double rmin, rmax;
-    double *dwork;
+    magmaDouble_ptr dwork;
     
     lower = (uplo == MagmaLower);
     wantz = (jobz == MagmaVec);

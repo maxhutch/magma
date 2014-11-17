@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqlf.cpp normal z -> c, Tue Sep  2 12:38:21 2014
+       @generated from zgeqlf.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -90,9 +90,11 @@
     @ingroup magma_cgeqlf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgeqlf(magma_int_t m, magma_int_t n,
-             magmaFloatComplex *A,    magma_int_t lda, magmaFloatComplex *tau,
-             magmaFloatComplex *work, magma_int_t lwork, magma_int_t *info)
+magma_cgeqlf(
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex *A,    magma_int_t lda, magmaFloatComplex *tau,
+    magmaFloatComplex *work, magma_int_t lwork,
+    magma_int_t *info)
 {
     #define  A(a_1,a_2) ( A + (a_2)*(lda) + (a_1))
     #define dA(a_1,a_2) (dA + (a_2)*ldda  + (a_1))

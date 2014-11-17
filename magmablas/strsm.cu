@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztrsm.cu normal z -> s, Tue Sep  2 12:38:16 2014
+       @generated from ztrsm.cu normal z -> s, Sat Nov 15 19:53:59 2014
 
        @author Peng Du
        @author Tingxing Dong
@@ -124,14 +124,14 @@
     @ingroup magma_sblas3
     ********************************************************************/
 extern "C"
-void magmablas_strsm_work(
+void magmablas_strsm_outofplace(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float* dA, magma_int_t ldda,
-    float* dB, magma_int_t lddb,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dB, magma_int_t lddb,
     magma_int_t flag,
-    float* d_dinvA, float *dX)
+    magmaFloat_ptr d_dinvA, magmaFloat_ptr dX)
 {
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
     #define dB(i_, j_) (dB + (i_) + (j_)*lddb)
@@ -337,11 +337,28 @@ void magmablas_strsm_work(
             }
         }
     }
+}
 
+/**
+    @see magmablas_strsm_outofplace
+    @ingroup magma_sblas3
+    ********************************************************************/
+extern "C"
+void magmablas_strsm_work(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t m, magma_int_t n,
+    float alpha,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dB, magma_int_t lddb,
+    magma_int_t flag,
+    magmaFloat_ptr d_dinvA, magmaFloat_ptr dX)
+{
+
+    magmablas_strsm_outofplace( side, uplo, transA, diag, m, n, alpha,
+                                dA, ldda, dB, lddb, 1, d_dinvA, dX );
     // copy X to B
     magmablas_slacpy( MagmaFull, m, n, dX, m, dB, lddb );
 }
-
 
 /**
     @see magmablas_strsm_work
@@ -352,8 +369,8 @@ void magmablas_strsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float* dA, magma_int_t ldda,
-    float* dB, magma_int_t lddb )
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dB, magma_int_t lddb )
 {
     magma_int_t nrowA = (side == MagmaLeft ? m : n);
 
@@ -381,7 +398,7 @@ void magmablas_strsm(
         return;
     }
 
-    float *d_dinvA, *dX;
+    magmaFloat_ptr d_dinvA, dX;
     magma_int_t size_dinvA;
     magma_int_t size_x = m*n;
     if ( side == MagmaLeft ) {

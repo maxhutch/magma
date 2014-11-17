@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -48,12 +48,14 @@ __device__ void sum_reduce( /*int n,*/ int i, double* x )
         __syncthreads(); }
 }
 
-__global__ void 
-magma_zpipelined_correction( int n,  
-                             int k,
-                             magmaDoubleComplex *skp, 
-                             magmaDoubleComplex *r,
-                             magmaDoubleComplex *v ){
+__global__ void
+magma_zpipelined_correction( 
+    int n,  
+    int k,
+    magmaDoubleComplex_ptr skp, 
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr v )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double zz= 0.0, tmp= 0.0;
 
@@ -77,12 +79,14 @@ magma_zpipelined_correction( int n,
     }
 }
 
-__global__ void 
-magma_zpipelined_copyscale( int n,  
-                             int k,
-                             magmaDoubleComplex *skp, 
-                             magmaDoubleComplex *r,
-                             magmaDoubleComplex *v ){
+__global__ void
+magma_zpipelined_copyscale( 
+    int n,  
+    int k,
+    magmaDoubleComplex_ptr skp, 
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr v )
+{
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -97,12 +101,14 @@ magma_zpipelined_copyscale( int n,
 //----------------------------------------------------------------------------//
 
 __global__ void
-magma_zpipelined_dznrm2_kernel( int m, 
-                                magmaDoubleComplex *da, 
-                                int ldda, 
-                                magmaDoubleComplex *dxnorm ){
+magma_zpipelineddznrm2_kernel( 
+    int m, 
+    magmaDoubleComplex_ptr da, 
+    int ldda, 
+    magmaDoubleComplex_ptr dxnorm )
+{
     const int i = threadIdx.x;
-    magmaDoubleComplex *dx = da + blockIdx.x * ldda;
+    magmaDoubleComplex_ptr dx = da + blockIdx.x * ldda;
 
     __shared__ double sum[ 512 ];
     double re, lsum;
@@ -130,10 +136,12 @@ magma_zpipelined_dznrm2_kernel( int m,
 
 //----------------------------------------------------------------------------//
 
-__global__ void 
-magma_zpipelined_scale( int n, 
-                        magmaDoubleComplex *r, 
-                        magmaDoubleComplex *drnorm ){
+__global__ void
+magma_zpipelinedscale( 
+    int n, 
+    magmaDoubleComplex_ptr r, 
+    magmaDoubleComplex_ptr drnorm )
+{
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -154,38 +162,42 @@ magma_zpipelined_scale( int n,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i
 
-    @param
+    @param[in]
     k           int
                 # skp entries v_i^T * r ( without r )
 
-    @param
-    r           magmaDoubleComplex*
+    @param[in]
+    r           magmaDoubleComplex_ptr 
                 vector of length n
 
-    @param
-    v           magmaDoubleComplex*
+    @param[in]
+    v           magmaDoubleComplex_ptr 
                 vector of length n
                 
-    @param  
-    skp         magmaDoubleComplex*
+    @param[in]  
+    skp         magmaDoubleComplex_ptr 
                 array of parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zaux
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zcopyscale(   int n, 
-                    int k,
-                    magmaDoubleComplex *r, 
-                    magmaDoubleComplex *v,
-                    magmaDoubleComplex *skp ){
-
-    
+magma_zcopyscale(
+    int n, 
+    int k,
+    magmaDoubleComplex_ptr r, 
+    magmaDoubleComplex_ptr v,
+    magmaDoubleComplex_ptr skp,
+    magma_queue_t queue )
+{
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs( (k+BLOCK_SIZE-1)/BLOCK_SIZE );
     unsigned int Ms =   Bs.x * sizeof( magmaDoubleComplex ); 
@@ -193,9 +205,9 @@ magma_zcopyscale(   int n,
     dim3 Gs2( (n+BLOCK_SIZE-1)/BLOCK_SIZE );
 
 
-    magma_zpipelined_correction<<<Gs, Bs, Ms, magma_stream>>>
+    magma_zpipelined_correction<<<Gs, Bs, Ms, queue >>>
                                             ( n, k, skp, r, v );
-    magma_zpipelined_copyscale<<<Gs2, Bs, 0, magma_stream>>>
+    magma_zpipelined_copyscale<<<Gs2, Bs, 0, queue >>>
                                             ( n, k, skp, r, v );
 
     return MAGMA_SUCCESS;
@@ -203,19 +215,21 @@ magma_zcopyscale(   int n,
 
 
 extern "C" magma_int_t
-magma_dznrm2scale(  int m, 
-                    magmaDoubleComplex *r, 
-                    int lddr, 
-                    magmaDoubleComplex *drnorm) {
-
+magma_dznrm2scale(
+    int m, 
+    magmaDoubleComplex_ptr r, 
+    int lddr, 
+    magmaDoubleComplex_ptr drnorm,
+    magma_queue_t queue )
+{
     dim3  blocks( 1 );
     dim3 threads( 512 );
-    magma_zpipelined_dznrm2_kernel<<< blocks, threads, 0, magma_stream >>>
+    magma_zpipelineddznrm2_kernel<<< blocks, threads, 0, queue >>>
                                 ( m, r, lddr, drnorm );
 
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs2( (m+BLOCK_SIZE-1)/BLOCK_SIZE );
-    magma_zpipelined_scale<<<Gs2, Bs, 0, magma_stream>>>( m, r, drnorm );
+    magma_zpipelinedscale<<<Gs2, Bs, 0, queue >>>( m, r, drnorm );
 
     return MAGMA_SUCCESS;
 }

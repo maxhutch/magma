@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex0.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+       @generated from dlaex0.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 
 /**
     Purpose
@@ -97,10 +97,15 @@
     @ingroup magma_ssyev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_slaex0(magma_int_t n, float* d, float* e, float* Q, magma_int_t ldq,
-             float* work, magma_int_t* iwork, float* dwork,
-             magma_range_t range, float vl, float vu,
-             magma_int_t il, magma_int_t iu, magma_int_t* info)
+magma_slaex0(
+    magma_int_t n,
+    float *d, float *e,
+    float *Q, magma_int_t ldq,
+    float *work, magma_int_t *iwork,
+    magmaFloat_ptr dwork,
+    magma_range_t range, float vl, float vu,
+    magma_int_t il, magma_int_t iu,
+    magma_int_t *info)
 {
 #define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
@@ -239,7 +244,7 @@ magma_slaex0(magma_int_t n, float* d, float* e, float* Q, magma_int_t ldq,
         blasf77_scopy(&n, Q(0, j), &ione, &work[ n*(i+1) ], &ione);
     }
     blasf77_scopy(&n, work, &ione, d, &ione);
-    lapackf77_slacpy ( "A", &n, &n, &work[n], &n, Q, &ldq );
+    lapackf77_slacpy( "A", &n, &n, &work[n], &n, Q, &ldq );
 
     return *info;
 } /* magma_slaex0 */

@@ -1,19 +1,17 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zposv.cpp normal z -> d, Tue Sep  2 12:38:28 2014
+       @generated from testing_zposv.cpp normal z -> d, Sat Nov 15 19:54:18 2014
 */
 // includes, system
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"

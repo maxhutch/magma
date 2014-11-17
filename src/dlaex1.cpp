@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
@@ -128,11 +128,16 @@
     @ingroup magma_dsyev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_dlaex1(magma_int_t n, double* d, double* Q, magma_int_t ldq,
-             magma_int_t* indxq, double rho, magma_int_t cutpnt,
-             double* work, magma_int_t* iwork, double* dwork,
-             magma_range_t range, double vl, double vu,
-             magma_int_t il, magma_int_t iu, magma_int_t* info)
+magma_dlaex1(
+    magma_int_t n,
+    double *d,
+    double *Q, magma_int_t ldq,
+    magma_int_t *indxq, double rho, magma_int_t cutpnt,
+    double *work, magma_int_t *iwork,
+    magmaDouble_ptr dwork,
+    magma_range_t range, double vl, double vu,
+    magma_int_t il, magma_int_t iu,
+    magma_int_t *info)
 {
 #define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 

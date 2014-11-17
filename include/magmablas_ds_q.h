@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from magmablas_zc_q.h mixed zc -> ds, Tue Sep  2 12:38:14 2014
+       @generated from magmablas_zc_q.h mixed zc -> ds, Sat Nov 15 19:53:54 2014
 */
 
 #ifndef MAGMABLAS_DS_Q_H
@@ -20,48 +20,51 @@ extern "C" {
   /* Mixed precision */
 void magmablas_dsaxpycp_q(
     magma_int_t m,
-    float *R, double *X,
-    const double *B, double *W,
+    magmaFloat_ptr  r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b,
+    magmaDouble_ptr w,
     magma_queue_t queue );
 
 void magmablas_daxpycp_q(
     magma_int_t m,
-    double *R, double *X,
-    const double *B,
+    magmaDouble_ptr r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b,
     magma_queue_t queue  );
 
 void magmablas_dslaswp_q(
     magma_int_t n,
-    double *A, magma_int_t lda,
-    float *SA, magma_int_t m,
+    magmaDouble_ptr A, magma_int_t lda,
+    magmaFloat_ptr SA, magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx,
     magma_queue_t queue );
 
 void magmablas_dlag2s_q(
     magma_int_t m, magma_int_t n,
-    const double *A,  magma_int_t lda,
-          float  *SA, magma_int_t ldsa,
+    magmaDouble_const_ptr A,  magma_int_t lda,
+    magmaFloat_ptr       SA, magma_int_t ldsa,
     magma_int_t *info,
     magma_queue_t queue );
 
 void magmablas_slag2d_q(
     magma_int_t m, magma_int_t n,
-    const float  *SA, magma_int_t ldsa,
-          double *A,  magma_int_t lda,
+    magmaFloat_const_ptr SA, magma_int_t ldsa,
+    magmaDouble_ptr       A,  magma_int_t lda,
     magma_int_t *info,
     magma_queue_t queue );
 
 void magmablas_dlat2s_q(
     magma_uplo_t uplo, magma_int_t n,
-    const double *A,  magma_int_t lda,
-          float  *SA, magma_int_t ldsa,
+    magmaDouble_const_ptr A,  magma_int_t lda,
+    magmaFloat_ptr       SA, magma_int_t ldsa,
     magma_int_t *info,
     magma_queue_t queue );
 
 void magmablas_slat2d_q(
     magma_uplo_t uplo, magma_int_t n,
-    const float  *SA, magma_int_t ldsa,
-          double *A,  magma_int_t lda,
+    magmaFloat_const_ptr SA, magma_int_t ldsa,
+    magmaDouble_ptr       A,  magma_int_t lda,
     magma_int_t *info,
     magma_queue_t queue );
 

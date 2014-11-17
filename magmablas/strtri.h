@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztrtri.h normal z -> s, Tue Sep  2 12:38:17 2014
+       @generated from ztrtri.h normal z -> s, Sat Nov 15 19:53:59 2014
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
+       @author Azzam Haidar
        
        Definitions used in strtri_diag.cu strtri_lower.cu strtri_upper.cu
 */
@@ -120,85 +121,186 @@ sgemm_kernel_16(
 
 
 __global__ void
-strtri_diag_kernel_lower(
+strtri_diag_lower_kernel(
     magma_diag_t diag, int n, const float *A, int lda, float *d_invA);
 
 __global__ void
-triple_sgemm16_part1_lower(
+triple_sgemm16_part1_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm16_part2_lower(
+triple_sgemm16_part2_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm32_part1_lower(
+triple_sgemm32_part1_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm32_part2_lower(
+triple_sgemm32_part2_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm64_part1_lower(
+triple_sgemm64_part1_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm64_part2_lower(
+triple_sgemm64_part2_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm_above64_part1_lower(
+triple_sgemm_above64_part1_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm_above64_part2_lower(
+triple_sgemm_above64_part2_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm_above64_part3_lower(
+triple_sgemm_above64_part3_lower_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 
     
 __global__ void
-strtri_diag_kernel_upper(
+strtri_diag_upper_kernel(
     magma_diag_t diag, int n, const float *A, int lda, float *d_invA);
 
 __global__ void
-triple_sgemm16_part1_upper(
+triple_sgemm16_part1_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm16_part2_upper(
+triple_sgemm16_part2_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm32_part1_upper(
+triple_sgemm32_part1_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm32_part2_upper(
+triple_sgemm32_part2_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm64_part1_upper(
+triple_sgemm64_part1_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm64_part2_upper(
+triple_sgemm64_part2_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm_above64_part1_upper(
+triple_sgemm_above64_part1_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm_above64_part2_upper(
+triple_sgemm_above64_part2_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
 
 __global__ void
-triple_sgemm_above64_part3_upper(
+triple_sgemm_above64_part3_upper_kernel(
     int n, const float *Ain, int lda, float *d_invA, int jb, int npages);
+
+
+
+
+
+
+
+__global__ void
+strtri_diag_lower_kernel_batched(
+    magma_diag_t diag, int n, float const * const * dA_array, int lda, float **dinvA_array);
+
+__global__ void
+triple_sgemm16_part1_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm16_part2_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm32_part1_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm32_part2_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm64_part1_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm64_part2_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm_above64_part1_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm_above64_part2_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm_above64_part3_lower_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+
+    
+__global__ void
+strtri_diag_upper_kernel_batched(
+    magma_diag_t diag, int n, float const * const * dA_array, int lda, float **dinvA_array);
+
+__global__ void
+triple_sgemm16_part1_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm16_part2_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm32_part1_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm32_part2_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm64_part1_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm64_part2_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm_above64_part1_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm_above64_part2_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_sgemm_above64_part3_upper_kernel_batched(
+    int n, float const * const * Ain_array, int lda, float **dinvA_array, int jb, int npages);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif        //  #ifndef STRTRI_H

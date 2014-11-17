@@ -1,17 +1,81 @@
+# Automatically generated from Makefile ZHDR and ZSRC
 CHDR = \
-
+	
 
 DHDR = \
-
+	
 
 SHDR = \
-
+	
 
 CSRC = \
-ccg.cpp ccg_res.cpp ccg_merge.cpp cbicgstab.cpp cbicgstab_merge.cpp cbicgstab_merge2.cpp citerref.cpp cjacobi.cpp cbaiter.cpp cpcg.cpp cgmres.cpp cpgmres.cpp cpbicgstab.cpp clobpcg.cpp ccuilu.cpp cpastix.cpp magma_c_precond_wrapper.cpp magma_c_solver_wrapper.cpp magma_ccuspmm.cpp cresidual.cpp
+	ccg.cpp \
+	ccg_res.cpp \
+	ccg_merge.cpp \
+	cbicgstab.cpp \
+	cbicgstab_merge.cpp \
+	cbicgstab_merge2.cpp \
+	citerref.cpp \
+	cjacobi.cpp \
+	cbaiter.cpp \
+	cpcg.cpp \
+	cbpcg.cpp \
+	cgmres.cpp \
+	cpgmres.cpp \
+	cpbicgstab.cpp \
+	clobpcg.cpp \
+	ccumilu.cpp \
+	cpastix.cpp \
+	magma_c_precond_wrapper.cpp \
+	magma_c_solver_wrapper.cpp \
+	magma_ccuspmm.cpp \
+	magma_ccuspaxpy.cpp \
+	cresidual.cpp
 
 DSRC = \
-dcg.cpp dcg_res.cpp dcg_merge.cpp dbicgstab.cpp dbicgstab_merge.cpp dbicgstab_merge2.cpp diterref.cpp djacobi.cpp dbaiter.cpp dpcg.cpp dgmres.cpp dpgmres.cpp dpbicgstab.cpp dlobpcg.cpp dcuilu.cpp dpastix.cpp magma_d_precond_wrapper.cpp magma_d_solver_wrapper.cpp magma_dcuspmm.cpp dresidual.cpp
+	dcg.cpp \
+	dcg_res.cpp \
+	dcg_merge.cpp \
+	dbicgstab.cpp \
+	dbicgstab_merge.cpp \
+	dbicgstab_merge2.cpp \
+	diterref.cpp \
+	djacobi.cpp \
+	dbaiter.cpp \
+	dpcg.cpp \
+	dbpcg.cpp \
+	dgmres.cpp \
+	dpgmres.cpp \
+	dpbicgstab.cpp \
+	dlobpcg.cpp \
+	dcumilu.cpp \
+	dpastix.cpp \
+	magma_d_precond_wrapper.cpp \
+	magma_d_solver_wrapper.cpp \
+	magma_dcuspmm.cpp \
+	magma_dcuspaxpy.cpp \
+	dresidual.cpp
 
 SSRC = \
-scg.cpp scg_res.cpp scg_merge.cpp sbicgstab.cpp sbicgstab_merge.cpp sbicgstab_merge2.cpp siterref.cpp sjacobi.cpp sbaiter.cpp spcg.cpp sgmres.cpp spgmres.cpp spbicgstab.cpp slobpcg.cpp scuilu.cpp spastix.cpp magma_s_precond_wrapper.cpp magma_s_solver_wrapper.cpp magma_scuspmm.cpp sresidual.cpp
+	scg.cpp \
+	scg_res.cpp \
+	scg_merge.cpp \
+	sbicgstab.cpp \
+	sbicgstab_merge.cpp \
+	sbicgstab_merge2.cpp \
+	siterref.cpp \
+	sjacobi.cpp \
+	sbaiter.cpp \
+	spcg.cpp \
+	sbpcg.cpp \
+	sgmres.cpp \
+	spgmres.cpp \
+	spbicgstab.cpp \
+	slobpcg.cpp \
+	scumilu.cpp \
+	spastix.cpp \
+	magma_s_precond_wrapper.cpp \
+	magma_s_solver_wrapper.cpp \
+	magma_scuspmm.cpp \
+	magma_scuspaxpy.cpp \
+	sresidual.cpp

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -74,8 +74,10 @@
     @ingroup magma_zposv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zpotrf_gpu(magma_uplo_t uplo, magma_int_t n,
-                 magmaDoubleComplex *dA, magma_int_t ldda, magma_int_t *info)
+magma_zpotrf_gpu(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magma_int_t *info)
 {
 #define dA(i, j) (dA + (j)*ldda + (i))
 

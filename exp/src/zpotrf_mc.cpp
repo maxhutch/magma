@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -136,11 +136,11 @@ magma_zpotrf_mc(magma_context *cntxt, char *uplo,
         cuDoubleComplex *a, magma_int_t *lda,
         magma_int_t *info)
 {
-/*  -- MAGMA (version 1.5.0) --
+/*  -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
     Purpose   
     =======   

@@ -1,16 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
+       @author Azzam Haidar
        
-       @generated from zlaset.cu normal z -> c, Tue Sep  2 12:38:16 2014
+       @generated from zlaset.cu normal z -> c, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
+#include "batched_kernel_param.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -22,8 +24,8 @@
 
     Code similar to clacpy, clag2z, clag2z, cgeadd.
 */
-__global__
-void claset_full(
+static __device__
+void claset_full_device(
     int m, int n,
     magmaFloatComplex offdiag, magmaFloatComplex diag,
     magmaFloatComplex *A, int lda )
@@ -31,7 +33,7 @@ void claset_full(
     int ind = blockIdx.x*BLK_X + threadIdx.x;
     int iby = blockIdx.y*BLK_Y;
     /* check if full block-column && (below diag || above diag || offdiag == diag) */
-    bool full = (iby + BLK_Y <= n && (ind >= iby + BLK_Y || ind + BLK_X <= iby || offdiag == diag));
+    bool full = (iby + BLK_Y <= n && (ind >= iby + BLK_Y || ind + BLK_X <= iby || MAGMA_C_EQUAL( offdiag, diag )));
     /* do only rows inside matrix */
     if ( ind < m ) {
         A += ind + iby*lda;
@@ -61,8 +63,8 @@ void claset_full(
 
     Code similar to clacpy, zlat2c, clat2z.
 */
-__global__
-void claset_lower(
+static __device__
+void claset_lower_device(
     int m, int n,
     magmaFloatComplex offdiag, magmaFloatComplex diag,
     magmaFloatComplex *A, int lda )
@@ -100,8 +102,8 @@ void claset_lower(
 
     Code similar to clacpy, zlat2c, clat2z.
 */
-__global__
-void claset_upper(
+static __device__
+void claset_upper_device(
     int m, int n,
     magmaFloatComplex offdiag, magmaFloatComplex diag,
     magmaFloatComplex *A, int lda )
@@ -131,8 +133,66 @@ void claset_upper(
         }
     }
 }
-
-
+//////////////////////////////////////////////////////////////////////////////////////
+/*
+    kernel wrapper to call the device function.
+*/
+__global__
+void claset_full_kernel(
+    int m, int n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex *dA, int ldda )
+{
+    claset_full_device(m, n, offdiag, diag, dA, ldda);
+}
+__global__
+void claset_lower_kernel(
+    int m, int n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex *dA, int ldda )
+{
+    claset_lower_device(m, n, offdiag, diag, dA, ldda);
+}
+__global__
+void claset_upper_kernel(
+    int m, int n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex *dA, int ldda )
+{
+    claset_lower_device(m, n, offdiag, diag, dA, ldda);
+}
+//////////////////////////////////////////////////////////////////////////////////////
+/*
+    kernel wrapper to call the device function for the batched routine.
+*/
+__global__
+void claset_full_kernel_batched(
+    int m, int n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex **dAarray, int ldda )
+{
+    int batchid = blockIdx.z;
+    claset_full_device(m, n, offdiag, diag, dAarray[batchid], ldda);
+}
+__global__
+void claset_lower_kernel_batched(
+    int m, int n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex **dAarray, int ldda )
+{
+    int batchid = blockIdx.z;
+    claset_lower_device(m, n, offdiag, diag, dAarray[batchid], ldda);
+}
+__global__
+void claset_upper_kernel_batched(
+    int m, int n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex **dAarray, int ldda )
+{
+    int batchid = blockIdx.z;
+    claset_upper_device(m, n, offdiag, diag, dAarray[batchid], ldda);
+}
+//////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
     -------
@@ -188,7 +248,7 @@ extern "C"
 void magmablas_claset_q(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaFloatComplex offdiag, magmaFloatComplex diag,
-    magmaFloatComplex *dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
     magma_queue_t queue)
 {
     magma_int_t info = 0;
@@ -213,15 +273,16 @@ void magmablas_claset_q(
     dim3 threads( BLK_X, 1 );
     dim3 grid( (m-1)/BLK_X + 1, (n-1)/BLK_Y + 1 );
     
-    if (uplo == MagmaLower)
-        claset_lower<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
-    else if (uplo == MagmaUpper)
-        claset_upper<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
-    else
-        claset_full <<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    if (uplo == MagmaLower) {
+        claset_lower_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    }
+    else if (uplo == MagmaUpper) {
+        claset_upper_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    }
+    else {
+        claset_full_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    }
 }
-
-
 /**
     @see magmablas_claset_q
     @ingroup magma_caux2
@@ -230,7 +291,91 @@ extern "C"
 void magmablas_claset(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaFloatComplex offdiag, magmaFloatComplex diag,
-    magmaFloatComplex *dA, magma_int_t ldda )
+    magmaFloatComplex_ptr dA, magma_int_t ldda )
 {
     magmablas_claset_q( uplo, m, n, offdiag, diag, dA, ldda, magma_stream );
 }
+////////////////////////////////////////////////////////////////////////////////////////
+
+extern "C"
+void magmablas_claset_batched_q(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex_ptr dAarray[], magma_int_t ldda,
+    magma_int_t batchCount, magma_queue_t queue)
+{
+    magma_int_t info = 0;
+    if ( uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( n < 0 )
+        info = -3;
+    else if ( ldda < max(1,m) )
+        info = -7;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    if ( m == 0 || n == 0 ) {
+        return;
+    }
+    
+    dim3 threads( BLK_X, 1 );
+    dim3 grid( (m-1)/BLK_X + 1, (n-1)/BLK_Y + 1, batchCount );
+    
+    if (uplo == MagmaLower) {
+        claset_lower_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+    else if (uplo == MagmaUpper) {
+        claset_upper_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+    else {
+        claset_full_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+}
+/**
+    @see magmablas_claset_batched_q
+    @ingroup magma_caux2
+    ********************************************************************/
+extern "C"
+void magmablas_claset_batched(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    magmaFloatComplex offdiag, magmaFloatComplex diag,
+    magmaFloatComplex_ptr dAarray[], magma_int_t ldda,
+    magma_int_t batchCount )
+{
+    magmablas_claset_batched_q( uplo, m, n, offdiag, diag, dAarray, ldda, batchCount, magma_stream );
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#define A(n, bound) d##A[min(n, bound)]
+#define TH_NCHUNK   8
+static
+__global__ void
+zmemset_kernel_batched(int length, magmaFloatComplex **dAarray, magmaFloatComplex val)
+{
+    int tid = threadIdx.x;
+    magmaFloatComplex *dA = dAarray[blockIdx.z];
+
+    #pragma unroll
+    for (int l = 0; l < TH_NCHUNK; l++)
+        A(l*MAX_NTHREADS+tid, length) = val;
+}
+#undef A
+
+extern "C"
+void magmablas_cmemset_batched(magma_int_t length, 
+        magmaFloatComplex_ptr dAarray[], magmaFloatComplex val, 
+        magma_int_t batchCount)
+{
+
+    magma_int_t size_per_block = TH_NCHUNK * MAX_NTHREADS;
+    magma_int_t nblock = (length-1)/size_per_block + 1;
+    dim3 grid(nblock, 1, batchCount );  // emulate 3D grid: NX * (NY*npages), for CUDA ARCH 1.x
+
+    zmemset_kernel_batched<<< grid, MAX_NTHREADS >>>(length, dAarray, val); 
+}
+
+

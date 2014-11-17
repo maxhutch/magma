@@ -1,22 +1,23 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegvdx_2stage.cpp normal z -> c, Tue Sep  2 12:38:23 2014
+       @generated from zhegvdx_2stage.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
 #include "magma_bulge.h"
 #include "magma_cbulge.h"
-#include "timer.h"
+#include "magma_timer.h"
 
 #define PRECISION_c
+#define COMPLEX
 
 /**
     Purpose
@@ -212,15 +213,18 @@
     @ingroup magma_chegv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_chegvdx_2stage(magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-                     magmaFloatComplex *A, magma_int_t lda,
-                     magmaFloatComplex *B, magma_int_t ldb,
-                     float vl, float vu, magma_int_t il, magma_int_t iu,
-                     magma_int_t *m, float *w,
-                     magmaFloatComplex *work, magma_int_t lwork,
-                     float *rwork, magma_int_t lrwork,
-                     magma_int_t *iwork, magma_int_t liwork,
-                     magma_int_t *info)
+magma_chegvdx_2stage(
+    magma_int_t itype, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *B, magma_int_t ldb,
+    float vl, float vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, float *w,
+    magmaFloatComplex *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );

@@ -1,19 +1,23 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlobpcg_shift.cu normal z -> d, Tue Sep  2 12:38:33 2014
+       @generated from zlobpcg_shift.cu normal z -> d, Sat Nov 15 19:54:21 2014
 
 */
 
 #include "common_magma.h"
 
-__global__ void 
-magma_dlobpcg_shift_kernel( magma_int_t num_rows, magma_int_t num_vecs, 
-        magma_int_t shift, double *x ){
+__global__ void
+magma_dlobpcg_shift_kernel( 
+    magma_int_t num_rows, 
+    magma_int_t num_vecs, 
+    magma_int_t shift, 
+    magmaDouble_ptr x )
+{
 
     int idx = threadIdx.x ;     // thread in row
     int row = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -51,32 +55,37 @@ magma_dlobpcg_shift_kernel( magma_int_t num_rows, magma_int_t num_vecs,
     Arguments
     ---------
 
-    @param
+    @param[in]
     num_rows    magma_int_t
                 number of rows
 
-    @param
+    @param[in]
     num_vecs    magma_int_t
                 number of vectors
 
-    @param
+    @param[in]
     shift       magma_int_t
                 shift number
 
-    @param
-    x           double*
+    @param[in/out]
+    x           magmaDouble_ptr 
                 input/output vector x
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_daux
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_dlobpcg_shift(    magma_int_t num_rows,
-                        magma_int_t num_vecs, 
-                        magma_int_t shift,
-                        double *x ){
-
+magma_dlobpcg_shift(
+    magma_int_t num_rows,
+    magma_int_t num_vecs, 
+    magma_int_t shift,
+    magmaDouble_ptr x,
+    magma_queue_t queue )
+{
     magma_int_t num_threads = num_vecs;
     // every thread handles one row containing the 
     if (  num_threads > 1024 )
@@ -93,7 +102,7 @@ magma_dlobpcg_shift(    magma_int_t num_rows,
 
     dim3 grid( dimgrid1, dimgrid2, 1);
 
-    magma_dlobpcg_shift_kernel<<< grid, block, Ms, magma_stream >>>
+    magma_dlobpcg_shift_kernel<<< grid, block, Ms, queue >>>
             ( num_rows, num_vecs, shift, x );
 
 

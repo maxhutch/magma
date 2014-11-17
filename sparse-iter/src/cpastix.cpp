@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hartwig Anzt 
 
-       @generated from zpastix.cpp normal z -> c, Tue Sep  2 12:38:35 2014
+       @generated from zpastix.cpp normal z -> c, Sat Nov 15 19:54:22 2014
 */
 
 #include "common_magma.h"
@@ -45,26 +45,31 @@
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_c_sparse_matrix
                 input matrix A
 
-    @param
+    @param[in]
     b           magma_c_vector
                 RHS b
 
-    @param
+    @param[in]
     precond     magma_c_preconditioner*
                 preconditioner parameter
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_cgesv
     ********************************************************************/
 
-magma_int_t
-magma_cpastixsetup( magma_c_sparse_matrix A, magma_c_vector b,
-                        magma_c_preconditioner *precond ){
-
-#if defined(HAVE_PASTIX)
+extern "C" magma_int_t
+magma_cpastixsetup(
+    magma_c_sparse_matrix A, magma_c_vector b,
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    #if defined(HAVE_PASTIX)
 
     #if defined(PRECISION_d)
 
@@ -82,24 +87,24 @@ magma_cpastixsetup( magma_c_sparse_matrix A, magma_c_vector b,
 
         magma_c_sparse_matrix A_h1, B;
         magma_c_vector diag, c_t, b_h;
-        magma_c_vinit( &c_t, Magma_CPU, A.num_rows, MAGMA_C_ZERO );
-        magma_c_vinit( &diag, Magma_CPU, A.num_rows, MAGMA_C_ZERO );
-        magma_c_vtransfer( b, &b_h, A.memory_location, Magma_CPU);
+        magma_c_vinit( &c_t, Magma_CPU, A.num_rows, MAGMA_C_ZERO, queue );
+        magma_c_vinit( &diag, Magma_CPU, A.num_rows, MAGMA_C_ZERO, queue );
+        magma_c_vtransfer( b, &b_h, A.memory_location, Magma_CPU, queue );
 
-        if( A.storage_type != Magma_CSR ){
-            magma_c_mtransfer( A, &A_h1, A.memory_location, Magma_CPU);
-            magma_c_mconvert( A_h1, &B, A_h1.storage_type, Magma_CSR);
+        if ( A.storage_type != Magma_CSR ) {
+            magma_c_mtransfer( A, &A_h1, A.memory_location, Magma_CPU, queue );
+            magma_c_mconvert( A_h1, &B, A_h1.storage_type, Magma_CSR, queue );
         }
-        else{
-            magma_c_mtransfer( A, &B, A.memory_location, Magma_CPU);
+        else {
+            magma_c_mtransfer( A, &B, A.memory_location, Magma_CPU, queue );
         }
 
 
-        rhs = (pastix_float_t*) b_h.val;
+        rhs = (pastix_float_t*) b_h.dval;
         ncol = B.num_rows;
-        colptr = B.row;
-        rows = B.col;
-        values = (pastix_float_t*) B.val;
+        colptr = B.drow;
+        rows = B.dcol;
+        values = (pastix_float_t*) B.dval;
 
         mat_type = API_SYM_NO;
 
@@ -176,9 +181,9 @@ magma_cpastixsetup( magma_c_sparse_matrix A, magma_c_vector b,
         precond->int_array_1 = (magma_int_t*) perm;
         precond->int_array_2 = (magma_int_t*) invp;
 
-        precond->M.val = (magmaFloatComplex*) values;
-        precond->M.col = (magma_int_t*) colptr;
-        precond->M.row = (magma_int_t*) rows;
+        precond->M.dval = (magmaFloatComplex*) values;
+        precond->M.dcol = (magma_int_t*) colptr;
+        precond->M.drow = (magma_int_t*) rows;
         precond->M.num_rows = A.num_rows;
         precond->M.num_cols = A.num_cols;
         precond->M.memory_location = Magma_CPU;
@@ -186,11 +191,11 @@ magma_cpastixsetup( magma_c_sparse_matrix A, magma_c_vector b,
         precond->iparm = iparm;
         precond->dparm = dparm;
 
-        if( A.storage_type != Magma_CSR){
-            magma_c_mfree( &A_h1 );
+        if ( A.storage_type != Magma_CSR) {
+            magma_c_mfree( &A_h1, queue );
         }   
-        magma_c_vfree( &b_h);
-        magma_c_mfree( &B );
+        magma_c_vfree( &b_h, queue );
+        magma_c_mfree( &B, queue );
 
     #else
         printf( "error: only real supported yet.\n");
@@ -201,7 +206,6 @@ magma_cpastixsetup( magma_c_sparse_matrix A, magma_c_vector b,
 #endif
 
     return MAGMA_SUCCESS;
-
 }
 
 
@@ -220,26 +224,31 @@ magma_cpastixsetup( magma_c_sparse_matrix A, magma_c_vector b,
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_c_sparse_matrix
                 input matrix A
 
-    @param
+    @param[in]
     b           magma_c_vector
                 RHS b
 
-    @param
+    @param[in]
     precond     magma_c_preconditioner*
                 preconditioner parameter
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_
     ********************************************************************/
 
-magma_int_t
-magma_capplypastix( magma_c_vector b, magma_c_vector *x, 
-                    magma_c_preconditioner *precond ){
-
-#if defined(HAVE_PASTIX)
+extern "C" magma_int_t
+magma_capplypastix(
+    magma_c_vector b, magma_c_vector *x, 
+    magma_c_preconditioner *precond,
+    magma_queue_t queue )
+{
+    #if defined(HAVE_PASTIX)
 
     #if defined(PRECISION_d)
 
@@ -255,13 +264,13 @@ magma_capplypastix( magma_c_vector b, magma_c_vector *x,
 
         magma_c_vector b_h;
 
-        magma_c_vtransfer( b, &b_h, b.memory_location, Magma_CPU);
+        magma_c_vtransfer( b, &b_h, b.memory_location, Magma_CPU, queue );
 
-        rhs = (pastix_float_t*) b_h.val;
+        rhs = (pastix_float_t*) b_h.dval;
         ncol = precond->M.num_rows;
-        colptr = (pastix_int_t*) precond->M.col;
-        rows = (pastix_int_t*) precond->M.row;
-        values = (pastix_float_t*) precond->M.val;
+        colptr = (pastix_int_t*) precond->M.dcol;
+        rows = (pastix_int_t*) precond->M.drow;
+        values = (pastix_float_t*) precond->M.dval;
         iparm = precond->iparm;
         dparm = precond->dparm;
 
@@ -281,16 +290,16 @@ magma_capplypastix( magma_c_vector b, magma_c_vector *x,
 
         pastix(&(precond->pastix_data), MPI_COMM_WORLD,
              ncol, colptr, rows, values,
-             perm, invp, b_h.val, 1, iparm, dparm);
+             perm, invp, b_h.dval, 1, iparm, dparm);
 
         // fix that x is not allocated every time
         //  in case of many iterations, it might be faster to use
         // magma_csetvector( ncol, 
-        //                                    b_h.val, 1, x->val, 1 );
-        magma_c_vfree( x );
-        magma_c_vtransfer( b_h, x, Magma_CPU, b.memory_location);
+        //                                    b_h.dval, 1, x->dval, 1 );
+        magma_c_vfree( x, queue );
+        magma_c_vtransfer( b_h, x, Magma_CPU, b.memory_location, queue );
 
-        magma_c_vfree( &b_h);
+        magma_c_vfree( &b_h, queue );
 
     #else
         printf( "error: only real supported yet.\n");
@@ -301,5 +310,4 @@ magma_capplypastix( magma_c_vector b, magma_c_vector *x,
 #endif
 
     return MAGMA_SUCCESS;
-
 }

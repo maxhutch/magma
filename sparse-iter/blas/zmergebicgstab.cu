@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -22,13 +22,14 @@
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_zbicgmerge1_kernel(  
-                    int n, 
-                    magmaDoubleComplex *skp,
-                    magmaDoubleComplex *v, 
-                    magmaDoubleComplex *r, 
-                    magmaDoubleComplex *p ){
+    int n, 
+    magmaDoubleComplex_ptr skp,
+    magmaDoubleComplex_ptr v, 
+    magmaDoubleComplex_ptr r, 
+    magmaDoubleComplex_ptr p )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaDoubleComplex beta=skp[1];
     magmaDoubleComplex omega=skp[2];
@@ -54,36 +55,40 @@ magma_zbicgmerge1_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    skp         magmaDoubleComplex*
+    @param[in]
+    skp         magmaDoubleComplex_ptr 
                 set of scalar parameters
 
-    @param
-    v           magmaDoubleComplex*
+    @param[in]
+    v           magmaDoubleComplex_ptr 
                 input v
 
-    @param
-    r           magmaDoubleComplex*
+    @param[in]
+    r           magmaDoubleComplex_ptr 
                 input r
 
-    @param
-    p           magmaDoubleComplex*
+    @param[in/out]
+    p           magmaDoubleComplex_ptr 
                 input/output p
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_zbicgmerge1(  int n, 
-                    magmaDoubleComplex *skp,
-                    magmaDoubleComplex *v, 
-                    magmaDoubleComplex *r, 
-                    magmaDoubleComplex *p ){
+magma_zbicgmerge1(  
+    int n, 
+    magmaDoubleComplex_ptr skp,
+    magmaDoubleComplex_ptr v, 
+    magmaDoubleComplex_ptr r, 
+    magmaDoubleComplex_ptr p ){
 
     
     dim3 Bs( BLOCK_SIZE );
@@ -95,13 +100,14 @@ magma_zbicgmerge1(  int n,
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_zbicgmerge2_kernel(  
-                    int n, 
-                    magmaDoubleComplex *skp, 
-                    magmaDoubleComplex *r,
-                    magmaDoubleComplex *v, 
-                    magmaDoubleComplex *s ){
+    int n, 
+    magmaDoubleComplex_ptr skp, 
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr v, 
+    magmaDoubleComplex_ptr s )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaDoubleComplex alpha=skp[0];
     if( i<n ){
@@ -124,36 +130,41 @@ magma_zbicgmerge2_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    skp         magmaDoubleComplex*
+    @param[in]
+    skp         magmaDoubleComplex_ptr 
                 set of scalar parameters
 
-    @param
-    r           magmaDoubleComplex*
+    @param[in]
+    r           magmaDoubleComplex_ptr 
                 input r
 
-    @param
-    v           magmaDoubleComplex*
+    @param[in]
+    v           magmaDoubleComplex_ptr 
                 input v
 
-    @param
-    s           magmaDoubleComplex*
-                input/output s
+    @param[s]
+    s           magmaDoubleComplex_ptr 
+                output s
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_zbicgmerge2(  int n, 
-                    magmaDoubleComplex *skp, 
-                    magmaDoubleComplex *r,
-                    magmaDoubleComplex *v, 
-                    magmaDoubleComplex *s ){
+magma_zbicgmerge2(  
+    int n, 
+    magmaDoubleComplex_ptr skp, 
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr v, 
+    magmaDoubleComplex_ptr s )
+{
 
     
     dim3 Bs( BLOCK_SIZE );
@@ -166,15 +177,16 @@ magma_zbicgmerge2(  int n,
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_zbicgmerge3_kernel(  
-                    int n, 
-                    magmaDoubleComplex *skp, 
-                    magmaDoubleComplex *p,
-                    magmaDoubleComplex *se,
-                    magmaDoubleComplex *t,
-                    magmaDoubleComplex *x, 
-                    magmaDoubleComplex *r ){
+    int n, 
+    magmaDoubleComplex_ptr skp, 
+    magmaDoubleComplex_ptr p,
+    magmaDoubleComplex_ptr se,
+    magmaDoubleComplex_ptr t,
+    magmaDoubleComplex_ptr x, 
+    magmaDoubleComplex_ptr r )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaDoubleComplex alpha=skp[0];
     magmaDoubleComplex omega=skp[2];
@@ -204,46 +216,51 @@ magma_zbicgmerge3_kernel(
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 dimension n
 
-    @param
-    skp         magmaDoubleComplex*
+    @param[in]
+    skp         magmaDoubleComplex_ptr 
                 set of scalar parameters
 
-    @param
-    p           magmaDoubleComplex*
+    @param[in]
+    p           magmaDoubleComplex_ptr 
                 input p
 
-    @param
-    s           magmaDoubleComplex*
+    @param[in]
+    s           magmaDoubleComplex_ptr 
                 input s
 
-    @param
-    t           magmaDoubleComplex*
+    @param[in]
+    t           magmaDoubleComplex_ptr 
                 input t
 
-    @param
-    x           magmaDoubleComplex*
+    @param[in/out]
+    x           magmaDoubleComplex_ptr 
                 input/output x
 
-    @param
-    r           magmaDoubleComplex*
+    @param[in/out]
+    r           magmaDoubleComplex_ptr 
                 input/output r
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_zbicgmerge3(  int n, 
-                    magmaDoubleComplex *skp,
-                    magmaDoubleComplex *p,
-                    magmaDoubleComplex *s,
-                    magmaDoubleComplex *t,
-                    magmaDoubleComplex *x, 
-                    magmaDoubleComplex *r ){
+magma_zbicgmerge3(  
+    int n, 
+    magmaDoubleComplex_ptr skp,
+    magmaDoubleComplex_ptr p,
+    magmaDoubleComplex_ptr s,
+    magmaDoubleComplex_ptr t,
+    magmaDoubleComplex_ptr x, 
+    magmaDoubleComplex_ptr r )
+{
 
     
     dim3 Bs( BLOCK_SIZE );
@@ -255,9 +272,10 @@ magma_zbicgmerge3(  int n,
 
 /* -------------------------------------------------------------------------- */
 
-__global__ void 
+__global__ void
 magma_zbicgmerge4_kernel_1(  
-                    magmaDoubleComplex *skp ){
+    magmaDoubleComplex_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -266,9 +284,10 @@ magma_zbicgmerge4_kernel_1(
     }
 }
 
-__global__ void 
+__global__ void
 magma_zbicgmerge4_kernel_2(  
-                    magmaDoubleComplex *skp ){
+    magmaDoubleComplex_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -277,9 +296,10 @@ magma_zbicgmerge4_kernel_2(
     }
 }
 
-__global__ void 
+__global__ void
 magma_zbicgmerge4_kernel_3(  
-                    magmaDoubleComplex *skp ){
+    magmaDoubleComplex_ptr skp )
+{
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -300,21 +320,26 @@ magma_zbicgmerge4_kernel_3(
     Arguments
     ---------
 
-    @param
+    @param[in]
     type        int
                 kernel type
 
-    @param
-    skp         magmaDoubleComplex*
+    @param[in/out]
+    skp         magmaDoubleComplex_ptr 
                 vector with parameters
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" int
-magma_zbicgmerge4(  int type, 
-                    magmaDoubleComplex *skp ){
+magma_zbicgmerge4(  
+    int type, 
+    magmaDoubleComplex_ptr skp )
+{
 
     dim3 Bs( 1 );
     dim3 Gs( 1 );

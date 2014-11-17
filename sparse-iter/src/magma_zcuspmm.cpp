@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -36,46 +36,64 @@
     Arguments
     ---------
 
-    @param
+    @param[in]
     A           magma_z_sparse_matrix
                 input matrix 
 
-    @param
+    @param[in]
     B           magma_z_sparse_matrix
                 input matrix 
 
-    @param
+    @param[out]
     AB          magma_z_sparse_matrix*
                 output matrix AB = A * B
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zcuspmm( magma_z_sparse_matrix A, magma_z_sparse_matrix B, 
-                                            magma_z_sparse_matrix *AB ){
-
-
-    if(    A.memory_location == Magma_DEV 
+magma_zcuspmm(
+    magma_z_sparse_matrix A, magma_z_sparse_matrix B, 
+    magma_z_sparse_matrix *AB,
+    magma_queue_t queue )
+{
+    if (    A.memory_location == Magma_DEV 
         && B.memory_location == Magma_DEV
         && ( A.storage_type == Magma_CSR ||
              A.storage_type == Magma_CSRCOO )
         && ( B.storage_type == Magma_CSR ||
-             B.storage_type == Magma_CSRCOO ) ){
-
+             B.storage_type == Magma_CSRCOO ) ) {
+            
             magma_z_sparse_matrix C;
             C.num_rows = A.num_rows;
-            C.num_cols = A.num_cols;
+            C.num_cols = B.num_cols;
             C.storage_type = A.storage_type;
             C.memory_location = A.memory_location;
-
+            C.fill_mode = Magma_FULL;
+            
+            magma_int_t stat_dev = 0;
+            C.val = NULL;
+            C.col = NULL;
+            C.row = NULL;
+            C.rowidx = NULL;
+            C.blockinfo = NULL;
+            C.diag = NULL;
+            C.dval = NULL;
+            C.dcol = NULL;
+            C.drow = NULL;
+            C.drowidx = NULL;
+            C.ddiag = NULL;
 
             // CUSPARSE context //
             cusparseHandle_t handle;
             cusparseStatus_t cusparseStatus;
             cusparseStatus = cusparseCreate(&handle);
-             if(cusparseStatus != 0)    printf("error in Handle.\n");
+            cusparseSetStream( handle, queue );
+             if (cusparseStatus != 0)    printf("error in Handle.\n");
 
             cusparseMatDescr_t descrA;
             cusparseMatDescr_t descrB;
@@ -83,54 +101,59 @@ magma_zcuspmm( magma_z_sparse_matrix A, magma_z_sparse_matrix B,
             cusparseStatus = cusparseCreateMatDescr(&descrA);
             cusparseStatus = cusparseCreateMatDescr(&descrB);
             cusparseStatus = cusparseCreateMatDescr(&descrC);
-             if(cusparseStatus != 0)    printf("error in MatrDescr.\n");
+             if (cusparseStatus != 0)    printf("error in MatrDescr.\n");
 
             cusparseStatus =
             cusparseSetMatType(descrA,CUSPARSE_MATRIX_TYPE_GENERAL);
             cusparseSetMatType(descrB,CUSPARSE_MATRIX_TYPE_GENERAL);
             cusparseSetMatType(descrC,CUSPARSE_MATRIX_TYPE_GENERAL);
-             if(cusparseStatus != 0)    printf("error in MatrType.\n");
+             if (cusparseStatus != 0)    printf("error in MatrType.\n");
 
             cusparseStatus =
             cusparseSetMatIndexBase(descrA,CUSPARSE_INDEX_BASE_ZERO);
             cusparseSetMatIndexBase(descrB,CUSPARSE_INDEX_BASE_ZERO);
             cusparseSetMatIndexBase(descrC,CUSPARSE_INDEX_BASE_ZERO);
-             if(cusparseStatus != 0)    printf("error in IndexBase.\n");
+             if (cusparseStatus != 0)    printf("error in IndexBase.\n");
 
             // multiply A and B on the device
             magma_int_t baseC;
             // nnzTotalDevHostPtr points to host memory
             magma_index_t *nnzTotalDevHostPtr = (magma_index_t*) &C.nnz;
             cusparseSetPointerMode(handle, CUSPARSE_POINTER_MODE_HOST);
-            magma_index_malloc( &C.row, (A.num_rows + 1) );
+            stat_dev += magma_index_malloc( &C.drow, (A.num_rows + 1) );
             cusparseXcsrgemmNnz(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         A.num_rows, A.num_rows, A.num_rows, 
-                                        descrA, A.nnz, A.row, A.col,
-                                        descrB, B.nnz, B.row, B.col,
-                                        descrC, C.row, nnzTotalDevHostPtr );
-            if (NULL != nnzTotalDevHostPtr){
+                                        descrA, A.nnz, A.drow, A.dcol,
+                                        descrB, B.nnz, B.drow, B.dcol,
+                                        descrC, C.drow, nnzTotalDevHostPtr );
+            if (NULL != nnzTotalDevHostPtr) {
                 C.nnz = *nnzTotalDevHostPtr;
-            }else{
+            } else {
                 // workaround as nnz and base C are magma_int_t 
                 magma_index_t base_t, nnz_t; 
-                magma_index_getvector( 1, C.row+C.num_rows, 1, &nnz_t, 1 );
-                magma_index_getvector( 1, C.row,   1, &base_t,    1 );
+                magma_index_getvector( 1, C.drow+C.num_rows, 1, &nnz_t, 1 );
+                magma_index_getvector( 1, C.drow,   1, &base_t,    1 );
                 C.nnz = (magma_int_t) nnz_t;
                 baseC = (magma_int_t) base_t;
                 C.nnz -= baseC;
             }
-            magma_index_malloc( &C.col, C.nnz );
-            magma_zmalloc( &C.val, C.nnz );
+            stat_dev += magma_index_malloc( &C.dcol, C.nnz );
+            stat_dev += magma_zmalloc( &C.dval, C.nnz );
+            if( stat_dev != 0 ){
+                magma_z_mfree( &C, queue );
+                return MAGMA_ERR_DEVICE_ALLOC;
+            }
+            
             cusparseZcsrgemm(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, 
                             A.num_rows, A.num_rows, A.num_rows,
                             descrA, A.nnz,
-                            A.val, A.row, A.col,
+                            A.dval, A.drow, A.dcol,
                             descrB, B.nnz,
-                            B.val, B.row, B.col,
+                            B.dval, B.drow, B.dcol,
                             descrC,
-                            C.val, C.row, C.col);
+                            C.dval, C.drow, C.dcol);
 
 
 
@@ -140,12 +163,12 @@ magma_zcuspmm( magma_z_sparse_matrix A, magma_z_sparse_matrix B,
             cusparseDestroy( handle );
             // end CUSPARSE context //
 
-            magma_z_mtransfer( C, AB, Magma_DEV, Magma_DEV );
-            magma_z_mfree( &C );
+            magma_z_mtransfer( C, AB, Magma_DEV, Magma_DEV, queue );
+            magma_z_mfree( &C, queue );
 
         return MAGMA_SUCCESS; 
     }
-    else{
+    else {
 
         printf("error: CSRMM only supported on device and CSR format.\n");
 

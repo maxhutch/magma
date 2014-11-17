@@ -17,9 +17,14 @@
 #include "magma.h"
 #include "magmasparse.h"
 
-int mm_read_unsymmetric_sparse(const char *fname, magma_index_t *M_, 
-                magma_index_t *N_, magma_index_t *nz_,
-                double **val_, magma_index_t **I_, magma_index_t **J_)
+int mm_read_unsymmetric_sparse(
+    const char *fname, 
+    magma_index_t *M_, 
+    magma_index_t *N_, 
+    magma_index_t *nz_,
+    double **val_, 
+    magma_index_t **I_, 
+    magma_index_t **J_)
 {
     FILE *f;
     MM_typecode matcode;

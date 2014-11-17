@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
     @author Raffaele Solca
     @author Azzam Haidar
@@ -17,8 +17,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "magma.h"
@@ -32,7 +30,7 @@
 */
 int main( int argc, char** argv)
 {
-    TESTING_INIT_MGPU();
+    TESTING_INIT();
 
     magmaDoubleComplex *h_A, *h_Ainit, *h_B, *h_Binit, *h_work;
     #if defined(PRECISION_z) || defined(PRECISION_c)
@@ -279,6 +277,6 @@ int main( int argc, char** argv)
     }
 
     /* Shutdown */
-    TESTING_FINALIZE_MGPU();
+    TESTING_FINALIZE();
     return status;
 }

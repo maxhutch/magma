@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeqr2x_gpu-v2.cpp normal z -> c, Tue Sep  2 12:38:20 2014
+       @generated from zgeqr2x_gpu-v2.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -91,17 +91,21 @@
     @ingroup magma_cgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgeqr2x2_gpu(magma_int_t m, magma_int_t n, magmaFloatComplex *dA,
-                  magma_int_t ldda, magmaFloatComplex *dtau,
-                  magmaFloatComplex *dT, magmaFloatComplex *ddA,
-                  float *dwork, magma_int_t *info)
+magma_cgeqr2x2_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dtau,
+    magmaFloatComplex_ptr dT,
+    magmaFloatComplex_ptr ddA,
+    magmaFloat_ptr dwork,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
     
     magma_int_t i, k;
     
     magmaFloatComplex *work = (magmaFloatComplex *)dwork;
-    float *dnorm = dwork + 4*(n);
+    magmaFloat_ptr dnorm = dwork + 4*(n);
 
 
     *info = 0;

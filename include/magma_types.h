@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 */
 
 #ifndef MAGMA_TYPES_H
@@ -87,11 +87,7 @@ typedef double real_Double_t;
     #define MAGMA_C_CNJG(a)       cuConjf(a)
     
 #elif defined(HAVE_clAmdBlas)
-    #if defined(__APPLE__) || defined(__MACOSX)
-    #include "my_amdblas.h"
-    #else
     #include <clAmdBlas.h>
-    #endif
     
     typedef cl_command_queue  magma_queue_t;
     typedef cl_event          magma_event_t;
@@ -142,20 +138,28 @@ typedef double real_Double_t;
     #define MAGMA_Z_MAKE(r, i)    std::complex<double>(r,i)
     #define MAGMA_Z_REAL(x)       (x).real()
     #define MAGMA_Z_IMAG(x)       (x).imag()
+    #define MAGMA_Z_SET2REAL(a,r) { (a).real() = (r);   (a).imag() = 0.0; }
     #define MAGMA_Z_ADD(a, b)     ((a)+(b))
     #define MAGMA_Z_SUB(a, b)     ((a)-(b))
+    #define MAGMA_Z_ABS(a)        abs(a)
     #define MAGMA_Z_MUL(a, b)     ((a)*(b))
     #define MAGMA_Z_DIV(a, b)     ((a)/(b))
+    #define MAGMA_Z_ABS1(a)       (fabs((a).real()) + fabs((a).imag())) 
     #define MAGMA_Z_CNJG(a)       conj(a)
+    #define MAGMA_Z_DSCALE(v,t,s) ((v) = (t)/(s))
 
     #define MAGMA_C_MAKE(r, i)    std::complex<float> (r,i)
     #define MAGMA_C_REAL(x)       (x).real()
     #define MAGMA_C_IMAG(x)       (x).imag()
+    #define MAGMA_C_SET2REAL(a,r) { (a).real() = (r);   (a).imag() = 0.0; }
     #define MAGMA_C_ADD(a, b)     ((a)+(b))
     #define MAGMA_C_SUB(a, b)     ((a)-(b))
+    #define MAGMA_C_ABS(a)        abs(a)
     #define MAGMA_C_MUL(a, b)     ((a)*(b))
     #define MAGMA_C_DIV(a, b)     ((a)/(b))
+    #define MAGMA_C_ABS1(a)       (fabs((a).real()) + fabs((a).imag()))
     #define MAGMA_C_CNJG(a)       conj(a)
+    #define MAGMA_C_SSCALE(v,t,s) ((v) = (t)/(s))
 #else
     #error "One of HAVE_CUBLAS, HAVE_clAmdBlas, or HAVE_MIC must be defined. For example, add -DHAVE_CUBLAS to CFLAGS, or #define HAVE_CUBLAS before #include <magma.h>. In MAGMA, this happens in Makefile.internal."
 #endif
@@ -169,6 +173,7 @@ typedef double real_Double_t;
 #define MAGMA_D_MAKE(r,i)         (r)
 #define MAGMA_D_REAL(x)           (x)
 #define MAGMA_D_IMAG(x)           (0.0)
+#define MAGMA_D_SET2REAL(a,r)     (a) = (r)
 #define MAGMA_D_ADD(a, b)         ((a) + (b))
 #define MAGMA_D_SUB(a, b)         ((a) - (b))
 #define MAGMA_D_MUL(a, b)         ((a) * (b))
@@ -178,10 +183,12 @@ typedef double real_Double_t;
 #define MAGMA_D_CNJG(a)           (a)
 #define MAGMA_D_EQUAL(a,b)        ((a) == (b))
 #define MAGMA_D_NEGATE(a)         (-a)
+#define MAGMA_D_DSCALE(v, t, s)   (v) = (t)/(s)
 
 #define MAGMA_S_MAKE(r,i)         (r)
 #define MAGMA_S_REAL(x)           (x)
 #define MAGMA_S_IMAG(x)           (0.0)
+#define MAGMA_S_SET2REAL(a,r)     (a) = (r)
 #define MAGMA_S_ADD(a, b)         ((a) + (b))
 #define MAGMA_S_SUB(a, b)         ((a) - (b))
 #define MAGMA_S_MUL(a, b)         ((a) * (b))
@@ -191,6 +198,7 @@ typedef double real_Double_t;
 #define MAGMA_S_CNJG(a)           (a)
 #define MAGMA_S_EQUAL(a,b)        ((a) == (b))
 #define MAGMA_S_NEGATE(a)         (-a)
+#define MAGMA_S_SSCALE(v, t, s)   (v) = (t)/(s)
 
 #define MAGMA_Z_ZERO              MAGMA_Z_MAKE( 0.0, 0.0)
 #define MAGMA_Z_ONE               MAGMA_Z_MAKE( 1.0, 0.0)
@@ -262,14 +270,14 @@ typedef double real_Double_t;
 
 // ----------------------------------------
 #define MAGMA_VERSION_MAJOR 1
-#define MAGMA_VERSION_MINOR 5
+#define MAGMA_VERSION_MINOR 6
 #define MAGMA_VERSION_MICRO 0
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
 #define MAGMA_VERSION_STAGE ""
 
 #define MagmaMaxGPUs 8
-
+#define MagmaMaxDevices 8
 
 // ----------------------------------------
 // Return codes
@@ -294,7 +302,10 @@ typedef double real_Double_t;
 #define MAGMA_ERR_INVALID_PTR      -115
 #define MAGMA_ERR_UNKNOWN          -116
 #define MAGMA_ERR_NOT_IMPLEMENTED  -117
-
+// some sparse-iter errors
+#define MAGMA_SLOW_CONVERGENCE     -201
+#define MAGMA_DIVERGENCE           -202
+#define MAGMA_NONSPD               -203
 
 // ----------------------------------------
 // parameter constants
@@ -323,7 +334,8 @@ typedef enum {
     MagmaUpper         = 121,
     MagmaLower         = 122,
     MagmaUpperLower    = 123,
-    MagmaFull          = 123   /* lascl, laset */
+    MagmaFull          = 123,  /* lascl, laset */
+    MagmaHessenberg    = 124   /* lascl */
 } magma_uplo_t;
 
 typedef magma_uplo_t magma_type_t;  /* lascl */
@@ -409,7 +421,7 @@ typedef enum {
 // sparse
 typedef enum {
     Magma_CSR          = 411,
-    Magma_ELLPACK      = 412,
+    Magma_ELLPACKT     = 412,
     Magma_ELL          = 413,
     Magma_DENSE        = 414,
     Magma_BCSR         = 415,
@@ -417,10 +429,10 @@ typedef enum {
     Magma_HYB          = 417,
     Magma_COO          = 418,
     Magma_ELLRT        = 419,
-    Magma_SELLC        = 420,
+
     Magma_SELLP        = 421,
     Magma_ELLD         = 422,
-    Magma_ELLDD        = 423,
+
     Magma_CSRD         = 424,
     Magma_CSRL         = 427,
     Magma_CSRU         = 428,
@@ -487,6 +499,13 @@ typedef enum {
     Magma_UNITROW      = 512,
     Magma_UNITDIAG     = 513
 } magma_scale_t;
+
+typedef enum {
+    Magma_FULL         = 521,
+    Magma_LOWER        = 522,
+    Magma_UPPER        = 523
+} magma_fillmode_t;
+
 
 
 // When adding constants, remember to do these steps as appropriate:

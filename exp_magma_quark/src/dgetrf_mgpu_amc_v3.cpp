@@ -1,5 +1,5 @@
 /* 
-    -- MAGMA (version 1.5.0) -- 
+    -- MAGMA (version 1.6.0) -- 
        Univ. of Tennessee, Knoxville 
        Univ. of California, Berkeley 
        Univ. of Colorado, Denver 
@@ -148,7 +148,7 @@ extern "C" magma_int_t magma_dgetrf_mgpu_amc_v3(magma_int_t num_gpus, magma_int_
                  double **dlA, magma_int_t dlA_LD, 
                  magma_int_t *ipiv, magma_int_t *info) 
 { 
-/*  -- MAGMA (version 1.5.0) -- 
+/*  -- MAGMA (version 1.6.0) -- 
        Univ. of Tennessee, Knoxville 
        Univ. of California, Berkeley 
        Univ. of Colorado, Denver 
@@ -374,7 +374,7 @@ magma_int_t *ipiv, magma_int_t *info,
 double *AWORK, magma_int_t AWORK_LD, magma_int_t AWORK_n
 ) 
 { 
-/*  -- MAGMA (version 1.5.0) -- 
+/*  -- MAGMA (version 1.6.0) -- 
        Univ. of Tennessee, Knoxville 
        Univ. of California, Berkeley 
        Univ. of Colorado, Denver 

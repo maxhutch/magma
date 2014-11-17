@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from ztstrf_gpu.cpp normal z -> d, Tue Sep  2 12:38:20 2014
+       @generated from ztstrf_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -132,13 +132,19 @@
     @ingroup magma_dgesv_tile
     ********************************************************************/
 extern "C" magma_int_t
-magma_dtstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t ib, magma_int_t nb,
-                  double *hU, magma_int_t ldhu, double *dU, magma_int_t lddu,
-                  double *hA, magma_int_t ldha, double *dA, magma_int_t ldda,
-                  double *hL, magma_int_t ldhl, double *dL, magma_int_t lddl,
-                  magma_int_t *ipiv,
-                  double *hwork, magma_int_t ldhwork, double *dwork, magma_int_t lddwork,
-                  magma_int_t *info)
+magma_dtstrf_gpu(
+    magma_order_t order, magma_int_t m, magma_int_t n,
+    magma_int_t ib, magma_int_t nb,
+    double    *hU, magma_int_t ldhu,
+    magmaDouble_ptr dU, magma_int_t lddu,
+    double    *hA, magma_int_t ldha,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    double    *hL, magma_int_t ldhl,
+    magmaDouble_ptr dL, magma_int_t lddl,
+    magma_int_t *ipiv,
+    double    *hwork, magma_int_t ldhwork,
+    magmaDouble_ptr dwork, magma_int_t lddwork,
+    magma_int_t *info)
 {
 #define UT(i,j) (dUT + (i)*ib*lddu + (j)*ib )
 #define AT(i,j) (dAT + (i)*ib*ldda + (j)*ib )
@@ -155,10 +161,10 @@ magma_dtstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
     int iinfo = 0;
     int maxm, mindim;
     int i, j, im, s, ip, ii, sb, p = 1;
-    double *dAT, *dUT;
-    double *dAp, *dUp;
+    magmaDouble_ptr dAT, dUT;
+    magmaDouble_ptr dAp, dUp;
 #ifndef WITHOUTTRTRI
-    double *dL2 = dL + ib;
+    magmaDouble_ptr dL2 = dL + ib;
     double *hL2 = hL + ib;
     p = 2;
 #endif

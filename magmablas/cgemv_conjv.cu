@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Stan Tomov
 
-       @generated from zgemv_conjv.cu normal z -> c, Tue Sep  2 12:38:15 2014
+       @generated from zgemv_conjv.cu normal z -> c, Sat Nov 15 19:53:57 2014
 */
 #include "common_magma.h"
 #include "commonblas_c.h"
@@ -20,9 +20,9 @@
 __global__ void
 cgemv_conjv_kernel(
     int m, int n, magmaFloatComplex alpha,
-    magmaFloatComplex_const_ptr __restrict__ A, int lda,
-    magmaFloatComplex_const_ptr __restrict__ x, int incx, magmaFloatComplex beta,
-    magmaFloatComplex_ptr       __restrict__ y, int incy)
+    const magmaFloatComplex * __restrict__ A, int lda,
+    const magmaFloatComplex * __restrict__ x, int incx, magmaFloatComplex beta,
+    magmaFloatComplex *       __restrict__ y, int incy)
 {
     int ind = blockIdx.x*num_threads + threadIdx.x;
     
@@ -68,14 +68,14 @@ cgemv_conjv_kernel(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    A       COMPLEX array of dimension ( LDA, n ) on the GPU.
+    dA      COMPLEX array of dimension ( LDA, n ) on the GPU.
 
     @param[in]
     lda     INTEGER
             LDA specifies the leading dimension of A.
 
     @param[in]
-    x       COMPLEX array of dimension n
+    dx      COMPLEX array of dimension n
 
     @param[in]
     incx    Specifies the increment for the elements of X.
@@ -87,7 +87,7 @@ cgemv_conjv_kernel(
             supplied as zero then Y need not be set on input.
 
     @param[out]
-    y       REAL array of dimension m
+    dy      REAL array of dimension m
 
     @param[in]
     incy    Specifies the increment for the elements of Y.
@@ -98,17 +98,17 @@ cgemv_conjv_kernel(
 extern "C" void
 magmablas_cgemv_conjv(
     magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
-    const magmaFloatComplex *A, magma_int_t lda,
-    const magmaFloatComplex *x, magma_int_t incx,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magmaFloatComplex beta,
-    magmaFloatComplex *y, magma_int_t incy)
+    magmaFloatComplex_ptr dy, magma_int_t incy)
 {
     magma_int_t info = 0;
     if ( m < 0 )
         info = -1;
     else if ( n < 0 )
         info = -2;
-    else if ( lda < m )
+    else if ( ldda < m )
         info = -5;
     else if ( incx == 0 )
         info = -7;
@@ -125,7 +125,7 @@ magmablas_cgemv_conjv(
     dim3 threads(num_threads, 1, 1);
 
     cgemv_conjv_kernel<<< grid, threads, 0, magma_stream >>>
-            (m, n, alpha, A, lda, x, incx, beta, y, incy);
+            (m, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
 
 }
 

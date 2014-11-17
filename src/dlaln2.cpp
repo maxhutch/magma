@@ -148,7 +148,8 @@ magma_int_t magma_dlaln2(
     double smin, double ca, const double *A, magma_int_t lda,
     double d1, double d2, const double *B, magma_int_t ldb,
     double wr, double wi, double *X, magma_int_t ldx,
-    double *scale, double *xnorm, magma_int_t *info)
+    double *scale, double *xnorm,
+    magma_int_t *info)
 {
     // normally, we use A(i,j) to be a pointer, A + i + j*lda, but
     // in this function it is more convenient to be an element, A[i + j*lda].

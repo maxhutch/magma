@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Jakub Kurzak
        @author Stan Tomov
@@ -11,6 +11,7 @@
 
        [zcds]gemm_fermi.cu        defines the CPU driver.
        [zcds]gemm_fermi_kernels.h defines the block sizes for each precision.
+       [zcds]gemm_fermi_kernels_batched.h defines the block sizes for each precision.
        gemm_stencil_defs.h        defines types and functions for precision-independent code.
        gemm_stencil.cu            defines the GPU kernel. It gets included
                                   multiple times, once for each transpose version.
@@ -84,9 +85,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
   #ifdef TEXTURE_1D
-    #define fetch(A, m, n) tex_fetch(tex_ref_##A, coord_##A + n*LD##A+m)
+    #define fetch(A, m, n, bound) tex_fetch(tex_ref_##A, coord_##A + n*LD##A+m)
   #else
-    #define fetch(A, m, n) offs_d##A[n*LD##A+m]
+    #define fetch(A, m, n, bound) offs_d##A[min(n*LD##A+m, bound)]
   #endif
 
 #ifdef COMPLEX

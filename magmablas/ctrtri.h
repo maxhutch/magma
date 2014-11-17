@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from ztrtri.h normal z -> c, Tue Sep  2 12:38:17 2014
+       @generated from ztrtri.h normal z -> c, Sat Nov 15 19:53:59 2014
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
+       @author Azzam Haidar
        
        Definitions used in ctrtri_diag.cu ctrtri_lower.cu ctrtri_upper.cu
 */
@@ -120,85 +121,186 @@ cgemm_kernel_16(
 
 
 __global__ void
-ctrtri_diag_kernel_lower(
+ctrtri_diag_lower_kernel(
     magma_diag_t diag, int n, const magmaFloatComplex *A, int lda, magmaFloatComplex *d_invA);
 
 __global__ void
-triple_cgemm16_part1_lower(
+triple_cgemm16_part1_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm16_part2_lower(
+triple_cgemm16_part2_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm32_part1_lower(
+triple_cgemm32_part1_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm32_part2_lower(
+triple_cgemm32_part2_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm64_part1_lower(
+triple_cgemm64_part1_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm64_part2_lower(
+triple_cgemm64_part2_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm_above64_part1_lower(
+triple_cgemm_above64_part1_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm_above64_part2_lower(
+triple_cgemm_above64_part2_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm_above64_part3_lower(
+triple_cgemm_above64_part3_lower_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 
     
 __global__ void
-ctrtri_diag_kernel_upper(
+ctrtri_diag_upper_kernel(
     magma_diag_t diag, int n, const magmaFloatComplex *A, int lda, magmaFloatComplex *d_invA);
 
 __global__ void
-triple_cgemm16_part1_upper(
+triple_cgemm16_part1_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm16_part2_upper(
+triple_cgemm16_part2_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm32_part1_upper(
+triple_cgemm32_part1_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm32_part2_upper(
+triple_cgemm32_part2_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm64_part1_upper(
+triple_cgemm64_part1_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm64_part2_upper(
+triple_cgemm64_part2_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm_above64_part1_upper(
+triple_cgemm_above64_part1_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm_above64_part2_upper(
+triple_cgemm_above64_part2_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
 
 __global__ void
-triple_cgemm_above64_part3_upper(
+triple_cgemm_above64_part3_upper_kernel(
     int n, const magmaFloatComplex *Ain, int lda, magmaFloatComplex *d_invA, int jb, int npages);
+
+
+
+
+
+
+
+__global__ void
+ctrtri_diag_lower_kernel_batched(
+    magma_diag_t diag, int n, magmaFloatComplex const * const * dA_array, int lda, magmaFloatComplex **dinvA_array);
+
+__global__ void
+triple_cgemm16_part1_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm16_part2_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm32_part1_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm32_part2_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm64_part1_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm64_part2_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm_above64_part1_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm_above64_part2_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm_above64_part3_lower_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+
+    
+__global__ void
+ctrtri_diag_upper_kernel_batched(
+    magma_diag_t diag, int n, magmaFloatComplex const * const * dA_array, int lda, magmaFloatComplex **dinvA_array);
+
+__global__ void
+triple_cgemm16_part1_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm16_part2_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm32_part1_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm32_part2_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm64_part1_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm64_part2_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm_above64_part1_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm_above64_part2_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+__global__ void
+triple_cgemm_above64_part3_upper_kernel_batched(
+    int n, magmaFloatComplex const * const * Ain_array, int lda, magmaFloatComplex **dinvA_array, int jb, int npages);
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif        //  #ifndef CTRTRI_H

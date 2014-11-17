@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zmatrix.cpp normal z -> c, Tue Sep  2 12:38:36 2014
+       @generated from testing_zmatrix.cpp normal z -> c, Sat Nov 15 19:54:24 2014
        @author Hartwig Anzt
 */
 
@@ -27,57 +27,78 @@
 /* ////////////////////////////////////////////////////////////////////////////
    -- testing any solver 
 */
-int main( int argc, char** argv)
+int main(  int argc, char** argv )
 {
     TESTING_INIT();
 
     magma_copts zopts;
-
+    magma_queue_t queue;
+    magma_queue_create( /*devices[ opts->device ],*/ &queue );
+    
     int i=1;
-    magma_cparse_opts( argc, argv, &zopts, &i);
+    magma_cparse_opts( argc, argv, &zopts, &i, queue );
 
 
     real_Double_t res;
-    magma_c_sparse_matrix A, AT, A2, B, B_d;
+    magma_c_sparse_matrix Z, A, AT, A2, B, B_d;
 
     B.blocksize = zopts.blocksize;
     B.alignment = zopts.alignment;
 
-    while(  i < argc ){
+    while(  i < argc ) {
 
-        magma_c_csr_mtx( &A,  argv[i]  ); 
+        if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
+            i++;
+            magma_int_t laplace_size = atoi( argv[i] );
+            magma_cm_5stencil(  laplace_size, &Z, queue );
+        } else {                        // file-matrix test
+            magma_c_csr_mtx( &Z,  argv[i], queue );
+        }
 
-        printf( "\n# matrix info: %d-by-%d with %d nonzeros\n\n",
-                            (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
+        printf( "# matrix info: %d-by-%d with %d nonzeros\n",
+                            (int) Z.num_rows,(int) Z.num_cols,(int) Z.nnz );
 
         // scale matrix
-        magma_cmscale( &A, zopts.scaling );
+        magma_cmscale( &Z, zopts.scaling, queue );
 
+        // remove nonzeros in matrix
+        magma_cmcsrcompressor( &Z, queue );
+        
+        // convert to be non-symmetric
+        magma_c_mconvert( Z, &A, Magma_CSR, Magma_CSRL, queue );
+        
         // transpose
-        magma_c_mtranspose( A, &AT );
+        magma_c_mtranspose( A, &AT, queue );
 
         // convert, copy back and forth to check everything works
-        magma_c_mconvert( AT, &B, Magma_CSR, zopts.output_format );
-        magma_c_mfree(&AT); 
-        magma_c_mtransfer( B, &B_d, Magma_CPU, Magma_DEV );
-        magma_c_mfree(&B);
-        magma_c_mtransfer( B_d, &B, Magma_DEV, Magma_CPU );
-        magma_c_mfree(&B_d);
-        magma_c_mconvert( B, &AT, zopts.output_format,Magma_CSR );      
-        magma_c_mfree(&B);
+        printf("here0\n");
+        magma_c_mconvert( AT, &B, Magma_CSR, zopts.output_format, queue );
+        magma_c_mfree(&AT, queue );
+        magma_c_mtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue );
+        magma_c_mfree(&B, queue );
+        magma_cmcsrcompressor_gpu( &B_d, queue );
+        magma_c_mtransfer( B_d, &B, Magma_DEV, Magma_CPU, queue );
+        magma_c_mfree(&B_d, queue );
+        magma_c_mconvert( B, &AT, zopts.output_format,Magma_CSR, queue );      
+        magma_c_mfree(&B, queue );
 
         // transpose back
-        magma_c_mtranspose( AT, &A2 );
-        magma_c_mfree(&AT); 
-        magma_cmdiff( A, A2, &res);
-        printf(" ||A-B||_F = %f\n", res);
+        magma_c_mtranspose( AT, &A2, queue );
+        magma_c_mfree(&AT, queue );
+        magma_cmdiff( A, A2, &res, queue);
+        printf("# ||A-B||_F = %8.2e\n", res);
+        if ( res < .000001 )
+            printf("# tester:  ok\n");
+        else
+            printf("# tester:  failed\n");
 
-        magma_c_mfree(&A); 
-        magma_c_mfree(&A2); 
+        magma_c_mfree(&A, queue ); 
+        magma_c_mfree(&A2, queue );
+        magma_c_mfree(&Z, queue ); 
 
         i++;
     }
-
+    magma_queue_destroy( queue );
     TESTING_FINALIZE();
     return 0;
 }

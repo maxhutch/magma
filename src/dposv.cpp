@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zposv.cpp normal z -> d, Tue Sep  2 12:38:19 2014
+       @generated from zposv.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -77,9 +77,10 @@ extern "C" magma_int_t
 magma_dposv(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
     double *A, magma_int_t lda,
-    double *B, magma_int_t ldb, magma_int_t *info )
+    double *B, magma_int_t ldb,
+    magma_int_t *info )
 {
-    magma_int_t num_gpus, ldda, lddb;
+    magma_int_t ngpu, ldda, lddb;
 
     *info = 0;
     if ( uplo != MagmaUpper && uplo != MagmaLower )
@@ -103,9 +104,9 @@ magma_dposv(
     }
 
     /* If single-GPU and allocation suceeds, use GPU interface. */
-    num_gpus = magma_num_gpus();
+    ngpu = magma_num_gpus();
     double *dA, *dB;
-    if ( num_gpus > 1 ) {
+    if ( ngpu > 1 ) {
         goto CPU_INTERFACE;
     }
     ldda = ((n+31)/32)*32;

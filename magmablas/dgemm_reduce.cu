@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgemm_reduce.cu normal z -> d, Tue Sep  2 12:38:15 2014
+       @generated from zgemm_reduce.cu normal z -> d, Sat Nov 15 19:53:57 2014
 
 */
 #include "common_magma.h"
@@ -30,26 +30,26 @@ __global__
 void dgemm_reduce_kernel(
     int m, int n, int k,
     double alpha,
-    const double* __restrict__ d_A, int lda,
-    const double* __restrict__ d_B, int ldb,
+    const double* __restrict__ dA, int lda,
+    const double* __restrict__ dB, int ldb,
     double beta,
-    double      * __restrict__ d_C, int ldc)
+    double      * __restrict__ dC, int ldc)
 {
 #if (__CUDA_ARCH__ >= 200)
     const int tx = threadIdx.x;
     
     if (blockIdx.x*BLK_M + threadIdx.y < m && blockIdx.y*BLK_N + threadIdx.z < n){
     
-        const double *dA = d_A + (blockIdx.x*BLK_M + threadIdx.y) * lda;
-        const double *dB = d_B + (blockIdx.y*BLK_N + threadIdx.z) * ldb;
-        double       *dC = d_C +  blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
+        dA += (blockIdx.x*BLK_M + threadIdx.y) * lda;
+        dB += (blockIdx.y*BLK_N + threadIdx.z) * ldb;
+        dC +=  blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
         
         // was: sum[BLK_M][BLK_N+1][BLK_K+1];
         // moved 3rd dimension to 1st dimension to make magma_sum_reduce_3d interface nicer.
         __shared__ double sum[BLK_K][BLK_M+1][BLK_N+1];
         double lsum;
         
-        /*  w := v' * C  */
+        /*  w := v**H * C  */
         lsum = MAGMA_D_ZERO;
         for( int j = tx; j < k; j += BLK_K )
             lsum += MAGMA_D_CNJG( dA[j] )* dB[j];
@@ -91,10 +91,10 @@ extern "C" void
 magmablas_dgemm_reduce(
     magma_int_t m, magma_int_t n, magma_int_t k,
     double alpha,
-    const double *d_A, magma_int_t lda,
-    const double *d_B, magma_int_t ldb,
+    magmaDouble_const_ptr dA, magma_int_t ldda,
+    magmaDouble_const_ptr dB, magma_int_t lddb,
     double beta,
-    double *d_C, magma_int_t ldc )
+    magmaDouble_ptr       dC, magma_int_t lddc )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -103,11 +103,11 @@ magmablas_dgemm_reduce(
         info = -2;
     else if ( k < 0 )
         info = -3;
-    else if ( lda < m )
+    else if ( ldda < m )
         info = -6;
-    else if ( ldb < k )
+    else if ( lddb < k )
         info = -8;
-    else if ( ldc < m )
+    else if ( lddc < m )
         info = -11;
     
     if (info != 0) {
@@ -124,7 +124,7 @@ magmablas_dgemm_reduce(
         dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
         dim3 threads( BLK_K, BLK_M, BLK_N );
         dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
-            ( m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+            ( m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
     }
     else {
         // --------------------
@@ -134,7 +134,7 @@ magmablas_dgemm_reduce(
         dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
         dim3 threads( BLK_K, BLK_M, BLK_N );
         dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
-            ( m, n, k, alpha, d_A, lda, d_B, ldb, beta, d_C, ldc );
+            ( m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
     }
 }
 

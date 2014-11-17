@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.5.0) --
+#   -- MAGMA (version 1.6.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2014
+#      @date November 2014
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = testing
@@ -13,8 +13,6 @@ include $(MAGMA_DIR)/Makefile.internal
 # ----------
 # BLAS and auxiliary
 ZSRC := \
-	testing_z_cublas_v2.cpp	\
-	\
 	testing_zgemm.cpp	\
 	testing_zgemv.cpp	\
 	testing_zhemv.cpp	\
@@ -34,9 +32,7 @@ ZSRC := \
 	testing_blas_z.cpp	\
 	testing_cblas_z.cpp	\
 	testing_zgeadd.cpp	\
-	testing_zgeadd_batched.cpp	\
 	testing_zlacpy.cpp	\
-	testing_zlacpy_batched.cpp	\
 	testing_zlag2c.cpp	\
 	testing_zlange.cpp	\
 	testing_zlanhe.cpp	\
@@ -57,6 +53,9 @@ ZSRC := \
 	testing_constants.cpp	\
 	testing_operators.cpp	\
 	testing_parse_opts.cpp	\
+	\
+	testing_zhesv.cpp \
+	testing_zhetrf.cpp \
 
 # ----------
 # Cholesky, GPU interface
@@ -91,6 +90,7 @@ ZSRC += \
 # LU, CPU interface
 ZSRC += \
 	testing_zgesv.cpp	\
+	testing_zgesv_rbt.cpp	\
 	testing_zgetrf.cpp	\
 
 # ----------
@@ -171,6 +171,22 @@ ZSRC += \
 	testing_zgesvd.cpp	\
 	testing_zgebrd.cpp	\
 	testing_zunmbr.cpp	\
+
+# ----------
+# batched
+ZSRC += \
+	testing_zgeadd_batched.cpp	\
+	testing_zlacpy_batched.cpp	\
+	testing_ztrsm_batched.cpp  \
+	testing_zgemm_batched.cpp	\
+	testing_zherk_batched.cpp	\
+	testing_zgetrf_batched.cpp	\
+	testing_zgetri_batched.cpp	\
+	testing_zgesv_batched.cpp	\
+	testing_zgetrf_nopiv_batched.cpp	\
+	testing_zgesv_nopiv_batched.cpp	\
+	testing_zpotrf_batched.cpp	\
+	testing_zposv_batched.cpp	\
 
 # ----------
 # utilities

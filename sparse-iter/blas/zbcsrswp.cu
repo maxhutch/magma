@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -30,40 +30,44 @@
     Arguments
     ---------
 
-    @param
+    @param[in]
     r_blocks    magma_int_t
                 number of blocks
 
-    @param
+    @param[in]
     size_b      magma_int_t
                 blocksize in BCSR
 
-    @param
+    @param[in]
     ipiv        magma_int_t*
                 array containing pivots
 
-    @param
-    x           magmaDoubleComplex*
+    @param[in]
+    x           magmaDoubleComplex_ptr 
                 input/output vector x
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zbcsrswp(   magma_int_t r_blocks,
-                  magma_int_t size_b, 
-                  magma_int_t *ipiv,
-                  magmaDoubleComplex *x ){
-
-
+magma_zbcsrswp(
+    magma_int_t r_blocks,
+    magma_int_t size_b, 
+    magmaInt_ptr ipiv,
+    magmaDoubleComplex_ptr x,
+    magma_queue_t queue )
+{
     const magma_int_t nrhs = 1, n = r_blocks*size_b, ione = 1, inc = 1;
 
-    magmaDoubleComplex *work; 
+   magmaDoubleComplex_ptr work; 
     magma_zmalloc_cpu( &work, r_blocks*size_b );
 
     // first shift the pivot elements
-    for( magma_int_t k=0; k<r_blocks; k++){
+    for( magma_int_t k=0; k<r_blocks; k++) {
             for( magma_int_t l=0; l<size_b; l++)
             ipiv[ k*size_b+l ] = ipiv[ k*size_b+l ] + k*size_b;
     }

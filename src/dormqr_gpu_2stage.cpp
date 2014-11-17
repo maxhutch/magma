@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmqr_gpu_2stage.cpp normal z -> d, Tue Sep  2 12:38:23 2014
+       @generated from zunmqr_gpu_2stage.cpp normal z -> d, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -99,17 +99,18 @@
     @ingroup magma_dsyev_2stage
     ********************************************************************/
 extern "C" magma_int_t
-magma_dormqr_gpu_2stages(magma_side_t side, magma_trans_t trans,
-                         magma_int_t m, magma_int_t n, magma_int_t k,
-                         double *dA,   magma_int_t ldda,
-                         double *dC,    magma_int_t lddc,
-                         double *dT,    magma_int_t nb,
-                         magma_int_t *info)
+magma_dormqr_gpu_2stages(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDouble_ptr dA,   magma_int_t ldda,
+    magmaDouble_ptr dC,    magma_int_t lddc,
+    magmaDouble_ptr dT,    magma_int_t nb,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
     
-    double *dwork;
+    magmaDouble_ptr dwork;
 
     magma_int_t i, i1, i2, step, ib, ic, jc, mi, ni, nq, nw;
     int left, notran;

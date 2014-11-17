@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
 
@@ -235,13 +235,18 @@
     @ingroup magma_zheev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_zheevr(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-             magmaDoubleComplex *A, magma_int_t lda, double vl, double vu,
-             magma_int_t il, magma_int_t iu, double abstol, magma_int_t *m,
-             double *w, magmaDoubleComplex *Z, magma_int_t ldz, magma_int_t *isuppz,
-             magmaDoubleComplex *work, magma_int_t lwork,
-             double *rwork, magma_int_t lrwork, magma_int_t *iwork,
-             magma_int_t liwork, magma_int_t *info)
+magma_zheevr(
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda,
+    double vl, double vu,
+    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *m,
+    double *w,
+    magmaDoubleComplex *Z, magma_int_t ldz,
+    magma_int_t *isuppz,
+    magmaDoubleComplex *work, magma_int_t lwork,
+    double *rwork, magma_int_t lrwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );

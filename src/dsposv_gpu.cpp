@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zcposv_gpu.cpp mixed zc -> ds, Tue Sep  2 12:38:19 2014
+       @generated from zcposv_gpu.cpp mixed zc -> ds, Sat Nov 15 19:54:03 2014
 
 */
 #include "common_magma.h"
@@ -134,12 +134,14 @@
     @ingroup magma_dposv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_dsposv_gpu(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
-                 double *dA, magma_int_t ldda,
-                 double *dB, magma_int_t lddb,
-                 double *dX, magma_int_t lddx,
-                 double *dworkd, float *dworks,
-                 magma_int_t *iter, magma_int_t *info)
+magma_dsposv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr dB, magma_int_t lddb,
+    magmaDouble_ptr dX, magma_int_t lddx,
+    magmaDouble_ptr dworkd, magmaFloat_ptr dworks,
+    magma_int_t *iter,
+    magma_int_t *info)
 {
     #define dB(i,j)     (dB + (i) + (j)*lddb)
     #define dX(i,j)     (dX + (i) + (j)*lddx)
@@ -149,8 +151,8 @@ magma_dsposv_gpu(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
     double c_neg_one = MAGMA_D_NEG_ONE;
     double c_one     = MAGMA_D_ONE;
     magma_int_t     ione  = 1;
-    double *dR;
-    float  *dSA, *dSX;
+    magmaDouble_ptr dR;
+    magmaFloat_ptr dSA, dSX;
     double Xnrmv, Rnrmv;
     double          Anrm, Xnrm, Rnrm, cte, eps;
     magma_int_t     i, j, iiter, lddsa, lddsx, lddr;

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgetrf_incpiv_gpu.cpp normal z -> d, Tue Sep  2 12:38:20 2014
+       @generated from zgetrf_incpiv_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -108,12 +108,15 @@
     @ingroup magma_dgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dgetrf_incpiv_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t ib,
-                         double *hA, magma_int_t ldha, double *dA, magma_int_t ldda,
-                         double *hL, magma_int_t ldhl, double *dL, magma_int_t lddl,
-                         magma_int_t *ipiv,
-                         double *dwork, magma_int_t lddwork,
-                         magma_int_t *info)
+magma_dgetrf_incpiv_gpu(
+    magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t ib,
+    double    *hA, magma_int_t ldha,
+    magmaDouble_ptr dA, magma_int_t ldda,
+    double    *hL, magma_int_t ldhl,
+    magmaDouble_ptr dL, magma_int_t lddl,
+    magma_int_t *ipiv,
+    magmaDouble_ptr dwork, magma_int_t lddwork,
+    magma_int_t *info)
 {
 #define AT(i,j) (dAT + (i)*ib*ldda + (j)*ib)
 #define hA(i,j) (hA  + (i)*ib + (j)*ib*ldha)
@@ -128,9 +131,9 @@ magma_dgetrf_incpiv_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magm
     magma_int_t iinfo;
     magma_int_t maxm, mindim;
     magma_int_t i, rows, cols, s, ii, sb;
-    double *dAT;
+    magmaDouble_ptr dAT;
 #ifndef WITHOUTTRTRI
-    double *dL2 = dL + ib;
+    magmaDouble_ptr dL2 = dL + ib;
     double *hL2 = hL + ib;
 #endif
 

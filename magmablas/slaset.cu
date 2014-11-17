@@ -1,16 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
+       @author Azzam Haidar
        
-       @generated from zlaset.cu normal z -> s, Tue Sep  2 12:38:16 2014
+       @generated from zlaset.cu normal z -> s, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
+#include "batched_kernel_param.h"
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -22,8 +24,8 @@
 
     Code similar to slacpy, slag2d, clag2z, sgeadd.
 */
-__global__
-void slaset_full(
+static __device__
+void slaset_full_device(
     int m, int n,
     float offdiag, float diag,
     float *A, int lda )
@@ -31,7 +33,7 @@ void slaset_full(
     int ind = blockIdx.x*BLK_X + threadIdx.x;
     int iby = blockIdx.y*BLK_Y;
     /* check if full block-column && (below diag || above diag || offdiag == diag) */
-    bool full = (iby + BLK_Y <= n && (ind >= iby + BLK_Y || ind + BLK_X <= iby || offdiag == diag));
+    bool full = (iby + BLK_Y <= n && (ind >= iby + BLK_Y || ind + BLK_X <= iby || MAGMA_S_EQUAL( offdiag, diag )));
     /* do only rows inside matrix */
     if ( ind < m ) {
         A += ind + iby*lda;
@@ -61,8 +63,8 @@ void slaset_full(
 
     Code similar to slacpy, zlat2c, clat2z.
 */
-__global__
-void slaset_lower(
+static __device__
+void slaset_lower_device(
     int m, int n,
     float offdiag, float diag,
     float *A, int lda )
@@ -100,8 +102,8 @@ void slaset_lower(
 
     Code similar to slacpy, zlat2c, clat2z.
 */
-__global__
-void slaset_upper(
+static __device__
+void slaset_upper_device(
     int m, int n,
     float offdiag, float diag,
     float *A, int lda )
@@ -131,8 +133,66 @@ void slaset_upper(
         }
     }
 }
-
-
+//////////////////////////////////////////////////////////////////////////////////////
+/*
+    kernel wrapper to call the device function.
+*/
+__global__
+void slaset_full_kernel(
+    int m, int n,
+    float offdiag, float diag,
+    float *dA, int ldda )
+{
+    slaset_full_device(m, n, offdiag, diag, dA, ldda);
+}
+__global__
+void slaset_lower_kernel(
+    int m, int n,
+    float offdiag, float diag,
+    float *dA, int ldda )
+{
+    slaset_lower_device(m, n, offdiag, diag, dA, ldda);
+}
+__global__
+void slaset_upper_kernel(
+    int m, int n,
+    float offdiag, float diag,
+    float *dA, int ldda )
+{
+    slaset_lower_device(m, n, offdiag, diag, dA, ldda);
+}
+//////////////////////////////////////////////////////////////////////////////////////
+/*
+    kernel wrapper to call the device function for the batched routine.
+*/
+__global__
+void slaset_full_kernel_batched(
+    int m, int n,
+    float offdiag, float diag,
+    float **dAarray, int ldda )
+{
+    int batchid = blockIdx.z;
+    slaset_full_device(m, n, offdiag, diag, dAarray[batchid], ldda);
+}
+__global__
+void slaset_lower_kernel_batched(
+    int m, int n,
+    float offdiag, float diag,
+    float **dAarray, int ldda )
+{
+    int batchid = blockIdx.z;
+    slaset_lower_device(m, n, offdiag, diag, dAarray[batchid], ldda);
+}
+__global__
+void slaset_upper_kernel_batched(
+    int m, int n,
+    float offdiag, float diag,
+    float **dAarray, int ldda )
+{
+    int batchid = blockIdx.z;
+    slaset_upper_device(m, n, offdiag, diag, dAarray[batchid], ldda);
+}
+//////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
     -------
@@ -188,7 +248,7 @@ extern "C"
 void magmablas_slaset_q(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     float offdiag, float diag,
-    float *dA, magma_int_t ldda,
+    magmaFloat_ptr dA, magma_int_t ldda,
     magma_queue_t queue)
 {
     magma_int_t info = 0;
@@ -213,15 +273,16 @@ void magmablas_slaset_q(
     dim3 threads( BLK_X, 1 );
     dim3 grid( (m-1)/BLK_X + 1, (n-1)/BLK_Y + 1 );
     
-    if (uplo == MagmaLower)
-        slaset_lower<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
-    else if (uplo == MagmaUpper)
-        slaset_upper<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
-    else
-        slaset_full <<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    if (uplo == MagmaLower) {
+        slaset_lower_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    }
+    else if (uplo == MagmaUpper) {
+        slaset_upper_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    }
+    else {
+        slaset_full_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+    }
 }
-
-
 /**
     @see magmablas_slaset_q
     @ingroup magma_saux2
@@ -230,7 +291,91 @@ extern "C"
 void magmablas_slaset(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     float offdiag, float diag,
-    float *dA, magma_int_t ldda )
+    magmaFloat_ptr dA, magma_int_t ldda )
 {
     magmablas_slaset_q( uplo, m, n, offdiag, diag, dA, ldda, magma_stream );
 }
+////////////////////////////////////////////////////////////////////////////////////////
+
+extern "C"
+void magmablas_slaset_batched_q(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    float offdiag, float diag,
+    magmaFloat_ptr dAarray[], magma_int_t ldda,
+    magma_int_t batchCount, magma_queue_t queue)
+{
+    magma_int_t info = 0;
+    if ( uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull )
+        info = -1;
+    else if ( m < 0 )
+        info = -2;
+    else if ( n < 0 )
+        info = -3;
+    else if ( ldda < max(1,m) )
+        info = -7;
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    if ( m == 0 || n == 0 ) {
+        return;
+    }
+    
+    dim3 threads( BLK_X, 1 );
+    dim3 grid( (m-1)/BLK_X + 1, (n-1)/BLK_Y + 1, batchCount );
+    
+    if (uplo == MagmaLower) {
+        slaset_lower_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+    else if (uplo == MagmaUpper) {
+        slaset_upper_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+    else {
+        slaset_full_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+    }
+}
+/**
+    @see magmablas_slaset_batched_q
+    @ingroup magma_saux2
+    ********************************************************************/
+extern "C"
+void magmablas_slaset_batched(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    float offdiag, float diag,
+    magmaFloat_ptr dAarray[], magma_int_t ldda,
+    magma_int_t batchCount )
+{
+    magmablas_slaset_batched_q( uplo, m, n, offdiag, diag, dAarray, ldda, batchCount, magma_stream );
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////
+#define A(n, bound) d##A[min(n, bound)]
+#define TH_NCHUNK   8
+static
+__global__ void
+zmemset_kernel_batched(int length, float **dAarray, float val)
+{
+    int tid = threadIdx.x;
+    float *dA = dAarray[blockIdx.z];
+
+    #pragma unroll
+    for (int l = 0; l < TH_NCHUNK; l++)
+        A(l*MAX_NTHREADS+tid, length) = val;
+}
+#undef A
+
+extern "C"
+void magmablas_smemset_batched(magma_int_t length, 
+        magmaFloat_ptr dAarray[], float val, 
+        magma_int_t batchCount)
+{
+
+    magma_int_t size_per_block = TH_NCHUNK * MAX_NTHREADS;
+    magma_int_t nblock = (length-1)/size_per_block + 1;
+    dim3 grid(nblock, 1, batchCount );  // emulate 3D grid: NX * (NY*npages), for CUDA ARCH 1.x
+
+    zmemset_kernel_batched<<< grid, MAX_NTHREADS >>>(length, dAarray, val); 
+}
+
+

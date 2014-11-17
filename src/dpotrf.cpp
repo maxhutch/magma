@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
-       @generated from zpotrf.cpp normal z -> d, Tue Sep  2 12:38:19 2014
+       @generated from zpotrf.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 */
 #include "common_magma.h"
 
@@ -79,11 +79,13 @@
     @ingroup magma_dposv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dpotrf(magma_uplo_t uplo, magma_int_t n,
-             double *A, magma_int_t lda, magma_int_t *info)
+magma_dpotrf(
+    magma_uplo_t uplo, magma_int_t n,
+    double *A, magma_int_t lda,
+    magma_int_t *info)
 {
-#define A(i, j)  (A    + (j)*lda  + (i))
-#define dA(i, j) (work + (j)*ldda + (i))
+#define  A(i_, j_)  (A + (j_)*lda  + (i_))
+#define dA(i_, j_) (dA + (j_)*ldda + (i_))
 
     /* Local variables */
     const char* uplo_ = lapack_uplo_const( uplo );
@@ -91,7 +93,7 @@ magma_dpotrf(magma_uplo_t uplo, magma_int_t n,
     magma_int_t j, jb;
     double    c_one     = MAGMA_D_ONE;
     double    c_neg_one = MAGMA_D_NEG_ONE;
-    double   *work;
+    magmaDouble_ptr dA;
     double             d_one     =  1.0;
     double             d_neg_one = -1.0;
     int upper = (uplo == MagmaUpper);
@@ -113,17 +115,17 @@ magma_dpotrf(magma_uplo_t uplo, magma_int_t n,
     if ( n == 0 )
         return *info;
 
-    magma_int_t num_gpus = magma_num_gpus();
-    if ( num_gpus > 1 ) {
+    magma_int_t ngpu = magma_num_gpus();
+    if ( ngpu > 1 ) {
         /* call multiple-GPU interface  */
-        return magma_dpotrf_m(num_gpus, uplo, n, A, lda, info);
+        return magma_dpotrf_m(ngpu, uplo, n, A, lda, info);
     }
 
     ldda = ((n+31)/32)*32;
     
-    if (MAGMA_SUCCESS != magma_dmalloc( &work, (n)*ldda )) {
+    if (MAGMA_SUCCESS != magma_dmalloc( &dA, (n)*ldda )) {
         /* alloc failed so call the non-GPU-resident version */
-        return magma_dpotrf_m(num_gpus, uplo, n, A, lda, info);
+        return magma_dpotrf_m(ngpu, uplo, n, A, lda, info);
     }
 
     /* Define user stream if current stream is NULL */
@@ -255,7 +257,7 @@ magma_dpotrf(magma_uplo_t uplo, magma_int_t n,
     }
     magmablasSetKernelStream( orig_stream );
 
-    magma_free( work );
+    magma_free( dA );
     
     return *info;
 } /* magma_dpotrf */

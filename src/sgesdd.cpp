@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Mark Gates
-       @generated from dgesdd.cpp normal d -> s, Tue Sep  2 12:38:25 2014
+       @generated from dgesdd.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
 
 #define PRECISION_s
+#define REAL
 
 // Version 1 - LAPACK
 // Version 2 - MAGMA
@@ -171,7 +172,11 @@ magma_int_t magma_sgesdd(
     float *U, magma_int_t ldu,
     float *VT, magma_int_t ldvt,
     float *work, magma_int_t lwork,
-    magma_int_t *iwork, magma_int_t *info)
+    #ifdef COMPLEX
+    float *rwork,
+    #endif
+    magma_int_t *iwork,
+    magma_int_t *info)
 {
     #define A(i_,j_)  (A  + (i_) + (j_)*lda)
     #define U(i_,j_)  (U  + (i_) + (j_)*ldu)

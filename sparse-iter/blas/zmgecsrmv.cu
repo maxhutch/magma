@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -19,15 +19,18 @@
 
 
 __global__ void 
-zmgecsrmv_kernel( int num_rows, int num_cols, 
-                  int num_vecs,
-                  magmaDoubleComplex alpha, 
-                  magmaDoubleComplex *d_val, 
-                  magma_index_t *d_rowptr, 
-                  magma_index_t *d_colind,
-                  magmaDoubleComplex *d_x,
-                  magmaDoubleComplex beta, 
-                  magmaDoubleComplex *d_y){
+zmgecsrmv_kernel( 
+    int num_rows, 
+    int num_cols, 
+    int num_vecs,
+    magmaDoubleComplex alpha, 
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr drowptr, 
+    magmaIndex_ptr dcolind,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex beta, 
+    magmaDoubleComplex_ptr dy)
+{
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
@@ -36,18 +39,18 @@ zmgecsrmv_kernel( int num_rows, int num_cols,
     if( row<num_rows ){
         for( int i=0; i<num_vecs; i++ )
                 dot[ threadIdx.x+ i*blockDim.x ] = MAGMA_Z_MAKE(0.0, 0.0);
-        int start = d_rowptr[ row ] ;
-        int end = d_rowptr[ row+1 ];
+        int start = drowptr[ row ] ;
+        int end = drowptr[ row+1 ];
         for( j=start; j<end; j++ ){
-            int col = d_colind [ j ];
-            magmaDoubleComplex val = d_val[ j ];
+            int col = dcolind [ j ];
+            magmaDoubleComplex val = dval[ j ];
             for( int i=0; i<num_vecs; i++ )
                 dot[ threadIdx.x + i*blockDim.x ] += 
-                                    val * d_x[ col + i*num_cols ];
+                                    val * dx[ col + i*num_cols ];
         }
         for( int i=0; i<num_vecs; i++ )
-            d_y[ row +i*num_cols ] = alpha * dot[ threadIdx.x + i*blockDim.x ] 
-                                             + beta * d_y[ row + i*num_cols ];
+            dy[ row +i*num_cols ] = alpha * dot[ threadIdx.x + i*blockDim.x ] 
+                                             + beta * dy[ row + i*num_cols ];
     }
 }
 
@@ -63,70 +66,76 @@ zmgecsrmv_kernel( int num_rows, int num_cols,
     Arguments
     ---------
     
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
 
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows in A
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns in A 
                 
-    @param
+    @param[in]
     num_vecs    mama_int_t
                 number of vectors
-    @param
+    @param[in]
     alpha       magmaDoubleComplex
                 scalar multiplier
 
-    @param
-    d_val       magmaDoubleComplex*
+    @param[in]
+    dval        magmaDoubleComplex_ptr
                 array containing values of A in CSR
 
-    @param
-    d_rowptr    magma_int_t*
+    @param[in]
+    drowptr    magma_int_t*
                 rowpointer of A in CSR
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 columnindices of A in CSR
 
-    @param
-    d_x         magmaDoubleComplex*
+    @param[in]
+    dx          magmaDoubleComplex_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        magmaDoubleComplex
                 scalar multiplier
 
-    @param
-    d_y         magmaDoubleComplex*
+    @param[out]
+    dy          magmaDoubleComplex_ptr
                 input/output vector y
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zmgecsrmv(    magma_trans_t transA,
-                    magma_int_t m, magma_int_t n,
-                    magma_int_t num_vecs, 
-                    magmaDoubleComplex alpha,
-                    magmaDoubleComplex *d_val,
-                    magma_index_t *d_rowptr,
-                    magma_index_t *d_colind,
-                    magmaDoubleComplex *d_x,
-                    magmaDoubleComplex beta,
-                    magmaDoubleComplex *d_y ){
-
+magma_zmgecsrmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t num_vecs, 
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex_ptr dval,
+    magmaIndex_ptr drowptr,
+    magmaIndex_ptr dcolind,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex beta,
+    magmaDoubleComplex_ptr dy,
+    magma_queue_t queue )
+{
     dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    magma_int_t threads = BLOCK_SIZE;
     unsigned int MEM_SIZE =  num_vecs* BLOCK_SIZE 
                     * sizeof( magmaDoubleComplex ); // num_vecs vectors 
-    zmgecsrmv_kernel<<< grid, BLOCK_SIZE, MEM_SIZE >>>
-            (m, n, num_vecs, alpha, d_val, d_rowptr, d_colind, d_x, beta, d_y);
+    zmgecsrmv_kernel<<< grid, threads, MEM_SIZE >>>
+            (m, n, num_vecs, alpha, dval, drowptr, dcolind, dx, beta, dy);
 
    return MAGMA_SUCCESS;
 }

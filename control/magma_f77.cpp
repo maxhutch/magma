@@ -6,11 +6,11 @@ extern "C" {
 #endif
 
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 */
 
 #define magmaf_init FORTRAN_NAME( magmaf_init, MAGMAF_INIT )

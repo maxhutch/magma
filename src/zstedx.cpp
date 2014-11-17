@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
     
        @author Raffaele Solca
     
@@ -130,12 +130,14 @@
     @ingroup magma_zheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zstedx(magma_range_t range, magma_int_t n, double vl, double vu,
-             magma_int_t il, magma_int_t iu, double* d, double* e,
-             magmaDoubleComplex* Z, magma_int_t ldz,
-             double* rwork, magma_int_t lrwork,
-             magma_int_t* iwork, magma_int_t liwork,
-             double* dwork, magma_int_t* info)
+magma_zstedx(
+    magma_range_t range, magma_int_t n, double vl, double vu,
+    magma_int_t il, magma_int_t iu, double *d, double *e,
+    magmaDoubleComplex *Z, magma_int_t ldz,
+    double *rwork, magma_int_t lrwork,
+    magma_int_t *iwork, magma_int_t liwork,
+    magmaDouble_ptr dwork,
+    magma_int_t *info)
 {
     magma_int_t alleig, indeig, valeig, lquery;
     magma_int_t i, j, smlsiz;

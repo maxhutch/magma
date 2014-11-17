@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zheevx_gpu.cpp normal z -> c, Tue Sep  2 12:38:22 2014
+       @generated from zheevx_gpu.cpp normal z -> c, Sat Nov 15 19:54:10 2014
 
  */
 #include "common_magma.h"
@@ -182,14 +182,18 @@
     @ingroup magma_cheev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_cheevx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-                 magmaFloatComplex *dA, magma_int_t ldda, float vl, float vu,
-                 magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
-                 float *w, magmaFloatComplex *dZ, magma_int_t lddz,
-                 magmaFloatComplex *wA, magma_int_t ldwa,
-                 magmaFloatComplex *wZ, magma_int_t ldwz,
-                 magmaFloatComplex *work, magma_int_t lwork,
-                 float *rwork, magma_int_t *iwork, magma_int_t *ifail, magma_int_t *info)
+magma_cheevx_gpu(
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    float vl, float vu,
+    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
+    float *w,
+    magmaFloatComplex_ptr dZ, magma_int_t lddz,
+    magmaFloatComplex *wA,    magma_int_t ldwa,
+    magmaFloatComplex *wZ,    magma_int_t ldwz,
+    magmaFloatComplex *work,  magma_int_t lwork,
+    float *rwork, magma_int_t *iwork, magma_int_t *ifail,
+    magma_int_t *info)
 {
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
@@ -218,7 +222,7 @@ magma_cheevx_gpu(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma
     float sigma, d__1;
     float rmin, rmax;
     
-    float *dwork;
+    magmaFloat_ptr dwork;
     
     /* Function Body */
     lower  = (uplo  == MagmaLower);

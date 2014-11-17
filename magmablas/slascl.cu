@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlascl.cu normal z -> s, Tue Sep  2 12:38:16 2014
+       @generated from zlascl.cu normal z -> s, Sat Nov 15 19:53:59 2014
 
 
        @author Mark Gates
@@ -132,8 +132,9 @@ magmablas_slascl_q(
     magma_type_t type, magma_int_t kl, magma_int_t ku,
     float cfrom, float cto,
     magma_int_t m, magma_int_t n,
-    float *dA, magma_int_t ldda, magma_int_t *info,
-    magma_queue_t queue )
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     *info = 0;
     if ( type != MagmaLower && type != MagmaUpper && type != MagmaFull )
@@ -226,7 +227,8 @@ magmablas_slascl(
     magma_type_t type, magma_int_t kl, magma_int_t ku,
     float cfrom, float cto,
     magma_int_t m, magma_int_t n,
-    float *dA, magma_int_t ldda, magma_int_t *info )
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magma_int_t *info )
 {
-    magmablas_slascl_q( type, kl, ku, cfrom, cto, m, n, dA, ldda, info, magma_stream );
+    magmablas_slascl_q( type, kl, ku, cfrom, cto, m, n, dA, ldda, magma_stream, info );
 }

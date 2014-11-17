@@ -1,10 +1,10 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
- 
+       @date November 2014
+
        @precisions normal z -> s d c
 */
 
@@ -24,7 +24,6 @@ extern "C" {
 
 #define lapackf77_ieeeck FORTRAN_NAME( ieeeck, IEEECK )
 #define lapackf77_lsame  FORTRAN_NAME( lsame,  LSAME  )
-#define lapackf77_xerbla FORTRAN_NAME( xerbla, XERBLA )
 
 #define lapackf77_slamch FORTRAN_NAME( slamch, SLAMCH )
 #define lapackf77_dlamch FORTRAN_NAME( dlamch, DLAMCH )
@@ -49,29 +48,9 @@ extern "C" {
 #define lapackf77_dlapy2 FORTRAN_NAME( dlapy2, DLAPY2 )
 #define lapackf77_slapy2 FORTRAN_NAME( slapy2, SLAPY2 )
 
-// Can't call lapack ilaenv directly because passing strings, i.e.,
-// character*(*), to Fortran is not portable.
-// This wrapper passes a character(*) array and separate length,
-// which should be portable.
-#define magmaf77_ilaenv  FORTRAN_NAME( magmaf77_ilaenv, MAGMAF77_ILAENV )
-
-magma_int_t magmaf77_ilaenv( const magma_int_t* ispec,
-                             const char* name, const magma_int_t* namelen,
-                             const char* opts, const magma_int_t* optslen,
-                             const magma_int_t* n1, const magma_int_t* n2,
-                             const magma_int_t* n3, const magma_int_t* n4 );
-
-// Convenience C wrapper that calls magmaf77_ilaenv.
-magma_int_t magma_ilaenv( magma_int_t ispec, const char* name, const char* opts,
-                          magma_int_t n1, magma_int_t n2,
-                          magma_int_t n3, magma_int_t n4 );
-
-magma_int_t lapackf77_ieeeck( magma_int_t* ispec, float* zero, float* one );
+magma_int_t lapackf77_ieeeck( magma_int_t *ispec, float *zero, float *one );
 
 long   lapackf77_lsame(  const char *ca, const char *cb );
-
-// NOT portable! Assumes particular Fortran string convention (Intel/gfortran).
-void   lapackf77_xerbla( const char *name, magma_int_t *info, magma_int_t name_len );
 
 float  lapackf77_slamch( const char *cmach );
 double lapackf77_dlamch( const char *cmach );
@@ -107,46 +86,46 @@ void   lapackf77_ssterf( const magma_int_t *n,
                          magma_int_t *info );
 
 // precision conversion, general matrix
-void   lapackf77_zlag2c( magma_int_t *m, magma_int_t *n,
-                         const magmaDoubleComplex *A,  magma_int_t *lda,
-                               magmaFloatComplex  *SA, magma_int_t *ldsa,
+void   lapackf77_zlag2c( magma_int_t *m, const magma_int_t *n,
+                         const magmaDoubleComplex *A,  const magma_int_t *lda,
+                               magmaFloatComplex  *SA, const magma_int_t *ldsa,
                          magma_int_t *info );
 
-void   lapackf77_clag2z( magma_int_t *m, magma_int_t *n,
-                         const magmaFloatComplex  *SA, magma_int_t *ldsa,
-                               magmaDoubleComplex *A,  magma_int_t *lda,
+void   lapackf77_clag2z( magma_int_t *m, const magma_int_t *n,
+                         const magmaFloatComplex  *SA, const magma_int_t *ldsa,
+                               magmaDoubleComplex *A,  const magma_int_t *lda,
                          magma_int_t *info );
 
-void   lapackf77_dlag2s( magma_int_t *m, magma_int_t *n,
-                         const double *A,  magma_int_t *lda,
-                               float  *SA, magma_int_t *ldsa,
+void   lapackf77_dlag2s( magma_int_t *m, const magma_int_t *n,
+                         const double *A,  const magma_int_t *lda,
+                               float  *SA, const magma_int_t *ldsa,
                          magma_int_t *info );
 
-void   lapackf77_slag2d( magma_int_t *m, magma_int_t *n,
-                         const float  *SA, magma_int_t *ldsa,
-                               double *A,  magma_int_t *lda,
+void   lapackf77_slag2d( magma_int_t *m, const magma_int_t *n,
+                         const float  *SA, const magma_int_t *ldsa,
+                               double *A,  const magma_int_t *lda,
                          magma_int_t *info );
 
 // precision conversion, triangular (or symmetric) matrix
-void   lapackf77_zlat2c( const char* uplo, magma_int_t *n,
-                         const magmaDoubleComplex *A,  magma_int_t *lda,
-                               magmaFloatComplex  *SA, magma_int_t *ldsa,
+void   lapackf77_zlat2c( const char *uplo, const magma_int_t *n,
+                         const magmaDoubleComplex *A,  const magma_int_t *lda,
+                               magmaFloatComplex  *SA, const magma_int_t *ldsa,
                          magma_int_t *info );
 
-void   lapackf77_dlat2s( const char* uplo, magma_int_t *n,
-                         const double *A,  magma_int_t *lda,
-                               float  *SA, magma_int_t *ldsa,
+void   lapackf77_dlat2s( const char *uplo, const magma_int_t *n,
+                         const double *A,  const magma_int_t *lda,
+                               float  *SA, const magma_int_t *ldsa,
                          magma_int_t *info );
 
 // not implemented in LAPACK
-//void lapackf77_clat2z(const char* uplo, magma_int_t *n,
-//                       const magmaFloatComplex  *SA, magma_int_t *ldsa,
-//                             magmaDoubleComplex *A,  magma_int_t *lda,
+//void lapackf77_clat2z(const char *uplo, const magma_int_t *n,
+//                       const magmaFloatComplex  *SA, const magma_int_t *ldsa,
+//                             magmaDoubleComplex *A,  const magma_int_t *lda,
 //                       magma_int_t *info );
 //
-//void lapackf77_slat2d( const char* uplo, magma_int_t *n,
-//                       const float  *SA, magma_int_t *ldsa,
-//                             double *A,  magma_int_t *lda,
+//void lapackf77_slat2d( const char *uplo, const magma_int_t *n,
+//                       const float  *SA, const magma_int_t *ldsa,
+//                             double *A,  const magma_int_t *lda,
 //                       magma_int_t *info );
 
 double lapackf77_dlapy2( const double *x, const double *y );
@@ -155,7 +134,5 @@ float  lapackf77_slapy2( const float  *x, const float  *y );
 #ifdef __cplusplus
 }
 #endif
-
-#undef return_float
 
 #endif /* MAGMA_LAPACK_H */

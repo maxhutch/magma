@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
   
-       @generated from zgeqp3.cpp normal z -> d, Tue Sep  2 12:38:21 2014
+       @generated from zgeqp3.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
        @author Mitch Horton
 */
@@ -97,14 +97,15 @@
     @ingroup magma_dgeqp3_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dgeqp3( magma_int_t m, magma_int_t n,
-              double *A, magma_int_t lda,
-              magma_int_t *jpvt, double *tau,
-              double *work, magma_int_t lwork,
-              #ifdef COMPLEX
-              double *rwork,
-              #endif
-              magma_int_t *info )
+magma_dgeqp3(
+    magma_int_t m, magma_int_t n,
+    double *A, magma_int_t lda,
+    magma_int_t *jpvt, double *tau,
+    double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
+    magma_int_t *info )
 {
 #define  A(i, j) (A     + (i) + (j)*(lda ))
 #define dA(i, j) (dwork + (i) + (j)*(ldda))

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 
@@ -13,17 +13,18 @@
 
 //F. Vázquez, G. Ortega, J.J. Fernández, E.M. Garzón, Almeria University
 __global__ void 
-zgeellrtmv_kernel_32( int num_rows, 
-                 int num_cols,
-                 magmaDoubleComplex alpha, 
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magma_index_t *d_rowlength,
-                 magmaDoubleComplex *d_x,
-                 magmaDoubleComplex beta, 
-                 magmaDoubleComplex *d_y,
-                 int T,
-                 int alignment )
+zgeellrtmv_kernel_32( 
+    int num_rows, 
+    int num_cols,
+    magmaDoubleComplex alpha, 
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex beta, 
+    magmaDoubleComplex_ptr dy,
+    int T,
+    int alignment )
 {
 int idx = blockIdx.y * gridDim.x * blockDim.x + 
           blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
@@ -35,20 +36,20 @@ extern __shared__ magmaDoubleComplex shared[];
 
     if(i < num_rows ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int max_ = (d_rowlength[i]+T-1)/T;  
+        int max_ = (drowlength[i]+T-1)/T;  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
 
             // original code in paper (not working for me)
-            //magmaDoubleComplex val = d_val[ k*(T*alignment)+(i*T)+idp ];  
-            //int col = d_colind [ k*(T*alignment)+(i*T)+idp ];    
+            //magmaDoubleComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
+            //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
 
             // new code (working for me)        
-            magmaDoubleComplex val = d_val[ k*(T)+(i*alignment)+idp ];
-            int col = d_colind [ k*(T)+(i*alignment)+idp ];
+            magmaDoubleComplex val = dval[ k*(T)+(i*alignment)+idp ];
+            int col = dcolind [ k*(T)+(i*alignment)+idp ];
 
-            dot += val * d_x[ col ];
+            dot += val * dx[ col ];
         }
         shared[idb]  = dot;
         if( idp < 16 ){
@@ -57,7 +58,7 @@ extern __shared__ magmaDoubleComplex shared[];
             if( idp < 4 ) shared[idb]+=shared[idb+4];
             if( idp < 2 ) shared[idb]+=shared[idb+2];
             if( idp == 0 ) {
-                d_y[i] = (shared[idb]+shared[idb+1])*alpha + beta*d_y [i];
+                dy[i] = (shared[idb]+shared[idb+1])*alpha + beta*dy [i];
             }
 
         }
@@ -67,17 +68,18 @@ extern __shared__ magmaDoubleComplex shared[];
 
 //F. Vázquez, G. Ortega, J.J. Fernández, E.M. Garzón, Almeria University
 __global__ void 
-zgeellrtmv_kernel_16( int num_rows, 
-                 int num_cols,
-                 magmaDoubleComplex alpha, 
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magma_index_t *d_rowlength,
-                 magmaDoubleComplex *d_x,
-                 magmaDoubleComplex beta, 
-                 magmaDoubleComplex *d_y,
-                 int T,
-                 int alignment )
+zgeellrtmv_kernel_16( 
+    int num_rows, 
+    int num_cols,
+    magmaDoubleComplex alpha, 
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex beta, 
+    magmaDoubleComplex_ptr dy,
+    int T,
+    int alignment )
 {
 int idx = blockIdx.y * gridDim.x * blockDim.x + 
           blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
@@ -89,20 +91,20 @@ extern __shared__ magmaDoubleComplex shared[];
 
     if(i < num_rows ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int max_ = (d_rowlength[i]+T-1)/T;  
+        int max_ = (drowlength[i]+T-1)/T;  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
 
             // original code in paper (not working for me)
-            //magmaDoubleComplex val = d_val[ k*(T*alignment)+(i*T)+idp ];  
-            //int col = d_colind [ k*(T*alignment)+(i*T)+idp ];    
+            //magmaDoubleComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
+            //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
 
             // new code (working for me)        
-            magmaDoubleComplex val = d_val[ k*(T)+(i*alignment)+idp ];
-            int col = d_colind [ k*(T)+(i*alignment)+idp ];
+            magmaDoubleComplex val = dval[ k*(T)+(i*alignment)+idp ];
+            int col = dcolind [ k*(T)+(i*alignment)+idp ];
 
-            dot += val * d_x[ col ];
+            dot += val * dx[ col ];
         }
         shared[idb]  = dot;
         if( idp < 8 ){
@@ -110,7 +112,7 @@ extern __shared__ magmaDoubleComplex shared[];
             if( idp < 4 ) shared[idb]+=shared[idb+4];
             if( idp < 2 ) shared[idb]+=shared[idb+2];
             if( idp == 0 ) {
-                d_y[i] = (shared[idb]+shared[idb+1])*alpha + beta*d_y [i];
+                dy[i] = (shared[idb]+shared[idb+1])*alpha + beta*dy [i];
             }
 
         }
@@ -120,17 +122,18 @@ extern __shared__ magmaDoubleComplex shared[];
 
 //F. Vázquez, G. Ortega, J.J. Fernández, E.M. Garzón, Almeria University
 __global__ void 
-zgeellrtmv_kernel_8( int num_rows, 
-                 int num_cols,
-                 magmaDoubleComplex alpha, 
-                 magmaDoubleComplex *d_val, 
-                 magma_index_t *d_colind,
-                 magma_index_t *d_rowlength,
-                 magmaDoubleComplex *d_x,
-                 magmaDoubleComplex beta, 
-                 magmaDoubleComplex *d_y,
-                 int T,
-                 int alignment )
+zgeellrtmv_kernel_8( 
+    int num_rows, 
+    int num_cols,
+    magmaDoubleComplex alpha, 
+    magmaDoubleComplex_ptr dval, 
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex beta, 
+    magmaDoubleComplex_ptr dy,
+    int T,
+    int alignment )
 {
 int idx = blockIdx.y * gridDim.x * blockDim.x + 
           blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
@@ -142,27 +145,27 @@ extern __shared__ magmaDoubleComplex shared[];
 
     if(i < num_rows ){
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        int max_ = (d_rowlength[i]+T-1)/T;  
+        int max_ = (drowlength[i]+T-1)/T;  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
 
             // original code in paper (not working for me)
-            //magmaDoubleComplex val = d_val[ k*(T*alignment)+(i*T)+idp ];  
-            //int col = d_colind [ k*(T*alignment)+(i*T)+idp ];    
+            //magmaDoubleComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
+            //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
 
             // new code (working for me)        
-            magmaDoubleComplex val = d_val[ k*(T)+(i*alignment)+idp ];
-            int col = d_colind [ k*(T)+(i*alignment)+idp ];
+            magmaDoubleComplex val = dval[ k*(T)+(i*alignment)+idp ];
+            int col = dcolind [ k*(T)+(i*alignment)+idp ];
 
-            dot += val * d_x[ col ];
+            dot += val * dx[ col ];
         }
         shared[idb]  = dot;
         if( idp < 4 ){
             shared[idb]+=shared[idb+4];
             if( idp < 2 ) shared[idb]+=shared[idb+2];
             if( idp == 0 ) {
-                d_y[i] = (shared[idb]+shared[idb+1])*alpha + beta*d_y [i];
+                dy[i] = (shared[idb]+shared[idb+1])*alpha + beta*dy [i];
             }
 
         }
@@ -186,79 +189,84 @@ extern __shared__ magmaDoubleComplex shared[];
     Arguments
     ---------
 
-    @param
+    @param[in]
     transA      magma_trans_t
                 transposition parameter for A
-    @param
+    @param[in]
     m           magma_int_t
                 number of rows 
 
-    @param
+    @param[in]
     n           magma_int_t
                 number of columns
 
-    @param
+    @param[in]
     nnz_per_row magma_int_t
                 max number of nonzeros in a row
 
-    @param
+    @param[in]
     alpha       magmaDoubleComplex
                 scalar alpha
 
-    @param
-    d_val       magmaDoubleComplex*
+    @param[in]
+    dval        magmaDoubleComplex_ptr
                 val array
 
-    @param
-    d_colind    magma_int_t*
+    @param[in]
+    dcolind     magmaIndex_ptr
                 col indices  
 
-    @param
-    d_rowlength magma_int_t*
+    @param[in]
+    drowlength  magmaIndex_ptr
                 number of elements in each row
 
-    @param
-    d_x         magmaDoubleComplex*
+    @param[in]
+    dx          magmaDoubleComplex_ptr
                 input vector x
 
-    @param
+    @param[in]
     beta        magmaDoubleComplex
                 scalar beta
 
-    @param
-    d_y         magmaDoubleComplex*
+    @param[out]
+    dy          magmaDoubleComplex_ptr
                 output vector y
 
-    @param
+    @param[in]
     blocksize   magma_int_t
                 threads per block
 
-    @param
+    @param[in]
     alignment   magma_int_t
                 threads assigned to each row
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_zgeellrtmv(  magma_trans_t transA,
-                   magma_int_t m, magma_int_t n,
-                   magma_int_t nnz_per_row,
-                   magmaDoubleComplex alpha,
-                   magmaDoubleComplex *d_val,
-                   magma_index_t *d_colind,
-                   magma_index_t *d_rowlength,
-                   magmaDoubleComplex *d_x,
-                   magmaDoubleComplex beta,
-                   magmaDoubleComplex *d_y,
-                   magma_int_t alignment,
-                   magma_int_t blocksize ){
-
-
+magma_zgeellrtmv(
+    magma_trans_t transA,
+    magma_int_t m, magma_int_t n,
+    magma_int_t nnz_per_row,
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex_ptr dval,
+    magmaIndex_ptr dcolind,
+    magmaIndex_ptr drowlength,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex beta,
+    magmaDoubleComplex_ptr dy,
+    magma_int_t alignment,
+    magma_int_t blocksize,
+    magma_queue_t queue )
+{
     int num_blocks = ( (m+blocksize-1)/blocksize);
 
-    int num_threads = alignment*blocksize;
+    magma_int_t num_threads = alignment*blocksize;
+    magma_int_t threads = alignment*blocksize;
 
     int real_row_length = ((int)(nnz_per_row+alignment-1)/alignment)
                             *alignment;
@@ -274,24 +282,24 @@ magma_zgeellrtmv(  magma_trans_t transA,
     int Ms = alignment * blocksize * sizeof( magmaDoubleComplex );
     // printf("launch kernel: %dx%d %d %d\n", grid.x, grid.y, num_threads , Ms);
 
-    if( alignment == 32 ){
-        zgeellrtmv_kernel_32<<< grid, num_threads , Ms, magma_stream >>>
-                 ( m, n, alpha, d_val, d_colind, d_rowlength, d_x, beta, d_y, 
+    if ( alignment == 32 ) {
+        zgeellrtmv_kernel_32<<< grid, threads , Ms, queue >>>
+                 ( m, n, alpha, dval, dcolind, drowlength, dx, beta, dy, 
                                                  alignment, real_row_length );
     }
-    else if( alignment == 16 ){
-        zgeellrtmv_kernel_16<<< grid, num_threads , Ms, magma_stream >>>
-                 ( m, n, alpha, d_val, d_colind, d_rowlength, d_x, beta, d_y, 
+    else if ( alignment == 16 ) {
+        zgeellrtmv_kernel_16<<< grid, threads , Ms, queue >>>
+                 ( m, n, alpha, dval, dcolind, drowlength, dx, beta, dy, 
                                                  alignment, real_row_length );
     }
-    else if( alignment == 8 ){
-        zgeellrtmv_kernel_8<<< grid, num_threads , Ms, magma_stream >>>
-                 ( m, n, alpha, d_val, d_colind, d_rowlength, d_x, beta, d_y, 
+    else if ( alignment == 8 ) {
+        zgeellrtmv_kernel_8<<< grid, threads , Ms, queue >>>
+                 ( m, n, alpha, dval, dcolind, drowlength, dx, beta, dy, 
                                                  alignment, real_row_length );
     }
-    else{
+    else {
         printf("error: alignment %d not supported.\n", alignment);
-        exit(-1);
+        return MAGMA_ERR_NOT_SUPPORTED;
     }
 
 

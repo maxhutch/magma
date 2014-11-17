@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgetri_gpu.cpp normal z -> c, Tue Sep  2 12:38:19 2014
+       @generated from zgetri_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -70,9 +70,11 @@
     @ingroup magma_cgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_cgetri_gpu( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
-                  magma_int_t *ipiv, magmaFloatComplex *dwork, magma_int_t lwork,
-                  magma_int_t *info )
+magma_cgetri_gpu(
+    magma_int_t n,
+    magmaFloatComplex_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
+    magmaFloatComplex_ptr dwork, magma_int_t lwork,
+    magma_int_t *info )
 {
     #define dA(i, j)  (dA + (i) + (j)*ldda)
     #define dL(i, j)  (dL + (i) + (j)*lddl)
@@ -81,7 +83,7 @@ magma_cgetri_gpu( magma_int_t n, magmaFloatComplex *dA, magma_int_t ldda,
     magmaFloatComplex c_zero    = MAGMA_C_ZERO;
     magmaFloatComplex c_one     = MAGMA_C_ONE;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
-    magmaFloatComplex *dL = dwork;
+    magmaFloatComplex_ptr dL = dwork;
     magma_int_t lddl = n;
     magma_int_t nb   = magma_get_cgetri_nb(n);
     magma_int_t j, jmax, jb, jp;

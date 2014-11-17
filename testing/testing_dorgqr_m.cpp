@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zungqr_m.cpp normal z -> d, Tue Sep  2 12:38:30 2014
+       @generated from testing_zungqr_m.cpp normal z -> d, Sat Nov 15 19:54:18 2014
 
        @author Stan Tomov
        @author Mathieu Faverge
@@ -17,8 +17,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 #include <assert.h>
 
 // includes, project
@@ -38,7 +36,7 @@ int main( int argc, char** argv )
     double           error, work[1];
     double  c_neg_one = MAGMA_D_NEG_ONE;
     double *hA, *hR, *hT, *tau, *h_work;
-    double *dA, *dT;
+    magmaDouble_ptr dA, dT;
     magma_int_t m, n, k;
     magma_int_t n2, lda, ldda, lwork, min_mn, nb, info;
     magma_int_t ione     = 1;

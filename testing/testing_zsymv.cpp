@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        Note: [ds] precisions generated from testing_zhemv.cu
        
@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 #include "flops.h"
 #include "magma.h"
@@ -39,7 +37,7 @@ int main(int argc, char **argv)
     magmaDoubleComplex alpha = MAGMA_Z_MAKE(  1.5, -2.3 );
     magmaDoubleComplex beta  = MAGMA_Z_MAKE( -0.6,  0.8 );
     magmaDoubleComplex *A, *X, *Y, *Ymagma;
-    magmaDoubleComplex *dA, *dX, *dY, *dwork;
+    magmaDoubleComplex_ptr dA, dX, dY, dwork;
     magma_int_t status = 0;
     
     magma_opts opts;

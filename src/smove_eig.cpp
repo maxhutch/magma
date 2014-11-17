@@ -1,20 +1,22 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dmove_eig.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+       @generated from dmove_eig.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
+
 extern "C" void
-magma_smove_eig(magma_range_t range, magma_int_t n, float *w, magma_int_t *il,
-                     magma_int_t *iu, float vl, float vu, magma_int_t *m)
+magma_smove_eig(
+    magma_range_t range, magma_int_t n, float *w, magma_int_t *il,
+    magma_int_t *iu, float vl, float vu, magma_int_t *m)
 {
     magma_int_t valeig, indeig, i;
 

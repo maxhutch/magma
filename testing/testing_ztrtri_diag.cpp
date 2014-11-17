@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> c d s
 */
@@ -12,8 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
 // includes, project
 #include "flops.h"
@@ -61,7 +59,7 @@ int main( int argc, char** argv )
     magma_int_t *ipiv;
 
     magmaDoubleComplex *h_A, *h_dinvA;
-    magmaDoubleComplex *d_A, *d_dinvA;
+    magmaDoubleComplex_ptr d_A, d_dinvA;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magma_int_t status = 0;
     

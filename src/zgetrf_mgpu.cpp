@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -28,8 +28,8 @@
     Arguments
     ---------
     @param[in]
-    num_gpus INTEGER
-            The number of GPUs to be used for the factorization.
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
 
     @param[in]
     m       INTEGER
@@ -40,9 +40,9 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    d_lA    COMPLEX_16 array of pointers on the GPU, dimension (num_gpus).
-            On entry, the M-by-N matrix A distributed over GPUs 
-            (d_lA[d] points to the local matrix on d-th GPU). 
+    d_lA    COMPLEX_16 array of pointers on the GPU, dimension (ngpu).
+            On entry, the M-by-N matrix A distributed over GPUs
+            (d_lA[d] points to the local matrix on d-th GPU).
             It uses 1D block column cyclic format with the block size of nb,
             and each local matrix is stored by column.
             On exit, the factors L and U from the factorization
@@ -70,10 +70,11 @@
     @ingroup magma_zgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zgetrf_mgpu(magma_int_t num_gpus,
-                 magma_int_t m, magma_int_t n,
-                 magmaDoubleComplex **d_lA, magma_int_t ldda,
-                 magma_int_t *ipiv, magma_int_t *info)
+magma_zgetrf_mgpu(
+    magma_int_t ngpu,
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_ptr d_lA[], magma_int_t ldda, magma_int_t *ipiv,
+    magma_int_t *info)
 {
     magma_int_t nb, n_local[MagmaMaxGPUs];
     magma_int_t maxm, mindim;
@@ -123,30 +124,30 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
         magmablasGetKernelStream( &orig_stream );
         
         maxm = ((m + 31)/32)*32;
-        if ( num_gpus > ceil((double)n/nb) ) {
-            printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) num_gpus );
+        if ( ngpu > ceil((double)n/nb) ) {
+            printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) ngpu );
             *info = -1;
             return *info;
         }
 
         /* allocate workspace for each GPU */
-        lddat = ((((((n+nb-1)/nb)/num_gpus)*nb)+31)/32)*32;
+        lddat = ((((((n+nb-1)/nb)/ngpu)*nb)+31)/32)*32;
         lddat = (n+nb-1)/nb;                 /* number of block columns         */
-        lddat = (lddat+num_gpus-1)/num_gpus; /* number of block columns per GPU */
+        lddat = (lddat+ngpu-1)/ngpu;         /* number of block columns per GPU */
         lddat = nb*lddat;                    /* number of columns per GPU       */
         lddat = ((lddat+31)/32)*32;          /* make it a multiple of 32        */
-        for (i=0; i < num_gpus; i++) {
+        for (i=0; i < ngpu; i++) {
             magma_setdevice(i);
             
             /* local-n and local-ld */
-            n_local[i] = ((n/nb)/num_gpus)*nb;
-            if (i < (n/nb)%num_gpus)
+            n_local[i] = ((n/nb)/ngpu)*nb;
+            if (i < (n/nb)%ngpu)
                 n_local[i] += nb;
-            else if (i == (n/nb)%num_gpus)
+            else if (i == (n/nb)%ngpu)
                 n_local[i] += n%nb;
             
             /* workspaces */
-            if (MAGMA_SUCCESS != magma_zmalloc( &d_panel[i], (3+num_gpus)*nb*maxm )) {
+            if (MAGMA_SUCCESS != magma_zmalloc( &d_panel[i], (3+ngpu)*nb*maxm )) {
                 for( j=0; j <= i; j++ ) {
                     magma_setdevice(j);
                 }
@@ -180,7 +181,7 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
             magmablasSetKernelStream(streaml[i][1]);
             magmablas_ztranspose( m, n_local[i], d_lA[i], ldda, d_lAT[i], lddat );
         }
-        for (i=0; i < num_gpus; i++) {
+        for (i=0; i < ngpu; i++) {
             magma_setdevice(i);
             magma_queue_sync(streaml[i][0]);
             magmablasSetKernelStream(NULL);
@@ -189,8 +190,8 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
 
         /* cpu workspace */
         lddwork = maxm;
-        if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, lddwork*nb*num_gpus )) {
-            for (i=0; i < num_gpus; i++ ) {
+        if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, lddwork*nb*ngpu )) {
+            for (i=0; i < ngpu; i++ ) {
                 magma_setdevice(i);
                 magma_free( d_panel[i] );
                 magma_free( d_lAT[i]   );
@@ -200,13 +201,11 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
         }
 
         /* calling multi-gpu interface with allocated workspaces and streams */
-        //magma_zgetrf1_mgpu( num_gpus, m, n, nb, 0, d_lAT, lddat, ipiv, d_panel, work, maxm,
-        //                   (magma_queue_t **)streaml, info );
-        magma_zgetrf2_mgpu(num_gpus, m, n, nb, 0, d_lAT, lddat, ipiv, d_panel, work, maxm,
+        magma_zgetrf2_mgpu(ngpu, m, n, nb, 0, d_lAT, lddat, ipiv, d_panel, work, maxm,
                            streaml, info);
 
         /* clean up */
-        for( d=0; d < num_gpus; d++ ) {
+        for( d=0; d < ngpu; d++ ) {
             magma_setdevice(d);
             
             /* save on output */
@@ -216,7 +215,7 @@ magma_zgetrf_mgpu(magma_int_t num_gpus,
             magma_free( d_panel[d] );
             magma_queue_destroy( streaml[d][0] );
             magma_queue_destroy( streaml[d][1] );
-        } /* end of for d=1,..,num_gpus */
+        } /* end of for d=1,..,ngpu */
         magma_setdevice( orig_dev );
         magmablasSetKernelStream( orig_stream );
         magma_free_pinned( work );

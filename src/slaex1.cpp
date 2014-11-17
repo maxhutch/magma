@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Raffaele Solca
        
-       @generated from dlaex1.cpp normal d -> s, Tue Sep  2 12:38:22 2014
+       @generated from dlaex1.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 */
 #include "common_magma.h"
 
@@ -128,11 +128,16 @@
     @ingroup magma_ssyev_aux
     ********************************************************************/
 extern "C" magma_int_t
-magma_slaex1(magma_int_t n, float* d, float* Q, magma_int_t ldq,
-             magma_int_t* indxq, float rho, magma_int_t cutpnt,
-             float* work, magma_int_t* iwork, float* dwork,
-             magma_range_t range, float vl, float vu,
-             magma_int_t il, magma_int_t iu, magma_int_t* info)
+magma_slaex1(
+    magma_int_t n,
+    float *d,
+    float *Q, magma_int_t ldq,
+    magma_int_t *indxq, float rho, magma_int_t cutpnt,
+    float *work, magma_int_t *iwork,
+    magmaFloat_ptr dwork,
+    magma_range_t range, float vl, float vu,
+    magma_int_t il, magma_int_t iu,
+    magma_int_t *info)
 {
 #define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 

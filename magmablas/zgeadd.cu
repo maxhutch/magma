@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -98,8 +98,8 @@ extern "C" void
 magmablas_zgeadd_q(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dB, magma_int_t lddb,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr       dB, magma_int_t lddb,
     magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -136,8 +136,8 @@ extern "C" void
 magmablas_zgeadd(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dB, magma_int_t lddb )
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr       dB, magma_int_t lddb )
 {
     magmablas_zgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magma_stream );
 }

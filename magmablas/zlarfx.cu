@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -36,7 +36,7 @@ void magma_zlarfx_kernel( int m, magmaDoubleComplex *v, magmaDoubleComplex *tau,
 
         /* NOTE HERE C is the C at position C(i, 0) 
          * if blockIdx.x<it it performs the V(i:n,i)' * V(i:n,1:i-1)' used for computing T
-         * if blockIdx.x>it it perform  w := v' * C  */
+         * if blockIdx.x>it it perform  w := v**H * C  */
         lsum = MAGMA_Z_ZERO;
         for( int j = tx; j < m; j += BLOCK_SIZE ){
             if (j==0){
@@ -148,11 +148,11 @@ void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
 /*
     Apply a complex elementary reflector H to a complex M-by-N
     matrix C from the left. H is represented in the form
-          H = I - tau * v * v'
+          H = I - tau * v * v**H
     where tau is a complex scalar and v is a complex vector.
     If tau = 0, then H is taken to be the unit matrix.
 
-    To apply H' (the conjugate transpose of H), supply conjg(tau) 
+    To apply H**H (the conjugate transpose of H), supply conjg(tau) 
     instead tau.
 
     The norms of v(:, 1:n) are given as input in xnorm(1:n). On exit, the norms
@@ -160,20 +160,25 @@ void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
     LAPACK's zlarf routine. 
  */
 extern "C" void
-magma_zlarfx_gpu(magma_int_t m, magma_int_t n, magmaDoubleComplex *v, magmaDoubleComplex *tau,
-                magmaDoubleComplex *c, magma_int_t ldc, double *xnorm, 
-                magmaDoubleComplex *T, magma_int_t i, magmaDoubleComplex *work )
+magma_zlarfx_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_ptr v,
+    magmaDoubleComplex_ptr tau,
+    magmaDoubleComplex_ptr C, magma_int_t ldc,
+    magmaDouble_ptr        xnorm, 
+    magmaDoubleComplex_ptr dT, magma_int_t iter,
+    magmaDoubleComplex_ptr work )
 {
-    magma_int_t N = n + i + 1;
+    magma_int_t N = n + iter + 1;
 
-    if (i==0)
-        magma_zlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, c, ldc, xnorm, T+i*N, i);
+    if (iter==0)
+        magma_zlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, dT+iter*N, iter);
     else
-        magma_zlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, c, ldc, xnorm, work, i);
+        magma_zlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, work, iter);
 
-    if (i > 0){
-        //magma_ztrmv_kernel<<< 1, i, 0, magma_stream >>>( T, N, T+i*N);
-        magma_ztrmv_kernel2<<< i, i, 0, magma_stream  >>>( T, N, work, T+i*N, tau);
+    if (iter > 0){
+        //magma_ztrmv_kernel<<< 1, iter, 0, magma_stream >>>( dT, N, dT+iter*N);
+        magma_ztrmv_kernel2<<< iter, iter, 0, magma_stream  >>>( dT, N, work, dT+iter*N, tau);
     }
 }
 

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegst.cpp normal z -> c, Tue Sep  2 12:38:23 2014
+       @generated from zhegst.cpp normal z -> c, Sat Nov 15 19:54:09 2014
 */
 
 #include "common_magma.h"
@@ -77,9 +77,11 @@
     @ingroup magma_cheev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_chegst(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
-             magmaFloatComplex *A, magma_int_t lda,
-             magmaFloatComplex *B, magma_int_t ldb, magma_int_t *info)
+magma_chegst(
+    magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex *B, magma_int_t ldb,
+    magma_int_t *info)
 {
 #define A(i, j) (A + (j)*lda + (i))
 #define B(i, j) (B + (j)*ldb + (i))

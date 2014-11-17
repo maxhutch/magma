@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zmdot.cu normal z -> s, Tue Sep  2 12:38:33 2014
+       @generated from zmdot.cu normal z -> s, Sat Nov 15 19:54:21 2014
        @author Hartwig Anzt
 
 */
@@ -17,8 +17,12 @@
 
 
 // initialize arrays with zero
-__global__ void 
-magma_sgpumemzero(  float *d, int n, int k ){
+__global__ void
+magma_sgpumemzero(  
+    magmaFloat_ptr d, 
+    int n, 
+    int k )
+{
 
    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -29,12 +33,14 @@ magma_sgpumemzero(  float *d, int n, int k ){
 }
 
 // dot product
-__global__ void 
-magma_sdot_kernel( int Gs,
-                        int n, 
-                        float *v,
-                        float *r,
-                        float *vtmp){
+__global__ void
+magma_sdot_kernel( 
+    int Gs,
+    int n, 
+    magmaFloat_ptr v,
+    magmaFloat_ptr r,
+    magmaFloat_ptr vtmp)
+{
 
     extern __shared__ float temp[]; 
     int Idx = threadIdx.x;   
@@ -88,13 +94,15 @@ magma_sdot_kernel( int Gs,
 }
 
 // dot product for multiple vectors
-__global__ void 
-magma_sblockdot_kernel( int Gs,
-                        int n, 
-                        int k,
-                        float *v,
-                        float *r,
-                        float *vtmp){
+__global__ void
+magma_sblockdot_kernel( 
+    int Gs,
+    int n, 
+    int k,
+    magmaFloat_ptr v,
+    magmaFloat_ptr r,
+    magmaFloat_ptr vtmp)
+{
 
     extern __shared__ float temp[]; 
     int Idx = threadIdx.x;   
@@ -179,12 +187,14 @@ magma_sblockdot_kernel( int Gs,
 }
 
 // block reduction for multiple vectors
-__global__ void 
-magma_sblockreduce_kernel( int Gs,
-                           int n, 
-                           int k,
-                           float *vtmp,
-                           float *vtmp2 ){
+__global__ void
+magma_sblockreduce_kernel( 
+    int Gs,
+    int n, 
+    int k,
+    magmaFloat_ptr vtmp,
+    magmaFloat_ptr vtmp2 )
+{
 
     extern __shared__ float temp[];    
     int Idx = threadIdx.x;
@@ -263,11 +273,11 @@ magma_sblockreduce_kernel( int Gs,
 }
 
 // accelerated reduction for one vector
-__global__ void 
+__global__ void
 magma_sreduce_kernel_fast( int Gs,
                            int n, 
-                           float *vtmp,
-                           float *vtmp2 ){
+                           magmaFloat_ptr vtmp,
+                           magmaFloat_ptr vtmp2 ){
 
     extern __shared__ float temp[];    
     int Idx = threadIdx.x;
@@ -324,12 +334,14 @@ magma_sreduce_kernel_fast( int Gs,
 }
 
 // accelerated block reduction for multiple vectors
-__global__ void 
-magma_sblockreduce_kernel_fast( int Gs,
-                           int n, 
-                           int k,
-                           float *vtmp,
-                           float *vtmp2 ){
+__global__ void
+magma_sblockreduce_kernel_fast( 
+    int Gs,
+    int n, 
+    int k,
+    magmaFloat_ptr vtmp,
+    magmaFloat_ptr vtmp2 )
+{
 
     extern __shared__ float temp[];    
     int Idx = threadIdx.x;
@@ -423,58 +435,68 @@ magma_sblockreduce_kernel_fast( int Gs,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i and r
 
-    @param
+    @param[in]
     k           int
                 # vectors v_i
 
-    @param
-    v           float*
+    @param[in]
+    v           magmaFloat_ptr 
                 v = (v_0 .. v_i.. v_k)
 
-    @param
-    r           float*
+    @param[in]
+    r           magmaFloat_ptr 
                 r
 
-    @param
-    d1          float*
+    @param[in]
+    d1          magmaFloat_ptr 
                 workspace
 
-    @param
-    d2          float*
+    @param[in]
+    d2          magmaFloat_ptr 
                 workspace
 
-    @param
-    skp         float*
+    @param[out]
+    skp         magmaFloat_ptr 
                 vector[k] of scalar products (<v_i,r>...)
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_sblas
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_smdotc(       int n, 
-                    int k, 
-                    float *v, 
-                    float *r,
-                    float *d1,
-                    float *d2,
-                    float *skp ){
+magma_smdotc(
+    int n, 
+    int k, 
+    magmaFloat_ptr v, 
+    magmaFloat_ptr r,
+    magmaFloat_ptr d1,
+    magmaFloat_ptr d2,
+    magmaFloat_ptr skp,
+    magma_queue_t queue )
+{
+    // set queue for old dense routines
+    magma_queue_t orig_queue;
+    magmablasGetKernelStream( &orig_queue );
+
     int local_block_size=256;
     dim3 Bs( local_block_size );
     dim3 Gs( (n+local_block_size-1)/local_block_size );
     dim3 Gs_next;
     int Ms =  (k)* (local_block_size) * sizeof( float ); // k vecs 
-    float *aux1 = d1, *aux2 = d2;
+    magmaFloat_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
 
-    if(k>1){
+    if (k>1) {
         magma_sblockdot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, k, v, r, d1 );
     }
-    else{
+    else {
         magma_sdot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, v, r, d1 );
     }
 /*
@@ -483,52 +505,53 @@ magma_smdotc(       int n,
     magma_sgpumemzero<<<Gs, Bs, 0>>>( d2, n*k,1 );
     //magmablas_slaset( MagmaUpperLower, n, k, d1, n );
     //magmablas_slaset( MagmaUpperLower, n, k, d2, n );
-    while( Gs.x > 1 ){
+    while( Gs.x > 1 ) {
         Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
         magma_sblockreduce_kernel<<< Gs_next.x, Bs.x, Ms >>> 
                                         ( Gs.x, n, k, aux1, aux2 );
         Gs.x = Gs_next.x;
         b = 1 - b;
-        if( b ){ aux1 = d1; aux2 = d2; }
+        if ( b ) { aux1 = d1; aux2 = d2; }
         else   { aux2 = d1; aux1 = d2; }
     }
-    for( int j=0; j<k; j++){
+    for( int j=0; j<k; j++) {
             magma_scopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
 */
    
-    if( k>1){
-        while( Gs.x > 1 ){
+    if ( k>1) {
+        while( Gs.x > 1 ) {
             Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-            if( Gs_next.x == 1 ) Gs_next.x = 2;
+            if ( Gs_next.x == 1 ) Gs_next.x = 2;
             magma_sblockreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                         ( Gs.x, n, k, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
             b = 1 - b;
-            if( b ){ aux1 = d1; aux2 = d2; }
+            if ( b ) { aux1 = d1; aux2 = d2; }
             else   { aux2 = d1; aux1 = d2; }
         }
     }
-    else{
-        while( Gs.x > 1 ){
+    else {
+        while( Gs.x > 1 ) {
             Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
-            if( Gs_next.x == 1 ) Gs_next.x = 2;
+            if ( Gs_next.x == 1 ) Gs_next.x = 2;
             magma_sreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                         ( Gs.x, n, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
             b = 1 - b;
-            if( b ){ aux1 = d1; aux2 = d2; }
+            if ( b ) { aux1 = d1; aux2 = d2; }
             else   { aux2 = d1; aux1 = d2; }
         }
     }
 
 
-    for( int j=0; j<k; j++){
+    for( int j=0; j<k; j++) {
             magma_scopyvector( 1, aux1+j*n, 1, skp+j, 1 );
     }
 
+   magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
 }
 
@@ -548,59 +571,64 @@ magma_smdotc(       int n,
     Arguments
     ---------
 
-    @param
+    @param[in]
     n           int
                 length of v_i and r
 
-    @param
+    @param[in]
     k           int
                 # vectors v_i
 
-    @param
-    v           float*
+    @param[in]
+    v           magmaFloat_ptr 
                 v = (v_0 .. v_i.. v_k)
 
-    @param
-    r           float*
+    @param[in]
+    r           magmaFloat_ptr 
                 r
 
-    @param
-    d1          float*
+    @param[in]
+    d1          magmaFloat_ptr 
                 workspace
 
-    @param
-    d2          float*
+    @param[in]
+    d2          magmaFloat_ptr 
                 workspace
 
-    @param
-    skp         float*
+    @param[out]
+    skp         magmaFloat_ptr 
                 vector[k] of scalar products (<v_i,r>...)
 
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_s
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_sgemvmdot(    int n, 
-                    int k, 
-                    float *v, 
-                    float *r,
-                    float *d1,
-                    float *d2,
-                    float *skp ){
-     
+magma_sgemvmdot(
+    int n, 
+    int k, 
+    magmaFloat_ptr v, 
+    magmaFloat_ptr r,
+    magmaFloat_ptr d1,
+    magmaFloat_ptr d2,
+    magmaFloat_ptr skp,
+    magma_queue_t queue )
+{
     int rows_left = k;
     int offset = 0;
     int chunk_size = 4;
     // process in chunks of 10 - has to be adapted to hardware and precision
-    while( rows_left > (chunk_size) ){
-        magma_smdotc( n, chunk_size, v+offset*n, r, d1, d2, skp+offset );
+    while( rows_left > (chunk_size) ) {
+        magma_smdotc( n, chunk_size, v+offset*n, r, d1, d2, skp+offset, queue );
         offset = offset + chunk_size;
         rows_left = rows_left-chunk_size;
 
     }
     // process rest
-    magma_smdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset ); 
+    magma_smdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset, queue ); 
 
 
    return MAGMA_SUCCESS;

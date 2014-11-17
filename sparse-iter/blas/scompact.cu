@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zcompact.cu normal z -> s, Tue Sep  2 12:38:33 2014
+       @generated from zcompact.cu normal z -> s, Sat Nov 15 19:54:21 2014
        @author Stan Tomov
 */
 #include "common_magma.h"
@@ -21,9 +21,12 @@
 __global__ void
 scompact_kernel(
     int m, int n,
-    float *dA, int ldda,
-    float *dnorms, float tol,
-    magma_index_t *active, magma_index_t *cBlock)
+    magmaFloat_ptr dA, 
+    int ldda,
+    magmaFloat_ptr dnorms, 
+    float tol,
+    magmaInt_ptr active, 
+    magmaInt_ptr cBlock)
 {
     // dA is processed across row i (by the current thread)
     int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -47,9 +50,11 @@ scompact_kernel(
 
 __global__ void
 scompactactive_kernel(
-    int m, int n,
-    float *dA, int ldda,
-    magma_index_t *active)
+    int m, 
+    int n,
+    magmaFloat_ptr dA, 
+    int ldda,
+    magmaInt_ptr active)
 {
     // dA is processed across row i (by the current thread)
     int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -79,46 +84,54 @@ scompactactive_kernel(
     Arguments
     ---------
     @param[in]
-    m       INTEGER
-            The number of rows of the matrix dA.  M >= 0.
+    m           INTEGER
+                The number of rows of the matrix dA.  M >= 0.
     
     @param[in]
-    n       INTEGER
-            The number of columns of the matrix dA.  N >= 0.
+    n           INTEGER
+                The number of columns of the matrix dA.  N >= 0.
     
-    @param[in,out]
-    dA      COMPLEX REAL array, dimension (LDDA,N)
-            The m by n matrix dA.
-    
-    @param[in]
-    ldda    INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,M).
+    @param[in][in,out]
+    dA          COMPLEX REAL array, dimension (LDDA,N)
+                The m by n matrix dA.
     
     @param[in]
-    dnorms  REAL array, dimension N
-            The norms of the N vectors in dA
+    ldda        INTEGER
+                The leading dimension of the array dA.  LDDA >= max(1,M).
+    
+    @param[in]
+    dnorms      REAL array, dimension N
+                The norms of the N vectors in dA
 
     @param[in]
-    tol     DOUBLE PRECISON
-            The tolerance value used in the criteria to compact or not.
+    tol         DOUBLE PRECISON
+                The tolerance value used in the criteria to compact or not.
 
-    @param[out]
-    active  INTEGER array, dimension N
-            A mask of 1s and 0s showing if a vector remains or has been removed
+    @param[in][out]
+    active      INTEGER array, dimension N
+                A mask of 1s and 0s showing if a vector remains or has been removed
             
-    @param[out]
-    cBlock  magma_index_t*
-            The number of vectors that remain in dA (i.e., with norms > tol).
+    @param[in][out]
+    cBlock      magmaInt_ptr
+                The number of vectors that remain in dA (i.e., with norms > tol).
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_sgegpuk
     ********************************************************************/
 
 extern "C" void
 magma_scompact(
-    magma_int_t m, magma_int_t n,
-    float *dA, magma_int_t ldda,
-    float *dnorms, float tol, 
-    magma_index_t *active, magma_index_t *cBlock)
+    magma_int_t m, 
+    magma_int_t n,
+    magmaFloat_ptr dA, 
+    magma_int_t ldda,
+    magmaFloat_ptr dnorms, 
+    float tol, 
+    magmaInt_ptr active,
+    magmaInt_ptr cBlock,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -139,10 +152,10 @@ magma_scompact(
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB );
     
-    scompact_kernel<<< grid, threads, 0, magma_stream >>>(
+    scompact_kernel<<< grid, threads, 0, queue >>>(
             m, n, dA, ldda, dnorms, tol, active, active+n );
 
-    magma_index_getvector( 1, active+n, 1, cBlock, 1 );
+    magma_igetvector( 1, active+n, 1, cBlock, 1 );
 }
 
 
@@ -164,7 +177,7 @@ magma_scompact(
     n       INTEGER
             The number of columns of the matrix dA.  N >= 0.
 
-    @param[in,out]
+    @param[in][in,out]
     dA      COMPLEX REAL array, dimension (LDDA,N)
             The m by n matrix dA.
 
@@ -175,15 +188,21 @@ magma_scompact(
     @param[in]
     active  INTEGER array, dimension N
             A mask of 1s and 0s showing if a vector remains or has been removed
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_s
     ********************************************************************/
 
 extern "C" void
 magma_scompactActive(
-    magma_int_t m, magma_int_t n,
-    float *dA, magma_int_t ldda,
-    magma_index_t *active)
+    magma_int_t m, 
+    magma_int_t n,
+    magmaFloat_ptr dA, 
+    magma_int_t ldda,
+    magmaInt_ptr active,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -204,7 +223,7 @@ magma_scompactActive(
     dim3 threads( NB );
     dim3 grid( (m + NB - 1)/NB );
 
-    scompactactive_kernel<<< grid, threads, 0, magma_stream >>>(
+    scompactactive_kernel<<< grid, threads, 0, queue >>>(
             m, n, dA, ldda, active);
 }
 

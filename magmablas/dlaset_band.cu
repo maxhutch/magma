@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from zlaset_band.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from zlaset_band.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -179,7 +179,8 @@ extern "C" void
 magmablas_dlaset_band_q(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
     double offdiag, double diag,
-    double *dA, magma_int_t ldda, magma_queue_t queue)
+    magmaDouble_ptr dA, magma_int_t ldda,
+    magma_queue_t queue)
 {
     magma_int_t info = 0;
     if ( uplo != MagmaLower && uplo != MagmaUpper )
@@ -219,7 +220,7 @@ extern "C" void
 magmablas_dlaset_band(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k,
     double offdiag, double diag,
-    double *dA, magma_int_t ldda)
+    magmaDouble_ptr dA, magma_int_t ldda)
 {
     magmablas_dlaset_band_q(uplo, m, n, k, offdiag, diag, dA, ldda, magma_stream);
 }

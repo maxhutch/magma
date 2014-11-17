@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
     
        @author Stan Tomov
        @author Mark Gates
@@ -13,12 +13,13 @@
 #include "common_magma.h"
 
 #define PRECISION_d
+#define REAL
 
 // Version 1 - LAPACK
 // Version 2 - MAGMA
 #define VERSION 2
 
-/**    
+/**
     Purpose
     -------
     DGESVD computes the singular value decomposition (SVD) of a real
@@ -151,12 +152,16 @@
     @ingroup magma_dgesvd_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
-             double *A,    magma_int_t lda, double *s,
-             double *U,    magma_int_t ldu,
-             double *VT,   magma_int_t ldvt,
-             double *work, magma_int_t lwork,
-             magma_int_t *info )
+magma_dgesvd(
+    magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
+    double *A,    magma_int_t lda, double *s,
+    double *U,    magma_int_t ldu,
+    double *VT,   magma_int_t ldvt,
+    double *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    double *rwork,
+    #endif
+    magma_int_t *info )
 {
     #define A(i_,j_)  (A  + (i_) + (j_)*lda)
     #define U(i_,j_)  (U  + (i_) + (j_)*ldu)
@@ -317,7 +322,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                 // (Workspace: need 3*N + (M+N)*NB)  [was: need 4*N, prefer 3*N + 2*N*NB]
                 lwork2 = lwork - iwork + 1;
                 #if VERSION == 1
-                lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie], 
+                lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie],
                              &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                 #else
                 magma_dgebrd(n, n, A, lda, s, &work[ie],
@@ -409,7 +414,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need N*N + 4*N, prefer N*N + 3*N + 2*N*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&n, &n, &work[ir], &ldwrkr, s, &work[ie], 
+                    lapackf77_dgebrd(&n, &n, &work[ir], &ldwrkr, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(n, n, &work[ir], ldwrkr, s, &work[ie],
@@ -456,7 +461,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need 3*N + M, prefer 3*N + (M + N)*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie], 
+                    lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(m, n, A, lda, s, &work[ie],
@@ -540,7 +545,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need N*N + 4*N, prefer N*N + 3*N + 2*N*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie], 
+                    lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(n, n, VT, ldvt, s, &work[ie],
@@ -625,7 +630,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need 4*N, prefer 3*N + 2*N*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie], 
+                    lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(n, n, VT, ldvt, s, &work[ie],
@@ -707,7 +712,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need N*N + 4*N, prefer N*N + 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, &work[ir], &ldwrkr, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, &work[ir], &ldwrkr, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, &work[ir], ldwrkr, s, &work[ie],
@@ -773,7 +778,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*N, prefer 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, A, lda, s, &work[ie],
@@ -859,7 +864,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         //           prefer 2*N*N + 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, &work[iu], ldwrku, s, &work[ie],
@@ -943,7 +948,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*N, prefer 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, A, lda, s, &work[ie],
@@ -1024,7 +1029,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need N*N + 4*N, prefer N*N + 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, &work[iu], ldwrku, s, &work[ie],
@@ -1105,7 +1110,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*N, prefer 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, VT, ldvt, s, &work[ie],
@@ -1191,7 +1196,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need N*N + 4*N, prefer N*N + 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, &work[ir], &ldwrkr, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, &work[ir], &ldwrkr, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, &work[ir], ldwrkr, s, &work[ie],
@@ -1262,7 +1267,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*N, prefer 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, A, lda, s, &work[ie],
@@ -1349,7 +1354,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 2*N*N + 4*N, prefer 2*N*N + 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, &work[iu], ldwrku, s, &work[ie],
@@ -1435,7 +1440,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*N, prefer 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, A, lda, s, &work[ie],
@@ -1519,7 +1524,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need N*N + 4*N, prefer N*N + 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, &work[iu], ldwrku, s, &work[ie],
@@ -1604,7 +1609,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*N, prefer 3*N + 2*N*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie], 
+                        lapackf77_dgebrd(&n, &n, VT, &ldvt, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(n, n, VT, ldvt, s, &work[ie],
@@ -1651,7 +1656,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
             lwork2 = lwork - iwork + 1;
 
             #if VERSION == 1
-            lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie], 
+            lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie],
                          &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
             #else
             magma_dgebrd(m, n, A, lda, s, &work[ie],
@@ -1774,7 +1779,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                 // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                 lwork2 = lwork - iwork + 1;
                 #if VERSION == 1
-                lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie], 
+                lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie],
                              &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                 #else
                 magma_dgebrd(m, m, A, lda, s, &work[ie],
@@ -1864,7 +1869,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need M*M + 4*M, prefer M*M + 3*M + 2*M*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&m, &m, &work[ir], &ldwrkr, s, &work[ie], 
+                    lapackf77_dgebrd(&m, &m, &work[ir], &ldwrkr, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(m, m, &work[ir], ldwrkr, s, &work[ie],
@@ -1911,7 +1916,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need 3*M + N, prefer 3*M + (M + N)*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie], 
+                    lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(m, n, A, lda, s, &work[ie],
@@ -1989,7 +1994,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need M*M + 4*M, prefer M*M + 3*M + 2*M*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie], 
+                    lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(m, m, U, ldu, s, &work[ie],
@@ -2065,7 +2070,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                     // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                     lwork2 = lwork - iwork + 1;
                     #if VERSION == 1
-                    lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie], 
+                    lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie],
                                  &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                     #else
                     magma_dgebrd(m, m, U, ldu, s, &work[ie],
@@ -2140,7 +2145,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need M*M + 4*M, prefer M*M + 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, &work[ir], &ldwrkr, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, &work[ir], &ldwrkr, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, &work[ir], ldwrkr, s, &work[ie],
@@ -2202,7 +2207,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, A, lda, s, &work[ie],
@@ -2280,7 +2285,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 2*M*M + 4*M, prefer 2*M*M + 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, &work[iu], ldwrku, s, &work[ie],
@@ -2355,7 +2360,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, A, lda, s, &work[ie],
@@ -2429,7 +2434,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need M*M + 4*M, prefer M*M + 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, &work[iu], ldwrku, s, &work[ie],
@@ -2501,7 +2506,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, U, ldu, s, &work[ie],
@@ -2580,7 +2585,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need M*M + 4*M, prefer M*M + 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, &work[ir], &ldwrkr, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, &work[ir], &ldwrkr, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, &work[ir], ldwrkr, s, &work[ie],
@@ -2644,7 +2649,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, A, lda, s, &work[ie],
@@ -2724,7 +2729,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 2*M*M + 4*M, prefer 2*M*M + 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, &work[iu], ldwrku, s, &work[ie],
@@ -2803,7 +2808,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, A, &lda, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, A, lda, s, &work[ie],
@@ -2880,7 +2885,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need M*M + 4*M, prefer M*M + 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, &work[iu], &ldwrku, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, &work[iu], ldwrku, s, &work[ie],
@@ -2957,7 +2962,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
                         // (Workspace: need 4*M, prefer 3*M + 2*M*NB)
                         lwork2 = lwork - iwork + 1;
                         #if VERSION == 1
-                        lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie], 
+                        lapackf77_dgebrd(&m, &m, U, &ldu, s, &work[ie],
                                      &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
                         #else
                         magma_dgebrd(m, m, U, ldu, s, &work[ie],
@@ -3003,7 +3008,7 @@ magma_dgesvd(magma_vec_t jobu, magma_vec_t jobvt, magma_int_t m, magma_int_t n,
             // (Workspace: need 3*M + N, prefer 3*M + (M + N)*NB)
             lwork2 = lwork - iwork + 1;
             #if VERSION == 1
-            lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie], 
+            lapackf77_dgebrd(&m, &n, A, &lda, s, &work[ie],
                          &work[itauq], &work[itaup], &work[iwork], &lwork2, &ierr);
             #else
             magma_dgebrd(m, n, A, lda, s, &work[ie],

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 */
@@ -73,9 +73,11 @@
     @ingroup magma_zposv_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_zposv_gpu( magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
-                 magmaDoubleComplex *dA, magma_int_t ldda,
-                 magmaDoubleComplex *dB, magma_int_t lddb, magma_int_t *info )
+magma_zposv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magma_int_t *info )
 {
     *info = 0;
     if ( uplo != MagmaUpper && uplo != MagmaLower )

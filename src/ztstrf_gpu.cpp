@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -132,13 +132,19 @@
     @ingroup magma_zgesv_tile
     ********************************************************************/
 extern "C" magma_int_t
-magma_ztstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t ib, magma_int_t nb,
-                  magmaDoubleComplex *hU, magma_int_t ldhu, magmaDoubleComplex *dU, magma_int_t lddu,
-                  magmaDoubleComplex *hA, magma_int_t ldha, magmaDoubleComplex *dA, magma_int_t ldda,
-                  magmaDoubleComplex *hL, magma_int_t ldhl, magmaDoubleComplex *dL, magma_int_t lddl,
-                  magma_int_t *ipiv,
-                  magmaDoubleComplex *hwork, magma_int_t ldhwork, magmaDoubleComplex *dwork, magma_int_t lddwork,
-                  magma_int_t *info)
+magma_ztstrf_gpu(
+    magma_order_t order, magma_int_t m, magma_int_t n,
+    magma_int_t ib, magma_int_t nb,
+    magmaDoubleComplex    *hU, magma_int_t ldhu,
+    magmaDoubleComplex_ptr dU, magma_int_t lddu,
+    magmaDoubleComplex    *hA, magma_int_t ldha,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex    *hL, magma_int_t ldhl,
+    magmaDoubleComplex_ptr dL, magma_int_t lddl,
+    magma_int_t *ipiv,
+    magmaDoubleComplex    *hwork, magma_int_t ldhwork,
+    magmaDoubleComplex_ptr dwork, magma_int_t lddwork,
+    magma_int_t *info)
 {
 #define UT(i,j) (dUT + (i)*ib*lddu + (j)*ib )
 #define AT(i,j) (dAT + (i)*ib*ldda + (j)*ib )
@@ -155,10 +161,10 @@ magma_ztstrf_gpu( magma_order_t order, magma_int_t m, magma_int_t n, magma_int_t
     int iinfo = 0;
     int maxm, mindim;
     int i, j, im, s, ip, ii, sb, p = 1;
-    magmaDoubleComplex *dAT, *dUT;
-    magmaDoubleComplex *dAp, *dUp;
+    magmaDoubleComplex_ptr dAT, dUT;
+    magmaDoubleComplex_ptr dAp, dUp;
 #ifndef WITHOUTTRTRI
-    magmaDoubleComplex *dL2 = dL + ib;
+    magmaDoubleComplex_ptr dL2 = dL + ib;
     magmaDoubleComplex *hL2 = hL + ib;
     p = 2;
 #endif

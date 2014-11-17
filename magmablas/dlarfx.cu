@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlarfx.cu normal z -> d, Tue Sep  2 12:38:16 2014
+       @generated from zlarfx.cu normal z -> d, Sat Nov 15 19:53:59 2014
 
 */
 #include "common_magma.h"
@@ -36,7 +36,7 @@ void magma_dlarfx_kernel( int m, double *v, double *tau,
 
         /* NOTE HERE C is the C at position C(i, 0) 
          * if blockIdx.x<it it performs the V(i:n,i)' * V(i:n,1:i-1)' used for computing T
-         * if blockIdx.x>it it perform  w := v' * C  */
+         * if blockIdx.x>it it perform  w := v**H * C  */
         lsum = MAGMA_D_ZERO;
         for( int j = tx; j < m; j += BLOCK_SIZE ){
             if (j==0){
@@ -148,11 +148,11 @@ void magma_dtrmv_tkernel(double *T, int ldt, double *t, double *y)
 /*
     Apply a real elementary reflector H to a real M-by-N
     matrix C from the left. H is represented in the form
-          H = I - tau * v * v'
+          H = I - tau * v * v**H
     where tau is a real scalar and v is a real vector.
     If tau = 0, then H is taken to be the unit matrix.
 
-    To apply H' (the conjugate transpose of H), supply conjg(tau) 
+    To apply H**H (the conjugate transpose of H), supply conjg(tau) 
     instead tau.
 
     The norms of v(:, 1:n) are given as input in xnorm(1:n). On exit, the norms
@@ -160,20 +160,25 @@ void magma_dtrmv_tkernel(double *T, int ldt, double *t, double *y)
     LAPACK's dlarf routine. 
  */
 extern "C" void
-magma_dlarfx_gpu(magma_int_t m, magma_int_t n, double *v, double *tau,
-                double *c, magma_int_t ldc, double *xnorm, 
-                double *T, magma_int_t i, double *work )
+magma_dlarfx_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaDouble_ptr v,
+    magmaDouble_ptr tau,
+    magmaDouble_ptr C, magma_int_t ldc,
+    magmaDouble_ptr        xnorm, 
+    magmaDouble_ptr dT, magma_int_t iter,
+    magmaDouble_ptr work )
 {
-    magma_int_t N = n + i + 1;
+    magma_int_t N = n + iter + 1;
 
-    if (i==0)
-        magma_dlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, c, ldc, xnorm, T+i*N, i);
+    if (iter==0)
+        magma_dlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, dT+iter*N, iter);
     else
-        magma_dlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, c, ldc, xnorm, work, i);
+        magma_dlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, work, iter);
 
-    if (i > 0){
-        //magma_dtrmv_kernel<<< 1, i, 0, magma_stream >>>( T, N, T+i*N);
-        magma_dtrmv_kernel2<<< i, i, 0, magma_stream  >>>( T, N, work, T+i*N, tau);
+    if (iter > 0){
+        //magma_dtrmv_kernel<<< 1, iter, 0, magma_stream >>>( dT, N, dT+iter*N);
+        magma_dtrmv_kernel2<<< iter, iter, 0, magma_stream  >>>( dT, N, work, dT+iter*N, tau);
     }
 }
 

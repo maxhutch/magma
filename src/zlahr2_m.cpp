@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -131,7 +131,7 @@ magma_zlahr2_m(
     magmaDoubleComplex *tau,
     magmaDoubleComplex *T, magma_int_t ldt,
     magmaDoubleComplex *Y, magma_int_t ldy,
-    struct zgehrd_data* data )
+    struct zgehrd_data *data )
 {
     #define  A(  i, j ) ( A + (i) + (j)*lda)
     #define  Y(  i, j ) ( Y + (i) + (j)*ldy)

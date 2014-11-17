@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from testing_zher2k.cpp normal z -> s, Tue Sep  2 12:38:27 2014
+       @generated from testing_zher2k.cpp normal z -> s, Sat Nov 15 19:54:18 2014
        @author Chongxiao Cao
 */
 // includes, system
@@ -13,14 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
 // includes, project
+#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -40,7 +38,7 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     
     float *h_A, *h_B, *h_C, *h_Ccublas;
-    float *d_A, *d_B, *d_C;
+    magmaFloat_ptr d_A, d_B, d_C;
     float c_neg_one = MAGMA_S_NEG_ONE;
     float alpha = MAGMA_S_MAKE(  0.29, -0.86 );
     float beta  = MAGMA_D_MAKE( -0.48,  0.38 );
@@ -108,7 +106,7 @@ int main( int argc, char** argv)
             magma_ssetmatrix( N, N, h_C, ldc, d_C, lddc );
             
             cublas_time = magma_sync_wtime( NULL );
-            cublasSsyr2k( handle, cublas_uplo_const(opts.uplo), cublas_trans_const(opts.transA), N, K,
+            cublasSsyr2k( opts.handle, cublas_uplo_const(opts.uplo), cublas_trans_const(opts.transA), N, K,
                           &alpha, d_A, ldda,
                                   d_B, lddb,
                           &beta,  d_C, lddc );

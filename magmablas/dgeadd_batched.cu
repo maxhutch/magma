@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zgeadd_batched.cu normal z -> d, Tue Sep  2 12:38:15 2014
+       @generated from zgeadd_batched.cu normal z -> d, Sat Nov 15 19:53:59 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -104,8 +104,8 @@ extern "C" void
 magmablas_dgeadd_batched_q(
     magma_int_t m, magma_int_t n,
     double alpha,
-    const double * const *dAarray, magma_int_t ldda,
-    double              **dBarray, magma_int_t lddb,
+    magmaDouble_const_ptr  const dAarray[], magma_int_t ldda,
+    magmaDouble_ptr              dBarray[], magma_int_t lddb,
     magma_int_t batchCount,
     magma_queue_t queue )
 {
@@ -145,8 +145,8 @@ extern "C" void
 magmablas_dgeadd_batched(
     magma_int_t m, magma_int_t n,
     double alpha,
-    const double * const *dAarray, magma_int_t ldda,
-    double              **dBarray, magma_int_t lddb,
+    magmaDouble_const_ptr  const dAarray[], magma_int_t ldda,
+    magmaDouble_ptr              dBarray[], magma_int_t lddb,
     magma_int_t batchCount )
 {
     magmablas_dgeadd_batched_q(

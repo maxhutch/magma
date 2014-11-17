@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions normal z -> s d c
 
@@ -166,7 +166,8 @@ __global__ void ztranspose_inplace_even( int n, magmaDoubleComplex *matrix, int 
     ********************************************************************/
 extern "C" void
 magmablas_ztranspose_inplace_q(
-    magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda,
+    magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -201,7 +202,9 @@ magmablas_ztranspose_inplace_q(
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_ztranspose_inplace( magma_int_t n, magmaDoubleComplex *dA, magma_int_t ldda )
+magmablas_ztranspose_inplace(
+    magma_int_t n,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda )
 {
     magmablas_ztranspose_inplace_q( n, dA, ldda, magma_stream );
 }

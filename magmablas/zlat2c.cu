@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -198,8 +198,8 @@ void zlat2c_upper(
 extern "C" void
 magmablas_zlat2c_q(
     magma_uplo_t uplo, magma_int_t n,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    magmaFloatComplex *SA,       magma_int_t ldsa,
+    magmaDoubleComplex_const_ptr  A, magma_int_t lda,
+    magmaFloatComplex_ptr        SA, magma_int_t ldsa,
     magma_int_t *info,
     magma_queue_t queue )
 {
@@ -225,8 +225,8 @@ magmablas_zlat2c_q(
     
     double rmax = (double)lapackf77_slamch("O");
 
-    dim3 threads( BLK_X );
-    dim3 grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    dim3 threads( BLK_X, 1 );
+    dim3    grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
     if (uplo == MagmaLower)
@@ -245,8 +245,8 @@ magmablas_zlat2c_q(
 extern "C" void
 magmablas_zlat2c(
     magma_uplo_t uplo, magma_int_t n,
-    const magmaDoubleComplex *A, magma_int_t lda,
-    magmaFloatComplex *SA,       magma_int_t ldsa,
+    magmaDoubleComplex_const_ptr  A, magma_int_t lda,
+    magmaFloatComplex_ptr        SA, magma_int_t ldsa,
     magma_int_t *info )
 {
     magmablas_zlat2c_q( uplo, n, A, lda, SA, ldsa, info, magma_stream );

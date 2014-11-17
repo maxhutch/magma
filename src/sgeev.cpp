@@ -1,18 +1,19 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from dgeev.cpp normal d -> s, Tue Sep  2 12:38:24 2014
+       @generated from dgeev.cpp normal d -> s, Sat Nov 15 19:54:10 2014
        @author Stan Tomov
        @author Mark Gates
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 
 #define PRECISION_s
+#define REAL
 
 /*
  * Version1 - LAPACK              (lapack_zgehrd and lapack_zunghr)
@@ -37,10 +38,10 @@
     eigenvalues and, optionally, the left and/or right eigenvectors.
 
     The right eigenvector v(j) of A satisfies
-                     A * v(j) = lambda(j) * v(j)
+        A * v(j) = lambda(j) * v(j)
     where lambda(j) is its eigenvalue.
     The left eigenvector u(j) of A satisfies
-                  u(j)**T * A = lambda(j) * u(j)**T
+        u(j)**T * A = lambda(j) * u(j)**T
     where u(j)**T denotes the transpose of u(j).
 
     The computed eigenvectors are normalized to have Euclidean norm
@@ -127,7 +128,7 @@
       -     < 0:  if INFO = -i, the i-th argument had an illegal value.
       -     > 0:  if INFO = i, the QR algorithm failed to compute all the
                   eigenvalues, and no eigenvectors have been computed;
-                  elements and i+1:N of W contain eigenvalues which have
+                  elements and i+1:N of w contain eigenvalues which have
                   converged.
 
     @ingroup magma_sgeev_driver
@@ -136,10 +137,17 @@ extern "C" magma_int_t
 magma_sgeev(
     magma_vec_t jobvl, magma_vec_t jobvr, magma_int_t n,
     float *A, magma_int_t lda,
+    #ifdef COMPLEX
+    float *w,
+    #else
     float *wr, float *wi,
+    #endif
     float *VL, magma_int_t ldvl,
     float *VR, magma_int_t ldvr,
     float *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork,
+    #endif
     magma_int_t *info )
 {
     #define VL(i,j)  (VL + (i) + (j)*ldvl)
@@ -207,7 +215,7 @@ magma_sgeev(
     }
     
     #if defined(VERSION3)
-    float *dT;
+    magmaFloat_ptr dT;
     if (MAGMA_SUCCESS != magma_smalloc( &dT, nb*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;

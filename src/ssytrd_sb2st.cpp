@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd_hb2st.cpp normal z -> s, Tue Sep  2 12:38:23 2014
+       @generated from zhetrd_hb2st.cpp normal z -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
@@ -23,12 +23,19 @@
 #define PRECISION_s
 
 static void *magma_ssytrd_sb2st_parallel_section(void *arg);
-static void magma_stile_bulge_parallel(magma_int_t my_core_id, magma_int_t cores_num, float *A, magma_int_t lda,
-                                       float *V, magma_int_t ldv, float *TAU, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
-                                       magma_int_t grsiz, magma_int_t Vblksiz, volatile magma_int_t *prog);
 
-static void magma_stile_bulge_computeT_parallel(magma_int_t my_core_id, magma_int_t cores_num, float *V, magma_int_t ldv, float *TAU,
-                                                float *T, magma_int_t ldt, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz);
+static void magma_stile_bulge_parallel(
+    magma_int_t my_core_id, magma_int_t cores_num,
+    float *A, magma_int_t lda,
+    float *V, magma_int_t ldv,
+    float *TAU, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
+    magma_int_t grsiz, magma_int_t Vblksiz, volatile magma_int_t *prog);
+
+static void magma_stile_bulge_computeT_parallel(
+    magma_int_t my_core_id, magma_int_t cores_num,
+    float *V, magma_int_t ldv, float *TAU,
+    float *T, magma_int_t ldt,
+    magma_int_t n, magma_int_t nb, magma_int_t Vblksiz);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,12 +58,14 @@ typedef struct magma_sbulge_data_s {
     pthread_barrier_t barrier;
 } magma_sbulge_data;
 
-void magma_sbulge_data_init(magma_sbulge_data *sbulge_data_S, 
-        magma_int_t threads_num, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
-        magma_int_t grsiz, magma_int_t Vblksiz, magma_int_t compT,
-        float *A, magma_int_t lda, float *V,
-        magma_int_t ldv, float *TAU, float *T,
-        magma_int_t ldt, volatile magma_int_t* prog)
+void magma_sbulge_data_init(
+    magma_sbulge_data *sbulge_data_S,
+    magma_int_t threads_num, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
+    magma_int_t grsiz, magma_int_t Vblksiz, magma_int_t compT,
+    float *A, magma_int_t lda,
+    float *V, magma_int_t ldv, float *TAU,
+    float *T, magma_int_t ldt,
+    volatile magma_int_t* prog)
 {
     sbulge_data_S->threads_num = threads_num;
     sbulge_data_S->n = n;
@@ -87,7 +96,7 @@ typedef struct magma_sbulge_id_data_s {
 
 void magma_sbulge_id_data_init(magma_sbulge_id_data *id_data, magma_int_t id, magma_sbulge_data* data)
 {
-    id_data->id = id; 
+    id_data->id = id;
     id_data->data = data;
 }
 
@@ -463,9 +472,12 @@ static void *magma_ssytrd_sb2st_parallel_section(void *arg)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void magma_stile_bulge_parallel(magma_int_t my_core_id, magma_int_t cores_num, float *A, magma_int_t lda,
-                                       float *V, magma_int_t ldv, float *TAU, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
-                                       magma_int_t grsiz, magma_int_t Vblksiz, volatile magma_int_t *prog)
+static void magma_stile_bulge_parallel(
+    magma_int_t my_core_id, magma_int_t cores_num,
+    float *A, magma_int_t lda,
+    float *V, magma_int_t ldv,
+    float *TAU, magma_int_t n, magma_int_t nb, magma_int_t nbtiles,
+    magma_int_t grsiz, magma_int_t Vblksiz, volatile magma_int_t *prog)
 {
     magma_int_t sweepid, myid, shift, stt, st, ed, stind, edind;
     magma_int_t blklastind, colpt;
@@ -608,8 +620,11 @@ static void magma_stile_bulge_parallel(magma_int_t my_core_id, magma_int_t cores
 #define V(m)     &(V[(m)])
 #define TAU(m)   &(TAU[(m)])
 #define T(m)   &(T[(m)])
-static void magma_stile_bulge_computeT_parallel(magma_int_t my_core_id, magma_int_t cores_num, float *V, magma_int_t ldv, float *TAU,
-                                                float *T, magma_int_t ldt, magma_int_t n, magma_int_t nb, magma_int_t Vblksiz)
+static void magma_stile_bulge_computeT_parallel(
+    magma_int_t my_core_id, magma_int_t cores_num,
+    float *V, magma_int_t ldv, float *TAU,
+    float *T, magma_int_t ldt,
+    magma_int_t n, magma_int_t nb, magma_int_t Vblksiz)
 {
     //%===========================
     //%   local variables

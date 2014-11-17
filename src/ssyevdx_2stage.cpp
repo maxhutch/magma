@@ -1,24 +1,24 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dsyevdx_2stage.cpp normal d -> s, Tue Sep  2 12:38:23 2014
+       @generated from dsyevdx_2stage.cpp normal d -> s, Sat Nov 15 19:54:10 2014
 
 */
 #include "common_magma.h"
-#include "timer.h"
+#include "magma_timer.h"
 #include "magma_bulge.h"
 #include "magma_sbulge.h"
 
-
-#define PRECISION_z
+#define PRECISION_s
+#define REAL
 
 /**
     Purpose
@@ -160,14 +160,18 @@
     @ingroup magma_ssyev_driver
     ********************************************************************/
 extern "C" magma_int_t
-magma_ssyevdx_2stage(magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
-                     magma_int_t n,
-                     float *A, magma_int_t lda,
-                     float vl, float vu, magma_int_t il, magma_int_t iu,
-                     magma_int_t *m, float *w,
-                     float *work, magma_int_t lwork,
-                     magma_int_t *iwork, magma_int_t liwork,
-                     magma_int_t *info)
+magma_ssyevdx_2stage(
+    magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo,
+    magma_int_t n,
+    float *A, magma_int_t lda,
+    float vl, float vu, magma_int_t il, magma_int_t iu,
+    magma_int_t *m, float *w,
+    float *work, magma_int_t lwork,
+    #ifdef COMPLEX
+    float *rwork, magma_int_t lrwork,
+    #endif
+    magma_int_t *iwork, magma_int_t liwork,
+    magma_int_t *info)
 {
     #define A(i_,j_)  (A  + (i_) + (j_)*lda)
     #define A2(i_,j_) (A2 + (i_) + (j_)*lda2)

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegst_gpu.cpp normal z -> s, Tue Sep  2 12:38:23 2014
+       @generated from zhegst_gpu.cpp normal z -> s, Sat Nov 15 19:54:10 2014
 */
 
 #include "common_magma.h"
@@ -79,9 +79,11 @@
     @ingroup magma_ssyev_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_ssygst_gpu(magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
-                 float *dA, magma_int_t ldda,
-                 float *dB, magma_int_t lddb, magma_int_t *info)
+magma_ssygst_gpu(
+    magma_int_t itype, magma_uplo_t uplo, magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dB, magma_int_t lddb,
+    magma_int_t *info)
 {
 #define A(i, j) (w + (j)*lda + (i))
 #define B(i, j) (w + nb*lda + (j)*ldb + (i))

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmqr2_gpu.cpp normal z -> s, Tue Sep  2 12:38:21 2014
+       @generated from zunmqr2_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -106,20 +106,21 @@
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_sormqr2_gpu(magma_side_t side, magma_trans_t trans,
-                  magma_int_t m, magma_int_t n, magma_int_t k,
-                  float *dA, magma_int_t ldda,
-                  float *tau,
-                  float *dC, magma_int_t lddc,
-                  float *wA, magma_int_t ldwa,
-                  magma_int_t *info)
+magma_sormqr2_gpu(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    float    *tau,
+    magmaFloat_ptr dC, magma_int_t lddc,
+    float    *wA, magma_int_t ldwa,
+    magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
     /* Allocate work space on the GPU */
-    float *dwork;
+    magmaFloat_ptr dwork;
 
     float c_zero = MAGMA_S_ZERO;
     float c_one  = MAGMA_S_ONE;

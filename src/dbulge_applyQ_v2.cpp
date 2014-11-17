@@ -8,7 +8,7 @@
  *     @author Stan Tomov
  *     @author Raffaele Solca
  *
- *     @generated from zbulge_applyQ_v2.cpp normal z -> d, Tue Sep  2 12:38:23 2014
+ *     @generated from zbulge_applyQ_v2.cpp normal z -> d, Sat Nov 15 19:54:10 2014
  *
  */
 
@@ -42,13 +42,14 @@
      */
 /***************************************************************************/
 extern "C" magma_int_t
-magma_dbulge_applyQ_v2(magma_side_t side,
-                        magma_int_t NE, magma_int_t N,
-                        magma_int_t NB, magma_int_t Vblksiz,
-                        double *dE, magma_int_t ldde,
-                        double *V, magma_int_t ldv,
-                        double *T, magma_int_t ldt,
-                        magma_int_t *info)
+magma_dbulge_applyQ_v2(
+    magma_side_t side,
+    magma_int_t NE, magma_int_t N,
+    magma_int_t NB, magma_int_t Vblksiz,
+    magmaDouble_ptr dE, magma_int_t ldde,
+    double *V, magma_int_t ldv,
+    double *T, magma_int_t ldt,
+    magma_int_t *info)
 {
     //%===========================
     //%   local variables

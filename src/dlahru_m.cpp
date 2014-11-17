@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
-       @generated from zlahru_m.cpp normal z -> d, Tue Sep  2 12:38:24 2014
+       @generated from zlahru_m.cpp normal z -> d, Sat Nov 15 19:54:09 2014
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -71,7 +71,7 @@ extern "C" magma_int_t
 magma_dlahru_m(
     magma_int_t n, magma_int_t ihi, magma_int_t k, magma_int_t nb,
     double *A, magma_int_t lda,
-    struct dgehrd_data* data )
+    struct dgehrd_data *data )
 {
     #define dA(  d, i, j ) (data->A [d] + (i) + (j)*ldda)
     #define dTi( d       ) (data->Ti[d])

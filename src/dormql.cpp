@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.5.0) --
+    -- MAGMA (version 1.6.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2014
+       @date November 2014
 
        @author Raffaele Solca
        @author Mark Gates
 
-       @generated from zunmql.cpp normal z -> d, Tue Sep  2 12:38:21 2014
+       @generated from zunmql.cpp normal z -> d, Sat Nov 15 19:54:09 2014
 
 */
 #include "common_magma.h"
@@ -113,13 +113,14 @@
     @ingroup magma_dgeqlf_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_dormql(magma_side_t side, magma_trans_t trans,
-             magma_int_t m, magma_int_t n, magma_int_t k,
-             double *A, magma_int_t lda,
-             double *tau,
-             double *C, magma_int_t ldc,
-             double *work, magma_int_t lwork,
-             magma_int_t *info)
+magma_dormql(
+    magma_side_t side, magma_trans_t trans,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    double *A, magma_int_t lda,
+    double *tau,
+    double *C, magma_int_t ldc,
+    double *work, magma_int_t lwork,
+    magma_int_t *info)
 {
     #define  A(i_,j_) ( A + (i_) + (j_)*lda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
