@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2013
        
-       @generated from zset_pointer.cu normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from zset_pointer.cu normal z -> s, Fri Jan 30 19:00:10 2015
        @author Azzam Haidar
        @author Tingxing Dong
 
@@ -30,7 +30,8 @@ void sset_pointer(float **output_array,
                  magma_int_t lda,
                  magma_int_t row, magma_int_t column, 
                  magma_int_t batchSize,
-                 magma_int_t batchCount)
+                 magma_int_t batchCount, 
+                 magma_queue_t queue)
 
 {
 /*
@@ -40,7 +41,7 @@ void sset_pointer(float **output_array,
 */
 
 
-    kernel_set_pointer<<<batchCount, 1, 0, magma_stream>>>(output_array, input, lda,  row, column, batchSize);
+    kernel_set_pointer<<<batchCount, 1, 0, queue>>>(output_array, input, lda,  row, column, batchSize);
 }
 
 
@@ -58,7 +59,7 @@ extern "C"
 void sset_array(float **output_array,
                float **input_array, magma_int_t lda,
                magma_int_t row, magma_int_t column, 
-               magma_int_t batchCount)
+               magma_int_t batchCount, magma_queue_t queue)
 
 {
 /*
@@ -66,14 +67,14 @@ void sset_array(float **output_array,
     input_array contains the pointers to the initial position.
     output_array[i] = input_array[i] + row + lda * column; 
 */
-    zdisplace_pointers_kernel<<<batchCount, 1, 0, magma_stream>>>(output_array, input_array, lda, row, column);
+    zdisplace_pointers_kernel<<<batchCount, 1, 0, queue>>>(output_array, input_array, lda, row, column);
 }
 
 extern "C"
 void magma_sdisplace_pointers(float **output_array,
                float **input_array, magma_int_t lda,
                magma_int_t row, magma_int_t column, 
-               magma_int_t batchCount)
+               magma_int_t batchCount, magma_queue_t queue)
 
 {
 /*
@@ -81,7 +82,7 @@ void magma_sdisplace_pointers(float **output_array,
     input_array contains the pointers to the initial position.
     output_array[i] = input_array[i] + row + lda * column; 
 */
-    zdisplace_pointers_kernel<<<batchCount, 1, 0, magma_stream>>>(output_array, input_array, lda, row, column);
+    zdisplace_pointers_kernel<<<batchCount, 1, 0, queue>>>(output_array, input_array, lda, row, column);
 }
 
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
-       @generated from zhetrf_nopiv_cpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zhetrf_nopiv_cpu.cpp normal z -> c, Fri Jan 30 19:00:17 2015
  
 */
 #include "common_magma.h"
@@ -24,7 +24,6 @@ int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaFloatComplex *Aik;
     magmaFloatComplex *Dkk;
     magmaFloatComplex *Akj;
-    magmaFloatComplex *Cij;
 
     /* Check input arguments */
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
@@ -54,7 +53,6 @@ int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
 
     if ( uplo == MagmaLower )
     {
-        Cij = C;
         for(int j=0; j<m; j++)
         {
             for(int i=j; i<m; i++)

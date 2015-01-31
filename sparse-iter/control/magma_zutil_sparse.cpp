@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include <sys/file.h>
 #include <errno.h>
 #include <sys/stat.h>
+
 // includes, project
 #include "magmasparse_z.h"
 #include "magma.h"
@@ -137,7 +137,7 @@ magma_zparse_opts(
     opts->solver_par.version = 0;
     opts->solver_par.restart = 30;
     opts->solver_par.num_eigenvalues = 0;
-    opts->precond_par.solver = Magma_JACOBI;
+    opts->precond_par.solver = Magma_NONE;
     opts->precond_par.epsilon = 0.01;
     opts->precond_par.maxiter = 100;
     opts->precond_par.restart = 10;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmergebicgstab.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zmergebicgstab.cu normal z -> d, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -25,10 +25,10 @@
 __global__ void
 magma_dbicgmerge1_kernel(  
     int n, 
-    magmaDouble_ptr skp,
-    magmaDouble_ptr v, 
-    magmaDouble_ptr r, 
-    magmaDouble_ptr p )
+    double * skp,
+    double * v, 
+    double * r, 
+    double * p )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double beta=skp[1];
@@ -103,10 +103,10 @@ magma_dbicgmerge1(
 __global__ void
 magma_dbicgmerge2_kernel(  
     int n, 
-    magmaDouble_ptr skp, 
-    magmaDouble_ptr r,
-    magmaDouble_ptr v, 
-    magmaDouble_ptr s )
+    double * skp, 
+    double * r,
+    double * v, 
+    double * s )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double alpha=skp[0];
@@ -180,12 +180,12 @@ magma_dbicgmerge2(
 __global__ void
 magma_dbicgmerge3_kernel(  
     int n, 
-    magmaDouble_ptr skp, 
-    magmaDouble_ptr p,
-    magmaDouble_ptr se,
-    magmaDouble_ptr t,
-    magmaDouble_ptr x, 
-    magmaDouble_ptr r )
+    double * skp, 
+    double * p,
+    double * se,
+    double * t,
+    double * x, 
+    double * r )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double alpha=skp[0];
@@ -274,7 +274,7 @@ magma_dbicgmerge3(
 
 __global__ void
 magma_dbicgmerge4_kernel_1(  
-    magmaDouble_ptr skp )
+    double * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -286,7 +286,7 @@ magma_dbicgmerge4_kernel_1(
 
 __global__ void
 magma_dbicgmerge4_kernel_2(  
-    magmaDouble_ptr skp )
+    double * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -298,7 +298,7 @@ magma_dbicgmerge4_kernel_2(
 
 __global__ void
 magma_dbicgmerge4_kernel_3(  
-    magmaDouble_ptr skp )
+    double * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 

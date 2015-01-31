@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,10 +8,9 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgetf2_kernels.cu normal z -> d, Sat Nov 15 19:53:59 2014
+       @generated from zgetf2_kernels.cu normal z -> d, Fri Jan 30 19:00:10 2015
 */
 
-#include <stdio.h>
 #include "common_magma.h"
 #include "magmablas.h"
 #include "batched_kernel_param.h"
@@ -195,7 +194,7 @@ tree_idamax_kernel2_batched(int n, int step,  magma_int_t** ipiv_array, magma_in
 
 
 magma_int_t magma_idamax_lg_batched(magma_int_t length, double **x_array, magma_int_t incx, magma_int_t step,  magma_int_t lda,
-        magma_int_t** ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount)
+        magma_int_t** ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 
 {
     if(length == 1) return 0;
@@ -217,12 +216,12 @@ magma_int_t magma_idamax_lg_batched(magma_int_t length, double **x_array, magma_
     magma_malloc((void**)&id_pool_array, batchCount * sizeof(*id_pool_array));
 
 #if defined(PRECISION_z) || defined(PRECISION_d)
-    dset_pointer(data_pool_array, data_pool, 1, 0, 0, num_blocks, batchCount);
+    dset_pointer(data_pool_array, data_pool, 1, 0, 0, num_blocks, batchCount, queue);
 #else
-    sset_pointer(data_pool_array, data_pool, 1, 0, 0, num_blocks, batchCount);
+    sset_pointer(data_pool_array, data_pool, 1, 0, 0, num_blocks, batchCount, queue);
 #endif 
 
-    set_ipointer(id_pool_array, id_pool, 1, 0, 0, num_blocks, batchCount);
+    set_ipointer(id_pool_array, id_pool, 1, 0, 0, num_blocks, batchCount, queue);
 
 
     if( num_blocks > zamax) 
@@ -234,13 +233,13 @@ magma_int_t magma_idamax_lg_batched(magma_int_t length, double **x_array, magma_
         // first level tree reduction
         dim3 grid(num_blocks, 1, batchCount);
 
-        tree_idamax_kernel_batched<<<grid, zamax>>>(length, x_array, incx, step, lda, ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
+        tree_idamax_kernel_batched<<<grid, zamax, 0, queue>>>(length, x_array, incx, step, lda, ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
 
         if( num_blocks > 1)
         {
             // second level tree reduction
             dim3 grid2(1, 1, batchCount);
-            tree_idamax_kernel2_batched<<<grid2, zamax>>>(num_blocks, step,  ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
+            tree_idamax_kernel2_batched<<<grid2, zamax, 0, queue>>>(num_blocks, step,  ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
         }
     }
 
@@ -260,7 +259,7 @@ magma_int_t magma_idamax_lg_batched(magma_int_t length, double **x_array, magma_
 extern "C"
 magma_int_t magma_idamax_batched(magma_int_t length, 
         double **x_array, magma_int_t incx, magma_int_t step,  magma_int_t lda,
-        magma_int_t** ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount)
+        magma_int_t** ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 {
   
     if(length == 0 ) return 0;
@@ -268,7 +267,7 @@ magma_int_t magma_idamax_batched(magma_int_t length,
 #if 1
         dim3 grid(1, 1, batchCount);
         int chunk = (length-1)/zamax + 1;
-        idamax_kernel_batched<<< grid, zamax, zamax * (sizeof(double) + sizeof(int)), magma_stream >>>
+        idamax_kernel_batched<<< grid, zamax, zamax * (sizeof(double) + sizeof(int)), queue >>>
                       (length, chunk, x_array, incx, step, lda, ipiv_array, info_array, gbstep);
 
 #else
@@ -277,7 +276,7 @@ magma_int_t magma_idamax_batched(magma_int_t length,
     {  
         dim3 grid(1, 1, batchCount);
         int chunk = (length-1)/zamax + 1;
-        idamax_kernel_batched<<< grid, zamax, zamax * (sizeof(double) + sizeof(magma_int_t)), magma_stream >>>
+        idamax_kernel_batched<<< grid, zamax, zamax * (sizeof(double) + sizeof(magma_int_t)), queue >>>
                       (length, chunk, x_array, incx, step, lda, ipiv_array, info_array, gbstep);
 
     }
@@ -323,7 +322,7 @@ void dswap_kernel_batched(magma_int_t n, double **x_array, magma_int_t incx, mag
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C"
 magma_int_t magma_dswap_batched(magma_int_t n, double **x_array, magma_int_t incx, magma_int_t step, 
-                 magma_int_t** ipiv_array, magma_int_t batchCount)
+                 magma_int_t** ipiv_array, magma_int_t batchCount, magma_queue_t queue)
 {
 /*
     dswap two row: (ipiv[step]-1)th and jth
@@ -334,7 +333,7 @@ magma_int_t magma_dswap_batched(magma_int_t n, double **x_array, magma_int_t inc
        return -15;
     }
     dim3 grid(1,1, batchCount);
-    dswap_kernel_batched<<< grid, n, 0, magma_stream >>>(n, x_array, incx, step, ipiv_array);
+    dswap_kernel_batched<<< grid, n, 0, queue >>>(n, x_array, incx, step, ipiv_array);
     return 0;
 }
 
@@ -381,7 +380,7 @@ extern "C"
 magma_int_t magma_dscal_dger_batched(magma_int_t m, magma_int_t n, magma_int_t step,
                                       double **dA_array, magma_int_t lda,
                                       magma_int_t *info_array, magma_int_t gbstep, 
-                                      magma_int_t batchCount)
+                                      magma_int_t batchCount, magma_queue_t queue)
 {
 /*
 
@@ -402,7 +401,7 @@ magma_int_t magma_dscal_dger_batched(magma_int_t m, magma_int_t n, magma_int_t s
     size_t shared_size = sizeof(double)*(n);
     dim3 grid(nchunk, 1, batchCount);
 
-    dscal_dger_kernel_batched<<< grid, min(m, MAX_NTHREADS), shared_size, magma_stream>>>(m, n, step, dA_array, lda, info_array, gbstep);
+    dscal_dger_kernel_batched<<< grid, min(m, MAX_NTHREADS), shared_size, queue>>>(m, n, step, dA_array, lda, info_array, gbstep);
     return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,7 +455,7 @@ void dgetf2trsm_kernel_batched(int ib, int n, double **dA_array, int step, int l
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C" void
 magma_dgetf2trsm_batched(magma_int_t ib, magma_int_t n, double **dA_array,  magma_int_t step, magma_int_t lda,
-                       magma_int_t batchCount)
+                       magma_int_t batchCount, magma_queue_t queue)
 {
 /*
 
@@ -472,7 +471,7 @@ magma_dgetf2trsm_batched(magma_int_t ib, magma_int_t n, double **dA_array,  magm
     }
 
     dim3 grid(1, 1, batchCount);
-    dgetf2trsm_kernel_batched<<< grid, max(n,ib), shared_size, magma_stream>>>(ib, n, dA_array, step, lda);
+    dgetf2trsm_kernel_batched<<< grid, max(n,ib), shared_size, queue>>>(ib, n, dA_array, step, lda);
 }
 
 
@@ -600,7 +599,7 @@ magma_int_t magma_dcomputecolumn_batched(magma_int_t m, magma_int_t paneloffset,
                                         double **dA_array,  magma_int_t lda,
                                         magma_int_t **ipiv_array, 
                                         magma_int_t *info_array, magma_int_t gbstep, 
-                                        magma_int_t batchCount)
+                                        magma_int_t batchCount, magma_queue_t queue)
 {
 /*
 
@@ -621,7 +620,7 @@ magma_int_t magma_dcomputecolumn_batched(magma_int_t m, magma_int_t paneloffset,
 
     size_t shared_size = sizeof(double)*m;
     dim3 grid(1, 1, batchCount);
-    zcomputecolumn_kernel_shared_batched<<< grid, min(m, MAX_NTHREADS), shared_size, magma_stream>>>(m, paneloffset, step, dA_array, lda, ipiv_array, info_array, gbstep);
+    zcomputecolumn_kernel_shared_batched<<< grid, min(m, MAX_NTHREADS), shared_size, queue>>>(m, paneloffset, step, dA_array, lda, ipiv_array, info_array, gbstep);
 
     return 0;
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_z_precond_wrapper.cpp normal z -> s, Sat Nov 15 19:54:22 2014
+       @generated from magma_z_precond_wrapper.cpp normal z -> s, Fri Jan 30 19:00:30 2015
        @author Hartwig Anzt
 
 */
@@ -280,6 +280,9 @@ magma_s_applyprecond_left(
     else if ( precond->solver == Magma_NONE ) {
         magma_scopy( b.num_rows*b.num_cols, b.dval, 1, x->dval, 1 );      //  x = b
     }
+    else if ( precond->solver == Magma_FUNCTION ) {
+        magma_sapplycustomprecond_l( b, x, precond, queue );     
+    }
     else {
         printf( "error: preconditioner type not yet supported.\n" );
         magmablasSetKernelStream( orig_queue );
@@ -350,6 +353,9 @@ magma_s_applyprecond_right(
     }
     else if ( precond->solver == Magma_NONE ) {
         magma_scopy( b.num_rows*b.num_cols, b.dval, 1, x->dval, 1 );      //  x = b
+    }
+    else if ( precond->solver == Magma_FUNCTION ) {
+        magma_sapplycustomprecond_r( b, x, precond, queue );     
     }
     else {
         printf( "error: preconditioner type not yet supported.\n" );

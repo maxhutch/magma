@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -23,8 +23,9 @@ magma_zpotf2_ztrsm_batched(
     magmaDoubleComplex **dB_displ, 
     magmaDoubleComplex **dC_displ,
     magma_int_t *info_array, magma_int_t gbstep,  
-    magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {
+
 
     magma_int_t j;
     magma_int_t arginfo = 0;
@@ -40,6 +41,7 @@ magma_zpotf2_ztrsm_batched(
         return arginfo;
     }
 
+
     magmaDoubleComplex alpha = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex beta  = MAGMA_Z_ONE;
 
@@ -48,29 +50,28 @@ magma_zpotf2_ztrsm_batched(
     }
     else {
         for(j = 0; j < n; j++) {
-
-            magma_zpotf2_zdotc_batched(j, dA_array, lda, j, info_array, gbstep, batchCount); // including zdotc product and update a(j,j)
+            magma_zpotf2_zdotc_batched(j, dA_array, lda, j, info_array, gbstep, batchCount, queue); // including zdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                magma_zlacgv_batched(j, dA_array, lda, j, batchCount);
+                magma_zlacgv_batched(j, dA_array, lda, j, batchCount, queue);
                 #endif
 
-                magma_zdisplace_pointers(dA_displ, dA_array, lda, j+1, 0, batchCount);
-                magma_zdisplace_pointers(dB_displ, dA_array, lda, j, 0, batchCount);
-                magma_zdisplace_pointers(dC_displ, dA_array, lda, j+1, j, batchCount);
+                magma_zdisplace_pointers(dA_displ, dA_array, lda, j+1, 0, batchCount, queue);
+                magma_zdisplace_pointers(dB_displ, dA_array, lda, j, 0, batchCount, queue);
+                magma_zdisplace_pointers(dC_displ, dA_array, lda, j+1, j, batchCount, queue);
 
                 // Compute elements J+1:N of column J = A(j+1:n,1:j-1) * A(j,1:j-1) (row).
                 magmablas_zgemv_batched(MagmaNoTrans, m-j-1, j,
                                  alpha, dA_displ, lda,
                                         dB_displ,    lda,
                                  beta,  dC_displ, 1,
-                                 batchCount);// 
+                                 batchCount, queue);// 
 
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                magma_zlacgv_batched(j, dA_array, lda, j, batchCount);
+                magma_zlacgv_batched(j, dA_array, lda, j, batchCount, queue);
                 #endif
-                magma_zpotf2_zdscal_batched(m-j, dA_array, 1, j+j*lda, info_array, batchCount);
+                magma_zpotf2_zdscal_batched(m-j, dA_array, 1, j+j*lda, info_array, batchCount, queue);
             }
         }
     }
@@ -92,7 +93,7 @@ magma_zpotf2_batched(
     magmaDoubleComplex **dB_displ, 
     magmaDoubleComplex **dC_displ, 
     magma_int_t *info_array, magma_int_t gbstep, 
-    magma_int_t batchCount, cublasHandle_t myhandle)
+    magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)
 {
 
     magma_int_t j;
@@ -117,19 +118,19 @@ magma_zpotf2_batched(
             ib   = min(nb, n-j);
             rows = m-j;
             if( (rows <= POTF2_TILE_SIZE) && (ib <= POTF2_TILE_SIZE) ){
-                magma_zdisplace_pointers(dA_displ, dA_array, lda, j, j, batchCount);
+                magma_zdisplace_pointers(dA_displ, dA_array, lda, j, j, batchCount, queue);
                 magma_zpotf2_tile_batched(
                                uplo, rows, ib,
                                dA_displ, lda,
-                               info_array, gbstep, batchCount);
+                               info_array, gbstep, batchCount, queue);
             }
             else{
-                 magma_zdisplace_pointers(dA_displ, dA_array, lda, j, j, batchCount); 
+                 magma_zdisplace_pointers(dA_displ, dA_array, lda, j, j, batchCount, queue); 
                  magma_zpotf2_ztrsm_batched(
                            uplo, rows, ib,
                            dA_displ, lda,
                            dW_displ, dB_displ, dC_displ, 
-                           info_array, gbstep, batchCount);
+                           info_array, gbstep, batchCount, queue);
 
             }
 #if 1
@@ -137,28 +138,28 @@ magma_zpotf2_batched(
 //#define RIGHT_LOOKING
             if( (n-j-ib) > 0){
 #ifdef RIGHT_LOOKING
-                magma_zdisplace_pointers(dA_displ, dA_array, lda, j+ib, j, batchCount);
-                magma_zdisplace_pointers(dC_displ, dA_array, lda, j+ib, j+ib, batchCount);
+                magma_zdisplace_pointers(dA_displ, dA_array, lda, j+ib, j, batchCount, queue);
+                magma_zdisplace_pointers(dC_displ, dA_array, lda, j+ib, j+ib, batchCount, queue);
                 #if 1
                 magmablas_zgemm_batched(MagmaNoTrans, MagmaConjTrans, m-j-ib, n-j-ib, ib,
                              alpha, dA_displ, lda,
                                     dA_displ, lda,
-                             beta,  dC_displ, lda, batchCount );
+                             beta,  dC_displ, lda, batchCount, queue );
                 #else
                 cublasZgemmBatched(myhandle, CUBLAS_OP_N, CUBLAS_OP_C, m-j-ib, n-j-ib, ib,
                              &alpha, (const magmaDoubleComplex**) dA_displ, lda,
                                     (const magmaDoubleComplex**) dA_displ, lda,
-                             &beta,  dC_displ, lda, batchCount );
+                             &beta,  dC_displ, lda, batchCount, queue );
                 #endif
 #else
                 // update next subpanel
-                magma_zdisplace_pointers(dA_displ, dA_array, lda, j+ib, 0, batchCount);
-                magma_zdisplace_pointers(dC_displ, dA_array, lda, j+ib, j+ib, batchCount);
+                magma_zdisplace_pointers(dA_displ, dA_array, lda, j+ib, 0, batchCount, queue);
+                magma_zdisplace_pointers(dC_displ, dA_array, lda, j+ib, j+ib, batchCount, queue);
                 #if 1
                 magmablas_zgemm_batched(MagmaNoTrans, MagmaConjTrans, m-j-ib, min((n-j-ib),ib), j+ib,
                              alpha, dA_displ, lda,
                                     dA_displ, lda,
-                             beta,  dC_displ, lda, batchCount );
+                             beta,  dC_displ, lda, batchCount, queue );
                 #else
                 cublasZgemmBatched(myhandle, CUBLAS_OP_N, CUBLAS_OP_C, m-j-ib, min((n-j-ib),ib), j+ib,
                              &alpha, (const magmaDoubleComplex**) dA_displ, lda,

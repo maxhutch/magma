@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
-       @generated from zhetrf_nopiv_cpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zhetrf_nopiv_cpu.cpp normal z -> s, Fri Jan 30 19:00:16 2015
  
 */
 #include "common_magma.h"
@@ -24,7 +24,6 @@ int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     float *Aik;
     float *Dkk;
     float *Akj;
-    float *Cij;
 
     /* Check input arguments */
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
@@ -54,7 +53,6 @@ int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
 
     if ( uplo == MagmaLower )
     {
-        Cij = C;
         for(int j=0; j<m; j++)
         {
             for(int i=j; i<m; i++)

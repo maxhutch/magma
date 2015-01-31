@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlascl_diag.cu normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zlascl_diag.cu normal z -> c, Fri Jan 30 19:00:09 2015
 */
 #include "common_magma.h"
 
@@ -15,8 +15,8 @@
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from left edge and moving right to diagonal.
 __global__ void
-clascl_diag_lower(int m, int n, const magmaFloatComplex* D, int ldd, 
-                                      magmaFloatComplex* A, int lda)
+clascl_diag_lower(int m, int n, magmaFloatComplex_const_ptr D, int ldd, 
+                                      magmaFloatComplex_ptr A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -31,8 +31,8 @@ clascl_diag_lower(int m, int n, const magmaFloatComplex* D, int ldd,
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from right edge and moving left to diagonal.
 __global__ void
-clascl_diag_upper(int m, int n, const magmaFloatComplex *D, int ldd, 
-                                      magmaFloatComplex *A, int lda)
+clascl_diag_upper(int m, int n, magmaFloatComplex_const_ptr D, int ldd, 
+                                      magmaFloatComplex_ptr A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -91,8 +91,8 @@ clascl_diag_upper(int m, int n, const magmaFloatComplex *D, int ldd,
 extern "C" void
 magmablas_clascl_diag_q(
     magma_type_t type, magma_int_t m, magma_int_t n,
-    const magmaFloatComplex *dD, magma_int_t lddd, 
-          magmaFloatComplex *dA, magma_int_t ldda, 
+    magmaFloatComplex_const_ptr dD, magma_int_t lddd, 
+          magmaFloatComplex_ptr dA, magma_int_t ldda, 
     magma_int_t *info, magma_queue_t queue )
 {
     *info = 0;
@@ -129,8 +129,8 @@ magmablas_clascl_diag_q(
 extern "C" void
 magmablas_clascl_diag(
     magma_type_t type, magma_int_t m, magma_int_t n,
-    const magmaFloatComplex *dD, magma_int_t lddd, 
-          magmaFloatComplex *dA, magma_int_t ldda, 
+    magmaFloatComplex_const_ptr dD, magma_int_t lddd, 
+          magmaFloatComplex_ptr dA, magma_int_t ldda, 
     magma_int_t *info )
 {
     magmablas_clascl_diag_q( type, m, n, dD, lddd, dA, ldda, info, magma_stream );

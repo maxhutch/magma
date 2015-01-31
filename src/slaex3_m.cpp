@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Raffaele Solca
-       @generated from dlaex3_m.cpp normal d -> s, Sat Nov 15 19:54:10 2014
+       @generated from dlaex3_m.cpp normal d -> s, Fri Jan 30 19:00:18 2015
 */
 
 #ifdef _OPENMP
@@ -217,7 +217,7 @@ magma_slaex3_m(
     magma_int_t n1_loc, n2_loc, ib, nb, ib2, igpu;
     magma_int_t ni_loc[MagmaMaxGPUs];
 
-    magma_int_t i,ind,iq2,j,n12,n2,n23,tmp,lq2;
+    magma_int_t i, ind, iq2, j, n12, n2, n23, tmp;
     float temp;
     magma_int_t alleig, valeig, indeig;
 
@@ -293,7 +293,7 @@ magma_slaex3_m(
     n23 = ctot[1] + ctot[2];
 
     iq2 = n1 * n12;
-    lq2 = iq2 + n2 * n23;
+    //lq2 = iq2 + n2 * n23;
 
     n1_loc = (n1-1) / (ngpu/2) + 1;
     n2_loc = (n2-1) / (ngpu/2) + 1;

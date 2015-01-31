@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zgesv_nopiv_batched.cpp normal z -> s, Sat Nov 15 19:54:18 2014
+       @generated from testing_zgesv_nopiv_batched.cpp normal z -> s, Fri Jan 30 19:00:26 2015
        @author Mark Gates
 */
 // includes, system
@@ -47,6 +47,7 @@ int main(int argc, char **argv)
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
+    magma_queue_t queue = magma_stream;
     batchCount = opts.batchcount ;
     magma_int_t columns;
     nrhs = opts.nrhs;
@@ -94,13 +95,13 @@ int main(int argc, char **argv)
             
             
             
-            sset_pointer(d_A_array, d_A, ldda, 0, 0, ldda*N, batchCount);
-            sset_pointer(d_B_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount);
+            sset_pointer(d_A_array, d_A, ldda, 0, 0, ldda*N, batchCount, queue);
+            sset_pointer(d_B_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, queue);
             
             
             
             gpu_time = magma_wtime();
-            magma_sgesv_nopiv_batched( N, nrhs, d_A_array, ldda, d_B_array, lddb, dinfo_magma, batchCount );
+            magma_sgesv_nopiv_batched( N, nrhs, d_A_array, ldda, d_B_array, lddb, dinfo_magma, batchCount, queue );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"

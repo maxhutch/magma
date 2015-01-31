@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgeellrtmv.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zgeellrtmv.cu normal z -> d, Fri Jan 30 19:00:29 2015
 
 */
 
@@ -17,12 +17,12 @@ dgeellrtmv_kernel_32(
     int num_rows, 
     int num_cols,
     double alpha, 
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaDouble_ptr dx,
+    double * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    double * dx,
     double beta, 
-    magmaDouble_ptr dy,
+    double * dy,
     int T,
     int alignment )
 {
@@ -72,12 +72,12 @@ dgeellrtmv_kernel_16(
     int num_rows, 
     int num_cols,
     double alpha, 
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaDouble_ptr dx,
+    double * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    double * dx,
     double beta, 
-    magmaDouble_ptr dy,
+    double * dy,
     int T,
     int alignment )
 {
@@ -126,12 +126,12 @@ dgeellrtmv_kernel_8(
     int num_rows, 
     int num_cols,
     double alpha, 
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaDouble_ptr dx,
+    double * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    double * dx,
     double beta, 
-    magmaDouble_ptr dy,
+    double * dy,
     int T,
     int alignment )
 {
@@ -275,7 +275,7 @@ magma_dgeellrtmv(
     if ( arch < 200 && num_threads > 256 )
         printf("error: too much shared memory requested.\n");
 
-    int dimgrid1 = sqrt(num_blocks);
+    int dimgrid1 = (int) sqrt( (double) num_blocks );
     int dimgrid2 = (num_blocks + dimgrid1 -1 ) / dimgrid1;
     dim3 grid( dimgrid1, dimgrid2, 1);
 

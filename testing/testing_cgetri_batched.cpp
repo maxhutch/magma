@@ -1,30 +1,25 @@
 /*
-   -- MAGMA (version 1.6.0) --
+   -- MAGMA (version 1.6.1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date November 2014
+   @date January 2015
 
    @author Azzam Haidar
 
-   @generated from testing_zgetri_batched.cpp normal z -> c, Sat Nov 15 19:54:18 2014
+   @generated from testing_zgetri_batched.cpp normal z -> c, Fri Jan 30 19:00:26 2015
  */
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-//#include <cublas.h>
-#include <cublas_v2.h>
 
 // includes, project
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
 #include "testings.h"
-
-#include "common_magma.h"
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -52,13 +47,19 @@ int main( int argc, char** argv)
     parse_opts( argc, argv, &opts );
     opts.lapack |= opts.check; 
 
+    magma_queue_t queue = magma_stream;
     magma_int_t batchCount = opts.batchcount ;
     magma_int_t columns;
-    float error, rwork[1];
+    float error=0.0, rwork[1];
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
+    magma_int_t     status = 0;
+    // need looser bound (3000*eps instead of 30*eps) for tests
+    // TODO: should compute ||I - A*A^{-1}|| / (n*||A||*||A^{-1}||)
+    opts.tolerance = max( 3000., opts.tolerance );
+    float tol = opts.tolerance * lapackf77_slamch("E");
 
-    printf("batchCount      M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||PA-LU||/(||A||*N)\n");
-    printf("=========================================================================\n");
+    printf("batchCount      M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||PA-LU||/(||A||*N    tolerance )\n");
+    printf("====================================================================================================\n");
     for( int i = 0; i < opts.ntest; ++i ) {
     
       for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -96,13 +97,13 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            cset_pointer(dA_array, d_A, ldda, 0, 0, ldda * N, batchCount);
-            cset_pointer(dinvA_array, d_invA, ldda, 0, 0, ldda * N, batchCount);
-            set_ipointer(dipiv_array, d_ipiv, 1, 0, 0, min(M,N), batchCount);
+            cset_pointer(dA_array, d_A, ldda, 0, 0, ldda * N, batchCount, queue);
+            cset_pointer(dinvA_array, d_invA, ldda, 0, 0, ldda * N, batchCount, queue);
+            set_ipointer(dipiv_array, d_ipiv, 1, 0, 0, min(M,N), batchCount, queue);
 
             gpu_time = magma_sync_wtime(0);
-            info1 = magma_cgetrf_batched( M, N, dA_array, ldda, dipiv_array, dinfo_array, batchCount);
-            info2 = magma_cgetri_outofplace_batched( min(M,N), dA_array, ldda, dipiv_array, dinvA_array, ldda, dinfo_array, batchCount);
+            info1 = magma_cgetrf_batched( M, N, dA_array, ldda, dipiv_array, dinfo_array, batchCount, queue);
+            info2 = magma_cgetri_outofplace_batched( min(M,N), dA_array, ldda, dipiv_array, dinvA_array, ldda, dinfo_array, batchCount, queue);
             gpu_time = magma_sync_wtime(0) - gpu_time;
             gpu_perf = gflops / gpu_time;
 
@@ -113,7 +114,7 @@ int main( int argc, char** argv)
             for(int i=0; i<batchCount; i++)
             {
                 if(cpu_info[i] != 0 ){
-                    printf("magma_cgetrf_batched matrix %d returned error %d\n",i, (int)cpu_info[i] );
+                    printf("magma_cgetrf_batched matrix %d returned error %d\n", i, (int)cpu_info[i] );
                 }
             }
             if (info1 != 0) printf("magma_cgetrf_batched returned argument error %d: %s.\n", (int) info1, magma_strerror( info1 ));
@@ -152,26 +153,26 @@ int main( int argc, char** argv)
                Check the factorization
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%10d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
+                printf("%10d %6d %6d   %7.2f (%7.2f)   %7.2f (%7.2f)",
                        (int) batchCount, (int) M, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000. );
             }
             else {
-                printf("%10d %5d %5d     ---   (  ---  )   %7.2f (%7.2f)",
+                printf("%10d %6d %6d     ---   (  ---  )   %7.2f (%7.2f)",
                        (int) batchCount, (int) M, (int) N, gpu_perf, gpu_time*1000. );
             }
 
             float err = 0.0;
             if ( opts.check ) {
-                cudaMemcpy(ipiv, d_ipiv, sizeof(magma_int_t) * min_mn * batchCount, cudaMemcpyDeviceToHost);
+                magma_getvector( min_mn * batchCount, sizeof(magma_int_t), d_ipiv, 1, ipiv, 1 );
                 magma_cgetmatrix( min(M,N), N*batchCount, d_invA, ldda, h_R, lda );
                 int stop=0;
                 n2     = lda*N;
-                for(int i=0; i<batchCount; i++)
+                for(int i=0; i < batchCount; i++)
                 {
-                    for(int k=0;k<min_mn; k++){
+                    for(int k=0; k < min_mn; k++){
                         if(ipiv[i*min_mn+k] < 1 || ipiv[i*min_mn+k] > M )
                         {
-                            printf("error for matrix %d ipiv @ %d = %d\n",i,k,ipiv[i*min_mn+k]);
+                            printf("error for matrix %d ipiv @ %d = %d\n", (int) i, (int) k, (int) ipiv[i*min_mn+k]);
                             stop=1;
                         }
                     }
@@ -186,9 +187,10 @@ int main( int argc, char** argv)
                         err = error;
                         break;
                     }
-                    err = max(fabs(error),err);
+                    err = max(fabs(error), err);
                 }
-                printf("   %8.2e\n", err );
+                printf("   %18.2e   %10.2e   %s\n", err, tol, (err < tol ? "ok" : "failed") );
+                status += ! (error < tol);
             }
             else {
                 printf("     ---  \n");
@@ -212,5 +214,5 @@ int main( int argc, char** argv)
         }
     }
     TESTING_FINALIZE();
-    return 0;
+    return status;
 }

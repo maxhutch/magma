@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Mark Gates
        @author Azzam Haidar
@@ -298,7 +298,7 @@ magma_int_t magma_ztrevc3_mt(
     // .. Local Scalars ..
     magma_int_t            allv, bothv, leftv, over, rightv, somev;
     magma_int_t            i, ii, is, j, k, ki, iv, n2, nb, nb2, version;
-    double                 ovfl, remax, smin, smlnum, ulp, unfl;
+    double                 ovfl, remax, unfl;  //smlnum, smin, ulp
     
     // Decode and test the input parameters
     bothv  = (side == MagmaBothSides);
@@ -371,8 +371,8 @@ magma_int_t magma_ztrevc3_mt(
     unfl = lapackf77_dlamch( "Safe minimum" );
     ovfl = 1. / unfl;
     lapackf77_dlabad( &unfl, &ovfl );
-    ulp = lapackf77_dlamch( "Precision" );
-    smlnum = unfl*( n / ulp );
+    //ulp = lapackf77_dlamch( "Precision" );
+    //smlnum = unfl*( n / ulp );
 
     // Store the diagonal elements of T in working array work.
     for( i=0; i < n; ++i ) {
@@ -424,7 +424,7 @@ magma_int_t magma_ztrevc3_mt(
                     continue;
                 }
             }
-            smin = max( ulp*( MAGMA_Z_ABS1( *T(ki,ki) ) ), smlnum );
+            //smin = max( ulp*MAGMA_Z_ABS1( *T(ki,ki) ), smlnum );
 
             // --------------------------------------------------------
             // Complex right eigenvector
@@ -548,7 +548,7 @@ magma_int_t magma_ztrevc3_mt(
                     continue;
                 }
             }
-            smin = max( ulp*MAGMA_Z_ABS1( *T(ki,ki) ), smlnum );
+            //smin = max( ulp*MAGMA_Z_ABS1( *T(ki,ki) ), smlnum );
         
             // --------------------------------------------------------
             // Complex left eigenvector

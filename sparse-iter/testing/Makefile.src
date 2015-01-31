@@ -9,34 +9,40 @@ SHDR = \
 	
 
 CSRC = \
+	testing_cblas.cpp \
 	testing_cmatrix.cpp \
 	testing_cio.cpp \
 	testing_cmcompressor.cpp \
 	testing_cmconverter.cpp \
 	testing_cdot.cpp \
 	testing_cspmv.cpp \
+	testing_cspmv_check.cpp \
 	testing_cspmm.cpp \
 	testing_cmadd.cpp \
 	testing_csolver.cpp
 
 DSRC = \
+	testing_dblas.cpp \
 	testing_dmatrix.cpp \
 	testing_dio.cpp \
 	testing_dmcompressor.cpp \
 	testing_dmconverter.cpp \
 	testing_ddot.cpp \
 	testing_dspmv.cpp \
+	testing_dspmv_check.cpp \
 	testing_dspmm.cpp \
 	testing_dmadd.cpp \
 	testing_dsolver.cpp
 
 SSRC = \
+	testing_sblas.cpp \
 	testing_smatrix.cpp \
 	testing_sio.cpp \
 	testing_smcompressor.cpp \
 	testing_smconverter.cpp \
 	testing_sdot.cpp \
 	testing_sspmv.cpp \
+	testing_sspmv_check.cpp \
 	testing_sspmm.cpp \
 	testing_smadd.cpp \
 	testing_ssolver.cpp

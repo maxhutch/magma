@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zhetrf.cpp normal z -> c, Sat Nov 15 19:54:18 2014
+       @generated from testing_zhetrf.cpp normal z -> c, Fri Jan 30 19:00:25 2015
        @author Ichitaro Yamazaki
 */
 // includes, system
@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -24,24 +22,22 @@
 
 /* ================================================================================================== */
 
-// Initialize matrix to random.
+// Initialize matrix to random & symmetrize. If nopiv, make positive definite.
 // Having this in separate function ensures the same ISEED is always used,
 // so we can re-generate the identical matrix.
 void init_matrix( int nopiv, int m, int n, magmaFloatComplex *h_A, magma_int_t lda )
 {
+    assert( m == n );
     magma_int_t ione = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t n2 = lda*n;
-    //float *A = (float*)malloc(n2*sizeof(float));
-    //lapackf77_slarnv( &ione, ISEED, &n2, A );
-    //for (int i=0; i<n; i++) for (int j=0; j<=i; j++) h_A[j+i*lda] = MAGMA_C_MAKE(A[j+i*lda],0.0);
-    //free(A);
-    //
     lapackf77_clarnv( &ione, ISEED, &n2, h_A );
-    // symmetrize
-    for (int i=0; i<n; i++) for (int j=0; j<i; j++) h_A[i+j*lda] = MAGMA_C_CNJG(h_A[j+i*lda]);
-    if (nopiv) for (int i=0; i<n; i++) h_A[i+i*lda] = MAGMA_C_MAKE(MAGMA_C_REAL(h_A[i+i*lda]) + n, 0.0);
-    else       for (int i=0; i<n; i++) h_A[i+i*lda] = MAGMA_C_MAKE(MAGMA_C_REAL(h_A[i+i*lda]), 0.0);
+    if (nopiv) {
+        magma_cmake_hpd( n, h_A, lda );
+    }
+    else {
+        magma_cmake_hermitian( n, h_A, lda );
+    }
 }
 
 
@@ -96,7 +92,7 @@ float get_residual(
                            A, &lda, x, &n );
         }
     }else {
-        lapackf77_chetrs( (upper ? MagmaUpperStr: MagmaLowerStr), &n, &ione, A, &lda, ipiv, x, &n, &info );
+        lapackf77_chetrs( lapack_uplo_const(uplo), &n, &ione, A, &lda, ipiv, x, &n, &info );
     }
     if (info != 0)
         printf("lapackf77_chetrs returned error %d: %s.\n",
@@ -162,10 +158,14 @@ float get_LDLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
                 D(j-1,j-1) = LD(j-1,j-1);
                 // exract L
                 L(j,j) = c_one;
-                for (i=0; i<j-1; i++) L(i,j) = LD(i,j);
+                for (i=0; i<j-1; i++) {
+                    L(i,j) = LD(i,j);
+                }
                 j--;
                 L(j,j) = c_one;
-                for (i=0; i<j; i++) L(i,j) = LD(i,j);
+                for (i=0; i<j; i++) {
+                    L(i,j) = LD(i,j);
+                }
                 if (piv != j) {
                     // apply row-pivoting to previous L
                     for (i=j+2; i<N; i++) {
@@ -192,7 +192,9 @@ float get_LDLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
                 D(j,j) = LD(j,j);
                 // exract L
                 L(j,j) = c_one;
-                for (i=0; i<j; i++) L(i,j) = LD(i,j);
+                for (i=0; i<j; i++) {
+                    L(i,j) = LD(i,j);
+                }
                 if (piv != j) {
                     // apply row-pivoting to previous L
                     for (i=j+1; i<N; i++) {
@@ -242,10 +244,14 @@ float get_LDLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
                 D(j+1,j+1) = LD(j+1,j+1);
                 // exract L
                 L(j,j) = c_one;
-                for (i=j+2; i<N; i++) L(i,j) = LD(i,j);
+                for (i=j+2; i<N; i++) {
+                    L(i,j) = LD(i,j);
+                }
                 j++;
                 L(j,j) = c_one;
-                for (i=j+1; i<N; i++) L(i,j) = LD(i,j);
+                for (i=j+1; i<N; i++) {
+                    L(i,j) = LD(i,j);
+                }
                 if (piv != j) {
                     // apply row-pivoting to previous L
                     for (i=0; i<j-1; i++) {
@@ -272,7 +278,9 @@ float get_LDLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
                 D(j,j) = LD(j,j);
                 // exract L
                 L(j,j) = c_one;
-                for (i=j+1; i<N; i++) L(i,j) = LD(i,j);
+                for (i=j+1; i<N; i++) {
+                    L(i,j) = LD(i,j);
+                }
                 if (piv != j) {
                     // apply row-pivoting to previous L
                     for (i=0; i<j; i++) {
@@ -333,7 +341,7 @@ int main( int argc, char** argv)
     magma_int_t     *ipiv;
     magma_int_t     N, n2, lda, lwork, info;
     magma_int_t     status = 0;
-    magma_int_t     cpu = 0, gpu = 0, nopiv = 0, nopiv_gpu = 0, row = 0;
+    magma_int_t     cpu = 0, nopiv = 0, nopiv_gpu = 0, row = 0;
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -343,7 +351,7 @@ int main( int argc, char** argv)
             printf( "\nCPU-Interface to Bunch-Kauffman on GPU" );
             break;
         case 2:
-            gpu = 1;
+            //gpu = 1;
             printf( "\nGPU-Interface to Bunch-Kauffman on GPU" );
             printf( "\n not yet..\n\n" );
             return 0;
@@ -363,15 +371,13 @@ int main( int argc, char** argv)
         //    break;
         default:
         //  printf( " hybrid CPU-GPU version" );
-            printf( " version = %d not supported\n\n",opts.version);
+            printf( " version = %d not supported\n\n", (int) opts.version );
             return 0;
     }
 
-    magma_uplo_t uplo = opts.uplo;
-    printf( " (%s)\n",(uplo == MagmaUpper ? "upper" : "lower") );
+    printf( " (%s)\n", lapack_uplo_const(opts.uplo) );
     printf( " (--version: 1 = Bunch-Kauffman (CPU), 2 = Bunch-Kauffman (GPU), 3 = No-piv (CPU), 4 = No-piv (GPU))\n\n" );
     
-    magma_int_t upper = (uplo == MagmaUpper);
     float tol = opts.tolerance * lapackf77_slamch("E");
 
     if ( opts.check == 2 ) {
@@ -397,19 +403,19 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 lwork = -1;
-                lapackf77_chetrf((upper ? MagmaUpperStr: MagmaLowerStr), &N, h_A, &lda, ipiv, &temp, &lwork, &info);
+                lapackf77_chetrf( lapack_uplo_const(opts.uplo), &N, h_A, &lda, ipiv, &temp, &lwork, &info);
                 lwork = (int)MAGMA_C_REAL(temp);
                 TESTING_MALLOC_CPU( work, magmaFloatComplex, lwork );
 
                 init_matrix( nopiv, N, N, h_A, lda );
                 cpu_time = magma_wtime();
-                lapackf77_chetrf((upper ? MagmaUpperStr: MagmaLowerStr), &N, h_A, &lda, ipiv, work, &lwork, &info);
+                lapackf77_chetrf( lapack_uplo_const(opts.uplo), &N, h_A, &lda, ipiv, work, &lwork, &info);
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
                     printf("lapackf77_chetrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                error_lapack = get_residual( nopiv, uplo, N, h_A, lda, ipiv );
+                error_lapack = get_residual( nopiv, opts.uplo, N, h_A, lda, ipiv );
 
                 TESTING_FREE_CPU( work );
             }
@@ -423,35 +429,35 @@ int main( int argc, char** argv)
                 // CPU-interface to non-piv LDLt
                 magma_setdevice(0);
                 gpu_time = magma_wtime();
-                magma_chetrf_nopiv( uplo, N, h_A, lda, &info);
+                magma_chetrf_nopiv( opts.uplo, N, h_A, lda, &info);
                 gpu_time = magma_wtime() - gpu_time;
             } else if (cpu) {
                 // CPU-interface to Bunch-Kauffman LDLt
                 magma_setdevice(0);
                 gpu_time = magma_wtime();
-                magma_chetrf( uplo, N, h_A, lda, ipiv, &info);
+                magma_chetrf( opts.uplo, N, h_A, lda, ipiv, &info);
                 gpu_time = magma_wtime() - gpu_time;
             } else if (nopiv_gpu) {
                 // GPU-interface to non-piv LDLt
                 magma_setdevice(0);
                 magma_int_t ldda = 32*((N+31)/32);
-                magmaFloatComplex *d_A;
+                magmaFloatComplex_ptr d_A;
                 if (MAGMA_SUCCESS != magma_cmalloc( &d_A, N*ldda  )) {
-                    printf( " failed to allocate d_A(%dx%d)\n",N,ldda);
+                    printf( " failed to allocate d_A(%dx%d)\n", (int) N, (int) ldda );
                     return 0;
                 }
                 magma_csetmatrix(N, N, h_A, lda, d_A, ldda);
                 gpu_time = magma_wtime();
-                magma_chetrf_nopiv_gpu( uplo, N, d_A, ldda, &info);
+                magma_chetrf_nopiv_gpu( opts.uplo, N, d_A, ldda, &info);
                 gpu_time = magma_wtime() - gpu_time;
                 magma_cgetmatrix(N, N, d_A, ldda, h_A, lda);
                 magma_free( d_A );
             } else if (row) {
                 magma_setdevice(0);
-                //magma_chetrf_gpu_row( uplo, N, h_A, lda, ipiv, work, lwork, &info);
+                //magma_chetrf_gpu_row( opts.uplo, N, h_A, lda, ipiv, work, lwork, &info);
             } else {
                 magma_setdevice(0);
-                //magma_chetrf_hybrid( uplo, N, h_A, lda, ipiv, work, lwork, &info);
+                //magma_chetrf_hybrid( opts.uplo, N, h_A, lda, ipiv, work, lwork, &info);
             }
             gpu_perf = gflops / gpu_time;
             if (info != 0)
@@ -470,7 +476,7 @@ int main( int argc, char** argv)
                        (int) N, (int) N, gpu_perf, gpu_time );
             }
             if ( opts.check == 2 ) {
-                error = get_residual( (nopiv | nopiv_gpu), uplo, N, h_A, lda, ipiv );
+                error = get_residual( (nopiv | nopiv_gpu), opts.uplo, N, h_A, lda, ipiv );
                 printf("   %8.2e   %s", error, (error < tol ? "ok" : "failed"));
                 if (opts.lapack)
                     printf(" (lapack rel.res. = %8.2e)", error_lapack);
@@ -478,7 +484,7 @@ int main( int argc, char** argv)
                 status += ! (error < tol);
             }
             else if ( opts.check ) {
-                error = get_LDLt_error( (nopiv | nopiv_gpu), uplo, N, h_A, lda, ipiv );
+                error = get_LDLt_error( (nopiv | nopiv_gpu), opts.uplo, N, h_A, lda, ipiv );
                 printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
                 status += ! (error < tol);
             }

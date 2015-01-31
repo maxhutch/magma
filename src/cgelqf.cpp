@@ -1,14 +1,16 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgelqf.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zgelqf.cpp normal z -> c, Fri Jan 30 19:00:15 2015
 
 */
 #include "common_magma.h"
+
+#define COMPLEX
 
 /**
     Purpose
@@ -69,7 +71,7 @@
     info    INTEGER
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
-                  if INFO = -10 internal GPU memory allocation failed.
+                  or another error occured, such as memory allocation failed.
 
     Further Details
     ---------------
@@ -94,15 +96,22 @@ magma_cgelqf(
     magmaFloatComplex *work, magma_int_t lwork,
     magma_int_t *info)
 {
-    magmaFloatComplex *dA, *dAT;
-    magmaFloatComplex c_one = MAGMA_C_ONE;
-    magma_int_t maxm, maxn, maxdim, nb;
-    magma_int_t iinfo, ldda;
+    #define  dA(i_, j_)  (dA  + (i_) + (j_)*ldda)
+    #define dAT(i_, j_)  (dAT + (i_) + (j_)*ldda)
+    
+    const magmaFloatComplex c_one = MAGMA_C_ONE;
+    const magma_int_t        ione  = 1;
+    MAGMA_UNUSED( ione );  // used only for complex
+    
+    magmaFloatComplex_ptr dA, dAT;
+    magma_int_t min_mn, maxm, maxn, maxdim, nb;
+    magma_int_t iinfo, ldda, lddat;
     int lquery;
 
     /* Function Body */
     *info = 0;
     nb = magma_get_cgelqf_nb(m);
+    min_mn = min(m,n);
 
     work[0] = MAGMA_C_MAKE( (float)(m*nb), 0 );
     lquery = (lwork == -1);
@@ -124,7 +133,7 @@ magma_cgelqf(
     }
 
     /*  Quick return if possible */
-    if (min(m, n) == 0) {
+    if (min_mn == 0) {
         work[0] = c_one;
         return *info;
     }
@@ -133,40 +142,56 @@ magma_cgelqf(
     maxn = ((n + 31)/32)*32;
     maxdim = max(maxm, maxn);
 
+    // copy to GPU and transpose
     if (maxdim*maxdim < 2*maxm*maxn) {
-        ldda = maxdim;
+        // close to square, do everything in-place
+        ldda  = maxdim;
+        lddat = maxdim;
 
         if (MAGMA_SUCCESS != magma_cmalloc( &dA, maxdim*maxdim )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
 
-        magma_csetmatrix( m, n, A, lda, dA, ldda );
+        magma_csetmatrix( m, n, A, lda, dA(0,0), ldda );
         dAT = dA;
-        magmablas_ctranspose_inplace( ldda, dAT, ldda );
+        magmablas_ctranspose_inplace( lddat, dAT(0,0), lddat );
     }
     else {
-        ldda = maxn;
+        // rectangular, do everything out-of-place
+        ldda  = maxm;
+        lddat = maxn;
 
         if (MAGMA_SUCCESS != magma_cmalloc( &dA, 2*maxn*maxm )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
 
-        magma_csetmatrix( m, n, A, lda, dA, maxm );
+        magma_csetmatrix( m, n, A, lda, dA(0,0), ldda );
 
         dAT = dA + maxn * maxm;
-        magmablas_ctranspose( m, n, dA, maxm, dAT, ldda );
+        magmablas_ctranspose( m, n, dA(0,0), ldda, dAT(0,0), lddat );
     }
 
-    magma_cgeqrf2_gpu(n, m, dAT, ldda, tau, &iinfo);
+    // factor QR
+    magma_cgeqrf2_gpu( n, m, dAT(0,0), lddat, tau, &iinfo );
+    assert( iinfo >= 0 );
+    if ( iinfo > 0 ) {
+        *info = iinfo;
+    }
+    
+    // conjugate tau
+    #ifdef COMPLEX
+    lapackf77_clacgv( &min_mn, tau, &ione );
+    #endif
 
+    // undo transpose
     if (maxdim*maxdim < 2*maxm*maxn) {
-        magmablas_ctranspose_inplace( ldda, dAT, ldda );
-        magma_cgetmatrix( m, n, dA, ldda, A, lda );
+        magmablas_ctranspose_inplace( lddat, dAT(0,0), lddat );
+        magma_cgetmatrix( m, n, dA(0,0), ldda, A, lda );
     } else {
-        magmablas_ctranspose( n, m, dAT, ldda, dA, maxm );
-        magma_cgetmatrix( m, n, dA, maxm, A, lda );
+        magmablas_ctranspose( n, m, dAT(0,0), lddat, dA(0,0), ldda );
+        magma_cgetmatrix( m, n, dA(0,0), ldda, A, lda );
     }
 
     magma_free( dA );

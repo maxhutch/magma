@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -17,7 +17,7 @@
 /**
     Purpose
     -------
-    ztrsm_work solves one of the matrix equations on gpu
+    ztrsm_outofplace solves one of the matrix equations on gpu
 
         op(A)*X = alpha*B,   or   X*op(A) = alpha*B,
 
@@ -26,7 +26,7 @@
 
         op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
 
-    The matrix X is overwritten on B.
+    The matrix X is output.
 
     This is an asynchronous version of magmablas_ztrsm with flag,
     d_dinvA and dX workspaces as arguments.
@@ -96,11 +96,10 @@
             When side = MagmaLeft,  ldda >= max( 1, m ),
             when side = MagmaRight, ldda >= max( 1, n ).
 
-    @param[in,out]
+    @param[in]
     dB      COMPLEX_16 array of dimension ( lddb, n ).
             Before entry, the leading m by n part of the array B must
-            contain the right-hand side matrix B, and on exit is
-            overwritten by the solution matrix X.
+            contain the right-hand side matrix B.
 
     @param[in]
     lddb    INTEGER.
@@ -118,8 +117,9 @@
             If side == MagmaRight, d_dinvA must be of size >= ((n+NB-1)/NB)*NB*NB,
             where NB = 128.
 
-    @param
-    dX      (workspace) size m*n, on device.
+    @param[out]
+    dX      COMPLEX_16 array of dimension ( m, n ).
+            On exit it contain the solution matrix X.
 
     @ingroup magma_zblas3
     ********************************************************************/
@@ -415,6 +415,8 @@ void magmablas_ztrsm(
         magma_xerbla( __func__, -(info) );
     }
     else {
+        magmablas_zlaset(MagmaFull, size_dinvA, 1, MAGMA_Z_ZERO, MAGMA_Z_ZERO, d_dinvA, size_dinvA);
+        magmablas_zlaset(MagmaFull, m, n, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dX, m);
         magmablas_ztrsm_work( side, uplo, transA, diag, m, n, alpha,
                               dA, ldda, dB, lddb, 1, d_dinvA, dX );
     }

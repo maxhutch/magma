@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -20,8 +20,8 @@ __global__ void
 magma_zlobpcg_maxpy_kernel( 
     magma_int_t num_rows, 
     magma_int_t num_vecs, 
-    magmaDoubleComplex_ptr X, 
-    magmaDoubleComplex_ptr Y)
+    magmaDoubleComplex * X, 
+    magmaDoubleComplex * Y)
 {
 
     int row = blockIdx.x * blockDim.x + threadIdx.x; // global row index

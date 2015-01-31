@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zherk_batched.cpp normal z -> s, Sat Nov 15 19:54:18 2014
+       @generated from testing_zherk_batched.cpp normal z -> s, Fri Jan 30 19:00:26 2015
        @author Chongxiao Cao
        @author Tingxing Dong
 */
@@ -16,8 +16,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
 
 // includes, project
 #include "flops.h"
@@ -53,6 +51,7 @@ int main( int argc, char** argv)
     float **C_array = NULL;
     magma_int_t status = 0;
 
+    magma_queue_t queue = magma_stream;
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
@@ -95,8 +94,8 @@ int main( int argc, char** argv)
             TESTING_MALLOC_CPU( h_C,  float, sizeC );
             TESTING_MALLOC_CPU( h_Cmagma,  float, sizeC  );
             
-            TESTING_MALLOC_DEV( d_A, float, sizeA );
-            TESTING_MALLOC_DEV( d_C, float, sizeC );
+            TESTING_MALLOC_DEV( d_A, float, ldda*An*batchCount );
+            TESTING_MALLOC_DEV( d_C, float, lddc*N*batchCount );
 
             magma_malloc((void**)&A_array, batchCount * sizeof(*A_array));
             magma_malloc((void**)&C_array, batchCount * sizeof(*C_array));
@@ -111,13 +110,13 @@ int main( int argc, char** argv)
             magma_ssetmatrix( An, Ak*batchCount, h_A, lda, d_A, ldda );
             magma_ssetmatrix( N, N*batchCount, h_C, ldc, d_C, lddc );
             
-            sset_pointer(A_array, d_A, lda, 0, 0, ldda*Ak, batchCount);
-            sset_pointer(C_array, d_C, ldc, 0, 0, lddc*N,  batchCount);
+            sset_pointer(A_array, d_A, lda, 0, 0, ldda*Ak, batchCount, queue);
+            sset_pointer(C_array, d_C, ldc, 0, 0, lddc*N,  batchCount, queue);
 
             magma_time = magma_sync_wtime( NULL );
             magmablas_ssyrk_batched(opts.uplo, opts.transA, N, K,
                              alpha, A_array, ldda,
-                             beta,  C_array, lddc, batchCount);
+                             beta,  C_array, lddc, batchCount, queue);
                              
             magma_time = magma_sync_wtime( NULL ) - magma_time;
             magma_perf = gflops / magma_time;

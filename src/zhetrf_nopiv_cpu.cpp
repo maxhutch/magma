@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -24,7 +24,6 @@ int zherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaDoubleComplex *Aik;
     magmaDoubleComplex *Dkk;
     magmaDoubleComplex *Akj;
-    magmaDoubleComplex *Cij;
 
     /* Check input arguments */
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
@@ -54,7 +53,6 @@ int zherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
 
     if ( uplo == MagmaLower )
     {
-        Cij = C;
         for(int j=0; j<m; j++)
         {
             for(int i=j; i<m; i++)

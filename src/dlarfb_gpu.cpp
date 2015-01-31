@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from zlarfb_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
+       @generated from zlarfb_gpu.cpp normal z -> d, Fri Jan 30 19:00:15 2015
 */
 #include "common_magma.h"
 
@@ -133,6 +133,11 @@ magma_dlarfb_gpu(
     magmaDouble_ptr dC,          magma_int_t lddc,
     magmaDouble_ptr dwork,       magma_int_t ldwork )
 {
+    #define dV(i_,j_)  (dV    + (i_) + (j_)*lddv)
+    #define dT(i_,j_)  (dT    + (i_) + (j_)*lddt)
+    #define dC(i_,j_)  (dC    + (i_) + (j_)*lddc)
+    #define dwork(i_)  (dwork + (i_))
+    
     double c_zero    = MAGMA_D_ZERO;
     double c_one     = MAGMA_D_ONE;
     double c_neg_one = MAGMA_D_NEG_ONE;
@@ -199,22 +204,22 @@ magma_dlarfb_gpu(
         // W = C^H V
         magma_dgemm( MagmaTrans, notransV,
                      n, k, m,
-                     c_one,  dC,    lddc,
-                             dV,    lddv,
-                     c_zero, dwork, ldwork);
+                     c_one,  dC(0,0),  lddc,
+                             dV(0,0),  lddv,
+                     c_zero, dwork(0), ldwork);
 
         // W = W T^H = C^H V T^H
         magma_dtrmm( MagmaRight, uplo, transt, MagmaNonUnit,
                      n, k,
-                     c_one, dT,    lddt,
-                            dwork, ldwork);
+                     c_one, dT(0,0),  lddt,
+                            dwork(0), ldwork);
 
         // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
         magma_dgemm( notransV, MagmaTrans,
                      m, n, k,
-                     c_neg_one, dV,    lddv,
-                                dwork, ldwork,
-                     c_one,     dC,    lddc);
+                     c_neg_one, dV(0,0),  lddv,
+                                dwork(0), ldwork,
+                     c_one,     dC(0,0),  lddc);
     }
     else {
         // Form C H or C H^H
@@ -223,22 +228,22 @@ magma_dlarfb_gpu(
         // W = C V
         magma_dgemm( MagmaNoTrans, notransV,
                      m, k, n,
-                     c_one,  dC,    lddc,
-                             dV,    lddv,
-                     c_zero, dwork, ldwork);
+                     c_one,  dC(0,0),  lddc,
+                             dV(0,0),  lddv,
+                     c_zero, dwork(0), ldwork);
 
         // W = W T = C V T
         magma_dtrmm( MagmaRight, uplo, trans, MagmaNonUnit,
                      m, k,
-                     c_one, dT,    lddt,
-                            dwork, ldwork);
+                     c_one, dT(0,0),  lddt,
+                            dwork(0), ldwork);
 
         // C = C - W V^H = C - C V T V^H = C (I - V T V^H) = C H
         magma_dgemm( MagmaNoTrans, transV,
                      m, n, k,
-                     c_neg_one, dwork, ldwork,
-                                dV,    lddv,
-                     c_one,     dC,    lddc);
+                     c_neg_one, dwork(0), ldwork,
+                                dV(0,0),  lddv,
+                     c_one,     dC(0,0),  lddc);
     }
 
     return info;

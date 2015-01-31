@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zhemm_mgpu_spec.cpp normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from zhemm_mgpu_spec.cpp normal z -> s, Fri Jan 30 19:00:10 2015
        @author Azzam Haidar
 */
 #include "common_magma.h"
@@ -44,15 +44,7 @@ void magmablas_ssymm_mgpu_spec(
     assert( nqueue >= ngpu );
     assert( nbevents >= ngpu*ngpu );
     
-    magmaFloat_ptr dwork1[MagmaMaxGPUs];
-    magmaFloat_ptr dwork2[MagmaMaxGPUs];
-
-
     magma_int_t lddwork = lddc;
-    for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-        dwork1[dev] = dwork[dev];
-        dwork2[dev] = dwork[dev]+n*lddwork;
-    }
     assert( dworksiz >= (2*n*lddwork) );
 
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from commonblas_z.h normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from commonblas_z.h normal z -> s, Fri Jan 30 19:00:10 2015
 */
 
 #ifndef COMMONBLAS_S_H
@@ -78,6 +78,63 @@ magma_strmv_kernel2(const float *T, int ldt,
 
 __global__ void
 magma_snrm2_adjust_kernel(float *xnorm, float *c);
+
+
+// kernels used in ssymv
+__global__ void
+ssymv_kernel_U(
+    int n,
+    float const * __restrict__ A, int lda,
+    float const * __restrict__ x, int incx,
+    float       * __restrict__ work);
+
+__global__ void
+ssymv_kernel_U_sum(
+    int n,
+    float alpha,
+    int lda,
+    float beta,
+    float       * __restrict__ y, int incy,
+    float const * __restrict__ work );
+
+// kernels used in ssymv
+__global__ void
+ssymv_kernel_U(
+    int n,
+    float const * __restrict__ A, int lda,
+    float const * __restrict__ x, int incx,
+    float       * __restrict__ work);
+
+__global__ void
+ssymv_kernel_U_sum(
+    int n,
+    float alpha,
+    int lda,
+    float beta,
+    float       * __restrict__ y, int incy,
+    float const * __restrict__ work );
+
+// kernels used in ssymv_mgpu
+__global__ void
+ssymv_kernel_U_mgpu(
+    int n,
+    float const * __restrict__ A, int lda,
+    float const * __restrict__ x, int incx,
+    float       * __restrict__ work,
+    int my_gpu_id,
+    int ngpu,
+    int block_offset );
+
+__global__ void
+ssymv_kernel_U_mgpu_sum(
+    int n,
+    float alpha,
+    int lda,
+    float       * __restrict__ y, int incy,
+    float const * __restrict__ work,
+    int my_gpu_id,
+    int ngpu,
+    int block_offset);
 
 #ifdef __cplusplus
 }

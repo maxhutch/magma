@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-    @author Raffaele Solca
-    @author Azzam Haidar
+       @author Raffaele Solca
+       @author Azzam Haidar
+       @author Mark Gates
 
-    @precisions normal z -> c d s
+       @precisions normal z -> c d s
 
 */
 
@@ -23,7 +24,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_z
+#define COMPLEX
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zhegvd
@@ -33,10 +34,10 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     magmaDoubleComplex *h_A, *h_Ainit, *h_B, *h_Binit, *h_work;
-    #if defined(PRECISION_z) || defined(PRECISION_c)
+    #ifdef COMPLEX
     double *rwork;
     #endif
-    double *w1, *w2, result;
+    double *w1, *w2, result[2]={0, 0};
     magma_int_t *iwork;
     real_Double_t mgpu_time, gpu_time, cpu_time;
 
@@ -59,11 +60,9 @@ int main( int argc, char** argv)
     double tol    = opts.tolerance * lapackf77_dlamch("E");
     double tolulp = opts.tolerance * lapackf77_dlamch("P");
 
-    if ( opts.check && opts.jobz == MagmaNoVec ) {
-        fprintf( stderr, "checking results requires vectors; setting jobz=V (option -JV)\n" );
-        opts.jobz = MagmaVec;
-    }
-
+    // checking NoVec requires LAPACK
+    opts.lapack |= (opts.check && opts.jobz == MagmaNoVec);
+    
     printf("using: ngpu = %d, itype = %d, jobz = %s, uplo = %s, check = %d\n",
            (int) opts.ngpu, (int) opts.itype,
            lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo), (int) opts.check);
@@ -76,7 +75,7 @@ int main( int argc, char** argv)
             N = opts.nsize[itest];
             n2     = N*N;
             nb     = magma_get_zhetrd_nb(N);
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
                 magma_int_t lwork  = max( N + N*nb, 2*N + N*N );
                 magma_int_t lrwork = 1 + 5*N +2*N*N;
             #else
@@ -87,7 +86,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_A,    magmaDoubleComplex, n2    );
             TESTING_MALLOC_PIN( h_B,    magmaDoubleComplex, n2    );
             TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_MALLOC_PIN( rwork, double, lrwork );
             #endif
 
@@ -104,8 +103,8 @@ int main( int argc, char** argv)
             if ( opts.warmup || opts.check ) {
                 TESTING_MALLOC_CPU( h_Ainit, magmaDoubleComplex, n2 );
                 TESTING_MALLOC_CPU( h_Binit, magmaDoubleComplex, n2 );
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_Ainit, &N );
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_Binit, &N );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &N, h_Ainit, &N );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_B, &N, h_Binit, &N );
             }
 
             if (opts.warmup) {
@@ -115,24 +114,23 @@ int main( int argc, char** argv)
                 magma_zhegvd_m( opts.ngpu, opts.itype, opts.jobz, opts.uplo,
                                 N, h_A, N, h_B, N, w1,
                                 h_work, lwork,
-                                #if defined(PRECISION_z) || defined(PRECISION_c)
+                                #ifdef COMPLEX
                                 rwork, lrwork,
                                 #endif
                                 iwork, liwork,
                                 &info);
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_Ainit, &N, h_A, &N );
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_Binit, &N, h_B, &N );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_Ainit, &N, h_A, &N );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_Binit, &N, h_B, &N );
             }
 
             // ===================================================================
             // Performs operation using MAGMA
             // ===================================================================
-
             mgpu_time = magma_wtime();
             magma_zhegvd_m( opts.ngpu, opts.itype, opts.jobz, opts.uplo,
                             N, h_A, N, h_B, N, w1,
                             h_work, lwork,
-                            #if defined(PRECISION_z) || defined(PRECISION_c)
+                            #ifdef COMPLEX
                             rwork, lrwork,
                             #endif
                             iwork, liwork,
@@ -143,7 +141,7 @@ int main( int argc, char** argv)
                 printf("magma_zhegvd_m returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
 
-            if ( opts.check ) {
+            if ( opts.check && opts.jobz != MagmaNoVec ) {
                 /* =====================================================================
                    Check the results following the LAPACK's [zc]hegvd routine.
                    A x = lambda B x is solved
@@ -153,39 +151,40 @@ int main( int argc, char** argv)
                           | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
                    =================================================================== */
 
-                #if defined(PRECISION_d) || defined(PRECISION_s)
+                #ifdef REAL
                 double *rwork = h_work + N*N;
                 #endif
 
-                result = 1.;
-                result /= lapackf77_zlanhe("1", lapack_uplo_const(opts.uplo), &N, h_Ainit, &N, rwork);
-                result /= lapackf77_zlange("1", &N, &N, h_A, &N, rwork);
+                result[0] = 1.;
+                result[0] /= lapackf77_zlanhe("1", lapack_uplo_const(opts.uplo), &N, h_Ainit, &N, rwork);
+                result[0] /= lapackf77_zlange("1", &N, &N, h_A, &N, rwork);
 
                 if (opts.itype == 1) {
                     blasf77_zhemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_Ainit, &N, h_A, &N, &c_zero, h_work, &N);
-                    for(int i=0; i<N; ++i)
+                    for(int i=0; i < N; ++i)
                         blasf77_zdscal(&N, &w1[i], &h_A[i*N], &ione);
                     blasf77_zhemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_neg_one, h_Binit, &N, h_A, &N, &c_one, h_work, &N);
-                    result *= lapackf77_zlange("1", &N, &N, h_work, &N, rwork)/N;
+                    result[0] *= lapackf77_zlange("1", &N, &N, h_work, &N, rwork)/N;
                 }
                 else if (opts.itype == 2) {
                     blasf77_zhemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_Binit, &N, h_A, &N, &c_zero, h_work, &N);
-                    for(int i=0; i<N; ++i)
+                    for(int i=0; i < N; ++i)
                         blasf77_zdscal(&N, &w1[i], &h_A[i*N], &ione);
                     blasf77_zhemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_Ainit, &N, h_work, &N, &c_neg_one, h_A, &N);
-                    result *= lapackf77_zlange("1", &N, &N, h_A, &N, rwork)/N;
+                    result[0] *= lapackf77_zlange("1", &N, &N, h_A, &N, rwork)/N;
                 }
                 else if (opts.itype == 3) {
                     blasf77_zhemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_Ainit, &N, h_A, &N, &c_zero, h_work, &N);
-                    for(int i=0; i<N; ++i)
+                    for(int i=0; i < N; ++i)
                         blasf77_zdscal(&N, &w1[i], &h_A[i*N], &ione);
                     blasf77_zhemm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_Binit, &N, h_work, &N, &c_neg_one, h_A, &N);
-                    result *= lapackf77_zlange("1", &N, &N, h_A, &N, rwork)/N;
+                    result[0] *= lapackf77_zlange("1", &N, &N, h_A, &N, rwork)/N;
                 }
-
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_Ainit, &N, h_A, &N );
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_Binit, &N, h_B, &N );
-
+            }
+            if ( opts.lapack ) {
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_Ainit, &N, h_A, &N );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_Binit, &N, h_B, &N );
+                
                 /* ====================================================================
                    Performs operation using MAGMA
                    =================================================================== */
@@ -193,7 +192,7 @@ int main( int argc, char** argv)
                 magma_zhegvd(opts.itype, opts.jobz, opts.uplo,
                              N, h_A, N, h_B, N, w2,
                              h_work, lwork,
-                             #if defined(PRECISION_z) || defined(PRECISION_c)
+                             #ifdef COMPLEX
                              rwork, lrwork,
                              #endif
                              iwork, liwork,
@@ -211,7 +210,7 @@ int main( int argc, char** argv)
                 lapackf77_zhegvd(&opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
                                  &N, h_Ainit, &N, h_Binit, &N, w2,
                                  h_work, &lwork,
-                                 #if defined(PRECISION_z) || defined(PRECISION_c)
+                                 #ifdef COMPLEX
                                  rwork, &lrwork,
                                  #endif
                                  iwork, &liwork,
@@ -221,43 +220,47 @@ int main( int argc, char** argv)
                     printf("lapackf77_zhegvd returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
 
-                double temp1 = 0;
-                double temp2 = 0;
-                for(int j=0; j<N; j++) {
-                    temp1 = max(temp1, fabs(w1[j]));
-                    temp1 = max(temp1, fabs(w2[j]));
-                    temp2 = max(temp2, fabs(w1[j]-w2[j]));
+                double maxw=0, diff=0;
+                for(int j=0; j < N; j++) {
+                    maxw = max(maxw, fabs(w1[j]));
+                    maxw = max(maxw, fabs(w2[j]));
+                    diff = max(diff, fabs(w1[j] - w2[j]));
                 }
-                double result2 = temp2 / (((double)N)*temp1);
+                result[1] = diff / (N*maxw);
 
                 /* =====================================================================
                    Print execution time
                    =================================================================== */
                 printf("%5d   %7.2f          %7.2f          %7.2f\n",
                        (int) N, cpu_time, gpu_time, mgpu_time);
-                printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if (opts.itype==1) {
-                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result,  (result  < tol    ? "ok" : "failed") );
-                }
-                else if (opts.itype==2) {
-                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result,  (result  < tol    ? "ok" : "failed") );
-                }
-                else if (opts.itype==3) {
-                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result,  (result  < tol    ? "ok" : "failed") );
-                }
-                printf(    "(3)    | D(MGPU)-D(LAPACK) |/ |D|    = %8.2e   %s\n\n", result2, (result2 < tolulp ? "ok" : "failed") );
-                status += ! (result < tol && result2 < tolulp);
             }
             else {
                 printf("%5d     ---              ---            %7.2f\n",
                        (int) N, mgpu_time);
+            }
+            if ( opts.check && opts.jobz != MagmaNoVec ) {
+                printf("Testing the eigenvalues and eigenvectors for correctness:\n");
+                if (opts.itype == 1) {
+                    printf("    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0],  (result[0] < tol ? "ok" : "failed") );
+                }
+                else if (opts.itype == 2) {
+                    printf("    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0],  (result[0] < tol ? "ok" : "failed") );
+                }
+                else if (opts.itype == 3) {
+                    printf("    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0],  (result[0] < tol ? "ok" : "failed") );
+                }
+                status += ! (result[0] < tol);
+            }
+            if ( opts.lapack ) {
+                printf(    "    | D_mgpu - D_lapack | / |D|   = %8.2e   %s\n\n", result[1], (result[1] < tolulp ? "ok" : "failed") );
+                status += ! (result[1] < tolulp);
             }
 
             /* Memory clean up */
             TESTING_FREE_PIN( h_A    );
             TESTING_FREE_PIN( h_B    );
             TESTING_FREE_PIN( h_work );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_FREE_PIN( rwork  );
             #endif
             
@@ -276,7 +279,6 @@ int main( int argc, char** argv)
         }
     }
 
-    /* Shutdown */
     TESTING_FINALIZE();
     return status;
 }

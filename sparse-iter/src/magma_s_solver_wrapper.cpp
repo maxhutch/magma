@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_z_solver_wrapper.cpp normal z -> s, Sat Nov 15 19:54:22 2014
+       @generated from magma_z_solver_wrapper.cpp normal z -> s, Fri Jan 30 19:00:30 2015
        @author Hartwig Anzt
 
 */
@@ -70,9 +70,9 @@ magma_s_solver(
             case  Magma_PBICGSTAB: 
                     magma_spbicgstab( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
             case  Magma_GMRES: 
-                    magma_sgmres( A, b, x, &zopts->solver_par, queue );break;
+                    magma_sfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
             case  Magma_PGMRES: 
-                    magma_spgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
+                    magma_sfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
             case  Magma_LOBPCG: 
                     magma_slobpcg( A, &zopts->solver_par, queue );break;
             case  Magma_ITERREF:

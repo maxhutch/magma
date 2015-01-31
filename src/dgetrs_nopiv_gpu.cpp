@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        @author Adrien REMY
 
-       @generated from zgetrs_nopiv_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
+       @generated from zgetrs_nopiv_gpu.cpp normal z -> d, Fri Jan 30 19:00:14 2015
 
 */
 #include "common_magma.h"
@@ -70,7 +70,6 @@ magma_dgetrs_nopiv_gpu(
 {
     double c_one = MAGMA_D_ONE;
     int notran = (trans == MagmaNoTrans);
-    magma_int_t i1, i2;
 
     *info = 0;
     if ( (! notran) &&
@@ -96,11 +95,7 @@ magma_dgetrs_nopiv_gpu(
         return *info;
     }
 
-      
-    i1 = 1;
-    i2 = n;
     if (notran) {
-
         /* Solve A * X = B. */
         if ( nrhs == 1) {
             magma_dtrsv(MagmaLower, MagmaNoTrans, MagmaUnit,    n, dA, ldda, dB, 1 );
@@ -110,7 +105,6 @@ magma_dgetrs_nopiv_gpu(
             magma_dtrsm(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb );
         }
     } else {
-
         /* Solve A**T * X = B  or  A**H * X = B. */
         if ( nrhs == 1) {
             magma_dtrsv(MagmaUpper, trans, MagmaNonUnit, n, dA, ldda, dB, 1 );
@@ -119,7 +113,6 @@ magma_dgetrs_nopiv_gpu(
             magma_dtrsm(MagmaLeft, MagmaUpper, trans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb );
             magma_dtrsm(MagmaLeft, MagmaLower, trans, MagmaUnit,    n, nrhs, c_one, dA, ldda, dB, lddb );
         }
-
     }
 
     return *info;

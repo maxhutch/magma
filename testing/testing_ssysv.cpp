@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zhesv.cpp normal z -> s, Sat Nov 15 19:54:18 2014
+       @generated from testing_zhesv.cpp normal z -> s, Fri Jan 30 19:00:24 2015
        @author Ichitaro Yamazaki
 */
 // includes, system
@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -24,23 +22,17 @@
 
 /* ================================================================================================== */
 
-// Initialize matrix to random.
+// Initialize matrix to random & symmetrize.
 // Having this in separate function ensures the same ISEED is always used,
 // so we can re-generate the identical matrix.
 void init_matrix( int m, int n, float *h_A, magma_int_t lda )
 {
+    assert( m == n );
     magma_int_t ione = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t n2 = lda*n;
-    //float *A = (float*)malloc(n2*sizeof(float));
-    //lapackf77_slarnv( &ione, ISEED, &n2, A );
-    //for (int i=0; i<n; i++) for (int j=0; j<=i; j++) h_A[j+i*lda] = MAGMA_S_MAKE(A[j+i*lda],0.0);
-    //free(A);
-    //
     lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-    // symmetrize
-    for (int i=0; i<n; i++) for (int j=0; j<i; j++) h_A[i+j*lda] = MAGMA_S_CNJG(h_A[j+i*lda]);
-    for (int i=0; i<n; i++) h_A[i+i*lda] = MAGMA_S_MAKE(MAGMA_S_REAL(h_A[i+i*lda]), 0.0);
+    magma_smake_symmetric( n, h_A, lda );
 }
 
 
@@ -94,9 +86,7 @@ int main( int argc, char** argv)
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
-    magma_uplo_t uplo = opts.uplo;
     
-    magma_int_t upper = (uplo == MagmaUpper);
     float tol = opts.tolerance * lapackf77_slamch("E");
 
     printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
@@ -120,7 +110,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 lwork = -1;
-                lapackf77_ssysv((upper ? MagmaUpperStr: MagmaLowerStr), &N, &opts.nrhs, 
+                lapackf77_ssysv(lapack_uplo_const(opts.uplo), &N, &opts.nrhs, 
                                 h_A, &lda, ipiv, h_X, &ldb, &temp, &lwork, &info);
                 lwork = (int)MAGMA_S_REAL(temp);
                 TESTING_MALLOC_CPU( work, float, lwork );
@@ -130,14 +120,14 @@ int main( int argc, char** argv)
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &opts.nrhs, h_B, &ldb, h_X, &ldb );
 
                 cpu_time = magma_wtime();
-                lapackf77_ssysv((upper ? MagmaUpperStr: MagmaLowerStr), &N, &opts.nrhs,
+                lapackf77_ssysv(lapack_uplo_const(opts.uplo), &N, &opts.nrhs,
                                 h_A, &lda, ipiv, h_X, &ldb, work, &lwork, &info);
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
                     printf("lapackf77_ssysv returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                error_lapack = get_residual( uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, h_B, ldb );
+                error_lapack = get_residual( opts.uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, h_B, ldb );
 
                 TESTING_FREE_CPU( work );
             }
@@ -151,7 +141,7 @@ int main( int argc, char** argv)
 
             magma_setdevice(0);
             gpu_time = magma_wtime();
-            magma_ssysv( uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, &info);
+            magma_ssysv( opts.uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, &info);
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
@@ -172,7 +162,7 @@ int main( int argc, char** argv)
             if ( opts.check == 0 ) {
                 printf("     ---   \n");
             } else {
-                error = get_residual( uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, h_B, ldb );
+                error = get_residual( opts.uplo, N, opts.nrhs, h_A, lda, ipiv, h_X, ldb, h_B, ldb );
                 printf("   %8.2e   %s", error, (error < tol ? "ok" : "failed"));
                 if (opts.lapack)
                     printf(" (lapack rel.res. = %8.2e)", error_lapack);

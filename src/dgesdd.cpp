@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
        @precisions normal d -> s
@@ -165,7 +165,8 @@
 
     @ingroup magma_dgesvd_driver
     ********************************************************************/
-magma_int_t magma_dgesdd(
+extern "C" magma_int_t
+magma_dgesdd(
     magma_vec_t jobz, magma_int_t m, magma_int_t n,
     double *A, magma_int_t lda,
     double *s,

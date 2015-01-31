@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -45,9 +45,9 @@ zbcsr_gemm_kernel32(
     int m,
     int n,
     int kblocks,   
-    magmaDouble_ptr *Avals, 
-    magmaDouble_ptr *Bval,
-    magmaDouble_ptr *Cval)
+    mdouble **Avals, 
+    double **Bval,
+    double **Cval)
 {
 #if (__CUDA_ARCH__ >= 200)
 
@@ -182,9 +182,9 @@ zbcsr_gemm_kernel64(
     int m,
     int n,
     int kblocks,   
-    magmaDouble_ptr *Avals, 
-    magmaDouble_ptr *Bval,
-    magmaDouble_ptr *Cval)
+    double **Avals, 
+    double **Bval,
+    double **Cval)
 {
 #if (__CUDA_ARCH__ >= 200)
 

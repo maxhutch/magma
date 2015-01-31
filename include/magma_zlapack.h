@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 */
@@ -658,8 +658,10 @@ void   lapackf77_zlabrd( const magma_int_t *m, const magma_int_t *n, const magma
                          magmaDoubleComplex *X, const magma_int_t *ldx,
                          magmaDoubleComplex *Y, const magma_int_t *ldy );
 
+#ifdef COMPLEX
 void   lapackf77_zlacgv( const magma_int_t *n,
                          magmaDoubleComplex *x, const magma_int_t *incx );
+#endif
 
 #ifdef COMPLEX
 void   lapackf77_zlacp2( const char *uplo,

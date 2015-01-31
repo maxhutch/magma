@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zhesv.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zhesv.cpp normal z -> s, Fri Jan 30 19:00:15 2015
 */
 
 #include "common_magma.h"
@@ -95,17 +95,16 @@
     @ingroup magma_ssysv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_ssysv(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs, 
-            float *A, magma_int_t lda, magma_int_t *ipiv, 
-            float *B, magma_int_t ldb, 
-            magma_int_t *info ) {
-
+magma_ssysv(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs, 
+    float *A, magma_int_t lda, magma_int_t *ipiv, 
+    float *B, magma_int_t ldb, 
+    magma_int_t *info ) 
+{
     /* .. Local Scalars .. */
     magma_int_t upper = (uplo == MagmaUpper);;
-    /* .. Executable Statements .. */
 
     /* Test the input parameters. */
-
     *info = 0;
     if( !upper && uplo != MagmaLower ) {
        *info = -1;
@@ -125,19 +124,15 @@ magma_ssysv(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
     }
 
     /* Compute the factorization A = U*D*U' or A = L*D*L'. */
-
     magma_ssytrf( uplo, n, A, lda, ipiv, info );
     if( *info == 0 ) {
 
         /* Solve the system A*X = B, overwriting B with X. */
-
         lapackf77_ssytrs( (upper ? MagmaUpperStr: MagmaLowerStr), 
                            &n, &nrhs, A, &lda, ipiv, B, &ldb, info );
-
     }
 
     return *info;
-
     /* End of SSYSV */
 }
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -11,21 +11,17 @@
        @author Tingxing Dong
 */
 
-
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
-#include "common_magma.h"
 
 // includes, project
+#include "testings.h"  // before magma.h, to include cublas_v2
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zgemm_batched
@@ -55,7 +51,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex **B_array = NULL;
     magmaDoubleComplex **C_array = NULL;
 
-
+    magma_queue_t queue = magma_stream;
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     batchCount = opts.batchcount;
@@ -110,9 +106,9 @@ int main( int argc, char** argv)
             TESTING_MALLOC_CPU( h_Cmagma,  magmaDoubleComplex, sizeC  );
             TESTING_MALLOC_CPU( h_Ccublas, magmaDoubleComplex, sizeC  );
 
-            TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, sizeA );
-            TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, sizeB );
-            TESTING_MALLOC_DEV( d_C, magmaDoubleComplex, sizeC  );
+            TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*An*batchCount );
+            TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*Bn*batchCount );
+            TESTING_MALLOC_DEV( d_C, magmaDoubleComplex, lddc*N*batchCount  );
 
             magma_malloc((void**)&A_array, batchCount * sizeof(*A_array));
             magma_malloc((void**)&B_array, batchCount * sizeof(*B_array));
@@ -130,15 +126,15 @@ int main( int argc, char** argv)
             magma_zsetmatrix( Bm, Bn*batchCount, h_B, ldb, d_B, lddb );
             magma_zsetmatrix( M, N*batchCount, h_C, ldc, d_C, lddc );
             
-            zset_pointer(A_array, d_A, ldda, 0, 0, ldda*An, batchCount);
-            zset_pointer(B_array, d_B, lddb, 0, 0, lddb*Bn, batchCount);
-            zset_pointer(C_array, d_C, lddc, 0, 0, lddc*N,  batchCount);
+            zset_pointer(A_array, d_A, ldda, 0, 0, ldda*An, batchCount, queue);
+            zset_pointer(B_array, d_B, lddb, 0, 0, lddb*Bn, batchCount, queue);
+            zset_pointer(C_array, d_C, lddc, 0, 0, lddc*N,  batchCount, queue);
 
             magma_time = magma_sync_wtime( NULL );
             magmablas_zgemm_batched(opts.transA, opts.transB, M, N, K,
                              alpha, A_array, ldda,
                                     B_array, lddb,
-                             beta,  C_array, lddc, batchCount);
+                             beta,  C_array, lddc, batchCount, queue);
             magma_time = magma_sync_wtime( NULL ) - magma_time;
             magma_perf = gflops / magma_time;            
             magma_zgetmatrix( M, N*batchCount, d_C, lddc, h_Cmagma, ldc );

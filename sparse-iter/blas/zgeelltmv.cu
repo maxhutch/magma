@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -26,11 +26,11 @@ zgeelltmv_kernel(
     int num_cols,
     int num_cols_per_row,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
     int row = blockDim.x * blockIdx.x + threadIdx.x ;
     if(row < num_rows ){
@@ -54,14 +54,14 @@ zgeelltmv_kernel_shift(
     int num_cols_per_row,
     magmaDoubleComplex alpha, 
     magmaDoubleComplex lambda, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
     int offset,
     int blocksize,
-    magmaIndex_ptr addrows,
-    magmaDoubleComplex_ptr dy)
+    magma_index_t * addrows,
+    magmaDoubleComplex * dy)
 {
 
     int row = blockDim.x * blockIdx.x + threadIdx.x ;
@@ -224,7 +224,7 @@ magma_zgeelltmv(
                 in case of processing multiple vectors  
                 
     @param[in]
-    addrows    magma_int_t*
+    addrows     magmaIndex_ptr
                 in case the matrixpowerskernel is used
 
     @param[out]
@@ -251,7 +251,7 @@ magma_zgeelltmv_shift(
     magmaDoubleComplex beta,
     int offset,
     int blocksize,
-    magma_index_t *addrows,
+    magmaIndex_ptr addrows,
     magmaDoubleComplex_ptr dy,
     magma_queue_t queue )
 {

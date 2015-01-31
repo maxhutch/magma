@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from zlaset_band.cu normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from zlaset_band.cu normal z -> s, Fri Jan 30 19:00:09 2015
 
 */
 #include "common_magma.h"

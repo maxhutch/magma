@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_zmconverter.cpp normal z -> d, Sat Nov 15 19:54:23 2014
+       @generated from magma_zmconverter.cpp normal z -> d, Fri Jan 30 19:00:32 2015
        @author Hartwig Anzt
 */
 
@@ -747,8 +747,8 @@ magma_d_mconvert(
                 // fill in "1" in blockinfo if block is occupied
                 for( i=0; i<A.num_rows; i++ ) {
                     for( j=A.row[i]; j<A.row[i+1]; j++ ) {
-                        k = floor(i / size_b);
-                        l = floor(A.col[j] / size_b);
+                        k = (i / size_b);
+                        l = (A.col[j] / size_b);
                         B->blockinfo(k,l) = 1;
                     }
                 } 
@@ -798,8 +798,8 @@ magma_d_mconvert(
                 // fill in val
                 for( i=0; i<A.num_rows; i++ ) {
                     for( j=A.row[i]; j<A.row[i+1]; j++ ) {
-                        k = floor(i / size_b);
-                        l = floor(A.col[j] / size_b);
+                        k = (i / size_b);
+                        l = (A.col[j] / size_b);
                     // find correct block + take row into account + correct column
                         B->val[ (B->blockinfo(k,l)-1) * size_b * size_b + i%size_b 
                                             * size_b + A.col[j]%size_b ] = A.val[j];

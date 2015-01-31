@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_zvpass_gpu.cpp normal z -> d, Sat Nov 15 19:54:23 2014
+       @generated from magma_zvpass_gpu.cpp normal z -> d, Fri Jan 30 19:00:32 2015
        @author Hartwig Anzt
 */
 
@@ -64,7 +64,7 @@ using namespace std;
 
 extern "C"
 magma_int_t
-magma_dvset_gpu(
+magma_dvset_dev(
     magma_int_t m, magma_int_t n, 
     magmaDouble_ptr val,
     magma_d_vector *v,
@@ -115,7 +115,7 @@ magma_dvset_gpu(
 
 extern "C"
 magma_int_t
-magma_vget_gpu(
+magma_dvget_dev(
     magma_d_vector v,
     magma_int_t *m, magma_int_t *n, 
     magmaDouble_ptr *val,
@@ -129,7 +129,7 @@ magma_vget_gpu(
     } else {
         magma_d_vector v_DEV;
         magma_d_vtransfer( v, &v_DEV, v.memory_location, Magma_DEV, queue ); 
-        magma_dvget_gpu( v_DEV, m, n, val, queue );
+        magma_dvget_dev( v_DEV, m, n, val, queue );
         magma_d_vfree( &v_DEV, queue );
     }
     return MAGMA_SUCCESS;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_zlapack.h normal z -> d, Sat Nov 15 19:53:54 2014
+       @generated from magma_zlapack.h normal z -> d, Fri Jan 30 19:00:06 2015
 */
 
 #ifndef MAGMA_DLAPACK_H
@@ -658,8 +658,10 @@ void   lapackf77_dlabrd( const magma_int_t *m, const magma_int_t *n, const magma
                          double *X, const magma_int_t *ldx,
                          double *Y, const magma_int_t *ldy );
 
+#ifdef COMPLEX
 void   lapackf77_dlacgv( const magma_int_t *n,
                          double *x, const magma_int_t *incx );
+#endif
 
 #ifdef COMPLEX
 void   lapackf77_dlacp2( const char *uplo,

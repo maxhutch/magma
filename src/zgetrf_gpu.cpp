@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -249,7 +249,7 @@ magma_zgetrf_gpu(
             for( i=s*nb; i < s*nb + nb0; ++i ) {
                 ipiv[i] += s*nb;
             }
-            magmablas_zlaswp( n, dAT, ldda, s*nb + 1, s*nb + nb0, ipiv, 1 );
+            magmablas_zlaswp( n, dAT, lddat, s*nb + 1, s*nb + nb0, ipiv, 1 );
     
             // upload j-th panel
             magma_zsetmatrix( rows, nb0, work, ldwork, dAP, maxm );

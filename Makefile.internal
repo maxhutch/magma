@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
@@ -47,11 +47,13 @@ CXXFLAGS        += -DHAVE_CUBLAS
 
 #
 # Set default values if they are not set in make.inc
+# We no longer compile Tesla (CUDA arch 1.x) by default, as nvcc 6.5 has deprecated it.
 #
 PGIFORTRAN      ?= 0
-GPU_TARGET      ?= Tesla Fermi Kepler
+GPU_TARGET      ?= Fermi Kepler
 LIBMAGMA        ?= $(MAGMA_DIR)/lib/libmagma.a
 LIBMAGMA_SPARSE ?= $(MAGMA_DIR)/lib/libmagma_sparse.a
+RPATH           ?= -Wl,-rpath,$(MAGMA_DIR)/lib
 FORT            ?= no_fortran
 
 prefix ?= /usr/local/magma
@@ -68,7 +70,8 @@ prefix ?= /usr/local/magma
 # First, add smXX for architecture names
 #
 ifneq ($(findstring Tesla, $(GPU_TARGET)),)
-    GPU_TARGET += sm10 sm13
+    # sm10 is no longer supported by CUDA 6.x nvcc
+    GPU_TARGET += sm13
 endif
 ifneq ($(findstring Fermi, $(GPU_TARGET)),)
     GPU_TARGET += sm20
@@ -90,6 +93,7 @@ NV_SM    :=
 NV_COMP  :=
 
 ifneq ($(findstring sm10, $(GPU_TARGET)),)
+    # sm10 is no longer supported by CUDA 6.x nvcc
     MIN_ARCH ?= 100
     NV_SM    += -gencode arch=compute_10,code=sm_10
     NV_COMP  := -gencode arch=compute_10,code=compute_10
@@ -137,6 +141,13 @@ endif
 # It is used for external programs that link with MAGMA, e.g., via pkgconfig.
 # CPPFLAGS adds internal MAGMA directories needed to compile MAGMA itself.
 CPPFLAGS = $(INC) -I$(MAGMA_DIR)/include -I$(MAGMA_DIR)/control -I$(MAGMA_DIR)/sparse-iter/include
+
+# check whether all FLAGS have -fPIC
+have_fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
+                  $(findstring -fPIC, $(CXXFLAGS)), \
+                  $(findstring -fPIC, $(FFLAGS)),   \
+                  $(findstring -fPIC, $(F90FLAGS)), \
+                  $(findstring -fPIC, $(NVCCFLAGS)))
 
 # Define the pointer size for fortran compilation
 PTRFILE = $(MAGMA_DIR)/control/sizeptr.c

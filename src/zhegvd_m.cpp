@@ -1,13 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
+       @author Mark Gates
 
        @precisions normal z -> c
 
@@ -15,7 +16,6 @@
 #include "common_magma.h"
 #include "magma_timer.h"
 
-#define PRECISION_z
 #define COMPLEX
 
 /**
@@ -273,32 +273,27 @@ magma_zhegvd_m(
         return *info;
     }
 
-    /*     Quick return if possible */
+    /* Quick return if possible */
     if (n == 0) {
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_zhegvd(&itype, jobz_, uplo_,
-                         &n, A, &lda, B, &ldb,
-                         w, work, &lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                         rwork, &lrwork,
-#endif
-                         iwork, &liwork, info);
+        lapackf77_zhegvd( &itype, jobz_, uplo_,
+                          &n, A, &lda, B, &ldb,
+                          w, work, &lwork,
+                          #ifdef COMPLEX
+                          rwork, &lrwork,
+                          #endif
+                          iwork, &liwork, info);
         return *info;
     }
 
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_zpotrf_m(ngpu, uplo, n, B, ldb, info);
+    magma_zpotrf_m( ngpu, uplo, n, B, ldb, info );
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -309,13 +304,13 @@ magma_zhegvd_m(
     timer_start( time );
 
     /*  Transform problem to standard eigenvalue problem and solve. */
-    magma_zhegst_m(ngpu, itype, uplo, n, A, lda, B, ldb, info);
+    magma_zhegst_m( ngpu, itype, uplo, n, A, lda, B, ldb, info );
 
     timer_stop( time );
     timer_printf( "time zhegst = %6.2f\n", time );
     timer_start( time );
 
-    magma_zheevd_m(ngpu, jobz, uplo, n, A, lda, w, work, lwork, rwork, lrwork, iwork, liwork, info);
+    magma_zheevd_m( ngpu, jobz, uplo, n, A, lda, w, work, lwork, rwork, lrwork, iwork, liwork, info );
 
     timer_stop( time );
     timer_printf( "time zheevd = %6.2f\n", time );
@@ -332,9 +327,8 @@ magma_zhegvd_m(
             } else {
                 trans = MagmaNoTrans;
             }
-
-            magma_ztrsm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
-                          n, n, c_one, B, ldb, A, lda);
+            magma_ztrsm_m( ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
+                           n, n, c_one, B, ldb, A, lda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -344,31 +338,35 @@ magma_zhegvd_m(
             } else {
                 trans = MagmaConjTrans;
             }
+            #ifdef ENABLE_DEBUG
             printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            #endif
             magmaDoubleComplex *dA=NULL, *dB=NULL;
-            magma_int_t ldda = n;
-            magma_int_t lddb = n;
+            magma_int_t ldda = roundup( n, 32 );
+            magma_int_t lddb = ldda;
             
-            if (MAGMA_SUCCESS != magma_zmalloc( &dB, n*lddb ) ) {
-                *info = MAGMA_ERR_DEVICE_ALLOC;
-                return *info;
-            }
-            if (MAGMA_SUCCESS != magma_zmalloc( &dA, n*ldda ) ) {
+            if (MAGMA_SUCCESS != magma_zmalloc( &dA, n*ldda ) ||
+                MAGMA_SUCCESS != magma_zmalloc( &dB, n*lddb )) {
+                magma_free( dA );
+                magma_free( dB );
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
             magma_zsetmatrix( n, n, B, ldb, dB, lddb );
             magma_zsetmatrix( n, n, A, lda, dA, ldda );
-            magma_ztrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, c_one, dB, lddb, dA, ldda);
+            magma_ztrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, n, c_one, dB, lddb, dA, ldda );
             magma_zgetmatrix( n, n, dA, ldda, A, lda );
+            
+            magma_free( dA );
+            magma_free( dB );
         }
 
         timer_stop( time );
         timer_printf( "time setmatrices trsm/mm + getmatrices = %6.2f\n", time );
     }
 
-    work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0 );  // round up
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 

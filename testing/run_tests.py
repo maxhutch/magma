@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 1.6.0) --
+# MAGMA (version 1.6.1) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date November 2014
+# @date January 2015
 
 ## @file run_tests.py
 #  @author Mark Gates
@@ -17,9 +17,9 @@
 # e.g., nearly square, 2:1, 10:1, 1:2, 1:10.
 # The -h or --help option provides a summary of the options.
 #
-# Batch vs. interactive mode
+# Non-interactive vs. interactive mode
 # --------------------------
-# When output is redirected to a file, it runs in batch mode, printing a
+# When output is redirected to a file, it runs in non-interactive mode, printing a
 # short summary to stderr on the console and all other output to the file.
 # For example:
 #
@@ -94,9 +94,10 @@
 # particular sets of tests. By default, all tests are run.
 #
 # The --start option skips all testers before the given one, then continues
-# with testers from there. This is helpful to restart a batch. For example:
+# with testers from there. This is helpful to restart a non-interactive set
+# of tests. For example:
 #
-#       ./run_tests.py --start testing_spotrf
+#       ./run_tests.py --start testing_spotrf > output.log
 #
 # If specific testers are named on the command line, only those are run.
 # For example:
@@ -126,6 +127,8 @@
 # The --tol option sets the tolerance to verify accuracy. This is 30 by default,
 # which may be too tight for some testers. Setting it somewhat higher
 # (e.g., 50 or 100) filters out spurious accuracy failures.
+#
+# The --dev option sets which GPU device to use.
 
 import os
 import re
@@ -138,15 +141,18 @@ from subprocess import PIPE, STDOUT
 from optparse import OptionParser
 
 # on a TTY screen, stop after each test for user input
-# when redirected to file ("batch mode"), don't stop
-batch = not sys.stdout.isatty()
+# when redirected to file ("non-interactive mode"), don't stop
+non_interactive = not sys.stdout.isatty()
 
 parser = OptionParser()
 parser.add_option('-p', '--precisions', action='store',      dest='precisions', help='run given precisions (initials, e.g., "sd" for single and double)', default='sdcz')
 parser.add_option(      '--start',      action='store',      dest='start',      help='start with given routine; useful to restart an interupted run')
 parser.add_option(      '--memcheck',   action='store_true', dest='memcheck',   help='run with cuda-memcheck (slow)')
 parser.add_option(      '--tol',        action='store',      dest='tol',        help='set tolerance')
+parser.add_option(      '--dev',        action='store',      dest='dev',        help='set GPU device to use')
+parser.add_option(      '--batch',      action='store',      dest='batch',      help='batch count for batched tests', default='100')
 
+parser.add_option(      '--xsmall',     action='store_true', dest='xsmall',     help='run very few, extra small tests, N=25:100:25, 32:128:32')
 parser.add_option('-s', '--small',      action='store_true', dest='small',      help='run small  tests, N < 300')
 parser.add_option('-m', '--medium',     action='store_true', dest='med',        help='run medium tests, N < 1000')
 parser.add_option('-l', '--large',      action='store_true', dest='large',      help='run large  tests, N > 1000')
@@ -160,11 +166,12 @@ parser.add_option(      '--syev',       action='store_true', dest='syev',       
 parser.add_option(      '--sygv',       action='store_true', dest='sygv',       help='run generalized symmetric eigenvalue tests')
 parser.add_option(      '--geev',       action='store_true', dest='geev',       help='run non-symmetric eigenvalue tests')
 parser.add_option(      '--svd',        action='store_true', dest='svd',        help='run SVD tests')
+parser.add_option(      '--batched',    action='store_true', dest='batched',    help='run batched (BLAS, LU, etc.) tests')
 
 (opts, args) = parser.parse_args()
 
-# default if no sizes given is all sizes
-if ( not opts.small and not opts.med and not opts.large ):
+# default if no sizes given is all sizes (small, medium, large)
+if ( not opts.xsmall and not opts.small and not opts.med and not opts.large ):
 	opts.small = True
 	opts.med   = True
 	opts.large = True
@@ -173,7 +180,8 @@ if ( not opts.small and not opts.med and not opts.large ):
 # default if no groups given is all groups
 if ( not opts.blas and not opts.aux  and
 	 not opts.chol and not opts.lu   and not opts.qr   and
-	 not opts.syev and not opts.sygv and not opts.geev and not opts.svd ):
+	 not opts.syev and not opts.sygv and not opts.geev and
+	 not opts.svd  and not opts.batched ):
 	opts.blas = True
 	opts.aux  = True
 	opts.chol = True
@@ -183,6 +191,7 @@ if ( not opts.blas and not opts.aux  and
 	opts.sygv = True
 	opts.geev = True
 	opts.svd  = True
+	opts.batched = True
 # end
 
 print 'opts', opts
@@ -199,6 +208,8 @@ print 'args', args
 
 # ----------
 n = ''
+if opts.xsmall:
+	n +=  ' --range 32:128:32 --range 25:100:25'
 if opts.small:
 	n += (' --range 1:20:1'
 	  +   ' -N  30  -N  31  -N  32  -N  33  -N  34'
@@ -277,8 +288,6 @@ tests = []
 # ----------
 # BLAS
 blas = (
-	('testing_z_cublas_v2',            '-c',  n,    'cublas only'),
-	
 	# no-trans/conj-trans; there are other combinations with trans
 	('testing_zgemm',   '-l -NN         -c',  mnk,  ''),
 	('testing_zgemm',   '-l -NC         -c',  mnk,  ''),
@@ -308,7 +317,7 @@ blas = (
 	
 	# lower/upper
 	('testing_zsymv',   '-L             -c',  n,    ''),
-	('#testing_zsymv',  '-U             -c',  n,    'upper not implemented'),
+	('testing_zsymv',   '-U             -c',  n,    ''),
 	
 	# left/right, lower/upper, no-trans/conj-trans, non-unit/unit diag
 	('testing_ztrmm',   '-SL -L    -DN  -c',  mn,   'cublas only'),
@@ -465,28 +474,18 @@ chol = (
 	('testing_zpotri',           '-U    -c',  n,    ''),
 
 # ----------
-# Symmetric Indefinite, GPU interface 
-# > no-pivot LDLt
-	('testing_zhetrf',           '-L   -c  --version 4',  n,    ''),
-	('testing_zhetrf',           '-U   -c  --version 4',  n,    ''),
-
-	('testing_zhetrf',           '-L   -c2 --version 4',  n,    ''),
-	('testing_zhetrf',           '-U   -c2 --version 4',  n,    ''),
-
-# ----------
-# Symmetric Indefinite, CPU interface
-# > Bunch-Kauffman
-	('testing_zhetrf',           '-L   -c  --version 1',  n,    ''),
-	('testing_zhetrf',           '-U   -c  --version 1',  n,    ''),
-
-	('testing_zhetrf',           '-L   -c2 --version 1',  n,    ''),
-	('testing_zhetrf',           '-U   -c2 --version 1',  n,    ''),
-# > no-pivot LDLt
-	('testing_zhetrf',           '-L   -c  --version 3',  n,    ''),
-	('testing_zhetrf',           '-U   -c  --version 3',  n,    ''),
-
-	('testing_zhetrf',           '-L   -c2 --version 3',  n,    ''),
-	('testing_zhetrf',           '-U   -c2 --version 3',  n,    ''),
+# Symmetric Indefinite
+	# Bunch-Kauffman
+	('testing_zhetrf', '-L --version 1 -c2',  n,    ''),
+	('testing_zhetrf', '-U --version 1 -c2',  n,    ''),
+	
+	# no-pivot LDLt, CPU interface
+	('testing_zhetrf', '-L --version 3 -c2',  n,    ''),
+	('testing_zhetrf', '-U --version 3 -c2',  n,    ''),
+	
+	# no-pivot LDLt, GPU interface
+	('testing_zhetrf', '-L --version 4 -c2',  n,    ''),
+	('testing_zhetrf', '-U --version 4 -c2',  n,    ''),
 )
 if ( opts.chol ):
 	tests += chol
@@ -559,26 +558,30 @@ if ( opts.qr ):
 # symmetric eigenvalues, GPU interface
 syev = (
 	# no-vectors/vectors, lower/upper
-	#('testing_dsyevd_gpu',              '',  n,    ''),  # covered by zheevd_gpu
-	#('testing_zheevd_gpu',     '-L -JN -c',  n,    '-c implies -JV'),
-	#('testing_zheevd_gpu',     '-U -JN -c',  n,    '-c implies -JV'),
+	('testing_zheevd_gpu',      '-L -JN -c',  n,    ''),
+	('testing_zheevd_gpu',      '-U -JN -c',  n,    ''),
 	('testing_zheevd_gpu',      '-L -JV -c',  n,    ''),
 	('testing_zheevd_gpu',      '-U -JV -c',  n,    ''),
 	
-	('testing_zhetrd_gpu',      '-L     -c',  n,    ''),
-	('testing_zhetrd_gpu',      '-U     -c',  n,    ''),
+	# lower/upper, version 1 (cublas_hemv)/2 (fast_hemv)
+	('testing_zhetrd_gpu',  '--version 1 -L -c',  n,    ''),
+	('testing_zhetrd_gpu',  '--version 1 -U -c',  n,    ''),
+	('testing_zhetrd_gpu',  '--version 2 -L -c',  n,    ''),
+	('testing_zhetrd_gpu',  '--version 2 -U -c',  n,    ''),
 	
+	# multi-gpu
 	('testing_zhetrd_mgpu',     '-L     -c',  n,    ''),
 	('testing_zhetrd_mgpu',     '-U     -c',  n,    ''),
 	
 # ----------
 # symmetric eigenvalues, CPU interface
-	#('testing_dsyevd',                  '',  n,    ''),  # covered by zheevd
-	#('testing_zheevd',         '-L -JN -c',  n,    '-c implies -JV'),
-	#('testing_zheevd',         '-U -JN -c',  n,    '-c implies -JV'),
+	# no vectors/vectors, lower/upper
+	('testing_zheevd',          '-L -JN -c',  n,    ''),
+	('testing_zheevd',          '-U -JN -c',  n,    ''),
 	('testing_zheevd',          '-L -JV -c',  n,    ''),
 	('testing_zheevd',          '-U -JV -c',  n,    ''),
 	
+	# lower/upper
 	('testing_zhetrd',          '-L     -c',  n,    ''),
 	('testing_zhetrd',          '-U     -c',  n,    ''),
 	
@@ -599,13 +602,13 @@ if ( opts.syev ):
 # generalized symmetric eigenvalues
 sygv = (
 	# no-vector/vector, lower/upper, itypes
-	#('testing_zhegvd',          '-L -JN --itype 1 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd',          '-L -JN --itype 2 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd',          '-L -JN --itype 3 -c',  n,  '-c implies -JV'),
-	
-	#('testing_zhegvd',          '-U -JN --itype 1 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd',          '-U -JN --itype 2 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd',          '-U -JN --itype 3 -c',  n,  '-c implies -JV'),
+	('testing_zhegvd',           '-L -JN --itype 1 -c',  n,  ''),
+	('testing_zhegvd',           '-L -JN --itype 2 -c',  n,  ''),
+	('testing_zhegvd',           '-L -JN --itype 3 -c',  n,  ''),
+	                                                          
+	('testing_zhegvd',           '-U -JN --itype 1 -c',  n,  ''),
+	('testing_zhegvd',           '-U -JN --itype 2 -c',  n,  ''),
+	('testing_zhegvd',           '-U -JN --itype 3 -c',  n,  ''),
 	
 	('testing_zhegvd',           '-L -JV --itype 1 -c',  n,  ''),
 	('testing_zhegvd',           '-L -JV --itype 2 -c',  n,  ''),
@@ -616,30 +619,30 @@ sygv = (
 	('testing_zhegvd',           '-U -JV --itype 3 -c',  n,  ''),
 	
 	# lower/upper, no-vector/vector, itypes
-	#('testing_zhegvd_m',        '-L -JN --itype 1 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd_m',        '-L -JN --itype 2 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd_m',        '-L -JN --itype 3 -c',  n,  '-c implies -JV'),
-	
-	#('testing_zhegvd_m',        '-U -JN --itype 1 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd_m',        '-U -JN --itype 2 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvd_m',        '-U -JN --itype 3 -c',  n,  '-c implies -JV'),
+	('testing_zhegvd_m',         '-L -JN --itype 1 -c',  n,  ''),
+	('testing_zhegvd_m',         '-L -JN --itype 2 -c',  n,  ''),
+	('testing_zhegvd_m',         '-L -JN --itype 3 -c',  n,  ''),
+	                                                          
+	('testing_zhegvd_m',         '-U -JN --itype 1 -c',  n,  ''),
+	('testing_zhegvd_m',         '-U -JN --itype 2 -c',  n,  ''),
+	('testing_zhegvd_m',         '-U -JN --itype 3 -c',  n,  ''),
 	
 	('testing_zhegvd_m',         '-L -JV --itype 1 -c',  n,  ''),
 	('testing_zhegvd_m',         '-L -JV --itype 2 -c',  n,  ''),
 	('testing_zhegvd_m',         '-L -JV --itype 3 -c',  n,  ''),
 	
-	('#testing_zhegvd_m',        '-U -JV --itype 1 -c',  n,  'upper not implemented'),
-	('#testing_zhegvd_m',        '-U -JV --itype 2 -c',  n,  'upper not implemented'),
-	('#testing_zhegvd_m',        '-U -JV --itype 3 -c',  n,  'upper not implemented'),
+	('testing_zhegvd_m',         '-U -JV --itype 1 -c',  n,  'upper not implemented ??'),
+	('testing_zhegvd_m',         '-U -JV --itype 2 -c',  n,  'upper not implemented ??'),
+	('testing_zhegvd_m',         '-U -JV --itype 3 -c',  n,  'upper not implemented ??'),
 	
 	# lower/upper, no-vector/vector, itypes
-	#('testing_zhegvdx',         '-L -JN --itype 1 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvdx',         '-L -JN --itype 2 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvdx',         '-L -JN --itype 3 -c',  n,  '-c implies -JV'),
-	
-	#('testing_zhegvdx',         '-U -JN --itype 1 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvdx',         '-U -JN --itype 2 -c',  n,  '-c implies -JV'),
-	#('testing_zhegvdx',         '-U -JN --itype 3 -c',  n,  '-c implies -JV'),
+	('testing_zhegvdx',          '-L -JN --itype 1 -c',  n,  ''),
+	('testing_zhegvdx',          '-L -JN --itype 2 -c',  n,  ''),
+	('testing_zhegvdx',          '-L -JN --itype 3 -c',  n,  ''),
+	                                                          
+	('testing_zhegvdx',          '-U -JN --itype 1 -c',  n,  ''),
+	('testing_zhegvdx',          '-U -JN --itype 2 -c',  n,  ''),
+	('testing_zhegvdx',          '-U -JN --itype 3 -c',  n,  ''),
 	
 	('testing_zhegvdx',          '-L -JV --itype 1 -c',  n,  ''),
 	('testing_zhegvdx',          '-L -JV --itype 2 -c',  n,  ''),
@@ -726,6 +729,23 @@ svd = (
 if ( opts.svd ):
 	tests += svd
 
+# ----------
+# batched (BLAS, LU, etc.)
+batched = (
+    # ----------
+    # Cholesky,
+	('testing_zpotrf_batched',  '--batch ' + opts.batch + ' -L   -c',  n,   ''),
+	('testing_zposv_batched',   '--batch ' + opts.batch + ' -L   -c',  n,   ''),
+    # LU,
+	('testing_zgetrf_batched',  '--batch ' + opts.batch + '   -c',  n,   ''),
+	('testing_zgesv_batched',   '--batch ' + opts.batch + '   -c',  n,   ''),
+	('testing_zgetri_batched',  '--batch ' + opts.batch + '   -c',  n,   ''),
+    # QR,
+	('testing_zgeqrf_batched',  '--batch ' + opts.batch + '   -c',  mn,   ''),
+)
+if ( opts.batched ):
+	tests += batched
+
 
 # ----------------------------------------------------------------------
 precisions = (
@@ -733,14 +753,15 @@ precisions = (
 )
 
 subs = (
-	('',              'dlag2s',      '',              'zlag2c'    ),
-	('ssy',           'dsy',         'che',           'zhe'       ),
-	('sor',           'dor',         'cun',           'zun'       ),
-	('sy2sb',         'sy2sb',       'he2hb',         'he2hb'     ),
-	('',              'testing_ds',  '',              'testing_zc'),
-	('testing_s',     'testing_d',   'testing_c',     'testing_z' ),
-	('lansy',         'lansy',       'lanhe',         'lanhe'     ),
-	('blas_s',        'blas_d',      'blas_c',        'blas_z'    ),
+	('',              'testing_dlag2s', '',              'testing_zlag2c'),
+	('',              'testing_dlat2s', '',              'testing_zlat2c'),
+	('ssy',           'dsy',            'che',           'zhe'           ),
+	('sor',           'dor',            'cun',           'zun'           ),
+	('sy2sb',         'sy2sb',          'he2hb',         'he2hb'         ),
+	('',              'testing_ds',     '',              'testing_zc'    ),
+	('testing_s',     'testing_d',      'testing_c',     'testing_z'     ),
+	('lansy',         'lansy',          'lanhe',         'lanhe'         ),
+	('blas_s',        'blas_d',         'blas_c',        'blas_z'        ),
 )
 
 # ----------
@@ -805,9 +826,12 @@ if ( opts.start ):
 seen  = {}
 pause = 0
 
-tol = ''
+global_options = ''
 if ( opts.tol ):
-	tol = ' --tolerance ' + opts.tol + ' '
+	global_options += ' --tol ' + opts.tol + ' '
+
+if ( opts.dev is not None ):
+	global_options += ' --dev ' + opts.dev + ' '
 
 last_cmd = None
 
@@ -817,14 +841,17 @@ for test in tests:
 	make = False
 	for precision in opts.precisions:
 		# precision generation
+		# in a few cases this doesn't produce a valid tester name (e.g., testing_zcposv_gpu -> posv_gpu)
 		cmdp = substitute( cmd, 'z', precision )
+		if ( not re.match( 'testing_', cmdp )):
+			continue
 		
 		disabled = (cmdp[0] == '#')
 		if ( disabled ):
 			cmdp = cmdp[1:]
 		
 		# command to run
-		cmd_args = './' + cmdp +' '+ options +' '+ tol + sizes
+		cmd_args = './' + cmdp +' '+ options +' '+ global_options + sizes
 		cmd_args = re.sub( '  +', ' ', cmd_args )  # compress spaces
 		
 		# command to print on console, lacks sizes
@@ -836,12 +863,14 @@ for test in tests:
 			continue
 		start = None
 		
-		# skip tests not in args, or duplicates, or non-existing
-		#if not os.path.exists( cmdp ):
-		#	print >>sys.stderr, cmd, cmdp, "doesn't exist"
+		# skip tests not in args, or duplicates
+		# skip and warn about non-existing
 		if (    (args and not cmdp in args)
-		     or (not os.path.exists( cmdp ))
 		     or (seen.has_key( cmd_opts )) ):
+			continue
+		# end
+		if ( not os.path.exists( cmdp )):
+			print >>sys.stderr, cmdp, "doesn't exist (original name: " + cmd + ", precision: " + precision + ")"
 			continue
 		# end
 		seen[ cmd_opts ] = True
@@ -862,7 +891,7 @@ for test in tests:
 			print '*'*100
 			sys.stdout.flush()
 			
-			if ( batch ):
+			if ( non_interactive ):
 				if ( last_cmd and cmd != last_cmd ):
 					sys.stderr.write( '\n' )
 				last_cmd = cmd
@@ -905,7 +934,7 @@ for test in tests:
 				nerror += 1  # count crash as an error
 			
 			if ( errmsg != '' ):
-				if ( batch ):
+				if ( non_interactive ):
 					sys.stderr.write( errmsg + '\n' )  # to console
 				sys.stdout.write( errmsg + '\n' )  # to file
 				failures[ cmd_opts ] = True
@@ -913,7 +942,7 @@ for test in tests:
 				sys.stderr.write( '  ok\n' )
 			# end
 			
-			if ( batch ):
+			if ( non_interactive ):
 				# set to sleep a few seconds before next test,
 				# to allow processor to cool off some between tests.
 				pause = min( t, 5. )
@@ -947,6 +976,6 @@ else:
 	msg += 'routines with failures:\n    ' + '\n    '.join( f ) + '\n'
 # end
 
-if ( batch ):
+if ( non_interactive ):
 	sys.stderr.write( msg )  # to console
 sys.stdout.write( msg )  # to file

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zgesdd.cpp normal z -> c, Sat Nov 15 19:54:18 2014
+       @generated from testing_zgesdd.cpp normal z -> c, Fri Jan 30 19:00:26 2015
        @author Mark Gates
 
 */
@@ -46,6 +46,8 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_vec_t jobz;
     magma_int_t status = 0;
+
+    MAGMA_UNUSED( max_mn );  // used only in complex
     
     magma_opts opts;
     parse_opts( argc, argv, &opts );

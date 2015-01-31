@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
+       @author Mark Gates
 
-       @generated from zhegvd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from zhegvd.cpp normal z -> c, Fri Jan 30 19:00:18 2015
 
 */
 #include "common_magma.h"
 #include "magma_timer.h"
 
-#define PRECISION_c
 #define COMPLEX
 
 /**
@@ -199,8 +199,8 @@ magma_chegvd(
     magmaFloatComplex c_one = MAGMA_C_ONE;
 
     magmaFloatComplex *dA=NULL, *dB=NULL;
-    magma_int_t ldda = n;
-    magma_int_t lddb = n;
+    magma_int_t ldda = roundup( n, 32 );
+    magma_int_t lddb = ldda;
 
     magma_int_t lower;
     magma_trans_t trans;
@@ -253,7 +253,7 @@ magma_chegvd(
     // multiply by 1+eps (in Double!) to ensure length gets rounded up,
     // if it cannot be exactly represented in floating point.
     real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0 );  // round up
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 
@@ -278,20 +278,15 @@ magma_chegvd(
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_chegvd(&itype, jobz_, uplo_,
-                         &n, A, &lda, B, &ldb,
-                         w, work, &lwork,
-                         #if defined(PRECISION_z) || defined(PRECISION_c)
-                         rwork, &lrwork,
-                         #endif
-                         iwork, &liwork, info);
+        lapackf77_chegvd( &itype, jobz_, uplo_,
+                          &n, A, &lda, B, &ldb,
+                          w, work, &lwork,
+                          #ifdef COMPLEX
+                          rwork, &lrwork,
+                          #endif
+                          iwork, &liwork, info );
         return *info;
     }
 
@@ -307,12 +302,12 @@ magma_chegvd(
     magma_csetmatrix( n, n, B, ldb, dB, lddb );
 
     magma_csetmatrix_async( n, n,
-                           A,  lda,
-                           dA, ldda, stream );
+                            A,  lda,
+                            dA, ldda, stream );
 
     magma_timer_t time=0;
     timer_start( time );
-    magma_cpotrf_gpu(uplo, n, dB, lddb, info);
+    magma_cpotrf_gpu( uplo, n, dB, lddb, info );
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -322,27 +317,27 @@ magma_chegvd(
 
     magma_queue_sync( stream );
     magma_cgetmatrix_async( n, n,
-                           dB, lddb,
-                           B,  ldb, stream );
+                            dB, lddb,
+                            B,  ldb, stream );
 
-    timer_start( time );
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_chegst_gpu(itype, uplo, n, dA, ldda, dB, lddb, info);
+    timer_start( time );
+    magma_chegst_gpu( itype, uplo, n, dA, ldda, dB, lddb, info );
     timer_stop( time );
     timer_printf( "time chegst_gpu = %6.2f\n", time );
 
     /* simple fix to be able to run bigger size.
-     * need to have a dwork here that will be used
-     * as dB and then passed to dsyevd.
-     * */
+     * set dB=NULL so we know to re-allocate below
+     * TODO: have dwork here that will be used as dB and then passed to  dsyevd.
+     */
     if (n > 5000) {
         magma_queue_sync( stream );
-        magma_free( dB );
+        magma_free( dB );  dB=NULL;
     }
 
     timer_start( time );
-    magma_cheevd_gpu(jobz, uplo, n, dA, ldda, w, A, lda,
-                     work, lwork, rwork, lrwork, iwork, liwork, info);
+    magma_cheevd_gpu( jobz, uplo, n, dA, ldda, w, A, lda,
+                      work, lwork, rwork, lrwork, iwork, liwork, info );
     timer_stop( time );
     timer_printf( "time cheevd_gpu = %6.2f\n", time );
 
@@ -350,8 +345,9 @@ magma_chegvd(
         timer_start( time );
         
         /* allocate and copy dB back */
-        if (n > 5000) {
+        if (dB == NULL) {
             if (MAGMA_SUCCESS != magma_cmalloc( &dB, n*lddb ) ) {
+                magma_free( dA );  dA=NULL;
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
@@ -366,9 +362,8 @@ magma_chegvd(
             } else {
                 trans = MagmaNoTrans;
             }
-
-            magma_ctrsm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, c_one, dB, lddb, dA, ldda);
+            magma_ctrsm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, n, c_one, dB, lddb, dA, ldda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -378,17 +373,11 @@ magma_chegvd(
             } else {
                 trans = MagmaConjTrans;
             }
-
-            magma_ctrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, c_one, dB, lddb, dA, ldda);
+            magma_ctrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, n, c_one, dB, lddb, dA, ldda );
         }
 
         magma_cgetmatrix( n, n, dA, ldda, A, lda );
-        
-        /* free dB */
-        if (n > 5000) {
-            magma_free( dB );
-        }
         
         timer_stop( time );
         timer_printf( "time ctrsm/mm + getmatrix = %6.2f\n", time );
@@ -397,14 +386,12 @@ magma_chegvd(
     magma_queue_sync( stream );
     magma_queue_destroy( stream );
 
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0 );  // round up
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 
-    magma_free( dA );
-    if (n <= 5000) {
-        magma_free( dB );
-    }
+    magma_free( dA );  dA=NULL;
+    magma_free( dB );  dB=NULL;
 
     return *info;
 } /* magma_chegvd */

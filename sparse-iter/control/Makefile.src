@@ -16,7 +16,7 @@ CSRC = \
 	magma_cmconverter.cpp \
 	magma_cmtransfer.cpp \
 	magma_c_vio.cpp \
-	magma_cgeneratematrix.cpp \
+	magma_cmgenerator.cpp \
 	magma_cmio.cpp \
 	magma_csolverinfo.cpp \
 	magma_ccsrsplit.cpp \
@@ -40,7 +40,7 @@ DSRC = \
 	magma_dmconverter.cpp \
 	magma_dmtransfer.cpp \
 	magma_d_vio.cpp \
-	magma_dgeneratematrix.cpp \
+	magma_dmgenerator.cpp \
 	magma_dmio.cpp \
 	magma_dsolverinfo.cpp \
 	magma_dcsrsplit.cpp \
@@ -64,7 +64,7 @@ SSRC = \
 	magma_smconverter.cpp \
 	magma_smtransfer.cpp \
 	magma_s_vio.cpp \
-	magma_sgeneratematrix.cpp \
+	magma_smgenerator.cpp \
 	magma_smio.cpp \
 	magma_ssolverinfo.cpp \
 	magma_scsrsplit.cpp \

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 
@@ -68,8 +68,8 @@ magma_zgetrf_nopiv_gpu(
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
 
     magma_int_t iinfo, nb;
-    magma_int_t maxm, maxn, mindim;
-    magma_int_t i, rows, cols, s, lddwork;
+    magma_int_t maxm, mindim;
+    magma_int_t i, rows, s, lddwork;
     magmaDoubleComplex *work;
 
     /* Check arguments */
@@ -110,7 +110,6 @@ magma_zgetrf_nopiv_gpu(
     else {
         /* Use hybrid blocked code. */
         maxm = ((m + 31)/32)*32;
-        maxn = ((n + 31)/32)*32;
 
         lddwork = maxm;
 
@@ -136,8 +135,6 @@ magma_zgetrf_nopiv_gpu(
 
         for( i=0; i < s; i++ ) {
             // download i-th panel
-            cols = maxm - i*nb;
-
             magma_queue_sync( stream[1] );
             magma_zgetmatrix_async( m-i*nb, nb, dA(i,i), ldda, work, lddwork, stream[0] );
             
@@ -188,7 +185,6 @@ magma_zgetrf_nopiv_gpu(
 
         magma_int_t nb0 = min(m - s*nb, n - s*nb);
         rows = m - s*nb;
-        cols = maxm - s*nb;
         magma_zgetmatrix( rows, nb0, dA(s,s), ldda, work, lddwork );
 
         // make sure that gpu queue is empty

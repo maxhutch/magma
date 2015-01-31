@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zcompact.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zcompact.cu normal z -> c, Fri Jan 30 19:00:29 2015
        @author Stan Tomov
 */
 #include "common_magma.h"
@@ -21,12 +21,12 @@
 __global__ void
 ccompact_kernel(
     int m, int n,
-    magmaFloatComplex_ptr dA, 
+    magmaFloatComplex *dA, 
     int ldda,
-    magmaFloat_ptr dnorms, 
+    float *dnorms, 
     float tol,
-    magmaInt_ptr active, 
-    magmaInt_ptr cBlock)
+    magma_int_t *active, 
+    magma_int_t *cBlock)
 {
     // dA is processed across row i (by the current thread)
     int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -52,9 +52,9 @@ __global__ void
 ccompactactive_kernel(
     int m, 
     int n,
-    magmaFloatComplex_ptr dA, 
+    magmaFloatComplex *dA, 
     int ldda,
-    magmaInt_ptr active)
+    magma_int_t *active)
 {
     // dA is processed across row i (by the current thread)
     int i = blockIdx.x*blockDim.x + threadIdx.x;

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from zpgmres.cpp normal z -> s, Sat Nov 15 19:54:22 2014
+       @generated from zpgmres.cpp normal z -> s, Fri Jan 30 19:00:30 2015
 */
 #include <sys/time.h>
 #include <time.h>

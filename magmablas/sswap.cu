@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Mark Gates
 
-       @generated from zswap.cu normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from zswap.cu normal z -> s, Fri Jan 30 19:00:09 2015
 
 */
 #include "common_magma.h"
@@ -66,9 +66,9 @@ magmablas_sswap_q(
     magmaFloat_ptr dy, magma_int_t incy,
     magma_queue_t queue )
 {
-    dim3 blocks( (n+NB-1) / NB );
+    dim3 grid( (n+NB-1) / NB );
     dim3 threads( NB );
-    sswap_kernel<<< blocks, threads, 0, queue >>>( n, dx, incx, dy, incy );
+    sswap_kernel<<< grid, threads, 0, queue >>>( n, dx, incx, dy, incy );
 }
 
 

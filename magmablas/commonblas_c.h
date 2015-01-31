@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from commonblas_z.h normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from commonblas_z.h normal z -> c, Fri Jan 30 19:00:10 2015
 */
 
 #ifndef COMMONBLAS_C_H
@@ -78,6 +78,63 @@ magma_ctrmv_kernel2(const magmaFloatComplex *T, int ldt,
 
 __global__ void
 magma_scnrm2_adjust_kernel(float *xnorm, magmaFloatComplex *c);
+
+
+// kernels used in chemv
+__global__ void
+chemv_kernel_U(
+    int n,
+    magmaFloatComplex const * __restrict__ A, int lda,
+    magmaFloatComplex const * __restrict__ x, int incx,
+    magmaFloatComplex       * __restrict__ work);
+
+__global__ void
+chemv_kernel_U_sum(
+    int n,
+    magmaFloatComplex alpha,
+    int lda,
+    magmaFloatComplex beta,
+    magmaFloatComplex       * __restrict__ y, int incy,
+    magmaFloatComplex const * __restrict__ work );
+
+// kernels used in csymv
+__global__ void
+csymv_kernel_U(
+    int n,
+    magmaFloatComplex const * __restrict__ A, int lda,
+    magmaFloatComplex const * __restrict__ x, int incx,
+    magmaFloatComplex       * __restrict__ work);
+
+__global__ void
+csymv_kernel_U_sum(
+    int n,
+    magmaFloatComplex alpha,
+    int lda,
+    magmaFloatComplex beta,
+    magmaFloatComplex       * __restrict__ y, int incy,
+    magmaFloatComplex const * __restrict__ work );
+
+// kernels used in chemv_mgpu
+__global__ void
+chemv_kernel_U_mgpu(
+    int n,
+    magmaFloatComplex const * __restrict__ A, int lda,
+    magmaFloatComplex const * __restrict__ x, int incx,
+    magmaFloatComplex       * __restrict__ work,
+    int my_gpu_id,
+    int ngpu,
+    int block_offset );
+
+__global__ void
+chemv_kernel_U_mgpu_sum(
+    int n,
+    magmaFloatComplex alpha,
+    int lda,
+    magmaFloatComplex       * __restrict__ y, int incy,
+    magmaFloatComplex const * __restrict__ work,
+    int my_gpu_id,
+    int ngpu,
+    int block_offset);
 
 #ifdef __cplusplus
 }

@@ -39,27 +39,41 @@ MAGMA README FILE
       setenv ATLASDIR  /opt/atlas
       setenv LAPACKDIR /opt/LAPACK
   
-  Creating a shared library requires adding the -fPIC option in make.inc to
-  CFLAGS, FFLAGS, F90FLAGS, and NVCCFLAGS. This is demonstrated in make.inc.mkl-shared.
-  
-  After proper modification of the make.inc file, running:
-  
+* Building a Shared Library
+
+  By default now, all make.inc files add the -fPIC option to CFLAGS, FFLAGS,
+  F90FLAGS, and NVCCFLAGS, required for building a shared library. Note in
+  NVCCFLAGS that -fPIC is passed via the -Xcompiler option. Running:
       make
+  or
+      make lib
+      make test
+  will create a shared library lib/libmagma.so, static library lib/libmagma.a,
+  and testing drivers in 'testing'.
+
+  (The current exception is for ATLAS, in make.inc.atlas, which in our
+   install is a static library, thus requiring MAGMA to be a static library.)
   
-  will create libmagma.a in 'lib' and testing drivers in 'testing'.
-  With the appropriate -fPIC options in make.inc, running:
+* Building a Static Library
+
+  Alternatively, comment out FPIC in the make.inc file to compile only a static
+  library. Running:
+      make
+  or
+      make lib
+      make test
+  will create a static library lib/libmagma.a, and testing drivers in 'testing'.
   
-      make shared
-      make testing
-  
-  will create both libmagma.a and libmagma.so, and the testers.
-  
+* Install
+
   To install libraries and include files in a given prefix, run:
   
       make install prefix=/usr/local/magma
   
   The default prefix is /usr/local/magma. You can also set prefix in make.inc.
   
+* Environment variables
+
   For multi-GPU functions, set $MAGMA_NUM_GPUS to set the number of GPUs to use.
   For multi-core BLAS libraries, set $OMP_NUM_THREADS or $MKL_NUM_THREADS or
   $VECLIB_MAXIMUM_THREADS to set the number of CPU threads, depending on your

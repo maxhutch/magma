@@ -1,30 +1,26 @@
 /*
-   -- MAGMA (version 1.6.0) --
+   -- MAGMA (version 1.6.1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date November 2014
+   @date January 2015
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing_zgetrf_nopiv_batched.cpp normal z -> d, Sat Nov 15 19:54:18 2014
+   @generated from testing_zgetrf_nopiv_batched.cpp normal z -> d, Fri Jan 30 19:00:26 2015
  */
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas_v2.h>
-
 
 // includes, project
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
 #include "testings.h"
-#include "common_magma.h"
 
 double get_LU_error(magma_int_t M, magma_int_t N,
                     double *A,  magma_int_t lda,
@@ -92,6 +88,7 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t batchCount = 1;
 
+    magma_queue_t queue = magma_stream;
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     //opts.lapack |= opts.check; 
@@ -135,9 +132,9 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            dset_pointer(dA_array, dA_magma, ldda, 0, 0, ldda*N, batchCount);
+            dset_pointer(dA_array, dA_magma, ldda, 0, 0, ldda*N, batchCount, queue);
             magma_time = magma_sync_wtime(0);
-            info = magma_dgetrf_nopiv_batched( M, N, dA_array, ldda, dinfo_magma, batchCount);
+            info = magma_dgetrf_nopiv_batched( M, N, dA_array, ldda, dinfo_magma, batchCount, queue);
             magma_time = magma_sync_wtime(0) - magma_time;
             magma_perf = gflops / magma_time;
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"

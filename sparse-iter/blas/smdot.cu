@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmdot.cu normal z -> s, Sat Nov 15 19:54:21 2014
+       @generated from zmdot.cu normal z -> s, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -19,7 +19,7 @@
 // initialize arrays with zero
 __global__ void
 magma_sgpumemzero(  
-    magmaFloat_ptr d, 
+    float * d, 
     int n, 
     int k )
 {
@@ -37,9 +37,9 @@ __global__ void
 magma_sdot_kernel( 
     int Gs,
     int n, 
-    magmaFloat_ptr v,
-    magmaFloat_ptr r,
-    magmaFloat_ptr vtmp)
+    float * v,
+    float * r,
+    float * vtmp)
 {
 
     extern __shared__ float temp[]; 
@@ -99,9 +99,9 @@ magma_sblockdot_kernel(
     int Gs,
     int n, 
     int k,
-    magmaFloat_ptr v,
-    magmaFloat_ptr r,
-    magmaFloat_ptr vtmp)
+    float * v,
+    float * r,
+    float * vtmp)
 {
 
     extern __shared__ float temp[]; 
@@ -192,8 +192,8 @@ magma_sblockreduce_kernel(
     int Gs,
     int n, 
     int k,
-    magmaFloat_ptr vtmp,
-    magmaFloat_ptr vtmp2 )
+    float * vtmp,
+    float * vtmp2 )
 {
 
     extern __shared__ float temp[];    
@@ -276,8 +276,8 @@ magma_sblockreduce_kernel(
 __global__ void
 magma_sreduce_kernel_fast( int Gs,
                            int n, 
-                           magmaFloat_ptr vtmp,
-                           magmaFloat_ptr vtmp2 ){
+                           float * vtmp,
+                           float * vtmp2 ){
 
     extern __shared__ float temp[];    
     int Idx = threadIdx.x;
@@ -339,8 +339,8 @@ magma_sblockreduce_kernel_fast(
     int Gs,
     int n, 
     int k,
-    magmaFloat_ptr vtmp,
-    magmaFloat_ptr vtmp2 )
+    float * vtmp,
+    float * vtmp2 )
 {
 
     extern __shared__ float temp[];    

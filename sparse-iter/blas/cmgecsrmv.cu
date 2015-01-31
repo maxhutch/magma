@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmgecsrmv.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zmgecsrmv.cu normal z -> c, Fri Jan 30 19:00:29 2015
 
 */
 #include "common_magma.h"
@@ -24,12 +24,12 @@ cmgecsrmv_kernel(
     int num_cols, 
     int num_vecs,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaFloatComplex_ptr dx,
+    magmaFloatComplex * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    magmaFloatComplex * dx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
@@ -90,7 +90,7 @@ cmgecsrmv_kernel(
                 array containing values of A in CSR
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of A in CSR
 
     @param[in]

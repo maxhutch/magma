@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlaswp_batched.cu normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zlaswp_batched.cu normal z -> c, Fri Jan 30 19:00:10 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -96,12 +96,12 @@ void claswp_rowparallel_kernel_batched(
 
 //=================================================================================================
 extern "C" void
-magma_claswp_rowparallel_batched_q( magma_int_t n, 
+magma_claswp_rowparallel_batched( magma_int_t n, 
                        magmaFloatComplex** input_array, magma_int_t ldi,
                        magmaFloatComplex** output_array, magma_int_t ldo,
                        magma_int_t k1, magma_int_t k2,
                        magma_int_t **pivinfo_array, 
-                       magma_queue_t stream, magma_int_t batchCount )
+                       magma_int_t batchCount, magma_queue_t queue)
 {
 
     if(n == 0 ) return ;
@@ -117,28 +117,15 @@ magma_claswp_rowparallel_batched_q( magma_int_t n,
 
     if( n < SWP_WIDTH)
     {
-        claswp_rowparallel_kernel_batched<<<grid, height, sizeof(magmaFloatComplex) * height * n, stream >>>
+        claswp_rowparallel_kernel_batched<<<grid, height, sizeof(magmaFloatComplex) * height * n, queue >>>
                                            ( n, n, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
     }
     else
     {
-        claswp_rowparallel_kernel_batched<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH , stream >>>
+        claswp_rowparallel_kernel_batched<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH , queue >>>
                                             (n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
  
     }
-}
-
-//=================================================================================================
-
-
-extern "C" void
-magma_claswp_rowparallel_batched( magma_int_t n, magmaFloatComplex** input_array, magma_int_t ldi,
-                   magmaFloatComplex** output_array, magma_int_t ldo,
-                   magma_int_t k1, magma_int_t k2,
-                   magma_int_t **pivinfo_array, 
-                   magma_int_t batchCount )
-{
-    magma_claswp_rowparallel_batched_q(n, input_array, ldi, output_array, ldo, k1, k2, pivinfo_array, magma_stream, batchCount);
 }
 
 //=================================================================================================
@@ -153,7 +140,7 @@ magma_claswp_rowparallel_q( magma_int_t n,
                        magmaFloatComplex* output, magma_int_t ldo,
                        magma_int_t k1, magma_int_t k2,
                        magma_int_t *pivinfo, 
-                       magma_queue_t stream)
+                       magma_queue_t queue)
 {
     if(n == 0 ) return ;
     int height = k2-k1;
@@ -168,12 +155,12 @@ magma_claswp_rowparallel_q( magma_int_t n,
 
     if( n < SWP_WIDTH)
     {
-        claswp_rowparallel_kernel<<<grid, height, sizeof(magmaFloatComplex) * height * n, stream >>>
+        claswp_rowparallel_kernel<<<grid, height, sizeof(magmaFloatComplex) * height * n, queue >>>
                                    ( n, n, height, input, ldi, output, ldo, pivinfo ); 
     }
     else
     {
-        claswp_rowparallel_kernel<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH , stream >>>
+        claswp_rowparallel_kernel<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH , queue >>>
                                     (n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
     }
 }
@@ -231,10 +218,10 @@ __global__ void claswp_rowserial_kernel_batched( int n, magmaFloatComplex **dA_a
 //  K1, K2 are in Fortran indexing  
 //=================================================================================================
 extern "C" void
-magma_claswp_rowserial_batched_q(magma_int_t n, magmaFloatComplex** dA_array, magma_int_t lda,
+magma_claswp_rowserial_batched(magma_int_t n, magmaFloatComplex** dA_array, magma_int_t lda,
                    magma_int_t k1, magma_int_t k2,
                    magma_int_t **ipiv_array, 
-                   magma_queue_t stream, magma_int_t batchCount)
+                   magma_int_t batchCount, magma_queue_t queue)
 {
 
     if(n == 0 ) return ;
@@ -242,20 +229,10 @@ magma_claswp_rowserial_batched_q(magma_int_t n, magmaFloatComplex** dA_array, ma
     int blocks =  (n-1)/ BLK_SIZE + 1;
     dim3  grid(blocks, 1, batchCount);
 
-    claswp_rowserial_kernel_batched<<< grid, max(BLK_SIZE, n), 0, stream >>>(
+    claswp_rowserial_kernel_batched<<< grid, max(BLK_SIZE, n), 0, queue >>>(
         n, dA_array, lda, k1, k2, ipiv_array); 
 
 }
-
-extern "C" void
-magma_claswp_rowserial_batched(magma_int_t n, magmaFloatComplex** dA_array, magma_int_t lda,
-                   magma_int_t k1, magma_int_t k2,
-                   magma_int_t **ipiv_array, 
-                   magma_int_t batchCount)
-{
-    magma_claswp_rowserial_batched_q(n, dA_array, lda, k1, k2, ipiv_array,  magma_stream, batchCount);
-}
-
 
 
 
@@ -308,10 +285,10 @@ __global__ void claswp_columnserial_kernel_batched( int n, magmaFloatComplex **d
 //  K1, K2 are in Fortran indexing  
 //=================================================================================================
 extern "C" void
-magma_claswp_columnserial_batched_q(magma_int_t n, magmaFloatComplex** dA_array, magma_int_t lda,
+magma_claswp_columnserial_batched(magma_int_t n, magmaFloatComplex** dA_array, magma_int_t lda,
                    magma_int_t k1, magma_int_t k2,
                    magma_int_t **ipiv_array, 
-                   magma_queue_t stream, magma_int_t batchCount)
+                   magma_int_t batchCount, magma_queue_t queue)
 {
 
     if(n == 0 ) return ;
@@ -319,17 +296,8 @@ magma_claswp_columnserial_batched_q(magma_int_t n, magmaFloatComplex** dA_array,
     int blocks =  (n-1)/ BLK_SIZE + 1;
     dim3  grid(blocks, 1, batchCount);
 
-    claswp_columnserial_kernel_batched<<< grid, min(BLK_SIZE, n), 0, stream >>>(
+    claswp_columnserial_kernel_batched<<< grid, min(BLK_SIZE, n), 0, queue >>>(
         n, dA_array, lda, k1, k2, ipiv_array); 
 
-}
-
-extern "C" void
-magma_claswp_columnserial_batched(magma_int_t n, magmaFloatComplex** dA_array, magma_int_t lda,
-                   magma_int_t k1, magma_int_t k2,
-                   magma_int_t **ipiv_array, 
-                   magma_int_t batchCount)
-{
-    magma_claswp_columnserial_batched_q(n, dA_array, lda, k1, k2, ipiv_array,  magma_stream, batchCount);
 }
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -84,7 +84,7 @@
     @ingroup magma_zblas3
     ********************************************************************/
 extern "C" void
-magmablas_ztrtri_diag_batched_q(
+magmablas_ztrtri_diag_batched(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
     magmaDoubleComplex const * const *dA_array, magma_int_t ldda,
     magmaDoubleComplex **dinvA_array, 
@@ -110,8 +110,8 @@ magmablas_ztrtri_diag_batched_q(
 
     if(resetozero)
     { 
-        magmablas_zlaset_batched(MagmaUpperLower, ((n+NB-1)/NB)*NB, NB, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvA_array, ((n+NB-1)/NB)*NB, batchCount);
-       //magmablas_zmemset_batched( dinvA_array, ((n+NB-1)/NB)*NB*NB, batchCount);
+        magmablas_zlaset_batched(MagmaFull, ((n+NB-1)/NB)*NB, NB, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvA_array, ((n+NB-1)/NB)*NB, batchCount, queue);
+       //magmablas_zmemset_batched( dinvA_array, ((n+NB-1)/NB)*NB*NB, batchCount, queue);
     }
     // if someone want to use cudamemset he need to set the whole vectors 
     // of initial size otherwise it is a bug and thus need to have dinvA_length 
@@ -193,16 +193,4 @@ magmablas_ztrtri_diag_batched_q(
     }
 }
 
-/**
-    @see magmablas_ztrtri_diag_q
-    @ingroup magma_zblas3
-    ********************************************************************/
-extern "C" void
-magmablas_ztrtri_diag_batched(
-    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    magmaDoubleComplex const * const *dA_array, magma_int_t ldda,
-    magmaDoubleComplex **dinvA_array, 
-    magma_int_t resetozero, magma_int_t batchCount)
-{
-    magmablas_ztrtri_diag_batched_q( uplo, diag, n, dA_array, ldda, dinvA_array, resetozero, batchCount, magma_stream );
-}
+

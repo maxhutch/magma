@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 
@@ -96,7 +96,7 @@ magma_zpotrf_m(
 
     magmaDoubleComplex *dwork[MagmaMaxGPUs], *dt[MagmaMaxGPUs];
     magma_int_t     ldda, lddla, nb, iinfo, n_local[MagmaMaxGPUs], J2, d, ngpu0 = ngpu;
-    magma_int_t     j, jj, jb, J, JB, NB, MB, h;
+    magma_int_t     j, jj, jb, J, JB, NB, h;
     magma_queue_t   stream[MagmaMaxGPUs][3];
     magma_event_t   event[MagmaMaxGPUs][5];
     magma_timer_t time_total=0, time_sum=0, time=0;
@@ -139,8 +139,8 @@ magma_zpotrf_m(
     cudaMemGetInfo( &freeMem, &totalMem );
     freeMem /= sizeof(magmaDoubleComplex);
     
-    MB = n;  /* number of rows in the big panel    */
-    NB = (magma_int_t)((0.8*freeMem-max(2,ngpu)*nb*ldda-(n+nb)*nb)/lddla); /* number of columns in the big panel */
+    //MB = n;  /* number of rows in the big panel    */
+    NB = (magma_int_t)((0.8*freeMem - max(2,ngpu)*nb*ldda - (n+nb)*nb)/lddla); /* number of columns in the big panel */
     //NB = min(5*nb,n);
 
     if ( NB >= n ) {

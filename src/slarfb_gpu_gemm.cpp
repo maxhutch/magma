@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
        @author Azzam Haidar
-       @generated from zlarfb_gpu_gemm.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zlarfb_gpu_gemm.cpp normal z -> s, Fri Jan 30 19:00:16 2015
 */
 #include "common_magma.h"
 
@@ -149,11 +149,13 @@ magma_slarfb_gpu_gemm(
     float c_one     = MAGMA_S_ONE;
     float c_neg_one = MAGMA_S_NEG_ONE;
 
-    /* Function Body */
     magma_int_t info = 0;
+    
+    /* Function Body */
     if (m <= 0 || n <= 0) {
         return info;
     }
+    
     // internal variable
     magma_int_t ldwvt = (m > n ?  k : m);
     magma_int_t ldw;
@@ -162,6 +164,7 @@ magma_slarfb_gpu_gemm(
     } else {
         ldw = m;
     }
+    
     // opposite of trans
     magma_trans_t transt;
     if (trans == MagmaNoTrans)
@@ -169,12 +172,7 @@ magma_slarfb_gpu_gemm(
     else
         transt = MagmaNoTrans;
     
-    // whether T is upper or lower triangular
-    magma_uplo_t uplo;
-    if (direct == MagmaForward)
-        uplo = MagmaUpper;
-    else
-        uplo = MagmaLower;
+    MAGMA_UNUSED( transt );  // TODO: is this a bug that it isn't used?
     
     // whether V is stored transposed or not
     magma_trans_t notransV, transV;
@@ -192,8 +190,8 @@ magma_slarfb_gpu_gemm(
         // Comments assume H C.
         // When forming H^H C, T gets transposed via transt for m >= n or by trans for m < n.
         
-        // W = V' C
-        magma_sgemm( MagmaTrans,notransV,
+        // W = V^H C
+        magma_sgemm( MagmaTrans, notransV,
                      k, n, m,
                      c_one,  dV,    lddv,
                              dC,    lddc,
@@ -206,20 +204,20 @@ magma_slarfb_gpu_gemm(
                          c_one,  dV, lddv,
                                  dT, lddt,
                          c_zero, dworkvt, ldwvt);
-            // C = C - W2 W = C - V T V' C = (I - V T V') C = H C
+            // C = C - W2 W = C - V T V^H C = (I - V T V^H) C = H C
             magma_sgemm( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dworkvt,  ldwvt,
                                     dwork,    ldw,
                          c_one,     dC,       lddc);
         } else {
-            // W2 = T W  = T  V' C
+            // W2 = T W  = T  V^H C
             magma_sgemm( trans, MagmaNoTrans,
                          k, n, k,
                          c_one,  dT, lddt,
                                  dwork, ldw,
                          c_zero, dworkvt, ldwvt);
-            // C = C - V W2 = C - V T V' C = (I - V T V') C = H C
+            // C = C - V W2 = C - V T V^H C = (I - V T V^H) C = H C
             magma_sgemm( notransV, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dV,  lddv,
@@ -245,20 +243,20 @@ magma_slarfb_gpu_gemm(
                          c_one,  dwork, ldw,
                                  dT, lddt,
                          c_zero, dworkvt, ldwvt);
-            // C = C - W2 V' = C - C V T V' = C (I - V T V') = C H
+            // C = C - W2 V^H = C - C V T V^H = C (I - V T V^H) = C H
             magma_sgemm( MagmaNoTrans, transV,
                          m, n, k,
                          c_neg_one, dworkvt, ldwvt,
                                     dV,    lddv,
                          c_one,     dC,    lddc);
         } else {
-            // W2 = T V'
+            // W2 = T V^H
             magma_sgemm( trans, transV,
                          k, n, k,
                          c_one,  dT, lddt,
                                  dV, lddv,
                          c_zero, dworkvt, ldwvt);
-            // C = C - W W2 = C - C V T V' = C (I - V T V') = C H
+            // C = C - W W2 = C - C V T V^H = C (I - V T V^H) = C H
             magma_sgemm( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dwork,   ldw,

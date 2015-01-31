@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmqr2_gpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zunmqr2_gpu.cpp normal z -> s, Fri Jan 30 19:00:16 2015
 
 */
 #include "common_magma.h"
@@ -127,7 +127,7 @@ magma_sormqr2_gpu(
     
     magma_int_t i, i__4, lddwork;
     float T[2*4160]        /* was [65][64] */;
-    magma_int_t i1, i2, step, ib, ic, jc, nb, mi, ni, nq, nw;
+    magma_int_t i1, i2, step, ib, ic, jc, nb, mi, ni, nq;
     int left, notran;
 
     wA -= 1 + ldwa;
@@ -141,11 +141,11 @@ magma_sormqr2_gpu(
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
         nq = m;
-        nw = n;
+        //nw = n;
         magma_smalloc( &dwork, (n + 64)*64 );  // TODO after checking args, else memory leak!
     } else {
         nq = n;
-        nw = m;
+        //nw = m;
         magma_smalloc( &dwork, (m + 64)*64 );  // TODO after checking args, else memory leak!
     }
     if (! left && side != MagmaRight) {

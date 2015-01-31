@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Azzam Haidar
 
-       @generated from zgesv_batched.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zgesv_batched.cpp normal z -> s, Fri Jan 30 19:00:19 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
@@ -73,7 +73,7 @@ magma_sgesv_batched(
                   magma_int_t **dipiv_array, 
                   float **dB_array, magma_int_t lddb,
                   magma_int_t *dinfo_array,
-                  magma_int_t batchCount)
+                  magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
     
@@ -97,7 +97,7 @@ magma_sgesv_batched(
     if (n == 0 || nrhs == 0) {
         return info;
     }
-    info = magma_sgetrf_batched( n, n, dA_array, ldda, dipiv_array, dinfo_array, batchCount);
+    info = magma_sgetrf_batched( n, n, dA_array, ldda, dipiv_array, dinfo_array, batchCount, queue);
     if ( (info != MAGMA_SUCCESS) ){
         return info;
     }
@@ -119,6 +119,6 @@ magma_sgesv_batched(
     free (cpu_info);
 #endif
 
-    info = magma_sgetrs_batched( MagmaNoTrans, n, nrhs, dA_array, ldda, dipiv_array, dB_array, lddb,  batchCount );
+    info = magma_sgetrs_batched( MagmaNoTrans, n, nrhs, dA_array, ldda, dipiv_array, dB_array, lddb,  batchCount, queue );
     return info;
 }

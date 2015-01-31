@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
  
        @author Raffaele Solca
        @author Azzam Haidar
@@ -12,6 +12,8 @@
  
 */
 #include "common_magma.h"
+
+//#define FAST_HEMV
 
 /**
     Purpose
@@ -497,7 +499,7 @@ magma_zheevr_gpu(
     
     /* Call DSTEBZ and ZSTEIN if infinite and NaN arithmetic is not supported or ZSTEMR didn't converge. */
     if (wantz && (ieeeok == 0 || *info != 0)) {
-        printf("B/I\n");
+        //printf("B/I\n");
         *info = 0;
         
         lapackf77_dstebz(range_, "B", &n, &vl, &vu, &il, &iu, &abstol, &rwork[indrd], &rwork[indre], m,

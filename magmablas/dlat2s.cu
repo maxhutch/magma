@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlat2c.cu mixed zc -> ds, Sat Nov 15 19:53:59 2014
+       @generated from zlat2c.cu mixed zc -> ds, Fri Jan 30 19:00:08 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -229,10 +229,12 @@ magmablas_dlat2s_q(
     dim3    grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
-    if (uplo == MagmaLower)
+    if (uplo == MagmaLower) {
         dlat2s_lower<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
-    else if (uplo == MagmaUpper)
+    }
+    else if (uplo == MagmaUpper) {
         dlat2s_upper<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
+    }
     
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
-       @generated from zgetrf_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zgetrf_gpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
 */
 #include "common_magma.h"
 
@@ -249,7 +249,7 @@ magma_cgetrf_gpu(
             for( i=s*nb; i < s*nb + nb0; ++i ) {
                 ipiv[i] += s*nb;
             }
-            magmablas_claswp( n, dAT, ldda, s*nb + 1, s*nb + nb0, ipiv, 1 );
+            magmablas_claswp( n, dAT, lddat, s*nb + 1, s*nb + nb0, ipiv, 1 );
     
             // upload j-th panel
             magma_csetmatrix( rows, nb0, work, ldwork, dAP, maxm );

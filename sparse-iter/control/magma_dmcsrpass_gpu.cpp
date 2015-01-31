@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_zmcsrpass_gpu.cpp normal z -> d, Sat Nov 15 19:54:23 2014
+       @generated from magma_zmcsrpass_gpu.cpp normal z -> d, Fri Jan 30 19:00:32 2015
        @author Hartwig Anzt
 */
 
@@ -83,7 +83,9 @@ magma_dcsrset_gpu(
 {
     A->num_rows = m;
     A->num_cols = n;
-    A->nnz = row[m];
+    magma_index_t nnz;
+    magma_index_getvector( 1, row+m, 1, &nnz, 1 );
+    A->nnz = (magma_int_t) nnz;
     A->storage_type = Magma_CSR;
     A->memory_location = Magma_DEV;
     A->dval = val;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -64,7 +64,7 @@ using namespace std;
 
 extern "C"
 magma_int_t
-magma_zvset_gpu(
+magma_zvset_dev(
     magma_int_t m, magma_int_t n, 
     magmaDoubleComplex_ptr val,
     magma_z_vector *v,
@@ -115,7 +115,7 @@ magma_zvset_gpu(
 
 extern "C"
 magma_int_t
-magma_vget_gpu(
+magma_zvget_dev(
     magma_z_vector v,
     magma_int_t *m, magma_int_t *n, 
     magmaDoubleComplex_ptr *val,
@@ -129,7 +129,7 @@ magma_vget_gpu(
     } else {
         magma_z_vector v_DEV;
         magma_z_vtransfer( v, &v_DEV, v.memory_location, Magma_DEV, queue ); 
-        magma_zvget_gpu( v_DEV, m, n, val, queue );
+        magma_zvget_dev( v_DEV, m, n, val, queue );
         magma_z_vfree( &v_DEV, queue );
     }
     return MAGMA_SUCCESS;

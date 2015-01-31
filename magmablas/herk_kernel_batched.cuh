@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Mark Gates
        @author Azzam Haidar
@@ -22,7 +22,7 @@ void batched_herk_kernel_name(precision)(
 {
 
     if(blockDim.x != blockDim.y){
-        printf("error zherk_fermi_kernel blkx=%d != blky=%d not supported where n=%d\n",blockDim.x,blockDim.y,N);
+        //printf("error zherk_fermi_kernel blkx=%d != blky=%d not supported where n=%d\n",blockDim.x,blockDim.y,N);
         return;
     }
 
@@ -31,7 +31,7 @@ void batched_herk_kernel_name(precision)(
 
     int batchid = blockIdx.z;
     #ifdef TEXTURE_1D
-    printf("error zherk_fermi_kernel not implemented \n");
+    //printf("error zherk_fermi_kernel not implemented \n");
     return;
     offsetA += batchid*LDA*512;
     offsetB += batchid*LDB*512;

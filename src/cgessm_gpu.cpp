@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgessm_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zgessm_gpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
 
 */
 #include "common_magma.h"
@@ -85,7 +85,7 @@ magma_cgessm_gpu(
     magmaFloatComplex c_one     = MAGMA_C_ONE;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
-    int i, s, sb;
+    int i, sb;
     magmaFloatComplex_ptr dAT;
 
     /* Check arguments */
@@ -112,7 +112,6 @@ magma_cgessm_gpu(
         dAT = dA;
     }
 
-    s = k / ib;
     for (i = 0; i < k; i += ib) {
         sb = min(ib, k-i);
 

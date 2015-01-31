@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
+       @author Mark Gates
 
-       @generated from zhegvdx_2stage_m.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from zhegvdx_2stage_m.cpp normal z -> c, Fri Jan 30 19:00:19 2015
 
 */
 #include "common_magma.h"
@@ -16,7 +17,6 @@
 #include "magma_cbulge.h"
 #include "magma_timer.h"
 
-#define PRECISION_c
 #define COMPLEX
 
 /**
@@ -125,7 +125,7 @@
             Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
     @param[out]
-    m       INTEGER
+    mout    INTEGER
             The total number of eigenvalues found.  0 <= M <= N.
             If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
 
@@ -224,7 +224,7 @@ magma_chegvdx_2stage_m(
     magmaFloatComplex *A, magma_int_t lda,
     magmaFloatComplex *B, magma_int_t ldb,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     magmaFloatComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -326,21 +326,16 @@ magma_chegvdx_2stage_m(
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_chegvd(&itype, jobz_, uplo_,
-                         &n, A, &lda, B, &ldb,
-                         w, work, &lwork,
-                         #if defined(PRECISION_z) || defined(PRECISION_c)
-                         rwork, &lrwork,
-                         #endif
-                         iwork, &liwork, info);
-        *m = n;
+        lapackf77_chegvd( &itype, jobz_, uplo_,
+                          &n, A, &lda, B, &ldb,
+                          w, work, &lwork,
+                          #ifdef COMPLEX
+                          rwork, &lrwork,
+                          #endif
+                          iwork, &liwork, info );
+        *mout = n;
         return *info;
     }
 
@@ -348,7 +343,7 @@ magma_chegvdx_2stage_m(
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_cpotrf_m(ngpu, uplo, n, B, ldb, info);
+    magma_cpotrf_m( ngpu, uplo, n, B, ldb, info );
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -359,13 +354,13 @@ magma_chegvdx_2stage_m(
     timer_start( time );
 
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_chegst_m(ngpu, itype, uplo, n, A, lda, B, ldb, info);
+    magma_chegst_m( ngpu, itype, uplo, n, A, lda, B, ldb, info );
 
     timer_stop( time );
     timer_printf( "time chegst_m = %6.2f\n", time );
     timer_start( time );
 
-    magma_cheevdx_2stage_m(ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, m, w, work, lwork, rwork, lrwork, iwork, liwork, info);
+    magma_cheevdx_2stage_m( ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, mout, w, work, lwork, rwork, lrwork, iwork, liwork, info );
 
     timer_stop( time );
     timer_printf( "time cheevdx_2stage_m = %6.2f\n", time );
@@ -383,7 +378,7 @@ magma_chegvdx_2stage_m(
                 trans = MagmaNoTrans;
             }
 
-            magma_ctrsm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, c_one, B, ldb, A, lda);
+            magma_ctrsm_m( ngpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *mout, c_one, B, ldb, A, lda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -393,26 +388,30 @@ magma_chegvdx_2stage_m(
             } else {
                 trans = MagmaConjTrans;
             }
+            #ifdef ENABLE_DEBUG
             printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            #endif
             magmaFloatComplex *dA=NULL, *dB=NULL;
-            magma_int_t ldda = n;
-            magma_int_t lddb = n;
+            magma_int_t ldda = roundup( n, 32 );
+            magma_int_t lddb = ldda;
             
-            if (MAGMA_SUCCESS != magma_cmalloc( &dB, n*lddb ) ) {
-                *info = MAGMA_ERR_DEVICE_ALLOC;
-                return *info;
-            }
-            if (MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda ) ) {
+            if (MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda ) ||
+                MAGMA_SUCCESS != magma_cmalloc( &dB, n*lddb ) ) {
+                magma_free( dA );
+                magma_free( dB );
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
             magma_csetmatrix( n, n, B, ldb, dB, lddb );
             magma_csetmatrix( n, n, A, lda, dA, ldda );
-            magma_ctrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, c_one, dB, lddb, dA, ldda);
+            magma_ctrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, n, c_one, dB, lddb, dA, ldda );
             magma_cgetmatrix( n, n, dA, ldda, A, lda );
 
-            //magma_ctrmm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, c_one, B, ldb, A, lda);
+            //magma_ctrmm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit, n, *mout, c_one, B, ldb, A, lda);
+            
+            magma_free( dA );
+            magma_free( dB );
         }
 
         timer_stop( time );

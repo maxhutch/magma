@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
   
-       @generated from testing_zprint.cpp normal z -> d, Sat Nov 15 19:54:18 2014
+       @generated from testing_zprint.cpp normal z -> d, Fri Jan 30 19:00:23 2015
        @author Mark Gates
 */
 // includes, system
@@ -30,7 +30,7 @@ int main( int argc, char** argv)
     double *hA, *dA;
     //magma_int_t ione     = 1;
     //magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t M, N, lda, ldda, size;
+    magma_int_t M, N, lda, ldda;  //size
     magma_int_t status = 0;
     
     magma_opts opts;
@@ -42,7 +42,7 @@ int main( int argc, char** argv)
             N     = opts.nsize[itest];
             lda   = M;
             ldda  = ((M + 31)/32)*32;
-            size  = lda*N;
+            //size  = lda*N;
 
             /* Allocate host memory for the matrix */
             TESTING_MALLOC_CPU( hA, double, lda *N );

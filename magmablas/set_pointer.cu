@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -45,10 +45,10 @@ __global__ void stepinit_ipiv_kernel(magma_int_t **ipiv_array, int pm)
 extern "C"
 void stepinit_ipiv(magma_int_t **ipiv_array,
                  magma_int_t pm,
-                 magma_int_t batchCount)
+                 magma_int_t batchCount, magma_queue_t queue)
 
 {
-    stepinit_ipiv_kernel<<<batchCount, pm, 0, magma_stream>>>(ipiv_array, pm);
+    stepinit_ipiv_kernel<<<batchCount, pm, 0, queue>>>(ipiv_array, pm);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ void set_ipointer(magma_int_t **output_array,
                  magma_int_t lda,
                  magma_int_t row, magma_int_t column, 
                  magma_int_t batchSize,
-                 magma_int_t batchCount)
+                 magma_int_t batchCount, magma_queue_t queue)
 
 {
 /*
@@ -79,7 +79,7 @@ void set_ipointer(magma_int_t **output_array,
 */
 
 
-    set_ipointer_kernel<<<batchCount, 1, 0, magma_stream>>>(output_array, input, lda,  row, column, batchSize);
+    set_ipointer_kernel<<<batchCount, 1, 0, queue>>>(output_array, input, lda,  row, column, batchSize);
 }
 
 
@@ -98,7 +98,7 @@ extern "C"
 void magma_idisplace_pointers(magma_int_t **output_array,
                magma_int_t **input_array, magma_int_t lda,
                magma_int_t row, magma_int_t column, 
-               magma_int_t batchCount)
+               magma_int_t batchCount, magma_queue_t queue)
 
 {
 /*
@@ -106,7 +106,7 @@ void magma_idisplace_pointers(magma_int_t **output_array,
     input_array contains the pointers to the initial position.
     output_array[i] = input_array[i] + row + lda * column; 
 */
-    idisplace_pointers_kernel<<<batchCount, 1, 0, magma_stream>>>(output_array, input_array, lda, row, column);
+    idisplace_pointers_kernel<<<batchCount, 1, 0, queue>>>(output_array, input_array, lda, row, column);
 }
 
 

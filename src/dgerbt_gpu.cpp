@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgerbt_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
+       @generated from zgerbt_gpu.cpp normal z -> d, Fri Jan 30 19:00:14 2015
        @author Adrien REMY
 */
 #include "common_magma.h"
@@ -135,9 +135,6 @@ magma_dgerbt_gpu(
     /* Quick return if possible */
     if (nrhs == 0 || n == 0)
         return *info;
-
-    magma_int_t n2;
-    n2 = n*n;
 
     double *du, *dv;
 

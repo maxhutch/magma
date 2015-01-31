@@ -8,9 +8,9 @@ $(error Set $$ATLASDIR, preferably in your environment, e.g., run "export ATLASD
 endif
 
 ifeq ($(wildcard $(LAPACKDIR)),)
-$(error $$LAPACKDIR=$(LAPACKDIR) does not exist. Please set $$LAPACKDIR to where ACML is installed.)
+$(error $$LAPACKDIR=$(LAPACKDIR) does not exist. Please set $$LAPACKDIR to where LAPACK is installed.)
 endif
 
 ifeq ($(wildcard $(ATLASDIR)),)
-$(error $$ATLASDIR=$(ATLASDIR) does not exist. Please set $$ATLASDIR to where CBLAS is installed.)
+$(error $$ATLASDIR=$(ATLASDIR) does not exist. Please set $$ATLASDIR to where ATLAS is installed.)
 endif

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgetrf_mgpu.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zgetrf_mgpu.cpp normal z -> s, Fri Jan 30 19:00:13 2015
 
 */
 #include "common_magma.h"
@@ -77,7 +77,7 @@ magma_sgetrf_mgpu(
     magma_int_t *info)
 {
     magma_int_t nb, n_local[MagmaMaxGPUs];
-    magma_int_t maxm, mindim;
+    magma_int_t maxm;
     magma_int_t i, j, d, lddat, lddwork;
     float *d_lAT[MagmaMaxGPUs];
     float *d_panel[MagmaMaxGPUs], *work;
@@ -102,8 +102,7 @@ magma_sgetrf_mgpu(
         return *info;
 
     /* Function Body */
-    mindim = min(m, n);
-    nb     = magma_get_sgetrf_nb(m);
+    nb = magma_get_sgetrf_nb(m);
 
     if (nb <= 1 || nb >= n) {
         /* Use CPU code. */

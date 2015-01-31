@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 
@@ -77,7 +77,7 @@ magma_zgetrf_mgpu(
     magma_int_t *info)
 {
     magma_int_t nb, n_local[MagmaMaxGPUs];
-    magma_int_t maxm, mindim;
+    magma_int_t maxm;
     magma_int_t i, j, d, lddat, lddwork;
     magmaDoubleComplex *d_lAT[MagmaMaxGPUs];
     magmaDoubleComplex *d_panel[MagmaMaxGPUs], *work;
@@ -102,8 +102,7 @@ magma_zgetrf_mgpu(
         return *info;
 
     /* Function Body */
-    mindim = min(m, n);
-    nb     = magma_get_zgetrf_nb(m);
+    nb = magma_get_zgetrf_nb(m);
 
     if (nb <= 1 || nb >= n) {
         /* Use CPU code. */

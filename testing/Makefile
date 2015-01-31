@@ -1,9 +1,10 @@
+
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = testing
@@ -53,9 +54,6 @@ ZSRC := \
 	testing_constants.cpp	\
 	testing_operators.cpp	\
 	testing_parse_opts.cpp	\
-	\
-	testing_zhesv.cpp \
-	testing_zhetrf.cpp \
 
 # ----------
 # Cholesky, GPU interface
@@ -75,6 +73,13 @@ ZSRC += \
 	testing_zpotrf.cpp	\
 	testing_zpotri.cpp	\
 
+# ----------
+# symmetric indefinite
+ZSRC += \
+	testing_zhesv.cpp	\
+	testing_zhesv_nopiv_gpu.cpp	\
+	testing_zhetrf.cpp	\
+	
 # ----------
 # LU, GPU interface
 ZSRC += \
@@ -128,7 +133,6 @@ ZSRC += \
 # ----------
 # symmetric eigenvalues, GPU interface
 ZSRC += \
-	testing_dsyevd_gpu.cpp	\
 	testing_zheevd_gpu.cpp	\
 	testing_zhetrd_gpu.cpp	\
 	\
@@ -136,7 +140,6 @@ ZSRC += \
 
 # symmetric eigenvalues, CPU interface
 ZSRC += \
-	testing_dsyevd.cpp	\
 	testing_zheevd.cpp	\
 	testing_zhetrd.cpp	\
 
@@ -176,17 +179,19 @@ ZSRC += \
 # batched
 ZSRC += \
 	testing_zgeadd_batched.cpp	\
-	testing_zlacpy_batched.cpp	\
-	testing_ztrsm_batched.cpp  \
+	testing_zgemv_batched.cpp	\
 	testing_zgemm_batched.cpp	\
-	testing_zherk_batched.cpp	\
-	testing_zgetrf_batched.cpp	\
-	testing_zgetri_batched.cpp	\
+	testing_ztrsm_batched.cpp	\
 	testing_zgesv_batched.cpp	\
-	testing_zgetrf_nopiv_batched.cpp	\
 	testing_zgesv_nopiv_batched.cpp	\
-	testing_zpotrf_batched.cpp	\
+	testing_zgetrf_batched.cpp	\
+	testing_zgetrf_nopiv_batched.cpp	\
+	testing_zgetri_batched.cpp	\
+	testing_zherk_batched.cpp	\
+	testing_zlacpy_batched.cpp	\
 	testing_zposv_batched.cpp	\
+	testing_zpotrf_batched.cpp	\
+	testing_zgeqrf_batched.cpp	\
 
 # ----------
 # utilities
@@ -282,13 +287,13 @@ testing_%.o : testing_%.f90
 endif
 
 testing_%_f : testing_%_f.o $(FOBJ)
-	$(FORT) $(LDFLAGS) $< $(FOBJ) -o $@ \
+	$(FORT) $(LDFLAGS) $(RPATH) $< $(FOBJ) -o $@ \
 	$(LIBTEST) $(LIBLAPACKTEST) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
 	$(LIB)
 
 testing_% : testing_%.o
-	$(CC) $(LDFLAGS) $(NOMAIN) $< -o $@ \
+	$(CC) $(LDFLAGS) $(RPATH) $(NOMAIN) $< -o $@ \
 	$(LIBTEST) $(LIBLAPACKTEST) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
 	$(LIB)

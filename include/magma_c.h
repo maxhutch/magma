@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_z.h normal z -> c, Sat Nov 15 19:53:54 2014
+       @generated from magma_z.h normal z -> c, Fri Jan 30 19:00:06 2015
 */
 
 #ifndef MAGMA_C_H
@@ -394,12 +394,13 @@ magma_int_t
 magma_chetrf(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex *A, magma_int_t lda,
-    magma_int_t *ipiv, magma_int_t *info);
+    magma_int_t *ipiv,
+    magma_int_t *info);
 
 magma_int_t
 magma_chetrf_nopiv(
     magma_uplo_t uplo, magma_int_t n,
-    magmaFloatComplex *a, magma_int_t lda,
+    magmaFloatComplex *A, magma_int_t lda,
     magma_int_t *info);
 
 magma_int_t
@@ -459,12 +460,27 @@ magma_clahef_gpu(
     magmaFloatComplex    *hA, magma_int_t lda,
     magmaFloatComplex_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
     magmaFloatComplex_ptr dW, magma_int_t lddw,
-    magma_queue_t queues[], magma_event_t event[], magma_int_t *info);
+    magma_queue_t queues[], magma_event_t event[],
+    magma_int_t *info);
 
 magma_int_t
 chetrf_nopiv_cpu(
     magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
     magmaFloatComplex *A, magma_int_t lda,
+    magma_int_t *info);
+
+magma_int_t
+magma_chetrs_nopiv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dB, magma_int_t lddb,
+    magma_int_t *info);
+
+magma_int_t
+magma_chesv_nopiv_gpu(
+    magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs, 
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dB, magma_int_t lddb, 
     magma_int_t *info);
 
 magma_int_t
@@ -1028,7 +1044,8 @@ magma_cgeqr2x3_gpu(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     magmaFloatComplex_ptr dtau,
-    magmaFloatComplex_ptr dT, magmaFloatComplex_ptr ddA,
+    magmaFloatComplex_ptr dT,
+    magmaFloatComplex_ptr ddA,
     magmaFloat_ptr dwork,
     magma_int_t *info);
 
@@ -1317,7 +1334,7 @@ magma_chetrd2_gpu(
 magma_int_t
 magma_chetrf_nopiv_gpu(
     magma_uplo_t uplo, magma_int_t n,
-    magmaFloatComplex_ptr da, magma_int_t ldda,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
     magma_int_t *info);
 
 magma_int_t
@@ -1400,18 +1417,15 @@ magma_int_t
 magma_clatrd_mgpu(
     magma_int_t ngpu,
     magma_uplo_t uplo,
-    magma_int_t n0, magma_int_t n, magma_int_t nb, magma_int_t nb0,
+    magma_int_t n, magma_int_t nb, magma_int_t nb0,
     magmaFloatComplex *A,  magma_int_t lda,
     float *e, magmaFloatComplex *tau,
-    magmaFloatComplex *W,   magma_int_t ldw,
+    magmaFloatComplex    *W,       magma_int_t ldw,
     magmaFloatComplex_ptr dA[],    magma_int_t ldda, magma_int_t offset,
     magmaFloatComplex_ptr dW[],    magma_int_t lddw,
+    magmaFloatComplex    *hwork,   magma_int_t lhwork,
     magmaFloatComplex_ptr dwork[], magma_int_t ldwork,
-    magma_int_t k,
-    magmaFloatComplex_ptr dx[], magmaFloatComplex_ptr dy[],
-    magmaFloatComplex *work,
-    magma_queue_t queues[][10],
-    float *times);
+    magma_queue_t queues[] );
 
 magma_int_t
 magma_clauum_gpu(

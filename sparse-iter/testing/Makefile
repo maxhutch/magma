@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/testing
@@ -15,7 +15,8 @@ LIB += -lcusparse
 # ----------
 # utility functions
 ZSRC += \
-    testing_zmatrix.cpp     \
+	testing_zblas.cpp	\
+	testing_zmatrix.cpp     \
     testing_zio.cpp     \
     testing_zmcompressor.cpp     \
     testing_zmconverter.cpp     \
@@ -26,11 +27,12 @@ ZSRC += \
 ZSRC += \
     testing_zdot.cpp        \
     testing_zspmv.cpp       \
+    testing_zspmv_check.cpp \
     testing_zspmm.cpp       \
     testing_zmadd.cpp     \
 
 # ----------
-# low level LA operations
+# iterative solvers
 ZSRC += \
     testing_zsolver.cpp     \
 
@@ -51,8 +53,8 @@ ZSRC += \
 #	testing_z_mpk_5.cpp	\
 
 # debugging
-ZSRC += \
-#	testing_zdebug.cpp	\
+#ZSRC += \
+#	testing_zsolver_debug.cpp	\
 #   testing_spmvELLRT.cpp \
 #	testing_zcdebug.cpp	\
 
@@ -90,8 +92,10 @@ $(ALLOBJ): $(MAGMA_DIR)/testing/testings.h
 
 $(EXE): $(LIBMAGMA_SPARSE) $(LIBTEST)
 
-clean:
-	rm -f *.o *~ 
+clean: cleanobj cleanexe
+
+cleanobj:
+	rm -f *.o *~
 
 cleanexe:
 	rm -f $(EXE)
@@ -100,13 +104,13 @@ cleanall: clean cleanexe
 
 testing_% : testing_%.o
 	echo $(LIB)
-	$(CXX) $(LDFLAGS) $(NOMAIN) $< -o $@ \
+	$(CXX) $(LDFLAGS) $(RPATH) $(NOMAIN) $< -o $@ \
 	$(LIBTEST) -L$(MAGMA_DIR)/lib -lmagma_sparse -lmagma \
 	$(LIBDIR) \
 	$(LIB)
 
 run_% : run_%.o
-	$(CXX) $(LDFLAGS) $(NOMAIN) $< -o $@ \
+	$(CXX) $(LDFLAGS) $(RPATH) $(NOMAIN) $< -o $@ \
 	$(LIBTEST) -L$(MAGMA_DIR)/lib -lmagma_sparse -lmagma \
 	$(LIBDIR) \
 	$(LIB)

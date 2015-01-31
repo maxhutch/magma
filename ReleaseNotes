@@ -3,8 +3,8 @@
 
 -----------------------------------------------------
 
-MAGMA is intended for CUDA enabled NVIDIA GPUs.  It supports
-Tesla, Fermi, and Kepler GPUs. 
+MAGMA is intended for CUDA enabled NVIDIA GPUs.
+It supports Tesla, Fermi, and Kepler GPUs.
 
 Included are routines for the following algorithms:
 
@@ -15,24 +15,43 @@ Included are routines for the following algorithms:
     * Generalized Hermitian-definite eigenproblem solver
     * Mixed-precision iterative refinement solvers based on LU, QR, and Cholesky
     * MAGMA BLAS including gemm, gemv, symv, and trsm
-    * BATCHED MAGMA BLAS including gemm, gemv, herk, and trsm
-    * BATCHED LU, GETRI, and Cholesky factorizations
-    * MAGMA SPARSE including CG, GMRES, BiCGSTAB, LOBPCG, and Iterative refinement,
-      preconditioners, sparse kernels (SpMV, SpMM), and support for CSR, ELL, and 
+    * Batched MAGMA BLAS including gemm, gemv, herk, and trsm
+    * Batched MAGMA LAPACK including LU, inverse(getri), QR, and Cholesky factorizations
+    * MAGMA Sparse including CG, GMRES, BiCGSTAB, LOBPCG, iterative refinement,
+      preconditioners, sparse kernels (SpMV, SpMM), and support for CSR, ELL, and
       SELL-P data formats
 
 Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
 
+ 1.6.1 - January 30, 2014
+    * Building as both shared and static library is default now.
+      Comment out FPIC in make.inc to build only static library.
+    * Added max norm and one norm to [zcsd]lange.
+    * Extended {sy|he}mv and {sy|he}mv_mgpu implementation to upper triangular.
+    * Fixed memory access bug in {sy|he}mv_mgpu, used in {sy|he}trd_mgpu.
+    * Fixed errant argument check in laswp, affecting getrf_mgpu.
+    * Fixed tau in [cz]gelqf, which needed to be conjugated.
+    * Fixed workspace size in symmetric/Hermitian eigenvalue solvers.
+    * Made fast magmablas_zhemv default in symmetric/Hermitian eigenvalue solvers
+      (previously needed to define -DFAST_HEMV option).
+    * Added FGMRES for non-constant preconditioner operator.
+    * Added backward communication interfaces for SpMV and 
+      preconditioner passing the vectors on the GPU.
+    * Added function to generate cuSPARSE ILU level-scheduling information
+      for a given matrix.
+    * Adding the batched QR routine.
+    * Performance improvments of all batched routines.
+    * Fixing "nan" output for batched factorizations.
+
  1.6.0 - November 16, 2014
     * Added MAGMA Batched linear algebra routines:
-        * BATCHED MAGMA BLAS including gemm, gemv, herk, and trsm
-        * BATCHED LU, GETRI, and Cholesky factorizations
-    * Added Bunch-Kaufman factorization (and solver) for symmetric 
-      indefinite matrices
-      {z|c|d|s}{he|sy}trf 
-    * Added non-pivoted LDLt 
+        * Batched MAGMA BLAS including gemm, gemv, herk, and trsm
+        * Batched LU, GETRI, and Cholesky factorizations
+    * Added Bunch-Kaufman factorization and solver for symmetric
+      indefinite matrices: [zcsd]{he|sy}trf
+    * Added non-pivoted LDLt
     * Added a Random Butterfly Transformation (RBT) and a new solver based
       on RBT + LU without pivoting + iterative refinement
     * Comprehensive release of sparse routines:
@@ -104,11 +123,11 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Add multi-GPU Hessenberg and non-symmetric eigenvalue routines:
       geev_m, gehrd_m, unghr_m, ungqr_m.
     * Add multi-GPU symmetric eigenvalue routines (one-stage)
-      ([zhe|che|ssy|dsy]trd_mgpu, 
+      ([zhe|che|ssy|dsy]trd_mgpu,
        [zhe|che|ssy|dsy]evd_m, [zhe|che|ssy|dsy]evdx_m,
        [zhe|che|ssy|dsy]gvd_m, [zhe|che|ssy|dsy]gvdx_m ).
     * Add single and multi-GPU symmetric eigenvalue routines (two-stage)
-      ([zhe|che|ssy|dsy]evdx_2stage,   [zhe|che|ssy|dsy]gvdx_2stage, 
+      ([zhe|che|ssy|dsy]evdx_2stage,   [zhe|che|ssy|dsy]gvdx_2stage,
        [zhe|che|ssy|dsy]evdx_2stage_m, [zhe|che|ssy|dsy]gvdx_2stage_m ).
     * Add magma_strerror to get error message.
     * Revised most testers to use common framework and options.
@@ -133,7 +152,7 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Fix bug in [zcsd]getrf_gpu.cpp
     * Fix workspace requirement for SVD in [zcsd]gesvd.cpp
     * Fix a bug in freeing pinned memory (in interface_cuda/alloc.cpp)
-    * Fix a bug in [zcsd]geqrf_mgpu.cpp 
+    * Fix a bug in [zcsd]geqrf_mgpu.cpp
     * Fix zdotc to use cblas for portability
     * Fix uppercase entries in blas/lapack headers
     * Use magma_int_t in blas/lapack headers, and fix sources accordingly
@@ -165,7 +184,7 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Add reduction to band-diagonal for symmetric/Hermitian definite matrices
       in [zc]hebbd.cpp and [ds]sybbd.cpp
     * Updated eigensolvers for standard and generalized eigenproblems for
-      symmetric/Hermitian definite matrices 
+      symmetric/Hermitian definite matrices
     * Add wrappers around CUDA and CUBLAS functions,
       for portability and error checking.
     * Add tracing functions.
@@ -181,11 +200,11 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Fix a bug in [zcsd]gehrd for ilo > 1 or ihi < n.
     * Added missing Fortran interfaces
     * Add general matrix inverse, [zcds]getri GPU interface.
-    * Add [zcds]potri in CPU and GPU interfaces 
+    * Add [zcds]potri in CPU and GPU interfaces
        [Hatem Ltaief et al.]
-    * Add [zcds]trtri in CPU and GPU interfaces 
+    * Add [zcds]trtri in CPU and GPU interfaces
        [Hatem Ltaief et al.]
-    * Add [zcds]lauum in CPU and GPU interfaces 
+    * Add [zcds]lauum in CPU and GPU interfaces
        [Hatem Ltaief et al.]
     * Add zgemm for Fermi obtained using autotuning
     * Add non-GPU-resident versions of [zcds]geqrf, [zcds]potrf, and [zcds]getrf
@@ -197,13 +216,13 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Add experimental directory ('exp') with algorithms for:
       (1) Multi-core QR, LU, Cholskey
       (2) Single GPU, all available CPU cores QR
-    * Add eigenvalue solver driver routines for the standard and generalized 
+    * Add eigenvalue solver driver routines for the standard and generalized
       symmetric/Hermitian eigenvalue problems [Raffaele Solca et al.].
 
  1.0.0 - August 25th, 2011
     * Fix make.inc.mkl (Thanks to ar1309)
     * Add gpu interfaces to [zcsd]hetrd, [zcsd]heevd
-    * Add all cases for [zcds]unmtr_gpu 
+    * Add all cases for [zcds]unmtr_gpu
        [Raffaele Solca et al.]
     * Add generalized Hermitian-definite eigenproblem solver ([zcds]hegvd)
        [Raffaele Solca et al.]
@@ -228,7 +247,7 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Fix bug on [cz]unmqr, [sd]ormqr functions
     * Fix bug in [zcsd]gebrd; fixes bug in SVD for n>m
     * Fix bug in [zcsd]geqrs_gpu for multiple RHS
-    * Added functionality - zcgesv_gpu and dsgesv_gpu can now solve also 
+    * Added functionality - zcgesv_gpu and dsgesv_gpu can now solve also
       A' X = B using mixed-precision iterative refinement
     * Fix error code in testings.h to compile with cuda 4.0
 
@@ -237,10 +256,9 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Add control directory to group all non computational functions
     * Integration of the eigenvalues solvers
     * Clean some f2c code in eigenvalues solvers
-    * Arithmetic consistency: cuDoubleComplex and cuFloatComplex are 
+    * Arithmetic consistency: cuDoubleComplex and cuFloatComplex are
       the  only types used for complex now.
     * Consistency of the interface of some functions.
     * Clean most of the return values in lapack functions
     * Fix multiple definition of min, max,
     * Fix headers problem under windows, thanks to Willem Burger
-

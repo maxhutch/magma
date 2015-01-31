@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-    @author Raffaele Solca
-    @author Azzam Haidar
+       @author Raffaele Solca
+       @author Azzam Haidar
+       @author Mark Gates
 
-    @generated from testing_zhegvdx_2stage.cpp normal z -> c, Sat Nov 15 19:54:18 2014
+       @generated from testing_zhegvdx_2stage.cpp normal z -> c, Fri Jan 30 19:00:26 2015
 
 */
 
@@ -155,20 +156,19 @@ int main( int argc, char** argv)
             gpu_time = magma_wtime() - gpu_time;
 
 
-            if ( opts.check ) {
+            if ( opts.check && opts.jobz != MagmaNoVec ) {
                 /* =====================================================================
                    Check the results following the LAPACK's [zc]hegvdx routine.
                    A x = lambda B x is solved
                    and the following 3 tests computed:
                    (1)    | A Z - B Z D | / ( |A||Z| N )  (itype = 1)
-                   | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
-                   | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
+                          | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
+                          | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
                    (2)    | S(with V) - S(w/o V) | / | S |
                    =================================================================== */
                 #if defined(PRECISION_d) || defined(PRECISION_s)
                 float *rwork = h_work + N*N;
                 #endif
-                float temp1, temp2;
 
                 result[0] = 1.;
                 result[0] /= lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_A, &N, rwork);
@@ -209,13 +209,13 @@ int main( int argc, char** argv)
                               iwork, &liwork,
                               &info);
 
-                temp1 = temp2 = 0;
+                float maxw=0, diff=0;
                 for(int j=0; j<m2; j++) {
-                    temp1 = max(temp1, fabs(w1[j]));
-                    temp1 = max(temp1, fabs(w2[j]));
-                    temp2 = max(temp2, fabs(w1[j]-w2[j]));
+                    maxw = max(maxw, fabs(w1[j]));
+                    maxw = max(maxw, fabs(w2[j]));
+                    diff = max(diff, fabs(w1[j] - w2[j]));
                 }
-                result[1] = temp2 / (((float)m2)*temp1);
+                result[1] = diff / (m2*maxw);
             }
 
 
@@ -224,18 +224,18 @@ int main( int argc, char** argv)
                =================================================================== */
             printf("%5d %5d   %7.2f\n",
                    (int) N, (int) m1, gpu_time);
-            if ( opts.check ) {
+            if ( opts.check && opts.jobz != MagmaNoVec ) {
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
                 if (opts.itype==1) {
-                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
+                    printf("    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
                 }
                 else if (opts.itype==2) {
-                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
+                    printf("    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
                 }
                 else if (opts.itype==3) {
-                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
+                    printf("    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
                 }
-                printf(    "(2)    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e   %s\n\n", result[1], (result[1] < tolulp ? "ok" : "failed"));
+                printf(    "    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e   %s\n\n", result[1], (result[1] < tolulp ? "ok" : "failed"));
                 status += ! (result[0] < tol && result[1] < tolulp);
             }
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 */
@@ -13,11 +13,11 @@
     Purpose
     -------
     Solves a system of linear equations
-       A * X = B
+        A * X = B
     where A is a general N-by-N matrix and X and B are N-by-NRHS matrices.
     The LU decomposition with partial pivoting and row interchanges is
     used to factor A as
-       A = P * L * U,
+        A = P * L * U,
     where P is a permutation matrix, L is unit lower triangular, and U is
     upper triangular.  The factored form of A is then used to solve the
     system of equations A * X = B.
@@ -41,7 +41,7 @@
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
     ipiv    INTEGER array, dimension (min(M,N))
@@ -49,13 +49,13 @@
             matrix was interchanged with row IPIV(i).
 
     @param[in,out]
-    dB      COMPLEX_16 array on the GPU, dimension (LDB,NRHS)
+    dB      COMPLEX_16 array on the GPU, dimension (LDDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,N).
+            The leading dimension of the array B.  LDDB >= max(1,N).
 
     @param[out]
     info    INTEGER

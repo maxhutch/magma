@@ -85,6 +85,8 @@ CSRC = \
 	chetrf_nopiv.cpp \
 	chetrf_nopiv_cpu.cpp \
 	chetrf_nopiv_gpu.cpp \
+	chetrs_nopiv_gpu.cpp \
+	chesv_nopiv_gpu.cpp \
 	clahef_gpu.cpp \
 	cheevd_gpu.cpp \
 	cheevdx_gpu.cpp \
@@ -173,7 +175,11 @@ CSRC = \
 	cpotrf_batched.cpp \
 	cpotrf_panel_batched.cpp \
 	cpotrs_batched.cpp \
-	cposv_batched.cpp
+	cposv_batched.cpp \
+	clarft_batched.cpp \
+	clarfb_gemm_batched.cpp \
+	cgeqrf_panel_batched.cpp \
+	cgeqrf_batched.cpp
 
 DSRC = \
 	cblas_d.cpp \
@@ -256,6 +262,8 @@ DSRC = \
 	dsytrf_nopiv.cpp \
 	dsytrf_nopiv_cpu.cpp \
 	dsytrf_nopiv_gpu.cpp \
+	dsytrs_nopiv_gpu.cpp \
+	dsysv_nopiv_gpu.cpp \
 	dlasyf_gpu.cpp \
 	dsytrd2_gpu.cpp \
 	dsytrd_gpu.cpp \
@@ -314,7 +322,11 @@ DSRC = \
 	dpotrf_batched.cpp \
 	dpotrf_panel_batched.cpp \
 	dpotrs_batched.cpp \
-	dposv_batched.cpp
+	dposv_batched.cpp \
+	dlarft_batched.cpp \
+	dlarfb_gemm_batched.cpp \
+	dgeqrf_panel_batched.cpp \
+	dgeqrf_batched.cpp
 
 SSRC = \
 	cblas_s.cpp \
@@ -393,6 +405,8 @@ SSRC = \
 	ssytrf_nopiv.cpp \
 	ssytrf_nopiv_cpu.cpp \
 	ssytrf_nopiv_gpu.cpp \
+	ssytrs_nopiv_gpu.cpp \
+	ssysv_nopiv_gpu.cpp \
 	slasyf_gpu.cpp \
 	ssyevd_gpu.cpp \
 	ssyevdx_gpu.cpp \
@@ -483,4 +497,8 @@ SSRC = \
 	spotrf_batched.cpp \
 	spotrf_panel_batched.cpp \
 	spotrs_batched.cpp \
-	sposv_batched.cpp
+	sposv_batched.cpp \
+	slarft_batched.cpp \
+	slarfb_gemm_batched.cpp \
+	sgeqrf_panel_batched.cpp \
+	sgeqrf_batched.cpp

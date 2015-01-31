@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- clMAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zgetrf_mgpu.cpp normal z -> s, Sat Nov 15 19:54:18 2014
+       @generated from testing_zgetrf_mgpu.cpp normal z -> s, Fri Jan 30 19:00:25 2015
        @author Mark Gates
 */
 // includes, system
@@ -196,7 +196,7 @@ int main( int argc, char** argv )
             TESTING_MALLOC_CPU( h_A,  float, n2     );
             
             // Allocate device memory
-            for( int dev=0; dev < ngpu; dev++){
+            for( int dev=0; dev < ngpu; dev++ ) {
                 n_local = ((N/nb)/ngpu)*nb;
                 if (dev < (N/nb) % ngpu)
                     n_local += nb;

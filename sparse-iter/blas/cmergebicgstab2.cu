@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmergebicgstab2.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zmergebicgstab2.cu normal z -> c, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -28,8 +28,8 @@ __global__ void
 magma_creduce_kernel_spmv1(    
     int Gs,
     int n, 
-    magmaFloatComplex_ptr vtmp,
-    magmaFloatComplex_ptr vtmp2 )
+    magmaFloatComplex * vtmp,
+    magmaFloatComplex * vtmp2 )
 {
 
     extern __shared__ magmaFloatComplex temp[];    
@@ -90,13 +90,13 @@ magma_creduce_kernel_spmv1(
 __global__ void
 magma_cbicgmerge_spmv1_kernel(  
     int n,
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaFloatComplex_ptr p,
-    magmaFloatComplex_ptr r,
-    magmaFloatComplex_ptr v,
-    magmaFloatComplex_ptr vtmp)
+    magmaFloatComplex * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    magmaFloatComplex * p,
+    magmaFloatComplex * r,
+    magmaFloatComplex * v,
+    magmaFloatComplex * vtmp)
 {
 
     extern __shared__ magmaFloatComplex temp[]; 
@@ -165,7 +165,7 @@ magma_cbicgmerge_spmv1_kernel(
 
 __global__ void
 magma_cbicgstab_alphakernel(  
-                    magmaFloatComplex_ptr skp ){
+                    magmaFloatComplex * skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -189,27 +189,27 @@ magma_cbicgstab_alphakernel(
                 system matrix
 
     @param[in]
-    d1          magmaFloatComplex_ptr 
+    d1          magmaFloatComplex_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaFloatComplex_ptr 
+    d2          magmaFloatComplex_ptr
                 temporary vector
 
     @param[in]
-    dp          magmaFloatComplex_ptr 
+    dp          magmaFloatComplex_ptr
                 input vector p
 
     @param[in]
-    dr          magmaFloatComplex_ptr 
+    dr          magmaFloatComplex_ptr
                 input vector r
 
     @param[in]
-    dv          magmaFloatComplex_ptr 
+    dv          magmaFloatComplex_ptr
                 output vector v
 
     @param[in/out]
-    skp         magmaFloatComplex_ptr 
+    skp         magmaFloatComplex_ptr
                 array for parameters ( skp[0]=alpha )
 
     @param[in]
@@ -278,8 +278,8 @@ __global__ void
 magma_creduce_kernel_spmv2( 
     int Gs,
     int n, 
-    magmaFloatComplex_ptr vtmp,
-    magmaFloatComplex_ptr vtmp2 )
+    magmaFloatComplex * vtmp,
+    magmaFloatComplex * vtmp2 )
 {
 
     extern __shared__ magmaFloatComplex temp[];    
@@ -364,12 +364,12 @@ magma_creduce_kernel_spmv2(
 __global__ void
 magma_cbicgmerge_spmv2_kernel(  
     int n,
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaFloatComplex_ptr s,
-    magmaFloatComplex_ptr t,
-    magmaFloatComplex_ptr vtmp )
+    magmaFloatComplex * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    magmaFloatComplex * s,
+    magmaFloatComplex * t,
+    magmaFloatComplex * vtmp )
 {
 
     extern __shared__ magmaFloatComplex temp[]; 
@@ -468,7 +468,7 @@ magma_cbicgmerge_spmv2_kernel(
 
 __global__ void
 magma_cbicgstab_omegakernel(  
-                    magmaFloatComplex_ptr skp ){
+                    magmaFloatComplex * skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -492,23 +492,23 @@ magma_cbicgstab_omegakernel(
                 input matrix 
 
     @param[in]
-    d1          magmaFloatComplex_ptr 
+    d1          magmaFloatComplex_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaFloatComplex_ptr 
+    d2          magmaFloatComplex_ptr
                 temporary vector
 
     @param[in]
-    ds          magmaFloatComplex_ptr 
+    ds          magmaFloatComplex_ptr
                 input vector s
 
     @param[in]
-    dt          magmaFloatComplex_ptr 
+    dt          magmaFloatComplex_ptr
                 output vector t
 
     @param[in/out]
-    skp         magmaFloatComplex_ptr 
+    skp         magmaFloatComplex_ptr
                 array for parameters
 
     @param[in]
@@ -574,14 +574,14 @@ magma_cbicgmerge_spmv2(
 __global__ void
 magma_cbicgmerge_xrbeta_kernel(  
     int n, 
-    magmaFloatComplex_ptr rr,
-    magmaFloatComplex_ptr r,
-    magmaFloatComplex_ptr p,
-    magmaFloatComplex_ptr s,
-    magmaFloatComplex_ptr t,
-    magmaFloatComplex_ptr x, 
-    magmaFloatComplex_ptr skp,
-    magmaFloatComplex_ptr vtmp )
+    magmaFloatComplex * rr,
+    magmaFloatComplex * r,
+    magmaFloatComplex * p,
+    magmaFloatComplex * s,
+    magmaFloatComplex * t,
+    magmaFloatComplex * x, 
+    magmaFloatComplex * skp,
+    magmaFloatComplex * vtmp )
 {
 
     extern __shared__ magmaFloatComplex temp[]; 
@@ -681,7 +681,7 @@ magma_cbicgmerge_xrbeta_kernel(
 
 __global__ void
 magma_cbicgstab_betakernel(  
-    magmaFloatComplex_ptr skp )
+    magmaFloatComplex * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -707,39 +707,39 @@ magma_cbicgstab_betakernel(
                 dimension n
 
     @param[in]
-    d1          magmaFloatComplex_ptr 
+    d1          magmaFloatComplex_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaFloatComplex_ptr 
+    d2          magmaFloatComplex_ptr
                 temporary vector
 
     @param[in]
-    rr          magmaFloatComplex_ptr 
+    rr          magmaFloatComplex_ptr
                 input vector rr
 
     @param[in]
-    r           magmaFloatComplex_ptr 
+    r           magmaFloatComplex_ptr
                 input/output vector r
 
     @param[in]
-    p           magmaFloatComplex_ptr 
+    p           magmaFloatComplex_ptr
                 input vector p
 
     @param[in]
-    s           magmaFloatComplex_ptr 
+    s           magmaFloatComplex_ptr
                 input vector s
 
     @param[in]
-    t           magmaFloatComplex_ptr 
+    t           magmaFloatComplex_ptr
                 input vector t
 
     @param[out]
-    x           magmaFloatComplex_ptr 
+    x           magmaFloatComplex_ptr
                 output vector x
 
     @param[in]
-    skp         magmaFloatComplex_ptr 
+    skp         magmaFloatComplex_ptr
                 array for parameters
 
     @param[in]

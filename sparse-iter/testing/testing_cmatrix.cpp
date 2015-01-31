@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zmatrix.cpp normal z -> c, Sat Nov 15 19:54:24 2014
+       @generated from testing_zmatrix.cpp normal z -> c, Fri Jan 30 19:00:33 2015
        @author Hartwig Anzt
 */
 
@@ -71,7 +71,7 @@ int main(  int argc, char** argv )
         magma_c_mtranspose( A, &AT, queue );
 
         // convert, copy back and forth to check everything works
-        printf("here0\n");
+
         magma_c_mconvert( AT, &B, Magma_CSR, zopts.output_format, queue );
         magma_c_mfree(&AT, queue );
         magma_c_mtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue );

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 */
 
 #ifndef MAGMA_TYPES_H
@@ -271,7 +271,7 @@ typedef double real_Double_t;
 // ----------------------------------------
 #define MAGMA_VERSION_MAJOR 1
 #define MAGMA_VERSION_MINOR 6
-#define MAGMA_VERSION_MICRO 0
+#define MAGMA_VERSION_MICRO 1
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
 #define MAGMA_VERSION_STAGE ""
@@ -306,6 +306,9 @@ typedef double real_Double_t;
 #define MAGMA_SLOW_CONVERGENCE     -201
 #define MAGMA_DIVERGENCE           -202
 #define MAGMA_NONSPD               -203
+
+// When adding error codes, please add to interface_cuda/error.cpp
+
 
 // ----------------------------------------
 // parameter constants
@@ -429,7 +432,7 @@ typedef enum {
     Magma_HYB          = 417,
     Magma_COO          = 418,
     Magma_ELLRT        = 419,
-
+    Magma_SPMVFUNCTION = 420,
     Magma_SELLP        = 421,
     Magma_ELLD         = 422,
 
@@ -461,7 +464,8 @@ typedef enum {
     Magma_AICC         = 448,
     Magma_BAITER       = 449,
     Magma_LOBPCG       = 450,
-    Magma_NONE         = 451
+    Magma_NONE         = 451,
+    Magma_FUNCTION     = 452
 } magma_solver_type;
 
 typedef enum {
@@ -526,6 +530,7 @@ typedef enum {
 #define MagmaNoTransStr       "NoTrans"
 #define MagmaTransStr         "Trans"
 #define MagmaConjTransStr     "ConjTrans"
+#define Magma_ConjTransStr    "ConjTrans"
 
 #define MagmaUpperStr         "Upper"
 #define MagmaLowerStr         "Lower"

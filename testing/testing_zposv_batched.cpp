@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.6.0) --
+   -- MAGMA (version 1.6.1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date November 2014
+   @date January 2015
 
    @author Mark gates
    @author Azzam Haidar
@@ -46,6 +46,7 @@ int main(int argc, char **argv)
     magmaDoubleComplex **dA_array = NULL;
     magmaDoubleComplex **dB_array = NULL;
 
+    magma_queue_t queue = magma_stream;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -98,11 +99,11 @@ int main(int argc, char **argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            zset_pointer(dA_array, d_A, ldda, 0, 0, ldda*N, batchCount);
-            zset_pointer(dB_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount);
+            zset_pointer(dA_array, d_A, ldda, 0, 0, ldda*N, batchCount, queue);
+            zset_pointer(dB_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, queue);
 
             gpu_time = magma_wtime();
-            info = magma_zposv_batched(opts.uplo, N, nrhs, dA_array, ldda, dB_array, lddb, dinfo_array, batchCount); 
+            info = magma_zposv_batched(opts.uplo, N, nrhs, dA_array, ldda, dB_array, lddb, dinfo_array, batchCount, queue); 
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from ztrsm_batched.cu normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from ztrsm_batched.cu normal z -> s, Fri Jan 30 19:00:10 2015
 
        @author Peng Du
        @author Tingxing Dong
@@ -96,11 +96,10 @@
             When side = MagmaLeft,  ldda >= max( 1, m ),
             when side = MagmaRight, ldda >= max( 1, n ).
 
-    @param[in,out]
+    @param[in]
     dB      REAL array of dimension ( lddb, n ).
             Before entry, the leading m by n part of the array B must
-            contain the right-hand side matrix B, and on exit is
-            overwritten by the solution matrix X.
+            contain the right-hand side matrix B.
 
     @param[in]
     lddb    INTEGER.
@@ -118,8 +117,9 @@
             If side == MagmaRight, d_dinvA must be of size >= ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB,
             where TRI_NB = 128.
 
-    @param
-    dX      (workspace) size m*n, on device.
+    @param[out]
+    dX      REAL array of dimension ( lddx, n ).
+            On exit it contain the solution matrix X.
 
     @ingroup magma_sblas3
     ********************************************************************/
@@ -134,7 +134,7 @@ void magmablas_strsm_outofplace_batched(
     float** dinvA_array, magma_int_t dinvA_length,
     float** dA_displ, float** dB_displ, 
     float** dX_displ, float** dinvA_displ,
-    magma_int_t resetozero, magma_int_t batchCount)
+    magma_int_t resetozero, magma_int_t batchCount, magma_queue_t queue)
 {
 /*
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
@@ -186,41 +186,41 @@ void magmablas_strsm_outofplace_batched(
     if (m == 0 || n == 0)
         return;
 
-    magma_sdisplace_pointers(dA_displ,       dA_array,    ldda,    0, 0, batchCount); 
-    magma_sdisplace_pointers(dB_displ,       dB_array,    lddb,    0, 0, batchCount); 
-    magma_sdisplace_pointers(dX_displ,       dX_array,    lddx,    0, 0, batchCount); 
-    magma_sdisplace_pointers(dinvA_displ, dinvA_array,  TRI_NB,    0, 0, batchCount); 
+    magma_sdisplace_pointers(dA_displ,       dA_array,    ldda,    0, 0, batchCount, queue); 
+    magma_sdisplace_pointers(dB_displ,       dB_array,    lddb,    0, 0, batchCount, queue); 
+    magma_sdisplace_pointers(dX_displ,       dX_array,    lddx,    0, 0, batchCount, queue); 
+    magma_sdisplace_pointers(dinvA_displ, dinvA_array,  TRI_NB,    0, 0, batchCount, queue); 
 
     if (side == MagmaLeft) {
         // invert diagonal blocks
         if (flag)
-            magmablas_strtri_diag_batched( uplo, diag, m, dA_displ, ldda, dinvA_displ, resetozero, batchCount );
+            magmablas_strtri_diag_batched( uplo, diag, m, dA_displ, ldda, dinvA_displ, resetozero, batchCount, queue );
 
         if (transA == MagmaNoTrans) {
             if (uplo == MagmaLower) {
                 // left, lower no-transpose
                 // handle first block seperately with alpha
                 jb = min(TRI_NB, m);                
-                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
 
                 if (TRI_NB < m) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array, ldda, TRI_NB, 0, batchCount); 
-                    magma_sdisplace_pointers(dB_displ,    dB_array, lddb, TRI_NB, 0, batchCount);                    
-                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array, ldda, TRI_NB, 0, batchCount, queue); 
+                    magma_sdisplace_pointers(dB_displ,    dB_array, lddb, TRI_NB, 0, batchCount, queue);                    
+                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=TRI_NB; i < m; i += TRI_NB ) {
                         jb = min(m-i, TRI_NB);
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array, lddb,    i, 0, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array, lddx,    i, 0, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, jb, n, jb, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array, lddb,    i, 0, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array, lddx,    i, 0, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, jb, n, jb, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i+TRI_NB >= m)
                             break;
                         
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  i+TRI_NB, i, batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,  i+TRI_NB, 0, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m-i-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount );
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  i+TRI_NB, i, batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,  i+TRI_NB, 0, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m-i-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount, queue );
                     }
                 }
             }
@@ -229,28 +229,28 @@ void magmablas_strsm_outofplace_batched(
                 // handle first block seperately with alpha
                 jb = (m % TRI_NB == 0) ? TRI_NB : (m % TRI_NB);
                 i = m-jb;
-                magma_sdisplace_pointers(dinvA_displ,    dinvA_array, TRI_NB, 0, i, batchCount);
-                magma_sdisplace_pointers(dB_displ,          dB_array,    lddb, i, 0, batchCount);
-                magma_sdisplace_pointers(dX_displ,          dX_array,    lddx, i, 0, batchCount);
-                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                magma_sdisplace_pointers(dinvA_displ,    dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                magma_sdisplace_pointers(dB_displ,          dB_array,    lddb, i, 0, batchCount, queue);
+                magma_sdisplace_pointers(dX_displ,          dX_array,    lddx, i, 0, batchCount, queue);
+                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
 
                 if (i-TRI_NB >= 0) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount); 
-                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, i, n, jb, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount, queue); 
+                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, i, n, jb, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=m-jb-TRI_NB; i >= 0; i -= TRI_NB ) {
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, i, 0, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, i, 0, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, TRI_NB, n, TRI_NB, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, i, 0, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, i, 0, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, TRI_NB, n, TRI_NB, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i-TRI_NB < 0)
                             break;
 
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, i, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount);
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, i, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount, queue);
                     }
                 }
             }
@@ -261,28 +261,28 @@ void magmablas_strsm_outofplace_batched(
                 // handle first block seperately with alpha
                 jb = (m % TRI_NB == 0) ? TRI_NB : (m % TRI_NB);
                 i = m-jb;
-                magma_sdisplace_pointers(dinvA_displ,    dinvA_array, TRI_NB, 0, i, batchCount);
-                magma_sdisplace_pointers(dB_displ,          dB_array,    lddb, i, 0, batchCount);
-                magma_sdisplace_pointers(dX_displ,          dX_array,    lddx, i, 0, batchCount);
-                magmablas_sgemm_batched( transA, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                magma_sdisplace_pointers(dinvA_displ,    dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                magma_sdisplace_pointers(dB_displ,          dB_array,    lddb, i, 0, batchCount, queue);
+                magma_sdisplace_pointers(dX_displ,          dX_array,    lddx, i, 0, batchCount, queue);
+                magmablas_sgemm_batched( transA, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
 
                 if (i-TRI_NB >= 0) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0, batchCount); 
-                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                    magmablas_sgemm_batched( transA, MagmaNoTrans, i, n, jb, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0, batchCount, queue); 
+                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                    magmablas_sgemm_batched( transA, MagmaNoTrans, i, n, jb, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=m-jb-TRI_NB; i >= 0; i -= TRI_NB ) {
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, i, 0, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, i, 0, batchCount);
-                        magmablas_sgemm_batched( transA, MagmaNoTrans, TRI_NB, n, TRI_NB, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, i, 0, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, i, 0, batchCount, queue);
+                        magmablas_sgemm_batched( transA, MagmaNoTrans, TRI_NB, n, TRI_NB, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i-TRI_NB < 0)
                             break;
 
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0,  batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                        magmablas_sgemm_batched( transA, MagmaNoTrans, i, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount );
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0,  batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                        magmablas_sgemm_batched( transA, MagmaNoTrans, i, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount, queue );
                     }
                 }
             }
@@ -290,26 +290,26 @@ void magmablas_strsm_outofplace_batched(
                 // left, upper transpose
                 // handle first block seperately with alpha
                 jb = min(TRI_NB, m);
-                magmablas_sgemm_batched( transA, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                magmablas_sgemm_batched( transA, MagmaNoTrans, jb, n, jb, alpha, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
 
                 if (TRI_NB < m) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,      0,   TRI_NB, batchCount); 
-                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, TRI_NB,        0, batchCount);
-                    magmablas_sgemm_batched( transA, MagmaNoTrans, m-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,      0,   TRI_NB, batchCount, queue); 
+                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, TRI_NB,        0, batchCount, queue);
+                    magmablas_sgemm_batched( transA, MagmaNoTrans, m-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=TRI_NB; i < m; i += TRI_NB ) {
                         jb = min(m-i, TRI_NB);
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, i, 0, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, i, 0, batchCount);
-                        magmablas_sgemm_batched( transA, MagmaNoTrans, jb, n, jb, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, i, 0, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, i, 0, batchCount, queue);
+                        magmablas_sgemm_batched( transA, MagmaNoTrans, jb, n, jb, c_one, dinvA_displ, TRI_NB, dB_displ, lddb, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i+TRI_NB >= m)
                             break;
 
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  i,        i+TRI_NB, batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,  i+TRI_NB,        0, batchCount);
-                        magmablas_sgemm_batched( transA, MagmaNoTrans, m-i-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount );
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  i,        i+TRI_NB, batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,  i+TRI_NB,        0, batchCount, queue);
+                        magmablas_sgemm_batched( transA, MagmaNoTrans, m-i-TRI_NB, n, TRI_NB, c_neg_one, dA_displ, ldda, dX_displ, lddx, c_one, dB_displ, lddb, batchCount, queue );
                     }
                 }
             }
@@ -318,7 +318,7 @@ void magmablas_strsm_outofplace_batched(
     else {  // side == MagmaRight
         // invert diagonal blocks
         if (flag)
-            magmablas_strtri_diag_batched( uplo, diag, n, dA_displ, ldda, dinvA_displ, resetozero, batchCount );
+            magmablas_strtri_diag_batched( uplo, diag, n, dA_displ, ldda, dinvA_displ, resetozero, batchCount, queue);
 
         if (transA == MagmaNoTrans) {
             if (uplo == MagmaLower) {
@@ -326,28 +326,28 @@ void magmablas_strsm_outofplace_batched(
                 // handle first block seperately with alpha
                 jb = (n % TRI_NB == 0) ? TRI_NB : (n % TRI_NB);
                 i = n-jb;                
-                magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount);
-                magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount);
-                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount, queue);
+                magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount, queue);
+                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
 
                 if (i-TRI_NB >= 0) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0, batchCount);                        
-                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, i, jb, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0, batchCount, queue);                        
+                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, i, jb, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=n-jb-TRI_NB; i >= 0; i -= TRI_NB ) {
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, TRI_NB, TRI_NB, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, TRI_NB, TRI_NB, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i-TRI_NB < 0)
                             break;
 
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0, batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, i, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount );
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, 0, batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, i, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount, queue );
                     }
                 }
             }
@@ -355,25 +355,25 @@ void magmablas_strsm_outofplace_batched(
                 // right, upper no-transpose
                 // handle first block seperately with alpha
                 jb = min(TRI_NB, n);
-                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
                 if (TRI_NB < n) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, TRI_NB, batchCount); 
-                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, TRI_NB, batchCount);
-                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, n-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, TRI_NB, batchCount, queue); 
+                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, TRI_NB, batchCount, queue);
+                    magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, n-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=TRI_NB; i < n; i += TRI_NB ) {
                         jb = min(TRI_NB, n-i);
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, jb, jb, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, jb, jb, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i+TRI_NB >= n)
                             break;
 
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, i+TRI_NB, batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, i+TRI_NB, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, n-i-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount );
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, i, i+TRI_NB, batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, i+TRI_NB, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m, n-i-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount, queue );
                     }
                 }
             }
@@ -383,25 +383,25 @@ void magmablas_strsm_outofplace_batched(
                 // right, lower transpose
                 // handle first block seperately with alpha
                 jb = min(TRI_NB, n);
-                magmablas_sgemm_batched( MagmaNoTrans, transA, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                magmablas_sgemm_batched( MagmaNoTrans, transA, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
                 if (TRI_NB < n) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  TRI_NB,      0, batchCount); 
-                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,       0, TRI_NB, batchCount);
-                    magmablas_sgemm_batched( MagmaNoTrans, transA, m, n-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  TRI_NB,      0, batchCount, queue); 
+                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,       0, TRI_NB, batchCount, queue);
+                    magmablas_sgemm_batched( MagmaNoTrans, transA, m, n-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=TRI_NB; i < n; i += TRI_NB ) {
                         jb = min(TRI_NB, n-i);
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, jb, jb, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, jb, jb, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i+TRI_NB >= n)
                             break;
 
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  TRI_NB+i,        i, batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,         0, i+TRI_NB, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, n-i-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount );
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda,  TRI_NB+i,        i, batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb,         0, i+TRI_NB, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, n-i-TRI_NB, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount, queue );
                     }
                 }
             }
@@ -410,28 +410,28 @@ void magmablas_strsm_outofplace_batched(
                 // handle first block seperately with alpha
                 jb = (n % TRI_NB == 0) ? TRI_NB : (n % TRI_NB);
                 i = n-jb;
-                magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount);
-                magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount);
-                magmablas_sgemm_batched( MagmaNoTrans, transA, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount, queue);
+                magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount, queue);
+                magmablas_sgemm_batched( MagmaNoTrans, transA, m, jb, jb, alpha, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
 
                 if (i-TRI_NB >= 0) {
-                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount); 
-                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                    magmablas_sgemm_batched( MagmaNoTrans, transA, m, i, jb, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount );
+                    magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount, queue); 
+                    magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                    magmablas_sgemm_batched( MagmaNoTrans, transA, m, i, jb, c_neg_one, dX_displ, lddx, dA_displ, ldda, alpha, dB_displ, lddb, batchCount, queue );
 
                     // remaining blocks
                     for( i=n-jb-TRI_NB; i >= 0; i -= TRI_NB ) {
-                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount);
-                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount);
-                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, TRI_NB, TRI_NB, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount );
+                        magma_sdisplace_pointers(dinvA_displ, dinvA_array, TRI_NB, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dB_displ,       dB_array,    lddb, 0, i, batchCount, queue);
+                        magma_sdisplace_pointers(dX_displ,       dX_array,    lddx, 0, i, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, TRI_NB, TRI_NB, c_one, dB_displ, lddb, dinvA_displ, TRI_NB, c_zero, dX_displ, lddx, batchCount, queue );
                         if (i-TRI_NB < 0)
                             break;
 
-                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount); 
-                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount);
-                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, i, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount );
+                        magma_sdisplace_pointers(dA_displ,    dA_array,    ldda, 0, i, batchCount, queue); 
+                        magma_sdisplace_pointers(dB_displ,    dB_array,    lddb, 0, 0, batchCount, queue);
+                        magmablas_sgemm_batched( MagmaNoTrans, transA, m, i, TRI_NB, c_neg_one, dX_displ, lddx, dA_displ, ldda, c_one, dB_displ, lddb, batchCount, queue );
                     }
                 }
             }
@@ -454,7 +454,7 @@ void magmablas_strsm_work_batched(
     float** dinvA_array, magma_int_t dinvA_length,
     float** dA_displ, float** dB_displ, 
     float** dX_displ, float** dinvA_displ,
-    magma_int_t resetozero, magma_int_t batchCount)
+    magma_int_t resetozero, magma_int_t batchCount, magma_queue_t queue)
 {
     magma_int_t nrowA = (side == MagmaLeft ? m : n);
 
@@ -493,11 +493,11 @@ void magmablas_strsm_work_batched(
                     dinvA_array, dinvA_length,
                     dA_displ, dB_displ, 
                     dX_displ, dinvA_displ,
-                    resetozero, batchCount );
+                    resetozero, batchCount, queue );
     // copy X to B
-    magma_sdisplace_pointers(dX_displ,    dX_array, lddx, 0, 0, batchCount);
-    magma_sdisplace_pointers(dB_displ,    dB_array, lddb, 0, 0, batchCount);
-    magmablas_slacpy_batched( MagmaFull, m, n, dX_displ, lddx, dB_displ, lddb, batchCount );
+    magma_sdisplace_pointers(dX_displ,    dX_array, lddx, 0, 0, batchCount, queue);
+    magma_sdisplace_pointers(dB_displ,    dB_array, lddb, 0, 0, batchCount, queue);
+    magmablas_slacpy_batched( MagmaFull, m, n, dX_displ, lddx, dB_displ, lddb, batchCount, queue );
 }
 
 /**
@@ -511,7 +511,7 @@ void magmablas_strsm_batched(
     float alpha,
     float** dA_array,    magma_int_t ldda,
     float** dB_array,    magma_int_t lddb,
-    magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {
     magma_int_t nrowA = (side == MagmaLeft ? m : n);
 
@@ -576,10 +576,11 @@ void magmablas_strsm_batched(
         magma_xerbla( __func__, -(info) );
         return;
     }
-    cudaMemset(dinvA, 0, size_dinvA*batchCount*sizeof(float));
+    magmablas_slaset_q(MagmaFull, size_dinvA, batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dinvA, size_dinvA, queue);
+    magmablas_slaset_q(MagmaFull, lddx, n*batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dX, lddx, queue);
 
-    sset_pointer(dX_array, dX, lddx, 0, 0, size_x, batchCount);
-    sset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, size_dinvA, batchCount);
+    sset_pointer(dX_array, dX, lddx, 0, 0, size_x, batchCount, queue);
+    sset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, size_dinvA, batchCount, queue);
 
     magmablas_strsm_work_batched( 
                     side, uplo, transA, diag, 1, 
@@ -590,7 +591,7 @@ void magmablas_strsm_batched(
                     dinvA_array, size_dinvA,
                     dA_displ, dB_displ, 
                     dX_displ, dinvA_displ,
-                    resetozero, batchCount );
+                    resetozero, batchCount, queue );
 
 
     magma_free( dinvA );

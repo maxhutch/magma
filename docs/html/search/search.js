@@ -7,11 +7,13 @@
 
 var indexSectionsWithContent =
 {
-  0: "000000000000000000000000000000000000000000000000000000000000000000000001000011001111100000000010",
-  1: "000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000",
-  2: "000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000",
-  3: "000000000000000000000000000000000000000000000000000000000000000000000001000011001101100000000010",
-  4: "000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000"
+  0: "bcdeghilmnopqrstuwz~",
+  1: "m",
+  2: "r",
+  3: "cdglmpqrstwz~",
+  4: "m",
+  5: "bcdeghilmnoqrstu",
+  6: "cdeimrs"
 };
 
 var indexSectionNames =
@@ -20,7 +22,9 @@ var indexSectionNames =
   1: "classes",
   2: "files",
   3: "functions",
-  4: "related"
+  4: "related",
+  5: "groups",
+  6: "pages"
 };
 
 function convertToId(search)
@@ -30,7 +34,7 @@ function convertToId(search)
   {
     var c = search.charAt(i);
     var cn = c.charCodeAt(0);
-    if (c.match(/[a-z0-9]/))
+    if (c.match(/[a-z0-9\u0080-\uFFFF]/))
     {
       result+=c;
     }
@@ -263,13 +267,13 @@ function SearchBox(name, resultsPath, inFrame, label)
       if (child.className=='SelectItem')
       {
         var node = child.firstChild;
-	if (j==id)
-	{
-          node.innerHTML='&bull;';
-        } 
+        if (j==id)
+        {
+          node.innerHTML='&#8226;';
+        }
         else
         {
-          node.innerHTML='&nbsp;';
+          node.innerHTML='&#160;';
         }
         j++;
       }
@@ -335,22 +339,20 @@ function SearchBox(name, resultsPath, inFrame, label)
     var searchValue = this.DOMSearchField().value.replace(/^ +/, "");
 
     var code = searchValue.toLowerCase().charCodeAt(0);
-    var hexCode;
-    if (code<16) 
+    var idxChar = searchValue.substr(0, 1).toLowerCase();
+    if ( 0xD800 <= code && code <= 0xDBFF && searchValue > 1) // surrogate pair
     {
-      hexCode="0"+code.toString(16);
-    }
-    else 
-    {
-      hexCode=code.toString(16);
+      idxChar = searchValue.substr(0, 2);
     }
 
     var resultsPage;
     var resultsPageWithSearch;
     var hasResultsPage;
 
-    if (indexSectionsWithContent[this.searchIndex].charAt(code-32) == '1')
+    var idx = indexSectionsWithContent[this.searchIndex].indexOf(idxChar);
+    if (idx!=-1)
     {
+       var hexCode=idx.toString(16);
        resultsPage = this.resultsPath + '/' + indexSectionNames[this.searchIndex] + '_' + hexCode + '.html';
        resultsPageWithSearch = resultsPage+'?'+escape(searchValue);
        hasResultsPage = true;
@@ -362,7 +364,7 @@ function SearchBox(name, resultsPath, inFrame, label)
        hasResultsPage = false;
     }
 
-    window.frames.MSearchResults.location.href = resultsPageWithSearch;  
+    window.frames.MSearchResults.location = resultsPageWithSearch;  
     var domPopupSearchResultsWindow = this.DOMPopupSearchResultsWindow();
 
     if (domPopupSearchResultsWindow.style.display!='block')
@@ -381,8 +383,8 @@ function SearchBox(name, resultsPath, inFrame, label)
        else
        {
          var domPopupSearchResults = this.DOMPopupSearchResults();
-         var left = getXPos(domSearchBox) + domSearchBox.offsetWidth;
-         var top  = getYPos(domSearchBox) + domSearchBox.offsetHeight + 1;
+         var left = getXPos(domSearchBox) + 150; // domSearchBox.offsetWidth;
+         var top  = getYPos(domSearchBox) + 20;  // domSearchBox.offsetHeight + 1;
          domPopupSearchResultsWindow.style.display = 'block';
          left -= domPopupSearchResults.offsetWidth;
          domPopupSearchResultsWindow.style.top     = top  + 'px';
@@ -478,20 +480,20 @@ function SearchResults(name)
       if (element)
       {
         if (element.style.display == 'block')
-        {  
-          element.style.display = 'none';  
+        {
+          element.style.display = 'none';
         }
         else
-        {  
-          element.style.display = 'block';  
+        {
+          element.style.display = 'block';
         }
       }
     }
 
-    // Searches for the passed string.  If there is no parameter, 
+    // Searches for the passed string.  If there is no parameter,
     // it takes it from the URL query.
     //
-    // Always returns true, since other documents may try to call it 
+    // Always returns true, since other documents may try to call it
     // and that may or may not be possible.
     this.Search = function(search)
     {
@@ -526,20 +528,20 @@ function SearchResults(name)
             matches++;
           }
           else
-          {  
-            row.style.display = 'none';  
+          {
+            row.style.display = 'none';
           }
         }
         i++;
       }
       document.getElementById("Searching").style.display='none';
       if (matches == 0) // no results
-      {  
-        document.getElementById("NoMatches").style.display='block';  
+      {
+        document.getElementById("NoMatches").style.display='block';
       }
       else // at least one result
-      {  
-        document.getElementById("NoMatches").style.display='none';  
+      {
+        document.getElementById("NoMatches").style.display='none';
       }
       this.lastMatchCount = matches;
       return true;
@@ -631,9 +633,9 @@ function SearchResults(name)
             while (1) // search for last child
             {
               tmpElem = document.getElementById('Item'+newIndex+'_c'+n);
-              if (tmpElem) 
+              if (tmpElem)
               {
-                focusItem = tmpElem; 
+                focusItem = tmpElem;
               }
               else // found it!
               {
@@ -732,3 +734,72 @@ function SearchResults(name)
       return false;
     }
 }
+
+function setKeyActions(elem,action)
+{
+  elem.setAttribute('onkeydown',action);
+  elem.setAttribute('onkeypress',action);
+  elem.setAttribute('onkeyup',action);
+}
+
+function setClassAttr(elem,attr)
+{
+  elem.setAttribute('class',attr);
+  elem.setAttribute('className',attr);
+}
+
+function createResults()
+{
+  var results = document.getElementById("SRResults");
+  for (var e=0; e<searchData.length; e++)
+  {
+    var id = searchData[e][0];
+    var srResult = document.createElement('div');
+    srResult.setAttribute('id','SR_'+id);
+    setClassAttr(srResult,'SRResult');
+    var srEntry = document.createElement('div');
+    setClassAttr(srEntry,'SREntry');
+    var srLink = document.createElement('a');
+    srLink.setAttribute('id','Item'+e);
+    setKeyActions(srLink,'return searchResults.Nav(event,'+e+')');
+    setClassAttr(srLink,'SRSymbol');
+    srLink.innerHTML = searchData[e][1][0];
+    srEntry.appendChild(srLink);
+    if (searchData[e][1].length==2) // single result
+    {
+      srLink.setAttribute('href',searchData[e][1][1][0]);
+      if (searchData[e][1][1][1])
+      {
+       srLink.setAttribute('target','_parent');
+      }
+      var srScope = document.createElement('span');
+      setClassAttr(srScope,'SRScope');
+      srScope.innerHTML = searchData[e][1][1][2];
+      srEntry.appendChild(srScope);
+    }
+    else // multiple results
+    {
+      srLink.setAttribute('href','javascript:searchResults.Toggle("SR_'+id+'")');
+      var srChildren = document.createElement('div');
+      setClassAttr(srChildren,'SRChildren');
+      for (var c=0; c<searchData[e][1].length-1; c++)
+      {
+        var srChild = document.createElement('a');
+        srChild.setAttribute('id','Item'+e+'_c'+c);
+        setKeyActions(srChild,'return searchResults.NavChild(event,'+e+','+c+')');
+        setClassAttr(srChild,'SRScope');
+        srChild.setAttribute('href',searchData[e][1][c+1][0]);
+        if (searchData[e][1][c+1][1])
+        {
+         srChild.setAttribute('target','_parent');
+        }
+        srChild.innerHTML = searchData[e][1][c+1][2];
+        srChildren.appendChild(srChild);
+      }
+      srEntry.appendChild(srChildren);
+    }
+    srResult.appendChild(srEntry);
+    results.appendChild(srResult);
+  }
+}
+

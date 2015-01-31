@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 
@@ -138,7 +138,7 @@ magmablas_zherk_batched_lg(
     double alpha,
     magmaDoubleComplex const * const * dA_array, magma_int_t ldda,
     double beta,
-    magmaDoubleComplex **dC_array, magma_int_t lddc, magma_int_t batchCount )
+    magmaDoubleComplex **dC_array, magma_int_t lddc, magma_int_t batchCount, magma_queue_t queue )
 {
     magmaDoubleComplex cbeta  = MAGMA_Z_MAKE( beta, 0. );
     magmaDoubleComplex calpha = MAGMA_Z_MAKE( alpha, 0. );
@@ -227,7 +227,7 @@ magmablas_zherk_batched_lg(
         dim3 dimGrid( (n - 1)/BLK_M_nt + 1,
                       (n - 1)/BLK_N_nt + 1 ,
                       batchCount );
-        magmablas_z_herk_kernel_fermi_nt_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        magmablas_z_herk_kernel_fermi_nt_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }
@@ -235,7 +235,7 @@ magmablas_zherk_batched_lg(
         dim3 dimGrid( (n - 1)/BLK_M_nc + 1,
                       (n - 1)/BLK_N_nc + 1 ,
                       batchCount );
-         magmablas_z_herk_kernel_fermi_nc_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+         magmablas_z_herk_kernel_fermi_nc_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }
@@ -243,7 +243,7 @@ magmablas_zherk_batched_lg(
         dim3 dimGrid( (n - 1)/BLK_M_tn + 1,
                       (n - 1)/BLK_N_tn + 1 ,
                       batchCount );
-         magmablas_z_herk_kernel_fermi_tn_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+         magmablas_z_herk_kernel_fermi_tn_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }
@@ -251,7 +251,7 @@ magmablas_zherk_batched_lg(
         dim3 dimGrid( (n - 1)/BLK_M_cn + 1,
                       (n - 1)/BLK_N_cn + 1 ,
                       batchCount );
-         magmablas_z_herk_kernel_fermi_cn_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+         magmablas_z_herk_kernel_fermi_cn_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }

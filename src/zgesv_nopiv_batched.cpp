@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -72,7 +72,7 @@ magma_zgesv_nopiv_batched(
                   magmaDoubleComplex **dA_array, magma_int_t ldda,
                   magmaDoubleComplex **dB_array, magma_int_t lddb,
                   magma_int_t *info_array,
-                  magma_int_t batchCount)
+                  magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
     
@@ -97,7 +97,7 @@ magma_zgesv_nopiv_batched(
     if (n == 0 || nrhs == 0) {
         return info;
     }
-    info = magma_zgetrf_nopiv_batched( n, n, dA_array, ldda, info_array, batchCount);
+    info = magma_zgetrf_nopiv_batched( n, n, dA_array, ldda, info_array, batchCount, queue);
     if ( (info != MAGMA_SUCCESS) ){
         return info;
     }
@@ -118,7 +118,7 @@ magma_zgesv_nopiv_batched(
     free (cpu_info);
 #endif
            
-    info = magma_zgetrs_nopiv_batched( MagmaNoTrans, n, nrhs, dA_array, ldda, dB_array, lddb, info_array, batchCount );
+    info = magma_zgetrs_nopiv_batched( MagmaNoTrans, n, nrhs, dA_array, ldda, dB_array, lddb, info_array, batchCount, queue );
             
     return info;
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_z_vio.cpp normal z -> s, Sat Nov 15 19:54:23 2014
+       @generated from magma_z_vio.cpp normal z -> s, Fri Jan 30 19:00:32 2015
        @author Hartwig Anzt
 */
 
@@ -80,7 +80,7 @@ magma_s_vvisu(
         magma_s_vtransfer( x, &y, Magma_DEV, Magma_CPU, queue );
         for( magma_int_t i=offset; i<offset +  visulen; i++ )
             printf("%5.2f\n", MAGMA_S_REAL(y.val[i]));
-    free(y.val);
+    magma_free_cpu(y.val);
     return MAGMA_SUCCESS;
     }
     return MAGMA_SUCCESS;

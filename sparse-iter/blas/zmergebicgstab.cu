@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -25,10 +25,10 @@
 __global__ void
 magma_zbicgmerge1_kernel(  
     int n, 
-    magmaDoubleComplex_ptr skp,
-    magmaDoubleComplex_ptr v, 
-    magmaDoubleComplex_ptr r, 
-    magmaDoubleComplex_ptr p )
+    magmaDoubleComplex * skp,
+    magmaDoubleComplex * v, 
+    magmaDoubleComplex * r, 
+    magmaDoubleComplex * p )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaDoubleComplex beta=skp[1];
@@ -103,10 +103,10 @@ magma_zbicgmerge1(
 __global__ void
 magma_zbicgmerge2_kernel(  
     int n, 
-    magmaDoubleComplex_ptr skp, 
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr v, 
-    magmaDoubleComplex_ptr s )
+    magmaDoubleComplex * skp, 
+    magmaDoubleComplex * r,
+    magmaDoubleComplex * v, 
+    magmaDoubleComplex * s )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaDoubleComplex alpha=skp[0];
@@ -180,12 +180,12 @@ magma_zbicgmerge2(
 __global__ void
 magma_zbicgmerge3_kernel(  
     int n, 
-    magmaDoubleComplex_ptr skp, 
-    magmaDoubleComplex_ptr p,
-    magmaDoubleComplex_ptr se,
-    magmaDoubleComplex_ptr t,
-    magmaDoubleComplex_ptr x, 
-    magmaDoubleComplex_ptr r )
+    magmaDoubleComplex * skp, 
+    magmaDoubleComplex * p,
+    magmaDoubleComplex * se,
+    magmaDoubleComplex * t,
+    magmaDoubleComplex * x, 
+    magmaDoubleComplex * r )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaDoubleComplex alpha=skp[0];
@@ -274,7 +274,7 @@ magma_zbicgmerge3(
 
 __global__ void
 magma_zbicgmerge4_kernel_1(  
-    magmaDoubleComplex_ptr skp )
+    magmaDoubleComplex * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -286,7 +286,7 @@ magma_zbicgmerge4_kernel_1(
 
 __global__ void
 magma_zbicgmerge4_kernel_2(  
-    magmaDoubleComplex_ptr skp )
+    magmaDoubleComplex * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -298,7 +298,7 @@ magma_zbicgmerge4_kernel_2(
 
 __global__ void
 magma_zbicgmerge4_kernel_3(  
-    magmaDoubleComplex_ptr skp )
+    magmaDoubleComplex * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 

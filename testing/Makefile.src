@@ -39,8 +39,6 @@ CSRC = \
 	testing_csymmetrize_tiles.cpp \
 	testing_cswap.cpp \
 	testing_ctranspose.cpp \
-	testing_chesv.cpp \
-	testing_chetrf.cpp \
 	testing_cposv_gpu.cpp \
 	testing_cpotrf_gpu.cpp \
 	testing_cpotf2_gpu.cpp \
@@ -49,6 +47,9 @@ CSRC = \
 	testing_cposv.cpp \
 	testing_cpotrf.cpp \
 	testing_cpotri.cpp \
+	testing_chesv.cpp \
+	testing_chesv_nopiv_gpu.cpp \
+	testing_chetrf.cpp \
 	testing_cgesv_gpu.cpp \
 	testing_cgetrf_gpu.cpp \
 	testing_cgetf2_gpu.cpp \
@@ -99,17 +100,19 @@ CSRC = \
 	testing_cgebrd.cpp \
 	testing_cunmbr.cpp \
 	testing_cgeadd_batched.cpp \
-	testing_clacpy_batched.cpp \
-	testing_ctrsm_batched.cpp \
+	testing_cgemv_batched.cpp \
 	testing_cgemm_batched.cpp \
-	testing_cherk_batched.cpp \
-	testing_cgetrf_batched.cpp \
-	testing_cgetri_batched.cpp \
+	testing_ctrsm_batched.cpp \
 	testing_cgesv_batched.cpp \
-	testing_cgetrf_nopiv_batched.cpp \
 	testing_cgesv_nopiv_batched.cpp \
-	testing_cpotrf_batched.cpp \
+	testing_cgetrf_batched.cpp \
+	testing_cgetrf_nopiv_batched.cpp \
+	testing_cgetri_batched.cpp \
+	testing_cherk_batched.cpp \
+	testing_clacpy_batched.cpp \
 	testing_cposv_batched.cpp \
+	testing_cpotrf_batched.cpp \
+	testing_cgeqrf_batched.cpp \
 	magma_cutil.cpp \
 	testing_cgetrf_gpu_f.F90 \
 	testing_cgetrf_f.f90
@@ -146,8 +149,6 @@ DSRC = \
 	testing_dsymmetrize_tiles.cpp \
 	testing_dswap.cpp \
 	testing_dtranspose.cpp \
-	testing_dsysv.cpp \
-	testing_dsytrf.cpp \
 	testing_dsposv_gpu.cpp \
 	testing_dposv_gpu.cpp \
 	testing_dpotrf_gpu.cpp \
@@ -157,6 +158,9 @@ DSRC = \
 	testing_dposv.cpp \
 	testing_dpotrf.cpp \
 	testing_dpotri.cpp \
+	testing_dsysv.cpp \
+	testing_dsysv_nopiv_gpu.cpp \
+	testing_dsytrf.cpp \
 	testing_dsgesv_gpu.cpp \
 	testing_dgesv_gpu.cpp \
 	testing_dgetrf_gpu.cpp \
@@ -188,8 +192,10 @@ DSRC = \
 	testing_dormql.cpp \
 	testing_dormqr.cpp \
 	testing_dorgqr_m.cpp \
+	testing_dsyevd_gpu.cpp \
 	testing_dsytrd_gpu.cpp \
 	testing_dsytrd_mgpu.cpp \
+	testing_dsyevd.cpp \
 	testing_dsytrd.cpp \
 	testing_dsytrd_sy2sb.cpp \
 	testing_dsyevdx_2stage.cpp \
@@ -205,17 +211,19 @@ DSRC = \
 	testing_dgebrd.cpp \
 	testing_dormbr.cpp \
 	testing_dgeadd_batched.cpp \
-	testing_dlacpy_batched.cpp \
-	testing_dtrsm_batched.cpp \
+	testing_dgemv_batched.cpp \
 	testing_dgemm_batched.cpp \
-	testing_dsyrk_batched.cpp \
-	testing_dgetrf_batched.cpp \
-	testing_dgetri_batched.cpp \
+	testing_dtrsm_batched.cpp \
 	testing_dgesv_batched.cpp \
-	testing_dgetrf_nopiv_batched.cpp \
 	testing_dgesv_nopiv_batched.cpp \
-	testing_dpotrf_batched.cpp \
+	testing_dgetrf_batched.cpp \
+	testing_dgetrf_nopiv_batched.cpp \
+	testing_dgetri_batched.cpp \
+	testing_dsyrk_batched.cpp \
+	testing_dlacpy_batched.cpp \
 	testing_dposv_batched.cpp \
+	testing_dpotrf_batched.cpp \
+	testing_dgeqrf_batched.cpp \
 	magma_dutil.cpp \
 	testing_dgetrf_gpu_f.F90 \
 	testing_dgetrf_f.f90
@@ -250,8 +258,6 @@ SSRC = \
 	testing_ssymmetrize_tiles.cpp \
 	testing_sswap.cpp \
 	testing_stranspose.cpp \
-	testing_ssysv.cpp \
-	testing_ssytrf.cpp \
 	testing_sposv_gpu.cpp \
 	testing_spotrf_gpu.cpp \
 	testing_spotf2_gpu.cpp \
@@ -260,6 +266,9 @@ SSRC = \
 	testing_sposv.cpp \
 	testing_spotrf.cpp \
 	testing_spotri.cpp \
+	testing_ssysv.cpp \
+	testing_ssysv_nopiv_gpu.cpp \
+	testing_ssytrf.cpp \
 	testing_sgesv_gpu.cpp \
 	testing_sgetrf_gpu.cpp \
 	testing_sgetf2_gpu.cpp \
@@ -310,17 +319,19 @@ SSRC = \
 	testing_sgebrd.cpp \
 	testing_sormbr.cpp \
 	testing_sgeadd_batched.cpp \
-	testing_slacpy_batched.cpp \
-	testing_strsm_batched.cpp \
+	testing_sgemv_batched.cpp \
 	testing_sgemm_batched.cpp \
-	testing_ssyrk_batched.cpp \
-	testing_sgetrf_batched.cpp \
-	testing_sgetri_batched.cpp \
+	testing_strsm_batched.cpp \
 	testing_sgesv_batched.cpp \
-	testing_sgetrf_nopiv_batched.cpp \
 	testing_sgesv_nopiv_batched.cpp \
-	testing_spotrf_batched.cpp \
+	testing_sgetrf_batched.cpp \
+	testing_sgetrf_nopiv_batched.cpp \
+	testing_sgetri_batched.cpp \
+	testing_ssyrk_batched.cpp \
+	testing_slacpy_batched.cpp \
 	testing_sposv_batched.cpp \
+	testing_spotrf_batched.cpp \
+	testing_sgeqrf_batched.cpp \
 	magma_sutil.cpp \
 	testing_sgetrf_gpu_f.F90 \
 	testing_sgetrf_f.f90

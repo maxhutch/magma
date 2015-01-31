@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -17,12 +17,12 @@ zgeellrtmv_kernel_32(
     int num_rows, 
     int num_cols,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy,
+    magmaDoubleComplex * dy,
     int T,
     int alignment )
 {
@@ -72,12 +72,12 @@ zgeellrtmv_kernel_16(
     int num_rows, 
     int num_cols,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy,
+    magmaDoubleComplex * dy,
     int T,
     int alignment )
 {
@@ -126,12 +126,12 @@ zgeellrtmv_kernel_8(
     int num_rows, 
     int num_cols,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy,
+    magmaDoubleComplex * dy,
     int T,
     int alignment )
 {
@@ -275,7 +275,7 @@ magma_zgeellrtmv(
     if ( arch < 200 && num_threads > 256 )
         printf("error: too much shared memory requested.\n");
 
-    int dimgrid1 = sqrt(num_blocks);
+    int dimgrid1 = (int) sqrt( (double) num_blocks );
     int dimgrid2 = (num_blocks + dimgrid1 -1 ) / dimgrid1;
     dim3 grid( dimgrid1, dimgrid2, 1);
 

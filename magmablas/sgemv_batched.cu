@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.6.0) --
+   -- MAGMA (version 1.6.1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date November 2014
+   @date January 2015
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from zgemv_batched.cu normal z -> s, Sat Nov 15 19:53:59 2014
+   @generated from zgemv_batched.cu normal z -> s, Fri Jan 30 19:00:10 2015
  */
 #include "common_magma.h"
 
@@ -66,7 +66,7 @@ void magmablas_sgemvn_batched(
     float alpha, float **dA_array, int lda, 
     float **x_array,  int incx,
     float beta, float **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     if( m > 512 || n > 512)
@@ -78,7 +78,7 @@ void magmablas_sgemvn_batched(
     dim3 grid(batchCount, 1, 1);
     dim3 threads(max(m,n), 1, 1);
    
-    kernel_sgemvn_batched<<< grid, threads, n * sizeof(float) >>>( m, n, alpha,  dA_array, lda, x_array, incx,  
+    kernel_sgemvn_batched<<< grid, threads, n * sizeof(float), queue >>>( m, n, alpha,  dA_array, lda, x_array, incx,  
                                                                          beta, y_array, incy);
 }
 
@@ -169,7 +169,7 @@ void magmablas_sgemvt_batched(
     float alpha, float **dA_array, int lda, 
     float **x_array,  int incx,
     float beta, float **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     dim3 grid(batchCount, n, 1);
@@ -177,7 +177,7 @@ void magmablas_sgemvt_batched(
 
     int m1 = (m / sgemv_bs) * sgemv_bs;
 
-    kernel_sgemvt_batched <<< grid, threads >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
+    kernel_sgemvt_batched <<< grid, threads,0, queue  >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
 
 }
    
@@ -270,7 +270,7 @@ void magmablas_sgemvc_batched(
     float alpha, float **dA_array, int lda, 
     float **x_array,  int incx,
     float beta, float **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     dim3 grid(batchCount, n, 1);
@@ -278,7 +278,7 @@ void magmablas_sgemvc_batched(
 
     int m1 = (m / sgemv_bs) * sgemv_bs;
 
-    kernel_sgemvc_batched <<< grid, threads >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
+    kernel_sgemvc_batched <<< grid, threads, 0, queue >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
 }
    
 #endif // defined(PRECISION_z) || defined (PRECISION_c)
@@ -362,7 +362,7 @@ void magmablas_sgemv_batched(
     magmaFloat_ptr dx_array[], magma_int_t incx,
     float beta,
     magmaFloat_ptr dy_array[], magma_int_t incy, 
-    magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {       
     magma_int_t info = 0;
     if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
@@ -387,17 +387,17 @@ void magmablas_sgemv_batched(
 
     if ( trans == MagmaNoTrans ) {
 
-        magmablas_sgemvn_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_sgemvn_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
             
     }
     else if ( trans == MagmaTrans ) {
-        magmablas_sgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_sgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
     }
     else if ( trans == MagmaConjTrans ) {
 #if defined(PRECISION_z) || defined (PRECISION_c)
-        magmablas_sgemvc_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_sgemvc_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
 #else
-        magmablas_sgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_sgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
 #endif
     }
     else {

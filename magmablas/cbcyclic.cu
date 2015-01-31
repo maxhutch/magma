@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Mark Gates
-       @generated from zbcyclic.cu normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zbcyclic.cu normal z -> c, Fri Jan 30 19:00:10 2015
 */
 #include "common_magma.h"
 
@@ -128,7 +128,7 @@ magma_csetmatrix_1D_row_bcyclic(
         info = -2;
     else if ( lda < m )
         info = -4;
-    else if ( ldda < m )
+    else if ( ldda < (1+m/(nb*ngpu))*nb )
         info = -6;
     else if ( ngpu < 1 )
         info = -7;
@@ -174,7 +174,7 @@ magma_cgetmatrix_1D_row_bcyclic(
         info = -1;
     else if ( n < 0 )
         info = -2;
-    else if ( ldda < m )
+    else if ( ldda < (1+m/(nb*ngpu))*nb )
         info = -4;
     else if ( lda < m )
         info = -6;

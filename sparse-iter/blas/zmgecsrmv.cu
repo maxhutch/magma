@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -24,12 +24,12 @@ zmgecsrmv_kernel(
     int num_cols, 
     int num_vecs,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
@@ -90,7 +90,7 @@ zmgecsrmv_kernel(
                 array containing values of A in CSR
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of A in CSR
 
     @param[in]

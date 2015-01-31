@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = .
@@ -30,12 +30,12 @@ ifneq ($(findstring sm35, $(GPU_TARGET)),)
 endif
 
 
-.PHONY: all lib libmagma test clean cleanall install shared
+.PHONY: all lib libmagma test clean cleanall install shared static
 
 .DEFAULT_GOAL := all
 all: lib test
 
-lib: libmagma
+static: libmagma
 
 libmagma:
 	@echo ======================================== magmablas
@@ -46,19 +46,23 @@ libmagma:
 	( cd control        && $(MAKE) )
 	@echo ======================================== interface
 	( cd interface_cuda && $(MAKE) )
+	@echo
 
 libquark:
 	@echo ======================================== quark
 	( cd quark          && $(MAKE) )
+	@echo
 
 lapacktest:
 	@echo ======================================== lapacktest
 	( cd testing/matgen && $(MAKE) )
 	( cd testing/lin    && $(MAKE) )
+	@echo
 
 test: lib
 	@echo ======================================== testing
 	( cd testing        && $(MAKE) )
+	@echo
 
 clean:
 	( cd magmablas      && $(MAKE) clean )
@@ -67,8 +71,10 @@ clean:
 	( cd interface_cuda && $(MAKE) clean )
 	( cd testing        && $(MAKE) clean )
 	( cd testing/lin    && $(MAKE) clean )
+	( cd sparse-iter    && $(MAKE) clean )
 	#(cd quark          && $(MAKE) clean )
 	-rm -f $(LIBMAGMA) $(LIBMAGMA_SO)
+	@echo
 
 cleanall:
 	( cd magmablas      && $(MAKE) cleanall )
@@ -77,9 +83,11 @@ cleanall:
 	( cd interface_cuda && $(MAKE) cleanall )
 	( cd testing        && $(MAKE) cleanall )
 	( cd testing/lin    && $(MAKE) cleanall )
+	( cd sparse-iter    && $(MAKE) cleanall )
 	( cd lib            && rm -f *.a *.so )
 	#(cd quark          && $(MAKE) cleanall )
 	$(MAKE) cleanall2
+	@echo
 
 # cleanall2 is a dummy rule to run cleanmkgen at the *end* of make cleanall, so
 # .Makefile.gen files aren't deleted and immediately re-created. see Makefile.gen
@@ -129,29 +137,40 @@ install: lib install_dirs
 # Better solution would be to use non-recursive make, so make knows all the
 # objects in each subdirectory, or use libtool, or put rules for, e.g., the
 # control directory in src/Makefile (as done in src/CMakeLists.txt)
-
-fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
-             $(findstring -fPIC, $(CXXFLAGS)), \
-             $(findstring -fPIC, $(FFLAGS)),   \
-             $(findstring -fPIC, $(F90FLAGS)), \
-             $(findstring -fPIC, $(NVCCFLAGS)))
+#
+# 'make lib' should do the right thing:
+# shared if it detects -fPIC in all the variables, otherwise static.
 
 LIBMAGMA_SO = $(LIBMAGMA:.a=.so)
 
-ifneq ($(fpic),)
+# see Makefile.internal for $(have_fpic) -- boolean for whether all FLAGS have -fPIC
 
-shared: lib
+ifneq ($(have_fpic),)
+    # ---------- all flags have -fPIC: compile shared & static
+lib: static shared
+
+shared: libmagma
 	$(MAKE) $(LIBMAGMA_SO)
+
+# MacOS likes the library's path to be set; see make.inc.macos
+ifneq ($(INSTALL_NAME),)
+    LDFLAGS += $(INSTALL_NAME)$(notdir $(LIBMAGMA_SO))
+endif
 
 $(LIBMAGMA_SO): src/*.o control/*.o interface_cuda/*.o magmablas/*.o
 	@echo ======================================== $(LIBMAGMA_SO)
 	$(CC) $(LDFLAGS) -shared -o $(LIBMAGMA_SO) $^ \
 	$(LIBDIR) \
 	$(LIB)
-
+	@echo
 else
+    # ---------- missing -fPIC: compile static only
+lib: static
+
 shared:
 	@echo "Error: 'make shared' requires CFLAGS, CXXFLAGS, FFLAGS, F90FLAGS, and NVCCFLAGS to have -fPIC."
-	@echo "Please edit your make.inc file. See make.inc.mkl-shared for an example."
-	@echo "After updating make.inc, please 'make clean', then 'make shared', then 'make testing'."
+	@echo "This is now the default in most example make.inc.* files, except atlas."
+	@echo "Please edit your make.inc file and uncomment FPIC."
+	@echo "After updating make.inc, please 'make clean && make shared && make testing'."
+	@echo "To compile only a static library, use 'make static'."
 endif

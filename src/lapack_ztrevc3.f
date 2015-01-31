@@ -1,9 +1,9 @@
 *
-*   -- MAGMA (version 1.6.0) --
+*   -- MAGMA (version 1.6.1) --
 *      Univ. of Tennessee, Knoxville
 *      Univ. of California, Berkeley
 *      Univ. of Colorado, Denver
-*      @date November 2014
+*      @date January 2015
 *
 *      @precisions normal z -> c
 *      @author Azzam Haidar
@@ -203,7 +203,7 @@
 *> \author Univ. of Colorado Denver
 *> \author NAG Ltd.
 *
-*> \date @date November 2014
+*> \date @date January 2015
 *
 *> \ingroup magma_zgeev_comp
 *

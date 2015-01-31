@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -20,14 +20,14 @@
 
 __global__ void
 magma_zbajac_csr_ls_kernel(int localiters, int n, 
-                            magmaDoubleComplex_ptr valD, 
-                            magmaIndex_ptr rowD, 
-                            magmaIndex_ptr colD, 
-                            magmaDoubleComplex_ptr valR, 
-                            magmaIndex_ptr rowR,
-                            magmaIndex_ptr colR, 
-                            const magmaDoubleComplex_ptr  __restrict__ b,                            
-                            magmaDoubleComplex_ptr x ){
+                            magmaDoubleComplex * valD, 
+                            magma_index_t * rowD, 
+                            magma_index_t * colD, 
+                            magmaDoubleComplex * valR, 
+                            magma_index_t * rowR,
+                            magma_index_t * colR, 
+                            const magmaDoubleComplex *  __restrict__ b,                            
+                            magmaDoubleComplex * x ){
 
     int inddiag =  blockIdx.x*blockDim.x;
     int index = blockIdx.x*blockDim.x+threadIdx.x;
@@ -85,14 +85,14 @@ magma_zbajac_csr_ls_kernel(int localiters, int n,
 __global__ void
 magma_zbajac_csr_kernel(    
     int n, 
-    magmaDoubleComplex_ptr valD, 
-    magmaIndex_ptr rowD, 
-    magmaIndex_ptr colD, 
-    magmaDoubleComplex_ptr valR, 
-    magmaIndex_ptr rowR,
-    magmaIndex_ptr colR, 
-    magmaDoubleComplex_ptr b,                                
-    magmaDoubleComplex_ptr x ){
+    magmaDoubleComplex * valD, 
+    magma_index_t * rowD, 
+    magma_index_t * colD, 
+    magmaDoubleComplex * valR, 
+    magma_index_t * rowR,
+    magma_index_t * colR, 
+    magmaDoubleComplex * b,                                
+    magmaDoubleComplex * x ){
 
     int index = blockIdx.x*blockDim.x+threadIdx.x;
     int i, start, end;   

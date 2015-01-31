@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlacpy.cu normal z -> c, Sat Nov 15 19:53:57 2014
+       @generated from zlacpy.cu normal z -> c, Fri Jan 30 19:00:08 2015
        @author Mark Gates
        @author Azzam Haidar
 */
@@ -353,7 +353,7 @@ magmablas_clacpy(
     @ingroup magma_caux2
     ********************************************************************/
 extern "C" void
-magmablas_clacpy_batched_q(
+magmablas_clacpy_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr const dAarray[], magma_int_t ldda,
     magmaFloatComplex_ptr             dBarray[], magma_int_t lddb,
@@ -394,16 +394,5 @@ magmablas_clacpy_batched_q(
 }
 
 
-/**
-    @see magmablas_clacpy_batched_q
-    @ingroup magma_caux2
-    ********************************************************************/
-extern "C" void
-magmablas_clacpy_batched(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaFloatComplex_const_ptr const dAarray[], magma_int_t ldda,
-    magmaFloatComplex_ptr             dBarray[], magma_int_t lddb,
-    magma_int_t batchCount )
-{
-    magmablas_clacpy_batched_q( uplo, m, n, dAarray, ldda, dBarray, lddb, batchCount, magma_stream );
-}
+
+

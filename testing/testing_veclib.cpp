@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
 */
@@ -13,19 +13,24 @@
 // functions, e.g., {s,d}dot, {s,d}nrm2, {s,d}lange, {s,d}lansy.
 // Oddly, with -m32 both return float and double for single precision functions works.
 // This is essentially a bug from an old f2c version of lapack (clapack).
+//
+// We work around this bug by putting replacement routines in the magma/lib/libblas_fix.a library.
+// These correctly return float for the single precision functions that had issues.
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-#include "magma_lapack.h"
+#include "magma_types.h"
+#include "magma_mangling.h"
 
 // ------------------------------------------------------------
-#define MIN(a,b) (a < b ? a : b)
-#define MAX(a,b) (a > b ? a : b)
-
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 // ------------------------------------------------------------
+//#define LAPACK_RETURN_DOUBLE
+
 #ifdef LAPACK_RETURN_DOUBLE
 typedef double RETURN_FLOAT;
 #else
@@ -34,54 +39,61 @@ typedef float  RETURN_FLOAT;
 
 
 // ------------------------------------------------------------
-#include "magma_lapack.h"
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#define blasf77_sdot     FORTRAN_NAME( sdot,   SDOT   )
+#define blasf77_snrm2    FORTRAN_NAME( snrm2,  SNRM2  )
+#define lapackf77_slange FORTRAN_NAME( slange, SLANGE )
+#define lapackf77_slansy FORTRAN_NAME( slansy, SLANSY )
+
+#define blasf77_ddot     FORTRAN_NAME( ddot,   DDOT   )
+#define blasf77_dnrm2    FORTRAN_NAME( dnrm2,  DNRM2  )
+#define lapackf77_dlange FORTRAN_NAME( dlange, DLANGE )
+#define lapackf77_dlansy FORTRAN_NAME( dlansy, DLANSY )
+
 RETURN_FLOAT
-       sdot_(   const magma_int_t *n,
+blasf77_sdot(   const magma_int_t *n,
                 const float *x, const magma_int_t *incx,
                 const float *y, const magma_int_t *incy );
                 
 RETURN_FLOAT    
-       snrm2_(  const magma_int_t *n,
+blasf77_snrm2(  const magma_int_t *n,
                 const float *x, const magma_int_t *incx );
 
-/*
 RETURN_FLOAT
-       slange_( const char *norm,
+lapackf77_slange( const char *norm,
                 const magma_int_t *m, const magma_int_t *n,
                 const float *A, const magma_int_t *lda,
                 float *work );
 
 RETURN_FLOAT
-       slansy_( const char *norm, const char* uplo,
+lapackf77_slansy( const char *norm, const char* uplo,
                 const magma_int_t *n,
                 const float *A, const magma_int_t *lda,
                 float *work );
-*/
 
-double ddot_(   const magma_int_t *n,
+double
+blasf77_ddot(   const magma_int_t *n,
                 const double *x, const magma_int_t *incx,
                 const double *y, const magma_int_t *incy );
 
-double dnrm2_(  const magma_int_t *n,
+double
+blasf77_dnrm2(  const magma_int_t *n,
                 const double *x, const magma_int_t *incx );
 
-/*
-double dlange_( const char *norm,
+double
+lapackf77_dlange( const char *norm,
                 const magma_int_t *m, const magma_int_t *n,
                 const double *A, const magma_int_t *lda,
                 double *work );
 
-double dlansy_( const char *norm, const char* uplo,
+double
+lapackf77_dlansy( const char *norm, const char* uplo,
                 const magma_int_t *n,
                 const double *A, const magma_int_t *lda,
                 double *work );
-*/
 
 #ifdef __cplusplus
 }
@@ -122,10 +134,10 @@ float test( magma_int_t m, magma_int_t n )
     // can repeat multiple times, but shows same results every time
     status = 0;
     for( magma_int_t i=0; i < 1; ++i ) {
-        snorm_one = sdot_(  &m, sA, &ione, sA, &ione );
-        dnorm_one = ddot_(  &m, dA, &ione, dA, &ione );
-        snorm_fro = snrm2_( &m, sA, &ione );
-        dnorm_fro = dnrm2_( &m, dA, &ione );
+        snorm_one = blasf77_sdot(  &m, sA, &ione, sA, &ione );
+        dnorm_one = blasf77_ddot(  &m, dA, &ione, dA, &ione );
+        snorm_fro = blasf77_snrm2( &m, sA, &ione );
+        dnorm_fro = blasf77_dnrm2( &m, dA, &ione );
         printf( "m %d, sdot %12.8f, snrm2 %12.8f\n", (int) m, snorm_one, snorm_fro );
         printf( "m %d, ddot %12.8f, dnrm2 %12.8f\n", (int) m, dnorm_one, dnorm_fro );
         error = fabs(snorm_one - dnorm_one) / dnorm_one;
@@ -134,19 +146,22 @@ float test( magma_int_t m, magma_int_t n )
     if ( status ) {
         printf( "**** failed ****\n" );
     }
+    else {
+        printf( "ok\n" );
+    }
     printf( "\n" );
     
     status = 0;
     for( magma_int_t i=0; i < 1; ++i ) {
-        snorm_one = slange_( "one", &m, &n, sA, &lda, swork );
-        snorm_inf = slange_( "inf", &m, &n, sA, &lda, swork );
-        snorm_max = slange_( "max", &m, &n, sA, &lda, swork );
-        snorm_fro = slange_( "fro", &m, &n, sA, &lda, swork );
+        snorm_one = lapackf77_slange( "one", &m, &n, sA, &lda, swork );
+        snorm_inf = lapackf77_slange( "inf", &m, &n, sA, &lda, swork );
+        snorm_max = lapackf77_slange( "max", &m, &n, sA, &lda, swork );
+        snorm_fro = lapackf77_slange( "fro", &m, &n, sA, &lda, swork );
                                                       
-        dnorm_one = dlange_( "one", &m, &n, dA, &lda, dwork );
-        dnorm_inf = dlange_( "inf", &m, &n, dA, &lda, dwork );
-        dnorm_max = dlange_( "max", &m, &n, dA, &lda, dwork );
-        dnorm_fro = dlange_( "fro", &m, &n, dA, &lda, dwork );
+        dnorm_one = lapackf77_dlange( "one", &m, &n, dA, &lda, dwork );
+        dnorm_inf = lapackf77_dlange( "inf", &m, &n, dA, &lda, dwork );
+        dnorm_max = lapackf77_dlange( "max", &m, &n, dA, &lda, dwork );
+        dnorm_fro = lapackf77_dlange( "fro", &m, &n, dA, &lda, dwork );
         
         printf( "m %d, n %d, slange norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
                 (int) m, (int) n, snorm_one, snorm_inf, snorm_max, snorm_fro );
@@ -159,19 +174,22 @@ float test( magma_int_t m, magma_int_t n )
     if ( status ) {
         printf( "**** failed ****\n" );
     }
+    else {
+        printf( "ok\n" );
+    }
     printf( "\n" );
     
     status = 0;
     for( magma_int_t i=0; i < 1; ++i ) {
-        snorm_one = slansy_( "one", "up", &n, sA, &lda, swork );
-        snorm_inf = slansy_( "inf", "up", &n, sA, &lda, swork );
-        snorm_max = slansy_( "max", "up", &n, sA, &lda, swork );
-        snorm_fro = slansy_( "fro", "up", &n, sA, &lda, swork );
+        snorm_one = lapackf77_slansy( "one", "up", &n, sA, &lda, swork );
+        snorm_inf = lapackf77_slansy( "inf", "up", &n, sA, &lda, swork );
+        snorm_max = lapackf77_slansy( "max", "up", &n, sA, &lda, swork );
+        snorm_fro = lapackf77_slansy( "fro", "up", &n, sA, &lda, swork );
                                                   
-        dnorm_one = dlansy_( "one", "up", &n, dA, &lda, dwork );
-        dnorm_inf = dlansy_( "inf", "up", &n, dA, &lda, dwork );
-        dnorm_max = dlansy_( "max", "up", &n, dA, &lda, dwork );
-        dnorm_fro = dlansy_( "fro", "up", &n, dA, &lda, dwork );
+        dnorm_one = lapackf77_dlansy( "one", "up", &n, dA, &lda, dwork );
+        dnorm_inf = lapackf77_dlansy( "inf", "up", &n, dA, &lda, dwork );
+        dnorm_max = lapackf77_dlansy( "max", "up", &n, dA, &lda, dwork );
+        dnorm_fro = lapackf77_dlansy( "fro", "up", &n, dA, &lda, dwork );
         
         printf( "m %d, n %d, slansy norm one %12.8f,  inf %12.8f,  max %12.8f,  fro %12.8f\n",
                 (int) m, (int) n, snorm_one, snorm_inf, snorm_max, snorm_fro );
@@ -183,6 +201,9 @@ float test( magma_int_t m, magma_int_t n )
     }
     if ( status ) {
         printf( "**** failed ****\n" );
+    }
+    else {
+        printf( "ok\n" );
     }
     printf( "\n" );
     

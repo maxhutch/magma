@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        @author Adrien REMY
@@ -135,9 +135,6 @@ magma_zgerbt_gpu(
     /* Quick return if possible */
     if (nrhs == 0 || n == 0)
         return *info;
-
-    magma_int_t n2;
-    n2 = n*n;
 
     magmaDoubleComplex *du, *dv;
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
        
@@ -12,14 +12,18 @@
 
 #include <string.h>
 #include <assert.h>
-#include <sys/file.h>
 #include <errno.h>
-#include <sys/stat.h>
+
+// flock exists only on Unix
+#ifdef USE_FLOCK
+#include <sys/file.h>  // flock
+#include <sys/stat.h>  // fchmod
+#endif
 
 #include <cuda_runtime_api.h>
 
 #include "testings.h"
-#include "common_magma.h"
+#include "magma.h"
 
 // --------------------
 // global variable
@@ -147,7 +151,7 @@ const char *usage =
 "                   Also set with $MAGMA_WARMUP.\n"
 "      --[not]all   Whether to test all combinations of flags, e.g., jobu.\n"
 "  --dev x          GPU device to use, default 0.\n"
-"  --pad n          Pad LDDA on GPU to multiple of pad, default 32.\n"
+"  --roundup n      Round up LDDA on GPU to multiple of roundup, default 32.\n"
 "  --verbose        Verbose output.\n"
 "  -x  --exclusive  Lock file for exclusive use (internal ICL functionality).\n"
 "\n"
@@ -159,11 +163,13 @@ const char *usage =
 "  --ngpu x         Number of GPUs, default 1. Also set with $MAGMA_NUM_GPUS.\n"
 "  --niter x        Number of iterations to repeat each test, default 1.\n"
 "  --nthread x      Number of CPU threads, default 1.\n"
+"  --offset x       Offset from beginning of matrix, default 0.\n"
 "  --itype [123]    Generalized Hermitian-definite eigenproblem type, default 1.\n"
 "  --svd_work [0123] SVD workspace size, from min (1) to optimal (3), or query (0), default 0.\n"
 "  --version x      version of routine, e.g., during development, default 1.\n"
 "  --fraction x     fraction of eigenvectors to compute, default 1.\n"
 "  --tolerance x    accuracy tolerance, multiplied by machine epsilon, default 30.\n"
+"  --tol x          same.\n"
 "  --panel_nthread x Number of threads in the first dimension if the panel is decomposed into a 2D layout, default 1.\n"
 "  --fraction_dcpu x Percentage of the workload to schedule on the cpu. Used in magma_amc algorithms only, default 0.\n"
 "  -L -U -F         uplo   = Lower*, Upper, or Full.\n"
@@ -190,13 +196,14 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
     // fill in default values
     opts->batchcount = 1;
     opts->device   = 0;
-    opts->pad      = 32;
+    opts->roundup  = 32;
     opts->nb       = 0;  // auto
     opts->nrhs     = 1;
     opts->nstream  = 1;
     opts->ngpu     = magma_num_gpus();
     opts->niter    = 1;
     opts->nthread  = 1;
+    opts->offset   = 0;
     opts->itype    = 1;
     opts->svd_work = 0;
     opts->version  = 1;
@@ -308,10 +315,10 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
             magma_assert( opts->device >= 0 && opts->device < ndevices,
                           "error: --dev %s is invalid; ensure dev in [0,%d].\n", argv[i], ndevices-1 );
         }
-        else if ( strcmp("--pad", argv[i]) == 0 && i+1 < argc ) {
-            opts->pad = atoi( argv[++i] );
-            magma_assert( opts->pad >= 1 && opts->pad <= 4096,
-                          "error: --pad %s is invalid; ensure pad in [1,4096].\n", argv[i] );
+        else if ( strcmp("--roundup", argv[i]) == 0 && i+1 < argc ) {
+            opts->roundup = atoi( argv[++i] );
+            magma_assert( opts->roundup >= 1 && opts->roundup <= 4096,
+                          "error: --roundup %s is invalid; ensure roundup in [1,4096].\n", argv[i] );
         }
         else if ( strcmp("--nrhs",    argv[i]) == 0 && i+1 < argc ) {
             opts->nrhs = atoi( argv[++i] );
@@ -355,6 +362,11 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
             magma_assert( opts->nthread > 0,
                           "error: --nthread %s is invalid; ensure nthread > 0.\n", argv[i] );
         }
+        else if ( strcmp("--offset", argv[i]) == 0 && i+1 < argc ) {
+            opts->offset = atoi( argv[++i] );
+            magma_assert( opts->offset >= 0,
+                          "error: --offset %s is invalid; ensure offset >= 0.\n", argv[i] );
+        }
         else if ( strcmp("--itype",   argv[i]) == 0 && i+1 < argc ) {
             opts->itype = atoi( argv[++i] );
             magma_assert( opts->itype >= 1 && opts->itype <= 3,
@@ -375,7 +387,8 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
             magma_assert( opts->fraction >= 0 && opts->fraction <= 1,
                           "error: --fraction %s is invalid; ensure fraction in [0,1].\n", argv[i] );
         }
-        else if ( strcmp("--tolerance", argv[i]) == 0 && i+1 < argc ) {
+        else if ( (strcmp("--tol",       argv[i]) == 0 ||
+                   strcmp("--tolerance", argv[i]) == 0) && i+1 < argc ) {
             opts->tolerance = atof( argv[++i] );
             magma_assert( opts->tolerance >= 0 && opts->tolerance <= 1000,
                           "error: --tolerance %s is invalid; ensure tolerance in [0,1000].\n", argv[i] );
@@ -391,7 +404,7 @@ void parse_opts( int argc, char** argv, magma_opts *opts )
                           "error: --fraction_dcpu %s is invalid; ensure fraction_dcpu in [0, 1]\n", argv[i] );
         }
         else if ( strcmp("--batch", argv[i]) == 0 && i+1 < argc ) {
-            opts->batchcount = atof( argv[++i] );
+            opts->batchcount = atoi( argv[++i] );
             magma_assert( opts->batchcount > 0,
                           "error: --batch %s is invalid; ensure batch > 0.\n", argv[i] );
         }

@@ -41,7 +41,7 @@ extern "C" void magma_zbulge_applyQ(
     magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
     magmaDoubleComplex c_one  = MAGMA_Z_ONE;
     
-    magma_int_t LDT, LDV, blklen, firstcolj;
+    magma_int_t LDT, LDV, firstcolj;
     magma_int_t bg, nbGblk, rownbm, k, m, n;
     magma_int_t st, ed, fst, vlen, vnb, colj, len;
     magma_int_t blkid, vpos, taupos, tpos;
@@ -59,7 +59,7 @@ extern "C" void magma_zbulge_applyQ(
     versionR = 92;
     LDT      = Vblksiz;
     LDV      = NB+Vblksiz-1;
-    blklen   = LDV*Vblksiz;
+    //blklen = LDV*Vblksiz;
     nbGblk   = plasma_ceildiv((N-1), Vblksiz);
     //magma_zmalloc_cpu( &WORK, LWORK );
 
@@ -75,8 +75,7 @@ extern "C" void magma_zbulge_applyQ(
     if (copytype > 1) magma_zsetmatrix( LDT, blkcnt*Vblksiz, T, LDT, dT, LDT );
     if (copytype > 2) magma_zsetmatrix( N, NE, E, N, dE, N );
     magmaDoubleComplex *dwork;
-    magma_int_t ldwork;
-    ldwork  = NE;
+    //ldwork  = NE;
     LWORK   = 2*N*max(Vblksiz, 64);
     if (MAGMA_SUCCESS != magma_zmalloc( &dwork, LWORK )) {
         printf ("!!!!  magma_zbulge_applyQ magma_alloc failed for: dwork\n" );

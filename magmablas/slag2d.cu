@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from clag2z.cu mixed zc -> ds, Sat Nov 15 19:53:59 2014
+       @generated from clag2z.cu mixed zc -> ds, Fri Jan 30 19:00:07 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -41,13 +41,13 @@ void slag2d_kernel(
             // full block-column
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
-                A[j*lda] = (double)( SA[j*ldsa] );
+                A[j*lda] = MAGMA_D_MAKE( MAGMA_S_REAL( SA[j*ldsa] ), MAGMA_S_IMAG( SA[j*ldsa] ));
             }
         }
         else {
             // partial block-column
             for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
-                A[j*lda] = (double)( SA[j*ldsa] );
+                A[j*lda] = MAGMA_D_MAKE( MAGMA_S_REAL( SA[j*ldsa] ), MAGMA_S_IMAG( SA[j*ldsa] ));
             }
         }
     }
@@ -129,7 +129,7 @@ magmablas_slag2d_q(
         return;
     }
 
-    dim3 threads( BLK_X );
+    dim3 threads( BLK_X, 1 );
     dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     slag2d_kernel<<< grid, threads, 0, queue >>> ( m, n, SA, ldsa, A, lda );
 }

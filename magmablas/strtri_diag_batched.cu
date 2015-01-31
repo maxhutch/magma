@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from ztrtri_diag_batched.cu normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from ztrtri_diag_batched.cu normal z -> s, Fri Jan 30 19:00:10 2015
 
        @author Peng Du
        @author Tingxing Dong
@@ -84,7 +84,7 @@
     @ingroup magma_sblas3
     ********************************************************************/
 extern "C" void
-magmablas_strtri_diag_batched_q(
+magmablas_strtri_diag_batched(
     magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
     float const * const *dA_array, magma_int_t ldda,
     float **dinvA_array, 
@@ -110,8 +110,8 @@ magmablas_strtri_diag_batched_q(
 
     if(resetozero)
     { 
-        magmablas_slaset_batched(MagmaUpperLower, ((n+NB-1)/NB)*NB, NB, MAGMA_S_ZERO, MAGMA_S_ZERO, dinvA_array, ((n+NB-1)/NB)*NB, batchCount);
-       //magmablas_smemset_batched( dinvA_array, ((n+NB-1)/NB)*NB*NB, batchCount);
+        magmablas_slaset_batched(MagmaFull, ((n+NB-1)/NB)*NB, NB, MAGMA_S_ZERO, MAGMA_S_ZERO, dinvA_array, ((n+NB-1)/NB)*NB, batchCount, queue);
+       //magmablas_smemset_batched( dinvA_array, ((n+NB-1)/NB)*NB*NB, batchCount, queue);
     }
     // if someone want to use cudamemset he need to set the whole vectors 
     // of initial size otherwise it is a bug and thus need to have dinvA_length 
@@ -193,16 +193,4 @@ magmablas_strtri_diag_batched_q(
     }
 }
 
-/**
-    @see magmablas_strtri_diag_q
-    @ingroup magma_sblas3
-    ********************************************************************/
-extern "C" void
-magmablas_strtri_diag_batched(
-    magma_uplo_t uplo, magma_diag_t diag, magma_int_t n,
-    float const * const *dA_array, magma_int_t ldda,
-    float **dinvA_array, 
-    magma_int_t resetozero, magma_int_t batchCount)
-{
-    magmablas_strtri_diag_batched_q( uplo, diag, n, dA_array, ldda, dinvA_array, resetozero, batchCount, magma_stream );
-}
+

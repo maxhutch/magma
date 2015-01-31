@@ -1,15 +1,16 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = interface_cuda
 MAGMA_DIR = ..
 include $(MAGMA_DIR)/Makefile.internal
 
+# alphabetic order by base name (ignoring precision)
 ZSRC := \
 	blas_z.cpp	\
 	zset_get.cpp	\

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -23,12 +23,12 @@ zgecsrmv_kernel(
     int num_rows, 
     int num_cols, 
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
@@ -51,15 +51,15 @@ zgecsrmv_kernel_shift(
     int num_cols, 
     magmaDoubleComplex alpha, 
     magmaDoubleComplex lambda, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
     int offset,
     int blocksize,
-    magmaIndex_ptr addrows,
-    magmaDoubleComplex_ptr dy)
+    magma_index_t * addrows,
+    magmaDoubleComplex * dy)
 {
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
@@ -112,7 +112,7 @@ zgecsrmv_kernel_shift(
                 array containing values of A in CSR
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of A in CSR
 
     @param[in]
@@ -196,7 +196,7 @@ magma_zgecsrmv(
                 array containing values of A in CSR
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of A in CSR
 
     @param[in]
@@ -246,7 +246,7 @@ magma_zgecsrmv_shift(
     magmaDoubleComplex beta,
     int offset,
     int blocksize,
-    magmaIndex_ptr addrows,
+    magma_index_t * addrows,
     magmaDoubleComplex_ptr dy,
     magma_queue_t queue )
 {

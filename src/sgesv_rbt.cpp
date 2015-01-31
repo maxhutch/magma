@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgesv_rbt.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zgesv_rbt.cpp normal z -> s, Fri Jan 30 19:00:14 2015
 
 */
 #include "common_magma.h"
@@ -161,9 +161,9 @@ magma_sgerfs_nopiv_gpu(
     
     eps  = lapackf77_slamch("Epsilon");
     Anrm = magmablas_slange(MagmaInfNorm, n, n, dA, ldda, (float*)dworkd );
-    cte  = Anrm * eps * pow((float)n, 0.5) * BWDMAX;
+    cte  = Anrm * eps * pow( (float)n, (float)0.5 ) * BWDMAX;
     
-       // residual dR = dB - dA*dX in real
+    // residual dR = dB - dA*dX in real
     magmablas_slacpy( MagmaUpperLower, n, nrhs, dB, lddb, dR, lddr );
     if ( nrhs == 1 ) {
         magma_sgemv( trans, n, n,
@@ -357,7 +357,7 @@ magma_sgesv_rbt(
     /* Function Body */
     *info = 0;
     if ( ! (ref == MagmaTrue) &&
-            ! (ref == MagmaFalse) ) {
+         ! (ref == MagmaFalse) ) {
         *info = -1;
     }
     else if (n < 0) {
@@ -371,7 +371,6 @@ magma_sgesv_rbt(
     }
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-
         return *info;
     }
 
@@ -401,7 +400,6 @@ magma_sgesv_rbt(
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
-
         if (MAGMA_SUCCESS != magma_smalloc( &dwork, nn*nrhs )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
@@ -412,13 +410,10 @@ magma_sgesv_rbt(
         }
     }
 
-
-
     if (MAGMA_SUCCESS != magma_smalloc_cpu( &hu, 2*nn )) {
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
     }
-
     if (MAGMA_SUCCESS != magma_smalloc_cpu( &hv, 2*nn )) {
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
@@ -431,10 +426,6 @@ magma_sgesv_rbt(
 
     /* Send b on the GPU*/
     magma_ssetmatrix(n, nrhs, B, ldb, db, nn);
-
-
-
-
 
     *info = magma_sgerbt_gpu(MagmaTrue, nn, nrhs, dA, nn, db, nn, hu, hv, info);
     if (*info != MAGMA_SUCCESS)  {
@@ -450,18 +441,10 @@ magma_sgesv_rbt(
 
 
     /* Iterative refinement */
-
-
-    if (ref == MagmaTrue)
-    magma_sgerfs_nopiv_gpu(MagmaNoTrans, nn, nrhs, dAo, nn, dBo, nn, db, nn, dwork, dA, &iter, info);
-
+    if (ref == MagmaTrue) {
+        magma_sgerfs_nopiv_gpu(MagmaNoTrans, nn, nrhs, dAo, nn, dBo, nn, db, nn, dwork, dA, &iter, info);
+    }
     //printf("iter = %d\n", iter);
-
-
-
-
-
-
 
     /* The solution of A.x = b is Vy computed on the GPU */
     float *dv;
@@ -473,8 +456,9 @@ magma_sgesv_rbt(
 
     magma_ssetvector(2*nn, hv, 1, dv, 1);
     
-    for(int i = 0; i < nrhs; i++)
+    for(int i = 0; i < nrhs; i++) {
         magmablas_sprbt_mv(nn, dv, db+(i*nn));
+    }
 
     magma_sgetmatrix(n, nrhs, db, nn, B, ldb);
 
@@ -492,5 +476,3 @@ magma_sgesv_rbt(
     }
     return *info;
 }
-
-

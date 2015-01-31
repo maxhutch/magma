@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
 
-       @generated from zunmlq.cpp normal z -> d, Sat Nov 15 19:54:09 2014
+       @generated from zunmlq.cpp normal z -> d, Fri Jan 30 19:00:16 2015
 
 */
 #include "common_magma.h"
@@ -123,6 +123,9 @@ magma_dormlq(
 {
     #define  A(i_,j_) ( A + (i_) + (j_)*lda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
+    #define dV(i_,j_) (dV + (i_) + (j_)*ib)
+    #define dT(i_,j_) (dT + (i_) + (j_)*ib)
+    #define dwork(i_) (dwork + (i_))
 
     double *T, *T2;
     magma_int_t i, i1, i2, ib, ic, jc, nb, mi, ni, nq, nq_i, nw, step;
@@ -199,7 +202,7 @@ magma_dormlq(
          * lddc*n for dC.
          */
         magma_int_t lddc = ((m+31)/32)*32;
-        double *dwork, *dV, *dT, *dC;
+        magmaDouble_ptr dwork, dV, dT, dC;
         magma_dmalloc( &dwork, (nw + nq + nb)*nb + lddc*n );
         if ( dwork == NULL ) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -221,7 +224,7 @@ magma_dormlq(
         T2 = T + nb*nb;
         
         /* Copy matrix C from the CPU to the GPU */
-        magma_dsetmatrix( m, n, C, ldc, dC, lddc );
+        magma_dsetmatrix( m, n, C, ldc, dC(0,0), lddc );
         
         if ( (left && notran) || (! left && ! notran) ) {
             i1 = 0;
@@ -264,7 +267,7 @@ magma_dormlq(
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
             dpanel_to_q( MagmaLower, ib, A(i,i), lda, T2 );
-            magma_dsetmatrix( ib, nq_i,  A(i,i), lda, dV, ib );
+            magma_dsetmatrix( ib, nq_i,  A(i,i), lda, dV(0,0), ib );
             dq_to_panel( MagmaLower, ib, A(i,i), lda, T2 );
             
             if (left) {
@@ -279,15 +282,15 @@ magma_dormlq(
             }
             
             /* Apply H or H**H; First copy T to the GPU */
-            magma_dsetmatrix( ib, ib, T, ib, dT, ib );
+            magma_dsetmatrix( ib, ib, T, ib, dT(0,0), ib );
             magma_dlarfb_gpu( side, transt, MagmaForward, MagmaRowwise,
                               mi, ni, ib,
-                              dV, ib,
-                              dT, ib,
+                              dV(0,0), ib,
+                              dT(0,0), ib,
                               dC(ic,jc), lddc,
-                              dwork, ldwork );
+                              dwork(0), ldwork );
         }
-        magma_dgetmatrix( m, n, dC, lddc, C, ldc );
+        magma_dgetmatrix( m, n, dC(0,0), lddc, C, ldc );
         
         magma_free( dwork );
         magma_free_cpu( T );

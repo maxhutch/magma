@@ -1,11 +1,11 @@
 /*
- -- MAGMA (version 1.6.0) --
+ -- MAGMA (version 1.6.1) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date November 2014
+ @date January 2015
 
- @generated from magmasparse_z.h normal z -> s, Sat Nov 15 19:54:20 2014
+ @generated from magmasparse_z.h normal z -> s, Fri Jan 30 19:00:27 2015
  @author Hartwig Anzt
 */
 
@@ -103,7 +103,7 @@ magma_svget(
     magma_queue_t queue );
 
 magma_int_t 
-magma_svset_gpu( 
+magma_svset_dev( 
     magma_int_t m, 
     magma_int_t n, 
     magmaFloat_ptr val,
@@ -111,7 +111,7 @@ magma_svset_gpu(
     magma_queue_t queue );
 
 magma_int_t 
-magma_svget_gpu( 
+magma_svget_dev( 
     magma_s_vector v,
     magma_int_t *m, 
     magma_int_t *n, 
@@ -487,6 +487,13 @@ magma_spgmres(
     magma_queue_t queue );
 
 magma_int_t
+magma_sfgmres(
+    magma_s_sparse_matrix A, magma_s_vector b, 
+    magma_s_vector *x, magma_s_solver_par *solver_par, 
+    magma_s_preconditioner *precond_par,
+    magma_queue_t queue );
+
+magma_int_t
 magma_sjacobi(
     magma_s_sparse_matrix A, magma_s_vector b, 
     magma_s_vector *x, magma_s_solver_par *solver_par,
@@ -644,6 +651,22 @@ magma_sapplypastix(
     magma_queue_t queue );
 
 
+// custom preconditioner
+magma_int_t
+magma_sapplycustomprecond_l(
+    magma_s_vector b, 
+    magma_s_vector *x, 
+    magma_s_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_sapplycustomprecond_r(
+    magma_s_vector b, 
+    magma_s_vector *x, 
+    magma_s_preconditioner *precond,
+    magma_queue_t queue );
+
+
 // CUSPARSE preconditioner
 
 magma_int_t
@@ -684,36 +707,52 @@ magma_sapplycuicc_r(
 
 magma_int_t
 magma_scumilusetup(
-    magma_s_sparse_matrix A, magma_s_preconditioner *precond,
+    magma_s_sparse_matrix A, 
+    magma_s_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_scumilugeneratesolverinfo(
+    magma_s_preconditioner *precond,
     magma_queue_t queue );
 
 magma_int_t
 magma_sapplycumilu_l(
-    magma_s_vector b, magma_s_vector *x, 
+    magma_s_vector b, 
+    magma_s_vector *x, 
     magma_s_preconditioner *precond,
     magma_queue_t queue );
 
 magma_int_t
 magma_sapplycumilu_r(
-    magma_s_vector b, magma_s_vector *x, 
+    magma_s_vector b, 
+    magma_s_vector *x, 
     magma_s_preconditioner *precond,
     magma_queue_t queue );
 
 
 magma_int_t
 magma_scumiccsetup(
-    magma_s_sparse_matrix A, magma_s_preconditioner *precond,
+    magma_s_sparse_matrix A, 
+    magma_s_preconditioner *precond,
+    magma_queue_t queue );
+
+magma_int_t
+magma_scumicgeneratesolverinfo(
+    magma_s_preconditioner *precond,
     magma_queue_t queue );
 
 magma_int_t
 magma_sapplycumicc_l(
-    magma_s_vector b, magma_s_vector *x, 
+    magma_s_vector b, 
+    magma_s_vector *x, 
     magma_s_preconditioner *precond,
     magma_queue_t queue );
 
 magma_int_t
 magma_sapplycumicc_r(
-    magma_s_vector b, magma_s_vector *x, 
+    magma_s_vector b, 
+    magma_s_vector *x, 
     magma_s_preconditioner *precond,
     magma_queue_t queue );
 
@@ -737,6 +776,14 @@ magma_int_t
 magma_s_spmv(
     float alpha, 
     magma_s_sparse_matrix A, 
+    magma_s_vector x, 
+    float beta, 
+    magma_s_vector y,
+    magma_queue_t queue );
+
+magma_int_t
+magma_scustomspmv(
+    float alpha, 
     magma_s_vector x, 
     float beta, 
     magma_s_vector y,

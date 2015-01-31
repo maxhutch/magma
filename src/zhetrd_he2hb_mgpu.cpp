@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -160,7 +160,7 @@ magma_zhetrd_he2hb_mgpu(
     double  d_one = MAGMA_D_ONE;
 
     magma_int_t pm, pn, indi, indj, pk;
-    magma_int_t pm_old=0, pn_old=0, indi_old=0, indj_old=0, flipV=-1;
+    magma_int_t pm_old=0, pn_old=0, indi_old=0, flipV=-1;
     magma_int_t iblock, idev, di;
     int i;
     int lwkopt;
@@ -488,7 +488,7 @@ magma_zhetrd_he2hb_mgpu(
              }
 
              indi_old = indi;
-             indj_old = indj;
+             //indj_old = indj;
              pm_old   = pm;
              pn_old   = pn;
         }  // end loop for (i)

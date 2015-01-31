@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -21,12 +21,12 @@
 __global__ void
 zcompact_kernel(
     int m, int n,
-    magmaDoubleComplex_ptr dA, 
+    magmaDoubleComplex *dA, 
     int ldda,
-    magmaDouble_ptr dnorms, 
+    double *dnorms, 
     double tol,
-    magmaInt_ptr active, 
-    magmaInt_ptr cBlock)
+    magma_int_t *active, 
+    magma_int_t *cBlock)
 {
     // dA is processed across row i (by the current thread)
     int i = blockIdx.x*blockDim.x + threadIdx.x;
@@ -52,9 +52,9 @@ __global__ void
 zcompactactive_kernel(
     int m, 
     int n,
-    magmaDoubleComplex_ptr dA, 
+    magmaDoubleComplex *dA, 
     int ldda,
-    magmaInt_ptr active)
+    magma_int_t *active)
 {
     // dA is processed across row i (by the current thread)
     int i = blockIdx.x*blockDim.x + threadIdx.x;

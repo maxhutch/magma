@@ -8,7 +8,7 @@ This file is processed with Doxygen. See docs/html/index.html for formatted vers
 Univ. of Tennessee, Knoxville \n
 Univ. of California, Berkeley \n
 Univ. of Colorado, Denver
-@date November 2014
+@date January 2015
 
 The goal of the MAGMA project is to create a new generation of linear algebra
 libraries that achieves the fastest possible time to an accurate solution on

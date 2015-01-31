@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmgesellcmmv.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zmgesellcmmv.cu normal z -> c, Fri Jan 30 19:00:29 2015
 
 */
 #include "cuda_runtime.h"
@@ -32,12 +32,12 @@ zmgesellptmv_kernel_1_3D(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloatComplex_ptr dx,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaFloatComplex * dx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.x;      // local row
@@ -80,12 +80,12 @@ zmgesellptmv_kernel_4_3D(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloatComplex_ptr dx,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaFloatComplex * dx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -150,12 +150,12 @@ zmgesellptmv_kernel_8_3D(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    const magmaFloatComplex_ptr __restrict__ dx,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    const magmaFloatComplex * __restrict__ dx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -222,12 +222,12 @@ zmgesellptmv_kernel_16_3D(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloatComplex_ptr dx,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaFloatComplex * dx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -293,12 +293,12 @@ zmgesellptmv_kernel_32_3D(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloatComplex_ptr dx,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaFloatComplex * dx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -369,12 +369,12 @@ zmgesellptmv_kernel_1_3D_tex(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
 
@@ -424,12 +424,12 @@ zmgesellptmv_kernel_4_3D_tex(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -503,12 +503,12 @@ zmgesellptmv_kernel_8_3D_tex(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -587,12 +587,12 @@ zmgesellptmv_kernel_16_3D_tex(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -675,12 +675,12 @@ zmgesellptmv_kernel_32_3D_tex(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -769,11 +769,11 @@ zmgesellptmv_kernel_1_3D_texb(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
 
@@ -823,11 +823,11 @@ zmgesellptmv_kernel_4_3D_texb(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -899,11 +899,11 @@ zmgesellptmv_kernel_8_3D_texb(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -981,11 +981,11 @@ zmgesellptmv_kernel_16_3D_texb(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -1067,11 +1067,11 @@ zmgesellptmv_kernel_32_3D_texb(
     int blocksize,
     int T,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
@@ -1200,7 +1200,7 @@ zmgesellptmv_kernel_32_3D_texb(
                 columnindices of A in SELLP
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of SELLP
 
     @param[in]

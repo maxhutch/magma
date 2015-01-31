@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
   
        @precisions normal z -> c d s
 
@@ -110,7 +110,7 @@ magma_zgeqp3_gpu(
     //magma_int_t na;
     magma_int_t n_j;
     magma_int_t j, jb, nb, sm, sn, fjb, nfxd, minmn;
-    magma_int_t topbmn, sminmn, lwkopt;
+    magma_int_t topbmn, lwkopt;
     
     *info = 0;
     if (m < 0) {
@@ -196,7 +196,7 @@ magma_zgeqp3_gpu(
     if (nfxd < minmn) {
         sm = m - nfxd;
         sn = n - nfxd;
-        sminmn = minmn - nfxd;
+        //sminmn = minmn - nfxd;
         
         /* Initialize partial column norms. */
         magmablas_dznrm2_cols(sm, sn, dA(nfxd,nfxd), ldda, &rwork[nfxd]);

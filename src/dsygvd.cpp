@@ -1,13 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
+       @author Mark Gates
 
        @precisions normal d -> s
 
@@ -15,7 +16,6 @@
 #include "common_magma.h"
 #include "magma_timer.h"
 
-#define PRECISION_d
 #define REAL
 
 /**
@@ -182,8 +182,8 @@ magma_dsygvd(
     double d_one = MAGMA_D_ONE;
 
     double *dA=NULL, *dB=NULL;
-    magma_int_t ldda = n;
-    magma_int_t lddb = n;
+    magma_int_t ldda = roundup( n, 32 );
+    magma_int_t lddb = ldda;
 
     magma_int_t lower;
     magma_trans_t trans;
@@ -252,17 +252,12 @@ magma_dsygvd(
         return *info;
     }
     
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_dsygvd(&itype, jobz_, uplo_,
-                         &n, A, &lda, B, &ldb,
-                         w, work, &lwork,
-                         iwork, &liwork, info);
+        lapackf77_dsygvd( &itype, jobz_, uplo_,
+                          &n, A, &lda, B, &ldb,
+                          w, work, &lwork,
+                          iwork, &liwork, info );
         return *info;
     }
 
@@ -282,7 +277,7 @@ magma_dsygvd(
 
     magma_timer_t time=0;
     timer_start( time );
-    magma_dpotrf_gpu(uplo, n, dB, lddb, info);
+    magma_dpotrf_gpu( uplo, n, dB, lddb, info );
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -297,22 +292,22 @@ magma_dsygvd(
 
     timer_start( time );
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_dsygst_gpu(itype, uplo, n, dA, ldda, dB, lddb, info);
+    magma_dsygst_gpu( itype, uplo, n, dA, ldda, dB, lddb, info );
     timer_stop( time );
     timer_printf( "time dsygst_gpu = %6.2f\n", time );
 
     /* simple fix to be able to run bigger size.
-     * need to have a dwork here that will be used
-     * as dB and then passed to dsyevd.
-     * */
+     * set dB=NULL so we know to re-allocate below
+     * TODO: have dwork here that will be used as dB and then passed to  dsyevd.
+     */
     if (n > 5000) {
         magma_queue_sync( stream );
-        magma_free( dB );
+        magma_free( dB );  dB=NULL;
     }
 
     timer_start( time );
-    magma_dsyevd_gpu(jobz, uplo, n, dA, ldda, w, A, lda,
-                     work, lwork, iwork, liwork, info);
+    magma_dsyevd_gpu( jobz, uplo, n, dA, ldda, w, A, lda,
+                      work, lwork, iwork, liwork, info );
     timer_stop( time );
     timer_printf( "time dsyevd_gpu = %6.2f\n", time );
 
@@ -320,8 +315,9 @@ magma_dsygvd(
         timer_start( time );
         
         /* allocate and copy dB back */
-        if (n > 5000) {
+        if (dB == NULL) {
             if (MAGMA_SUCCESS != magma_dmalloc( &dB, n*lddb ) ) {
+                magma_free( dA );
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
@@ -336,8 +332,8 @@ magma_dsygvd(
             } else {
                 trans = MagmaNoTrans;
             }
-            magma_dtrsm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, d_one, dB, lddb, dA, ldda);
+            magma_dtrsm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, n, d_one, dB, lddb, dA, ldda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -347,16 +343,10 @@ magma_dsygvd(
             } else {
                 trans = MagmaTrans;
             }
-
-            magma_dtrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, d_one, dB, lddb, dA, ldda);
+            magma_dtrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, n, d_one, dB, lddb, dA, ldda );
         }
         magma_dgetmatrix( n, n, dA, ldda, A, lda );
-        
-        /* free dB */
-        if (n > 5000) {
-            magma_free( dB );
-        }
         
         timer_stop( time );
         timer_printf( "time dtrsm/mm + getmatrix = %6.2f\n", time );
@@ -368,10 +358,8 @@ magma_dsygvd(
     work[0]  = lwmin * one_eps;  // round up
     iwork[0] = liwmin;
 
-    magma_free( dA );
-    if (n <= 5000) {
-        magma_free( dB );
-    }
+    magma_free( dA );  dA=NULL;
+    magma_free( dB );  dB=NULL;
 
     return *info;
 } /* magma_dsygvd */

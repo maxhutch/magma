@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zgeqr2x_gpu.cpp normal z -> d, Sat Nov 15 19:54:18 2014
+       @generated from testing_zgeqr2x_gpu.cpp normal z -> d, Fri Jan 30 19:00:25 2015
 
 */
 
@@ -19,8 +19,8 @@
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
-#include "common_magma.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dgeqrf
@@ -30,9 +30,11 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double           error, work[1];
+    double           error, error2;
 
+    double  c_zero    = MAGMA_D_ZERO;
     double  c_neg_one = MAGMA_D_NEG_ONE;
+    double c_one     = MAGMA_D_ONE;
     double *h_A, *h_T, *h_R, *tau, *h_work, tmp[1];
     magmaDouble_ptr d_A,  d_T, ddA, dtau;
     magmaDouble_ptr d_A2, d_T2, ddA2, dtau2;
@@ -55,7 +57,7 @@ int main( int argc, char** argv)
     magma_queue_create( &stream[1] );
 
     printf("version %d\n", (int) opts.version );
-    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||R||_F/||A||_F  ||R_T||\n");
+    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||R - Q^H*A||   ||R_T||\n");
     printf("=============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -100,11 +102,10 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( dwork2, double, max(5*min_mn, (BLOCK_SIZE*2+2)*min_mn) );
             
             // todo replace with magma_dlaset
-            cudaMemset(ddA, 0, N*N*sizeof(double));
-            cudaMemset(d_T, 0, N*N*sizeof(double));
-        
-            cudaMemset(ddA2, 0, N*N*sizeof(double));
-            cudaMemset(d_T2, 0, N*N*sizeof(double));
+            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, ddA,  N );
+            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, d_T,  N );
+            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, ddA2, N );
+            magmablas_dlaset( MagmaFull, N, N, c_zero, c_zero, d_T2, N );
         
             lwork = -1;
             lapackf77_dgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
@@ -154,25 +155,69 @@ int main( int argc, char** argv)
             else {
                 if ( opts.check ) {
                     /* =====================================================================
+                       Check the result, following zqrt01 except using the reduced Q.
+                       This works for any M,N (square, tall, wide).
+                       =================================================================== */
+                    magma_dgetmatrix( M, N, d_A, ldda, h_R, M );
+                    magma_dgetmatrix( N, N, ddA, N,    h_T, N );
+                    magma_dgetmatrix( min_mn, 1, dtau, min_mn,   tau, min_mn );
+
+                    // Restore the upper triangular part of A before the check
+                    for(int col=0; col < N; col++){
+                        for(int row=0; row <= col; row++)
+                            h_R[row + col*M] = h_T[row + col*N];
+                    }
+
+                    magma_int_t ldq = M;
+                    magma_int_t ldr = min_mn;
+                    double *Q, *R;
+                    double *work;
+                    TESTING_MALLOC_CPU( Q,    double, ldq*min_mn );  // M by K
+                    TESTING_MALLOC_CPU( R,    double, ldr*N );       // K by N
+                    TESTING_MALLOC_CPU( work, double,             min_mn );
+                    
+                    // generate M by K matrix Q, where K = min(M,N)
+                    lapackf77_dlacpy( "Lower", &M, &min_mn, h_R, &M, Q, &ldq );
+                    lapackf77_dorgqr( &M, &min_mn, &min_mn, Q, &ldq, tau, h_work, &lwork, &info );
+                    assert( info == 0 );
+
+                    // copy K by N matrix R
+                    lapackf77_dlaset( "Lower", &min_mn, &N, &c_zero, &c_zero, R, &ldr );
+                    lapackf77_dlacpy( "Upper", &min_mn, &N, h_R, &M,        R, &ldr );
+
+                    // error = || R - Q^H*A || / (N * ||A||)
+                    blasf77_dgemm( "Conj", "NoTrans", &min_mn, &N, &M,
+                                   &c_neg_one, Q, &ldq, h_A, &lda, &c_one, R, &ldr );
+                    double Anorm = lapackf77_dlange( "1", &M,      &N, h_A, &lda, work );
+                    error2 = lapackf77_dlange( "1", &min_mn, &N, R,   &ldr, work );
+                    if ( N > 0 && Anorm > 0 )
+                        error2 /= (N*Anorm);
+
+                    TESTING_FREE_CPU( Q    );  Q    = NULL;
+                    TESTING_FREE_CPU( R    );  R    = NULL;
+                    TESTING_FREE_CPU( work );  work = NULL;
+
+                    /* =====================================================================
                        Performs operation using LAPACK
                        =================================================================== */
                     cpu_time = magma_wtime();
-                    lapackf77_dgeqrf(&M, &N, h_A, &lda, tau, h_work, &lwork, &info);
+                    //lapackf77_dgeqrf(&M, &N, h_A, &lda, tau, h_work, &lwork, &info);
+                    lapackf77_dlacpy( MagmaUpperLowerStr, &M, &N, h_R, &M, h_A, &lda );
                     lapackf77_dlarft( MagmaForwardStr, MagmaColumnwiseStr,
-                                     &M, &N, h_A, &lda, tau, h_work, &N);
+                                      &M, &N, h_A, &lda, tau, h_work, &N);
                     //magma_dgeqr2(&M, &N, h_A, &lda, tau, h_work, &info);
+                                              
                     cpu_time = magma_wtime() - cpu_time;
                     cpu_perf = gflops / cpu_time;
                     if (info != 0)
                         printf("lapackf77_dgeqrf returned error %d: %s.\n",
                                (int) info, magma_strerror( info ));
-                
+
+
                     /* =====================================================================
                        Check the result compared to LAPACK
                        =================================================================== */
-                    magma_dgetmatrix( M, N, d_A, ldda, h_R, M );
-                    magma_dgetmatrix( N, N, ddA, N,    h_T, N );
-    
+
                     // Restore the upper triangular part of A before the check
                     for(int col=0; col < N; col++){
                         for(int row=0; row <= col; row++)
@@ -191,12 +236,15 @@ int main( int argc, char** argv)
                         for(int row=0; row <= col; row++)
                             terr += (  MAGMA_D_ABS(h_work[row + col*N] - h_T[row + col*N])*
                                        MAGMA_D_ABS(h_work[row + col*N] - h_T[row + col*N])  );
-                    terr = magma_dsqrt(terr);
+                    terr = sqrt( terr );
     
+                    // If comparison to LAPACK fail, check || R - Q^H*A || / (N * ||A||)
+                    // and print fail if both fails, otherwise print ok (*) 
                     printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)     %8.2e     %8.2e   %s\n",
                            (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
-                           error, terr, (error < tol ? "ok" : "failed") );
-                    status += ! (error < tol);
+                           error2, terr, (error2 < tol ? "ok" : "failed" )); 
+
+                    status += ! (error2 < tol);
                 }
                 else {
                     printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",

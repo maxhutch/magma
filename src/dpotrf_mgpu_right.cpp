@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Azzam Haidar
        @author Ichi Yamazaki
 
-       @generated from zpotrf_mgpu_right.cpp normal z -> d, Sat Nov 15 19:54:09 2014
+       @generated from zpotrf_mgpu_right.cpp normal z -> d, Fri Jan 30 19:00:14 2015
 
 */
 #include "common_magma.h"
@@ -92,7 +92,7 @@ magma_dpotrf_mgpu_right(
     double             m_one = -1.0;
     const char* uplo_ = lapack_uplo_const( uplo );
 
-    magma_int_t j, nb, d, id, j_local, blkid, crosspoint, prevj, prevtrsmrows=0, nqueue = 5;
+    magma_int_t j, nb, d, id, j_local, blkid, crosspoint, prevtrsmrows=0, nqueue = 5;
     double *panel, *tmppanel0, *tmppanel1, *tmppanel, *tmpprevpanel;
     double *d_lP[MagmaMaxGPUs], *dlpanel, *dlpanels[MagmaMaxGPUs];
     magma_int_t rows, trsmrows, igpu, n_local[MagmaMaxGPUs], ldpanel;
@@ -403,7 +403,6 @@ magma_dpotrf_mgpu_right(
                     }
 
                     prevtrsmrows = trsmrows;
-                    prevj = j;
 
                     #if defined (ENABLE_TIMER)
                     ttot += (tcnp+tcchol+tctrsm+therk[0]+therk[1]+therk[2]+tctm+tmnp);

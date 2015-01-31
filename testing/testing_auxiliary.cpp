@@ -1,15 +1,17 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
 */
 #include <stdlib.h>
 #include <stdio.h>
 
+// tests internal routines: magma_{set,get}_lapack_numthreads, magma_get_parallel_numthreads
+// so include common_magma.h instead of magma.h
 #include "common_magma.h"
 
 

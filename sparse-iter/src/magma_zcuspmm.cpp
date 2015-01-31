@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -123,7 +123,7 @@ magma_zcuspmm(
             stat_dev += magma_index_malloc( &C.drow, (A.num_rows + 1) );
             cusparseXcsrgemmNnz(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, 
-                                        A.num_rows, A.num_rows, A.num_rows, 
+                                        A.num_rows, B.num_cols, A.num_cols, 
                                         descrA, A.nnz, A.drow, A.dcol,
                                         descrB, B.nnz, B.drow, B.dcol,
                                         descrC, C.drow, nnzTotalDevHostPtr );
@@ -147,7 +147,7 @@ magma_zcuspmm(
             
             cusparseZcsrgemm(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, 
                                         CUSPARSE_OPERATION_NON_TRANSPOSE, 
-                            A.num_rows, A.num_rows, A.num_rows,
+                            A.num_rows, B.num_cols, A.num_cols, 
                             descrA, A.nnz,
                             A.dval, A.drow, A.dcol,
                             descrB, B.nnz,

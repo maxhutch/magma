@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgeqlf.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zgeqlf.cpp normal z -> s, Fri Jan 30 19:00:15 2015
 
 */
 #include "common_magma.h"
@@ -96,10 +96,11 @@ magma_sgeqlf(
     float *work, magma_int_t lwork,
     magma_int_t *info)
 {
-    #define  A(a_1,a_2) ( A + (a_2)*(lda) + (a_1))
-    #define dA(a_1,a_2) (dA + (a_2)*ldda  + (a_1))
+    #define  A(i_,j_) ( A + (i_) + (j_)*lda)
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
+    #define dwork(i_) (dwork + (i_))
 
-    float *dA, *dwork;
+    magmaFloat_ptr dA, dwork;
     float c_one = MAGMA_S_ONE;
     magma_int_t i, k, lddwork, old_i, old_ib, nb;
     magma_int_t rows, cols;
@@ -152,19 +153,19 @@ magma_sgeqlf(
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-    dwork = dA + ldda*(n);
+    dwork = dA + ldda*n;
 
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_t queues[2];
+    magma_queue_create( &queues[0] );
+    magma_queue_create( &queues[1] );
 
     if ( (nb > 1) && (nb < k) ) {
         /*  Use blocked code initially.
             The last kk columns are handled by the block method.
             First, copy the matrix on the GPU except the last kk columns */
-        magma_ssetmatrix_async( (m), (n-nb),
+        magma_ssetmatrix_async( m, n-nb,
                                 A(0, 0),  lda,
-                                dA(0, 0), ldda, stream[0] );
+                                dA(0, 0), ldda, queues[0] );
 
         ki = ((k - nb - 1) / nb) * nb;
         kk = min(k, ki + nb);
@@ -178,11 +179,11 @@ magma_sgeqlf(
                 rows = m - k + i + ib;
                 magma_sgetmatrix_async( rows, ib,
                                         dA(0, n-k+i), ldda,
-                                        A(0, n-k+i),  lda, stream[1] );
+                                        A(0, n-k+i),  lda, queues[1] );
 
-                magma_sgetmatrix_async( (m-rows), ib,
+                magma_sgetmatrix_async( m-rows, ib,
                                         dA(rows, n-k+i), ldda,
-                                        A(rows, n-k+i),  lda, stream[0] );
+                                        A(rows, n-k+i),  lda, queues[0] );
 
                 /* Apply H' to A(1:m-k+i+ib-1,1:n-k+i-1) from the left in
                    two steps - implementing the lookahead techniques.
@@ -191,16 +192,16 @@ magma_sgeqlf(
                 cols = n - k + old_i - old_ib;
                 magma_slarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaBackward, MagmaColumnwise,
                                   rows, cols, old_ib,
-                                  dA(0, cols+old_ib), ldda, dwork,        lddwork,
-                                  dA(0, 0          ), ldda, dwork+old_ib, lddwork);
+                                  dA(0, cols+old_ib), ldda, dwork(0),      lddwork,
+                                  dA(0, 0          ), ldda, dwork(old_ib), lddwork);
             }
 
-            magma_queue_sync( stream[1] );
+            magma_queue_sync( queues[1] );
             /* Compute the QL factorization of the current block
                A(1:m-k+i+ib-1,n-k+i:n-k+i+ib-1) */
             rows = m - k + i + ib;
             cols = n - k + i;
-            lapackf77_sgeqlf(&rows,&ib, A(0,cols), &lda, tau+i, work, &lwork, &iinfo);
+            lapackf77_sgeqlf( &rows, &ib, A(0,cols), &lda, tau+i, work, &lwork, &iinfo );
 
             if (cols > 0) {
                 /* Form the triangular factor of the block reflector
@@ -216,7 +217,7 @@ magma_sgeqlf(
                 sq_to_panel( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
 
                 // Send the triangular part on the GPU
-                magma_ssetmatrix( ib, ib, work, ib, dwork, lddwork );
+                magma_ssetmatrix( ib, ib, work, ib, dwork(0), lddwork );
 
                 /* Apply H' to A(1:m-k+i+ib-1,1:n-k+i-1) from the left in
                    two steps - implementing the lookahead techniques.
@@ -224,13 +225,13 @@ magma_sgeqlf(
                 if (i-ib >= k -kk)
                     magma_slarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaBackward, MagmaColumnwise,
                                       rows, ib, ib,
-                                      dA(0, cols),   ldda, dwork,    lddwork,
-                                      dA(0,cols-ib), ldda, dwork+ib, lddwork);
+                                      dA(0, cols),   ldda, dwork(0),  lddwork,
+                                      dA(0,cols-ib), ldda, dwork(ib), lddwork);
                 else {
                     magma_slarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaBackward, MagmaColumnwise,
                                       rows, cols, ib,
-                                      dA(0, cols), ldda, dwork,    lddwork,
-                                      dA(0, 0   ), ldda, dwork+ib, lddwork);
+                                      dA(0, cols), ldda, dwork(0),  lddwork,
+                                      dA(0, 0   ), ldda, dwork(ib), lddwork);
                 }
 
                 old_i  = i;
@@ -250,9 +251,10 @@ magma_sgeqlf(
     if (mu > 0 && nu > 0)
         lapackf77_sgeqlf(&mu, &nu, A(0,0), &lda, tau, work, &lwork, &iinfo);
 
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     magma_free( dA );
+    
     return *info;
 } /* magma_sgeqlf */
 

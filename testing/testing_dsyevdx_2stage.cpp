@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-    @author Raffaele Solca
-    @author Azzam Haidar
+       @author Raffaele Solca
+       @author Azzam Haidar
+       @author Mark Gates
 
-    @generated from testing_zheevdx_2stage.cpp normal z -> d, Sat Nov 15 19:54:18 2014
+       @generated from testing_zheevdx_2stage.cpp normal z -> d, Fri Jan 30 19:00:26 2015
 
 */
 
@@ -184,7 +185,7 @@ int main( int argc, char** argv)
             printf("%5d %5d  %7.2f      ",
                    (int) N, (int) m1, gpu_time );
 
-            if ( opts.check ) {
+            if ( opts.check && opts.jobz != MagmaNoVec ) {
                 double eps   = lapackf77_dlamch("E");
                 //printf("\n");
                 //printf("------ TESTS FOR MAGMA DSYEVD ROUTINE -------  \n");
@@ -322,7 +323,7 @@ static magma_int_t check_reduction(magma_uplo_t uplo, magma_int_t N, magma_int_t
         blasf77_dscal(&N, &D[i], &(TEMP[i*N]), &ione);
     }
     /* Compute Residual = A - Q * LAMBDA * Q^H */
-    /* A is Hermetian but both upper and lower 
+    /* A is symmetric but both upper and lower 
      * are assumed valable here for checking 
      * otherwise it need to be symetrized before 
      * checking.

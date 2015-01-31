@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgeellmv.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zgeellmv.cu normal z -> d, Fri Jan 30 19:00:28 2015
 
 */
 
@@ -26,11 +26,11 @@ dgeellmv_kernel(
     int num_cols,
     int num_cols_per_row,
     double alpha, 
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaDouble_ptr dx,
+    double * dval, 
+    magma_index_t * dcolind,
+    double * dx,
     double beta, 
-    magmaDouble_ptr dy)
+    double * dy)
 {
 int row = blockDim.x * blockIdx.x + threadIdx.x ;
     if(row < num_rows ){
@@ -54,14 +54,14 @@ dgeellmv_kernel_shift(
     int num_cols_per_row,
     double alpha, 
     double lambda, 
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaDouble_ptr dx,
+    double * dval, 
+    magma_index_t * dcolind,
+    double * dx,
     double beta, 
     int offset,
     int blocksize,
-    magmaIndex_ptr addrows,
-    magmaDouble_ptr dy)
+    magma_index_t * addrows,
+    double * dy)
 {
 int row = blockDim.x * blockIdx.x + threadIdx.x ;
     if(row < num_rows ){
@@ -223,7 +223,7 @@ magma_dgeellmv(
                 in case of processing multiple vectors  
                 
     @param[in]
-    addrows    magma_int_t*
+    addrows     magmaIndex_ptr
                 in case the matrixpowerskernel is used
 
     @param[out]
@@ -250,7 +250,7 @@ magma_dgeellmv_shift(
     double beta,
     int offset,
     int blocksize,
-    magma_index_t *addrows,
+    magmaIndex_ptr addrows,
     magmaDouble_ptr dy,
     magma_queue_t queue )
 {

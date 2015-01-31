@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions mixed zc -> ds
 
@@ -36,9 +36,9 @@ int main( int argc, char** argv)
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *h_A, *h_A2, *h_B, *h_X, *h_R;
     magmaDoubleComplex_ptr d_A, d_B, d_X, d_T;
-    magmaFloatComplex  *d_SA, *d_SB, *d_ST;
+    magmaFloatComplex  *d_SA, *d_SB;
     magmaDoubleComplex *h_workd, *tau, tmp[1];
-    magmaFloatComplex  *h_works, *tau_s;
+    magmaFloatComplex  *h_works;
     magma_int_t lda,  ldb, lhwork, lworkgpu;
     magma_int_t ldda, lddb, lddx;
     magma_int_t M, N, nrhs, qrsv_iters, info, size, min_mn, max_mn, nb;
@@ -94,14 +94,12 @@ int main( int argc, char** argv)
             TESTING_MALLOC_CPU( h_X,     magmaDoubleComplex, ldb*nrhs );
             TESTING_MALLOC_CPU( h_R,     magmaDoubleComplex, ldb*nrhs );
             TESTING_MALLOC_CPU( h_workd, magmaDoubleComplex, lhwork   );
-            tau_s   = (magmaFloatComplex*)tau;
             h_works = (magmaFloatComplex*)h_workd;
             
             TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*N      );
             TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*nrhs   );
             TESTING_MALLOC_DEV( d_X, magmaDoubleComplex, lddx*nrhs   );
             TESTING_MALLOC_DEV( d_T, magmaDoubleComplex, ( 2*min_mn + (N+31)/32*32 )*nb );
-            d_ST = (magmaFloatComplex*)d_T;
             
             /* Initialize the matrices */
             size = lda*N;

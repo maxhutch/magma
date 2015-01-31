@@ -72,10 +72,10 @@ extern "C" void  magma_zstedx_withZ(magma_int_t N, magma_int_t NE, double *D, do
     double *RWORK;
     double *dwork;
     magma_int_t *IWORK;
-    magma_int_t LWORK, LIWORK, LRWORK;
+    magma_int_t LIWORK, LRWORK;
     magma_int_t INFO;
     
-    LWORK  = N;
+    //LWORK  = N;
     LRWORK = 2*N*N + 4*N + 1 + 256*N;
     LIWORK = 256*N;
     

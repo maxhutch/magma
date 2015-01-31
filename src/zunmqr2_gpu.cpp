@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -127,7 +127,7 @@ magma_zunmqr2_gpu(
     
     magma_int_t i, i__4, lddwork;
     magmaDoubleComplex T[2*4160]        /* was [65][64] */;
-    magma_int_t i1, i2, step, ib, ic, jc, nb, mi, ni, nq, nw;
+    magma_int_t i1, i2, step, ib, ic, jc, nb, mi, ni, nq;
     int left, notran;
 
     wA -= 1 + ldwa;
@@ -141,11 +141,11 @@ magma_zunmqr2_gpu(
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
         nq = m;
-        nw = n;
+        //nw = n;
         magma_zmalloc( &dwork, (n + 64)*64 );  // TODO after checking args, else memory leak!
     } else {
         nq = n;
-        nw = m;
+        //nw = m;
         magma_zmalloc( &dwork, (m + 64)*64 );  // TODO after checking args, else memory leak!
     }
     if (! left && side != MagmaRight) {

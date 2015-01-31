@@ -133,7 +133,7 @@
 *
 *     Note that RESULT(1) cannot overflow and is bounded by 1/(N*EPS)
 *
-      RESULT( 1 ) = MIN( WNORM, ANORM ) / MAX( SMLNUM, ANORM*EPS ) / N
+      RESULT(1) = MIN(WNORM, ANORM) / MAX(SMLNUM, ANORM*EPS) / REAL(N)
 *
 *     Test 2:  Compute norm( I - Q'*Q ) / ( N * EPS )
 *

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
  
        @author Mark Gates
-       @generated from zset_get.cpp normal z -> s, Sat Nov 15 19:54:12 2014
+       @generated from zset_get.cpp normal z -> s, Fri Jan 30 19:00:20 2015
 */
 
 #include <stdlib.h>
@@ -19,11 +19,11 @@
 
 // ========================================
 // copying vectors
-extern "C"
-void magma_ssetvector_internal(
+extern "C" void
+magma_ssetvector_internal(
     magma_int_t n,
     float const* hx_src, magma_int_t incx,
-    float*       dy_dst, magma_int_t incy,
+    magmaFloat_ptr    dy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
 {
     cublasStatus_t status;
@@ -35,10 +35,27 @@ void magma_ssetvector_internal(
 }
 
 // --------------------
-extern "C"
-void magma_sgetvector_internal(
+extern "C" void
+magma_ssetvector_async_internal(
     magma_int_t n,
-    float const* dx_src, magma_int_t incx,
+    float const* hx_src, magma_int_t incx,
+    magmaFloat_ptr    dy_dst, magma_int_t incy,
+    magma_queue_t queue,
+    const char* func, const char* file, int line )
+{
+    cublasStatus_t status;
+    status = cublasSetVectorAsync(
+        n, sizeof(float),
+        hx_src, incx,
+        dy_dst, incy, queue );
+    check_xerror( status, func, file, line );
+}
+
+// --------------------
+extern "C" void
+magma_sgetvector_internal(
+    magma_int_t n,
+    magmaFloat_const_ptr dx_src, magma_int_t incx,
     float*       hy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
 {
@@ -51,47 +68,30 @@ void magma_sgetvector_internal(
 }
 
 // --------------------
-extern "C"
-void magma_ssetvector_async_internal(
+extern "C" void
+magma_sgetvector_async_internal(
     magma_int_t n,
-    float const* hx_src, magma_int_t incx,
-    float*       dy_dst, magma_int_t incy,
-    cudaStream_t stream,
-    const char* func, const char* file, int line )
-{
-    cublasStatus_t status;
-    status = cublasSetVectorAsync(
-        n, sizeof(float),
-        hx_src, incx,
-        dy_dst, incy, stream );
-    check_xerror( status, func, file, line );
-}
-
-// --------------------
-extern "C"
-void magma_sgetvector_async_internal(
-    magma_int_t n,
-    float const* dx_src, magma_int_t incx,
+    magmaFloat_const_ptr dx_src, magma_int_t incx,
     float*       hy_dst, magma_int_t incy,
-    cudaStream_t stream,
+    magma_queue_t queue,
     const char* func, const char* file, int line )
 {
     cublasStatus_t status;
     status = cublasGetVectorAsync(
         n, sizeof(float),
         dx_src, incx,
-        hy_dst, incy, stream );
+        hy_dst, incy, queue );
     check_xerror( status, func, file, line );
 }
 
 // --------------------
 // TODO compare performance with cublasScopy BLAS function.
 // But this implementation can handle any element size, not just [sdcz] precisions.
-extern "C"
-void magma_scopyvector_internal(
+extern "C" void
+magma_scopyvector_internal(
     magma_int_t n,
-    float const* dx_src, magma_int_t incx,
-    float*       dy_dst, magma_int_t incy,
+    magmaFloat_const_ptr dx_src, magma_int_t incx,
+    magmaFloat_ptr    dy_dst, magma_int_t incy,
     const char* func, const char* file, int line )
 {
     if ( incx == 1 && incy == 1 ) {
@@ -109,12 +109,12 @@ void magma_scopyvector_internal(
 }
 
 // --------------------
-extern "C"
-void magma_scopyvector_async_internal(
+extern "C" void
+magma_scopyvector_async_internal(
     magma_int_t n,
-    float const* dx_src, magma_int_t incx,
-    float*       dy_dst, magma_int_t incy,
-    cudaStream_t stream,
+    magmaFloat_const_ptr dx_src, magma_int_t incx,
+    magmaFloat_ptr    dy_dst, magma_int_t incy,
+    magma_queue_t queue,
     const char* func, const char* file, int line )
 {
     if ( incx == 1 && incy == 1 ) {
@@ -122,23 +122,23 @@ void magma_scopyvector_async_internal(
         status = cudaMemcpyAsync(
             dy_dst,
             dx_src,
-            n*sizeof(float), cudaMemcpyDeviceToDevice, stream );
+            n*sizeof(float), cudaMemcpyDeviceToDevice, queue );
         check_xerror( status, func, file, line );
     }
     else {
         magma_scopymatrix_async_internal(
-            1, n, dx_src, incx, dy_dst, incy, stream, func, file, line );
+            1, n, dx_src, incx, dy_dst, incy, queue, func, file, line );
     }
 }
 
 
 // ========================================
 // copying sub-matrices (contiguous columns)
-extern "C"
-void magma_ssetmatrix_internal(
+extern "C" void
+magma_ssetmatrix_internal(
     magma_int_t m, magma_int_t n,
     float const* hA_src, magma_int_t lda,
-    float*       dB_dst, magma_int_t ldb,
+    magmaFloat_ptr    dB_dst, magma_int_t ldb,
     const char* func, const char* file, int line )
 {
     cublasStatus_t status;
@@ -150,11 +150,28 @@ void magma_ssetmatrix_internal(
 }
 
 // --------------------
-extern "C"
-void magma_sgetmatrix_internal(
+extern "C" void
+magma_ssetmatrix_async_internal(
     magma_int_t m, magma_int_t n,
-    float const* dA_src, magma_int_t lda,
-    float*       hB_dst, magma_int_t ldb,
+    float const* hA_src, magma_int_t lda,
+    magmaFloat_ptr    dB_dst, magma_int_t ldb,
+    magma_queue_t queue,
+    const char* func, const char* file, int line )
+{
+    cublasStatus_t status;
+    status = cublasSetMatrixAsync(
+        m, n, sizeof(float),
+        hA_src, lda,
+        dB_dst, ldb, queue );
+    check_xerror( status, func, file, line );
+}
+
+// --------------------
+extern "C" void
+magma_sgetmatrix_internal(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_const_ptr dA_src, magma_int_t lda,
+    float*          hB_dst, magma_int_t ldb,
     const char* func, const char* file, int line )
 {
     cublasStatus_t status;
@@ -166,45 +183,28 @@ void magma_sgetmatrix_internal(
 }
 
 // --------------------
-extern "C"
-void magma_ssetmatrix_async_internal(
+extern "C" void
+magma_sgetmatrix_async_internal(
     magma_int_t m, magma_int_t n,
-    float const* hA_src, magma_int_t lda,
-    float*       dB_dst, magma_int_t ldb,
-    cudaStream_t stream,
-    const char* func, const char* file, int line )
-{
-    cublasStatus_t status;
-    status = cublasSetMatrixAsync(
-        m, n, sizeof(float),
-        hA_src, lda,
-        dB_dst, ldb, stream );
-    check_xerror( status, func, file, line );
-}
-
-// --------------------
-extern "C"
-void magma_sgetmatrix_async_internal(
-    magma_int_t m, magma_int_t n,
-    float const* dA_src, magma_int_t lda,
-    float*       hB_dst, magma_int_t ldb,
-    cudaStream_t stream,
+    magmaFloat_const_ptr dA_src, magma_int_t lda,
+    float*          hB_dst, magma_int_t ldb,
+    magma_queue_t queue,
     const char* func, const char* file, int line )
 {
     cublasStatus_t status;
     status = cublasGetMatrixAsync(
         m, n, sizeof(float),
         dA_src, lda,
-        hB_dst, ldb, stream );
+        hB_dst, ldb, queue );
     check_xerror( status, func, file, line );
 }
 
 // --------------------
-extern "C"
-void magma_scopymatrix_internal(
+extern "C" void
+magma_scopymatrix_internal(
     magma_int_t m, magma_int_t n,
-    float const* dA_src, magma_int_t lda,
-    float*       dB_dst, magma_int_t ldb,
+    magmaFloat_const_ptr dA_src, magma_int_t lda,
+    magmaFloat_ptr       dB_dst, magma_int_t ldb,
     const char* func, const char* file, int line )
 {
     cudaError_t status;
@@ -216,19 +216,19 @@ void magma_scopymatrix_internal(
 }
 
 // --------------------
-extern "C"
-void magma_scopymatrix_async_internal(
+extern "C" void
+magma_scopymatrix_async_internal(
     magma_int_t m, magma_int_t n,
-    float const* dA_src, magma_int_t lda,
-    float*       dB_dst, magma_int_t ldb,
-    cudaStream_t stream,
+    magmaFloat_const_ptr dA_src, magma_int_t lda,
+    magmaFloat_ptr       dB_dst, magma_int_t ldb,
+    magma_queue_t queue,
     const char* func, const char* file, int line )
 {
     cudaError_t status;
     status = cudaMemcpy2DAsync(
         dB_dst, ldb*sizeof(float),
         dA_src, lda*sizeof(float),
-        m*sizeof(float), n, cudaMemcpyDeviceToDevice, stream );
+        m*sizeof(float), n, cudaMemcpyDeviceToDevice, queue );
     check_xerror( status, func, file, line );
 }
 

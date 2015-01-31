@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
 
-       @generated from zunmlq.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zunmlq.cpp normal z -> c, Fri Jan 30 19:00:16 2015
 
 */
 #include "common_magma.h"
@@ -123,6 +123,9 @@ magma_cunmlq(
 {
     #define  A(i_,j_) ( A + (i_) + (j_)*lda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
+    #define dV(i_,j_) (dV + (i_) + (j_)*ib)
+    #define dT(i_,j_) (dT + (i_) + (j_)*ib)
+    #define dwork(i_) (dwork + (i_))
 
     magmaFloatComplex *T, *T2;
     magma_int_t i, i1, i2, ib, ic, jc, nb, mi, ni, nq, nq_i, nw, step;
@@ -199,7 +202,7 @@ magma_cunmlq(
          * lddc*n for dC.
          */
         magma_int_t lddc = ((m+31)/32)*32;
-        magmaFloatComplex *dwork, *dV, *dT, *dC;
+        magmaFloatComplex_ptr dwork, dV, dT, dC;
         magma_cmalloc( &dwork, (nw + nq + nb)*nb + lddc*n );
         if ( dwork == NULL ) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -221,7 +224,7 @@ magma_cunmlq(
         T2 = T + nb*nb;
         
         /* Copy matrix C from the CPU to the GPU */
-        magma_csetmatrix( m, n, C, ldc, dC, lddc );
+        magma_csetmatrix( m, n, C, ldc, dC(0,0), lddc );
         
         if ( (left && notran) || (! left && ! notran) ) {
             i1 = 0;
@@ -264,7 +267,7 @@ magma_cunmlq(
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
             cpanel_to_q( MagmaLower, ib, A(i,i), lda, T2 );
-            magma_csetmatrix( ib, nq_i,  A(i,i), lda, dV, ib );
+            magma_csetmatrix( ib, nq_i,  A(i,i), lda, dV(0,0), ib );
             cq_to_panel( MagmaLower, ib, A(i,i), lda, T2 );
             
             if (left) {
@@ -279,15 +282,15 @@ magma_cunmlq(
             }
             
             /* Apply H or H**H; First copy T to the GPU */
-            magma_csetmatrix( ib, ib, T, ib, dT, ib );
+            magma_csetmatrix( ib, ib, T, ib, dT(0,0), ib );
             magma_clarfb_gpu( side, transt, MagmaForward, MagmaRowwise,
                               mi, ni, ib,
-                              dV, ib,
-                              dT, ib,
+                              dV(0,0), ib,
+                              dT(0,0), ib,
                               dC(ic,jc), lddc,
-                              dwork, ldwork );
+                              dwork(0), ldwork );
         }
-        magma_cgetmatrix( m, n, dC, lddc, C, ldc );
+        magma_cgetmatrix( m, n, dC(0,0), lddc, C, ldc );
         
         magma_free( dwork );
         magma_free_cpu( T );

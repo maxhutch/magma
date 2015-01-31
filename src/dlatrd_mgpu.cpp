@@ -1,23 +1,23 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Raffaele Solca
+       @author Ichitaro Yamazaki
+       @author Mark Gates
 
-       @generated from zlatrd_mgpu.cpp normal z -> d, Sat Nov 15 19:54:10 2014
+       @generated from zlatrd_mgpu.cpp normal z -> d, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
 #include "trace.h"
 
-
 #define PRECISION_d
-
-#define MAGMABLAS_DSYMV_MGPU
+#define REAL
 
 /**
     Purpose
@@ -99,6 +99,37 @@
     ldw     INTEGER
             The leading dimension of the array W. LDW >= max(1,N).
 
+    @param
+    dA
+
+    @param[in]
+    ldda
+
+    @param[in]
+    offset
+
+    @param
+    dW
+
+    @param[in]
+    lddw
+
+    @param
+    hwork
+
+    @param[in]
+    lhwork
+
+    @param
+    dwork
+
+    @param[in]
+    ldwork
+             
+    @param[in]
+    queues  magma_queue_t array of dimension (ngpu).
+            queues[dev] is an execution queue on GPU dev.
+    
     Further Details
     ---------------
     If UPLO = MagmaUpper, the matrix Q is represented as a product of elementary
@@ -153,48 +184,31 @@ extern "C" magma_int_t
 magma_dlatrd_mgpu(
     magma_int_t ngpu,
     magma_uplo_t uplo,
-    magma_int_t n0, magma_int_t n, magma_int_t nb, magma_int_t nb0,
+    magma_int_t n, magma_int_t nb, magma_int_t nb0,
     double *A,  magma_int_t lda,
     double *e, double *tau,
     double *W,          magma_int_t ldw,
     magmaDouble_ptr dA[],    magma_int_t ldda, magma_int_t offset,
     magmaDouble_ptr dW[],    magma_int_t lddw,
+    double    *hwork,   magma_int_t lhwork,
     magmaDouble_ptr dwork[], magma_int_t ldwork,
-    magma_int_t k,
-    magmaDouble_ptr dx[],
-    magmaDouble_ptr dy[],
-    double *work,
-    magma_queue_t queues[][10],
-    double *times)
+    magma_queue_t queues[] )
 {
 #define A(i, j) (A + (j)*lda + (i))
 #define W(i, j) (W + (j)*ldw + (i))
 
-#define dA(id, i, j)  (dA[(id)] + ((j)+loffset)*ldda + (i) + offset)
-#define dW(id, i, j)  (dW[(id)] + (j)          *lddw + (i))
-#define dW1(id, i, j) (dW[(id)] + ((j)+nb)     *lddw + (i))
+#define dA(dev, i, j)  (dA[(dev)] + ((j)+loffset)*ldda + (i) + offset)
+#define dW(dev, i, j)  (dW[(dev)] + (j)          *lddw + (i))
+#define dW1(dev, i, j) (dW[(dev)] + ((j)+nb)     *lddw + (i))
 
-    //double mv_time = 0.0;
-    magma_int_t i;
-#ifndef MAGMABLAS_DSYMV_MGPU
-    magma_int_t loffset = nb0*((offset/nb0)/ngpu);
-#endif
+    const double c_neg_one = MAGMA_D_NEG_ONE;
+    const double c_one     = MAGMA_D_ONE;
+    const double c_zero    = MAGMA_D_ZERO;
+    const magma_int_t ione = 1;
 
-    double c_neg_one = MAGMA_D_NEG_ONE;
-    double c_one     = MAGMA_D_ONE;
-    double c_zero    = MAGMA_D_ZERO;
-    double value     = MAGMA_D_ZERO;
-    magma_int_t id, idw, i_one = 1;
-
-    //magma_int_t kk;
-    magma_int_t ione = 1;
-
-    magma_int_t i_n, i_1, iw;
-
-    double alpha;
-
-    double *dx2[MagmaMaxGPUs];
-    double *f;
+    double alpha, value;
+    magma_int_t dev;
+    magma_int_t i, n_i, n_i_1, ip1, iw;
 
     // TODO check arguments
     magma_int_t info = 0;
@@ -202,6 +216,8 @@ magma_dlatrd_mgpu(
         return info;
     }
     
+    // TODO allocate f in dsytrd and pass into dlatrd. (e.g., expand hwork a bit)
+    double *f;
     magma_dmalloc_cpu( &f, n );
     if ( f == NULL ) {
         info = MAGMA_ERR_HOST_ALLOC;
@@ -213,111 +229,102 @@ magma_dlatrd_mgpu(
     magma_queue_t orig_stream;
     magmablasGetKernelStream( &orig_stream );
     
-//#define PROFILE_SYMV
-#ifdef PROFILE_SYMV
-    magma_event_t start, stop;
-    float etime;
-    magma_timestr_t cpu_start, cpu_end;
-    magma_setdevice(0);
-    magma_event_create( &start );
-    magma_event_create( &stop  );
-#endif
-
     if (uplo == MagmaUpper) {
         /* Reduce last NB columns of upper triangle */
         for (i = n-1; i >= n - nb; --i) {
-            i_1 = i + 1;
-            i_n = n - i - 1;
+            ip1 = i + 1;
+            n_i_1 = n - i - 1;
             iw = i - n + nb;
             if (i < n-1) {
                 /* Update A(1:i,i) */
-                double wii = *W(i, iw+1);
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                    lapackf77_dlacgv(&i_one, &wii, &ldw);
-                #endif
-                wii = -wii;
-                blasf77_daxpy(&i_1, &wii, A(0, i+1), &i_one, A(0, i), &ione);
+                double wii = -conj( *W(i, iw+1) );
+                blasf77_daxpy( &ip1, &wii, A(0, i+1), &ione, A(0, i), &ione );
 
-                wii = *A(i, i+1);
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                    lapackf77_dlacgv(&i_one, &wii, &ldw);
-                #endif
-                wii = -wii;
-                blasf77_daxpy(&i_1, &wii, W(0, iw+1), &i_one, A(0, i), &ione);
+                wii = -conj( *A(i, i+1) );
+                blasf77_daxpy( &ip1, &wii, W(0, iw+1), &ione, A(0, i), &ione );
             }
             if (i > 0) {
                 /* Generate elementary reflector H(i) to annihilate A(1:i-2,i) */
                 alpha = *A(i-1, i);
-                lapackf77_dlarfg(&i, &alpha, A(0, i), &ione, &tau[i - 1]);
+                lapackf77_dlarfg( &i, &alpha, A(0, i), &ione, &tau[i - 1] );
 
                 e[i-1] = MAGMA_D_REAL( alpha );
-                *A(i-1,i) = MAGMA_D_MAKE( 1, 0 );
-                for( id=0; id < ngpu; id++ ) {
-                    magma_setdevice(id);
-                    dx2[id] = dW1(id, 0, iw);
-                    magma_dsetvector_async( n, A(0,i), 1, dW1(id, 0, iw), 1, queues[id][0]);
-#ifndef  MAGMABLAS_DSYMV_MGPU
-                    magma_dsetvector_async( i, A(0,i), 1, dx[id], 1, queues[id][0] );
-#endif
+                *A(i-1,i) = MAGMA_D_ONE;
+                
+                // TODO Previously, this set dx2[dev] = dW1(dev, 0, iw); and used dx2 in dsymv.
+                // TODO Now dsymv handles broadcasting x to the GPUs, but data in dW1 is
+                // TODO apparently still used in dsytrd_mgpu / dsyr2k_mgpu.
+                for( dev=0; dev < ngpu; dev++ ) {
+                    magma_setdevice( dev );
+                    magma_dsetvector_async( n, A(0,i), 1, dW1(dev, 0, iw), 1, queues[dev] );
                 }
-                magmablas_dsymv_mgpu(ngpu, k, MagmaUpper, i, nb0, c_one, dA, ldda, 0,
-                                     dx2, ione, c_zero, dy, ione, dwork, ldwork,
-                                     work, W(0, iw), queues );
+                magmablas_dsymv_mgpu(
+                    MagmaUpper, i, c_one, dA, ldda, 0,
+                    A(0,i), 1, c_zero, W(0, iw), 1,
+                    hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
 
                 if (i < n-1) {
-                    blasf77_dgemv(MagmaConjTransStr, &i, &i_n, &c_one, W(0, iw+1), &ldw,
-                                  A(0, i), &ione, &c_zero, W(i+1, iw), &ione);
+                    blasf77_dgemv( MagmaConjTransStr, &i, &n_i_1, &c_one,
+                                   W(0,   iw+1), &ldw,
+                                   A(0,   i),    &ione, &c_zero,
+                                   W(i+1, iw),   &ione );
                 }
 
                 /* overlap update */
                 if ( i < n-1 && i-1 >= n - nb ) {
-                    magma_int_t im1_1 = i_1 - 1;
-                    magma_int_t im1   = i-1;
                     /* Update A(1:i,i) */
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                        magma_int_t im1_n = i_n + 1;
-                        lapackf77_dlacgv(&im1_n, W(im1, iw+1), &ldw);
+                    #ifdef COMPLEX
+                    lapackf77_dlacgv( &n_i_1, W(i-1, iw+1), &ldw );
                     #endif
-                    blasf77_dgemv("No transpose", &im1_1, &i_n, &c_neg_one, A(0, i+1), &lda,
-                                  W(im1, iw+1), &ldw, &c_one, A(0, i-1), &ione);
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                        lapackf77_dlacgv(&im1_n, W(im1, iw+1), &ldw);
-                        lapackf77_dlacgv(&im1_n, A(im1, i +1), &lda);
+                    blasf77_dgemv( "No transpose", &i, &n_i_1, &c_neg_one,
+                                   A(0,   i+1),  &lda,
+                                   W(i-1, iw+1), &ldw, &c_one,
+                                   A(0,   i-1),  &ione );
+                    #ifdef COMPLEX
+                    lapackf77_dlacgv( &n_i_1, W(i-1, iw+1), &ldw );
+                    lapackf77_dlacgv( &n_i_1, A(i-1, i +1), &lda );
                     #endif
-                    blasf77_dgemv("No transpose", &im1_1, &i_n, &c_neg_one, W(0, iw+1), &ldw,
-                                  A(im1, i+1), &lda, &c_one, A(0, i-1), &ione);
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                        lapackf77_dlacgv(&im1_n, A(im1, i+1), &lda);
+                    blasf77_dgemv( "No transpose", &i, &n_i_1, &c_neg_one,
+                                   W(0,   iw+1), &ldw,
+                                   A(i-1, i+1),  &lda, &c_one,
+                                   A(0,   i-1),  &ione );
+                    #ifdef COMPLEX
+                    lapackf77_dlacgv( &n_i_1, A(i-1, i+1), &lda );
                     #endif
                 }
 
-                // 3. Here is where we need it // TODO find the right place
-                magmablas_dsymv_sync(ngpu, k, i, work, W(0, iw), queues );
+                // synchronize to get dsymv result W(0, iw)
+                magmablas_dsymv_mgpu_sync(
+                    MagmaUpper, i, c_one, dA, ldda, 0,
+                    A(0,i), 1, c_zero, W(0, iw), 1,
+                    hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
 
                 if (i < n-1) {
-                    blasf77_dgemv("No transpose", &i, &i_n, &c_neg_one, A(0, i+1), &lda,
-                                  W(i+1, iw), &ione, &c_one, W(0, iw), &ione);
+                    blasf77_dgemv( "No transpose", &i, &n_i_1, &c_neg_one,
+                                   A(0,   i+1), &lda,
+                                   W(i+1, iw),  &ione, &c_one,
+                                   W(0,   iw),  &ione );
 
-                    blasf77_dgemv(MagmaConjTransStr, &i, &i_n, &c_one, A(0, i+1), &lda,
-                                  A(0, i), &ione, &c_zero, W(i+1, iw), &ione);
+                    blasf77_dgemv( MagmaConjTransStr, &i, &n_i_1, &c_one,
+                                   A(0,   i+1), &lda,
+                                   A(0,   i),   &ione, &c_zero,
+                                   W(i+1, iw),  &ione );
 
-                    blasf77_dgemv("No transpose", &i, &i_n, &c_neg_one, W(0, iw+1), &ldw,
-                                  W(i+1, iw), &ione, &c_one, W(0, iw), &ione);
+                    blasf77_dgemv( "No transpose", &i, &n_i_1, &c_neg_one,
+                                   W(0,   iw+1), &ldw,
+                                   W(i+1, iw),   &ione, &c_one,
+                                   W(0,   iw),   &ione );
                 }
 
-                blasf77_dscal(&i, &tau[i - 1], W(0, iw), &ione);
+                blasf77_dscal( &i, &tau[i - 1], W(0, iw), &ione );
 
                 value = magma_cblas_ddot( i, W(0,iw), ione, A(0,i), ione );
-                alpha = tau[i - 1] * -.5f * value;
-                blasf77_daxpy(&i, &alpha, A(0, i), &ione, W(0, iw), &ione);
+                alpha = tau[i - 1] * -0.5f * value;
+                blasf77_daxpy( &i, &alpha, A(0, i), &ione, W(0, iw), &ione );
 
-                for( id=0; id < ngpu; id++ ) {
-                    magma_setdevice(id);
-                    if ( k > 1 ) {
-                        magma_dsetvector_async( n, W(0,iw), 1, dW(id, 0, iw), 1, queues[id][1] );
-                    } else {
-                        magma_dsetvector_async( n, W(0,iw), 1, dW(id, 0, iw), 1, queues[id][0] );
-                    }
+                for( dev=0; dev < ngpu; dev++ ) {
+                    magma_setdevice( dev );
+                    magma_dsetvector_async( n, W(0,iw), 1, dW(dev, 0, iw), 1, queues[dev] );
                 }
             }
         }
@@ -325,145 +332,112 @@ magma_dlatrd_mgpu(
         /*  Reduce first NB columns of lower triangle */
         for (i = 0; i < nb; ++i) {
             /* Update A(i:n,i) */
-            i_n = n - i;
-            idw = ((offset+i)/nb)%ngpu;
+            n_i = n - i;
+            //idw = ((offset+i)/nb)%ngpu;
             if ( i > 0 ) {
                 trace_cpu_start( 0, "gemv", "gemv" );
-                double wii = *W(i, i-1);
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                    lapackf77_dlacgv(&i_one, &wii, &ldw);
-                #endif
-                wii = -wii;
-                blasf77_daxpy( &i_n, &wii, A(i, i-1), &ione, A(i, i), &ione);
+                double wii = -conj( *W(i, i-1) );
+                blasf77_daxpy( &n_i, &wii, A(i, i-1), &ione, A(i, i), &ione );
 
-                wii = *A(i, i-1);
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                    lapackf77_dlacgv(&i_one, &wii, &lda);
-                #endif
-                wii = -wii;
-                blasf77_daxpy( &i_n, &wii, W(i, i-1), &ione, A(i, i), &ione);
+                wii = -conj( *A(i, i-1) );
+                blasf77_daxpy( &n_i, &wii, W(i, i-1), &ione, A(i, i), &ione );
             }
 
             if (i < n-1) {
                 /* Generate elementary reflector H(i) to annihilate A(i+2:n,i) */
-                i_n = n - i - 1;
+                n_i_1 = n - i - 1;
                 trace_cpu_start( 0, "larfg", "larfg" );
                 alpha = *A(i+1, i);
-#ifdef PROFILE_SYMV
-                cpu_start = get_current_time();
-#endif
-                lapackf77_dlarfg(&i_n, &alpha, A(min(i+2,n-1), i), &ione, &tau[i]);
-#ifdef PROFILE_SYMV
-                cpu_end = get_current_time();
-                times[0] += GetTimerValue(cpu_start,cpu_end)/1000.0;
-#endif
+                lapackf77_dlarfg( &n_i_1, &alpha, A(min(i+2,n-1), i), &ione, &tau[i] );
                 e[i] = MAGMA_D_REAL( alpha );
-                *A(i+1,i) = MAGMA_D_MAKE( 1, 0 );
+                *A(i+1,i) = MAGMA_D_ONE;
                 trace_cpu_end( 0 );
 
                 /* Compute W(i+1:n,i) */
-                // 1. Send the block reflector  A(i+1:n,i) to the GPU
-                //trace_gpu_start(  idw, 0, "comm", "comm1" );
-#ifndef  MAGMABLAS_DSYMV_MGPU
-                magma_setdevice(idw);
-                magma_dsetvector( i_n, A(i+1,i), 1, dA(idw, i+1, i), 1 );
-#endif
-                for( id=0; id < ngpu; id++ ) {
-                    magma_setdevice(id);
-                    trace_gpu_start( id, 0, "comm", "comm" );
-#ifdef MAGMABLAS_DSYMV_MGPU
-                    dx2[id] = dW1(id, 0, i)-offset;
-#else
-                    dx2[id] = dx[id];
-                    magma_dsetvector( i_n, A(i+1,i), 1, dx[id], 1 );
-#endif
-                    magma_dsetvector_async( n, A(0,i), 1, dW1(id, 0, i), 1, queues[id][0] );
-                    trace_gpu_end( id, 0 );
+                // TODO Previously, this set dx2[id] = dW1(id, 0, i)-offset; and used dx2 in dsymv.
+                // TODO Now dsymv handles broadcasting x to the GPUs, but data in dW1 is
+                // TODO apparently still used in dsytrd_mgpu / dsyr2k_mgpu.
+                for( dev=0; dev < ngpu; dev++ ) {
+                    magma_setdevice( dev );
+                    magma_dsetvector_async( n, A(0,i), 1, dW1(dev, 0, i), 1, queues[dev] );
                 }
-                /* mat-vec on multiple GPUs */
-#ifdef PROFILE_SYMV
-                magma_setdevice(0);
-                magma_event_record(start, queues[0][0]);
-#endif
-                magmablas_dsymv_mgpu(ngpu, k, MagmaLower, i_n, nb0, c_one, dA, ldda, offset+i+1,
-                                       dx2, ione, c_zero, dy, ione, dwork, ldwork,
-                                       work, W(i+1,i), queues );
-#ifdef PROFILE_SYMV
-                magma_setdevice(0);
-                magma_event_record(stop, queues[0][0]);
-#endif
+                
+                magmablas_dsymv_mgpu(
+                    MagmaLower, n_i_1, c_one, dA, ldda, offset+i+1,
+                    A(i+1, i), 1, c_zero, W(i+1, i), 1,
+                    hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
+                
                 trace_cpu_start( 0, "gemv", "gemv" );
-                blasf77_dgemv(MagmaConjTransStr, &i_n, &i, &c_one, W(i+1, 0), &ldw,
-                              A(i+1, i), &ione, &c_zero, W(0, i), &ione);
-                blasf77_dgemv("No transpose", &i_n, &i, &c_neg_one, A(i+1, 0), &lda,
-                              W(0, i), &ione, &c_zero, f, &ione);
-                blasf77_dgemv(MagmaConjTransStr, &i_n, &i, &c_one, A(i+1, 0), &lda,
-                              A(i+1, i), &ione, &c_zero, W(0, i), &ione);
+                blasf77_dgemv( MagmaConjTransStr, &n_i_1, &i, &c_one,
+                               W(i+1, 0), &ldw,
+                               A(i+1, i), &ione, &c_zero,
+                               W(0,   i), &ione );
+                
+                blasf77_dgemv( "No transpose", &n_i_1, &i, &c_neg_one,
+                               A(i+1, 0), &lda,
+                               W(0,   i), &ione, &c_zero,
+                               f,         &ione );
+                
+                blasf77_dgemv( MagmaConjTransStr, &n_i_1, &i, &c_one,
+                               A(i+1, 0), &lda,
+                               A(i+1, i), &ione, &c_zero,
+                               W(0,   i), &ione );
                 trace_cpu_end( 0 );
 
                 /* overlap update */
                 if ( i > 0 && i+1 < n ) {
-                    magma_int_t ip1 = i+1;
                     trace_cpu_start( 0, "gemv", "gemv" );
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                        lapackf77_dlacgv(&i, W(ip1, 0), &ldw);
+                    #ifdef COMPLEX
+                    lapackf77_dlacgv( &i, W(i+1, 0), &ldw );
                     #endif
-                    blasf77_dgemv("No transpose", &i_n, &i, &c_neg_one, A(ip1, 0), &lda,
-                                  W(ip1, 0), &ldw, &c_one, A(ip1, ip1), &ione);
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                        lapackf77_dlacgv(&i, W(ip1, 0), &ldw);
-                        lapackf77_dlacgv(&i, A(ip1, 0), &lda);
+                    blasf77_dgemv( "No transpose", &n_i_1, &i, &c_neg_one,
+                                   A(i+1, 0),   &lda,
+                                   W(i+1, 0),   &ldw, &c_one,
+                                   A(i+1, i+1), &ione );
+                    #ifdef COMPLEX
+                    lapackf77_dlacgv( &i, W(i+1, 0), &ldw );
+                    lapackf77_dlacgv( &i, A(i+1, 0), &lda );
                     #endif
-                    blasf77_dgemv("No transpose", &i_n, &i, &c_neg_one, W(ip1, 0), &ldw,
-                                  A(ip1, 0), &lda, &c_one, A(ip1, ip1), &ione);
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                        lapackf77_dlacgv(&i, A(ip1, 0), &lda);
+                    blasf77_dgemv( "No transpose", &n_i_1, &i, &c_neg_one,
+                                   W(i+1, 0),   &ldw,
+                                   A(i+1, 0),   &lda, &c_one,
+                                   A(i+1, i+1), &ione );
+                    #ifdef COMPLEX
+                    lapackf77_dlacgv( &i, A(i+1, 0), &lda );
                     #endif
                     trace_cpu_end( 0 );
                 }
 
-                /* synchronize */
-                magmablas_dsymv_sync(ngpu, k, i_n, work, W(i+1,i), queues );
-#ifdef PROFILE_SYMV
-                cudaEventElapsedTime(&etime, start, stop);
-                //mv_time += (etime/1000.0);
-                times[1+(i_n/(n0/10))] += (etime/1000.0);
-#endif
+                // synchronize to get dsymv result W(i+1, i)
+                magmablas_dsymv_mgpu_sync(
+                    MagmaLower, n_i_1, c_one, dA, ldda, offset+i+1,
+                    A(i+1, i), 1, c_zero, W(i+1, i), 1,
+                    hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
+                
                 trace_cpu_start( 0, "axpy", "axpy" );
-                if (i != 0)
-                    blasf77_daxpy(&i_n, &c_one, f, &ione, W(i+1, i), &ione);
+                if (i != 0) {
+                    blasf77_daxpy( &n_i_1, &c_one, f, &ione, W(i+1, i), &ione );
+                }
 
-                blasf77_dgemv("No transpose", &i_n, &i, &c_neg_one, W(i+1, 0), &ldw,
-                              W(0, i), &ione, &c_one, W(i+1, i), &ione);
-                blasf77_dscal(&i_n, &tau[i], W(i+1,i), &ione);
+                blasf77_dgemv( "No transpose", &n_i_1, &i, &c_neg_one,
+                               W(i+1, 0), &ldw,
+                               W(0,   i), &ione, &c_one,
+                               W(i+1, i), &ione );
+                blasf77_dscal( &n_i_1, &tau[i], W(i+1,i), &ione );
 
-                value = magma_cblas_ddot( i_n, W(i+1,i), ione, A(i+1,i), ione );
-                alpha = tau[i]* -.5f * value;
-                blasf77_daxpy(&i_n, &alpha, A(i+1, i), &ione, W(i+1,i), &ione);
+                value = magma_cblas_ddot( n_i_1, W(i+1,i), ione, A(i+1,i), ione );
+                alpha = tau[i] * -0.5f * value;
+                blasf77_daxpy( &n_i_1, &alpha, A(i+1, i), &ione, W(i+1,i), &ione );
                 trace_cpu_end( 0 );
-                for( id=0; id < ngpu; id++ ) {
-                    magma_setdevice(id);
-                    if ( k > 1 ) {
-                        magma_dsetvector_async( n, W(0,i), 1, dW(id, 0, i), 1, queues[id][1] );
-                    } else {
-                        magma_dsetvector_async( n, W(0,i), 1, dW(id, 0, i), 1, queues[id][0] );
-                    }
+                for( dev=0; dev < ngpu; dev++ ) {
+                    magma_setdevice( dev );
+                    magma_dsetvector_async( n, W(0,i), 1, dW(dev, 0, i), 1, queues[dev] );
                 }
             }
         }
     }
 
-#ifdef PROFILE_SYMV
-    magma_setdevice(0);
-    magma_event_destory( start );
-    magma_event_destory( stop  );
-#endif
-    for( id=0; id < ngpu; id++ ) {
-        magma_setdevice(id);
-        if ( k > 1 )
-            magma_queue_sync( queues[id][1] );
-    }
-    magma_free_cpu(f);
+    magma_free_cpu( f );
 
     magma_setdevice( orig_dev );
     magmablasSetKernelStream( orig_stream );
@@ -476,262 +450,3 @@ magma_dlatrd_mgpu(
 #undef dA
 #undef dW
 #undef dW1
-
-
-// ----------------------------------------------------------------------
-extern "C" magma_int_t
-magmablas_dsymv_mgpu(
-    magma_int_t ngpu,
-    magma_int_t k, magma_uplo_t uplo,
-    magma_int_t n, magma_int_t nb,
-    double alpha,
-    magmaDouble_ptr dA[],    magma_int_t ldda, magma_int_t offset,
-    magmaDouble_ptr dx[],    magma_int_t incx,
-    double beta,
-    magmaDouble_ptr dy[],    magma_int_t incy,
-    magmaDouble_ptr dwork[], magma_int_t ldwork,
-    double *work, double *W,
-    magma_queue_t queues[][10] )
-{
-#define dX(id, i)    (dx[(id)]+incx*(i))
-#define dY(id, i, j) (dy[(id)]+incy*(i)+n*(j))
-
-    magma_int_t id;
-
-    magma_device_t orig_dev;
-    magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-    
-#ifdef MAGMABLAS_DSYMV_MGPU
-    for( id=0; id < ngpu; id++ ) {
-        magma_setdevice(id);
-        magmablasSetKernelStream( queues[id][0] );
-        trace_gpu_start( id, 0, "memset", "memset" );
-        cudaMemset( dwork[id], 0, ldwork*sizeof(double) );
-        trace_gpu_end( id, 0 );
-        trace_gpu_start( id, 0, "symv", "symv" );
-    }
-
-    if ( nb == 32 ) {
-        magmablas_dsymv_mgpu_32_offset( uplo, offset+n, alpha, dA, ldda,
-                                        dx, incx,
-                                        beta,
-                                        dy, incy,
-                                        dwork, ldwork,
-                                        ngpu, nb, offset,
-                                        queues );
-    } else {
-        magmablas_dsymv_mgpu_offset( uplo, offset+n, alpha, dA, ldda,
-                                     dx, incx,
-                                     beta,
-                                     dy, incy,
-                                     dwork, ldwork,
-                                     ngpu, nb, offset,
-                                     queues );
-    }
-    for( id=0; id < ngpu; id++ ) {
-        magma_setdevice(id);
-        trace_gpu_end( id, 0 );
-        magmablasSetKernelStream(NULL);
-    }
-    //magma_setdevice(0);
-    //magmablasSetKernelStream( queues[0][0] );
-    //magma_dsymv(MagmaLower, n, alpha, &dA[0][offset+offset*ldda], ldda, &dx[0][offset], incx, beta, &dy[0][offset], incy );
-    //magmablasSetKernelStream(NULL);
-
-    /* send to CPU */
-    magma_setdevice(0);
-    trace_gpu_start( 0, 0, "comm", "comm" );
-    magma_dgetvector_async( n, dY(0, offset, 0), 1, W, 1, queues[0][0] );
-    trace_gpu_end( 0, 0 );
-    magmablasSetKernelStream(NULL);
-
-    for( id=1; id < ngpu; id++ ) {
-        magma_setdevice(id);
-        trace_gpu_start(  id, 0, "comm", "comm" );
-        magma_dgetvector_async( n, dY(id, offset, 0), 1, &work[id*n], 1, queues[id][0] );
-        trace_gpu_end( id, 0 );
-        magmablasSetKernelStream(NULL);
-    }
-#else
-    double c_one = MAGMA_D_ONE;
-    const char* uplo_  = lapack_uplo_const( uplo  );
-    magma_int_t i, ii, j, kk, ib, ib0, i_1, i_local, idw;
-    magma_int_t i_0=n;
-    magma_int_t loffset0 = nb*(offset/(nb*ngpu));
-    magma_int_t loffset1 = offset%nb;
-    magma_int_t loffset;
-    
-    //magma_dsymv(uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
-
-    idw = (offset/nb)%ngpu;
-
-    for( id=0; id < ngpu; id++ ) {
-        magma_setdevice(id);
-        magmablasSetKernelStream( queues[id][0] );
-        cudaMemset( dy[id], 0, n*k*sizeof(double) );
-    }
-
-    if (uplo == MagmaLower) {
-        /* the first block */
-        if ( loffset1 > 0 ) {
-            id = idw;
-            kk = 0;
-
-            magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
-
-            loffset = loffset0+loffset1;
-            ib0 = min(nb-loffset1,n);
-            // diagonal
-            magma_dsymv(MagmaLower, ib0, c_one, dA(id, 0, 0 ), ldda,
-                        dX(id, 0), incx, c_one, dY(id, 0, kk), incy);
-            // off-diagonl
-            if ( ib0 < n ) {
-                for( j=ib0; j < n; j += i_0 ) {
-                    i_1 = min(i_0, n-j);
-                    magma_dgemv(MagmaNoTrans, i_1, ib0, c_one, dA(id, j, 0), ldda,
-                                dX(id, 0), incx, c_one, dY(id, j, kk), incy);
-                    magma_dgemv(MagmaConjTrans, i_1, ib0, c_one, dA(id, j, 0), ldda,
-                                dX(id, j), incx, c_one, dY(id, 0, kk), incy);
-                }
-            }
-        }
-        else {
-            ib0 = 0;
-        }
-
-        /* diagonal */
-        for( i=ib0; i < n; i += nb ) {
-            id = ((i+offset)/nb)%ngpu;
-            kk = ((i+loffset1)/(nb*ngpu))%k;
-
-            magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
-
-            i_local = (i+loffset1)/(nb*ngpu);
-            ib = min(nb,n-i);
-
-            ii = nb*i_local;
-
-            loffset = loffset0;
-            if ( id < idw )
-                loffset += nb;
-            magma_dsymv(MagmaLower,  ib, c_one, dA(id, i, ii), ldda,
-                        dX(id, i), incx, c_one, dY(id, i, kk), incy);
-        }
-
-        /* off-diagonal */
-        for( i=ib0; i < n-nb; i += nb ) {
-            id = ((i+offset)/nb)%ngpu;
-            kk = ((i+loffset1)/(nb*ngpu))%k;
-            magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
-
-            i_local = ((i+loffset1)/nb)/ngpu;
-            ii = nb*i_local;
-            ib = min(nb,n-i);
-            loffset = loffset0;
-            if ( id < idw )
-                loffset += nb;
-
-            for( j=i+ib; j < n; j += i_0 ) {
-                i_1 = min(i_0, n-j);
-                magma_dgemv(MagmaNoTrans, i_1, ib, c_one, dA(id, j, ii), ldda,
-                            dX(id, i), incx, c_one, dY(id, j, kk), incy);
-                magma_dgemv(MagmaConjTrans, i_1, ib, c_one, dA(id, j, ii), ldda,
-                            dX(id, j), incx, c_one, dY(id, i, kk), incy);
-            }
-        }
-    } else { /* upper-triangular storage */
-        loffset = 0;
-        /* diagonal */
-        for( i=0; i < n; i += nb ) {
-            id = (i/nb)%ngpu;
-            kk = (i/(nb*ngpu))%k;
-            ib = min(nb,n-i);
-
-            magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
-
-            i_local = i/(nb*ngpu);
-            ii = nb*i_local;
-
-            magma_dsymv(MagmaUpper, ib, c_one, dA(id, i, ii), ldda,
-                        dX(id, i), incx, c_one, dY(id, i, kk), incy);
-        }
-
-        /* off-diagonal */
-        for( i=nb; i < n; i += nb ) {
-            id = (i/nb)%ngpu;
-            kk = (i/(nb*ngpu))%k;
-            magma_setdevice(id);
-            magmablasSetKernelStream( queues[id][kk] );
-
-            i_local = (i/nb)/ngpu;
-            ii = nb*i_local;
-            ib = min(nb,n-i);
-
-            magma_dgemv(MagmaNoTrans, i, ib, c_one, dA(id, 0, ii), ldda,
-                        dX(id, i), incx, c_one, dY(id, 0, kk), incy);
-            magma_dgemv(MagmaConjTrans, i, ib, c_one, dA(id, 0, ii), ldda,
-                        dX(id, 0), incx, c_one, dY(id, i, kk), incy);
-        }
-    }
-    /* send to CPU */
-    magma_setdevice(0);
-    magma_dgetvector_async( n, dY(0, 0, 0), 1, W, 1, queues[0][0] );
-    for( kk=1; kk < k; kk++ ) {
-        magma_dgetvector_async( n, dY(0, 0, kk), 1, &work[kk*n], 1, queues[0][kk] );
-    }
-
-    for( id=1; id < ngpu; id++ ) {
-        magma_setdevice(id);
-        for( kk=0; kk < k; kk++ ) {
-            magma_dgetvector_async( n, dY(id, 0, kk), 1, &work[id*k*n + kk*n], 1, queues[id][kk] );
-        }
-    }
-#endif
-
-    magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
-
-    return 0;
-}
-
-
-// ----------------------------------------------------------------------
-extern "C" magma_int_t
-magmablas_dsymv_sync(
-    magma_int_t ngpu,
-    magma_int_t k,
-    magma_int_t n, double *work, double *W,
-    magma_queue_t queues[][10] )
-{
-    double c_one = MAGMA_D_ONE;
-    magma_int_t ione = 1;
-    magma_int_t id, kk;
-
-    magma_device_t orig_dev;
-    magma_getdevice( &orig_dev );
-    
-    /* reduce on CPU */
-    magma_setdevice(0);
-    magma_queue_sync( queues[0][0] );
-    for( kk=1; kk < k; kk++ ) {
-        magma_queue_sync( queues[0][kk] );
-        blasf77_daxpy( &n, &c_one, &work[kk*n], &ione, W, &ione );
-    }
-    for( id=1; id < ngpu; id++ ) {
-        magma_setdevice(id);
-        for( kk=0; kk < k; kk++ ) {
-            magma_queue_sync( queues[id][kk] );
-            blasf77_daxpy( &n, &c_one, &work[id*k*n + kk*n], &ione, W, &ione );
-        }
-    }
-
-    magma_setdevice( orig_dev );
-    
-    return 0;
-}

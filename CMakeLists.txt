@@ -9,6 +9,13 @@ project( MAGMA C CXX Fortran )
 
 
 # ----------------------------------------
+# don't regenerate files during make.
+# (I think this means you have to manually re-run CMake if CMakeLists changes.
+#  Hopefully it fixes the huge problems with CMake interrupting Visual Studio.)
+set(CMAKE_SUPPRESS_REGENERATION on)
+
+
+# ----------------------------------------
 # force an out-of-source build, to not overwrite the existing Makefiles
 # (out-of-source is cleaner, too)
 string( COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" MAGMA_COMPILE_INPLACE )
@@ -42,7 +49,7 @@ endif()
 
 # ----------------------------------------
 # locate CUDA libraries
-set( GPU_TARGET "Tesla Fermi Kepler" CACHE STRING "CUDA architectures to compile for; one or more of Tesla, Fermi, Kepler" )
+set( GPU_TARGET "Fermi Kepler" CACHE STRING "CUDA architectures to compile for; one or more of Tesla, Fermi, Kepler" )
 find_package( CUDA )
 if ( CUDA_FOUND )
 	message( "-- Found CUDA ${CUDA_VERSION}" )
@@ -63,12 +70,12 @@ if ( CUDA_FOUND )
 	message( "   GPU_TARGET ${GPU_TARGET}" )
 	if ( ${GPU_TARGET} MATCHES Tesla )
 		if ( NOT MIN_ARCH )
-			set( MIN_ARCH 100 )
+			set( MIN_ARCH 130 )
 		endif()
 		# -gencode arch=compute_10,code=compute_10
 		set( NV_SM "${NV_SM} -gencode arch=compute_13,code=sm_13" )
 		set( NV_COMP        "-gencode arch=compute_13,code=compute_13" )
-		message( "   compile for CUDA arch 1.x (Tesla)" )
+		message( "   compile for CUDA arch 1.3 (Tesla)" )
 	endif()
 	
 	if ( ${GPU_TARGET} MATCHES Fermi )

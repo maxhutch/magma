@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_z_matrixchar.cpp normal z -> c, Sat Nov 15 19:54:23 2014
+       @generated from magma_z_matrixchar.cpp normal z -> c, Fri Jan 30 19:00:32 2015
        @author Hartwig Anzt
 */
 

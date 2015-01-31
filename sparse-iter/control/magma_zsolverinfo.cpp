@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -525,6 +525,17 @@ magma_zsolverinfo_init(
     magma_int_t stat = 0;
     solver_par->res_vec = NULL;
     solver_par->timing = NULL;
+    solver_par->eigenvectors = NULL;
+    solver_par->eigenvalues = NULL;
+
+    if( solver_par->maxiter == 0 )
+        solver_par->maxiter = 1000;
+    if( solver_par->version == 0 )
+        solver_par->version = 0;
+    if( solver_par->restart == 0 )
+        solver_par->restart = 30;
+    if( solver_par->solver == 0 )
+        solver_par->solver = Magma_CG;
 
     if ( solver_par->verbose > 0 ) {
         stat = 

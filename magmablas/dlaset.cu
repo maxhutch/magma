@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from zlaset.cu normal z -> d, Sat Nov 15 19:53:59 2014
+       @generated from zlaset.cu normal z -> d, Fri Jan 30 19:00:09 2015
 
 */
 #include "common_magma.h"
@@ -159,7 +159,7 @@ void dlaset_upper_kernel(
     double offdiag, double diag,
     double *dA, int ldda )
 {
-    dlaset_lower_device(m, n, offdiag, diag, dA, ldda);
+    dlaset_upper_device(m, n, offdiag, diag, dA, ldda);
 }
 //////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -280,7 +280,17 @@ void magmablas_dlaset_q(
         dlaset_upper_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
     }
     else {
-        dlaset_full_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+        // if continuous in memory & set to zero, cudaMemset is faster.
+        if ( m == ldda &&
+             MAGMA_D_EQUAL( offdiag, MAGMA_D_ZERO ) &&
+             MAGMA_D_EQUAL( diag,    MAGMA_D_ZERO ) )
+        {
+            magma_int_t size = m*n;
+            cudaMemsetAsync( dA, 0, size*sizeof(double), queue );
+        }
+        else {
+            dlaset_full_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+        }
     }
 }
 /**
@@ -298,7 +308,7 @@ void magmablas_dlaset(
 ////////////////////////////////////////////////////////////////////////////////////////
 
 extern "C"
-void magmablas_dlaset_batched_q(
+void magmablas_dlaset_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     double offdiag, double diag,
     magmaDouble_ptr dAarray[], magma_int_t ldda,
@@ -336,19 +346,7 @@ void magmablas_dlaset_batched_q(
         dlaset_full_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
     }
 }
-/**
-    @see magmablas_dlaset_batched_q
-    @ingroup magma_daux2
-    ********************************************************************/
-extern "C"
-void magmablas_dlaset_batched(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    double offdiag, double diag,
-    magmaDouble_ptr dAarray[], magma_int_t ldda,
-    magma_int_t batchCount )
-{
-    magmablas_dlaset_batched_q( uplo, m, n, offdiag, diag, dAarray, ldda, batchCount, magma_stream );
-}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #define A(n, bound) d##A[min(n, bound)]
 #define TH_NCHUNK   8
@@ -368,14 +366,14 @@ zmemset_kernel_batched(int length, double **dAarray, double val)
 extern "C"
 void magmablas_dmemset_batched(magma_int_t length, 
         magmaDouble_ptr dAarray[], double val, 
-        magma_int_t batchCount)
+        magma_int_t batchCount, magma_queue_t queue)
 {
 
     magma_int_t size_per_block = TH_NCHUNK * MAX_NTHREADS;
     magma_int_t nblock = (length-1)/size_per_block + 1;
     dim3 grid(nblock, 1, batchCount );  // emulate 3D grid: NX * (NY*npages), for CUDA ARCH 1.x
 
-    zmemset_kernel_batched<<< grid, MAX_NTHREADS >>>(length, dAarray, val); 
+    zmemset_kernel_batched<<< grid, MAX_NTHREADS, 0, queue >>>(length, dAarray, val); 
 }
 
 

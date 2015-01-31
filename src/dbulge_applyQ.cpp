@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_applyQ.cpp normal z -> d, Sat Nov 15 19:54:10 2014
+ *     @generated from zbulge_applyQ.cpp normal z -> d, Fri Jan 30 19:00:18 2015
  *
  */
 
@@ -41,7 +41,7 @@ extern "C" void magma_dbulge_applyQ(
     double c_zero = MAGMA_D_ZERO;
     double c_one  = MAGMA_D_ONE;
     
-    magma_int_t LDT, LDV, blklen, firstcolj;
+    magma_int_t LDT, LDV, firstcolj;
     magma_int_t bg, nbGblk, rownbm, k, m, n;
     magma_int_t st, ed, fst, vlen, vnb, colj, len;
     magma_int_t blkid, vpos, taupos, tpos;
@@ -59,7 +59,7 @@ extern "C" void magma_dbulge_applyQ(
     versionR = 92;
     LDT      = Vblksiz;
     LDV      = NB+Vblksiz-1;
-    blklen   = LDV*Vblksiz;
+    //blklen = LDV*Vblksiz;
     nbGblk   = plasma_ceildiv((N-1), Vblksiz);
     //magma_dmalloc_cpu( &WORK, LWORK );
 
@@ -75,8 +75,7 @@ extern "C" void magma_dbulge_applyQ(
     if (copytype > 1) magma_dsetmatrix( LDT, blkcnt*Vblksiz, T, LDT, dT, LDT );
     if (copytype > 2) magma_dsetmatrix( N, NE, E, N, dE, N );
     double *dwork;
-    magma_int_t ldwork;
-    ldwork  = NE;
+    //ldwork  = NE;
     LWORK   = 2*N*max(Vblksiz, 64);
     if (MAGMA_SUCCESS != magma_dmalloc( &dwork, LWORK )) {
         printf ("!!!!  magma_dbulge_applyQ magma_alloc failed for: dwork\n" );

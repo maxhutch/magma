@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zpipelinedgmres.cu normal z -> s, Sat Nov 15 19:54:21 2014
+       @generated from zpipelinedgmres.cu normal z -> s, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -52,9 +52,9 @@ __global__ void
 magma_spipelined_correction( 
     int n,  
     int k,
-    magmaFloat_ptr skp, 
-    magmaFloat_ptr r,
-    magmaFloat_ptr v )
+    float * skp, 
+    float * r,
+    float * v )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     float zz= 0.0, tmp= 0.0;
@@ -83,9 +83,9 @@ __global__ void
 magma_spipelined_copyscale( 
     int n,  
     int k,
-    magmaFloat_ptr skp, 
-    magmaFloat_ptr r,
-    magmaFloat_ptr v )
+    float * skp, 
+    float * r,
+    float * v )
 {
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -103,9 +103,9 @@ magma_spipelined_copyscale(
 __global__ void
 magma_spipelinedsnrm2_kernel( 
     int m, 
-    magmaFloat_ptr da, 
+    float * da, 
     int ldda, 
-    magmaFloat_ptr dxnorm )
+    float * dxnorm )
 {
     const int i = threadIdx.x;
     magmaFloat_ptr dx = da + blockIdx.x * ldda;
@@ -139,8 +139,8 @@ magma_spipelinedsnrm2_kernel(
 __global__ void
 magma_spipelinesscale( 
     int n, 
-    magmaFloat_ptr r, 
-    magmaFloat_ptr drnorm )
+    float * r, 
+    float * drnorm )
 {
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;

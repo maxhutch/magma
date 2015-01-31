@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -174,10 +174,6 @@ magma_zunmtr_m(
         work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
     }
     
-    if (upper) {
-        *info = MAGMA_ERR_NOT_IMPLEMENTED;
-    }
-
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
         return *info;
@@ -203,11 +199,14 @@ magma_zunmtr_m(
     if (upper) {
         /* Q was determined by a call to SSYTRD with UPLO = 'U' */
         i__2 = nq - 1;
-        // TODO: upper case is not yet implemented -- see above
+        // TODO: upper case is not yet implemented for multiple GPUs -- see above
+        // for now use one GPU
         //lapackf77_zunmql(side_, trans_, &mi, &ni, &i__2, A(0,1), &lda,
         //                 tau, C, &ldc, work, &lwork, &iinfo);
         //magma_zunmql_m(ngpu, side, trans, mi, ni, i__2, A(0,1), lda, tau,
         //               C, ldc, work, lwork, &iinfo);
+        magma_zunmql(side, trans, mi, ni, i__2, A(0,1), lda, tau,
+                       C, ldc, work, lwork, &iinfo); 
     }
     else {
         /* Q was determined by a call to SSYTRD with UPLO = 'L' */

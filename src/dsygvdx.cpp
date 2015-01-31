@@ -1,12 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
+       @author Mark Gates
 
        @precisions normal d -> s
 
@@ -120,9 +121,9 @@
             Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
     @param[out]
-    m       INTEGER
-            The total number of eigenvalues found.  0 <= M <= N.
-            If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
+    mout    INTEGER
+            The total number of eigenvalues found.  0 <= MOUT <= N.
+            If RANGE = MagmaRangeAll, MOUT = N, and if RANGE = MagmaRangeI, MOUT = IU-IL+1.
     @param[out]
     w       DOUBLE PRECISION array, dimension (N)
             If INFO = 0, the eigenvalues in ascending order.
@@ -202,7 +203,7 @@ magma_dsygvdx(
     double *A, magma_int_t lda,
     double *B, magma_int_t ldb,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     double *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -216,8 +217,8 @@ magma_dsygvdx(
     double d_one = MAGMA_D_ONE;
 
     double *dA=NULL, *dB=NULL;
-    magma_int_t ldda = n;
-    magma_int_t lddb = n;
+    magma_int_t ldda = roundup( n, 32 );
+    magma_int_t lddb = ldda;
 
     magma_int_t lower;
     magma_trans_t trans;
@@ -303,18 +304,14 @@ magma_dsygvdx(
     if (n == 0) {
         return *info;
     }
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_dsygvd(&itype, jobz_, uplo_,
-                         &n, A, &lda, B, &ldb,
-                         w, work, &lwork,
-                         iwork, &liwork, info);
-        *m = n;
+        lapackf77_dsygvd( &itype, jobz_, uplo_,
+                          &n, A, &lda, B, &ldb,
+                          w, work, &lwork,
+                          iwork, &liwork, info );
+        *mout = n;
         return *info;
     }
 
@@ -335,7 +332,7 @@ magma_dsygvdx(
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_dpotrf_gpu(uplo, n, dB, lddb, info);
+    magma_dpotrf_gpu( uplo, n, dB, lddb, info );
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -352,23 +349,23 @@ magma_dsygvdx(
     timer_start( time );
 
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_dsygst_gpu(itype, uplo, n, dA, ldda, dB, lddb, info);
+    magma_dsygst_gpu( itype, uplo, n, dA, ldda, dB, lddb, info );
 
     timer_stop( time );
     timer_printf( "time dsygst_gpu = %6.2f\n", time );
 
     /* simple fix to be able to run bigger size.
-     * need to have a dwork here that will be used
-     * a dB and then passed to  dsyevd.
-     * */
+     * set dB=NULL so we know to re-allocate below
+     * TODO: have dwork here that will be used as dB and then passed to  dsyevd.
+     */
     if (n > 5000) {
         magma_queue_sync( stream );
-        magma_free( dB );
+        magma_free( dB );  dB=NULL;
     }
 
     timer_start( time );
-    magma_dsyevdx_gpu(jobz, range, uplo, n, dA, ldda, vl, vu, il, iu, m, w, A, lda,
-                      work, lwork, iwork, liwork, info);
+    magma_dsyevdx_gpu( jobz, range, uplo, n, dA, ldda, vl, vu, il, iu, mout, w, A, lda,
+                       work, lwork, iwork, liwork, info );
     timer_stop( time );
     timer_printf( "time dsyevdx_gpu = %6.2f\n", time );
 
@@ -376,8 +373,9 @@ magma_dsygvdx(
         timer_start( time );
         
         /* allocate and copy dB back */
-        if (n > 5000) {
+        if (dB == NULL) {
             if (MAGMA_SUCCESS != magma_dmalloc( &dB, n*lddb ) ) {
+                magma_free( dA );  dA=NULL;
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
@@ -392,8 +390,8 @@ magma_dsygvdx(
             } else {
                 trans = MagmaNoTrans;
             }
-            magma_dtrsm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, *m, d_one, dB, lddb, dA, ldda);
+            magma_dtrsm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, *mout, d_one, dB, lddb, dA, ldda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -403,16 +401,10 @@ magma_dsygvdx(
             } else {
                 trans = MagmaTrans;
             }
-
-            magma_dtrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, *m, d_one, dB, lddb, dA, ldda);
+            magma_dtrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, *mout, d_one, dB, lddb, dA, ldda );
         }
-        magma_dgetmatrix( n, *m, dA, ldda, A, lda );
-        
-        /* free dB */
-        if (n > 5000) {
-            magma_free( dB );
-        }
+        magma_dgetmatrix( n, *mout, dA, ldda, A, lda );
         
         timer_stop( time );
         timer_printf( "time dtrsm/mm + getmatrix = %6.2f\n", time );
@@ -424,10 +416,8 @@ magma_dsygvdx(
     work[0]  = lwmin * one_eps;  // round up
     iwork[0] = liwmin;
 
-    magma_free( dA );
-    if (n <= 5000) {
-        magma_free( dB );
-    }
+    magma_free( dA );  dA=NULL;
+    magma_free( dB );  dB=NULL;
 
     return *info;
 } /* magma_dsygvd */

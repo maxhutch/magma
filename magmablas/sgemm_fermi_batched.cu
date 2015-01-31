@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgemm_fermi_batched.cu normal z -> s, Sat Nov 15 19:53:59 2014
+       @generated from zgemm_fermi_batched.cu normal z -> s, Fri Jan 30 19:00:10 2015
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -143,7 +143,7 @@ magmablas_sgemm_batched_lg(
     float const * const * dA_array, magma_int_t ldda,
     float const * const * dB_array, magma_int_t lddb,
     float beta,
-    float **dC_array, magma_int_t lddc, magma_int_t batchCount )
+    float **dC_array, magma_int_t lddc, magma_int_t batchCount, magma_queue_t queue )
 {
     magma_int_t info = 0;
     if      ( transA != MagmaNoTrans && transA != MagmaTrans && transA != MagmaConjTrans )
@@ -271,7 +271,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_nn + 1,
                       (n - 1)/BLK_N_nn + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_nn_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_nn_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -279,7 +279,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_nt + 1,
                       (n - 1)/BLK_N_nt + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_nt_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_nt_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -287,7 +287,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_nc + 1,
                       (n - 1)/BLK_N_nc + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_nc_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_nc_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -295,7 +295,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_tn + 1,
                       (n - 1)/BLK_N_tn + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_tn_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_tn_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -303,7 +303,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_tt + 1,
                       (n - 1)/BLK_N_tt + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_tt_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_tt_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -311,7 +311,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_tc + 1,
                       (n - 1)/BLK_N_tc + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_tc_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_tc_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -319,7 +319,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_cn + 1,
                       (n - 1)/BLK_N_cn + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_cn_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_cn_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -327,7 +327,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_ct + 1,
                       (n - 1)/BLK_N_ct + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_ct_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_ct_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -335,7 +335,7 @@ magmablas_sgemm_batched_lg(
         dim3 dimGrid( (m - 1)/BLK_M_cc + 1,
                       (n - 1)/BLK_N_cc + 1 ,
                       batchCount );
-        sgemm_kernel_fermi_cc_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        sgemm_kernel_fermi_cc_batched<<< dimGrid, dimBlock, 0, queue >>>(
             m, n, k, dA_array, ldda, dB_array, lddb, dC_array, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmgeelltmv.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zmgeelltmv.cu normal z -> d, Fri Jan 30 19:00:29 2015
 
 */
 
@@ -26,11 +26,11 @@ dmgeelltmv_kernel(
         int num_vecs,
         int num_cols_per_row,
         double alpha, 
-        magmaDouble_ptr dval, 
-        magmaIndex_ptr dcolind,
-        magmaDouble_ptr dx,
+        double * dval, 
+        magma_index_t * dcolind,
+        double * dx,
         double beta, 
-        magmaDouble_ptr dy)
+        double * dy)
 {
     extern __shared__ double dot[];
     int row = blockDim.x * blockIdx.x + threadIdx.x ;

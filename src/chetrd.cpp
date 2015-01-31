@@ -1,17 +1,20 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @author Stan Tomov
        @author Raffaele Solca
+       @author Stan Tomov
+       @author Mark Gates
 
-       @generated from zhetrd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from zhetrd.cpp normal z -> c, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
+
+#define FAST_HEMV
 
 /**
     Purpose
@@ -141,22 +144,23 @@ magma_chetrd(
     magmaFloatComplex *work, magma_int_t lwork,
     magma_int_t *info)
 {
-#define  A(i, j) ( A + (j)*lda  + (i))
-#define dA(i, j) (dA + (j)*ldda + (i))
+    #define  A(i_, j_) ( A + (i_) + (j_)*lda )
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
     const char* uplo_ = lapack_uplo_const( uplo );
 
-    magma_int_t ldda = lda;
-    magma_int_t nb = magma_get_chetrd_nb(n);
+    magma_int_t ldda = roundup( n, 32 );
+    magma_int_t nb = magma_get_chetrd_nb( n );
 
-    magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
-    magmaFloatComplex c_one     = MAGMA_C_ONE;
-    float          d_one     = MAGMA_D_ONE;
+    const magmaFloatComplex c_zero    = MAGMA_C_ZERO;
+    const magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
+    const magmaFloatComplex c_one     = MAGMA_C_ONE;
+    const float             d_one     = MAGMA_D_ONE;
     
     magma_int_t kk, nx;
     magma_int_t i, j, i_n;
     magma_int_t iinfo;
-    magma_int_t ldwork, lddwork, lwkopt;
+    magma_int_t ldw, lddw, lwkopt;
     magma_int_t lquery;
 
     *info = 0;
@@ -173,7 +177,8 @@ magma_chetrd(
     }
 
     /* Determine the block size. */
-    ldwork = lddwork = n;
+    ldw = n;
+    lddw = ldda;
     lwkopt = n * nb;
     if (*info == 0) {
         work[0] = MAGMA_C_MAKE( lwkopt, 0 );
@@ -193,24 +198,37 @@ magma_chetrd(
     }
 
     magmaFloatComplex *dA;
-    if (MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda + 2*n*nb )) {
+    #ifdef FAST_HEMV
+    magma_int_t ldwork2 = ldda*ceildiv(n,64);
+    #else
+    magma_int_t ldwork2 = 0;
+    #endif
+    if (MAGMA_SUCCESS != magma_cmalloc( &dA, ldda*n + 2*lddw*nb + ldwork2 )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
-    magmaFloatComplex *dwork = dA + n*ldda;
+    magmaFloatComplex *dwork  = dA + ldda*n;
+    #ifdef FAST_HEMV
+    magmaFloatComplex *dwork2 = dwork + 2*lddw*nb;
+    #endif
 
-    if (n < 2048)
-        nx = n;
-    else
-        nx = 512;
+    //if (n < 2048)
+    //    nx = n;
+    //else
+    //    nx = 512;
+    nx = min( 128, n );  // nx <= n is required
+
+    // clear out dwork in case it has NANs (used as y in chemv)
+    // rest of dwork (used as work in magmablas_chemv) doesn't need to be cleared
+    magmablas_claset( MagmaFull, n, nb, c_zero, c_zero, dwork, lddw );
 
     if (upper) {
         /* Copy the matrix to the GPU */
         magma_csetmatrix( n, n, A(0, 0), lda, dA(0, 0), ldda );
 
-        /*  Reduce the upper triangle of A.
-            Columns 1:kk are handled by the unblocked method. */
+        /* Reduce the upper triangle of A.
+           Columns 1:kk are handled by the unblocked method. */
         kk = n - (n - nx + nb - 1) / nb * nb;
 
         for (i = n - nb; i >= kk; i -= nb) {
@@ -218,20 +236,26 @@ magma_chetrd(
                matrix W which is needed to update the unreduced part of
                the matrix */
             
-            /*   Get the current panel (no need for the 1st iteration) */
+            /* Get the current panel (no need for the 1st iteration) */
             if (i != n-nb)
                 magma_cgetmatrix( i+nb, nb, dA(0, i), ldda, A(0, i), lda );
             
-            magma_clatrd(uplo, i+nb, nb, A(0, 0), lda, e, tau,
-                         work, ldwork, dA(0, 0), ldda, dwork, lddwork);
+            #ifdef FAST_HEMV
+            magma_clatrd2( uplo, i+nb, nb, A(0, 0), lda, e, tau,
+                           work, ldw, dA(0, 0), ldda, dwork, lddw,
+                           dwork2, ldwork2 );
+            #else
+            magma_clatrd(  uplo, i+nb, nb, A(0, 0), lda, e, tau,
+                           work, ldw, dA(0, 0), ldda, dwork, lddw );
+            #endif
 
             /* Update the unreduced submatrix A(0:i-2,0:i-2), using an
                update of the form:  A := A - V*W' - W*V' */
-            magma_csetmatrix( i + nb, nb, work, ldwork, dwork, lddwork );
+            magma_csetmatrix( i + nb, nb, work, ldw, dwork, lddw );
 
-            magma_cher2k(uplo, MagmaNoTrans, i, nb, c_neg_one,
-                         dA(0, i), ldda, dwork,
-                         lddwork, d_one, dA(0, 0), ldda);
+            magma_cher2k( uplo, MagmaNoTrans, i, nb, c_neg_one,
+                          dA(0, i), ldda, dwork, lddw,
+                          d_one, dA(0, 0), ldda );
             
             /* Copy superdiagonal elements back into A, and diagonal
                elements into D */
@@ -243,50 +267,40 @@ magma_chetrd(
         
         magma_cgetmatrix( kk, kk, dA(0, 0), ldda, A(0, 0), lda );
         
-        /*  Use unblocked code to reduce the last or only block */
-        lapackf77_chetd2(uplo_, &kk, A(0, 0), &lda, d, e, tau, &iinfo);
+        /* Use CPU code to reduce the last or only block */
+        lapackf77_chetrd( uplo_, &kk, A(0, 0), &lda, d, e, tau, work, &lwork, &iinfo );
     }
     else {
         /* Copy the matrix to the GPU */
         if (1 <= n-nx)
             magma_csetmatrix( n, n, A(0,0), lda, dA(0,0), ldda );
 
-        #ifdef FAST_HEMV
-        // TODO this leaks memory from dA, above
-        magmaFloatComplex *dwork2;
-        if (MAGMA_SUCCESS != magma_cmalloc( &dwork2, n*n )) {
-            *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
-        }
-        #endif
         /* Reduce the lower triangle of A */
         for (i = 0; i < n-nx; i += nb) {
             /* Reduce columns i:i+nb-1 to tridiagonal form and form the
                matrix W which is needed to update the unreduced part of
                the matrix */
 
-            /*   Get the current panel (no need for the 1st iteration) */
+            /* Get the current panel (no need for the 1st iteration) */
             if (i != 0)
                 magma_cgetmatrix( n-i, nb, dA(i, i), ldda, A(i, i), lda );
+            
             #ifdef FAST_HEMV
-            magma_clatrd2(uplo, n-i, nb, A(i, i), lda, &e[i],
-                         &tau[i], work, ldwork,
-                         dA(i, i), ldda,
-                         dwork, lddwork, dwork2, n*n);
+            magma_clatrd2( uplo, n-i, nb, A(i, i), lda, &e[i], &tau[i],
+                           work, ldw, dA(i, i), ldda, dwork, lddw,
+                           dwork2, ldwork2 );
             #else
-            magma_clatrd(uplo, n-i, nb, A(i, i), lda, &e[i],
-                         &tau[i], work, ldwork,
-                         dA(i, i), ldda,
-                         dwork, lddwork);
+            magma_clatrd(  uplo, n-i, nb, A(i, i), lda, &e[i], &tau[i],
+                           work, ldw, dA(i, i), ldda, dwork, lddw );
             #endif
+            
             /* Update the unreduced submatrix A(i+ib:n,i+ib:n), using
                an update of the form:  A := A - V*W' - W*V' */
-            magma_csetmatrix( n-i, nb, work, ldwork, dwork, lddwork );
+            magma_csetmatrix( n-i, nb, work, ldw, dwork, lddw );
 
-            magma_cher2k(MagmaLower, MagmaNoTrans, n-i-nb, nb, c_neg_one,
-                         dA(i+nb, i), ldda,
-                         &dwork[nb], lddwork, d_one,
-                         dA(i+nb, i+nb), ldda);
+            magma_cher2k( MagmaLower, MagmaNoTrans, n-i-nb, nb, c_neg_one,
+                          dA(i+nb, i), ldda, &dwork[nb], lddw,
+                          d_one, dA(i+nb, i+nb), ldda );
             
             /* Copy subdiagonal elements back into A, and diagonal
                elements into D */
@@ -296,19 +310,17 @@ magma_chetrd(
             }
         }
 
-        #ifdef FAST_HEMV
-        magma_free( dwork2 );
-        #endif
-
-        /* Use unblocked code to reduce the last or only block */
+        /* Use CPU code to reduce the last or only block */
         if (1 <= n-nx)
             magma_cgetmatrix( n-i, n-i, dA(i, i), ldda, A(i, i), lda );
+        
         i_n = n-i;
-        lapackf77_chetrd(uplo_, &i_n, A(i, i), &lda, &d[i], &e[i],
-                         &tau[i], work, &lwork, &iinfo);
+        lapackf77_chetrd( uplo_, &i_n, A(i, i), &lda, &d[i], &e[i],
+                          &tau[i], work, &lwork, &iinfo );
     }
     
     magma_free( dA );
+    
     work[0] = MAGMA_C_MAKE( lwkopt, 0 );
 
     return *info;

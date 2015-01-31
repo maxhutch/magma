@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -41,13 +41,13 @@ void clag2z_kernel(
             // full block-column
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
-                A[j*lda] = cuComplexFloatToDouble( SA[j*ldsa] );
+                A[j*lda] = MAGMA_Z_MAKE( MAGMA_C_REAL( SA[j*ldsa] ), MAGMA_C_IMAG( SA[j*ldsa] ));
             }
         }
         else {
             // partial block-column
             for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
-                A[j*lda] = cuComplexFloatToDouble( SA[j*ldsa] );
+                A[j*lda] = MAGMA_Z_MAKE( MAGMA_C_REAL( SA[j*ldsa] ), MAGMA_C_IMAG( SA[j*ldsa] ));
             }
         }
     }
@@ -129,7 +129,7 @@ magmablas_clag2z_q(
         return;
     }
 
-    dim3 threads( BLK_X );
+    dim3 threads( BLK_X, 1 );
     dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     clag2z_kernel<<< grid, threads, 0, queue >>> ( m, n, SA, ldsa, A, lda );
 }

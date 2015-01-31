@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zherk_fermi_batched_k32.cu normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zherk_fermi_batched_k32.cu normal z -> c, Fri Jan 30 19:00:10 2015
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -138,7 +138,7 @@ magmablas_cherk_batched_k32(
     float alpha,
     magmaFloatComplex const * const * dA_array, magma_int_t ldda,
     float beta,
-    magmaFloatComplex **dC_array, magma_int_t lddc, magma_int_t batchCount )
+    magmaFloatComplex **dC_array, magma_int_t lddc, magma_int_t batchCount, magma_queue_t queue )
 {
     magmaFloatComplex cbeta  = MAGMA_C_MAKE( beta, 0. );
     magmaFloatComplex calpha = MAGMA_C_MAKE( alpha, 0. );
@@ -227,7 +227,7 @@ magmablas_cherk_batched_k32(
         dim3 dimGrid( (n - 1)/BLK_M_nt + 1,
                       (n - 1)/BLK_N_nt + 1 ,
                       batchCount );
-        magmablas_c_herk_kernel_fermi_nt_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        magmablas_c_herk_kernel_fermi_nt_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }
@@ -235,7 +235,7 @@ magmablas_cherk_batched_k32(
         dim3 dimGrid( (n - 1)/BLK_M_nc + 1,
                       (n - 1)/BLK_N_nc + 1 ,
                       batchCount );
-         magmablas_c_herk_kernel_fermi_nc_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+         magmablas_c_herk_kernel_fermi_nc_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }
@@ -243,7 +243,7 @@ magmablas_cherk_batched_k32(
         dim3 dimGrid( (n - 1)/BLK_M_tn + 1,
                       (n - 1)/BLK_N_tn + 1 ,
                       batchCount );
-         magmablas_c_herk_kernel_fermi_tn_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+         magmablas_c_herk_kernel_fermi_tn_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }
@@ -251,7 +251,7 @@ magmablas_cherk_batched_k32(
         dim3 dimGrid( (n - 1)/BLK_M_cn + 1,
                       (n - 1)/BLK_N_cn + 1 ,
                       batchCount );
-         magmablas_c_herk_kernel_fermi_cn_batched<<< dimGrid, dimBlock, 0, magma_stream >>>(
+         magmablas_c_herk_kernel_fermi_cn_batched<<< dimGrid, dimBlock, 0, queue >>>(
             uploA, n, k, dA_array, ldda, dA_array, ldda, dC_array, lddc, calpha, cbeta,
             (int)offsetA, (int)offsetA );
     }

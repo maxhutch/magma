@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
  
        @author Mark Gates
-       @generated from blas_z.cpp normal z -> s, Sat Nov 15 19:54:12 2014
+       @generated from blas_z.cpp normal z -> s, Fri Jan 30 19:00:20 2015
 */
 
 #include <stdlib.h>
@@ -47,10 +47,10 @@
             
     @ingroup magma_sblas1
 */
-extern "C"
-magma_int_t magma_isamax(
+extern "C" magma_int_t
+magma_isamax(
     magma_int_t n,
-    const float *dx, magma_int_t incx )
+    magmaFloat_const_ptr dx, magma_int_t incx )
 {
     return cublasIsamax( n, dx, incx );
 }
@@ -70,10 +70,10 @@ magma_int_t magma_isamax(
 
     @ingroup magma_sblas1
 */
-extern "C"
-magma_int_t magma_isamin(
+extern "C" magma_int_t
+magma_isamin(
     magma_int_t n,
-    const float *dx, magma_int_t incx )
+    magmaFloat_const_ptr dx, magma_int_t incx )
 {
     return cublasIsamin( n, dx, incx );
 }
@@ -93,10 +93,10 @@ magma_int_t magma_isamin(
 
     @ingroup magma_sblas1
 */
-extern "C"
-float magma_sasum(
+extern "C" float
+magma_sasum(
     magma_int_t n,
-    const float *dx, magma_int_t incx )
+    magmaFloat_const_ptr dx, magma_int_t incx )
 {
     return cublasSasum( n, dx, incx );
 }
@@ -126,12 +126,12 @@ float magma_sasum(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_saxpy(
+extern "C" void
+magma_saxpy(
     magma_int_t n,
     float alpha,
-    const float *dx, magma_int_t incx,
-    float       *dy, magma_int_t incy )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_ptr       dy, magma_int_t incy )
 {
     cublasSaxpy( n, alpha, dx, incx, dy, incy );
 }
@@ -158,11 +158,11 @@ void magma_saxpy(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_scopy(
+extern "C" void
+magma_scopy(
     magma_int_t n,
-    const float *dx, magma_int_t incx,
-    float       *dy, magma_int_t incy )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_ptr       dy, magma_int_t incy )
 {
     cublasScopy( n, dx, incx, dy, incy );
 }
@@ -192,8 +192,8 @@ void magma_scopy(
 extern "C"
 float magma_sdot(
     magma_int_t n,
-    const float *dx, magma_int_t incx,
-    const float *dy, magma_int_t incy )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_const_ptr dy, magma_int_t incy )
 {
     return cublasSdot( n, dx, incx, dy, incy );
 }
@@ -224,12 +224,12 @@ float magma_sdot(
 extern "C"
 float magma_sdot(
     magma_int_t n,
-    const float *dx, magma_int_t incx,
-    const float *dy, magma_int_t incy )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_const_ptr dy, magma_int_t incy )
 {
     return cublasSdot( n, dx, incx, dy, incy );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Returns 2-norm of vector x. Avoids unnecesary over/underflow.
@@ -246,10 +246,10 @@ float magma_sdot(
 
     @ingroup magma_sblas1
 */
-extern "C"
-float magma_snrm2(
+extern "C" float
+magma_snrm2(
     magma_int_t n,
-    const float *dx, magma_int_t incx )
+    magmaFloat_const_ptr dx, magma_int_t incx )
 {
     return cublasSnrm2( n, dx, incx );
 }
@@ -286,11 +286,11 @@ float magma_snrm2(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_srot(
+extern "C" void
+magma_srot(
     magma_int_t n,
-    float *dx, magma_int_t incx,
-    float *dy, magma_int_t incy,
+    magmaFloat_ptr dx, magma_int_t incx,
+    magmaFloat_ptr dy, magma_int_t incy,
     float c, float s )
 {
     cublasSrot( n, dx, incx, dy, incy, c, s );
@@ -329,16 +329,16 @@ void magma_srot(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_srot(
+extern "C" void
+magma_srot(
     magma_int_t n,
-    float *dx, magma_int_t incx,
-    float *dy, magma_int_t incy,
+    magmaFloat_ptr dx, magma_int_t incx,
+    magmaFloat_ptr dy, magma_int_t incy,
     float c, float s )
 {
     cublasSrot( n, dx, incx, dy, incy, c, s );
 }
-#endif
+#endif // COMPLEX
 
 #ifdef REAL
 // --------------------
@@ -346,8 +346,8 @@ void magma_srot(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_srotm(
+extern "C" void
+magma_srotm(
     magma_int_t n,
     float *dx, magma_int_t incx,
     float *dy, magma_int_t incy,
@@ -361,15 +361,15 @@ void magma_srotm(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_srotmg(
+extern "C" void
+magma_srotmg(
     float *d1, float       *d2,
     float *x1, const float *y1,
     float *param )
 {
     cublasSrotmg( d1, d2, x1, y1, param );
 }
-#endif
+#endif // REAL
 
 // --------------------
 /** Scales a vector by a constant; \f$ x = \alpha x \f$.
@@ -389,11 +389,11 @@ void magma_srotmg(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_sscal(
+extern "C" void
+magma_sscal(
     magma_int_t n,
     float alpha,
-    float *dx, magma_int_t incx )
+    magmaFloat_ptr dx, magma_int_t incx )
 {
     cublasSscal( n, alpha, dx, incx );
 }
@@ -417,15 +417,15 @@ void magma_sscal(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_sscal(
+extern "C" void
+magma_sscal(
     magma_int_t n,
     float alpha,
-    float *dx, magma_int_t incx )
+    magmaFloat_ptr dx, magma_int_t incx )
 {
     cublasSscal( n, alpha, dx, incx );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Swap vector x and y; \f$ x <-> y \f$.
@@ -449,11 +449,11 @@ void magma_sscal(
 
     @ingroup magma_sblas1
 */
-extern "C"
-void magma_sswap(
+extern "C" void
+magma_sswap(
     magma_int_t n,
-    float *dx, magma_int_t incx,
-    float *dy, magma_int_t incy )
+    magmaFloat_ptr dx, magma_int_t incx,
+    magmaFloat_ptr dy, magma_int_t incy )
 {
     cublasSswap( n, dx, incx, dy, incy );
 }
@@ -508,15 +508,15 @@ void magma_sswap(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_sgemv(
+extern "C" void
+magma_sgemv(
     magma_trans_t transA,
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    const float *dx, magma_int_t incx,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
-    float       *dy, magma_int_t incy )
+    magmaFloat_ptr       dy, magma_int_t incy )
 {
     cublasSgemv(
         cublas_trans_const( transA ),
@@ -561,13 +561,13 @@ void magma_sgemv(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_sger(
+extern "C" void
+magma_sger(
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float *dx, magma_int_t incx,
-    const float *dy, magma_int_t incy,
-    float       *dA, magma_int_t ldda )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_const_ptr dy, magma_int_t incy,
+    magmaFloat_ptr       dA, magma_int_t ldda )
 {
     cublasSger(
         m, n,
@@ -612,13 +612,13 @@ void magma_sger(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_sger(
+extern "C" void
+magma_sger(
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float *dx, magma_int_t incx,
-    const float *dy, magma_int_t incy,
-    float       *dA, magma_int_t ldda )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_const_ptr dy, magma_int_t incy,
+    magmaFloat_ptr       dA, magma_int_t ldda )
 {
     cublasSger(
         m, n,
@@ -626,7 +626,7 @@ void magma_sger(
                dy, incy,
                dA, ldda );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Perform symmetric matrix-vector product, \f$ y = \alpha A x + \beta y \f$.
@@ -666,15 +666,15 @@ void magma_sger(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_ssymv(
+extern "C" void
+magma_ssymv(
     magma_uplo_t uplo,
     magma_int_t n,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    const float *dx, magma_int_t incx,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
-    float       *dy, magma_int_t incy )
+    magmaFloat_ptr       dy, magma_int_t incy )
 {
     cublasSsymv(
         cublas_uplo_const( uplo ),
@@ -712,13 +712,13 @@ void magma_ssymv(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_ssyr(
+extern "C" void
+magma_ssyr(
     magma_uplo_t uplo,
     magma_int_t n,
     float alpha,
-    const float *dx, magma_int_t incx,
-    float       *dA, magma_int_t ldda )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_ptr       dA, magma_int_t ldda )
 {
     cublasSsyr(
         cublas_uplo_const( uplo ),
@@ -762,14 +762,14 @@ void magma_ssyr(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_ssyr2(
+extern "C" void
+magma_ssyr2(
     magma_uplo_t uplo,
     magma_int_t n,
     float alpha,
-    const float *dx, magma_int_t incx,
-    const float *dy, magma_int_t incy,
-    float       *dA, magma_int_t ldda )
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    magmaFloat_const_ptr dy, magma_int_t incy,
+    magmaFloat_ptr       dA, magma_int_t ldda )
 {
     cublasSsyr2(
         cublas_uplo_const( uplo ),
@@ -813,12 +813,12 @@ void magma_ssyr2(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_strmv(
+extern "C" void
+magma_strmv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
-    const float *dA, magma_int_t ldda,
-    float       *dx, magma_int_t incx )
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dx, magma_int_t incx )
 {
     cublasStrmv(
         cublas_uplo_const( uplo ),
@@ -864,12 +864,12 @@ void magma_strmv(
 
     @ingroup magma_sblas2
 */
-extern "C"
-void magma_strsv(
+extern "C" void
+magma_strsv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
-    const float *dA, magma_int_t ldda,
-    float       *dx, magma_int_t incx )
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dx, magma_int_t incx )
 {
     cublasStrsv(
         cublas_uplo_const( uplo ),
@@ -932,15 +932,15 @@ void magma_strsv(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_sgemm(
+extern "C" void
+magma_sgemm(
     magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    const float *dB, magma_int_t lddb,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dB, magma_int_t lddb,
     float beta,
-    float       *dC, magma_int_t lddc )
+    magmaFloat_ptr       dC, magma_int_t lddc )
 {
     cublasSgemm(
         cublas_trans_const( transA ),
@@ -999,15 +999,15 @@ void magma_sgemm(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_ssymm(
+extern "C" void
+magma_ssymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    const float *dB, magma_int_t lddb,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dB, magma_int_t lddb,
     float beta,
-    float       *dC, magma_int_t lddc )
+    magmaFloat_ptr       dC, magma_int_t lddc )
 {
     cublasSsymm(
         cublas_side_const( side ),
@@ -1059,14 +1059,14 @@ void magma_ssymm(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_ssyrk(
+extern "C" void
+magma_ssyrk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     float alpha,
-    const float *dA, magma_int_t ldda,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
     float beta,
-    float       *dC, magma_int_t lddc )
+    magmaFloat_ptr       dC, magma_int_t lddc )
 {
     cublasSsyrk(
         cublas_uplo_const( uplo ),
@@ -1125,15 +1125,15 @@ void magma_ssyrk(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_ssyr2k(
+extern "C" void
+magma_ssyr2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    const float *dB, magma_int_t lddb,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dB, magma_int_t lddb,
     float beta,
-    float       *dC, magma_int_t lddc )
+    magmaFloat_ptr       dC, magma_int_t lddc )
 {
     cublasSsyr2k(
         cublas_uplo_const( uplo ),
@@ -1193,15 +1193,15 @@ void magma_ssyr2k(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_ssymm(
+extern "C" void
+magma_ssymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    const float *dB, magma_int_t lddb,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dB, magma_int_t lddb,
     float beta,
-    float       *dC, magma_int_t lddc )
+    magmaFloat_ptr       dC, magma_int_t lddc )
 {
     cublasSsymm(
         cublas_side_const( side ),
@@ -1253,14 +1253,14 @@ void magma_ssymm(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_ssyrk(
+extern "C" void
+magma_ssyrk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     float alpha,
-    const float *dA, magma_int_t ldda,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
     float beta,
-    float       *dC, magma_int_t lddc )
+    magmaFloat_ptr       dC, magma_int_t lddc )
 {
     cublasSsyrk(
         cublas_uplo_const( uplo ),
@@ -1319,15 +1319,15 @@ void magma_ssyrk(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_ssyr2k(
+extern "C" void
+magma_ssyr2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    const float *dB, magma_int_t lddb,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dB, magma_int_t lddb,
     float beta,
-    float       *dC, magma_int_t lddc )
+    magmaFloat_ptr       dC, magma_int_t lddc )
 {
     cublasSsyr2k(
         cublas_uplo_const( uplo ),
@@ -1383,13 +1383,13 @@ void magma_ssyr2k(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_strmm(
+extern "C" void
+magma_strmm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    float       *dB, magma_int_t lddb )
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dB, magma_int_t lddb )
 {
     cublasStrmm(
         cublas_side_const( side ),
@@ -1446,13 +1446,13 @@ void magma_strmm(
 
     @ingroup magma_sblas3
 */
-extern "C"
-void magma_strsm(
+extern "C" void
+magma_strsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     float alpha,
-    const float *dA, magma_int_t ldda,
-    float       *dB, magma_int_t lddb )
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dB, magma_int_t lddb )
 {
     cublasStrsm(
         cublas_side_const( side ),

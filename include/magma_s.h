@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_z.h normal z -> s, Sat Nov 15 19:53:54 2014
+       @generated from magma_z.h normal z -> s, Fri Jan 30 19:00:06 2015
 */
 
 #ifndef MAGMA_S_H
@@ -394,12 +394,13 @@ magma_int_t
 magma_ssytrf(
     magma_uplo_t uplo, magma_int_t n,
     float *A, magma_int_t lda,
-    magma_int_t *ipiv, magma_int_t *info);
+    magma_int_t *ipiv,
+    magma_int_t *info);
 
 magma_int_t
 magma_ssytrf_nopiv(
     magma_uplo_t uplo, magma_int_t n,
-    float *a, magma_int_t lda,
+    float *A, magma_int_t lda,
     magma_int_t *info);
 
 magma_int_t
@@ -459,12 +460,27 @@ magma_slasyf_gpu(
     float    *hA, magma_int_t lda,
     magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
     magmaFloat_ptr dW, magma_int_t lddw,
-    magma_queue_t queues[], magma_event_t event[], magma_int_t *info);
+    magma_queue_t queues[], magma_event_t event[],
+    magma_int_t *info);
 
 magma_int_t
 ssytrf_nopiv_cpu(
     magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
     float *A, magma_int_t lda,
+    magma_int_t *info);
+
+magma_int_t
+magma_ssytrs_nopiv_gpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dB, magma_int_t lddb,
+    magma_int_t *info);
+
+magma_int_t
+magma_ssysv_nopiv_gpu(
+    magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs, 
+    magmaFloat_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dB, magma_int_t lddb, 
     magma_int_t *info);
 
 magma_int_t
@@ -1028,7 +1044,8 @@ magma_sgeqr2x3_gpu(
     magma_int_t m, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dtau,
-    magmaFloat_ptr dT, magmaFloat_ptr ddA,
+    magmaFloat_ptr dT,
+    magmaFloat_ptr ddA,
     magmaFloat_ptr dwork,
     magma_int_t *info);
 
@@ -1317,7 +1334,7 @@ magma_ssytrd2_gpu(
 magma_int_t
 magma_ssytrf_nopiv_gpu(
     magma_uplo_t uplo, magma_int_t n,
-    magmaFloat_ptr da, magma_int_t ldda,
+    magmaFloat_ptr dA, magma_int_t ldda,
     magma_int_t *info);
 
 magma_int_t
@@ -1400,18 +1417,15 @@ magma_int_t
 magma_slatrd_mgpu(
     magma_int_t ngpu,
     magma_uplo_t uplo,
-    magma_int_t n0, magma_int_t n, magma_int_t nb, magma_int_t nb0,
+    magma_int_t n, magma_int_t nb, magma_int_t nb0,
     float *A,  magma_int_t lda,
     float *e, float *tau,
-    float *W,   magma_int_t ldw,
+    float    *W,       magma_int_t ldw,
     magmaFloat_ptr dA[],    magma_int_t ldda, magma_int_t offset,
     magmaFloat_ptr dW[],    magma_int_t lddw,
+    float    *hwork,   magma_int_t lhwork,
     magmaFloat_ptr dwork[], magma_int_t ldwork,
-    magma_int_t k,
-    magmaFloat_ptr dx[], magmaFloat_ptr dy[],
-    float *work,
-    magma_queue_t queues[][10],
-    float *times);
+    magma_queue_t queues[] );
 
 magma_int_t
 magma_slauum_gpu(

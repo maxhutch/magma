@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -16,7 +16,7 @@ magma_zlobpcg_shift_kernel(
     magma_int_t num_rows, 
     magma_int_t num_vecs, 
     magma_int_t shift, 
-    magmaDoubleComplex_ptr x )
+    magmaDoubleComplex * x )
 {
 
     int idx = threadIdx.x ;     // thread in row
@@ -97,7 +97,7 @@ magma_zlobpcg_shift(
 
     dim3 block( num_threads, 1, 1 );
 
-    int dimgrid1 = sqrt(num_rows);
+    int dimgrid1 = (int) sqrt( (double) num_rows);
     int dimgrid2 = (num_rows + dimgrid1 -1 ) / dimgrid1;
 
     dim3 grid( dimgrid1, dimgrid2, 1);

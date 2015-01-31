@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
  
        @author Mark Gates
-       @generated from cblas_z.cpp normal z -> d, Sat Nov 15 19:54:05 2014
+       @generated from cblas_z.cpp normal z -> d, Fri Jan 30 19:00:12 2015
 
     Wrappers around a few CBLAS functions.
     

@@ -22,7 +22,7 @@
 5) compile magma-sparse using "make -j8" (in case you want to use 8 cores...)
 
 6) If no errors show up, everything has worked out fine. 
-   In the sparse-iter/testing folder you find example runfiles - for proper
+   In the sparse-iter/testing folder you find example testers - for proper
    usage see section below.
 
 
@@ -44,7 +44,7 @@ Another option is to generate a 2D Laplace problem of variable size on-the-fly:
 To run a solver:
 
 
-            ./run_xsolver [ --options ] matrices
+            ./testing_xsolver [ --options ] matrices
 
 
 Every solver exists in single ("x"=s), double ("x"=d), single-complex and 
@@ -52,7 +52,7 @@ double-complex version ("x"=c or z, respectively).
 
 
 For different solvers there exist different options, which are printed 
-when executing "./run_xsolver —help.
+when executing "./testing_xsolver --help".
 
  Some options are:
 
@@ -103,7 +103,7 @@ when executing "./run_xsolver —help.
    k = 0 no scaling
    k = 1 scale symmetrically to unit diagonal
 
-"--preconditioner k"
+"--precond k"
     k = 0 : No
     k = 1 : Jacobi
     k = 2 : ILU/IC
@@ -113,8 +113,9 @@ when executing "./run_xsolver —help.
     k : number of eigenvalue/eigenvectors to compute
 
 
-The last argument is the traget matrices. These should be stored in MatrixMarket
-format, see http://math.nist.gov/MatrixMarket/formats.html.
+The last argument is a list of the target matrices. 
+These should be stored in MatrixMarket format, see 
+http://math.nist.gov/MatrixMarket/formats.html.
 
 The solver info uses the following feedback:
        0          Success.

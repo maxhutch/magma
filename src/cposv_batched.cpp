@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Azzam Haidar
 
-       @generated from zposv_batched.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zposv_batched.cpp normal z -> c, Fri Jan 30 19:00:19 2015
 */
 #include "common_magma.h"
 /**
@@ -79,7 +79,7 @@ magma_cposv_batched(
                   magmaFloatComplex **dA_array, magma_int_t ldda,
                   magmaFloatComplex **dB_array, magma_int_t lddb,
                   magma_int_t *dinfo_array,
-                  magma_int_t batchCount)
+                  magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
     
@@ -105,7 +105,7 @@ magma_cposv_batched(
         return info;
     }
 
-    info = magma_cpotrf_batched( uplo, n, dA_array, ldda, dinfo_array, batchCount);
+    info = magma_cpotrf_batched( uplo, n, dA_array, ldda, dinfo_array, batchCount, queue);
     if ( (info != MAGMA_SUCCESS) ){
         return info;
     }
@@ -127,6 +127,6 @@ magma_cposv_batched(
     free (cpu_info);
 #endif
 
-    info = magma_cpotrs_batched( uplo, n, nrhs, dA_array, ldda, dB_array, lddb,  batchCount );
+    info = magma_cpotrs_batched( uplo, n, nrhs, dA_array, ldda, dB_array, lddb,  batchCount, queue );
     return info;
 }

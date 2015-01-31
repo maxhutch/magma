@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmergebicgstab2.cu normal z -> s, Sat Nov 15 19:54:21 2014
+       @generated from zmergebicgstab2.cu normal z -> s, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -28,8 +28,8 @@ __global__ void
 magma_sreduce_kernel_spmv1(    
     int Gs,
     int n, 
-    magmaFloat_ptr vtmp,
-    magmaFloat_ptr vtmp2 )
+    float * vtmp,
+    float * vtmp2 )
 {
 
     extern __shared__ float temp[];    
@@ -90,13 +90,13 @@ magma_sreduce_kernel_spmv1(
 __global__ void
 magma_sbicgmerge_spmv1_kernel(  
     int n,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaFloat_ptr p,
-    magmaFloat_ptr r,
-    magmaFloat_ptr v,
-    magmaFloat_ptr vtmp)
+    float * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    float * p,
+    float * r,
+    float * v,
+    float * vtmp)
 {
 
     extern __shared__ float temp[]; 
@@ -165,7 +165,7 @@ magma_sbicgmerge_spmv1_kernel(
 
 __global__ void
 magma_sbicgstab_alphakernel(  
-                    magmaFloat_ptr skp ){
+                    float * skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -189,27 +189,27 @@ magma_sbicgstab_alphakernel(
                 system matrix
 
     @param[in]
-    d1          magmaFloat_ptr 
+    d1          magmaFloat_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaFloat_ptr 
+    d2          magmaFloat_ptr
                 temporary vector
 
     @param[in]
-    dp          magmaFloat_ptr 
+    dp          magmaFloat_ptr
                 input vector p
 
     @param[in]
-    dr          magmaFloat_ptr 
+    dr          magmaFloat_ptr
                 input vector r
 
     @param[in]
-    dv          magmaFloat_ptr 
+    dv          magmaFloat_ptr
                 output vector v
 
     @param[in/out]
-    skp         magmaFloat_ptr 
+    skp         magmaFloat_ptr
                 array for parameters ( skp[0]=alpha )
 
     @param[in]
@@ -278,8 +278,8 @@ __global__ void
 magma_sreduce_kernel_spmv2( 
     int Gs,
     int n, 
-    magmaFloat_ptr vtmp,
-    magmaFloat_ptr vtmp2 )
+    float * vtmp,
+    float * vtmp2 )
 {
 
     extern __shared__ float temp[];    
@@ -364,12 +364,12 @@ magma_sreduce_kernel_spmv2(
 __global__ void
 magma_sbicgmerge_spmv2_kernel(  
     int n,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaFloat_ptr s,
-    magmaFloat_ptr t,
-    magmaFloat_ptr vtmp )
+    float * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    float * s,
+    float * t,
+    float * vtmp )
 {
 
     extern __shared__ float temp[]; 
@@ -468,7 +468,7 @@ magma_sbicgmerge_spmv2_kernel(
 
 __global__ void
 magma_sbicgstab_omegakernel(  
-                    magmaFloat_ptr skp ){
+                    float * skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -492,23 +492,23 @@ magma_sbicgstab_omegakernel(
                 input matrix 
 
     @param[in]
-    d1          magmaFloat_ptr 
+    d1          magmaFloat_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaFloat_ptr 
+    d2          magmaFloat_ptr
                 temporary vector
 
     @param[in]
-    ds          magmaFloat_ptr 
+    ds          magmaFloat_ptr
                 input vector s
 
     @param[in]
-    dt          magmaFloat_ptr 
+    dt          magmaFloat_ptr
                 output vector t
 
     @param[in/out]
-    skp         magmaFloat_ptr 
+    skp         magmaFloat_ptr
                 array for parameters
 
     @param[in]
@@ -574,14 +574,14 @@ magma_sbicgmerge_spmv2(
 __global__ void
 magma_sbicgmerge_xrbeta_kernel(  
     int n, 
-    magmaFloat_ptr rr,
-    magmaFloat_ptr r,
-    magmaFloat_ptr p,
-    magmaFloat_ptr s,
-    magmaFloat_ptr t,
-    magmaFloat_ptr x, 
-    magmaFloat_ptr skp,
-    magmaFloat_ptr vtmp )
+    float * rr,
+    float * r,
+    float * p,
+    float * s,
+    float * t,
+    float * x, 
+    float * skp,
+    float * vtmp )
 {
 
     extern __shared__ float temp[]; 
@@ -681,7 +681,7 @@ magma_sbicgmerge_xrbeta_kernel(
 
 __global__ void
 magma_sbicgstab_betakernel(  
-    magmaFloat_ptr skp )
+    float * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -707,39 +707,39 @@ magma_sbicgstab_betakernel(
                 dimension n
 
     @param[in]
-    d1          magmaFloat_ptr 
+    d1          magmaFloat_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaFloat_ptr 
+    d2          magmaFloat_ptr
                 temporary vector
 
     @param[in]
-    rr          magmaFloat_ptr 
+    rr          magmaFloat_ptr
                 input vector rr
 
     @param[in]
-    r           magmaFloat_ptr 
+    r           magmaFloat_ptr
                 input/output vector r
 
     @param[in]
-    p           magmaFloat_ptr 
+    p           magmaFloat_ptr
                 input vector p
 
     @param[in]
-    s           magmaFloat_ptr 
+    s           magmaFloat_ptr
                 input vector s
 
     @param[in]
-    t           magmaFloat_ptr 
+    t           magmaFloat_ptr
                 input vector t
 
     @param[out]
-    x           magmaFloat_ptr 
+    x           magmaFloat_ptr
                 output vector x
 
     @param[in]
-    skp         magmaFloat_ptr 
+    skp         magmaFloat_ptr
                 array for parameters
 
     @param[in]

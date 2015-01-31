@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -49,8 +49,8 @@ __global__ void
 zbcsrlupivloc_kernel( 
     int size_b,
     int kblocks,   
-    magmaDouble_ptr *A,  
-    magmaInt_ptr ipiv)
+    double **A, 
+    magma_int_t *ipiv)
 {
     if( blockIdx.x < kblocks ) {
         if(threadIdx.x < size_b ){

@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.6.0) --
+   -- MAGMA (version 1.6.1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date November 2014
+   @date January 2015
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from zgemv_batched.cu normal z -> d, Sat Nov 15 19:53:59 2014
+   @generated from zgemv_batched.cu normal z -> d, Fri Jan 30 19:00:10 2015
  */
 #include "common_magma.h"
 
@@ -66,7 +66,7 @@ void magmablas_dgemvn_batched(
     double alpha, double **dA_array, int lda, 
     double **x_array,  int incx,
     double beta, double **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     if( m > 512 || n > 512)
@@ -78,7 +78,7 @@ void magmablas_dgemvn_batched(
     dim3 grid(batchCount, 1, 1);
     dim3 threads(max(m,n), 1, 1);
    
-    kernel_dgemvn_batched<<< grid, threads, n * sizeof(double) >>>( m, n, alpha,  dA_array, lda, x_array, incx,  
+    kernel_dgemvn_batched<<< grid, threads, n * sizeof(double), queue >>>( m, n, alpha,  dA_array, lda, x_array, incx,  
                                                                          beta, y_array, incy);
 }
 
@@ -169,7 +169,7 @@ void magmablas_dgemvt_batched(
     double alpha, double **dA_array, int lda, 
     double **x_array,  int incx,
     double beta, double **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     dim3 grid(batchCount, n, 1);
@@ -177,7 +177,7 @@ void magmablas_dgemvt_batched(
 
     int m1 = (m / dgemv_bs) * dgemv_bs;
 
-    kernel_dgemvt_batched <<< grid, threads >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
+    kernel_dgemvt_batched <<< grid, threads,0, queue  >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
 
 }
    
@@ -270,7 +270,7 @@ void magmablas_dgemvc_batched(
     double alpha, double **dA_array, int lda, 
     double **x_array,  int incx,
     double beta, double **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     dim3 grid(batchCount, n, 1);
@@ -278,7 +278,7 @@ void magmablas_dgemvc_batched(
 
     int m1 = (m / dgemv_bs) * dgemv_bs;
 
-    kernel_dgemvc_batched <<< grid, threads >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
+    kernel_dgemvc_batched <<< grid, threads, 0, queue >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
 }
    
 #endif // defined(PRECISION_z) || defined (PRECISION_c)
@@ -362,7 +362,7 @@ void magmablas_dgemv_batched(
     magmaDouble_ptr dx_array[], magma_int_t incx,
     double beta,
     magmaDouble_ptr dy_array[], magma_int_t incy, 
-    magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {       
     magma_int_t info = 0;
     if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
@@ -387,17 +387,17 @@ void magmablas_dgemv_batched(
 
     if ( trans == MagmaNoTrans ) {
 
-        magmablas_dgemvn_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_dgemvn_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
             
     }
     else if ( trans == MagmaTrans ) {
-        magmablas_dgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_dgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
     }
     else if ( trans == MagmaConjTrans ) {
 #if defined(PRECISION_z) || defined (PRECISION_c)
-        magmablas_dgemvc_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_dgemvc_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
 #else
-        magmablas_dgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_dgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
 #endif
     }
     else {

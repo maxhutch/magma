@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magmablas_z_q.h normal z -> d, Sat Nov 15 19:53:54 2014
+       @generated from magmablas_z_q.h normal z -> d, Fri Jan 30 19:00:05 2015
 */
 
 #ifndef MAGMABLAS_D_Q_H
@@ -161,7 +161,7 @@ magmablas_dlaswp2_q(
     magma_int_t n,
     magmaDouble_ptr dAT, magma_int_t ldda,
     magma_int_t k1, magma_int_t k2,
-    const magma_int_t *d_ipiv, magma_int_t inci,
+    magmaInt_const_ptr d_ipiv, magma_int_t inci,
     magma_queue_t queue );
 
 void

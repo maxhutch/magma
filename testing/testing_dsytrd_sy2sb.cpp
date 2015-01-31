@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Azzam Haidar
 
-       @generated from testing_zhetrd_he2hb.cpp normal z -> d, Sat Nov 15 19:54:18 2014
+       @generated from testing_zhetrd_he2hb.cpp normal z -> d, Fri Jan 30 19:00:26 2015
 
 */
 
@@ -56,7 +56,7 @@ int main( int argc, char** argv)
     double *D, *E;
 
     /* Matrix size */
-    magma_int_t N, n2, lda, lwork, ldt, lwork0;
+    magma_int_t N, n2, lda, lwork, lwork0;  //ldt
 
     magma_int_t info;
     magma_int_t ione     = 1;
@@ -90,7 +90,7 @@ int main( int argc, char** argv)
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda = N;
-            ldt = N;
+            //ldt = N;
             n2  = N*lda;
             gflops = FLOPS_DSYTRD( N ) / 1e9;
             
@@ -157,7 +157,7 @@ int main( int argc, char** argv)
             }
             double *hh_work;
             magma_int_t *iwork;
-            magma_int_t nb, /*lwork,*/ liwork;
+            magma_int_t /*nb,*/ /*lwork,*/ liwork;
             magma_int_t threads = magma_get_parallel_numthreads();
             #if defined(PRECISION_z) || defined(PRECISION_c)
                 double *rwork;
@@ -169,7 +169,7 @@ int main( int argc, char** argv)
                 lwork  = magma_dbulge_get_lq2(N, threads) + 1 + 6*N + 2*N*N;
             #endif
             liwork = 3 + 5*N;
-            nb = magma_get_dsytrd_nb(N);
+            //nb = magma_get_dsytrd_nb(N);
             TESTING_MALLOC_PIN( hh_work, double, lwork  );
             TESTING_MALLOC_CPU( iwork,   magma_int_t,        liwork );
     

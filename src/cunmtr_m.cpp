@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmtr_m.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from zunmtr_m.cpp normal z -> c, Fri Jan 30 19:00:18 2015
 
 */
 #include "common_magma.h"
@@ -174,10 +174,6 @@ magma_cunmtr_m(
         work[0] = MAGMA_C_MAKE( lwkopt, 0 );
     }
     
-    if (upper) {
-        *info = MAGMA_ERR_NOT_IMPLEMENTED;
-    }
-
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
         return *info;
@@ -203,11 +199,14 @@ magma_cunmtr_m(
     if (upper) {
         /* Q was determined by a call to SSYTRD with UPLO = 'U' */
         i__2 = nq - 1;
-        // TODO: upper case is not yet implemented -- see above
+        // TODO: upper case is not yet implemented for multiple GPUs -- see above
+        // for now use one GPU
         //lapackf77_cunmql(side_, trans_, &mi, &ni, &i__2, A(0,1), &lda,
         //                 tau, C, &ldc, work, &lwork, &iinfo);
         //magma_cunmql_m(ngpu, side, trans, mi, ni, i__2, A(0,1), lda, tau,
         //               C, ldc, work, lwork, &iinfo);
+        magma_cunmql(side, trans, mi, ni, i__2, A(0,1), lda, tau,
+                       C, ldc, work, lwork, &iinfo); 
     }
     else {
         /* Q was determined by a call to SSYTRD with UPLO = 'L' */

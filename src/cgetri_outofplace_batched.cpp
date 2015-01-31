@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgetri_outofplace_batched.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zgetri_outofplace_batched.cpp normal z -> c, Fri Jan 30 19:00:19 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
@@ -72,7 +72,7 @@ magma_cgetri_outofplace_batched( magma_int_t n,
                   magma_int_t **dipiv_array, 
                   magmaFloatComplex **dinvA_array, magma_int_t lddia,
                   magma_int_t *info_array,
-                  magma_int_t batchCount)
+                  magma_int_t batchCount, magma_queue_t queue)
        
 {
     /* Local variables */
@@ -110,8 +110,7 @@ magma_cgetri_outofplace_batched( magma_int_t n,
     magmaFloatComplex **dW4_displ  = NULL;
     magmaFloatComplex **dinvdiagA_array = NULL;
     magmaFloatComplex **dwork_array = NULL;
-    magmaFloatComplex **dW_array   = NULL;
-
+    magmaFloatComplex **dW5_displ   = NULL;
     magma_malloc((void**)&dA_displ,   batchCount * sizeof(*dA_displ));
     magma_malloc((void**)&dW0_displ,  batchCount * sizeof(*dW0_displ));
     magma_malloc((void**)&dW1_displ,  batchCount * sizeof(*dW1_displ));
@@ -120,21 +119,38 @@ magma_cgetri_outofplace_batched( magma_int_t n,
     magma_malloc((void**)&dW4_displ,  batchCount * sizeof(*dW4_displ));
     magma_malloc((void**)&dinvdiagA_array, batchCount * sizeof(*dinvdiagA_array));
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
-    magma_malloc((void**)&dW_array,  batchCount * sizeof(*dW_array));
+    magma_malloc((void**)&dW5_displ,  batchCount * sizeof(*dW5_displ));
 
     magmaFloatComplex* dinvdiagA;
     magmaFloatComplex* dwork;// dinvdiagA and dwork are workspace in ctrsm
-
     //magma_int_t invdiagA_msize =  BATRI_NB*((nb/BATRI_NB)+(nb % BATRI_NB != 0))* BATRI_NB ;
     magma_int_t invdiagA_msize = ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB;
     magma_int_t dwork_msize = n*nb;
     magma_cmalloc( &dinvdiagA, invdiagA_msize * batchCount);
     magma_cmalloc( &dwork, dwork_msize * batchCount );
-    cset_pointer(dwork_array, dwork, n, 0, 0, dwork_msize, batchCount);
-    cset_pointer(dinvdiagA_array, dinvdiagA, ((n+TRI_NB-1)/TRI_NB)*TRI_NB, 0, 0, invdiagA_msize, batchCount);
-    cudaMemset( dinvdiagA, 0, batchCount * ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB * sizeof(magmaFloatComplex) );
+    /* check allocation */
+    if ( dA_displ  == NULL || dW1_displ == NULL || dW2_displ       == NULL || dW3_displ   == NULL || 
+         dW4_displ == NULL || dW5_displ  == NULL || dinvdiagA_array == NULL || dwork_array == NULL || 
+         dinvdiagA == NULL || dwork     == NULL ) {
+        magma_free(dA_displ);
+        magma_free(dW1_displ);
+        magma_free(dW2_displ);
+        magma_free(dW3_displ);
+        magma_free(dW4_displ);
+        magma_free(dW5_displ);
+        magma_free(dinvdiagA_array);
+        magma_free(dwork_array);
+        magma_free(dinvdiagA);
+        magma_free( dwork );
+        info = MAGMA_ERR_DEVICE_ALLOC;
+        magma_xerbla( __func__, -(info) );
+        return info;
+    }
 
-    magma_cdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount);
+    magmablas_claset_q(MagmaFull, invdiagA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvdiagA, invdiagA_msize, queue);
+    magmablas_claset_q(MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue);
+    cset_pointer(dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue);
+    cset_pointer(dinvdiagA_array, dinvdiagA, TRI_NB, 0, 0, invdiagA_msize, batchCount, queue);
 
     magma_queue_t cstream;
     magmablasGetKernelStream(&cstream);
@@ -142,8 +158,9 @@ magma_cgetri_outofplace_batched( magma_int_t n,
     //printf(" I am after malloc getri\n");
 
 
+    magma_cdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
     // set dinvdiagA to identity
-    magmablas_claset_batched(MagmaUpperLower, n, n, MAGMA_C_ZERO, MAGMA_C_ONE, dinvA_array, lddia, batchCount);
+    magmablas_claset_batched(MagmaUpperLower, n, n, MAGMA_C_ZERO, MAGMA_C_ONE, dinvA_array, lddia, batchCount, queue);
 
     for(j = 0; j < n; j+=nb) {
         ib = min(nb, n-j);
@@ -155,42 +172,42 @@ magma_cgetri_outofplace_batched( magma_int_t n,
         //magma_queue_sync(NULL);
         //printf(" @ step %d calling solve 1 \n",j);
         // solve dwork = L^-1 * I
-        magmablas_claset_batched(MagmaUpperLower, j, ib, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork_array, n, batchCount);
-        magma_cdisplace_pointers(dW_array, dwork_array, n, j, 0, batchCount);
-        magma_cdisplace_pointers(dW0_displ, dinvA_array, lddia, j, j, batchCount);
-        magma_cdisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount);
+        magmablas_claset_batched(MagmaUpperLower, j, ib, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork_array, n, batchCount, queue);
+        magma_cdisplace_pointers(dW5_displ, dwork_array, n, j, 0, batchCount, queue);
+        magma_cdisplace_pointers(dW0_displ, dinvA_array, lddia, j, j, batchCount, queue);
+        magma_cdisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount, queue);
         
         magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
                 n-j, ib,
                 MAGMA_C_ONE,
                 dA_displ,       ldda, // dA
                 dW0_displ,   lddia, // dB
-                dW_array,        n, // dX //output
+                dW5_displ,        n, // dX //output
                 dinvdiagA_array,  invdiagA_msize, 
                 dW1_displ,   dW2_displ, 
                 dW3_displ,   dW4_displ,
-                1, batchCount);
+                1, batchCount, queue);
         
         //magma_queue_sync(NULL);
         //printf(" @ step %d calling solve 2 \n",j);
         // solve dinvdiagA = U^-1 * dwork
-        magma_cdisplace_pointers(dW_array, dwork_array, n, 0, 0, batchCount);
-        magma_cdisplace_pointers(dW0_displ, dinvA_array, lddia, 0, j, batchCount);
-        magma_cdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount);
+        magma_cdisplace_pointers(dW5_displ, dwork_array, n, 0, 0, batchCount, queue);
+        magma_cdisplace_pointers(dW0_displ, dinvA_array, lddia, 0, j, batchCount, queue);
+        magma_cdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
         magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, 1,
                 n, ib,
                 MAGMA_C_ONE,
                 dA_displ,       ldda, // dA
-                dW_array,        n, // dB 
+                dW5_displ,        n, // dB 
                 dW0_displ,   lddia, // dX //output
                 dinvdiagA_array,  invdiagA_msize, 
                 dW1_displ,   dW2_displ, 
                 dW3_displ,   dW4_displ,
-                1, batchCount);
+                1, batchCount, queue);
     }
 
     // Apply column interchanges
-    magma_claswp_columnserial_batched( n, dinvA_array, lddia, max(1,n-1), 1, dipiv_array, batchCount);
+    magma_claswp_columnserial_batched( n, dinvA_array, lddia, max(1,n-1), 1, dipiv_array, batchCount, queue);
 
     magma_queue_sync(cstream);
 
@@ -199,11 +216,10 @@ magma_cgetri_outofplace_batched( magma_int_t n,
     magma_free(dW2_displ);
     magma_free(dW3_displ);
     magma_free(dW4_displ);
+    magma_free(dW5_displ);
     magma_free(dinvdiagA_array);
     magma_free(dwork_array);
-    magma_free(dW_array);
-
-    magma_free( dinvdiagA );
+    magma_free(dinvdiagA);
     magma_free( dwork );
 
     

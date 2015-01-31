@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -18,7 +18,7 @@
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-/*  -- MAGMA (version 1.6.0) --
+/*  -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -78,7 +78,7 @@ magma_zgetf2_batched(
     magma_int_t *info_array,
     magma_int_t gbstep,          
     magma_int_t batchCount, 
-    cublasHandle_t myhandle)
+    cublasHandle_t myhandle, magma_queue_t queue)
 
 {
 
@@ -127,23 +127,23 @@ magma_zgetf2_batched(
             {
                 //printf("running non shared version\n");
                 // find the max of the column gbj
-                arginfo = magma_izamax_batched(m-gbj, dA_array, 1, gbj, lda, ipiv_array, info_array, gbstep, batchCount);
+                arginfo = magma_izamax_batched(m-gbj, dA_array, 1, gbj, lda, ipiv_array, info_array, gbstep, batchCount, queue);
                 if(arginfo != 0 ) return arginfo;
                 // Apply the interchange to columns 1:N. swap the whole row
-                arginfo = magma_zswap_batched(n, dA_array, lda, gbj, ipiv_array, batchCount);
+                arginfo = magma_zswap_batched(n, dA_array, lda, gbj, ipiv_array, batchCount, queue);
                 if(arginfo != 0 ) return arginfo;
                 // Compute elements J+1:M of J-th column.
                 if (gbj < m) {
-                    arginfo = magma_zscal_zgeru_batched(m-gbj, ib-step, gbj, dA_array, lda, info_array, gbstep, batchCount);
+                    arginfo = magma_zscal_zgeru_batched(m-gbj, ib-step, gbj, dA_array, lda, info_array, gbstep, batchCount, queue);
                     if(arginfo != 0 ) return arginfo;
                 }
             }
             else{
                 //printf("running --- shared version\n");                
-                arginfo = magma_zcomputecolumn_batched(m-panelj, panelj, step, dA_array, lda, ipiv_array, info_array, gbstep, batchCount);
+                arginfo = magma_zcomputecolumn_batched(m-panelj, panelj, step, dA_array, lda, ipiv_array, info_array, gbstep, batchCount, queue);
                 if(arginfo != 0 ) return arginfo;
                 // Apply the interchange to columns 1:N. swap the whole row
-                arginfo = magma_zswap_batched(n, dA_array, lda, gbj, ipiv_array, batchCount);
+                arginfo = magma_zswap_batched(n, dA_array, lda, gbj, ipiv_array, batchCount, queue);
                 if(arginfo != 0 ) return arginfo;
             }
         }
@@ -151,11 +151,11 @@ magma_zgetf2_batched(
 
         if( (n-panelj-ib) > 0){
             // continue the update of the selected ib row column panelj+ib:n(TRSM)
-            magma_zgetf2trsm_batched(ib, n-panelj-ib, dA_array, panelj, lda, batchCount);
+            magma_zgetf2trsm_batched(ib, n-panelj-ib, dA_array, panelj, lda, batchCount, queue);
             // do the blocked DGER = DGEMM for the remaining panelj+ib:n columns
-            magma_zdisplace_pointers(dW0_displ, dA_array, lda, ib+panelj, panelj, batchCount);
-            magma_zdisplace_pointers(dW1_displ, dA_array, lda, panelj, ib+panelj, batchCount);            
-            magma_zdisplace_pointers(dW2_displ, dA_array, lda, ib+panelj, ib+panelj, batchCount);
+            magma_zdisplace_pointers(dW0_displ, dA_array, lda, ib+panelj, panelj, batchCount, queue);
+            magma_zdisplace_pointers(dW1_displ, dA_array, lda, panelj, ib+panelj, batchCount, queue);            
+            magma_zdisplace_pointers(dW2_displ, dA_array, lda, ib+panelj, ib+panelj, batchCount, queue);
 
 
 #if 1
@@ -163,7 +163,7 @@ magma_zgetf2_batched(
                                       neg_one, dW0_displ, lda, 
                                       dW1_displ, lda, 
                                       one,  dW2_displ, lda, 
-                                      batchCount);
+                                      batchCount, queue);
 #else
             cublasZgemmBatched(myhandle, CUBLAS_OP_N, CUBLAS_OP_N, m-(panelj+ib), n-(panelj+ib), ib,
                                      &neg_one, (const magmaDoubleComplex**) dW0_displ, lda,

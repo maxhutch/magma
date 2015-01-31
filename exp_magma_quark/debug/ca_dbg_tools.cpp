@@ -1,6 +1,6 @@
 /*
 
-    -- MAGMA (version 1.6.0) -- 
+    -- MAGMA (version 1.6.1) -- 
        Univ. of Tennessee, Knoxville 
        Univ. of California, Berkeley 
        Univ. of Colorado, Denver 

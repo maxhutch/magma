@@ -1,22 +1,20 @@
 /*
-   -- MAGMA (version 1.6.0) --
+   -- MAGMA (version 1.6.1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date November 2014
+   @date January 2015
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing_zpotrf_batched.cpp normal z -> s, Sat Nov 15 19:54:18 2014
+   @generated from testing_zpotrf_batched.cpp normal z -> s, Fri Jan 30 19:00:26 2015
 */
 // includes, system
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <cuda_runtime_api.h>
-#include <cublas.h>
 
 // includes, project
 #include "flops.h"
@@ -40,15 +38,18 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     float      work[1], error;
+    magma_int_t status = 0;
     float **d_A_array = NULL;
     magma_int_t *dinfo_magma;
 
     magma_int_t batchCount;
 
+    magma_queue_t queue = magma_stream;
     magma_opts opts;
     parse_opts( argc, argv, &opts );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     batchCount = opts.batchcount;
+    float tol = opts.tolerance * lapackf77_slamch("E");
 
     printf("BatchCount    N      CPU GFlop/s (ms)      GPU GFlop/s (ms)    ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
     printf("========================================================\n");
@@ -82,9 +83,9 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            sset_pointer(d_A_array, d_A, ldda, 0, 0, ldda * N, batchCount);
+            sset_pointer(d_A_array, d_A, ldda, 0, 0, ldda * N, batchCount, queue);
             gpu_time = magma_sync_wtime(NULL);
-            info = magma_spotrf_batched( opts.uplo, N, d_A_array, ldda, dinfo_magma, batchCount);
+            info = magma_spotrf_batched( opts.uplo, N, d_A_array, ldda, dinfo_magma, batchCount, queue);
             gpu_time = magma_sync_wtime(NULL) - gpu_time;
             gpu_perf = gflops / gpu_time;
             magma_int_t *cpu_info = (magma_int_t*) malloc(batchCount*sizeof(magma_int_t));
@@ -134,8 +135,10 @@ int main( int argc, char** argv)
                  }
               
 
-                printf("%5d      %5d    %7.2f (%7.2f)     %7.2f (%7.2f)     %8.2e\n",
-                       (int)batchCount, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000., err);
+                printf("%5d      %5d    %7.2f (%7.2f)     %7.2f (%7.2f)     %8.2e   %s\n",
+                       (int)batchCount, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000., err,  (error < tol ? "ok" : "failed"));
+                status += ! (err < tol);
+                
             }
             else {
                 printf("%5d      %5d    ---   (  ---  )   %7.2f (%7.2f)     ---  \n",
@@ -154,7 +157,7 @@ int main( int argc, char** argv)
     }
 
     TESTING_FINALIZE();
-    return 0;
+    return status;
 
 }
 

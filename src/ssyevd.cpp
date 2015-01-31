@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from dsyevd.cpp normal d -> s, Sat Nov 15 19:54:10 2014
+       @generated from dsyevd.cpp normal d -> s, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
@@ -229,17 +229,12 @@ magma_ssyevd(
         return *info;
     }
     
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_ssyevd(jobz_, uplo_,
-                         &n, A, &lda,
-                         w, work, &lwork,
-                         iwork, &liwork, info);
+        lapackf77_ssyevd( jobz_, uplo_,
+                          &n, A, &lda,
+                          w, work, &lwork,
+                          iwork, &liwork, info );
         return *info;
     }
 
@@ -248,11 +243,11 @@ magma_ssyevd(
     eps    = lapackf77_slamch("Precision");
     smlnum = safmin / eps;
     bignum = 1. / smlnum;
-    rmin = magma_ssqrt(smlnum);
-    rmax = magma_ssqrt(bignum);
+    rmin = magma_ssqrt( smlnum );
+    rmax = magma_ssqrt( bignum );
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = lapackf77_slansy("M", uplo_, &n, A, &lda, work );
+    anrm = lapackf77_slansy( "M", uplo_, &n, A, &lda, work );
     iscale = 0;
     if (anrm > 0. && anrm < rmin) {
         iscale = 1;
@@ -262,8 +257,7 @@ magma_ssyevd(
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        lapackf77_slascl(uplo_, &izero, &izero, &d_one, &sigma, &n, &n, A,
-                &lda, info);
+        lapackf77_slascl( uplo_, &izero, &izero, &d_one, &sigma, &n, &n, A, &lda, info );
     }
 
     /* Call SSYTRD to reduce symmetric matrix to tridiagonal form. */
@@ -279,8 +273,8 @@ magma_ssyevd(
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_ssytrd(uplo, n, A, lda, w, &work[inde],
-                 &work[indtau], &work[indwrk], llwork, &iinfo);
+    magma_ssytrd( uplo, n, A, lda, w, &work[inde],
+                  &work[indtau], &work[indwrk], llwork, &iinfo );
 
     timer_stop( time );
     timer_printf( "time ssytrd = %6.2f\n", time );
@@ -290,7 +284,7 @@ magma_ssyevd(
        tridiagonal matrix, then call SORMTR to multiply it to the Householder
        transformations represented as Householder vectors in A. */
     if (! wantz) {
-        lapackf77_ssterf(&n, w, &work[inde], info);
+        lapackf77_ssterf( &n, w, &work[inde], info );
     }
     else {
         timer_start( time );
@@ -301,9 +295,9 @@ magma_ssyevd(
         }
 
         // TTT Possible bug for n < 128
-        magma_sstedx(MagmaRangeAll, n, 0., 0., 0, 0, w, &work[inde],
-                     &work[indwrk], n, &work[indwk2],
-                     llwrk2, iwork, liwork, dwork, info);
+        magma_sstedx( MagmaRangeAll, n, 0., 0., 0, 0, w, &work[inde],
+                      &work[indwrk], n, &work[indwk2], llwrk2,
+                      iwork, liwork, dwork, info );
 
         magma_free( dwork );
 
@@ -311,10 +305,10 @@ magma_ssyevd(
         timer_printf( "time sstedx = %6.2f\n", time );
         timer_start( time );
 
-        magma_sormtr(MagmaLeft, uplo, MagmaNoTrans, n, n, A, lda, &work[indtau],
-                     &work[indwrk], n, &work[indwk2], llwrk2, &iinfo);
+        magma_sormtr( MagmaLeft, uplo, MagmaNoTrans, n, n, A, lda, &work[indtau],
+                      &work[indwrk], n, &work[indwk2], llwrk2, &iinfo );
 
-        lapackf77_slacpy("A", &n, &n, &work[indwrk], &n, A, &lda);
+        lapackf77_slacpy( "A", &n, &n, &work[indwrk], &n, A, &lda );
 
         timer_stop( time );
         timer_printf( "time sormtr + copy = %6.2f\n", time );
@@ -323,7 +317,7 @@ magma_ssyevd(
     /* If matrix was scaled, then rescale eigenvalues appropriately. */
     if (iscale == 1) {
         d__1 = 1. / sigma;
-        blasf77_sscal(&n, &d__1, w, &ione);
+        blasf77_sscal( &n, &d__1, w, &ione );
     }
 
     work[0]  = lwmin * one_eps;  // round up

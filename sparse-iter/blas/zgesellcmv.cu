@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -32,12 +32,12 @@ zgesellcmv_kernel(
     int num_cols,
     int blocksize,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaDoubleComplex * dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
     // threads assigned to rows
     int Idx = blockDim.x * blockIdx.x + threadIdx.x ;
@@ -105,7 +105,7 @@ zgesellcmv_kernel(
                 columnindices of A in SELLC/P
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of SELLP
 
     @param[in]

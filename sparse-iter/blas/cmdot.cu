@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmdot.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zmdot.cu normal z -> c, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -19,7 +19,7 @@
 // initialize arrays with zero
 __global__ void
 magma_cgpumemzero(  
-    magmaFloatComplex_ptr d, 
+    magmaFloatComplex * d, 
     int n, 
     int k )
 {
@@ -37,9 +37,9 @@ __global__ void
 magma_cdot_kernel( 
     int Gs,
     int n, 
-    magmaFloatComplex_ptr v,
-    magmaFloatComplex_ptr r,
-    magmaFloatComplex_ptr vtmp)
+    magmaFloatComplex * v,
+    magmaFloatComplex * r,
+    magmaFloatComplex * vtmp)
 {
 
     extern __shared__ magmaFloatComplex temp[]; 
@@ -99,9 +99,9 @@ magma_cblockdot_kernel(
     int Gs,
     int n, 
     int k,
-    magmaFloatComplex_ptr v,
-    magmaFloatComplex_ptr r,
-    magmaFloatComplex_ptr vtmp)
+    magmaFloatComplex * v,
+    magmaFloatComplex * r,
+    magmaFloatComplex * vtmp)
 {
 
     extern __shared__ magmaFloatComplex temp[]; 
@@ -192,8 +192,8 @@ magma_cblockreduce_kernel(
     int Gs,
     int n, 
     int k,
-    magmaFloatComplex_ptr vtmp,
-    magmaFloatComplex_ptr vtmp2 )
+    magmaFloatComplex * vtmp,
+    magmaFloatComplex * vtmp2 )
 {
 
     extern __shared__ magmaFloatComplex temp[];    
@@ -276,8 +276,8 @@ magma_cblockreduce_kernel(
 __global__ void
 magma_creduce_kernel_fast( int Gs,
                            int n, 
-                           magmaFloatComplex_ptr vtmp,
-                           magmaFloatComplex_ptr vtmp2 ){
+                           magmaFloatComplex * vtmp,
+                           magmaFloatComplex * vtmp2 ){
 
     extern __shared__ magmaFloatComplex temp[];    
     int Idx = threadIdx.x;
@@ -339,8 +339,8 @@ magma_cblockreduce_kernel_fast(
     int Gs,
     int n, 
     int k,
-    magmaFloatComplex_ptr vtmp,
-    magmaFloatComplex_ptr vtmp2 )
+    magmaFloatComplex * vtmp,
+    magmaFloatComplex * vtmp2 )
 {
 
     extern __shared__ magmaFloatComplex temp[];    

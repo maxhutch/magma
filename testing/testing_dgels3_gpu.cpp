@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zgels3_gpu.cpp normal z -> d, Sat Nov 15 19:54:18 2014
+       @generated from testing_zgels3_gpu.cpp normal z -> d, Fri Jan 30 19:00:26 2015
 
 */
 
@@ -78,7 +78,7 @@ int main( int argc, char** argv)
             lhwork2 = (magma_int_t) MAGMA_D_REAL( tmp[0] );
             
             lhwork = -1;
-            lapackf77_dormqr( MagmaLeftStr, MagmaConjTransStr,
+            lapackf77_dormqr( MagmaLeftStr, MagmaTransStr,
                               &M, &nrhs, &min_mn, NULL, &lda, NULL,
                               NULL, &ldb, tmp, &lhwork, &info);
             lhwork = (magma_int_t) MAGMA_D_REAL( tmp[0] );

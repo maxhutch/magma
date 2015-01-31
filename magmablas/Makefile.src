@@ -18,7 +18,10 @@ CSRC = \
 	cgeadd.cu \
 	cgemm_reduce.cu \
 	cgemv_conjv.cu \
+	cgerbt_kernels.cu \
+	cgerbt.cu \
 	chemv.cu \
+	chemv_upper.cu \
 	clacpy.cu \
 	clacpy_cnjg.cu \
 	clange.cu \
@@ -43,6 +46,7 @@ CSRC = \
 	cswapblk.cu \
 	cswapdblk.cu \
 	csymv.cu \
+	csymv_upper.cu \
 	csymmetrize.cu \
 	csymmetrize_tiles.cu \
 	ctranspose.cu \
@@ -53,15 +57,14 @@ CSRC = \
 	ctrtri_diag.cu \
 	ctrtri_lower.cu \
 	ctrtri_upper.cu \
-	cgerbt_kernels.cu \
-	cgerbt.cu \
+	clarft_kernels.cu \
 	cgemm_fermi.cu \
 	cgemv_fermi.cu \
 	cbcyclic.cu \
 	cgetmatrix_transpose_mgpu.cu \
 	csetmatrix_transpose_mgpu.cu \
-	chemv_fermi_mgpu_32.cu \
-	chemv_fermi_mgpu.cu \
+	chemv_mgpu.cu \
+	chemv_mgpu_upper.cu \
 	chemm_mgpu.cpp \
 	chemm_mgpu_spec.cpp \
 	cher2k_mgpu.cpp \
@@ -85,14 +88,19 @@ CSRC = \
 	cpotf2_kernels.cu \
 	cset_pointer.cu \
 	ctrsm_batched.cu \
-	ctrtri_diag_batched.cu
+	ctrtri_diag_batched.cu \
+	cgeqr2_kernels.cu \
+	cgeqr2_batched.cu
 
 DSRC = \
 	dsaxpycp.cu \
 	dgeadd.cu \
 	dgemm_reduce.cu \
 	dgemv_conjv.cu \
+	dgerbt_kernels.cu \
+	dgerbt.cu \
 	dsymv.cu \
+	dsymv_upper.cu \
 	dlacpy.cu \
 	dlacpy_cnjg.cu \
 	dlag2s.cu \
@@ -131,15 +139,14 @@ DSRC = \
 	dtrtri_diag.cu \
 	dtrtri_lower.cu \
 	dtrtri_upper.cu \
-	dgerbt_kernels.cu \
-	dgerbt.cu \
+	dlarft_kernels.cu \
 	dgemm_fermi.cu \
 	dgemv_fermi.cu \
 	dbcyclic.cu \
 	dgetmatrix_transpose_mgpu.cu \
 	dsetmatrix_transpose_mgpu.cu \
-	dsymv_fermi_mgpu_32.cu \
-	dsymv_fermi_mgpu.cu \
+	dsymv_mgpu.cu \
+	dsymv_mgpu_upper.cu \
 	dsymm_mgpu.cpp \
 	dsymm_mgpu_spec.cpp \
 	dsyr2k_mgpu.cpp \
@@ -163,13 +170,18 @@ DSRC = \
 	dpotf2_kernels.cu \
 	dset_pointer.cu \
 	dtrsm_batched.cu \
-	dtrtri_diag_batched.cu
+	dtrtri_diag_batched.cu \
+	dgeqr2_kernels.cu \
+	dgeqr2_batched.cu
 
 SSRC = \
 	sgeadd.cu \
 	sgemm_reduce.cu \
 	sgemv_conjv.cu \
+	sgerbt_kernels.cu \
+	sgerbt.cu \
 	ssymv.cu \
+	ssymv_upper.cu \
 	slacpy.cu \
 	slacpy_cnjg.cu \
 	slange.cu \
@@ -203,8 +215,7 @@ SSRC = \
 	strtri_diag.cu \
 	strtri_lower.cu \
 	strtri_upper.cu \
-	sgerbt_kernels.cu \
-	sgerbt.cu \
+	slarft_kernels.cu \
 	sgemm_tesla.cu \
 	sgemm_tesla_a_0.cu \
 	sgemm_tesla_ab_0.cu \
@@ -219,8 +230,8 @@ SSRC = \
 	sbcyclic.cu \
 	sgetmatrix_transpose_mgpu.cu \
 	ssetmatrix_transpose_mgpu.cu \
-	ssymv_fermi_mgpu_32.cu \
-	ssymv_fermi_mgpu.cu \
+	ssymv_mgpu.cu \
+	ssymv_mgpu_upper.cu \
 	ssymm_mgpu.cpp \
 	ssymm_mgpu_spec.cpp \
 	ssyr2k_mgpu.cpp \
@@ -244,4 +255,6 @@ SSRC = \
 	spotf2_kernels.cu \
 	sset_pointer.cu \
 	strsm_batched.cu \
-	strtri_diag_batched.cu
+	strtri_diag_batched.cu \
+	sgeqr2_kernels.cu \
+	sgeqr2_batched.cu

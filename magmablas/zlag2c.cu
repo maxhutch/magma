@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -49,30 +49,30 @@ void zlag2c_kernel(
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
                 tmp = A[j*lda];
-                if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
-#endif
+                if (   (MAGMA_Z_REAL(tmp) < neg_rmax) || (MAGMA_Z_REAL(tmp) > rmax)
+                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    || (MAGMA_Z_IMAG(tmp) < neg_rmax) || (MAGMA_Z_IMAG(tmp) > rmax)
+                    #endif
                     )
                 {
                     flag = 1;
                 }
-                SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
+                SA[j*ldsa] = MAGMA_C_MAKE( MAGMA_Z_REAL(tmp), MAGMA_Z_IMAG(tmp) );
             }
         }
         else {
             // partial block-column
             for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
                 tmp = A[j*lda];
-                if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
-#endif
+                if (   (MAGMA_Z_REAL(tmp) < neg_rmax) || (MAGMA_Z_REAL(tmp) > rmax)
+                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    || (MAGMA_Z_IMAG(tmp) < neg_rmax) || (MAGMA_Z_IMAG(tmp) > rmax)
+                    #endif
                     )
                 {
                     flag = 1;
                 }
-                SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
+                SA[j*ldsa] = MAGMA_C_MAKE( MAGMA_Z_REAL(tmp), MAGMA_Z_IMAG(tmp) );
             }
         }
     }
@@ -162,7 +162,7 @@ magmablas_zlag2c_q(
     
     double rmax = (double)lapackf77_slamch("O");
 
-    dim3 threads( BLK_X );
+    dim3 threads( BLK_X, 1 );
     dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     

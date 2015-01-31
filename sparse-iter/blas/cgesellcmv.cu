@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgesellcmv.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zgesellcmv.cu normal z -> c, Fri Jan 30 19:00:29 2015
 
 */
 #include "cuda_runtime.h"
@@ -32,12 +32,12 @@ cgesellcmv_kernel(
     int num_cols,
     int blocksize,
     magmaFloatComplex alpha, 
-    magmaFloatComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloatComplex_ptr dx,
+    magmaFloatComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaFloatComplex * dx,
     magmaFloatComplex beta, 
-    magmaFloatComplex_ptr dy)
+    magmaFloatComplex * dy)
 {
     // threads assigned to rows
     int Idx = blockDim.x * blockIdx.x + threadIdx.x ;
@@ -105,7 +105,7 @@ cgesellcmv_kernel(
                 columnindices of A in SELLC/P
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of SELLP
 
     @param[in]

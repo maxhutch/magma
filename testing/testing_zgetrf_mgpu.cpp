@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- clMAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -196,7 +196,7 @@ int main( int argc, char** argv )
             TESTING_MALLOC_CPU( h_A,  magmaDoubleComplex, n2     );
             
             // Allocate device memory
-            for( int dev=0; dev < ngpu; dev++){
+            for( int dev=0; dev < ngpu; dev++ ) {
                 n_local = ((N/nb)/ngpu)*nb;
                 if (dev < (N/nb) % ngpu)
                     n_local += nb;

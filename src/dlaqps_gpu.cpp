@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlaqps_gpu.cpp normal z -> d, Sat Nov 15 19:54:09 2014
+       @generated from zlaqps_gpu.cpp normal z -> d, Fri Jan 30 19:00:16 2015
 
 */
 #include "common_magma.h"
@@ -129,10 +129,9 @@ magma_dlaqps_gpu(
 
     double lsticc;
     magmaDouble_ptr dlsticcs;
-    magma_int_t lastrk;
     magma_dmalloc( &dlsticcs, 1+256*(n+255)/256 );
 
-    lastrk = min( m, n + offset );
+    //lastrk = min( m, n + offset );
     tol3z = magma_dsqrt( lapackf77_dlamch("Epsilon"));
 
     lsticc = 0;

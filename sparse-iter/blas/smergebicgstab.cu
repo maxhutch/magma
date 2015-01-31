@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmergebicgstab.cu normal z -> s, Sat Nov 15 19:54:21 2014
+       @generated from zmergebicgstab.cu normal z -> s, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -25,10 +25,10 @@
 __global__ void
 magma_sbicgmerge1_kernel(  
     int n, 
-    magmaFloat_ptr skp,
-    magmaFloat_ptr v, 
-    magmaFloat_ptr r, 
-    magmaFloat_ptr p )
+    float * skp,
+    float * v, 
+    float * r, 
+    float * p )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     float beta=skp[1];
@@ -103,10 +103,10 @@ magma_sbicgmerge1(
 __global__ void
 magma_sbicgmerge2_kernel(  
     int n, 
-    magmaFloat_ptr skp, 
-    magmaFloat_ptr r,
-    magmaFloat_ptr v, 
-    magmaFloat_ptr s )
+    float * skp, 
+    float * r,
+    float * v, 
+    float * s )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     float alpha=skp[0];
@@ -180,12 +180,12 @@ magma_sbicgmerge2(
 __global__ void
 magma_sbicgmerge3_kernel(  
     int n, 
-    magmaFloat_ptr skp, 
-    magmaFloat_ptr p,
-    magmaFloat_ptr se,
-    magmaFloat_ptr t,
-    magmaFloat_ptr x, 
-    magmaFloat_ptr r )
+    float * skp, 
+    float * p,
+    float * se,
+    float * t,
+    float * x, 
+    float * r )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     float alpha=skp[0];
@@ -274,7 +274,7 @@ magma_sbicgmerge3(
 
 __global__ void
 magma_sbicgmerge4_kernel_1(  
-    magmaFloat_ptr skp )
+    float * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -286,7 +286,7 @@ magma_sbicgmerge4_kernel_1(
 
 __global__ void
 magma_sbicgmerge4_kernel_2(  
-    magmaFloat_ptr skp )
+    float * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -298,7 +298,7 @@ magma_sbicgmerge4_kernel_2(
 
 __global__ void
 magma_sbicgmerge4_kernel_3(  
-    magmaFloat_ptr skp )
+    float * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 

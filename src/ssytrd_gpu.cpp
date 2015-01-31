@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
+       @author Mark Gates
 
-       @generated from zhetrd_gpu.cpp normal z -> s, Sat Nov 15 19:54:10 2014
+       @generated from zhetrd_gpu.cpp normal z -> s, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
@@ -32,7 +33,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      REAL array on the GPU, dimension (LDA,N)
+    dA      REAL array on the GPU, dimension (LDDA,N)
             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -53,7 +54,7 @@
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
     d       REAL array, dimension (N)
@@ -71,13 +72,13 @@
             Details).
 
     @param[out]
-    wA      (workspace) REAL array, dimension (LDA,N)
+    A       (workspace) REAL array, dimension (LDA,N)
             On exit the diagonal, the  upper part (UPLO=MagmaUpper)
             or the lower part (UPLO=MagmaLower) are copies of DA
 
     @param[in]
-    ldwa    INTEGER
-            The leading dimension of the array wA.  LDWA >= max(1,N).
+    lda     INTEGER
+            The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
     work    (workspace) REAL array, dimension (MAX(1,LWORK))
@@ -147,20 +148,21 @@ magma_ssytrd_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda,
     float *d, float *e, float *tau,
-    float *wA,  magma_int_t ldwa,
+    float *A,  magma_int_t lda,
     float *work, magma_int_t lwork,
     magma_int_t *info)
 {
-#define  A(i, j) (wA + (j)*ldwa + (i))
-#define dA(i, j) (dA + (j)*ldda + (i))
+    #define  A(i_, j_) ( A + (i_) + (j_)*lda )
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
     const char* uplo_ = lapack_uplo_const( uplo );
 
-    magma_int_t nb = magma_get_ssytrd_nb(n);
+    magma_int_t nb = magma_get_ssytrd_nb( n );
 
-    float c_neg_one = MAGMA_S_NEG_ONE;
-    float c_one     = MAGMA_S_ONE;
-    float          d_one     = MAGMA_D_ONE;
+    const float c_zero    = MAGMA_S_ZERO;
+    const float c_neg_one = MAGMA_S_NEG_ONE;
+    const float c_one     = MAGMA_S_ONE;
+    const float             d_one     = MAGMA_D_ONE;
     
     magma_int_t kk, nx;
     magma_int_t i, j, i_n;
@@ -177,14 +179,15 @@ magma_ssytrd_gpu(
         *info = -2;
     } else if (ldda < max(1,n)) {
         *info = -4;
-    } else if (ldwa < max(1,n)) {
+    } else if (lda < max(1,n)) {
         *info = -9;
     } else if (lwork < nb*n && ! lquery) {
         *info = -11;
     }
 
     /* Determine the block size. */
-    ldw = lddw = n;
+    ldw = n;
+    lddw = roundup( n, 32 );
     lwkopt = n * nb;
     if (*info == 0) {
         work[0] = MAGMA_S_MAKE( lwkopt, 0 );
@@ -203,42 +206,45 @@ magma_ssytrd_gpu(
         return *info;
     }
 
+    //if (n < 2048)
+    //    nx = n;
+    //else
+    //    nx = 512;
+    nx = min( 128, n );  // nx <= n is required
+    
     magmaFloat_ptr dwork;
-    
-    if (n < 2048)
-        nx = n;
-    else
-        nx = 512;
-    
-    if (MAGMA_SUCCESS != magma_smalloc( &dwork, (ldw*nb) )) {
+    if (MAGMA_SUCCESS != magma_smalloc( &dwork, lddw*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
+    // clear out dwork in case it has NANs (used as y in ssymv)
+    // rest of dwork (used as work in magmablas_ssymv) doesn't need to be cleared
+    magmablas_slaset( MagmaFull, n, nb, c_zero, c_zero, dwork, lddw );
+    
     if (upper) {
-        /*  Reduce the upper triangle of A.
-         Columns 1:kk are handled by the unblocked method. */
+        /* Reduce the upper triangle of A.
+           Columns 1:kk are handled by the unblocked method. */
         kk = n - (n - nx + nb - 1) / nb * nb;
         
         for (i = n - nb; i >= kk; i -= nb) {
             /* Reduce columns i:i+nb-1 to tridiagonal form and form the
-             matrix W which is needed to update the unreduced part of
-             the matrix */
+               matrix W which is needed to update the unreduced part of
+               the matrix */
             
-            /*   Get the current panel */
-            magma_sgetmatrix( i+nb, nb, dA(0, i), ldda, A(0, i), ldwa );
+            /* Get the current panel */
+            magma_sgetmatrix( i+nb, nb, dA(0, i), ldda, A(0, i), lda );
             
-            magma_slatrd(uplo, i+nb, nb, A(0, 0), ldwa, e, tau,
-                         work, ldw, dA(0, 0), ldda, dwork, lddw);
+            magma_slatrd( uplo, i+nb, nb, A(0, 0), lda, e, tau,
+                          work, ldw, dA(0, 0), ldda, dwork, lddw );
             
             /* Update the unreduced submatrix A(0:i-2,0:i-2), using an
                update of the form:  A := A - V*W' - W*V' */
-            
             magma_ssetmatrix( i + nb, nb, work, ldw, dwork, lddw );
             
-            magma_ssyr2k(uplo, MagmaNoTrans, i, nb, c_neg_one,
-                         dA(0, i), ldda, dwork,
-                         lddw, d_one, dA(0, 0), ldda);
+            magma_ssyr2k( uplo, MagmaNoTrans, i, nb, c_neg_one,
+                          dA(0, i), ldda, dwork, lddw,
+                          d_one, dA(0, 0), ldda );
             
             /* Copy superdiagonal elements back into A, and diagonal
                elements into D */
@@ -248,37 +254,34 @@ magma_ssytrd_gpu(
             }
         }
         
-        magma_sgetmatrix( kk, kk, dA(0, 0), ldda, A(0, 0), ldwa );
+        magma_sgetmatrix( kk, kk, dA(0, 0), ldda, A(0, 0), lda );
         
-        /*  Use CPU code to reduce the last or only block */
-        lapackf77_ssytrd(uplo_, &kk, A(0, 0), &ldwa, d, e, tau, work, &lwork, &iinfo);
+        /* Use CPU code to reduce the last or only block */
+        lapackf77_ssytrd( uplo_, &kk, A(0, 0), &lda, d, e, tau, work, &lwork, &iinfo );
         
-        magma_ssetmatrix( kk, kk, A(0, 0), ldwa, dA(0, 0), ldda );
+        magma_ssetmatrix( kk, kk, A(0, 0), lda, dA(0, 0), ldda );
     }
     else {
         /* Reduce the lower triangle of A */
         for (i = 0; i < n-nx; i += nb) {
             /* Reduce columns i:i+nb-1 to tridiagonal form and form the
-             matrix W which is needed to update the unreduced part of
-             the matrix */
+               matrix W which is needed to update the unreduced part of
+               the matrix */
             
-            /*   Get the current panel */
-            magma_sgetmatrix( n-i, nb, dA(i, i), ldda, A(i, i), ldwa );
+            /* Get the current panel */
+            magma_sgetmatrix( n-i, nb, dA(i, i), ldda, A(i, i), lda );
             
-            magma_slatrd(uplo, n-i, nb, A(i, i), ldwa, &e[i],
-                         &tau[i], work, ldw,
-                         dA(i, i), ldda,
-                         dwork, lddw);
+            magma_slatrd( uplo, n-i, nb, A(i, i), lda, &e[i], &tau[i],
+                          work, ldw, dA(i, i), ldda, dwork, lddw );
             
             /* Update the unreduced submatrix A(i+ib:n,i+ib:n), using
-             an update of the form:  A := A - V*W' - W*V' */
-            
+               an update of the form:  A := A - V*W' - W*V' */
             magma_ssetmatrix( n-i, nb, work, ldw, dwork, lddw );
             
-            magma_ssyr2k(MagmaLower, MagmaNoTrans, n-i-nb, nb, c_neg_one,
-                         dA(i+nb, i), ldda,
-                         &dwork[nb], lddw, d_one,
-                         dA(i+nb, i+nb), ldda);
+            // cublas 6.5 crashes here if lddw % 32 != 0, e.g., N=250.
+            magma_ssyr2k( MagmaLower, MagmaNoTrans, n-i-nb, nb, c_neg_one,
+                          dA(i+nb, i), ldda, &dwork[nb], lddw,
+                          d_one, dA(i+nb, i+nb), ldda );
             
             /* Copy subdiagonal elements back into A, and diagonal
                elements into D */
@@ -287,18 +290,20 @@ magma_ssytrd_gpu(
                 d[j] = MAGMA_S_REAL( *A(j, j) );
             }
         }
-        /* Use unblocked code to reduce the last or only block */
         
-        magma_sgetmatrix( n-i, n-i, dA(i, i), ldda, A(i, i), ldwa );
+        /* Use CPU code to reduce the last or only block */
+        magma_sgetmatrix( n-i, n-i, dA(i, i), ldda, A(i, i), lda );
         
         i_n = n-i;
-        lapackf77_ssytrd(uplo_, &i_n, A(i, i), &ldwa, &d[i], &e[i],
-                         &tau[i], work, &lwork, &iinfo);
+        lapackf77_ssytrd( uplo_, &i_n, A(i, i), &lda, &d[i], &e[i],
+                          &tau[i], work, &lwork, &iinfo );
         
-        magma_ssetmatrix( n-i, n-i, A(i, i), ldwa, dA(i, i), ldda );
+        magma_ssetmatrix( n-i, n-i, A(i, i), lda, dA(i, i), ldda );
     }
     
     magma_free( dwork );
+    
     work[0] = MAGMA_S_MAKE( lwkopt, 0 );
+    
     return *info;
 } /* magma_ssytrd_gpu */

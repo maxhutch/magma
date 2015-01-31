@@ -1,14 +1,16 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgelqf_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zgelqf_gpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
 
 */
 #include "common_magma.h"
+
+#define COMPLEX
 
 /**
     Purpose
@@ -66,7 +68,7 @@
     info    INTEGER
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
-                  if INFO = -10 internal GPU memory allocation failed.
+                  or another error occured, such as memory allocation failed.
 
     Further Details
     ---------------
@@ -92,14 +94,18 @@ magma_cgelqf_gpu(
     magmaFloatComplex *work, magma_int_t lwork,
     magma_int_t *info)
 {
+    const magmaFloatComplex c_one = MAGMA_C_ONE;
+    const magma_int_t        ione  = 1;
+    MAGMA_UNUSED( ione );  // used only for complex
+
     magmaFloatComplex *dAT;
-    magmaFloatComplex c_one = MAGMA_C_ONE;
-    magma_int_t maxm, maxn, maxdim, nb;
+    magma_int_t min_mn, maxm, maxn, nb;
     magma_int_t iinfo;
     int lquery;
 
     *info = 0;
     nb = magma_get_cgelqf_nb(m);
+    min_mn = min(m,n);
 
     work[0] = MAGMA_C_MAKE( (float)(m*nb), 0 );
     lquery = (lwork == -1);
@@ -121,14 +127,13 @@ magma_cgelqf_gpu(
     }
 
     /*  Quick return if possible */
-    if (min(m, n) == 0) {
+    if (min_mn == 0) {
         work[0] = c_one;
         return *info;
     }
 
     maxm = ((m + 31)/32)*32;
     maxn = ((n + 31)/32)*32;
-    maxdim = max(maxm, maxn);
 
     magma_int_t lddat = maxn;
 
@@ -147,8 +152,17 @@ magma_cgelqf_gpu(
         magmablas_ctranspose( m, n, dA, ldda, dAT, lddat );
     }
     
-    magma_cgeqrf2_gpu(n, m, dAT, lddat, tau, &iinfo);
-
+    magma_cgeqrf2_gpu( n, m, dAT, lddat, tau, &iinfo );
+    assert( iinfo >= 0 );
+    if ( iinfo > 0 ) {
+        *info = iinfo;
+    }
+    
+    // conjugate tau
+    #ifdef COMPLEX
+    lapackf77_clacgv( &min_mn, tau, &ione );
+    #endif
+    
     if ( m == n ) {
         magmablas_ctranspose_inplace( m, dAT, lddat );
     }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -17,6 +17,7 @@
 #include "magma_timer.h"
 
 #define REAL
+#define FAST_SYMV
 
 /**
     Purpose
@@ -65,7 +66,7 @@
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
             the leading N-by-N lower triangular part of A contains
             the lower triangular part of the matrix A.
-            On exit, if JOBZ = MagmaVec, then if INFO = 0, the first m columns
+            On exit, if JOBZ = MagmaVec, then if INFO = 0, the first mout columns
             of A contains the required
             orthonormal eigenvectors of the matrix A.
             If JOBZ = MagmaNoVec, then on exit the lower triangle (if UPLO=MagmaLower)
@@ -94,13 +95,13 @@
             Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
     @param[out]
-    m       INTEGER
-            The total number of eigenvalues found.  0 <= M <= N.
-            If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
+    mout    INTEGER
+            The total number of eigenvalues found.  0 <= MOUT <= N.
+            If RANGE = MagmaRangeAll, MOUT = N, and if RANGE = MagmaRangeI, MOUT = IU-IL+1.
 
     @param[out]
     w       DOUBLE PRECISION array, dimension (N)
-            If INFO = 0, the required m eigenvalues in ascending order.
+            If INFO = 0, the required mout eigenvalues in ascending order.
 
     @param
     wA      (workspace) DOUBLE PRECISION array, dimension (LDWA, N)
@@ -172,7 +173,7 @@ magma_dsyevdx_gpu(
     magma_int_t n,
     magmaDouble_ptr dA, magma_int_t ldda,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     double *wA,  magma_int_t ldwa,
     double *work, magma_int_t lwork,
     #ifdef COMPLEX
@@ -277,36 +278,34 @@ magma_dsyevdx_gpu(
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        const char* jobz_ = lapack_vec_const( jobz );
-        const char* uplo_ = lapack_uplo_const( uplo );
+        magma_int_t lda = n;
         double *A;
-        magma_dmalloc_cpu( &A, n*n );
-        magma_dgetmatrix(n, n, dA, ldda, A, n);
-        lapackf77_dsyevd(jobz_, uplo_,
-                         &n, A, &n,
-                         w, work, &lwork,
-                         iwork, &liwork, info);
-        magma_dsetmatrix( n, n, A, n, dA, ldda);
-        magma_free_cpu(A);
+        magma_dmalloc_cpu( &A, lda*n );
+        magma_dgetmatrix( n, n, dA, ldda, A, lda );
+        // TODO: deal with range and mout. Use lapack dsyevx? (There is no lapack dsyevdx.)
+        lapackf77_dsyevd( lapack_vec_const(jobz), lapack_uplo_const(uplo),
+                          &n, A, &lda,
+                          w, work, &lwork,
+                          iwork, &liwork, info );
+        *mout = n;
+        magma_dsetmatrix( n, n, A, lda, dA, ldda );
+        magma_free_cpu( A );
         return *info;
     }
 
     magma_queue_t stream;
     magma_queue_create( &stream );
 
-    // n*lddc for dsytrd2_gpu
-    // n for dlansy
-    magma_int_t ldwork = n*lddc;
+    // dsytrd2_gpu requires ldda*ceildiv(n,64) + 2*ldda*nb
+    // dormtr_gpu  requires lddc*n
+    // dlansy      requires n
+    magma_int_t ldwork = max( ldda*ceildiv(n,64) + 2*ldda*nb, lddc*n );
+    ldwork = max( ldwork, n );
     if ( wantz ) {
-        // need 3n^2/2 for dstedx
-        ldwork = max( ldwork, 3*n*(n/2 + 1));
+        // dstedx requires 3n^2/2
+        ldwork = max( ldwork, 3*n*(n/2 + 1) );
     }
     if (MAGMA_SUCCESS != magma_dmalloc( &dwork, ldwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -318,11 +317,11 @@ magma_dsyevdx_gpu(
     eps    = lapackf77_dlamch("Precision");
     smlnum = safmin / eps;
     bignum = 1. / smlnum;
-    rmin = magma_dsqrt(smlnum);
-    rmax = magma_dsqrt(bignum);
+    rmin = magma_dsqrt( smlnum );
+    rmax = magma_dsqrt( bignum );
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_dlansy(MagmaMaxNorm, uplo, n, dA, ldda, dwork);
+    anrm = magmablas_dlansy( MagmaMaxNorm, uplo, n, dA, ldda, dwork );
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -333,7 +332,7 @@ magma_dsyevdx_gpu(
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        magmablas_dlascl(uplo, 0, 0, 1., sigma, n, n, dA, ldda, info);
+        magmablas_dlascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, info );
     }
 
     /* Call DSYTRD to reduce symmetric matrix to tridiagonal form. */
@@ -350,13 +349,13 @@ magma_dsyevdx_gpu(
     timer_start( time );
 
 #ifdef FAST_SYMV
-    magma_dsytrd2_gpu(uplo, n, dA, ldda, w, &work[inde],
-                      &work[indtau], wA, ldwa, &work[indwrk], llwork,
-                      dwork, n*lddc, &iinfo);
+    magma_dsytrd2_gpu( uplo, n, dA, ldda, w, &work[inde],
+                       &work[indtau], wA, ldwa, &work[indwrk], llwork,
+                       dwork, ldwork, &iinfo );
 #else
-    magma_dsytrd_gpu(uplo, n, dA, ldda, w, &work[inde],
-                     &work[indtau], wA, ldwa, &work[indwrk], llwork,
-                     &iinfo);
+    magma_dsytrd_gpu(  uplo, n, dA, ldda, w, &work[inde],
+                       &work[indtau], wA, ldwa, &work[indwrk], llwork,
+                       &iinfo );
 #endif
 
     timer_stop( time );
@@ -366,31 +365,30 @@ magma_dsyevdx_gpu(
        DSTEDC to generate the eigenvector matrix, WORK(INDWRK), of the
        tridiagonal matrix, then call DORMTR to multiply it to the Householder
        transformations represented as Householder vectors in A. */
-
     if (! wantz) {
-        lapackf77_dsterf(&n, w, &work[inde], info);
+        lapackf77_dsterf( &n, w, &work[inde], info );
 
-        magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
+        magma_dmove_eig( range, n, w, &il, &iu, vl, vu, mout );
     }
     else {
         timer_start( time );
 
-        magma_dstedx(range, n, vl, vu, il, iu, w, &work[inde],
-                     &work[indwrk], n, &work[indwk2],
-                     llwrk2, iwork, liwork, dwork, info);
+        magma_dstedx( range, n, vl, vu, il, iu, w, &work[inde],
+                      &work[indwrk], n, &work[indwk2],
+                      llwrk2, iwork, liwork, dwork, info );
 
         timer_stop( time );
         timer_printf( "time dstedx = %6.2f\n", time );
         timer_start( time );
 
-        magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
+        magma_dmove_eig( range, n, w, &il, &iu, vl, vu, mout );
 
-        magma_dsetmatrix( n, *m, &work[indwrk + n* (il-1) ], n, dwork, lddc );
+        magma_dsetmatrix( n, *mout, &work[indwrk + n* (il-1) ], n, dwork, lddc );
 
-        magma_dormtr_gpu(MagmaLeft, uplo, MagmaNoTrans, n, *m, dA, ldda, &work[indtau],
-                         dwork, lddc, wA, ldwa, &iinfo);
+        magma_dormtr_gpu( MagmaLeft, uplo, MagmaNoTrans, n, *mout, dA, ldda, &work[indtau],
+                          dwork, lddc, wA, ldwa, &iinfo );
 
-        magma_dcopymatrix( n, *m, dwork, lddc, dA, ldda );
+        magma_dcopymatrix( n, *mout, dwork, lddc, dA, ldda );
 
         timer_stop( time );
         timer_printf( "time dormtr + copy = %6.2f\n", time );
@@ -399,7 +397,7 @@ magma_dsyevdx_gpu(
     /* If matrix was scaled, then rescale eigenvalues appropriately. */
     if (iscale == 1) {
         d__1 = 1. / sigma;
-        blasf77_dscal(&n, &d__1, w, &ione);
+        blasf77_dscal( &n, &d__1, w, &ione );
     }
 
     work[0]  = lwmin * one_eps;  // round up

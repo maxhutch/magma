@@ -286,6 +286,22 @@ const char* magma_strerror( magma_int_t error )
         case MAGMA_ERR_INVALID_PTR:
             return "invalid pointer";
         
+        case MAGMA_ERR_UNKNOWN:
+            return "unknown error";
+                        
+        case MAGMA_ERR_NOT_IMPLEMENTED:
+            return "not implemented";
+        
+        // some sparse-iter errors
+        case MAGMA_SLOW_CONVERGENCE:
+            return "slow convergence";
+        
+        case MAGMA_DIVERGENCE:
+            return "divergence";
+        
+        case MAGMA_NONSPD:
+            return "not positive definite (SPD/HPD)";
+        
         default:
             return "unknown MAGMA error code";
     }

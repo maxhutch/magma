@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
 
-       @generated from zunmtr_gpu.cpp normal z -> d, Sat Nov 15 19:54:10 2014
+       @generated from zunmtr_gpu.cpp normal z -> d, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
@@ -119,7 +119,7 @@ magma_dormtr_gpu(
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
-    magma_int_t i1, i2, mi, ni, nq, nw;
+    magma_int_t i1, i2, mi, ni, nq;
     int left, upper;
     magma_int_t iinfo;
 
@@ -130,10 +130,10 @@ magma_dormtr_gpu(
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
         nq = m;
-        nw = n;
+        //nw = n;
     } else {
         nq = n;
-        nw = m;
+        //nw = m;
     }
     if (! left && side != MagmaRight) {
         *info = -1;

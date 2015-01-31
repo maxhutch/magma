@@ -1,20 +1,23 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
     
        @author Raffaele Solca
+       @author Stan Tomov
+       @author Mark Gates
        @author Azzam Haidar
     
-       @generated from zheevdx_gpu.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from zheevdx_gpu.cpp normal z -> c, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
 #include "magma_timer.h"
 
 #define COMPLEX
+#define FAST_HEMV
 
 /**
     Purpose
@@ -63,7 +66,7 @@
             upper triangular part of the matrix A.  If UPLO = MagmaLower,
             the leading N-by-N lower triangular part of A contains
             the lower triangular part of the matrix A.
-            On exit, if JOBZ = MagmaVec, then if INFO = 0, the first m columns
+            On exit, if JOBZ = MagmaVec, then if INFO = 0, the first mout columns
             of A contains the required
             orthonormal eigenvectors of the matrix A.
             If JOBZ = MagmaNoVec, then on exit the lower triangle (if UPLO=MagmaLower)
@@ -92,13 +95,13 @@
             Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.
 
     @param[out]
-    m       INTEGER
-            The total number of eigenvalues found.  0 <= M <= N.
-            If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
+    mout    INTEGER
+            The total number of eigenvalues found.  0 <= MOUT <= N.
+            If RANGE = MagmaRangeAll, MOUT = N, and if RANGE = MagmaRangeI, MOUT = IU-IL+1.
 
     @param[out]
     w       REAL array, dimension (N)
-            If INFO = 0, the required m eigenvalues in ascending order.
+            If INFO = 0, the required mout eigenvalues in ascending order.
 
     @param
     wA      (workspace) COMPLEX array, dimension (LDWA, N)
@@ -187,7 +190,7 @@ magma_cheevdx_gpu(
     magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     magmaFloatComplex *wA,  magma_int_t ldwa,
     magmaFloatComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
@@ -212,7 +215,7 @@ magma_cheevdx_gpu(
     magma_int_t lower;
     magma_int_t llrwk;
     magma_int_t wantz;
-    magma_int_t indwk2, llwrk2;
+    //magma_int_t indwk2;
     magma_int_t iscale;
     float safmin;
     float bignum;
@@ -283,7 +286,7 @@ magma_cheevdx_gpu(
     // multiply by 1+eps (in Double!) to ensure length gets rounded up,
     // if it cannot be exactly represented in floating point.
     real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0 );
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 
@@ -296,31 +299,27 @@ magma_cheevdx_gpu(
     }
 
     if (*info != 0) {
-        magma_xerbla( __func__, -(*info));
+        magma_xerbla( __func__, -(*info) );
         return *info;
     }
     else if (lquery) {
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
+        magma_int_t lda = n;
         magmaFloatComplex *A;
-        magma_cmalloc_cpu( &A, n*n );
-        magma_cgetmatrix(n, n, dA, ldda, A, n);
-        lapackf77_cheevd(jobz_, uplo_,
-                         &n, A, &n,
-                         w, work, &lwork,
-                         rwork, &lrwork,
-                         iwork, &liwork, info);
-        magma_csetmatrix( n, n, A, n, dA, ldda);
-        magma_free_cpu(A);
-        *m=n;
+        magma_cmalloc_cpu( &A, lda*n );
+        magma_cgetmatrix( n, n, dA, ldda, A, lda );
+        lapackf77_cheevd( jobz_, uplo_,
+                          &n, A, &lda,
+                          w, work, &lwork,
+                          rwork, &lrwork,
+                          iwork, &liwork, info );
+        magma_csetmatrix( n, n, A, lda, dA, ldda );
+        magma_free_cpu( A );
+        *mout = n;
         return *info;
     }
 
@@ -329,15 +328,17 @@ magma_cheevdx_gpu(
 
     // dC and dwork are never used together, so use one buffer for both;
     // unfortunately they're different types (complex and float).
-    // (this works better in dsyevd_gpu where they're both float).
-    // n*lddc for chetrd2_gpu, *2 for complex
-    // n for clanhe
-    magma_int_t ldwork = n*lddc*2;
+    // (this is easier in dsyevd_gpu where everything is float.)
+    // chetrd2_gpu requires ldda*ceildiv(n,64) + 2*ldda*nb, in float-complex.
+    // cunmtr_gpu  requires lddc*n,                         in float-complex.
+    // clanhe      requires n, in float.
+    magma_int_t ldwork = max( ldda*ceildiv(n,64) + 2*ldda*nb, lddc*n );
+    magma_int_t ldwork_real = max( ldwork*2, n );
     if ( wantz ) {
-        // need 3n^2/2 for cstedx
-        ldwork = max( ldwork, 3*n*(n/2 + 1) );
+        // cstedx requrise 3n^2/2, in float
+        ldwork_real = max( ldwork_real, 3*n*(n/2 + 1) );
     }
-    if (MAGMA_SUCCESS != magma_smalloc( &dwork, ldwork )) {
+    if (MAGMA_SUCCESS != magma_smalloc( &dwork, ldwork_real )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -348,11 +349,11 @@ magma_cheevdx_gpu(
     eps    = lapackf77_slamch("Precision");
     smlnum = safmin / eps;
     bignum = 1. / smlnum;
-    rmin = magma_ssqrt(smlnum);
-    rmax = magma_ssqrt(bignum);
+    rmin = magma_ssqrt( smlnum );
+    rmax = magma_ssqrt( bignum );
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_clanhe(MagmaMaxNorm, uplo, n, dA, ldda, dwork);
+    anrm = magmablas_clanhe( MagmaMaxNorm, uplo, n, dA, ldda, dwork );
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -363,7 +364,7 @@ magma_cheevdx_gpu(
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        magmablas_clascl(uplo, 0, 0, 1., sigma, n, n, dA, ldda, info);
+        magmablas_clascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, info );
     }
 
     /* Call CHETRD to reduce Hermitian matrix to tridiagonal form. */
@@ -378,20 +379,21 @@ magma_cheevdx_gpu(
     // cunmtr work: tau (n) + z (n^2) + llwrk2 (n or n*nb)  ==>  2n + n^2, or n + n*nb + n^2
     indtau = 0;
     indwrk = indtau + n;
-    indwk2 = indwrk + n*n;
+    //indwk2 = indwrk + n*n;
     llwork = lwork - indwrk;
-    llwrk2 = lwork - indwk2;
+    //llwrk2 = lwork - indwk2;
 
     magma_timer_t time=0;
     timer_start( time );
 
 #ifdef FAST_HEMV
-    magma_chetrd2_gpu(uplo, n, dA, ldda, w, &rwork[inde],
-                      &work[indtau], wA, ldwa, &work[indwrk], llwork,
-                      dC, n*lddc, &iinfo);
+    magma_chetrd2_gpu( uplo, n, dA, ldda, w, &rwork[inde],
+                       &work[indtau], wA, ldwa, &work[indwrk], llwork,
+                       dC, ldwork, &iinfo );
 #else
-    magma_chetrd_gpu (uplo, n, dA, ldda, w, &rwork[inde],
-                      &work[indtau], wA, ldwa, &work[indwrk], llwork, &iinfo);
+    magma_chetrd_gpu ( uplo, n, dA, ldda, w, &rwork[inde],
+                       &work[indtau], wA, ldwa, &work[indwrk], llwork,
+                       &iinfo );
 #endif
 
     timer_stop( time );
@@ -401,31 +403,30 @@ magma_cheevdx_gpu(
        CSTEDC to generate the eigenvector matrix, WORK(INDWRK), of the
        tridiagonal matrix, then call CUNMTR to multiply it to the Householder
        transformations represented as Householder vectors in A. */
-
     if (! wantz) {
-        lapackf77_ssterf(&n, w, &rwork[inde], info);
+        lapackf77_ssterf( &n, w, &rwork[inde], info );
 
-        magma_smove_eig(range, n, w, &il, &iu, vl, vu, m);
+        magma_smove_eig( range, n, w, &il, &iu, vl, vu, mout );
     }
     else {
         timer_start( time );
 
-        magma_cstedx(range, n, vl, vu, il, iu, w, &rwork[inde],
-                     &work[indwrk], n, &rwork[indrwk],
-                     llrwk, iwork, liwork, dwork, info);
+        magma_cstedx( range, n, vl, vu, il, iu, w, &rwork[inde],
+                      &work[indwrk], n, &rwork[indrwk],
+                      llrwk, iwork, liwork, dwork, info );
 
         timer_stop( time );
         timer_printf( "time cstedx = %6.2f\n", time );
         timer_start( time );
 
-        magma_smove_eig(range, n, w, &il, &iu, vl, vu, m);
+        magma_smove_eig( range, n, w, &il, &iu, vl, vu, mout );
 
-        magma_csetmatrix( n, *m, &work[indwrk + n * (il-1) ], n, dC, lddc );
+        magma_csetmatrix( n, *mout, &work[indwrk + n * (il-1) ], n, dC, lddc );
 
-        magma_cunmtr_gpu(MagmaLeft, uplo, MagmaNoTrans, n, *m, dA, ldda, &work[indtau],
-                         dC, lddc, wA, ldwa, &iinfo);
+        magma_cunmtr_gpu( MagmaLeft, uplo, MagmaNoTrans, n, *mout, dA, ldda, &work[indtau],
+                          dC, lddc, wA, ldwa, &iinfo );
 
-        magma_ccopymatrix( n, *m, dC, lddc, dA, ldda );
+        magma_ccopymatrix( n, *mout, dC, lddc, dA, ldda );
 
         timer_stop( time );
         timer_printf( "time cunmtr_gpu + copy = %6.2f\n", time );
@@ -439,10 +440,10 @@ magma_cheevdx_gpu(
             imax = *info - 1;
         }
         d__1 = 1. / sigma;
-        blasf77_sscal(&imax, &d__1, w, &ione);
+        blasf77_sscal( &imax, &d__1, w, &ione );
     }
 
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0 );  // round up
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 

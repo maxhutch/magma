@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
 
-       @generated from zunmbr.cpp normal z -> s, Sat Nov 15 19:54:10 2014
+       @generated from zunmbr.cpp normal z -> s, Fri Jan 30 19:00:19 2015
 
 */
 #include "common_magma.h"
@@ -154,6 +154,8 @@ magma_sormbr(
     magma_int_t i1, i2, nb, mi, ni, nq, nq_1, nw, iinfo, lwkopt;
     magma_int_t left, notran, applyq, lquery;
     magma_trans_t transt;
+    
+    MAGMA_UNUSED( nq_1 );  // used only in version 1
 
     *info = 0;
     applyq = (vect  == MagmaQ);
@@ -236,10 +238,10 @@ magma_sormbr(
             /* Q was determined by a call to SGEBRD with nq >= k */
             #if VERSION == 1
             lapackf77_sormqr( lapack_side_const(side), lapack_trans_const(trans),
-                &m, &n, &k, A, &lda, tau, C, &ldc, work, &lwork, &iinfo);
+                              &m, &n, &k, A, &lda, tau, C, &ldc, work, &lwork, &iinfo);
             #else
             magma_sormqr( side, trans,
-                m, n, k, A, lda, tau, C, ldc, work, lwork, &iinfo);
+                          m, n, k, A, lda, tau, C, ldc, work, lwork, &iinfo);
             #endif
         }
         else if (nq > 1) {
@@ -256,13 +258,13 @@ magma_sormbr(
                 i1 = 0;
                 i2 = 1;
             }
-            nq_1 = nq - 1;
             #if VERSION == 1
+            nq_1 = nq - 1;
             lapackf77_sormqr( lapack_side_const(side), lapack_trans_const(trans),
-                &mi, &ni, &nq_1, A(1,0), &lda, tau, C(i1,i2), &ldc, work, &lwork, &iinfo);
+                              &mi, &ni, &nq_1, A(1,0), &lda, tau, C(i1,i2), &ldc, work, &lwork, &iinfo);
             #else
             magma_sormqr( side, trans,
-                mi, ni, nq-1, A(1,0), lda, tau, C(i1,i2), ldc, work, lwork, &iinfo);
+                          mi, ni, nq-1, A(1,0), lda, tau, C(i1,i2), ldc, work, lwork, &iinfo);
             #endif
         }
     }
@@ -278,10 +280,10 @@ magma_sormbr(
             /* P was determined by a call to SGEBRD with nq > k */
             #if VERSION == 1
             lapackf77_sormlq( lapack_side_const(side), lapack_trans_const(transt),
-                &m, &n, &k, A, &lda, tau, C, &ldc, work, &lwork, &iinfo);
+                              &m, &n, &k, A, &lda, tau, C, &ldc, work, &lwork, &iinfo);
             #else
             magma_sormlq( side, transt,
-                m, n, k, A, lda, tau, C, ldc, work, lwork, &iinfo);
+                          m, n, k, A, lda, tau, C, ldc, work, lwork, &iinfo);
             #endif
         }
         else if (nq > 1) {
@@ -298,13 +300,13 @@ magma_sormbr(
                 i1 = 0;
                 i2 = 1;
             }
-            nq_1 = nq - 1;
             #if VERSION == 1
+            nq_1 = nq - 1;
             lapackf77_sormlq( lapack_side_const(side), lapack_trans_const(transt),
-                &mi, &ni, &nq_1, A(0,1), &lda, tau, C(i1,i2), &ldc, work, &lwork, &iinfo);
+                              &mi, &ni, &nq_1, A(0,1), &lda, tau, C(i1,i2), &ldc, work, &lwork, &iinfo);
             #else
             magma_sormlq( side, transt,
-                mi, ni, nq-1, A(0,1), lda, tau, C(i1,i2), ldc, work, lwork, &iinfo);
+                          mi, ni, nq-1, A(0,1), lda, tau, C(i1,i2), ldc, work, lwork, &iinfo);
             #endif
         }
     }

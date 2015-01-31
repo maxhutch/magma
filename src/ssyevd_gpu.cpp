@@ -1,22 +1,23 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from dsyevd_gpu.cpp normal d -> s, Sat Nov 15 19:54:10 2014
+       @generated from dsyevd_gpu.cpp normal d -> s, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
 #include "magma_timer.h"
 
 #define REAL
+#define FAST_SYMV
 
 /**
     Purpose
@@ -222,38 +223,33 @@ magma_ssyevd_gpu(
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        const char* jobz_ = lapack_vec_const( jobz );
-        const char* uplo_ = lapack_uplo_const( uplo );
+        magma_int_t lda = n;
         float *A;
-        magma_smalloc_cpu( &A, n*n );
-        magma_sgetmatrix(n, n, dA, ldda, A, n);
-        lapackf77_ssyevd(jobz_, uplo_,
-                         &n, A, &n,
-                         w, work, &lwork,
-                         iwork, &liwork, info);
-        magma_ssetmatrix( n, n, A, n, dA, ldda);
-        magma_free_cpu(A);
+        magma_smalloc_cpu( &A, lda*n );
+        magma_sgetmatrix( n, n, dA, ldda, A, lda );
+        lapackf77_ssyevd( lapack_vec_const(jobz), lapack_uplo_const(uplo),
+                          &n, A, &lda,
+                          w, work, &lwork,
+                          iwork, &liwork, info );
+        magma_ssetmatrix( n, n, A, lda, dA, ldda );
+        magma_free_cpu( A );
         return *info;
     }
 
     magma_queue_t stream;
     magma_queue_create( &stream );
 
-    // n*lddc for ssytrd2_gpu
-    // n for slansy
-    magma_int_t ldwork = n*lddc;
+    // ssytrd2_gpu requires ldda*ceildiv(n,64) + 2*ldda*nb
+    // sormtr_gpu  requires lddc*n
+    // slansy      requires n
+    magma_int_t ldwork = max( ldda*ceildiv(n,64) + 2*ldda*nb, lddc*n );
+    ldwork = max( ldwork, n );
     if ( wantz ) {
-        // need 3n^2/2 for sstedx
-        ldwork = max( ldwork, 3*n*(n/2 + 1));
+        // sstedx requires 3n^2/2
+        ldwork = max( ldwork, 3*n*(n/2 + 1) );
     }
-
     if (MAGMA_SUCCESS != magma_smalloc( &dwork, ldwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
@@ -264,11 +260,11 @@ magma_ssyevd_gpu(
     eps    = lapackf77_slamch("Precision");
     smlnum = safmin / eps;
     bignum = 1. / smlnum;
-    rmin = magma_ssqrt(smlnum);
-    rmax = magma_ssqrt(bignum);
+    rmin = magma_ssqrt( smlnum );
+    rmax = magma_ssqrt( bignum );
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_slansy(MagmaMaxNorm, uplo, n, dA, ldda, dwork);
+    anrm = magmablas_slansy( MagmaMaxNorm, uplo, n, dA, ldda, dwork );
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -279,7 +275,7 @@ magma_ssyevd_gpu(
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        magmablas_slascl(uplo, 0, 0, 1., sigma, n, n, dA, ldda, info);
+        magmablas_slascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, info );
     }
 
     /* Call SSYTRD to reduce symmetric matrix to tridiagonal form. */
@@ -296,13 +292,13 @@ magma_ssyevd_gpu(
     timer_start( time );
 
 #ifdef FAST_SYMV
-    magma_ssytrd2_gpu(uplo, n, dA, ldda, w, &work[inde],
-                      &work[indtau], wA, ldwa, &work[indwrk], llwork,
-                      dwork, n*lddc, &iinfo);
+    magma_ssytrd2_gpu( uplo, n, dA, ldda, w, &work[inde],
+                       &work[indtau], wA, ldwa, &work[indwrk], llwork,
+                       dwork, ldwork, &iinfo );
 #else
-    magma_ssytrd_gpu(uplo, n, dA, ldda, w, &work[inde],
-                     &work[indtau], wA, ldwa, &work[indwrk], llwork,
-                     &iinfo);
+    magma_ssytrd_gpu(  uplo, n, dA, ldda, w, &work[inde],
+                       &work[indtau], wA, ldwa, &work[indwrk], llwork,
+                       &iinfo );
 #endif
 
     timer_stop( time );
@@ -317,14 +313,14 @@ magma_ssyevd_gpu(
        tridiagonal matrix, then call SORMTR to multiply it to the Householder
        transformations represented as Householder vectors in A. */
     if (! wantz) {
-        lapackf77_ssterf(&n, w, &work[inde], info);
+        lapackf77_ssterf( &n, w, &work[inde], info );
     }
     else {
         timer_start( time );
 
-        magma_sstedx(MagmaRangeAll, n, 0., 0., 0, 0, w, &work[inde],
-                     &work[indwrk], n, &work[indwk2],
-                     llwrk2, iwork, liwork, dwork, info);
+        magma_sstedx( MagmaRangeAll, n, 0., 0., 0, 0, w, &work[inde],
+                      &work[indwrk], n, &work[indwk2],
+                      llwrk2, iwork, liwork, dwork, info );
 
         timer_stop( time );
         timer_printf( "time sstedx = %6.2f\n", time );
@@ -332,8 +328,8 @@ magma_ssyevd_gpu(
 
         magma_ssetmatrix( n, n, &work[indwrk], n, dwork, lddc );
 
-        magma_sormtr_gpu(MagmaLeft, uplo, MagmaNoTrans, n, n, dA, ldda, &work[indtau],
-                         dwork, lddc, wA, ldwa, &iinfo);
+        magma_sormtr_gpu( MagmaLeft, uplo, MagmaNoTrans, n, n, dA, ldda, &work[indtau],
+                          dwork, lddc, wA, ldwa, &iinfo );
 
         magma_scopymatrix( n, n, dwork, lddc, dA, ldda );
 
@@ -344,7 +340,7 @@ magma_ssyevd_gpu(
     /* If matrix was scaled, then rescale eigenvalues appropriately. */
     if (iscale == 1) {
         d__1 = 1. / sigma;
-        blasf77_sscal(&n, &d__1, w, &ione);
+        blasf77_sscal( &n, &d__1, w, &ione );
     }
 
     work[0]  = lwmin * one_eps;  // round up

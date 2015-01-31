@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmergebicgstab2.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zmergebicgstab2.cu normal z -> d, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -28,8 +28,8 @@ __global__ void
 magma_dreduce_kernel_spmv1(    
     int Gs,
     int n, 
-    magmaDouble_ptr vtmp,
-    magmaDouble_ptr vtmp2 )
+    double * vtmp,
+    double * vtmp2 )
 {
 
     extern __shared__ double temp[];    
@@ -90,13 +90,13 @@ magma_dreduce_kernel_spmv1(
 __global__ void
 magma_dbicgmerge_spmv1_kernel(  
     int n,
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaDouble_ptr p,
-    magmaDouble_ptr r,
-    magmaDouble_ptr v,
-    magmaDouble_ptr vtmp)
+    double * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    double * p,
+    double * r,
+    double * v,
+    double * vtmp)
 {
 
     extern __shared__ double temp[]; 
@@ -165,7 +165,7 @@ magma_dbicgmerge_spmv1_kernel(
 
 __global__ void
 magma_dbicgstab_alphakernel(  
-                    magmaDouble_ptr skp ){
+                    double * skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -189,27 +189,27 @@ magma_dbicgstab_alphakernel(
                 system matrix
 
     @param[in]
-    d1          magmaDouble_ptr 
+    d1          magmaDouble_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaDouble_ptr 
+    d2          magmaDouble_ptr
                 temporary vector
 
     @param[in]
-    dp          magmaDouble_ptr 
+    dp          magmaDouble_ptr
                 input vector p
 
     @param[in]
-    dr          magmaDouble_ptr 
+    dr          magmaDouble_ptr
                 input vector r
 
     @param[in]
-    dv          magmaDouble_ptr 
+    dv          magmaDouble_ptr
                 output vector v
 
     @param[in/out]
-    skp         magmaDouble_ptr 
+    skp         magmaDouble_ptr
                 array for parameters ( skp[0]=alpha )
 
     @param[in]
@@ -278,8 +278,8 @@ __global__ void
 magma_dreduce_kernel_spmv2( 
     int Gs,
     int n, 
-    magmaDouble_ptr vtmp,
-    magmaDouble_ptr vtmp2 )
+    double * vtmp,
+    double * vtmp2 )
 {
 
     extern __shared__ double temp[];    
@@ -364,12 +364,12 @@ magma_dreduce_kernel_spmv2(
 __global__ void
 magma_dbicgmerge_spmv2_kernel(  
     int n,
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaDouble_ptr s,
-    magmaDouble_ptr t,
-    magmaDouble_ptr vtmp )
+    double * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    double * s,
+    double * t,
+    double * vtmp )
 {
 
     extern __shared__ double temp[]; 
@@ -468,7 +468,7 @@ magma_dbicgmerge_spmv2_kernel(
 
 __global__ void
 magma_dbicgstab_omegakernel(  
-                    magmaDouble_ptr skp ){
+                    double * skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -492,23 +492,23 @@ magma_dbicgstab_omegakernel(
                 input matrix 
 
     @param[in]
-    d1          magmaDouble_ptr 
+    d1          magmaDouble_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaDouble_ptr 
+    d2          magmaDouble_ptr
                 temporary vector
 
     @param[in]
-    ds          magmaDouble_ptr 
+    ds          magmaDouble_ptr
                 input vector s
 
     @param[in]
-    dt          magmaDouble_ptr 
+    dt          magmaDouble_ptr
                 output vector t
 
     @param[in/out]
-    skp         magmaDouble_ptr 
+    skp         magmaDouble_ptr
                 array for parameters
 
     @param[in]
@@ -574,14 +574,14 @@ magma_dbicgmerge_spmv2(
 __global__ void
 magma_dbicgmerge_xrbeta_kernel(  
     int n, 
-    magmaDouble_ptr rr,
-    magmaDouble_ptr r,
-    magmaDouble_ptr p,
-    magmaDouble_ptr s,
-    magmaDouble_ptr t,
-    magmaDouble_ptr x, 
-    magmaDouble_ptr skp,
-    magmaDouble_ptr vtmp )
+    double * rr,
+    double * r,
+    double * p,
+    double * s,
+    double * t,
+    double * x, 
+    double * skp,
+    double * vtmp )
 {
 
     extern __shared__ double temp[]; 
@@ -681,7 +681,7 @@ magma_dbicgmerge_xrbeta_kernel(
 
 __global__ void
 magma_dbicgstab_betakernel(  
-    magmaDouble_ptr skp )
+    double * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -707,39 +707,39 @@ magma_dbicgstab_betakernel(
                 dimension n
 
     @param[in]
-    d1          magmaDouble_ptr 
+    d1          magmaDouble_ptr
                 temporary vector
 
     @param[in]
-    d2          magmaDouble_ptr 
+    d2          magmaDouble_ptr
                 temporary vector
 
     @param[in]
-    rr          magmaDouble_ptr 
+    rr          magmaDouble_ptr
                 input vector rr
 
     @param[in]
-    r           magmaDouble_ptr 
+    r           magmaDouble_ptr
                 input/output vector r
 
     @param[in]
-    p           magmaDouble_ptr 
+    p           magmaDouble_ptr
                 input vector p
 
     @param[in]
-    s           magmaDouble_ptr 
+    s           magmaDouble_ptr
                 input vector s
 
     @param[in]
-    t           magmaDouble_ptr 
+    t           magmaDouble_ptr
                 input vector t
 
     @param[out]
-    x           magmaDouble_ptr 
+    x           magmaDouble_ptr
                 output vector x
 
     @param[in]
-    skp         magmaDouble_ptr 
+    skp         magmaDouble_ptr
                 array for parameters
 
     @param[in]

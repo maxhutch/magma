@@ -1,14 +1,15 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-    @author Raffaele Solca
-    @author Azzam Haidar
+       @author Raffaele Solca
+       @author Azzam Haidar
+       @author Mark Gates
 
-    @precisions normal z -> c d s
+       @precisions normal z -> c d s
 
 */
 
@@ -160,14 +161,14 @@ int main( int argc, char** argv)
                                    &info);
             mgpu_time = magma_wtime() - mgpu_time;
 
-            if ( opts.check ) {
+            if ( opts.check && opts.jobz != MagmaNoVec ) {
                 // ===================================================================
                 // Check the results following the LAPACK's [zc]hegvdx routine.
                 // A x = lambda B x is solved
                 // and the following 3 tests computed:
                 // (1)    | A Z - B Z D | / ( |A||Z| N )  (itype = 1)
-                // | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
-                // | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
+                //        | A B Z - Z D | / ( |A||Z| N )  (itype = 2)
+                //        | B A Z - Z D | / ( |A||Z| N )  (itype = 3)
                 // ===================================================================
                 #if defined(PRECISION_d) || defined(PRECISION_s)
                 double *rwork = h_work + N*N;
@@ -204,16 +205,16 @@ int main( int argc, char** argv)
             // ===================================================================
             printf("%5d %5d   %4d   %7.2f\n",
                    (int) N, (int) m1, (int) opts.ngpu, mgpu_time);
-            if ( opts.check ) {
+            if ( opts.check && opts.jobz != MagmaNoVec ) {
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
                 if (opts.itype==1) {
-                    printf("(1)    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
+                    printf("    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
                 }
                 else if (opts.itype==2) {
-                    printf("(1)    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
+                    printf("    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
                 }
                 else if (opts.itype==3) {
-                    printf("(1)    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
+                    printf("    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
                 }
                 printf("\n");
                 status += ! (result < tol);

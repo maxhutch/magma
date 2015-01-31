@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Azzam Haidar
        @author Ichi Yamazaki
@@ -92,7 +92,7 @@ magma_zpotrf_mgpu_right(
     double             m_one = -1.0;
     const char* uplo_ = lapack_uplo_const( uplo );
 
-    magma_int_t j, nb, d, id, j_local, blkid, crosspoint, prevj, prevtrsmrows=0, nqueue = 5;
+    magma_int_t j, nb, d, id, j_local, blkid, crosspoint, prevtrsmrows=0, nqueue = 5;
     magmaDoubleComplex *panel, *tmppanel0, *tmppanel1, *tmppanel, *tmpprevpanel;
     magmaDoubleComplex *d_lP[MagmaMaxGPUs], *dlpanel, *dlpanels[MagmaMaxGPUs];
     magma_int_t rows, trsmrows, igpu, n_local[MagmaMaxGPUs], ldpanel;
@@ -403,7 +403,6 @@ magma_zpotrf_mgpu_right(
                     }
 
                     prevtrsmrows = trsmrows;
-                    prevj = j;
 
                     #if defined (ENABLE_TIMER)
                     ttot += (tcnp+tcchol+tctrsm+therk[0]+therk[1]+therk[2]+tctm+tmnp);

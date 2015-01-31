@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        
@@ -96,12 +96,12 @@ void zlaswp_rowparallel_kernel_batched(
 
 //=================================================================================================
 extern "C" void
-magma_zlaswp_rowparallel_batched_q( magma_int_t n, 
+magma_zlaswp_rowparallel_batched( magma_int_t n, 
                        magmaDoubleComplex** input_array, magma_int_t ldi,
                        magmaDoubleComplex** output_array, magma_int_t ldo,
                        magma_int_t k1, magma_int_t k2,
                        magma_int_t **pivinfo_array, 
-                       magma_queue_t stream, magma_int_t batchCount )
+                       magma_int_t batchCount, magma_queue_t queue)
 {
 
     if(n == 0 ) return ;
@@ -117,28 +117,15 @@ magma_zlaswp_rowparallel_batched_q( magma_int_t n,
 
     if( n < SWP_WIDTH)
     {
-        zlaswp_rowparallel_kernel_batched<<<grid, height, sizeof(magmaDoubleComplex) * height * n, stream >>>
+        zlaswp_rowparallel_kernel_batched<<<grid, height, sizeof(magmaDoubleComplex) * height * n, queue >>>
                                            ( n, n, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
     }
     else
     {
-        zlaswp_rowparallel_kernel_batched<<< grid, height, sizeof(magmaDoubleComplex) * height * SWP_WIDTH , stream >>>
+        zlaswp_rowparallel_kernel_batched<<< grid, height, sizeof(magmaDoubleComplex) * height * SWP_WIDTH , queue >>>
                                             (n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
  
     }
-}
-
-//=================================================================================================
-
-
-extern "C" void
-magma_zlaswp_rowparallel_batched( magma_int_t n, magmaDoubleComplex** input_array, magma_int_t ldi,
-                   magmaDoubleComplex** output_array, magma_int_t ldo,
-                   magma_int_t k1, magma_int_t k2,
-                   magma_int_t **pivinfo_array, 
-                   magma_int_t batchCount )
-{
-    magma_zlaswp_rowparallel_batched_q(n, input_array, ldi, output_array, ldo, k1, k2, pivinfo_array, magma_stream, batchCount);
 }
 
 //=================================================================================================
@@ -153,7 +140,7 @@ magma_zlaswp_rowparallel_q( magma_int_t n,
                        magmaDoubleComplex* output, magma_int_t ldo,
                        magma_int_t k1, magma_int_t k2,
                        magma_int_t *pivinfo, 
-                       magma_queue_t stream)
+                       magma_queue_t queue)
 {
     if(n == 0 ) return ;
     int height = k2-k1;
@@ -168,12 +155,12 @@ magma_zlaswp_rowparallel_q( magma_int_t n,
 
     if( n < SWP_WIDTH)
     {
-        zlaswp_rowparallel_kernel<<<grid, height, sizeof(magmaDoubleComplex) * height * n, stream >>>
+        zlaswp_rowparallel_kernel<<<grid, height, sizeof(magmaDoubleComplex) * height * n, queue >>>
                                    ( n, n, height, input, ldi, output, ldo, pivinfo ); 
     }
     else
     {
-        zlaswp_rowparallel_kernel<<< grid, height, sizeof(magmaDoubleComplex) * height * SWP_WIDTH , stream >>>
+        zlaswp_rowparallel_kernel<<< grid, height, sizeof(magmaDoubleComplex) * height * SWP_WIDTH , queue >>>
                                     (n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
     }
 }
@@ -231,10 +218,10 @@ __global__ void zlaswp_rowserial_kernel_batched( int n, magmaDoubleComplex **dA_
 //  K1, K2 are in Fortran indexing  
 //=================================================================================================
 extern "C" void
-magma_zlaswp_rowserial_batched_q(magma_int_t n, magmaDoubleComplex** dA_array, magma_int_t lda,
+magma_zlaswp_rowserial_batched(magma_int_t n, magmaDoubleComplex** dA_array, magma_int_t lda,
                    magma_int_t k1, magma_int_t k2,
                    magma_int_t **ipiv_array, 
-                   magma_queue_t stream, magma_int_t batchCount)
+                   magma_int_t batchCount, magma_queue_t queue)
 {
 
     if(n == 0 ) return ;
@@ -242,20 +229,10 @@ magma_zlaswp_rowserial_batched_q(magma_int_t n, magmaDoubleComplex** dA_array, m
     int blocks =  (n-1)/ BLK_SIZE + 1;
     dim3  grid(blocks, 1, batchCount);
 
-    zlaswp_rowserial_kernel_batched<<< grid, max(BLK_SIZE, n), 0, stream >>>(
+    zlaswp_rowserial_kernel_batched<<< grid, max(BLK_SIZE, n), 0, queue >>>(
         n, dA_array, lda, k1, k2, ipiv_array); 
 
 }
-
-extern "C" void
-magma_zlaswp_rowserial_batched(magma_int_t n, magmaDoubleComplex** dA_array, magma_int_t lda,
-                   magma_int_t k1, magma_int_t k2,
-                   magma_int_t **ipiv_array, 
-                   magma_int_t batchCount)
-{
-    magma_zlaswp_rowserial_batched_q(n, dA_array, lda, k1, k2, ipiv_array,  magma_stream, batchCount);
-}
-
 
 
 
@@ -308,10 +285,10 @@ __global__ void zlaswp_columnserial_kernel_batched( int n, magmaDoubleComplex **
 //  K1, K2 are in Fortran indexing  
 //=================================================================================================
 extern "C" void
-magma_zlaswp_columnserial_batched_q(magma_int_t n, magmaDoubleComplex** dA_array, magma_int_t lda,
+magma_zlaswp_columnserial_batched(magma_int_t n, magmaDoubleComplex** dA_array, magma_int_t lda,
                    magma_int_t k1, magma_int_t k2,
                    magma_int_t **ipiv_array, 
-                   magma_queue_t stream, magma_int_t batchCount)
+                   magma_int_t batchCount, magma_queue_t queue)
 {
 
     if(n == 0 ) return ;
@@ -319,17 +296,8 @@ magma_zlaswp_columnserial_batched_q(magma_int_t n, magmaDoubleComplex** dA_array
     int blocks =  (n-1)/ BLK_SIZE + 1;
     dim3  grid(blocks, 1, batchCount);
 
-    zlaswp_columnserial_kernel_batched<<< grid, min(BLK_SIZE, n), 0, stream >>>(
+    zlaswp_columnserial_kernel_batched<<< grid, min(BLK_SIZE, n), 0, queue >>>(
         n, dA_array, lda, k1, k2, ipiv_array); 
 
-}
-
-extern "C" void
-magma_zlaswp_columnserial_batched(magma_int_t n, magmaDoubleComplex** dA_array, magma_int_t lda,
-                   magma_int_t k1, magma_int_t k2,
-                   magma_int_t **ipiv_array, 
-                   magma_int_t batchCount)
-{
-    magma_zlaswp_columnserial_batched_q(n, dA_array, lda, k1, k2, ipiv_array,  magma_stream, batchCount);
 }
 

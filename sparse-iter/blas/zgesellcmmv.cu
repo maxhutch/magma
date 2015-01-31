@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -30,12 +30,12 @@ zgesellptmv2d_kernel_4_ldg(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    const magmaDoubleComplex_ptr  __restrict__ dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    const magmaDoubleComplex *  __restrict__ dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
 
 #if defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
@@ -112,12 +112,12 @@ zgesellptmv2d_kernel_1(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaDoubleComplex_ptr  dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaDoubleComplex *  dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
 
     // threads assigned to rows
@@ -151,12 +151,12 @@ zgesellptmv2d_kernel_4(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaDoubleComplex_ptr  dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaDoubleComplex *  dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -229,12 +229,12 @@ zgesellptmv2d_kernel_8(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaDoubleComplex_ptr  dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaDoubleComplex *  dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -309,12 +309,12 @@ zgesellptmv2d_kernel_16(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaDoubleComplex_ptr  dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaDoubleComplex *  dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -374,12 +374,12 @@ zgesellptmv2d_kernel_32(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaDoubleComplex_ptr  dx,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    magmaDoubleComplex *  dx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -451,12 +451,12 @@ zgesellptmv2d_kernel_4_tex(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -529,12 +529,12 @@ zgesellptmv2d_kernel_8_tex(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -609,12 +609,12 @@ zgesellptmv2d_kernel_16_tex(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -674,12 +674,12 @@ zgesellptmv2d_kernel_32_tex(
     int blocksize,
     int T,
     magmaDoubleComplex alpha, 
-    magmaDoubleComplex_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
+    magmaDoubleComplex * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
     cudaTextureObject_t texdx,
     magmaDoubleComplex beta, 
-    magmaDoubleComplex_ptr dy)
+    magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -825,7 +825,7 @@ magma_zgesellpmv(
 
     dim3 block( blocksize, alignment, 1);
 
-    int dimgrid1 = sqrt(slices);
+    int dimgrid1 = (int) sqrt( (double)slices );
     int dimgrid2 = (slices + dimgrid1 -1 ) / dimgrid1;
 
     dim3 grid( dimgrid1, dimgrid2, 1);

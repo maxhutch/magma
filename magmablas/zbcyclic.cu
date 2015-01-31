@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Mark Gates
@@ -128,7 +128,7 @@ magma_zsetmatrix_1D_row_bcyclic(
         info = -2;
     else if ( lda < m )
         info = -4;
-    else if ( ldda < m )
+    else if ( ldda < (1+m/(nb*ngpu))*nb )
         info = -6;
     else if ( ngpu < 1 )
         info = -7;
@@ -174,7 +174,7 @@ magma_zgetmatrix_1D_row_bcyclic(
         info = -1;
     else if ( n < 0 )
         info = -2;
-    else if ( ldda < m )
+    else if ( ldda < (1+m/(nb*ngpu))*nb )
         info = -4;
     else if ( lda < m )
         info = -6;

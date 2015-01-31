@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/control
@@ -20,7 +20,7 @@ ZSRC := \
 	magma_zmconverter.cpp	\
 	magma_zmtransfer.cpp	\
 	magma_z_vio.cpp		\
-	magma_zgeneratematrix.cpp	\
+	magma_zmgenerator.cpp	\
 	magma_zmio.cpp		\
 	magma_zsolverinfo.cpp	\
     magma_zcsrsplit.cpp   \

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -19,7 +19,7 @@
 // initialize arrays with zero
 __global__ void
 magma_zgpumemzero(  
-    magmaDoubleComplex_ptr d, 
+    magmaDoubleComplex * d, 
     int n, 
     int k )
 {
@@ -37,9 +37,9 @@ __global__ void
 magma_zdot_kernel( 
     int Gs,
     int n, 
-    magmaDoubleComplex_ptr v,
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr vtmp)
+    magmaDoubleComplex * v,
+    magmaDoubleComplex * r,
+    magmaDoubleComplex * vtmp)
 {
 
     extern __shared__ magmaDoubleComplex temp[]; 
@@ -99,9 +99,9 @@ magma_zblockdot_kernel(
     int Gs,
     int n, 
     int k,
-    magmaDoubleComplex_ptr v,
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr vtmp)
+    magmaDoubleComplex * v,
+    magmaDoubleComplex * r,
+    magmaDoubleComplex * vtmp)
 {
 
     extern __shared__ magmaDoubleComplex temp[]; 
@@ -192,8 +192,8 @@ magma_zblockreduce_kernel(
     int Gs,
     int n, 
     int k,
-    magmaDoubleComplex_ptr vtmp,
-    magmaDoubleComplex_ptr vtmp2 )
+    magmaDoubleComplex * vtmp,
+    magmaDoubleComplex * vtmp2 )
 {
 
     extern __shared__ magmaDoubleComplex temp[];    
@@ -276,8 +276,8 @@ magma_zblockreduce_kernel(
 __global__ void
 magma_zreduce_kernel_fast( int Gs,
                            int n, 
-                           magmaDoubleComplex_ptr vtmp,
-                           magmaDoubleComplex_ptr vtmp2 ){
+                           magmaDoubleComplex * vtmp,
+                           magmaDoubleComplex * vtmp2 ){
 
     extern __shared__ magmaDoubleComplex temp[];    
     int Idx = threadIdx.x;
@@ -339,8 +339,8 @@ magma_zblockreduce_kernel_fast(
     int Gs,
     int n, 
     int k,
-    magmaDoubleComplex_ptr vtmp,
-    magmaDoubleComplex_ptr vtmp2 )
+    magmaDoubleComplex * vtmp,
+    magmaDoubleComplex * vtmp2 )
 {
 
     extern __shared__ magmaDoubleComplex temp[];    

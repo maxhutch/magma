@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
  
        @author Mark Gates
-       @generated from blas_z.cpp normal z -> c, Sat Nov 15 19:54:12 2014
+       @generated from blas_z.cpp normal z -> c, Fri Jan 30 19:00:20 2015
 */
 
 #include <stdlib.h>
@@ -47,10 +47,10 @@
             
     @ingroup magma_cblas1
 */
-extern "C"
-magma_int_t magma_icamax(
+extern "C" magma_int_t
+magma_icamax(
     magma_int_t n,
-    const magmaFloatComplex *dx, magma_int_t incx )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasIcamax( n, dx, incx );
 }
@@ -70,10 +70,10 @@ magma_int_t magma_icamax(
 
     @ingroup magma_cblas1
 */
-extern "C"
-magma_int_t magma_icamin(
+extern "C" magma_int_t
+magma_icamin(
     magma_int_t n,
-    const magmaFloatComplex *dx, magma_int_t incx )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasIcamin( n, dx, incx );
 }
@@ -93,10 +93,10 @@ magma_int_t magma_icamin(
 
     @ingroup magma_cblas1
 */
-extern "C"
-float magma_scasum(
+extern "C" float
+magma_scasum(
     magma_int_t n,
-    const magmaFloatComplex *dx, magma_int_t incx )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasScasum( n, dx, incx );
 }
@@ -126,12 +126,12 @@ float magma_scasum(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_caxpy(
+extern "C" void
+magma_caxpy(
     magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex       *dy, magma_int_t incy )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr       dy, magma_int_t incy )
 {
     cublasCaxpy( n, alpha, dx, incx, dy, incy );
 }
@@ -158,11 +158,11 @@ void magma_caxpy(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_ccopy(
+extern "C" void
+magma_ccopy(
     magma_int_t n,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex       *dy, magma_int_t incy )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr       dy, magma_int_t incy )
 {
     cublasCcopy( n, dx, incx, dy, incy );
 }
@@ -192,8 +192,8 @@ void magma_ccopy(
 extern "C"
 magmaFloatComplex magma_cdotc(
     magma_int_t n,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    const magmaFloatComplex *dy, magma_int_t incy )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_const_ptr dy, magma_int_t incy )
 {
     return cublasCdotc( n, dx, incx, dy, incy );
 }
@@ -224,12 +224,12 @@ magmaFloatComplex magma_cdotc(
 extern "C"
 magmaFloatComplex magma_cdotu(
     magma_int_t n,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    const magmaFloatComplex *dy, magma_int_t incy )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_const_ptr dy, magma_int_t incy )
 {
     return cublasCdotu( n, dx, incx, dy, incy );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Returns 2-norm of vector x. Avoids unnecesary over/underflow.
@@ -246,10 +246,10 @@ magmaFloatComplex magma_cdotu(
 
     @ingroup magma_cblas1
 */
-extern "C"
-float magma_scnrm2(
+extern "C" float
+magma_scnrm2(
     magma_int_t n,
-    const magmaFloatComplex *dx, magma_int_t incx )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasScnrm2( n, dx, incx );
 }
@@ -286,11 +286,11 @@ float magma_scnrm2(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_crot(
+extern "C" void
+magma_crot(
     magma_int_t n,
-    magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex *dy, magma_int_t incy,
+    magmaFloatComplex_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr dy, magma_int_t incy,
     float c, magmaFloatComplex s )
 {
     cublasCrot( n, dx, incx, dy, incy, c, s );
@@ -329,16 +329,16 @@ void magma_crot(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_csrot(
+extern "C" void
+magma_csrot(
     magma_int_t n,
-    magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex *dy, magma_int_t incy,
+    magmaFloatComplex_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr dy, magma_int_t incy,
     float c, float s )
 {
     cublasCsrot( n, dx, incx, dy, incy, c, s );
 }
-#endif
+#endif // COMPLEX
 
 #ifdef REAL
 // --------------------
@@ -346,8 +346,8 @@ void magma_csrot(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_crotm(
+extern "C" void
+magma_crotm(
     magma_int_t n,
     float *dx, magma_int_t incx,
     float *dy, magma_int_t incy,
@@ -361,15 +361,15 @@ void magma_crotm(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_crotmg(
+extern "C" void
+magma_crotmg(
     float *d1, float       *d2,
     float *x1, const float *y1,
     float *param )
 {
     cublasCrotmg( d1, d2, x1, y1, param );
 }
-#endif
+#endif // REAL
 
 // --------------------
 /** Scales a vector by a constant; \f$ x = \alpha x \f$.
@@ -389,11 +389,11 @@ void magma_crotmg(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_cscal(
+extern "C" void
+magma_cscal(
     magma_int_t n,
     magmaFloatComplex alpha,
-    magmaFloatComplex *dx, magma_int_t incx )
+    magmaFloatComplex_ptr dx, magma_int_t incx )
 {
     cublasCscal( n, alpha, dx, incx );
 }
@@ -417,15 +417,15 @@ void magma_cscal(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_csscal(
+extern "C" void
+magma_csscal(
     magma_int_t n,
     float alpha,
-    magmaFloatComplex *dx, magma_int_t incx )
+    magmaFloatComplex_ptr dx, magma_int_t incx )
 {
     cublasCsscal( n, alpha, dx, incx );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Swap vector x and y; \f$ x <-> y \f$.
@@ -449,11 +449,11 @@ void magma_csscal(
 
     @ingroup magma_cblas1
 */
-extern "C"
-void magma_cswap(
+extern "C" void
+magma_cswap(
     magma_int_t n,
-    magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex *dy, magma_int_t incy )
+    magmaFloatComplex_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr dy, magma_int_t incy )
 {
     cublasCswap( n, dx, incx, dy, incy );
 }
@@ -508,15 +508,15 @@ void magma_cswap(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_cgemv(
+extern "C" void
+magma_cgemv(
     magma_trans_t transA,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    const magmaFloatComplex *dx, magma_int_t incx,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magmaFloatComplex beta,
-    magmaFloatComplex       *dy, magma_int_t incy )
+    magmaFloatComplex_ptr       dy, magma_int_t incy )
 {
     cublasCgemv(
         cublas_trans_const( transA ),
@@ -561,13 +561,13 @@ void magma_cgemv(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_cgerc(
+extern "C" void
+magma_cgerc(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    const magmaFloatComplex *dy, magma_int_t incy,
-    magmaFloatComplex       *dA, magma_int_t ldda )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_const_ptr dy, magma_int_t incy,
+    magmaFloatComplex_ptr       dA, magma_int_t ldda )
 {
     cublasCgerc(
         m, n,
@@ -612,13 +612,13 @@ void magma_cgerc(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_cgeru(
+extern "C" void
+magma_cgeru(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    const magmaFloatComplex *dy, magma_int_t incy,
-    magmaFloatComplex       *dA, magma_int_t ldda )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_const_ptr dy, magma_int_t incy,
+    magmaFloatComplex_ptr       dA, magma_int_t ldda )
 {
     cublasCgeru(
         m, n,
@@ -626,7 +626,7 @@ void magma_cgeru(
                dy, incy,
                dA, ldda );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Perform Hermitian matrix-vector product, \f$ y = \alpha A x + \beta y \f$.
@@ -666,15 +666,15 @@ void magma_cgeru(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_chemv(
+extern "C" void
+magma_chemv(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    const magmaFloatComplex *dx, magma_int_t incx,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
     magmaFloatComplex beta,
-    magmaFloatComplex       *dy, magma_int_t incy )
+    magmaFloatComplex_ptr       dy, magma_int_t incy )
 {
     cublasChemv(
         cublas_uplo_const( uplo ),
@@ -712,13 +712,13 @@ void magma_chemv(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_cher(
+extern "C" void
+magma_cher(
     magma_uplo_t uplo,
     magma_int_t n,
     float alpha,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    magmaFloatComplex       *dA, magma_int_t ldda )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_ptr       dA, magma_int_t ldda )
 {
     cublasCher(
         cublas_uplo_const( uplo ),
@@ -762,14 +762,14 @@ void magma_cher(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_cher2(
+extern "C" void
+magma_cher2(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dx, magma_int_t incx,
-    const magmaFloatComplex *dy, magma_int_t incy,
-    magmaFloatComplex       *dA, magma_int_t ldda )
+    magmaFloatComplex_const_ptr dx, magma_int_t incx,
+    magmaFloatComplex_const_ptr dy, magma_int_t incy,
+    magmaFloatComplex_ptr       dA, magma_int_t ldda )
 {
     cublasCher2(
         cublas_uplo_const( uplo ),
@@ -813,12 +813,12 @@ void magma_cher2(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_ctrmv(
+extern "C" void
+magma_ctrmv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    magmaFloatComplex       *dx, magma_int_t incx )
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr       dx, magma_int_t incx )
 {
     cublasCtrmv(
         cublas_uplo_const( uplo ),
@@ -864,12 +864,12 @@ void magma_ctrmv(
 
     @ingroup magma_cblas2
 */
-extern "C"
-void magma_ctrsv(
+extern "C" void
+magma_ctrsv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    magmaFloatComplex       *dx, magma_int_t incx )
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr       dx, magma_int_t incx )
 {
     cublasCtrsv(
         cublas_uplo_const( uplo ),
@@ -932,15 +932,15 @@ void magma_ctrsv(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_cgemm(
+extern "C" void
+magma_cgemm(
     magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    const magmaFloatComplex *dB, magma_int_t lddb,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dB, magma_int_t lddb,
     magmaFloatComplex beta,
-    magmaFloatComplex       *dC, magma_int_t lddc )
+    magmaFloatComplex_ptr       dC, magma_int_t lddc )
 {
     cublasCgemm(
         cublas_trans_const( transA ),
@@ -999,15 +999,15 @@ void magma_cgemm(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_csymm(
+extern "C" void
+magma_csymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    const magmaFloatComplex *dB, magma_int_t lddb,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dB, magma_int_t lddb,
     magmaFloatComplex beta,
-    magmaFloatComplex       *dC, magma_int_t lddc )
+    magmaFloatComplex_ptr       dC, magma_int_t lddc )
 {
     cublasCsymm(
         cublas_side_const( side ),
@@ -1059,14 +1059,14 @@ void magma_csymm(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_csyrk(
+extern "C" void
+magma_csyrk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
     magmaFloatComplex beta,
-    magmaFloatComplex       *dC, magma_int_t lddc )
+    magmaFloatComplex_ptr       dC, magma_int_t lddc )
 {
     cublasCsyrk(
         cublas_uplo_const( uplo ),
@@ -1125,15 +1125,15 @@ void magma_csyrk(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_csyr2k(
+extern "C" void
+magma_csyr2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    const magmaFloatComplex *dB, magma_int_t lddb,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dB, magma_int_t lddb,
     magmaFloatComplex beta,
-    magmaFloatComplex       *dC, magma_int_t lddc )
+    magmaFloatComplex_ptr       dC, magma_int_t lddc )
 {
     cublasCsyr2k(
         cublas_uplo_const( uplo ),
@@ -1193,15 +1193,15 @@ void magma_csyr2k(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_chemm(
+extern "C" void
+magma_chemm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    const magmaFloatComplex *dB, magma_int_t lddb,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dB, magma_int_t lddb,
     magmaFloatComplex beta,
-    magmaFloatComplex       *dC, magma_int_t lddc )
+    magmaFloatComplex_ptr       dC, magma_int_t lddc )
 {
     cublasChemm(
         cublas_side_const( side ),
@@ -1253,14 +1253,14 @@ void magma_chemm(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_cherk(
+extern "C" void
+magma_cherk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     float alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
     float beta,
-    magmaFloatComplex       *dC, magma_int_t lddc )
+    magmaFloatComplex_ptr       dC, magma_int_t lddc )
 {
     cublasCherk(
         cublas_uplo_const( uplo ),
@@ -1319,15 +1319,15 @@ void magma_cherk(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_cher2k(
+extern "C" void
+magma_cher2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    const magmaFloatComplex *dB, magma_int_t lddb,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_const_ptr dB, magma_int_t lddb,
     float beta,
-    magmaFloatComplex       *dC, magma_int_t lddc )
+    magmaFloatComplex_ptr       dC, magma_int_t lddc )
 {
     cublasCher2k(
         cublas_uplo_const( uplo ),
@@ -1383,13 +1383,13 @@ void magma_cher2k(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_ctrmm(
+extern "C" void
+magma_ctrmm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    magmaFloatComplex       *dB, magma_int_t lddb )
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr       dB, magma_int_t lddb )
 {
     cublasCtrmm(
         cublas_side_const( side ),
@@ -1446,13 +1446,13 @@ void magma_ctrmm(
 
     @ingroup magma_cblas3
 */
-extern "C"
-void magma_ctrsm(
+extern "C" void
+magma_ctrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
-    const magmaFloatComplex *dA, magma_int_t ldda,
-    magmaFloatComplex       *dB, magma_int_t lddb )
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr       dB, magma_int_t lddb )
 {
     cublasCtrsm(
         cublas_side_const( side ),

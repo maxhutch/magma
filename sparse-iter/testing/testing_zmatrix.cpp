@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -71,7 +71,7 @@ int main(  int argc, char** argv )
         magma_z_mtranspose( A, &AT, queue );
 
         // convert, copy back and forth to check everything works
-        printf("here0\n");
+
         magma_z_mconvert( AT, &B, Magma_CSR, zopts.output_format, queue );
         magma_z_mfree(&AT, queue );
         magma_z_mtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue );

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Jakub Kurzak
        @author Stan Tomov
@@ -195,21 +195,21 @@ void devfunc_name(precision) (
             int coord_B = offsetB + bly*BLK_N*LDB + idyB*LDB + idxB;
         #endif
     #else
-        // bound is the correction to offs_d in order to not getting out of memory bound
+        // bound is the correction to offs_d in order to not get out of memory bound
         // so bound could be negative value since offs_d could be out of bound
         #ifdef TRANS_A
             const FloatingPoint_t *offs_dA = A + blx*BLK_M*LDA + idyA*LDA + idxA;
-            ssize_t boundA = (LDA*(M-1) + K) - ( blx*BLK_M*LDA + idyA*LDA + idxA ) -1;
+            ptrdiff_t boundA = (LDA*(M-1) + K) - ( blx*BLK_M*LDA + idyA*LDA + idxA ) -1;
         #else
             const FloatingPoint_t *offs_dA = A + blx*BLK_M     + idyA*LDA + idxA;
-            ssize_t boundA = (LDA*(K-1) + M) - ( blx*BLK_M  + idyA*LDA + idxA ) -1;
+            ptrdiff_t boundA = (LDA*(K-1) + M) - ( blx*BLK_M  + idyA*LDA + idxA ) -1;
         #endif
         #ifdef TRANS_B
             const FloatingPoint_t *offs_dB = B + bly*BLK_N     + idyB*LDB + idxB;
-            ssize_t boundB = (LDB*(K-1) + N) - ( bly*BLK_N     + idyB*LDB + idxB ) -1;
+            ptrdiff_t boundB = (LDB*(K-1) + N) - ( bly*BLK_N     + idyB*LDB + idxB ) -1;
         #else
             const FloatingPoint_t *offs_dB = B + bly*BLK_N*LDB + idyB*LDB + idxB;
-            ssize_t boundB = (LDB*(N-1) + K) - ( bly*BLK_N*LDB + idyB*LDB + idxB ) -1;
+            ptrdiff_t boundB = (LDB*(N-1) + K) - ( bly*BLK_N*LDB + idyB*LDB + idxB ) -1;
         #endif
     #endif
 

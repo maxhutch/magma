@@ -7,7 +7,7 @@ replacements can be defined such that no two sets can conflict.  Multiple
 types of replacements can, however, be specified for the same file.
 
 @author Wesley Alvaro
-@date November 2014
+@date January 2015
 
 """
 __author__="alvaro"

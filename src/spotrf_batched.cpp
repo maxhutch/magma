@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zpotrf_batched.cpp normal z -> s, Sat Nov 15 19:54:10 2014
+       @generated from zpotrf_batched.cpp normal z -> s, Fri Jan 30 19:00:19 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
@@ -72,9 +72,11 @@ extern "C" magma_int_t
 magma_spotrf_batched(
     magma_uplo_t uplo, magma_int_t n,
     float **dA_array, magma_int_t ldda,
-    magma_int_t *info_array,  magma_int_t batchCount)
+    magma_int_t *info_array,  magma_int_t batchCount, magma_queue_t queue)
 {
 #define A(i_, j_)  (A + (i_) + (j_)*ldda)   
+    float d_alpha = -1.0;
+    float d_beta  = 1.0;
     cudaMemset(info_array, 0, batchCount*sizeof(magma_int_t));
 
     magma_int_t arginfo = 0;
@@ -121,7 +123,7 @@ magma_spotrf_batched(
     float **dW3_displ  = NULL;
     float **dW4_displ  = NULL;
     float **dinvA_array = NULL;
-    float **dx_array    = NULL;
+    float **dwork_array = NULL;
 
     magma_malloc((void**)&dA_displ,   batchCount * sizeof(*dA_displ));
     magma_malloc((void**)&dW0_displ,  batchCount * sizeof(*dW0_displ));
@@ -130,25 +132,41 @@ magma_spotrf_batched(
     magma_malloc((void**)&dW3_displ,  batchCount * sizeof(*dW3_displ));
     magma_malloc((void**)&dW4_displ,  batchCount * sizeof(*dW4_displ));
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
-    magma_malloc((void**)&dx_array,    batchCount * sizeof(*dx_array));
+    magma_malloc((void**)&dwork_array,    batchCount * sizeof(*dwork_array));
 
-    float* dinvA;
-    float* dx;// dinvA and x are workspace in strsm
     magma_int_t invA_msize = ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB;
-    magma_int_t x_msize = n*nb;
-    magma_smalloc( &dinvA, invA_msize * batchCount);
-    magma_smalloc( &dx,    x_msize * batchCount );
-    sset_pointer(dx_array, dx, 1, 0, 0, x_msize, batchCount);
-    sset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount);
-    cudaMemset( dinvA, 0, batchCount * ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB * sizeof(float) );
-
+    magma_int_t dwork_msize = n*nb;
+    float* dinvA      = NULL;
+    float* dwork      = NULL;// dinvA and dwork are workspace in strsm
     float **cpuAarray = NULL;
+    magma_smalloc( &dinvA, invA_msize * batchCount);
+    magma_smalloc( &dwork, dwork_msize * batchCount );
     magma_malloc_cpu((void**) &cpuAarray, batchCount*sizeof(float*));
-    magma_getvector( batchCount, sizeof(float*), dA_array, 1, cpuAarray, 1);
+   /* check allocation */
+    if ( dA_displ  == NULL || dW0_displ == NULL || dW1_displ   == NULL || dW2_displ   == NULL || 
+         dW3_displ == NULL || dW4_displ == NULL || dinvA_array == NULL || dwork_array == NULL || 
+         dinvA     == NULL || dwork     == NULL || cpuAarray   == NULL ) {
+        magma_free(dA_displ);
+        magma_free(dW0_displ);
+        magma_free(dW1_displ);
+        magma_free(dW2_displ);
+        magma_free(dW3_displ);
+        magma_free(dW4_displ);
+        magma_free(dinvA_array);
+        magma_free(dwork_array);
+        magma_free( dinvA );
+        magma_free( dwork );
+        free(cpuAarray);
+        magma_int_t info = MAGMA_ERR_DEVICE_ALLOC;
+        magma_xerbla( __func__, -(info) );
+        return info;
+    }
 
+    magmablas_slaset_q(MagmaFull, invA_msize, batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dinvA, invA_msize, queue);
+    magmablas_slaset_q(MagmaFull, dwork_msize, batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dwork, dwork_msize, queue);
+    sset_pointer(dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue);
+    sset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
 
-    float d_alpha = -1.0;
-    float d_beta  = 1.0;
 
     magma_queue_t cstream;
     magmablasGetKernelStream(&cstream);
@@ -158,6 +176,7 @@ magma_spotrf_batched(
     for(k=0; k<nbstreams; k++){
         magma_queue_create( &stream[k] );
     }
+    magma_getvector( batchCount, sizeof(float*), dA_array, 1, cpuAarray, 1);
 
     magmablasSetKernelStream(NULL);
 
@@ -172,16 +191,16 @@ magma_spotrf_batched(
             //===============================================
             //  panel factorization
             //===============================================
-            magma_sdisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount);
-            sset_pointer(dx_array, dx, 1, 0, 0, x_msize, batchCount);
-            sset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount);
+            magma_sdisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount, queue);
+            sset_pointer(dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue);
+            sset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
 
 
             #if 0
             arginfo = magma_spotrf_panel_batched(
                                uplo, n-j, ib,
                                dA_displ, ldda,
-                               dx_array, x_msize,
+                               dwork_array, dwork_msize,
                                dinvA_array, invA_msize,
                                dW0_displ, dW1_displ, dW2_displ,
                                dW3_displ, dW4_displ,
@@ -191,11 +210,11 @@ magma_spotrf_batched(
             arginfo = magma_spotrf_recpanel_batched(
                                uplo, n-j, ib, 32,
                                dA_displ, ldda,
-                               dx_array, x_msize,
+                               dwork_array, dwork_msize,
                                dinvA_array, invA_msize,
                                dW0_displ, dW1_displ, dW2_displ,
                                dW3_displ, dW4_displ, 
-                               info_array, j, batchCount, myhandle);
+                               info_array, j, batchCount, myhandle, queue);
             #endif
             if(arginfo != 0 ) goto fin;
             //===============================================
@@ -240,12 +259,12 @@ magma_spotrf_batched(
                     //-------------------------------------------
                     //          USE BATCHED GEMM(which is a HERK in fact, since it only access the lower part)
                     //-------------------------------------------
-                    magma_sdisplace_pointers(dA_displ, dA_array, ldda, j+ib, j, batchCount);
-                    magma_sdisplace_pointers(dW1_displ, dA_array, ldda, j+ib, j+ib, batchCount);
+                    magma_sdisplace_pointers(dA_displ, dA_array, ldda, j+ib, j, batchCount, queue);
+                    magma_sdisplace_pointers(dW1_displ, dA_array, ldda, j+ib, j+ib, batchCount, queue);
                     magmablas_ssyrk_batched(uplo, MagmaNoTrans, n-j-ib, ib,
                                           d_alpha, dA_displ, ldda, 
                                           d_beta,  dW1_displ, ldda, 
-                                          batchCount);
+                                          batchCount, queue);
                 }
             } 
             //gpu_time = magma_sync_wtime(NULL) - gpu_time;
@@ -275,12 +294,11 @@ fin:
     magma_free(dW2_displ);
     magma_free(dW3_displ);
     magma_free(dW4_displ);
-
     magma_free(dinvA_array);
-    magma_free(dx_array);
-    magma_free(dinvA);
-    magma_free(dx);
-    magma_free_cpu(cpuAarray);
+    magma_free(dwork_array);
+    magma_free( dinvA );
+    magma_free( dwork );
+    free(cpuAarray);
 
     return arginfo;
 }

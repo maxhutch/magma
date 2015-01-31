@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -52,9 +52,9 @@ __global__ void
 magma_zpipelined_correction( 
     int n,  
     int k,
-    magmaDoubleComplex_ptr skp, 
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr v )
+    magmaDoubleComplex * skp, 
+    magmaDoubleComplex * r,
+    magmaDoubleComplex * v )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     double zz= 0.0, tmp= 0.0;
@@ -83,9 +83,9 @@ __global__ void
 magma_zpipelined_copyscale( 
     int n,  
     int k,
-    magmaDoubleComplex_ptr skp, 
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr v )
+    magmaDoubleComplex * skp, 
+    magmaDoubleComplex * r,
+    magmaDoubleComplex * v )
 {
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;
@@ -103,9 +103,9 @@ magma_zpipelined_copyscale(
 __global__ void
 magma_zpipelineddznrm2_kernel( 
     int m, 
-    magmaDoubleComplex_ptr da, 
+    magmaDoubleComplex * da, 
     int ldda, 
-    magmaDoubleComplex_ptr dxnorm )
+    magmaDoubleComplex * dxnorm )
 {
     const int i = threadIdx.x;
     magmaDoubleComplex_ptr dx = da + blockIdx.x * ldda;
@@ -139,8 +139,8 @@ magma_zpipelineddznrm2_kernel(
 __global__ void
 magma_zpipelinedscale( 
     int n, 
-    magmaDoubleComplex_ptr r, 
-    magmaDoubleComplex_ptr drnorm )
+    magmaDoubleComplex * r, 
+    magmaDoubleComplex * drnorm )
 {
 
     int i = blockIdx.x * blockDim.x + threadIdx.x;

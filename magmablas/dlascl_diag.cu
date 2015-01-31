@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlascl_diag.cu normal z -> d, Sat Nov 15 19:53:59 2014
+       @generated from zlascl_diag.cu normal z -> d, Fri Jan 30 19:00:09 2015
 */
 #include "common_magma.h"
 
@@ -15,8 +15,8 @@
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from left edge and moving right to diagonal.
 __global__ void
-dlascl_diag_lower(int m, int n, const double* D, int ldd, 
-                                      double* A, int lda)
+dlascl_diag_lower(int m, int n, magmaDouble_const_ptr D, int ldd, 
+                                      magmaDouble_ptr A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -31,8 +31,8 @@ dlascl_diag_lower(int m, int n, const double* D, int ldd,
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from right edge and moving left to diagonal.
 __global__ void
-dlascl_diag_upper(int m, int n, const double *D, int ldd, 
-                                      double *A, int lda)
+dlascl_diag_upper(int m, int n, magmaDouble_const_ptr D, int ldd, 
+                                      magmaDouble_ptr A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -91,8 +91,8 @@ dlascl_diag_upper(int m, int n, const double *D, int ldd,
 extern "C" void
 magmablas_dlascl_diag_q(
     magma_type_t type, magma_int_t m, magma_int_t n,
-    const double *dD, magma_int_t lddd, 
-          double *dA, magma_int_t ldda, 
+    magmaDouble_const_ptr dD, magma_int_t lddd, 
+          magmaDouble_ptr dA, magma_int_t ldda, 
     magma_int_t *info, magma_queue_t queue )
 {
     *info = 0;
@@ -129,8 +129,8 @@ magmablas_dlascl_diag_q(
 extern "C" void
 magmablas_dlascl_diag(
     magma_type_t type, magma_int_t m, magma_int_t n,
-    const double *dD, magma_int_t lddd, 
-          double *dA, magma_int_t ldda, 
+    magmaDouble_const_ptr dD, magma_int_t lddd, 
+          magmaDouble_ptr dA, magma_int_t ldda, 
     magma_int_t *info )
 {
     magmablas_dlascl_diag_q( type, m, n, dD, lddd, dA, ldda, info, magma_stream );

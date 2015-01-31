@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -72,7 +72,7 @@ magma_zgesv_rbt_batched(
                   magmaDoubleComplex **dA_array, magma_int_t ldda,
                   magmaDoubleComplex **dB_array, magma_int_t lddb,
                   magma_int_t *info_array,
-                  magma_int_t batchCount)
+                  magma_int_t batchCount, magma_queue_t queue)
 {
     /* Local variables */
     
@@ -111,13 +111,13 @@ magma_zgesv_rbt_batched(
 
 
 
-    info = magma_zgerbt_batched(MagmaTrue, n, nrhs, dA_array, n, dB_array, n, hu, hv, &info, batchCount);
+    info = magma_zgerbt_batched(MagmaTrue, n, nrhs, dA_array, n, dB_array, n, hu, hv, &info, batchCount, queue);
     if (info != MAGMA_SUCCESS)  {
         return info;
     }
 
 
-    info = magma_zgetrf_nopiv_batched( n, n, dA_array, ldda, info_array, batchCount);
+    info = magma_zgetrf_nopiv_batched( n, n, dA_array, ldda, info_array, batchCount, queue);
     if ( (info != MAGMA_SUCCESS) ){
         return info;
     }
@@ -138,7 +138,7 @@ magma_zgesv_rbt_batched(
     free (cpu_info);
 #endif
 
-    info = magma_zgetrs_nopiv_batched( MagmaNoTrans, n, nrhs, dA_array, ldda, dB_array, lddb, info_array, batchCount );
+    info = magma_zgetrs_nopiv_batched( MagmaNoTrans, n, nrhs, dA_array, ldda, dB_array, lddb, info_array, batchCount, queue );
 
 
     /* The solution of A.x = b is Vy computed on the GPU */
@@ -152,7 +152,7 @@ magma_zgesv_rbt_batched(
     magma_zsetvector(2*n, hv, 1, dv, 1);
 
     for(int i = 0; i < nrhs; i++)
-        magmablas_zprbt_mv_batched(n, dv, dB_array+(i), batchCount);
+        magmablas_zprbt_mv_batched(n, dv, dB_array+(i), batchCount, queue);
 
  //   magma_zgetmatrix(n, nrhs, db, nn, B, ldb);
 

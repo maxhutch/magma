@@ -9,10 +9,10 @@ SHDR = \
 	
 
 CSRC = \
-	magma_c_no_fortran.c
+	magma_c_no_fortran.cpp
 
 DSRC = \
-	magma_d_no_fortran.c
+	magma_d_no_fortran.cpp
 
 SSRC = \
-	magma_s_no_fortran.c
+	magma_s_no_fortran.cpp

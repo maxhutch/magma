@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgemm_batched.cu normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zgemm_batched.cu normal z -> c, Fri Jan 30 19:00:10 2015
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -139,15 +139,17 @@ magmablas_cgemm_batched(
     magmaFloatComplex const * const * dA_array, magma_int_t ldda,
     magmaFloatComplex const * const * dB_array, magma_int_t lddb,
     magmaFloatComplex beta,
-    magmaFloatComplex **dC_array, magma_int_t lddc, magma_int_t batchCount )
+    magmaFloatComplex **dC_array, magma_int_t lddc, magma_int_t batchCount, magma_queue_t queue )
 {
-    if( (k < 32) || (k <= 32 && m <= 32) || (k <= 32 && n <= 32) ) {
+
+    //if( (k < 32) || (k == 32 && m < 256) || (k == 32 && n < 256) || (k == 32 && transA==MagmaTrans) || (k == 32 && transA==MagmaConjTrans) || (m <= 32 && n <= 32) ) {
+    if( (k <= 32) || (m <= 32 && n <= 32) ) {
         magmablas_cgemm_batched_k32(
                   transA, transB, m, n, k,
                   alpha, dA_array, ldda,
                          dB_array, lddb,
                   beta,  dC_array, lddc,
-                  batchCount );
+                  batchCount, queue );
     }
     else{
         magmablas_cgemm_batched_lg(
@@ -155,7 +157,7 @@ magmablas_cgemm_batched(
                   alpha, dA_array, ldda,
                          dB_array, lddb,
                   beta,  dC_array, lddc,
-                  batchCount );
+                  batchCount, queue );
     }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////

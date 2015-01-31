@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -85,7 +85,7 @@ magma_zgessm_gpu(
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
 
-    int i, s, sb;
+    int i, sb;
     magmaDoubleComplex_ptr dAT;
 
     /* Check arguments */
@@ -112,7 +112,6 @@ magma_zgessm_gpu(
         dAT = dA;
     }
 
-    s = k / ib;
     for (i = 0; i < k; i += ib) {
         sb = min(ib, k-i);
 

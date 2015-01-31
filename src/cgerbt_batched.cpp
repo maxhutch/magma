@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgerbt_batched.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zgerbt_batched.cpp normal z -> c, Fri Jan 30 19:00:19 2015
        @author Adrien REMY
 */
 #include "common_magma.h"
@@ -109,7 +109,7 @@ magma_cgerbt_batched(
     magmaFloatComplex **dA_array, magma_int_t ldda,
     magmaFloatComplex **dB_array, magma_int_t lddb,
     magmaFloatComplex *U, magmaFloatComplex *V,
-    magma_int_t *info, magma_int_t batchCount)
+    magma_int_t *info, magma_int_t batchCount, magma_queue_t queue)
 {
     /* Function Body */
     *info = 0;
@@ -136,9 +136,6 @@ magma_cgerbt_batched(
     if (nrhs == 0 || n == 0)
         return *info;
 
-    magma_int_t n2;
-    n2 = n*n;
-
     magmaFloatComplex *du, *dv;
 
     /* Allocate memory for the buterfly matrices */
@@ -160,13 +157,13 @@ magma_cgerbt_batched(
     magma_csetvector( 2*n, V, 1, dv, 1);
 
     /* Perform Partial Random Butterfly Transformation on the GPU*/
-    magmablas_cprbt_batched(n, dA_array, ldda, du, dv, batchCount);
+    magmablas_cprbt_batched(n, dA_array, ldda, du, dv, batchCount, queue);
 
     /* Compute U^T.b on the GPU*/
 
     // TODO fix for multiple RHS
     for(int i= 0; i < nrhs; i++)
-        magmablas_cprbt_mtv_batched(n, du, dB_array, batchCount);
+        magmablas_cprbt_mtv_batched(n, du, dB_array, batchCount, queue);
 
     magma_free( du );
     magma_free( dv );

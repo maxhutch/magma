@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -53,8 +53,8 @@ magma_zlobpcg_res_kernel(
     magma_int_t num_rows, 
     magma_int_t num_vecs, 
     magmaDouble_ptr evals, 
-    magmaDoubleComplex_ptr X, 
-    magmaDoubleComplex_ptr R,
+    magmaDoubleComplex * X, 
+    magmaDoubleComplex * R,
     magmaDouble_ptr res)
 {
 
@@ -74,9 +74,9 @@ magma_zlobpcg_res_kernel(
 /*
 magmablas_dznrm2_kernel( 
     int m, 
-    magmaDoubleComplex_ptr da, 
+    magmaDoubleComplex * da, 
     int ldda, 
-    magmaDouble_ptr dxnorm )
+    double * dxnorm )
 {
     const int i = threadIdx.x;
     magmaDoubleComplex_ptr dx = da + blockIdx.x * ldda;

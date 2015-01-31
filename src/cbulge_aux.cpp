@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_aux.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+ *     @generated from zbulge_aux.cpp normal z -> c, Fri Jan 30 19:00:18 2015
  *
  */
 
@@ -72,10 +72,10 @@ extern "C" void  magma_cstedx_withZ(magma_int_t N, magma_int_t NE, float *D, flo
     float *RWORK;
     float *dwork;
     magma_int_t *IWORK;
-    magma_int_t LWORK, LIWORK, LRWORK;
+    magma_int_t LIWORK, LRWORK;
     magma_int_t INFO;
     
-    LWORK  = N;
+    //LWORK  = N;
     LRWORK = 2*N*N + 4*N + 1 + 256*N;
     LIWORK = 256*N;
     

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magmablas_z.h normal z -> s, Sat Nov 15 19:53:54 2014
+       @generated from magmablas_z.h normal z -> s, Fri Jan 30 19:00:06 2015
 */
 
 #ifndef MAGMABLAS_S_H
@@ -220,76 +220,33 @@ magmablas_ssymm_mgpu_spec33(
 
 magma_int_t
 magmablas_ssymv_mgpu(
-    magma_int_t ngpu, magma_int_t k, magma_uplo_t uplo,
-    magma_int_t n, magma_int_t nb,
+    magma_uplo_t uplo,
+    magma_int_t n,
     float alpha,
-    magmaFloat_ptr dA[], magma_int_t ldda, magma_int_t offset,
-    magmaFloat_ptr dx[], magma_int_t incx,
-    float beta,
-    magmaFloat_ptr dy[], magma_int_t incy,
-    magmaFloat_ptr dwork[], magma_int_t ldwork,
-    float *work, float *W,
-    magma_queue_t queues[][10] );
-
-magma_int_t
-magmablas_ssymv_mgpu_32_offset(
-    magma_uplo_t uplo, magma_int_t n,
-    float alpha,
-    magmaFloat_ptr dA[], magma_int_t ldda,
-    magmaFloat_ptr dx[], magma_int_t incx,
-    float beta,
-    magmaFloat_ptr dy[], magma_int_t incy,
-    magmaFloat_ptr dwork[], magma_int_t lwork,
+    magmaFloat_const_ptr const d_lA[], magma_int_t ldda, magma_int_t offset,
+    float const *x,         magma_int_t incx,
+    float beta,             
+    float       *y,         magma_int_t incy,
+    float       *hwork,     magma_int_t lhwork,
+    magmaFloat_ptr    dwork[],   magma_int_t ldwork,
     magma_int_t ngpu,
     magma_int_t nb,
-    magma_int_t offset,
-    magma_queue_t queues[][10] );
+    magma_queue_t queues[] );
 
 magma_int_t
-magmablas_ssymv_mgpu_offset(
-    magma_uplo_t uplo, magma_int_t n,
+magmablas_ssymv_mgpu_sync(
+    magma_uplo_t uplo,
+    magma_int_t n,
     float alpha,
-    magmaFloat_ptr dA[], magma_int_t ldda,
-    magmaFloat_ptr dx[], magma_int_t incx,
-    float beta,
-    magmaFloat_ptr dy[], magma_int_t incy,
-    magmaFloat_ptr dwork[], magma_int_t lwork,
+    magmaFloat_const_ptr const d_lA[], magma_int_t ldda, magma_int_t offset,
+    float const *x,         magma_int_t incx,
+    float beta,             
+    float       *y,         magma_int_t incy,
+    float       *hwork,     magma_int_t lhwork,
+    magmaFloat_ptr    dwork[],   magma_int_t ldwork,
     magma_int_t ngpu,
     magma_int_t nb,
-    magma_int_t offset,
-    magma_queue_t queues[][10] );
-
-magma_int_t
-magmablas_ssymv_sync(
-    magma_int_t ngpu, magma_int_t k,
-    magma_int_t n, float *work, float *W,
-    magma_queue_t queues[][10] );
-
-magma_int_t
-magmablas_ssymv2_mgpu_32_offset(
-    magma_uplo_t uplo, magma_int_t n,
-    float alpha,
-    magmaFloat_ptr dA[], magma_int_t ldda,
-    magmaFloat_ptr dx[], magma_int_t incx,
-    float beta,
-    magmaFloat_ptr dy[], magma_int_t incy,
-    magmaFloat_ptr dwork[], magma_int_t lwork,
-    magma_int_t ngpu,
-    magma_int_t nb,
-    magma_int_t offset);
-
-magma_int_t
-magmablas_ssymv2_mgpu_offset(
-    magma_uplo_t uplo, magma_int_t n,
-    float alpha,
-    magmaFloat_ptr dA[], magma_int_t ldda,
-    magmaFloat_ptr dx[], magma_int_t incx,
-    float beta,
-    magmaFloat_ptr dy[], magma_int_t incy,
-    magmaFloat_ptr dwork[], magma_int_t lwork,
-    magma_int_t ngpu,
-    magma_int_t nb,
-    magma_int_t offset);
+    magma_queue_t queues[] );
 
 // Ichi's version, in src/ssytrd_mgpu.cpp
 void
@@ -455,8 +412,8 @@ magmablas_slascl2(
 void
 magmablas_slascl_diag(
     magma_type_t type, magma_int_t m, magma_int_t n,
-    const float *dD, magma_int_t lddd,
-          float *dA, magma_int_t ldda,
+    magmaFloat_const_ptr dD, magma_int_t lddd,
+          magmaFloat_ptr dA, magma_int_t ldda,
     magma_int_t *info );
 
 void
@@ -660,7 +617,8 @@ magmablas_ssymv_work(
     magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
     magmaFloat_ptr       dy, magma_int_t incy,
-    magmaFloat_ptr       dwork, magma_int_t lwork );
+    magmaFloat_ptr       dwork, magma_int_t lwork,
+    magma_queue_t queue );
 
 magma_int_t
 magmablas_ssymv_work(
@@ -670,7 +628,8 @@ magmablas_ssymv_work(
     magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
     magmaFloat_ptr       dy, magma_int_t incy,
-    magmaFloat_ptr       dwork, magma_int_t lwork );
+    magmaFloat_ptr       dwork, magma_int_t lwork,
+    magma_queue_t queue );
 
   /*
    * Level 3 BLAS (alphabetical order)

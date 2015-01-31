@@ -5,7 +5,7 @@
  * This is a temporary file to compile imported PLASMA routines. Need to be removed later.
  *
  * @author Simplice Donfack
- * @date November 2014
+ * @date January 2015
  *
  *
  **/

@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #
 #      Contributed by: Allan Menezes (Ontario, Canada)
 #      Note that GOTO BLAS is no longer maintained.
@@ -12,13 +12,13 @@
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
 # to specify for which GPUs you want to compile MAGMA:
-#     Tesla  - NVIDIA compute capability 1.x cards
+#     Tesla  - NVIDIA compute capability 1.x cards (no longer supported in CUDA 6.5)
 #     Fermi  - NVIDIA compute capability 2.x cards
 #     Kepler - NVIDIA compute capability 3.x cards
-# The default is all, "Tesla Fermi Kepler".
+# The default is "Fermi Kepler".
 # See http://developer.nvidia.com/cuda-gpus
 #
-#GPU_TARGET ?= Tesla Fermi Kepler
+#GPU_TARGET ?= Fermi Kepler
 
 CC        = gcc
 CXX       = g++
@@ -29,15 +29,26 @@ ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
 
-CFLAGS    = -O3 -DADD_
-FFLAGS    = -O3 -DADD_
-F90FLAGS  = -O3 -DADD_ -x f95-cpp-input
-NVCCFLAGS = -O3 -DADD_ --compiler-options -fno-strict-aliasing -DUNIX
-LDFLAGS   = -fPIC -Xlinker -zmuldefs
+# Use -fPIC to make shared (.so) and static (.a) library;
+# can be commented out if making only static library.
+FPIC      = -fPIC
 
-LIB       = -lgoto  -lpthread -lcublas -lcudart -llapack -lm 
+CFLAGS    = -O3 $(FPIC) -DADD_ -Wall
+FFLAGS    = -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument
+F90FLAGS  = -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument -x f95-cpp-input
+NVCCFLAGS = -O3         -DADD_       -Xcompiler "-fno-strict-aliasing $(FPIC)"
+LDFLAGS   =     $(FPIC)
 
-CUDADIR   = /usr/local/cuda
+LIB       = -lgoto  -lpthread -lcublas -lcudart -llapack -lm
 
-LIBDIR    = -L/bummer/GotoBLAS -L/usr/local/cuda/lib64 -L/usr/lib64
+# define library directories preferably in your environment, or here.
+#GOTODIR  ?= /opt/gotoblas
+#CBLASDIR ?= /opt/CBLAS
+#CUDADIR  ?= /usr/local/cuda
+-include make.check-cuda
+
+LIBDIR    = -L$(CUDADIR)/lib64 \
+            -L$(GOTODIR)/GotoBLAS \
+            -L$(CBLASDIR)/lib
+
 INC       = -I$(CUDADIR)/include

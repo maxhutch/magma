@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zlaset_band.cpp normal z -> c, Sat Nov 15 19:54:18 2014
+       @generated from testing_zlaset_band.cpp normal z -> c, Fri Jan 30 19:00:24 2015
        @author Mark Gates
 */
 
@@ -38,7 +38,7 @@ int main( int argc, char** argv)
     magmaFloatComplex_ptr d_A;
     magmaFloatComplex offdiag = MAGMA_C_MAKE( 1.2000, 6.7000 );
     magmaFloatComplex diag    = MAGMA_C_MAKE( 3.1415, 2.7183 );
-    magma_int_t M, N, nb, cnt, size, lda, ldb, ldda;
+    magma_int_t M, N, nb, cnt, size, lda, ldda;
     magma_int_t ione     = 1;
     magma_int_t status = 0;
     
@@ -59,7 +59,6 @@ int main( int argc, char** argv)
             M = opts.msize[itest] + 2*inset;
             N = opts.nsize[itest] + 2*inset;
             lda    = M;
-            ldb    = lda;
             ldda   = ((M+31)/32)*32;
             size   = lda*N;
             

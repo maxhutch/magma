@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zcgeqrsv_gpu.cpp mixed zc -> ds, Sat Nov 15 19:54:18 2014
+       @generated from testing_zcgeqrsv_gpu.cpp mixed zc -> ds, Fri Jan 30 19:00:24 2015
 
 */
 
@@ -36,9 +36,9 @@ int main( int argc, char** argv)
     double c_neg_one = MAGMA_D_NEG_ONE;
     double *h_A, *h_A2, *h_B, *h_X, *h_R;
     magmaDouble_ptr d_A, d_B, d_X, d_T;
-    float  *d_SA, *d_SB, *d_ST;
+    float  *d_SA, *d_SB;
     double *h_workd, *tau, tmp[1];
-    float  *h_works, *tau_s;
+    float  *h_works;
     magma_int_t lda,  ldb, lhwork, lworkgpu;
     magma_int_t ldda, lddb, lddx;
     magma_int_t M, N, nrhs, qrsv_iters, info, size, min_mn, max_mn, nb;
@@ -94,14 +94,12 @@ int main( int argc, char** argv)
             TESTING_MALLOC_CPU( h_X,     double, ldb*nrhs );
             TESTING_MALLOC_CPU( h_R,     double, ldb*nrhs );
             TESTING_MALLOC_CPU( h_workd, double, lhwork   );
-            tau_s   = (float*)tau;
             h_works = (float*)h_workd;
             
             TESTING_MALLOC_DEV( d_A, double, ldda*N      );
             TESTING_MALLOC_DEV( d_B, double, lddb*nrhs   );
             TESTING_MALLOC_DEV( d_X, double, lddx*nrhs   );
             TESTING_MALLOC_DEV( d_T, double, ( 2*min_mn + (N+31)/32*32 )*nb );
-            d_ST = (float*)d_T;
             
             /* Initialize the matrices */
             size = lda*N;

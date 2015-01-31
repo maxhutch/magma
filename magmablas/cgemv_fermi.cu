@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Mark Gates
 
-       @generated from zgemv_fermi.cu normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zgemv_fermi.cu normal z -> c, Fri Jan 30 19:00:10 2015
 */
 #include "common_magma.h"
 #include "commonblas_c.h"

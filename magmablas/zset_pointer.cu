@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -30,7 +30,8 @@ void zset_pointer(magmaDoubleComplex **output_array,
                  magma_int_t lda,
                  magma_int_t row, magma_int_t column, 
                  magma_int_t batchSize,
-                 magma_int_t batchCount)
+                 magma_int_t batchCount, 
+                 magma_queue_t queue)
 
 {
 /*
@@ -40,7 +41,7 @@ void zset_pointer(magmaDoubleComplex **output_array,
 */
 
 
-    kernel_set_pointer<<<batchCount, 1, 0, magma_stream>>>(output_array, input, lda,  row, column, batchSize);
+    kernel_set_pointer<<<batchCount, 1, 0, queue>>>(output_array, input, lda,  row, column, batchSize);
 }
 
 
@@ -58,7 +59,7 @@ extern "C"
 void zset_array(magmaDoubleComplex **output_array,
                magmaDoubleComplex **input_array, magma_int_t lda,
                magma_int_t row, magma_int_t column, 
-               magma_int_t batchCount)
+               magma_int_t batchCount, magma_queue_t queue)
 
 {
 /*
@@ -66,14 +67,14 @@ void zset_array(magmaDoubleComplex **output_array,
     input_array contains the pointers to the initial position.
     output_array[i] = input_array[i] + row + lda * column; 
 */
-    zdisplace_pointers_kernel<<<batchCount, 1, 0, magma_stream>>>(output_array, input_array, lda, row, column);
+    zdisplace_pointers_kernel<<<batchCount, 1, 0, queue>>>(output_array, input_array, lda, row, column);
 }
 
 extern "C"
 void magma_zdisplace_pointers(magmaDoubleComplex **output_array,
                magmaDoubleComplex **input_array, magma_int_t lda,
                magma_int_t row, magma_int_t column, 
-               magma_int_t batchCount)
+               magma_int_t batchCount, magma_queue_t queue)
 
 {
 /*
@@ -81,7 +82,7 @@ void magma_zdisplace_pointers(magmaDoubleComplex **output_array,
     input_array contains the pointers to the initial position.
     output_array[i] = input_array[i] + row + lda * column; 
 */
-    zdisplace_pointers_kernel<<<batchCount, 1, 0, magma_stream>>>(output_array, input_array, lda, row, column);
+    zdisplace_pointers_kernel<<<batchCount, 1, 0, queue>>>(output_array, input_array, lda, row, column);
 }
 
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmergecg.cu normal z -> s, Sat Nov 15 19:54:21 2014
+       @generated from zmergecg.cu normal z -> s, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -27,8 +27,8 @@ __global__ void
 magma_scgreduce_kernel_spmv1( 
     int Gs,
     int n, 
-    magmaFloat_ptr vtmp,
-    magmaFloat_ptr vtmp2 )
+    float * vtmp,
+    float * vtmp2 )
 {
 
     extern __shared__ float temp[];    
@@ -89,12 +89,12 @@ magma_scgreduce_kernel_spmv1(
 __global__ void
 magma_scgmerge_spmvcsr_kernel(  
     int n,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr vtmp )
+    float * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    float * d,
+    float * z,
+    float * vtmp )
 {
 
     extern __shared__ float temp[]; 
@@ -166,11 +166,11 @@ __global__ void
 magma_scgmerge_spmvell_kernel(  
     int n,
     int num_cols_per_row,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr vtmp )
+    float * dval, 
+    magma_index_t * dcolind,
+    float * d,
+    float * z,
+    float * vtmp )
 {
 
     extern __shared__ float temp[]; 
@@ -243,11 +243,11 @@ __global__ void
 magma_scgmerge_spmvellpack_kernel(  
     int n,
     int num_cols_per_row,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr vtmp )
+    float * dval, 
+    magma_index_t * dcolind,
+    float * d,
+    float * z,
+    float * vtmp )
 {
 
     extern __shared__ float temp[]; 
@@ -319,12 +319,12 @@ magma_scgmerge_spmvellpack_kernel(
 __global__ void
 magma_scgmerge_spmvellpackrt_kernel_8(  
     int n,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr vtmp,
+    float * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    float * d,
+    float * z,
+    float * vtmp,
     magma_int_t T, 
     magma_int_t alignment  )
 {
@@ -371,12 +371,12 @@ extern __shared__ float shared[];
 __global__ void
 magma_scgmerge_spmvellpackrt_kernel_16(  
     int n,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr vtmp,
+    float * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    float * d,
+    float * z,
+    float * vtmp,
     magma_int_t T, 
     magma_int_t alignment  )
 {
@@ -424,12 +424,12 @@ extern __shared__ float shared[];
 __global__ void
 magma_scgmerge_spmvellpackrt_kernel_32(  
     int n,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowlength,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr vtmp,
+    float * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowlength,
+    float * d,
+    float * z,
+    float * vtmp,
     magma_int_t T, 
     magma_int_t alignment  )
 {
@@ -482,9 +482,9 @@ extern __shared__ float shared[];
 __global__ void
 magma_scgmerge_spmvellpackrt_kernel2(  
     int n,
-    magmaFloat_ptr z,
-    magmaFloat_ptr d,
-    magmaFloat_ptr vtmp2 )
+    float * z,
+    float * d,
+    float * vtmp2 )
 {
 
     extern __shared__ float temp[]; 
@@ -547,12 +547,12 @@ __global__ void
 magma_scgmerge_spmvsellc_kernel(   
     int num_rows, 
     int blocksize,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr vtmp)
+    float * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    float * d,
+    float * z,
+    float * vtmp)
 {
 
     extern __shared__ float temp[]; 
@@ -634,11 +634,11 @@ magma_scgmerge_spmvsellpt_kernel_8(
     int num_rows, 
     int blocksize,
     int T,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z)
+    float * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    float * d,
+    float * z)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -690,11 +690,11 @@ magma_scgmerge_spmvsellpt_kernel_16(
     int num_rows, 
     int blocksize,
     int T,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z)
+    float * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    float * d,
+    float * z)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -750,11 +750,11 @@ magma_scgmerge_spmvsellpt_kernel_32(
     int num_rows, 
     int blocksize,
     int T,
-    magmaFloat_ptr dval, 
-    magmaIndex_ptr dcolind,
-    magmaIndex_ptr drowptr,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z)
+    float * dval, 
+    magma_index_t * dcolind,
+    magma_index_t * drowptr,
+    float * d,
+    float * z)
 {
    // T threads assigned to each row
     int idx = threadIdx.y ;     // thread in row
@@ -805,7 +805,7 @@ magma_scgmerge_spmvsellpt_kernel_32(
 // kernel to handle scalars
 __global__ void // rho = beta/tmp; gamma = beta;
 magma_scg_rhokernel(  
-                    magmaFloat_ptr skp ){
+    float * skp ){
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if( i==0 ){
@@ -1012,12 +1012,12 @@ magma_scgmerge_spmv1(
 __global__ void
 magma_scgmerge_xrbeta_kernel(  
     int n, 
-    magmaFloat_ptr x, 
-    magmaFloat_ptr r,
-    magmaFloat_ptr d,
-    magmaFloat_ptr z,
-    magmaFloat_ptr skp,
-    magmaFloat_ptr vtmp )
+    float * x, 
+    float * r,
+    float * d,
+    float * z,
+    float * skp,
+    float * vtmp )
 {
 
     extern __shared__ float temp[]; 
@@ -1085,7 +1085,7 @@ magma_scgmerge_xrbeta_kernel(
 // kernel to handle scalars
 __global__ void //alpha = beta / gamma
 magma_scg_alphabetakernel(  
-    magmaFloat_ptr skp )
+    float * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -1100,9 +1100,9 @@ magma_scg_alphabetakernel(
 __global__ void
 magma_scg_d_kernel(  
     int n, 
-    magmaFloat_ptr skp,
-    magmaFloat_ptr r,
-    magmaFloat_ptr d )
+    float * skp,
+    float * r,
+    float * d )
 {
   
     int i   = blockIdx.x * blockDim.x + threadIdx.x;

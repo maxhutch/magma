@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Raffaele Solca
        
-       @generated from dlaex3.cpp normal d -> s, Sat Nov 15 19:54:10 2014
+       @generated from dlaex3.cpp normal d -> s, Fri Jan 30 19:00:18 2015
 */
 
 #ifdef _OPENMP
@@ -222,7 +222,10 @@ magma_slaex3(
     magma_range_t range, float vl, float vu, magma_int_t il, magma_int_t iu,
     magma_int_t *info )
 {
-#define Q(i_,j_) (Q + (i_) + (j_)*ldq)
+    #define   Q(i_,j_) (Q   + (i_) + (j_)*ldq)
+    #define  dQ(i_,j_) (dQ  + (i_) + (j_)*lddq)
+    #define dQ2(i_,j_) (dQ2 + (i_) + (j_)*lddq)
+    #define  dS(i_,j_) (dS  + (i_) + (j_)*lddq)
 
     float d_one  = 1.;
     float d_zero = 0.;
@@ -231,10 +234,10 @@ magma_slaex3(
 
     magma_int_t iil, iiu, rk;
 
-    float *dq2= dwork;
-    float *ds = dq2  + n*(n/2+1);
-    float *dq = ds   + n*(n/2+1);
     magma_int_t lddq = n/2 + 1;
+    magmaFloat_ptr dQ2 = dwork;
+    magmaFloat_ptr dS  = dQ2  + n*lddq;
+    magmaFloat_ptr dQ  = dS   + n*lddq;
 
     magma_int_t i, iq2, j, n12, n2, n23, tmp, lq2;
     float temp;
@@ -302,7 +305,7 @@ magma_slaex3(
     iq2 = n1 * n12;
     lq2 = iq2 + n2 * n23;
 
-    magma_ssetvector_async( lq2, Q2, 1, dq2, 1, NULL );
+    magma_ssetvector_async( lq2, Q2, 1, dQ2(0,0), 1, NULL );
 
 #ifdef _OPENMP
     /////////////////////////////////////////////////////////////////////////////////
@@ -518,12 +521,12 @@ magma_slaex3(
                 blasf77_sgemm("N", "N", &n2, &rk, &n23, &d_one, &Q2[iq2], &n2,
                               s, &n23, &d_zero, Q(n1,iil-1), &ldq );
             } else {
-                magma_ssetmatrix( n23, rk, Q(ctot[0],iil-1), ldq, ds, n23 );
+                magma_ssetmatrix( n23, rk, Q(ctot[0],iil-1), ldq, dS(0,0), n23 );
                 magma_sgemm( MagmaNoTrans, MagmaNoTrans, n2, rk, n23,
-                             d_one,  &dq2[iq2], n2,
-                                     ds, n23,
-                             d_zero, dq, lddq);
-                magma_sgetmatrix( n2, rk, dq, lddq, Q(n1,iil-1), ldq );
+                             d_one,  dQ2(iq2,0), n2,
+                                     dS(0,0), n23,
+                             d_zero, dQ(0,0), lddq);
+                magma_sgetmatrix( n2, rk, dQ(0,0), lddq, Q(n1,iil-1), ldq );
             }
         } else
             lapackf77_slaset("A", &n2, &rk, &d_zero, &d_zero, Q(n1,iil-1), &ldq);
@@ -534,12 +537,12 @@ magma_slaex3(
                 blasf77_sgemm("N", "N", &n1, &rk, &n12, &d_one, Q2, &n1,
                               s, &n12, &d_zero, Q(0,iil-1), &ldq);
             } else {
-                magma_ssetmatrix( n12, rk, Q(0,iil-1), ldq, ds, n12 );
+                magma_ssetmatrix( n12, rk, Q(0,iil-1), ldq, dS(0,0), n12 );
                 magma_sgemm( MagmaNoTrans, MagmaNoTrans, n1, rk, n12,
-                             d_one,  dq2, n1,
-                                     ds, n12,
-                             d_zero, dq, lddq);
-                magma_sgetmatrix( n1, rk, dq, lddq, Q(0,iil-1), ldq );
+                             d_one,  dQ2(0,0), n1,
+                                     dS(0,0), n12,
+                             d_zero, dQ(0,0), lddq);
+                magma_sgetmatrix( n1, rk, dQ(0,0), lddq, Q(0,iil-1), ldq );
             }
         } else
             lapackf77_slaset("A", &n1, &rk, &d_zero, &d_zero, Q(0,iil-1), &ldq);

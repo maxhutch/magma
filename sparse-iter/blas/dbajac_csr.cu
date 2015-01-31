@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zbajac_csr.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zbajac_csr.cu normal z -> d, Fri Jan 30 19:00:28 2015
 
 */
 
@@ -20,14 +20,14 @@
 
 __global__ void
 magma_dbajac_csr_ls_kernel(int localiters, int n, 
-                            magmaDouble_ptr valD, 
-                            magmaIndex_ptr rowD, 
-                            magmaIndex_ptr colD, 
-                            magmaDouble_ptr valR, 
-                            magmaIndex_ptr rowR,
-                            magmaIndex_ptr colR, 
-                            const magmaDouble_ptr  __restrict__ b,                            
-                            magmaDouble_ptr x ){
+                            double * valD, 
+                            magma_index_t * rowD, 
+                            magma_index_t * colD, 
+                            double * valR, 
+                            magma_index_t * rowR,
+                            magma_index_t * colR, 
+                            const double *  __restrict__ b,                            
+                            double * x ){
 
     int inddiag =  blockIdx.x*blockDim.x;
     int index = blockIdx.x*blockDim.x+threadIdx.x;
@@ -85,14 +85,14 @@ magma_dbajac_csr_ls_kernel(int localiters, int n,
 __global__ void
 magma_dbajac_csr_kernel(    
     int n, 
-    magmaDouble_ptr valD, 
-    magmaIndex_ptr rowD, 
-    magmaIndex_ptr colD, 
-    magmaDouble_ptr valR, 
-    magmaIndex_ptr rowR,
-    magmaIndex_ptr colR, 
-    magmaDouble_ptr b,                                
-    magmaDouble_ptr x ){
+    double * valD, 
+    magma_index_t * rowD, 
+    magma_index_t * colD, 
+    double * valR, 
+    magma_index_t * rowR,
+    magma_index_t * colR, 
+    double * b,                                
+    double * x ){
 
     int index = blockIdx.x*blockDim.x+threadIdx.x;
     int i, start, end;   

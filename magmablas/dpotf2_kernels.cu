@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zpotf2_kernels.cu normal z -> d, Sat Nov 15 19:53:59 2014
+       @generated from zpotf2_kernels.cu normal z -> d, Fri Jan 30 19:00:10 2015
 */
 
 #include "common_magma.h"
@@ -77,7 +77,7 @@ __global__ void ddot_kernel_batched(int n, double **x_array, int incx, int offse
 }
 
 
-void magma_dpotf2_ddot_batched(magma_int_t n, double **x_array, magma_int_t incx, magma_int_t offset, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount)
+void magma_dpotf2_ddot_batched(magma_int_t n, double **x_array, magma_int_t incx, magma_int_t offset, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 {
 /*
     Specialized Ddot
@@ -110,7 +110,7 @@ void magma_dpotf2_ddot_batched(magma_int_t n, double **x_array, magma_int_t incx
     
     dim3 grid(1, 1, batchCount);
     ddot_kernel_batched<<< grid, threadSize, 
-                  threadSize * sizeof(double), magma_stream>>> (n, x_array, incx, offset, info_array, gbstep);
+                  threadSize * sizeof(double), queue>>> (n, x_array, incx, offset, info_array, gbstep);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ __global__ void dscal_kernel_batched(int n, double **x_array, int incx, int offs
 }
 
 
-void magma_dpotf2_dscal_batched(magma_int_t n, double **x_array, magma_int_t incx, magma_int_t offset, magma_int_t *info_array, magma_int_t batchCount)
+void magma_dpotf2_dscal_batched(magma_int_t n, double **x_array, magma_int_t incx, magma_int_t offset, magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)
 {
 /*
     Specialized Dscal perform x[1:n-1]/x[0]
@@ -146,7 +146,7 @@ void magma_dpotf2_dscal_batched(magma_int_t n, double **x_array, magma_int_t inc
     dim3 grid(1, 1, batchCount);
     dim3 threads(n, 1, 1); 
 
-    dscal_kernel_batched<<< grid, threads, 0, magma_stream >>> (n, x_array, incx, offset, info_array);
+    dscal_kernel_batched<<< grid, threads, 0, queue >>> (n, x_array, incx, offset, info_array);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,7 +165,7 @@ __global__ void dlacgv_kernel_batched(int n, double **x_array, int incx, int off
     }
 }
 
-void magma_dlacgv_batched(magma_int_t n, double **x_array, magma_int_t incx, int offset, int batchCount)
+void magma_dlacgv_batched(magma_int_t n, double **x_array, magma_int_t incx, int offset, int batchCount, magma_queue_t queue)
 {
 /*
     Purpose
@@ -192,7 +192,7 @@ void magma_dlacgv_batched(magma_int_t n, double **x_array, magma_int_t incx, int
     dim3 grid(1, 1, batchCount);
     dim3 threads(n, 1, 1);
    
-    dlacgv_kernel_batched<<< grid, threads, 0, magma_stream >>> (n, x_array, incx, offset);
+    dlacgv_kernel_batched<<< grid, threads, 0, queue >>> (n, x_array, incx, offset);
 }
 
 #endif // defined(PRECISION_z) || defined(PRECISION_c)
@@ -396,7 +396,7 @@ extern "C" magma_int_t
 magma_dpotf2_tile_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     double **dA_array, magma_int_t lda,
-    magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount)
+    magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 {
 
     magma_int_t arginfo = 0;
@@ -432,7 +432,7 @@ magma_dpotf2_tile_batched(
     dim3 threads(POTF2_TILE_SIZE, 1);
     int shared_mem_size = sizeof(double)*m*n; // + sizeof(double)*(POTF2_TILE_SIZE+1);
 
-    dpotf2_kernel_batched<<<dimGrid, threads, shared_mem_size >>>(m, n, dA_array, lda, alpha, beta, info_array, gbstep);
+    dpotf2_kernel_batched<<<dimGrid, threads, shared_mem_size, queue >>>(m, n, dA_array, lda, alpha, beta, info_array, gbstep);
 
     return arginfo;
 }
@@ -477,7 +477,7 @@ magma_dpotf2_tile(
     dim3 threads(POTF2_TILE_SIZE, 1);
     int shared_mem_size = sizeof(double)*m*n; // + sizeof(double)*(POTF2_TILE_SIZE+1);
 
-    dpotf2_kernel<<<dimGrid, threads, shared_mem_size >>>(m, n, dA, lda, alpha, beta, info);
+    dpotf2_kernel<<<dimGrid, threads, shared_mem_size, magma_stream >>>(m, n, dA, lda, alpha, beta, info);
 
     return *info;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -353,7 +353,7 @@ magmablas_zlacpy(
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
-magmablas_zlacpy_batched_q(
+magmablas_zlacpy_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr const dAarray[], magma_int_t ldda,
     magmaDoubleComplex_ptr             dBarray[], magma_int_t lddb,
@@ -394,16 +394,5 @@ magmablas_zlacpy_batched_q(
 }
 
 
-/**
-    @see magmablas_zlacpy_batched_q
-    @ingroup magma_zaux2
-    ********************************************************************/
-extern "C" void
-magmablas_zlacpy_batched(
-    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-    magmaDoubleComplex_const_ptr const dAarray[], magma_int_t ldda,
-    magmaDoubleComplex_ptr             dBarray[], magma_int_t lddb,
-    magma_int_t batchCount )
-{
-    magmablas_zlacpy_batched_q( uplo, m, n, dAarray, ldda, dBarray, lddb, batchCount, magma_stream );
-}
+
+

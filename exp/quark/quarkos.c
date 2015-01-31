@@ -9,7 +9,7 @@
  * @version 2.3.1
  * @author Piotr Luszczek
  * @author Mathieu Faverge
- * @date November 2014
+ * @date January 2015
  *
  *  Note : this file is a copy of a PLASMA file for use of QUARK alone
  *

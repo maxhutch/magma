@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -18,6 +18,8 @@
 #include "magma.h"
 #include "magma_lapack.h"
 #include "testings.h"
+
+#include "magma_threadsetting.h"  // to work around MKL bug
 
 #define PRECISION_z
 
@@ -70,6 +72,10 @@ int main( int argc, char** argv)
         printf( "...return values %s\n\n", (status == 0 ? "ok" : "failed") );
     }
 #endif
+
+    #ifdef MAGMA_WITH_MKL
+    printf( "\nNote: using single thread to work around MKL zlanhe bug.\n\n" );
+    #endif
     
     printf("    N   norm   uplo   CPU GByte/s (ms)    GPU GByte/s (ms)    error   \n");
     printf("=======================================================================\n");
@@ -80,7 +86,7 @@ int main( int argc, char** argv)
             N   = opts.nsize[itest];
             lda = N;
             n2  = lda*N;
-            ldda = roundup( N, opts.pad );
+            ldda = roundup( N, opts.roundup );
             // read upper or lower triangle
             gbytes = 0.5*(N+1)*N*sizeof(magmaDoubleComplex) / 1e9;
             
@@ -92,11 +98,7 @@ int main( int argc, char** argv)
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &idist, ISEED, &n2, h_A );
-            //magma_zmake_hermitian( N, h_A, lda );
-            // make diagonal real -- according to docs, should NOT be necesary
-            //for( int i=0; i < N; ++i ) {
-            //    h_A[i + i*lda] = MAGMA_Z_MAKE( MAGMA_Z_REAL( h_A[i + i*lda] ), 0 );
-            //}
+            
             magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
             
             /* ====================================================================
@@ -118,6 +120,12 @@ int main( int argc, char** argv)
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
+            #ifdef MAGMA_WITH_MKL
+            // MKL (11.1.2) has bug in multi-threaded zlanhe; use single thread to work around
+            int threads = magma_get_lapack_numthreads();
+            magma_set_lapack_numthreads( 1 );
+            #endif
+            
             cpu_time = magma_wtime();
             norm_lapack = lapackf77_zlanhe(
                 lapack_norm_const( norm[inorm] ),
@@ -128,6 +136,11 @@ int main( int argc, char** argv)
             if (norm_lapack < 0)
                 printf("lapackf77_zlanhe returned error %f: %s.\n",
                        norm_lapack, magma_strerror( (int) norm_lapack ));
+            
+            #ifdef MAGMA_WITH_MKL
+            // end single thread to work around MKL bug
+            magma_set_lapack_numthreads( threads );
+            #endif
             
             /* =====================================================================
                Check the result compared to LAPACK
@@ -145,17 +158,18 @@ int main( int argc, char** argv)
                 #endif
             }
             
-            if ( error > tol2 && norm[inorm] == MagmaInfNorm && uplo[iuplo] == MagmaLower ) {
-                mkl_warning = true;
-            }
-            
+            bool okay = (error <= tol2);
             printf("%5d   %4c   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %s\n",
                    (int) N,
                    lapacke_norm_const( norm[inorm] ),
                    lapacke_uplo_const( uplo[iuplo] ),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
-                   error, (error <= tol2 ? "ok" : "failed") );
-            status += ! (error <= tol2);
+                   error, (okay ? "ok" : "failed") );
+            status += ! okay;
+            
+            if ( ! okay ) {
+                mkl_warning = true;
+            }
             
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_work );
@@ -172,8 +186,8 @@ int main( int argc, char** argv)
     }
     
     if ( mkl_warning ) {
-        printf("* Some versions of MKL (e.g., 11.1.0) have a bug in zlanhe with uplo=L\n"
-               "  and multiple threads. Try again with MKL_NUM_THREADS=1.\n" );
+        printf("* MKL (e.g., 11.1.0) has a bug in zlanhe with multiple threads.\n"
+               "  Try again with MKL_NUM_THREADS=1.\n" );
     }
     
     TESTING_FINALIZE();

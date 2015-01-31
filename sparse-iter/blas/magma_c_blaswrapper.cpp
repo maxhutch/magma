@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from magma_z_blaswrapper.cpp normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from magma_z_blaswrapper.cpp normal z -> c, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -141,6 +141,11 @@ magma_c_spmv(
                  magmablas_cgemv( MagmaNoTrans, A.num_rows, A.num_cols, alpha, 
                                 A.dval, A.num_rows, x.dval, 1, beta,  y.dval, 
                                 1 );
+                 //printf("done.\n");
+             }
+             else if ( A.storage_type == Magma_SPMVFUNCTION ) {
+                 //printf("using DENSE kernel for SpMV: ");
+                 magma_ccustomspmv( alpha, x, beta, y, queue );
                  //printf("done.\n");
              }
 /*             else if ( A.storage_type == Magma_BCSR ) {

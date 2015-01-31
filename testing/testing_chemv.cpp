@@ -1,11 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zhemv.cpp normal z -> c, Sat Nov 15 19:54:15 2014
+       @generated from testing_zhemv.cpp normal z -> c, Fri Jan 30 19:00:23 2015
+       
+       @author Mark Gates
 */
 // includes, system
 #include <stdlib.h>
@@ -25,16 +27,17 @@ int main(int argc, char **argv)
 {
     TESTING_INIT();
 
+    const magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
+    const magma_int_t        ione      = 1;
+    
     real_Double_t   atomics_perf, atomics_time;
     real_Double_t   gflops, magma_perf, magma_time, cublas_perf, cublas_time, cpu_perf, cpu_time;
     float          magma_error, atomics_error, cublas_error, work[1];
-    magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t N, lda, ldda, sizeA, sizeX, sizeY, blocks, ldwork;
     magma_int_t incx = 1;
     magma_int_t incy = 1;
     magma_int_t nb   = 64;
-    magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magmaFloatComplex alpha = MAGMA_C_MAKE(  1.5, -2.3 );
     magmaFloatComplex beta  = MAGMA_C_MAKE( -0.6,  0.8 );
     magmaFloatComplex *A, *X, *Y, *Yatomics, *Ycublas, *Ymagma;
@@ -47,9 +50,6 @@ int main(int argc, char **argv)
     float tol = opts.tolerance * lapackf77_slamch("E");
 
     printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    if ( opts.uplo == MagmaUpper ) {
-        printf("** for uplo=MagmaUpper, magmablas_chemv simply calls cublas_chemv.\n");
-    }
     printf("    N   MAGMA Gflop/s (ms)    Atomics Gflop/s      CUBLAS Gflop/s       CPU Gflop/s   MAGMA error  Atomics    CUBLAS\n");
     printf("======================================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -83,6 +83,16 @@ int main(int argc, char **argv)
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &sizeA, A );
             magma_cmake_hermitian( N, A, lda );
+            
+            // should not use data from the opposite triangle -- fill with NAN to check
+            magma_int_t N1 = N-1;
+            if ( opts.uplo == MagmaUpper ) {
+                lapackf77_claset( "Lower", &N1, &N1, &MAGMA_C_NAN, &MAGMA_C_NAN, &A[1], &lda );
+            }
+            else {
+                lapackf77_claset( "Upper", &N1, &N1, &MAGMA_C_NAN, &MAGMA_C_NAN, &A[lda], &lda );
+            }
+            
             lapackf77_clarnv( &ione, ISEED, &sizeX, X );
             lapackf77_clarnv( &ione, ISEED, &sizeY, Y );
             
@@ -121,18 +131,18 @@ int main(int argc, char **argv)
                =================================================================== */
             magma_csetvector( N, Y, incy, dY, incy );
             
-            //magma_cprint_gpu( ldda, blocks, dwork, ldda );
-            
             magma_time = magma_sync_wtime( 0 );
-            magmablas_chemv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork );
-            // TODO provide option to test non-work interface
-            //magmablas_chemv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
+            if ( opts.version == 1 ) {
+                magmablas_chemv_work( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy, dwork, ldwork, opts.queue );
+            }
+            else {
+                // non-work interface (has added overhead)
+                magmablas_chemv( opts.uplo, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
+            }
             magma_time = magma_sync_wtime( 0 ) - magma_time;
             magma_perf = gflops / magma_time;
             
             magma_cgetvector( N, dY, incy, Ymagma, incy );
-            
-            //magma_cprint_gpu( ldda, blocks, dwork, ldda );
             
             /* =====================================================================
                Performs operation using CPU BLAS
@@ -181,7 +191,7 @@ int main(int argc, char **argv)
         if ( opts.niter > 1 ) {
             printf( "\n" );
         }
-    }
+      }
 
     TESTING_FINALIZE();
     return status;

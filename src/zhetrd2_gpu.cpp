@@ -1,12 +1,13 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
+       @author Mark Gates
 
        @precisions normal z -> s d c
 
@@ -34,7 +35,7 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      COMPLEX_16 array, dimension (LDA,N)
+    dA      COMPLEX_16 array on the GPU, dimension (LDDA,N)
             On entry, the Hermitian matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
@@ -55,7 +56,7 @@
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
     d       COMPLEX_16 array, dimension (N)
@@ -73,13 +74,13 @@
             Details).
 
     @param[out]
-    wA      (workspace) COMPLEX_16 array, dimension (LDA,N)
+    A       (workspace) COMPLEX_16 array, dimension (LDA,N)
             On exit the diagonal, the  upper part (UPLO=MagmaUpper)
             or the lower part (UPLO=MagmaLower) are copies of DA
 
     @param[in]
-    ldwa    INTEGER
-            The leading dimension of the array wA.  LDWA >= max(1,N).
+    lda     INTEGER
+            The leading dimension of the array A.  LDA >= max(1,N).
 
     @param[out]
     work    (workspace) COMPLEX_16 array, dimension (MAX(1,LWORK))
@@ -87,9 +88,8 @@
 
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= 1.
-            For optimum performance LWORK >= N*NB, where NB is the
-            optimal blocksize.
+            The dimension of the array WORK.  LWORK >= N*NB, where NB is the
+            optimal blocksize given by magma_get_zhetrd_nb().
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -102,7 +102,8 @@
     @param[in]
     ldwork  INTEGER
             The dimension of the array DWORK.
-            LDWORK >= (n*n+64-1)/64 + 2*n*nb, where nb = magma_get_zhetrd_nb(n)
+            LDWORK >= ldda*ceil(n/64) + 2*ldda*nb, where nb = magma_get_zhetrd_nb(n),
+            and 64 is for the blocksize of magmablas_zhemv.
 
     @param[out]
     info    INTEGER
@@ -158,21 +159,22 @@ magma_zhetrd2_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     double *d, double *e, magmaDoubleComplex *tau,
-    magmaDoubleComplex *wA,  magma_int_t ldwa,
+    magmaDoubleComplex *A,  magma_int_t lda,
     magmaDoubleComplex *work, magma_int_t lwork,
     magmaDoubleComplex_ptr dwork, magma_int_t ldwork,
     magma_int_t *info)
 {
-#define  A(i, j) (wA + (j)*ldwa + (i))
-#define dA(i, j) (dA + (j)*ldda + (i))
+    #define  A(i_, j_) ( A + (i_) + (j_)*lda )
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
     const char* uplo_ = lapack_uplo_const( uplo );
 
-    magma_int_t nb = magma_get_zhetrd_nb(n);
+    magma_int_t nb = magma_get_zhetrd_nb( n );
 
-    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
-    double          d_one     = MAGMA_D_ONE;
+    const magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
+    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    const double             d_one     = MAGMA_D_ONE;
     
     magma_int_t kk, nx;
     magma_int_t i, j, i_n;
@@ -189,14 +191,17 @@ magma_zhetrd2_gpu(
         *info = -2;
     } else if (ldda < max(1,n)) {
         *info = -4;
-    } else if (ldwa < max(1,n)) {
+    } else if (lda < max(1,n)) {
         *info = -9;
-    } else if (lwork < 1 && ! lquery) {
+    } else if (lwork < nb*n && ! lquery) {
         *info = -11;
+    } else if (ldwork < ldda*ceildiv(n,64) + 2*ldda*nb) {
+        *info = -13;
     }
 
     /* Determine the block size. */
-    ldw = lddw = n;
+    ldw = n;
+    lddw = ldda;  // hopefully ldda is rounded up to multiple of 32; ldwork is in terms of ldda, so lddw can't be > ldda.
     lwkopt = n * nb;
     if (*info == 0) {
         work[0] = MAGMA_Z_MAKE( lwkopt, 0 );
@@ -215,19 +220,19 @@ magma_zhetrd2_gpu(
         return *info;
     }
 
-    if (n < 1024)
-        nx = n;
-    else
-        nx = 300;
-
-    if (ldwork < (ldw*n+64-1)/64 + 2*ldw*nb) {
-        *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
-    }
+    //if (n < 2048)
+    //    nx = n;
+    //else
+    //    nx = 512;
+    nx = min( 128, n );  // nx <= n is required
+    
+    // clear out dwork in case it has NANs (used as y in zhemv)
+    // rest of dwork (used as work in magmablas_zhemv) doesn't need to be cleared
+    magmablas_zlaset( MagmaFull, n, nb, c_zero, c_zero, dwork, lddw );
 
     if (upper) {
-        /*  Reduce the upper triangle of A.
-            Columns 1:kk are handled by the unblocked method. */
+        /* Reduce the upper triangle of A.
+           Columns 1:kk are handled by the unblocked method. */
         kk = n - (n - nx + nb - 1) / nb * nb;
         
         for (i = n - nb; i >= kk; i -= nb) {
@@ -235,20 +240,20 @@ magma_zhetrd2_gpu(
                matrix W which is needed to update the unreduced part of
                the matrix */
             
-            /*   Get the current panel */
-            magma_zgetmatrix( i+nb, nb, dA(0, i), ldda, A(0, i), ldwa );
+            /* Get the current panel */
+            magma_zgetmatrix( i+nb, nb, dA(0, i), ldda, A(0, i), lda );
             
-            magma_zlatrd2(uplo, i+nb, nb, A(0, 0), ldwa, e, tau,
-                          work, ldw, dA(0, 0), ldda, dwork, lddw, dwork + 2*ldw*nb, ldwork - 2*ldw*nb);
+            magma_zlatrd2( uplo, i+nb, nb, A(0, 0), lda, e, tau,
+                           work, ldw, dA(0, 0), ldda, dwork, lddw,
+                           dwork + 2*lddw*nb, ldwork - 2*lddw*nb );
             
             /* Update the unreduced submatrix A(0:i-2,0:i-2), using an
                update of the form:  A := A - V*W' - W*V' */
-            
             magma_zsetmatrix( i + nb, nb, work, ldw, dwork, lddw );
             
-            magma_zher2k(uplo, MagmaNoTrans, i, nb, c_neg_one,
-                         dA(0, i), ldda, dwork,
-                         lddw, d_one, dA(0, 0), ldda);
+            magma_zher2k( uplo, MagmaNoTrans, i, nb, c_neg_one,
+                          dA(0, i), ldda, dwork, lddw,
+                          d_one, dA(0, 0), ldda );
             
             /* Copy superdiagonal elements back into A, and diagonal
                elements into D */
@@ -258,12 +263,12 @@ magma_zhetrd2_gpu(
             }
         }
         
-        magma_zgetmatrix( kk, kk, dA(0, 0), ldda, A(0, 0), ldwa );
+        magma_zgetmatrix( kk, kk, dA(0, 0), ldda, A(0, 0), lda );
         
-        /*  Use CPU code to reduce the last or only block */
-        lapackf77_zhetrd(uplo_, &kk, A(0, 0), &ldwa, d, e, tau, work, &lwork, &iinfo);
+        /* Use CPU code to reduce the last or only block */
+        lapackf77_zhetrd( uplo_, &kk, A(0, 0), &lda, d, e, tau, work, &lwork, &iinfo );
         
-        magma_zsetmatrix( kk, kk, A(0, 0), ldwa, dA(0, 0), ldda );
+        magma_zsetmatrix( kk, kk, A(0, 0), lda, dA(0, 0), ldda );
     }
     else {
         /* Reduce the lower triangle of A */
@@ -272,24 +277,22 @@ magma_zhetrd2_gpu(
                matrix W which is needed to update the unreduced part of
                the matrix */
             
-            /*   Get the current panel */
-            magma_zgetmatrix( n-i, nb, dA(i, i), ldda, A(i, i), ldwa );
+            /* Get the current panel */
+            magma_zgetmatrix( n-i, nb, dA(i, i), ldda, A(i, i), lda );
             
-            magma_zlatrd2(uplo, n-i, nb, A(i, i), ldwa, &e[i],
-                          &tau[i], work, ldw,
-                          dA(i, i), ldda,
-                          dwork, lddw,
-                          dwork + 2*ldw*nb, ldwork - 2*ldw*nb);
+            magma_zlatrd2( uplo, n-i, nb, A(i, i), lda, &e[i], &tau[i],
+                           work, ldw, dA(i, i), ldda, dwork, lddw,
+                           dwork + 2*lddw*nb, ldwork - 2*lddw*nb );
             
             /* Update the unreduced submatrix A(i+ib:n,i+ib:n), using
                an update of the form:  A := A - V*W' - W*V' */
             magma_zsetmatrix( n-i, nb, work, ldw, dwork, lddw );
             
-            magma_zher2k(MagmaLower, MagmaNoTrans, n-i-nb, nb, c_neg_one,
-                         dA(i+nb, i), ldda,
-                         &dwork[nb], lddw, d_one,
-                         dA(i+nb, i+nb), ldda);
-            
+            // cublas 6.5 crashes here if lddw % 32 != 0, e.g., N=250.
+            magma_zher2k( MagmaLower, MagmaNoTrans, n-i-nb, nb, c_neg_one,
+                          dA(i+nb, i), ldda, &dwork[nb], lddw,
+                          d_one, dA(i+nb, i+nb), ldda );
+
             /* Copy subdiagonal elements back into A, and diagonal
                elements into D */
             for (j = i; j < i+nb; ++j) {
@@ -297,14 +300,15 @@ magma_zhetrd2_gpu(
                 d[j] = MAGMA_Z_REAL( *A(j, j) );
             }
         }
-        /* Use unblocked code to reduce the last or only block */
-        magma_zgetmatrix( n-i, n-i, dA(i, i), ldda, A(i, i), ldwa );
+        
+        /* Use CPU code to reduce the last or only block */
+        magma_zgetmatrix( n-i, n-i, dA(i, i), ldda, A(i, i), lda );
         
         i_n = n-i;
-        lapackf77_zhetrd(uplo_, &i_n, A(i, i), &ldwa, &d[i], &e[i],
-                         &tau[i], work, &lwork, &iinfo);
+        lapackf77_zhetrd( uplo_, &i_n, A(i, i), &lda, &d[i], &e[i],
+                          &tau[i], work, &lwork, &iinfo );
         
-        magma_zsetmatrix( n-i, n-i, A(i, i), ldwa, dA(i, i), ldda );
+        magma_zsetmatrix( n-i, n-i, A(i, i), lda, dA(i, i), ldda );
     }
     
     work[0] = MAGMA_Z_MAKE( lwkopt, 0 );

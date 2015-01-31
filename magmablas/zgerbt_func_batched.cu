@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 
@@ -44,10 +44,10 @@
             Queue to execute in.
     ********************************************************************/
 extern "C" void
-magmablas_zprbt_mtv_batched_q(
+magmablas_zprbt_mtv_batched(
     magma_int_t n, 
     magmaDoubleComplex *du, magmaDoubleComplex **db_array,
-    magma_queue_t queue, magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {
     /*
 
@@ -59,21 +59,10 @@ magmablas_zprbt_mtv_batched_q(
     magmablas_zapply_transpose_vector_kernel_batched<<< grid, threads, 0, queue >>>(n/2, du, n+n/2, db_array, n/2);
 
     threads = block_length;
-    grid = n/(2*block_length) + ((n%(2*block_length))!=0), batchCount;
+    grid = n/(2*block_length) + ((n%(2*block_length))!=0);
     magmablas_zapply_transpose_vector_kernel_batched<<< grid, threads, 0, queue >>>(n, du, 0, db_array, 0);
 }
 
-
-/**
-    @see magmablas_zprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_zprbt_mtv_batched(
-    magma_int_t n, 
-    magmaDoubleComplex *du, magmaDoubleComplex **db_array, magma_int_t batchCount)
-{
-    magmablas_zprbt_mtv_batched_q(n, du, db_array, magma_stream, batchCount);
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -101,10 +90,10 @@ magmablas_zprbt_mtv_batched(
             Queue to execute in.
     ********************************************************************/
 extern "C" void
-magmablas_zprbt_mv_batched_q(
+magmablas_zprbt_mv_batched(
     magma_int_t n, 
     magmaDoubleComplex *dv, magmaDoubleComplex **db_array,
-    magma_queue_t queue, magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {
 
     magma_int_t threads = block_length;
@@ -114,7 +103,7 @@ magmablas_zprbt_mv_batched_q(
 
 
     threads = block_length;
-    grid = n/(4*block_length) + ((n%(4*block_length))!=0), batchCount;
+    grid = n/(4*block_length) + ((n%(4*block_length))!=0);
 
     magmablas_zapply_vector_kernel_batched<<< grid, threads, 0, queue >>>(n/2, dv, n, db_array, 0);
     magmablas_zapply_vector_kernel_batched<<< grid, threads, 0, queue >>>(n/2, dv, n+n/2, db_array, n/2);
@@ -124,16 +113,6 @@ magmablas_zprbt_mv_batched_q(
 
 
 
-/**
-    @see magmablas_zprbt_mtv_q
-    ********************************************************************/
-extern "C" void
-magmablas_zprbt_mv_batched(
-    magma_int_t n, 
-    magmaDoubleComplex *dv, magmaDoubleComplex **db_array, magma_int_t batchCount)
-{
-    magmablas_zprbt_mv_batched_q(n, dv, db_array, magma_stream, batchCount);
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -170,11 +149,11 @@ magmablas_zprbt_mv_batched(
 
     ********************************************************************/
 extern "C" void 
-magmablas_zprbt_batched_q(
+magmablas_zprbt_batched(
     magma_int_t n, 
     magmaDoubleComplex **dA_array, magma_int_t ldda, 
     magmaDoubleComplex *du, magmaDoubleComplex *dv,
-    magma_queue_t queue, magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {
     du += ldda;
     dv += ldda;
@@ -197,18 +176,6 @@ magmablas_zprbt_batched_q(
 }
 
 
-/**
-    @see magmablas_zprbt_q
-    ********************************************************************/
-extern "C" void 
-magmablas_zprbt_batched(
-    magma_int_t n, 
-    magmaDoubleComplex **dA_array, magma_int_t ldda, 
-    magmaDoubleComplex *du, magmaDoubleComplex *dv,
-    magma_int_t batchCount)
-{
-    magmablas_zprbt_batched_q(n, dA_array, ldda, du, dv, magma_stream, batchCount);
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

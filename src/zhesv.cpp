@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 */
@@ -95,17 +95,16 @@
     @ingroup magma_zhesv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zhesv(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs, 
-            magmaDoubleComplex *A, magma_int_t lda, magma_int_t *ipiv, 
-            magmaDoubleComplex *B, magma_int_t ldb, 
-            magma_int_t *info ) {
-
+magma_zhesv(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs, 
+    magmaDoubleComplex *A, magma_int_t lda, magma_int_t *ipiv, 
+    magmaDoubleComplex *B, magma_int_t ldb, 
+    magma_int_t *info ) 
+{
     /* .. Local Scalars .. */
     magma_int_t upper = (uplo == MagmaUpper);;
-    /* .. Executable Statements .. */
 
     /* Test the input parameters. */
-
     *info = 0;
     if( !upper && uplo != MagmaLower ) {
        *info = -1;
@@ -125,19 +124,15 @@ magma_zhesv(magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
     }
 
     /* Compute the factorization A = U*D*U' or A = L*D*L'. */
-
     magma_zhetrf( uplo, n, A, lda, ipiv, info );
     if( *info == 0 ) {
 
         /* Solve the system A*X = B, overwriting B with X. */
-
         lapackf77_zhetrs( (upper ? MagmaUpperStr: MagmaLowerStr), 
                            &n, &nrhs, A, &lda, ipiv, B, &ldb, info );
-
     }
 
     return *info;
-
     /* End of ZHESV */
 }
 

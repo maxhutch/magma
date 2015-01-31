@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zherk_batched.cu normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zherk_batched.cu normal z -> c, Fri Jan 30 19:00:10 2015
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -136,7 +136,7 @@ magmablas_cherk_batched(
     float alpha,
     magmaFloatComplex const * const * dA_array, magma_int_t ldda,
     float beta,
-    magmaFloatComplex **dC_array, magma_int_t lddc, magma_int_t batchCount )
+    magmaFloatComplex **dC_array, magma_int_t lddc, magma_int_t batchCount, magma_queue_t queue )
 {
 
     if( k <= 32 ) {
@@ -144,14 +144,14 @@ magmablas_cherk_batched(
                   uplo, trans, n, k,
                   alpha, dA_array, ldda,
                   beta,  dC_array, lddc,
-                  batchCount );
+                  batchCount, queue );
     }
     else{
         magmablas_cherk_batched_lg(
                   uplo, trans, n, k,
                   alpha, dA_array, ldda,
                   beta,  dC_array, lddc,
-                  batchCount );
+                  batchCount, queue );
     }
 }
 

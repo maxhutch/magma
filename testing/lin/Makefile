@@ -39,13 +39,13 @@ include $(MAGMA_DIR)/Makefile.internal
 
 # ----------
 # sources for liblapacktest.a, if Fortran is NOT available -- dummy stub functions.
-ZSRC = magma_z_no_fortran.c
+ZSRC := magma_z_no_fortran.cpp
 
 -include Makefile.src
 
 NO_FORT_SRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 
-NO_FORT_OBJ := $(NO_FORT_SRC:.c=.o)
+NO_FORT_OBJ := $(NO_FORT_SRC:.cpp=.o)
 
 # ----------
 # sources for liblapacktest.a, if Fortran IS available.
@@ -325,7 +325,7 @@ FRC:
 	@FRC=$(FRC)
  
 clean:
-	rm -f *.o liblapacktest.a *~
+	rm -f *.o *.mod liblapacktest.a *~
 
 cleanall: clean
 	rm -f liblapacktest.a xlintsts xlintstd xlintstc xlintstz testing_results.txt

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmergebicgstab.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zmergebicgstab.cu normal z -> c, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -25,10 +25,10 @@
 __global__ void
 magma_cbicgmerge1_kernel(  
     int n, 
-    magmaFloatComplex_ptr skp,
-    magmaFloatComplex_ptr v, 
-    magmaFloatComplex_ptr r, 
-    magmaFloatComplex_ptr p )
+    magmaFloatComplex * skp,
+    magmaFloatComplex * v, 
+    magmaFloatComplex * r, 
+    magmaFloatComplex * p )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaFloatComplex beta=skp[1];
@@ -103,10 +103,10 @@ magma_cbicgmerge1(
 __global__ void
 magma_cbicgmerge2_kernel(  
     int n, 
-    magmaFloatComplex_ptr skp, 
-    magmaFloatComplex_ptr r,
-    magmaFloatComplex_ptr v, 
-    magmaFloatComplex_ptr s )
+    magmaFloatComplex * skp, 
+    magmaFloatComplex * r,
+    magmaFloatComplex * v, 
+    magmaFloatComplex * s )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaFloatComplex alpha=skp[0];
@@ -180,12 +180,12 @@ magma_cbicgmerge2(
 __global__ void
 magma_cbicgmerge3_kernel(  
     int n, 
-    magmaFloatComplex_ptr skp, 
-    magmaFloatComplex_ptr p,
-    magmaFloatComplex_ptr se,
-    magmaFloatComplex_ptr t,
-    magmaFloatComplex_ptr x, 
-    magmaFloatComplex_ptr r )
+    magmaFloatComplex * skp, 
+    magmaFloatComplex * p,
+    magmaFloatComplex * se,
+    magmaFloatComplex * t,
+    magmaFloatComplex * x, 
+    magmaFloatComplex * r )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaFloatComplex alpha=skp[0];
@@ -274,7 +274,7 @@ magma_cbicgmerge3(
 
 __global__ void
 magma_cbicgmerge4_kernel_1(  
-    magmaFloatComplex_ptr skp )
+    magmaFloatComplex * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -286,7 +286,7 @@ magma_cbicgmerge4_kernel_1(
 
 __global__ void
 magma_cbicgmerge4_kernel_2(  
-    magmaFloatComplex_ptr skp )
+    magmaFloatComplex * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -298,7 +298,7 @@ magma_cbicgmerge4_kernel_2(
 
 __global__ void
 magma_cbicgmerge4_kernel_3(  
-    magmaFloatComplex_ptr skp )
+    magmaFloatComplex * skp )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 

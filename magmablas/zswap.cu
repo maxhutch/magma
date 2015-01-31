@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Mark Gates
 
@@ -66,9 +66,9 @@ magmablas_zswap_q(
     magmaDoubleComplex_ptr dy, magma_int_t incy,
     magma_queue_t queue )
 {
-    dim3 blocks( (n+NB-1) / NB );
+    dim3 grid( (n+NB-1) / NB );
     dim3 threads( NB );
-    zswap_kernel<<< blocks, threads, 0, queue >>>( n, dx, incx, dy, incy );
+    zswap_kernel<<< grid, threads, 0, queue >>>( n, dx, incx, dy, incy );
 }
 
 

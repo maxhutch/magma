@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zhemm_mgpu.cpp normal z -> c, Sat Nov 15 19:53:59 2014
+       @generated from zhemm_mgpu.cpp normal z -> c, Fri Jan 30 19:00:10 2015
        @author Mark Gates
        @author Azzam Haidar
        
@@ -53,7 +53,6 @@ void magmablas_chemm_mgpu_com(
     
     magmaFloatComplex c_one  = MAGMA_C_ONE;
 
-    magmaFloatComplex_ptr dwork1[MagmaMaxGPUs];
     magmaFloatComplex_ptr dwork2[MagmaMaxGPUs];
 
 
@@ -61,7 +60,6 @@ void magmablas_chemm_mgpu_com(
     magma_int_t lddwork = lddc;
     magma_int_t ldwork  = m;
     for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-        dwork1[dev] = dwork[dev];  // size of dwork1 is n*lddwork
         dwork2[dev] = dwork[dev]+n*lddwork;  // size of dwork2 is maxgsize*ngpu
     }
     assert( dworksiz >= (n*lddwork+maxgsize*ngpu) );

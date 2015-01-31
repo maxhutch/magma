@@ -1,21 +1,20 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zheevd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from zheevd.cpp normal z -> c, Fri Jan 30 19:00:17 2015
 
 */
 #include "common_magma.h"
 #include "magma_timer.h"
 
-#define PRECISION_c
 #define COMPLEX
 
 /**
@@ -222,7 +221,7 @@ magma_cheevd(
     // multiply by 1+eps (in Double!) to ensure length gets rounded up,
     // if it cannot be exactly represented in floating point.
     real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0 );
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 
@@ -248,27 +247,22 @@ magma_cheevd(
     }
 
     if (n == 1) {
-        w[0] = MAGMA_C_REAL(A[0]);
+        w[0] = MAGMA_C_REAL( A[0] );
         if (wantz) {
             A[0] = MAGMA_C_ONE;
         }
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_cheevd(jobz_, uplo_,
-                         &n, A, &lda,
-                         w, work, &lwork,
-                         #if defined(PRECISION_z) || defined(PRECISION_c)
-                         rwork, &lrwork,
-                         #endif
-                         iwork, &liwork, info);
+        lapackf77_cheevd( jobz_, uplo_,
+                          &n, A, &lda,
+                          w, work, &lwork,
+                          #ifdef COMPLEX
+                          rwork, &lrwork,
+                          #endif
+                          iwork, &liwork, info );
         return *info;
     }
 
@@ -277,11 +271,11 @@ magma_cheevd(
     eps    = lapackf77_slamch("Precision");
     smlnum = safmin / eps;
     bignum = 1. / smlnum;
-    rmin = magma_ssqrt(smlnum);
-    rmax = magma_ssqrt(bignum);
+    rmin = magma_ssqrt( smlnum );
+    rmax = magma_ssqrt( bignum );
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = lapackf77_clanhe("M", uplo_, &n, A, &lda, rwork);
+    anrm = lapackf77_clanhe( "M", uplo_, &n, A, &lda, rwork );
     iscale = 0;
     if (anrm > 0. && anrm < rmin) {
         iscale = 1;
@@ -291,8 +285,7 @@ magma_cheevd(
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        lapackf77_clascl(uplo_, &izero, &izero, &d_one, &sigma, &n, &n, A,
-                         &lda, info);
+        lapackf77_clascl( uplo_, &izero, &izero, &d_one, &sigma, &n, &n, A, &lda, info );
     }
 
     /* Call CHETRD to reduce Hermitian matrix to tridiagonal form. */
@@ -314,8 +307,8 @@ magma_cheevd(
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_chetrd(uplo, n, A, lda, w, &rwork[inde],
-                 &work[indtau], &work[indwrk], llwork, &iinfo);
+    magma_chetrd( uplo, n, A, lda, w, &rwork[inde],
+                  &work[indtau], &work[indwrk], llwork, &iinfo );
 
     timer_stop( time );
     timer_printf( "time chetrd = %6.2f\n", time );
@@ -325,7 +318,7 @@ magma_cheevd(
      * tridiagonal matrix, then call CUNMTR to multiply it to the Householder
      * transformations represented as Householder vectors in A. */
     if (! wantz) {
-        lapackf77_ssterf(&n, w, &rwork[inde], info);
+        lapackf77_ssterf( &n, w, &rwork[inde], info );
     }
     else {
         timer_start( time );
@@ -335,9 +328,9 @@ magma_cheevd(
             return *info;
         }
 
-        magma_cstedx(MagmaRangeAll, n, 0., 0., 0, 0, w, &rwork[inde],
-                     &work[indwrk], n, &rwork[indrwk],
-                     llrwk, iwork, liwork, dwork, info);
+        magma_cstedx( MagmaRangeAll, n, 0., 0., 0, 0, w, &rwork[inde],
+                      &work[indwrk], n, &rwork[indrwk], llrwk,
+                      iwork, liwork, dwork, info );
 
         magma_free( dwork );
 
@@ -345,10 +338,10 @@ magma_cheevd(
         timer_printf( "time cstedx = %6.2f\n", time );
         timer_start( time );
 
-        magma_cunmtr(MagmaLeft, uplo, MagmaNoTrans, n, n, A, lda, &work[indtau],
-                     &work[indwrk], n, &work[indwk2], llwrk2, &iinfo);
+        magma_cunmtr( MagmaLeft, uplo, MagmaNoTrans, n, n, A, lda, &work[indtau],
+                      &work[indwrk], n, &work[indwk2], llwrk2, &iinfo );
 
-        lapackf77_clacpy("A", &n, &n, &work[indwrk], &n, A, &lda);
+        lapackf77_clacpy( "A", &n, &n, &work[indwrk], &n, A, &lda );
 
         timer_stop( time );
         timer_printf( "time cunmtr + copy = %6.2f\n", time );
@@ -362,10 +355,10 @@ magma_cheevd(
             imax = *info - 1;
         }
         d__1 = 1. / sigma;
-        blasf77_sscal(&imax, &d__1, w, &ione);
+        blasf77_sscal( &imax, &d__1, w, &ione );
     }
 
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0 );  // round up
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 

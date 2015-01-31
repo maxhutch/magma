@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 
@@ -96,7 +96,7 @@ magma_zgetrf_m(
     magmaDoubleComplex *dAT[MagmaMaxGPUs], *dA[MagmaMaxGPUs], *dPT[MagmaMaxGPUs];
     magma_int_t        iinfo = 0, nb, nbi, maxm, n_local[MagmaMaxGPUs], ldn_local;
     magma_int_t        N, M, NB, NBk, I, d, ngpu0 = ngpu;
-    magma_int_t        ii, jj, h, offset, ib, rows, s;
+    magma_int_t        ii, jj, h, offset, ib, rows;
     
     magma_queue_t stream[MagmaMaxGPUs][2];
     magma_event_t  event[MagmaMaxGPUs][2];
@@ -198,7 +198,7 @@ magma_zgetrf_m(
         for( I=0; I < n; I += NB ) {
             M = m;
             N = min( NB, n-I );       /* number of columns in this big panel             */
-            s = min( max(m-I,0), N )/nb; /* number of small block-columns in this big panel */
+            //s = min( max(m-I,0), N )/nb; /* number of small block-columns in this big panel */
     
             maxm = ((M + 31)/32)*32;
             if ( ngpu0 > ceil((double)N/nb) ) {

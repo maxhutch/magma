@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zmdot.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zmdot.cu normal z -> d, Fri Jan 30 19:00:29 2015
        @author Hartwig Anzt
 
 */
@@ -19,7 +19,7 @@
 // initialize arrays with zero
 __global__ void
 magma_dgpumemzero(  
-    magmaDouble_ptr d, 
+    double * d, 
     int n, 
     int k )
 {
@@ -37,9 +37,9 @@ __global__ void
 magma_ddot_kernel( 
     int Gs,
     int n, 
-    magmaDouble_ptr v,
-    magmaDouble_ptr r,
-    magmaDouble_ptr vtmp)
+    double * v,
+    double * r,
+    double * vtmp)
 {
 
     extern __shared__ double temp[]; 
@@ -99,9 +99,9 @@ magma_dblockdot_kernel(
     int Gs,
     int n, 
     int k,
-    magmaDouble_ptr v,
-    magmaDouble_ptr r,
-    magmaDouble_ptr vtmp)
+    double * v,
+    double * r,
+    double * vtmp)
 {
 
     extern __shared__ double temp[]; 
@@ -192,8 +192,8 @@ magma_dblockreduce_kernel(
     int Gs,
     int n, 
     int k,
-    magmaDouble_ptr vtmp,
-    magmaDouble_ptr vtmp2 )
+    double * vtmp,
+    double * vtmp2 )
 {
 
     extern __shared__ double temp[];    
@@ -276,8 +276,8 @@ magma_dblockreduce_kernel(
 __global__ void
 magma_dreduce_kernel_fast( int Gs,
                            int n, 
-                           magmaDouble_ptr vtmp,
-                           magmaDouble_ptr vtmp2 ){
+                           double * vtmp,
+                           double * vtmp2 ){
 
     extern __shared__ double temp[];    
     int Idx = threadIdx.x;
@@ -339,8 +339,8 @@ magma_dblockreduce_kernel_fast(
     int Gs,
     int n, 
     int k,
-    magmaDouble_ptr vtmp,
-    magmaDouble_ptr vtmp2 )
+    double * vtmp,
+    double * vtmp2 )
 {
 
     extern __shared__ double temp[];    

@@ -1,11 +1,11 @@
 /*
--- MAGMA (version 1.6.0) --
+-- MAGMA (version 1.6.1) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date November 2014
+ @date January 2015
 
- @generated from magmasparse_zc.h mixed zc -> ds, Sat Nov 15 19:54:20 2014
+ @generated from magmasparse_zc.h mixed zc -> ds, Fri Jan 30 19:00:27 2015
  @author Hartwig Anzt
 */
 
@@ -59,7 +59,7 @@ void
 magmablas_dlag2s_sparse(
     magma_int_t M, 
     magma_int_t N , 
-    const magmaDouble_ptr dA, 
+    magmaDouble_const_ptr dA, 
     magma_int_t lda, 
     magmaFloat_ptr dSA, 
     magma_int_t ldsa,
@@ -70,7 +70,7 @@ void
 magmablas_slag2d_sparse(
     magma_int_t M, 
     magma_int_t N , 
-    const magmaFloat_ptr dSA, 
+    magmaFloat_const_ptr dSA, 
     magma_int_t ldsa, 
     magmaDouble_ptr dA, 
     magma_int_t lda,

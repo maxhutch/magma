@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlobpcg_residuals.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zlobpcg_residuals.cu normal z -> c, Fri Jan 30 19:00:29 2015
 
 */
 
@@ -53,8 +53,8 @@ magma_clobpcg_res_kernel(
     magma_int_t num_rows, 
     magma_int_t num_vecs, 
     magmaFloat_ptr evals, 
-    magmaFloatComplex_ptr X, 
-    magmaFloatComplex_ptr R,
+    magmaFloatComplex * X, 
+    magmaFloatComplex * R,
     magmaFloat_ptr res)
 {
 
@@ -74,9 +74,9 @@ magma_clobpcg_res_kernel(
 /*
 magmablas_scnrm2_kernel( 
     int m, 
-    magmaFloatComplex_ptr da, 
+    magmaFloatComplex * da, 
     int ldda, 
-    magmaFloat_ptr dxnorm )
+    float * dxnorm )
 {
     const int i = threadIdx.x;
     magmaFloatComplex_ptr dx = da + blockIdx.x * ldda;

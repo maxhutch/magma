@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Mark Gates
-       @generated from zgesdd.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from zgesdd.cpp normal z -> c, Fri Jan 30 19:00:19 2015
 
 */
 #include "common_magma.h"
@@ -179,7 +179,8 @@
 
     @ingroup magma_cgesvd_driver
     ********************************************************************/
-magma_int_t magma_cgesdd(
+extern "C" magma_int_t
+magma_cgesdd(
     magma_vec_t jobz, magma_int_t m, magma_int_t n,
     magmaFloatComplex *A, magma_int_t lda,
     float *s,

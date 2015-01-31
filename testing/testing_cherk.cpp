@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zherk.cpp normal z -> c, Sat Nov 15 19:54:15 2014
+       @generated from testing_zherk.cpp normal z -> c, Fri Jan 30 19:00:23 2015
        @author Chongxiao Cao
 */
 // includes, system
@@ -19,6 +19,9 @@
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
+
+#include "magma_threadsetting.h"  // to work around MKL bug
+
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing cherk
@@ -119,6 +122,12 @@ int main( int argc, char** argv)
                Check the result
                =================================================================== */
             if ( opts.lapack ) {
+                #ifdef MAGMA_WITH_MKL
+                // MKL (11.1.2) has bug in multi-threaded clanhe; use single thread to work around
+                int threads = magma_get_lapack_numthreads();
+                magma_set_lapack_numthreads( 1 );
+                #endif
+                
                 // compute relative error for both magma & cublas, relative to lapack,
                 // |C_magma - C_lapack| / |C_lapack|
                 Cnorm = lapackf77_clanhe("fro", lapack_uplo_const(opts.uplo), &N, h_C, &ldc, work);
@@ -132,6 +141,11 @@ int main( int argc, char** argv)
                        cpu_perf,    1000.*cpu_time,
                        cublas_error, (cublas_error < tol ? "ok" : "failed"));
                 status += ! (cublas_error < tol);
+                
+                #ifdef MAGMA_WITH_MKL
+                // end single thread to work around MKL bug
+                magma_set_lapack_numthreads( threads );
+                #endif
             }
             else {
                 printf("%5d %5d   %7.2f (%7.2f)    ---   (  ---  )    ---     ---\n",

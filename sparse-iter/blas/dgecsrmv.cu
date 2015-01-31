@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zgecsrmv.cu normal z -> d, Sat Nov 15 19:54:21 2014
+       @generated from zgecsrmv.cu normal z -> d, Fri Jan 30 19:00:28 2015
 
 */
 #include "common_magma.h"
@@ -23,12 +23,12 @@ dgecsrmv_kernel(
     int num_rows, 
     int num_cols, 
     double alpha, 
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaDouble_ptr dx,
+    double * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    double * dx,
     double beta, 
-    magmaDouble_ptr dy)
+    double * dy)
 {
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
@@ -51,15 +51,15 @@ dgecsrmv_kernel_shift(
     int num_cols, 
     double alpha, 
     double lambda, 
-    magmaDouble_ptr dval, 
-    magmaIndex_ptr drowptr, 
-    magmaIndex_ptr dcolind,
-    magmaDouble_ptr dx,
+    double * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    double * dx,
     double beta, 
     int offset,
     int blocksize,
-    magmaIndex_ptr addrows,
-    magmaDouble_ptr dy)
+    magma_index_t * addrows,
+    double * dy)
 {
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
@@ -112,7 +112,7 @@ dgecsrmv_kernel_shift(
                 array containing values of A in CSR
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of A in CSR
 
     @param[in]
@@ -196,7 +196,7 @@ magma_dgecsrmv(
                 array containing values of A in CSR
 
     @param[in]
-    drowptr    magma_int_t*
+    drowptr     magmaIndex_ptr
                 rowpointer of A in CSR
 
     @param[in]
@@ -246,7 +246,7 @@ magma_dgecsrmv_shift(
     double beta,
     int offset,
     int blocksize,
-    magmaIndex_ptr addrows,
+    magma_index_t * addrows,
     magmaDouble_ptr dy,
     magma_queue_t queue )
 {

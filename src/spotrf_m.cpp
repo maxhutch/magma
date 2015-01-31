@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zpotrf_m.cpp normal z -> s, Sat Nov 15 19:54:09 2014
+       @generated from zpotrf_m.cpp normal z -> s, Fri Jan 30 19:00:14 2015
 
 */
 #include "common_magma.h"
@@ -96,7 +96,7 @@ magma_spotrf_m(
 
     float *dwork[MagmaMaxGPUs], *dt[MagmaMaxGPUs];
     magma_int_t     ldda, lddla, nb, iinfo, n_local[MagmaMaxGPUs], J2, d, ngpu0 = ngpu;
-    magma_int_t     j, jj, jb, J, JB, NB, MB, h;
+    magma_int_t     j, jj, jb, J, JB, NB, h;
     magma_queue_t   stream[MagmaMaxGPUs][3];
     magma_event_t   event[MagmaMaxGPUs][5];
     magma_timer_t time_total=0, time_sum=0, time=0;
@@ -139,8 +139,8 @@ magma_spotrf_m(
     cudaMemGetInfo( &freeMem, &totalMem );
     freeMem /= sizeof(float);
     
-    MB = n;  /* number of rows in the big panel    */
-    NB = (magma_int_t)((0.8*freeMem-max(2,ngpu)*nb*ldda-(n+nb)*nb)/lddla); /* number of columns in the big panel */
+    //MB = n;  /* number of rows in the big panel    */
+    NB = (magma_int_t)((0.8*freeMem - max(2,ngpu)*nb*ldda - (n+nb)*nb)/lddla); /* number of columns in the big panel */
     //NB = min(5*nb,n);
 
     if ( NB >= n ) {

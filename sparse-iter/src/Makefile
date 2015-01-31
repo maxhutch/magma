@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.0) --
+#   -- MAGMA (version 1.6.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date November 2014
+#      @date January 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/src
@@ -35,6 +35,7 @@ ZSRC += \
 	zbpcg.cpp		\
  	zgmres.cpp	\
 	zpgmres.cpp	\
+	zfgmres.cpp \
  	zpbicgstab.cpp		\
 
 
@@ -69,8 +70,10 @@ ZSRC += \
 ZSRC += \
 #	zorthomgs.cpp   \
 
-
-
+# backward communication for SpMV and Preconditioner
+ZSRC += \
+    magma_zcustomspmv.cpp   \
+    magma_zcustomprecond.cpp   \
 
 # Wrappers, tools etc
 ZSRC += \

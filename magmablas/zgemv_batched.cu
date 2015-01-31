@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.6.0) --
+   -- MAGMA (version 1.6.1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date November 2014
+   @date January 2015
 
    @author Azzam Haidar
    @author Tingxing Dong
@@ -66,7 +66,7 @@ void magmablas_zgemvn_batched(
     magmaDoubleComplex alpha, magmaDoubleComplex **dA_array, int lda, 
     magmaDoubleComplex **x_array,  int incx,
     magmaDoubleComplex beta, magmaDoubleComplex **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     if( m > 512 || n > 512)
@@ -78,7 +78,7 @@ void magmablas_zgemvn_batched(
     dim3 grid(batchCount, 1, 1);
     dim3 threads(max(m,n), 1, 1);
    
-    kernel_zgemvn_batched<<< grid, threads, n * sizeof(magmaDoubleComplex) >>>( m, n, alpha,  dA_array, lda, x_array, incx,  
+    kernel_zgemvn_batched<<< grid, threads, n * sizeof(magmaDoubleComplex), queue >>>( m, n, alpha,  dA_array, lda, x_array, incx,  
                                                                          beta, y_array, incy);
 }
 
@@ -169,7 +169,7 @@ void magmablas_zgemvt_batched(
     magmaDoubleComplex alpha, magmaDoubleComplex **dA_array, int lda, 
     magmaDoubleComplex **x_array,  int incx,
     magmaDoubleComplex beta, magmaDoubleComplex **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     dim3 grid(batchCount, n, 1);
@@ -177,7 +177,7 @@ void magmablas_zgemvt_batched(
 
     int m1 = (m / zgemv_bs) * zgemv_bs;
 
-    kernel_zgemvt_batched <<< grid, threads >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
+    kernel_zgemvt_batched <<< grid, threads,0, queue  >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
 
 }
    
@@ -270,7 +270,7 @@ void magmablas_zgemvc_batched(
     magmaDoubleComplex alpha, magmaDoubleComplex **dA_array, int lda, 
     magmaDoubleComplex **x_array,  int incx,
     magmaDoubleComplex beta, magmaDoubleComplex **y_array,  int incy, 
-    int batchCount)
+    int batchCount, magma_queue_t queue)
 {
 
     dim3 grid(batchCount, n, 1);
@@ -278,7 +278,7 @@ void magmablas_zgemvc_batched(
 
     int m1 = (m / zgemv_bs) * zgemv_bs;
 
-    kernel_zgemvc_batched <<< grid, threads >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
+    kernel_zgemvc_batched <<< grid, threads, 0, queue >>>(m, n, m1, alpha,  dA_array, lda, x_array, incx, beta, y_array, incy);
 }
    
 #endif // defined(PRECISION_z) || defined (PRECISION_c)
@@ -362,7 +362,7 @@ void magmablas_zgemv_batched(
     magmaDoubleComplex_ptr dx_array[], magma_int_t incx,
     magmaDoubleComplex beta,
     magmaDoubleComplex_ptr dy_array[], magma_int_t incy, 
-    magma_int_t batchCount)
+    magma_int_t batchCount, magma_queue_t queue)
 {       
     magma_int_t info = 0;
     if ( trans != MagmaNoTrans && trans != MagmaTrans && trans != MagmaConjTrans )
@@ -387,17 +387,17 @@ void magmablas_zgemv_batched(
 
     if ( trans == MagmaNoTrans ) {
 
-        magmablas_zgemvn_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_zgemvn_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
             
     }
     else if ( trans == MagmaTrans ) {
-        magmablas_zgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_zgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
     }
     else if ( trans == MagmaConjTrans ) {
 #if defined(PRECISION_z) || defined (PRECISION_c)
-        magmablas_zgemvc_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_zgemvc_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
 #else
-        magmablas_zgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount);
+        magmablas_zgemvt_batched(m, n, alpha, dA_array, ldda, dx_array, incx, beta, dy_array, incy, batchCount, queue);
 #endif
     }
     else {

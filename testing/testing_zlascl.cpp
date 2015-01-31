@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -34,7 +34,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex *h_A, *h_R;
     magmaDoubleComplex_ptr d_A;
     double cto, cfrom;
-    magma_int_t M, N, size, lda, ldb, ldda, info;
+    magma_int_t M, N, size, lda, ldda, info;
     magma_int_t ione     = 1;
     magma_int_t status = 0;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -57,7 +57,6 @@ int main( int argc, char** argv)
             //M += 2;  // space for insets
             //N += 2;
             lda    = M;
-            ldb    = lda;
             ldda   = ((M+31)/32)*32;
             size   = lda*N;
             if ( uplo[iuplo] == MagmaLower || uplo[iuplo] == MagmaUpper ) {

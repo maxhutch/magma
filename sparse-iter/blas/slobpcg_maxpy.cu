@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlobpcg_maxpy.cu normal z -> s, Sat Nov 15 19:54:21 2014
+       @generated from zlobpcg_maxpy.cu normal z -> s, Fri Jan 30 19:00:28 2015
 
 */
 
@@ -20,8 +20,8 @@ __global__ void
 magma_slobpcg_maxpy_kernel( 
     magma_int_t num_rows, 
     magma_int_t num_vecs, 
-    magmaFloat_ptr X, 
-    magmaFloat_ptr Y)
+    float * X, 
+    float * Y)
 {
 
     int row = blockIdx.x * blockDim.x + threadIdx.x; // global row index

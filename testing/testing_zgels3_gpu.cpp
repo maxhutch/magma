@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> s d c
 
@@ -78,7 +78,7 @@ int main( int argc, char** argv)
             lhwork2 = (magma_int_t) MAGMA_Z_REAL( tmp[0] );
             
             lhwork = -1;
-            lapackf77_zunmqr( MagmaLeftStr, MagmaConjTransStr,
+            lapackf77_zunmqr( MagmaLeftStr, Magma_ConjTransStr,
                               &M, &nrhs, &min_mn, NULL, &lda, NULL,
                               NULL, &ldb, tmp, &lhwork, &info);
             lhwork = (magma_int_t) MAGMA_Z_REAL( tmp[0] );

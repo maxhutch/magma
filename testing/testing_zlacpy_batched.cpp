@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -40,6 +40,7 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
     
+    magma_queue_t queue = magma_stream;
     magma_opts opts;
     parse_opts( argc, argv, &opts );
 
@@ -96,7 +97,7 @@ int main( int argc, char** argv)
             magma_setvector( ntile, sizeof(magmaDoubleComplex*), hBarray, 1, dBarray, 1 );
             
             gpu_time = magma_sync_wtime( 0 );
-            magmablas_zlacpy_batched( MagmaUpperLower, mb, nb, dAarray, ldda, dBarray, ldda, ntile );
+            magmablas_zlacpy_batched( MagmaUpperLower, mb, nb, dAarray, ldda, dBarray, ldda, ntile, queue );
             gpu_time = magma_sync_wtime( 0 ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             

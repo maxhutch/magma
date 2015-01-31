@@ -1,13 +1,12 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        @author Adrien REMY
 
-       @generated from zgesv_nopiv_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
-
+       @generated from zgesv_nopiv_gpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
 */
 #include "common_magma.h"
 
@@ -15,11 +14,11 @@
     Purpose
     -------
     Solves a system of linear equations
-       A * X = B
+        A * X = B
     where A is a general n-by-n matrix and X and B are n-by-nrhs matrices.
     The LU decomposition with no pivoting is
     used to factor A as
-       A = L * U,
+        A = L * U,
     where L is unit lower triangular, and U is
     upper triangular.  The factored form of A is then used to solve the
     system of equations A * X = B.
@@ -36,23 +35,23 @@
             of the matrix B.  nrhs >= 0.
 
     @param[in,out]
-    dA       COMPLEX array, dimension (ldda,n).
+    dA      COMPLEX array on the GPU, dimension (ldda,n).
             On entry, the n-by-n matrix to be factored.
             On exit, the factors L and U from the factorization
             A = L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
-    ldda     INTEGER
+    ldda    INTEGER
             The leading dimension of the array A.  ldda >= max(1,n).
 
     @param[in,out]
-    dB       COMPLEX array, dimension (lddb,nrhs)
+    dB      COMPLEX array on the GPU, dimension (lddb,nrhs)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
-    lddb     INTEGER
-            The leading dimension of the array B.  ldb >= max(1,n).
+    lddb    INTEGER
+            The leading dimension of the array B.  lddb >= max(1,n).
 
     @param[out]
     info    INTEGER
@@ -62,17 +61,13 @@
     @ingroup magma_cgesv_driver
     ********************************************************************/
 
-
-
-
 extern "C" magma_int_t
-magma_cgesv_nopiv_gpu( magma_int_t n, magma_int_t nrhs, 
-                 magmaFloatComplex_ptr dA, magma_int_t ldda,
-                 magmaFloatComplex_ptr dB, magma_int_t lddb, 
-                 magma_int_t *info)
+magma_cgesv_nopiv_gpu(
+    magma_int_t n, magma_int_t nrhs,
+    magmaFloatComplex_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr dB, magma_int_t lddb,
+    magma_int_t *info )
 {
-    magma_int_t ret;
-
     *info = 0;
     if (n < 0) {
         *info = -1;
@@ -85,21 +80,18 @@ magma_cgesv_nopiv_gpu( magma_int_t n, magma_int_t nrhs,
     }
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
 
     /* Quick return if possible */
     if (n == 0 || nrhs == 0) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
 
-    ret = magma_cgetrf_nopiv_gpu( n, n, dA, ldda, info);
-    if ( (ret != MAGMA_SUCCESS) || (*info != 0) ) {
-        return ret;
+    magma_cgetrf_nopiv_gpu( n, n, dA, ldda, info );
+    if ( *info == MAGMA_SUCCESS ) {
+        magma_cgetrs_nopiv_gpu( MagmaNoTrans, n, nrhs, dA, ldda, dB, lddb, info );
     }
-        
-    ret = magma_cgetrs_nopiv_gpu( MagmaNoTrans, n, nrhs, dA, ldda, dB, lddb, info );
     
-    
-    return ret;
+    return *info;
 }

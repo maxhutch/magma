@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
 
@@ -24,8 +24,8 @@ __global__ void
 zbcsrvalcpy_kernel( 
     int size_b,
     magma_int_t num_blocks,
-    magmaDoubleComplex_ptr *Aval, 
-    magmaDoubleComplex_ptr *Bval )
+    magmaDoubleComplex **Aval, 
+    magmaDoubleComplex **Bval )
 {
     if(blockIdx.x*65535+blockIdx.y < num_blocks){
         magmaDoubleComplex *dA = Aval[ blockIdx.x*65535+blockIdx.y ];
@@ -44,7 +44,7 @@ __global__ void
 zbcsrvalzro_kernel( 
     int size_b,
     magma_int_t num_blocks,
-    magmaDoubleComplex_ptr *Bval )
+    magmaDoubleComplex **Bval )
 {
     if(blockIdx.x*65535+blockIdx.y < num_blocks){
         magmaDoubleComplex *dB = Bval[ blockIdx.x*65535+blockIdx.y ];

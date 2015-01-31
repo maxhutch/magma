@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zbajac_csr.cu normal z -> c, Sat Nov 15 19:54:21 2014
+       @generated from zbajac_csr.cu normal z -> c, Fri Jan 30 19:00:28 2015
 
 */
 
@@ -20,14 +20,14 @@
 
 __global__ void
 magma_cbajac_csr_ls_kernel(int localiters, int n, 
-                            magmaFloatComplex_ptr valD, 
-                            magmaIndex_ptr rowD, 
-                            magmaIndex_ptr colD, 
-                            magmaFloatComplex_ptr valR, 
-                            magmaIndex_ptr rowR,
-                            magmaIndex_ptr colR, 
-                            const magmaFloatComplex_ptr  __restrict__ b,                            
-                            magmaFloatComplex_ptr x ){
+                            magmaFloatComplex * valD, 
+                            magma_index_t * rowD, 
+                            magma_index_t * colD, 
+                            magmaFloatComplex * valR, 
+                            magma_index_t * rowR,
+                            magma_index_t * colR, 
+                            const magmaFloatComplex *  __restrict__ b,                            
+                            magmaFloatComplex * x ){
 
     int inddiag =  blockIdx.x*blockDim.x;
     int index = blockIdx.x*blockDim.x+threadIdx.x;
@@ -85,14 +85,14 @@ magma_cbajac_csr_ls_kernel(int localiters, int n,
 __global__ void
 magma_cbajac_csr_kernel(    
     int n, 
-    magmaFloatComplex_ptr valD, 
-    magmaIndex_ptr rowD, 
-    magmaIndex_ptr colD, 
-    magmaFloatComplex_ptr valR, 
-    magmaIndex_ptr rowR,
-    magmaIndex_ptr colR, 
-    magmaFloatComplex_ptr b,                                
-    magmaFloatComplex_ptr x ){
+    magmaFloatComplex * valD, 
+    magma_index_t * rowD, 
+    magma_index_t * colD, 
+    magmaFloatComplex * valR, 
+    magma_index_t * rowR,
+    magma_index_t * colR, 
+    magmaFloatComplex * b,                                
+    magmaFloatComplex * x ){
 
     int index = blockIdx.x*blockDim.x+threadIdx.x;
     int i, start, end;   

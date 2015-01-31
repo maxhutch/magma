@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from ztrevc3_mt.cpp normal z -> c, Sat Nov 15 19:54:10 2014
+       @generated from ztrevc3_mt.cpp normal z -> c, Fri Jan 30 19:00:19 2015
 */
 #include "thread_queue.hpp"
 #include "magma_timer.h"
@@ -298,7 +298,7 @@ magma_int_t magma_ctrevc3_mt(
     // .. Local Scalars ..
     magma_int_t            allv, bothv, leftv, over, rightv, somev;
     magma_int_t            i, ii, is, j, k, ki, iv, n2, nb, nb2, version;
-    float                 ovfl, remax, smin, smlnum, ulp, unfl;
+    float                 ovfl, remax, unfl;  //smlnum, smin, ulp
     
     // Decode and test the input parameters
     bothv  = (side == MagmaBothSides);
@@ -371,8 +371,8 @@ magma_int_t magma_ctrevc3_mt(
     unfl = lapackf77_slamch( "Safe minimum" );
     ovfl = 1. / unfl;
     lapackf77_slabad( &unfl, &ovfl );
-    ulp = lapackf77_slamch( "Precision" );
-    smlnum = unfl*( n / ulp );
+    //ulp = lapackf77_slamch( "Precision" );
+    //smlnum = unfl*( n / ulp );
 
     // Store the diagonal elements of T in working array work.
     for( i=0; i < n; ++i ) {
@@ -424,7 +424,7 @@ magma_int_t magma_ctrevc3_mt(
                     continue;
                 }
             }
-            smin = max( ulp*( MAGMA_C_ABS1( *T(ki,ki) ) ), smlnum );
+            //smin = max( ulp*MAGMA_C_ABS1( *T(ki,ki) ), smlnum );
 
             // --------------------------------------------------------
             // Complex right eigenvector
@@ -548,7 +548,7 @@ magma_int_t magma_ctrevc3_mt(
                     continue;
                 }
             }
-            smin = max( ulp*MAGMA_C_ABS1( *T(ki,ki) ), smlnum );
+            //smin = max( ulp*MAGMA_C_ABS1( *T(ki,ki) ), smlnum );
         
             // --------------------------------------------------------
             // Complex left eigenvector

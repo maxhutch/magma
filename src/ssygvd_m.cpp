@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
+       @author Mark Gates
 
-       @generated from dsygvd_m.cpp normal d -> s, Sat Nov 15 19:54:10 2014
+       @generated from dsygvd_m.cpp normal d -> s, Fri Jan 30 19:00:18 2015
 
 */
 #include "common_magma.h"
@@ -252,24 +253,19 @@ magma_ssygvd_m(
         return *info;
     }
 
-    /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
+    /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
-        #ifdef ENABLE_DEBUG
-        printf("--------------------------------------------------------------\n");
-        printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
-        printf("--------------------------------------------------------------\n");
-        #endif
-        lapackf77_ssygvd(&itype, jobz_, uplo_,
-                         &n, A, &lda, B, &ldb,
-                         w, work, &lwork,
-                         iwork, &liwork, info);
+        lapackf77_ssygvd( &itype, jobz_, uplo_,
+                          &n, A, &lda, B, &ldb,
+                          w, work, &lwork,
+                          iwork, &liwork, info );
         return *info;
     }
 
     magma_timer_t time=0;
     timer_start( time );
 
-    magma_spotrf_m(ngpu, uplo, n, B, ldb, info);
+    magma_spotrf_m( ngpu, uplo, n, B, ldb, info );
     if (*info != 0) {
         *info = n + *info;
         return *info;
@@ -280,13 +276,13 @@ magma_ssygvd_m(
     timer_start( time );
 
     /* Transform problem to standard eigenvalue problem and solve. */
-    magma_ssygst_m(ngpu, itype, uplo, n, A, lda, B, ldb, info);
+    magma_ssygst_m( ngpu, itype, uplo, n, A, lda, B, ldb, info );
 
     timer_stop( time );
     timer_printf( "time ssygst = %6.2f\n", time );
     timer_start( time );
 
-    magma_ssyevd_m(ngpu, jobz, uplo, n, A, lda, w, work, lwork, iwork, liwork, info);
+    magma_ssyevd_m( ngpu, jobz, uplo, n, A, lda, w, work, lwork, iwork, liwork, info );
 
     timer_stop( time );
     timer_printf( "time ssyevd = %6.2f\n", time );
@@ -304,8 +300,8 @@ magma_ssygvd_m(
                 trans = MagmaNoTrans;
             }
 
-            magma_strsm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
-                          n, n, d_one, B, ldb, A, lda);
+            magma_strsm_m( ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
+                           n, n, d_one, B, ldb, A, lda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -318,22 +314,24 @@ magma_ssygvd_m(
 
             printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
             float *dA=NULL, *dB=NULL;
-            magma_int_t ldda = n;
-            magma_int_t lddb = n;
+            magma_int_t ldda = roundup( n, 32 );
+            magma_int_t lddb = ldda;
             
-            if (MAGMA_SUCCESS != magma_smalloc( &dB, n*lddb ) ) {
-                *info = MAGMA_ERR_DEVICE_ALLOC;
-                return *info;
-            }
-            if (MAGMA_SUCCESS != magma_smalloc( &dA, n*ldda ) ) {
+            if (MAGMA_SUCCESS != magma_smalloc( &dA, n*ldda ) ||
+                MAGMA_SUCCESS != magma_smalloc( &dB, n*lddb ) ) {
+                magma_free( dA );
+                magma_free( dB );
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
             magma_ssetmatrix( n, n, B, ldb, dB, lddb );
             magma_ssetmatrix( n, n, A, lda, dA, ldda );
-            magma_strmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-                        n, n, d_one, dB, lddb, dA, ldda);
+            magma_strmm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, n, d_one, dB, lddb, dA, ldda );
             magma_sgetmatrix( n, n, dA, ldda, A, lda );
+            
+            magma_free( dA );
+            magma_free( dB );
         }
 
         timer_stop( time );

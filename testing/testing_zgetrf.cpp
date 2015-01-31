@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -156,7 +156,7 @@ int main( int argc, char** argv)
     double          error;
     magmaDoubleComplex *h_A;
     magma_int_t     *ipiv;
-    magma_int_t     M, N, n2, lda, ldda, info, min_mn;
+    magma_int_t     M, N, n2, lda, info, min_mn;
     magma_int_t     status = 0;
     
     magma_opts opts;
@@ -179,7 +179,6 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
             gflops = FLOPS_ZGETRF( M, N ) / 1e9;
             
             TESTING_MALLOC_CPU( ipiv, magma_int_t, min_mn );

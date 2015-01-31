@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -68,46 +68,29 @@ __global__ void setup_pivinfo_kernel(magma_int_t *pivinfo, magma_int_t *ipiv, in
 //TODO add description
 //=================================================================================================
 extern "C" void
-setup_pivinfo_batched_q( magma_int_t **pivinfo_array, magma_int_t **ipiv_array, 
+setup_pivinfo_batched( magma_int_t **pivinfo_array, magma_int_t **ipiv_array, 
                          magma_int_t m, magma_int_t nb, 
-                         magma_queue_t stream, magma_int_t batchCount)
+                         magma_int_t batchCount,
+                         magma_queue_t queue)
 {
     if(nb == 0 ) return ;
-    setup_pivinfo_kernel_batched<<<batchCount, min(m, MAX_NTHREADS), 0, stream>>>(pivinfo_array, ipiv_array, m, nb);
+    setup_pivinfo_kernel_batched<<<batchCount, min(m, MAX_NTHREADS), 0, queue>>>(pivinfo_array, ipiv_array, m, nb);
 }
 
 
 
 //=================================================================================================
-extern "C" void
-setup_pivinfo_batched( magma_int_t **pivinfo_array, magma_int_t **ipiv_array, 
-                       magma_int_t m, magma_int_t nb, 
-                       magma_int_t batchCount)
-{
-   setup_pivinfo_batched_q( pivinfo_array, ipiv_array, m, nb, magma_stream, batchCount);
-}
-//=================================================================================================
-
-
-
 
 
 //TODO add description
 //=================================================================================================
 extern "C" void
-setup_pivinfo_q( magma_int_t *pivinfo, magma_int_t *ipiv, 
+setup_pivinfo( magma_int_t *pivinfo, magma_int_t *ipiv, 
                  magma_int_t m, magma_int_t nb, 
-                 magma_queue_t stream)
+                 magma_queue_t queue)
 {
     if(nb == 0 ) return ;
-    setup_pivinfo_kernel<<<1, min(m, MAX_NTHREADS), 0, stream>>>(pivinfo, ipiv, m, nb);
-}
-//=================================================================================================
-extern "C" void
-setup_pivinfo( magma_int_t *pivinfo, magma_int_t *ipiv, 
-               magma_int_t m, magma_int_t nb)
-{
-   setup_pivinfo_q( pivinfo, ipiv, m, nb, magma_stream);
+    setup_pivinfo_kernel<<<1, min(m, MAX_NTHREADS), 0, queue>>>(pivinfo, ipiv, m, nb);
 }
 //=================================================================================================
 
@@ -150,9 +133,9 @@ __global__ void adjust_ipiv_kernel(magma_int_t *ipiv, int m, int offset)
 //TODO add description
 //=================================================================================================
 extern "C" void
-adjust_ipiv_batched_q( magma_int_t **ipiv_array, 
+adjust_ipiv_batched( magma_int_t **ipiv_array, 
                          magma_int_t m, magma_int_t offset, 
-                         magma_queue_t stream, magma_int_t batchCount)
+                         magma_int_t batchCount, magma_queue_t queue)
 {
     if(offset == 0 ) return ;
     if( m  > MAX_NTHREADS) 
@@ -160,19 +143,11 @@ adjust_ipiv_batched_q( magma_int_t **ipiv_array,
        printf(" adjust_ipiv_batched_q m=%d > %d, not supported \n", m, MAX_NTHREADS);
        return;
     }
-    adjust_ipiv_kernel_batched<<<batchCount, m, 0, stream>>>(ipiv_array, m, offset);
+    adjust_ipiv_kernel_batched<<<batchCount, m, 0, queue>>>(ipiv_array, m, offset);
 }
 
 
 
-//=================================================================================================
-extern "C" void
-adjust_ipiv_batched( magma_int_t **ipiv_array, 
-                       magma_int_t m, magma_int_t offset, 
-                       magma_int_t batchCount)
-{
-   adjust_ipiv_batched_q( ipiv_array, m, offset, magma_stream, batchCount);
-}
 //=================================================================================================
 
 
@@ -182,9 +157,9 @@ adjust_ipiv_batched( magma_int_t **ipiv_array,
 //TODO add description
 //=================================================================================================
 extern "C" void
-adjust_ipiv_q( magma_int_t *ipiv, 
+adjust_ipiv( magma_int_t *ipiv, 
                  magma_int_t m, magma_int_t offset, 
-                 magma_queue_t stream)
+                 magma_queue_t queue)
 {
     if(offset == 0 ) return ;
     if( m  > 1024) 
@@ -192,18 +167,8 @@ adjust_ipiv_q( magma_int_t *ipiv,
        printf(" adjust_ipiv_q m=%d > %d, not supported \n", m, MAX_NTHREADS);
        return;
     }
-    adjust_ipiv_kernel<<<1, m, 0, stream>>>(ipiv, m, offset);
+    adjust_ipiv_kernel<<<1, m, 0, queue>>>(ipiv, m, offset);
 }
-//=================================================================================================
-extern "C" void
-adjust_ipiv( magma_int_t *ipiv, 
-               magma_int_t m, magma_int_t offset)
-{
-   adjust_ipiv_q( ipiv, m, offset, magma_stream);
-}
-//=================================================================================================
-
-
 
 
 

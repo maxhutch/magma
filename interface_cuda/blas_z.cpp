@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
  
        @author Mark Gates
        @precisions normal z -> s d c
@@ -47,10 +47,10 @@
             
     @ingroup magma_zblas1
 */
-extern "C"
-magma_int_t magma_izamax(
+extern "C" magma_int_t
+magma_izamax(
     magma_int_t n,
-    const magmaDoubleComplex *dx, magma_int_t incx )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasIzamax( n, dx, incx );
 }
@@ -70,10 +70,10 @@ magma_int_t magma_izamax(
 
     @ingroup magma_zblas1
 */
-extern "C"
-magma_int_t magma_izamin(
+extern "C" magma_int_t
+magma_izamin(
     magma_int_t n,
-    const magmaDoubleComplex *dx, magma_int_t incx )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasIzamin( n, dx, incx );
 }
@@ -93,10 +93,10 @@ magma_int_t magma_izamin(
 
     @ingroup magma_zblas1
 */
-extern "C"
-double magma_dzasum(
+extern "C" double
+magma_dzasum(
     magma_int_t n,
-    const magmaDoubleComplex *dx, magma_int_t incx )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasDzasum( n, dx, incx );
 }
@@ -126,12 +126,12 @@ double magma_dzasum(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zaxpy(
+extern "C" void
+magma_zaxpy(
     magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex       *dy, magma_int_t incy )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr       dy, magma_int_t incy )
 {
     cublasZaxpy( n, alpha, dx, incx, dy, incy );
 }
@@ -158,11 +158,11 @@ void magma_zaxpy(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zcopy(
+extern "C" void
+magma_zcopy(
     magma_int_t n,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex       *dy, magma_int_t incy )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr       dy, magma_int_t incy )
 {
     cublasZcopy( n, dx, incx, dy, incy );
 }
@@ -192,8 +192,8 @@ void magma_zcopy(
 extern "C"
 magmaDoubleComplex magma_zdotc(
     magma_int_t n,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    const magmaDoubleComplex *dy, magma_int_t incy )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dy, magma_int_t incy )
 {
     return cublasZdotc( n, dx, incx, dy, incy );
 }
@@ -224,12 +224,12 @@ magmaDoubleComplex magma_zdotc(
 extern "C"
 magmaDoubleComplex magma_zdotu(
     magma_int_t n,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    const magmaDoubleComplex *dy, magma_int_t incy )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dy, magma_int_t incy )
 {
     return cublasZdotu( n, dx, incx, dy, incy );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Returns 2-norm of vector x. Avoids unnecesary over/underflow.
@@ -246,10 +246,10 @@ magmaDoubleComplex magma_zdotu(
 
     @ingroup magma_zblas1
 */
-extern "C"
-double magma_dznrm2(
+extern "C" double
+magma_dznrm2(
     magma_int_t n,
-    const magmaDoubleComplex *dx, magma_int_t incx )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx )
 {
     return cublasDznrm2( n, dx, incx );
 }
@@ -286,11 +286,11 @@ double magma_dznrm2(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zrot(
+extern "C" void
+magma_zrot(
     magma_int_t n,
-    magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex *dy, magma_int_t incy,
+    magmaDoubleComplex_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr dy, magma_int_t incy,
     double c, magmaDoubleComplex s )
 {
     cublasZrot( n, dx, incx, dy, incy, c, s );
@@ -329,16 +329,16 @@ void magma_zrot(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zdrot(
+extern "C" void
+magma_zdrot(
     magma_int_t n,
-    magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex *dy, magma_int_t incy,
+    magmaDoubleComplex_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr dy, magma_int_t incy,
     double c, double s )
 {
     cublasZdrot( n, dx, incx, dy, incy, c, s );
 }
-#endif
+#endif // COMPLEX
 
 #ifdef REAL
 // --------------------
@@ -346,8 +346,8 @@ void magma_zdrot(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zrotm(
+extern "C" void
+magma_zrotm(
     magma_int_t n,
     double *dx, magma_int_t incx,
     double *dy, magma_int_t incy,
@@ -361,15 +361,15 @@ void magma_zrotm(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zrotmg(
+extern "C" void
+magma_zrotmg(
     double *d1, double       *d2,
     double *x1, const double *y1,
     double *param )
 {
     cublasZrotmg( d1, d2, x1, y1, param );
 }
-#endif
+#endif // REAL
 
 // --------------------
 /** Scales a vector by a constant; \f$ x = \alpha x \f$.
@@ -389,11 +389,11 @@ void magma_zrotmg(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zscal(
+extern "C" void
+magma_zscal(
     magma_int_t n,
     magmaDoubleComplex alpha,
-    magmaDoubleComplex *dx, magma_int_t incx )
+    magmaDoubleComplex_ptr dx, magma_int_t incx )
 {
     cublasZscal( n, alpha, dx, incx );
 }
@@ -417,15 +417,15 @@ void magma_zscal(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zdscal(
+extern "C" void
+magma_zdscal(
     magma_int_t n,
     double alpha,
-    magmaDoubleComplex *dx, magma_int_t incx )
+    magmaDoubleComplex_ptr dx, magma_int_t incx )
 {
     cublasZdscal( n, alpha, dx, incx );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Swap vector x and y; \f$ x <-> y \f$.
@@ -449,11 +449,11 @@ void magma_zdscal(
 
     @ingroup magma_zblas1
 */
-extern "C"
-void magma_zswap(
+extern "C" void
+magma_zswap(
     magma_int_t n,
-    magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex *dy, magma_int_t incy )
+    magmaDoubleComplex_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr dy, magma_int_t incy )
 {
     cublasZswap( n, dx, incx, dy, incy );
 }
@@ -508,15 +508,15 @@ void magma_zswap(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_zgemv(
+extern "C" void
+magma_zgemv(
     magma_trans_t transA,
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    const magmaDoubleComplex *dx, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
     magmaDoubleComplex beta,
-    magmaDoubleComplex       *dy, magma_int_t incy )
+    magmaDoubleComplex_ptr       dy, magma_int_t incy )
 {
     cublasZgemv(
         cublas_trans_const( transA ),
@@ -561,13 +561,13 @@ void magma_zgemv(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_zgerc(
+extern "C" void
+magma_zgerc(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    const magmaDoubleComplex *dy, magma_int_t incy,
-    magmaDoubleComplex       *dA, magma_int_t ldda )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dy, magma_int_t incy,
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda )
 {
     cublasZgerc(
         m, n,
@@ -612,13 +612,13 @@ void magma_zgerc(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_zgeru(
+extern "C" void
+magma_zgeru(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    const magmaDoubleComplex *dy, magma_int_t incy,
-    magmaDoubleComplex       *dA, magma_int_t ldda )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dy, magma_int_t incy,
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda )
 {
     cublasZgeru(
         m, n,
@@ -626,7 +626,7 @@ void magma_zgeru(
                dy, incy,
                dA, ldda );
 }
-#endif
+#endif // COMPLEX
 
 // --------------------
 /** Perform Hermitian matrix-vector product, \f$ y = \alpha A x + \beta y \f$.
@@ -666,15 +666,15 @@ void magma_zgeru(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_zhemv(
+extern "C" void
+magma_zhemv(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    const magmaDoubleComplex *dx, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
     magmaDoubleComplex beta,
-    magmaDoubleComplex       *dy, magma_int_t incy )
+    magmaDoubleComplex_ptr       dy, magma_int_t incy )
 {
     cublasZhemv(
         cublas_uplo_const( uplo ),
@@ -712,13 +712,13 @@ void magma_zhemv(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_zher(
+extern "C" void
+magma_zher(
     magma_uplo_t uplo,
     magma_int_t n,
     double alpha,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    magmaDoubleComplex       *dA, magma_int_t ldda )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda )
 {
     cublasZher(
         cublas_uplo_const( uplo ),
@@ -762,14 +762,14 @@ void magma_zher(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_zher2(
+extern "C" void
+magma_zher2(
     magma_uplo_t uplo,
     magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dx, magma_int_t incx,
-    const magmaDoubleComplex *dy, magma_int_t incy,
-    magmaDoubleComplex       *dA, magma_int_t ldda )
+    magmaDoubleComplex_const_ptr dx, magma_int_t incx,
+    magmaDoubleComplex_const_ptr dy, magma_int_t incy,
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda )
 {
     cublasZher2(
         cublas_uplo_const( uplo ),
@@ -813,12 +813,12 @@ void magma_zher2(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_ztrmv(
+extern "C" void
+magma_ztrmv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dx, magma_int_t incx )
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr       dx, magma_int_t incx )
 {
     cublasZtrmv(
         cublas_uplo_const( uplo ),
@@ -864,12 +864,12 @@ void magma_ztrmv(
 
     @ingroup magma_zblas2
 */
-extern "C"
-void magma_ztrsv(
+extern "C" void
+magma_ztrsv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dx, magma_int_t incx )
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr       dx, magma_int_t incx )
 {
     cublasZtrsv(
         cublas_uplo_const( uplo ),
@@ -932,15 +932,15 @@ void magma_ztrsv(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_zgemm(
+extern "C" void
+magma_zgemm(
     magma_trans_t transA, magma_trans_t transB,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    const magmaDoubleComplex *dB, magma_int_t lddb,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
     magmaDoubleComplex beta,
-    magmaDoubleComplex       *dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
 {
     cublasZgemm(
         cublas_trans_const( transA ),
@@ -999,15 +999,15 @@ void magma_zgemm(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_zsymm(
+extern "C" void
+magma_zsymm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    const magmaDoubleComplex *dB, magma_int_t lddb,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
     magmaDoubleComplex beta,
-    magmaDoubleComplex       *dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
 {
     cublasZsymm(
         cublas_side_const( side ),
@@ -1059,14 +1059,14 @@ void magma_zsymm(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_zsyrk(
+extern "C" void
+magma_zsyrk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magmaDoubleComplex beta,
-    magmaDoubleComplex       *dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
 {
     cublasZsyrk(
         cublas_uplo_const( uplo ),
@@ -1125,15 +1125,15 @@ void magma_zsyrk(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_zsyr2k(
+extern "C" void
+magma_zsyr2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    const magmaDoubleComplex *dB, magma_int_t lddb,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
     magmaDoubleComplex beta,
-    magmaDoubleComplex       *dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
 {
     cublasZsyr2k(
         cublas_uplo_const( uplo ),
@@ -1193,15 +1193,15 @@ void magma_zsyr2k(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_zhemm(
+extern "C" void
+magma_zhemm(
     magma_side_t side, magma_uplo_t uplo,
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    const magmaDoubleComplex *dB, magma_int_t lddb,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
     magmaDoubleComplex beta,
-    magmaDoubleComplex       *dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
 {
     cublasZhemm(
         cublas_side_const( side ),
@@ -1253,14 +1253,14 @@ void magma_zhemm(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_zherk(
+extern "C" void
+magma_zherk(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     double alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     double beta,
-    magmaDoubleComplex       *dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
 {
     cublasZherk(
         cublas_uplo_const( uplo ),
@@ -1319,15 +1319,15 @@ void magma_zherk(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_zher2k(
+extern "C" void
+magma_zher2k(
     magma_uplo_t uplo, magma_trans_t trans,
     magma_int_t n, magma_int_t k,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    const magmaDoubleComplex *dB, magma_int_t lddb,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
     double beta,
-    magmaDoubleComplex       *dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
 {
     cublasZher2k(
         cublas_uplo_const( uplo ),
@@ -1383,13 +1383,13 @@ void magma_zher2k(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_ztrmm(
+extern "C" void
+magma_ztrmm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dB, magma_int_t lddb )
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr       dB, magma_int_t lddb )
 {
     cublasZtrmm(
         cublas_side_const( side ),
@@ -1446,13 +1446,13 @@ void magma_ztrmm(
 
     @ingroup magma_zblas3
 */
-extern "C"
-void magma_ztrsm(
+extern "C" void
+magma_ztrsm(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex alpha,
-    const magmaDoubleComplex *dA, magma_int_t ldda,
-    magmaDoubleComplex       *dB, magma_int_t lddb )
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr       dB, magma_int_t lddb )
 {
     cublasZtrsm(
         cublas_side_const( side ),

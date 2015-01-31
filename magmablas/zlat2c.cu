@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -229,10 +229,12 @@ magmablas_zlat2c_q(
     dim3    grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
-    if (uplo == MagmaLower)
+    if (uplo == MagmaLower) {
         zlat2c_lower<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
-    else if (uplo == MagmaUpper)
+    }
+    else if (uplo == MagmaUpper) {
         zlat2c_upper<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
+    }
     
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

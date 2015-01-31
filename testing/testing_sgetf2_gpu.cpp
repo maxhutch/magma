@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from testing_zgetf2_gpu.cpp normal z -> s, Sat Nov 15 19:54:18 2014
+       @generated from testing_zgetf2_gpu.cpp normal z -> s, Fri Jan 30 19:00:24 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -84,8 +84,8 @@ int main( int argc, char** argv)
 
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("    M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||PA-LU||/(||A||*N)\n");
-    printf("=========================================================================\n");
+    printf("    M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)  Copy time (ms)  ||PA-LU||/(||A||*N)\n");
+    printf("=======================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -109,8 +109,11 @@ int main( int argc, char** argv)
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
             lapackf77_slacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+
+            real_Double_t set_time = magma_wtime();
             magma_ssetmatrix( M, N, h_R, lda, d_A, ldda );
-            
+            set_time =  magma_wtime() - set_time;
+
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
@@ -135,16 +138,21 @@ int main( int argc, char** argv)
                 printf("magma_sgetf2_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
+            real_Double_t get_time = magma_wtime();
+            magma_sgetmatrix( M, N, d_A, ldda, h_A, lda );
+            get_time =  magma_wtime() - get_time;
+
             /* =====================================================================
                Check the factorization
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
-                       (int) M, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000. );
+                printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f",
+                       (int) M, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
+                       set_time*1000.+get_time*1000.);
             }
             else {
-                printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)",
-                       (int) M, (int) N, gpu_perf, gpu_time*1000. );
+                printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %7.2f",
+                       (int) M, (int) N, gpu_perf, gpu_time*1000., set_time*1000.+get_time*1000. );
             }
             if ( opts.check ) {
                 magma_sgetmatrix( M, N, d_A, ldda, h_A, lda );

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
        
        @author Stan Tomov
        @author Mark Gates
@@ -399,50 +399,26 @@ magma_int_t magma_get_zgehrd_nb( magma_int_t m )
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for sytrd based on m
+      Must be 64 due to zhemv_mgpu restrictions.
 */
 magma_int_t magma_get_ssytrd_nb( magma_int_t /*m*/ )
 {
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch >= 200 ) {       // 2.x Fermi
-        return 32;
-    }
-    else {                     // 1.x
-        return 32;
-    }
+    return 64;
 }
 
 magma_int_t magma_get_dsytrd_nb( magma_int_t /*m*/ )
 {
-    magma_int_t arch = magma_getdevice_arch();
-
-    if ( arch >= 200 ) {       // 2.x Fermi
-        return 32;
-    }
-    else {                     // 1.x
-        return 32;
-    }
+    return 64;
 }
 
 magma_int_t magma_get_chetrd_nb( magma_int_t /*m*/ )
 {
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch >= 200 ) {       // 2.x Fermi
-        return 32;
-    }
-    else {                     // 1.x
-        return 32;
-    }
+    return 64;
 }
 
 magma_int_t magma_get_zhetrd_nb( magma_int_t /*m*/ )
 {
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch >= 200 ) {       // 2.x Fermi
-        return 32;
-    }
-    else {                     // 1.x
-        return 32;
-    }
+    return 64;
 }
 
 /* ////////////////////////////////////////////////////////////////////////////

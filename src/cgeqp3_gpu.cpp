@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
   
-       @generated from zgeqp3_gpu.cpp normal z -> c, Sat Nov 15 19:54:09 2014
+       @generated from zgeqp3_gpu.cpp normal z -> c, Fri Jan 30 19:00:15 2015
 
 */
 #include "common_magma.h"
@@ -110,7 +110,7 @@ magma_cgeqp3_gpu(
     //magma_int_t na;
     magma_int_t n_j;
     magma_int_t j, jb, nb, sm, sn, fjb, nfxd, minmn;
-    magma_int_t topbmn, sminmn, lwkopt;
+    magma_int_t topbmn, lwkopt;
     
     *info = 0;
     if (m < 0) {
@@ -196,7 +196,7 @@ magma_cgeqp3_gpu(
     if (nfxd < minmn) {
         sm = m - nfxd;
         sn = n - nfxd;
-        sminmn = minmn - nfxd;
+        //sminmn = minmn - nfxd;
         
         /* Initialize partial column norms. */
         magmablas_scnrm2_cols(sm, sn, dA(nfxd,nfxd), ldda, &rwork[nfxd]);

@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
+       @author Mark Gates
 
-       @generated from testing_zhetrd_gpu.cpp normal z -> s, Sat Nov 15 19:54:18 2014
+       @generated from testing_zhetrd_gpu.cpp normal z -> s, Fri Jan 30 19:00:25 2015
 
 */
 
@@ -25,7 +26,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_s
+#define REAL
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing ssytrd_gpu
@@ -41,14 +42,14 @@ int main( int argc, char** argv)
     float *tau;
     float          *diag, *offdiag;
     float           result[2] = {0., 0.};
-    magma_int_t N, n2, lda, lwork, info, nb, ldwork;
+    magma_int_t N, n2, lda, ldda, lwork, info, nb, ldwork;
     magma_int_t ione     = 1;
     magma_int_t itwo     = 2;
     magma_int_t ithree   = 3;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
     
-    #if defined(PRECISION_z) || defined(PRECISION_c)
+    #ifdef COMPLEX
     float *rwork;
     #endif
 
@@ -71,11 +72,12 @@ int main( int argc, char** argv)
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda    = N;
+            ldda   = roundup( N, opts.roundup );  // by default, round to multiple of 32
             n2     = N*lda;
             nb     = magma_get_ssytrd_nb(N);
             lwork  = N*nb;  /* We suppose the magma nb is bigger than lapack nb */
             gflops = FLOPS_SSYTRD( N ) / 1e9;
-            ldwork = (N*N+64-1)/64 + 2*N*nb;
+            ldwork = ldda*ceildiv(N,64) + 2*ldda*nb;
             
             TESTING_MALLOC_CPU( h_A,     float, lda*N );
             TESTING_MALLOC_CPU( tau,     float, N     );
@@ -85,34 +87,28 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_R,     float, lda*N );
             TESTING_MALLOC_PIN( h_work,  float, lwork );
             
-            TESTING_MALLOC_DEV( d_R,     float, lda*N  );
+            TESTING_MALLOC_DEV( d_R,     float, ldda*N );
             TESTING_MALLOC_DEV( dwork,   float, ldwork );
-            
-            if ( opts.check ) {
-                TESTING_MALLOC_CPU( h_Q,  float, lda*N );
-                TESTING_MALLOC_CPU( work, float, 2*N*N );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_MALLOC_CPU( rwork, float, N );
-                #endif
-            }
             
             /* ====================================================================
                Initialize the matrix
                =================================================================== */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
             magma_smake_symmetric( N, h_A, lda );
-            magma_ssetmatrix( N, N, h_A, lda, d_R, lda );
+            magma_ssetmatrix( N, N, h_A, lda, d_R, ldda );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            if (opts.version == 1)
-                magma_ssytrd_gpu( opts.uplo, N, d_R, lda, diag, offdiag,
+            if (opts.version == 1) {
+                magma_ssytrd_gpu( opts.uplo, N, d_R, ldda, diag, offdiag,
                                   tau, h_R, lda, h_work, lwork, &info );
-            else
-                magma_ssytrd2_gpu( opts.uplo, N, d_R, lda, diag, offdiag,
+            }
+            else {
+                magma_ssytrd2_gpu( opts.uplo, N, d_R, ldda, diag, offdiag,
                                    tau, h_R, lda, h_work, lwork, dwork, ldwork, &info );
+            }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
@@ -123,33 +119,43 @@ int main( int argc, char** argv)
                Check the factorization
                =================================================================== */
             if ( opts.check ) {
-                magma_sgetmatrix( N, N, d_R, lda, h_R, lda );
-                magma_sgetmatrix( N, N, d_R, lda, h_Q, lda );
+                TESTING_MALLOC_CPU( h_Q,  float, lda*N );
+                TESTING_MALLOC_CPU( work, float, 2*N*N );
+                #ifdef COMPLEX
+                TESTING_MALLOC_CPU( rwork, float, N );
+                #endif
+                
+                magma_sgetmatrix( N, N, d_R, ldda, h_R, lda );
+                magma_sgetmatrix( N, N, d_R, ldda, h_Q, lda );
                 lapackf77_sorgtr( lapack_uplo_const(opts.uplo), &N, h_Q, &lda, tau, h_work, &lwork, &info );
                 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
                 lapackf77_ssyt21( &itwo, lapack_uplo_const(opts.uplo), &N, &ione,
                                   h_A, &lda, diag, offdiag,
                                   h_Q, &lda, h_R, &lda,
-                                  tau, work, rwork, &result[0] );
+                                  tau, work,
+                                  #ifdef COMPLEX
+                                  rwork,
+                                  #endif
+                                  &result[0] );
                 
                 lapackf77_ssyt21( &ithree, lapack_uplo_const(opts.uplo), &N, &ione,
                                   h_A, &lda, diag, offdiag,
                                   h_Q, &lda, h_R, &lda,
-                                  tau, work, rwork, &result[1] );
-                #else
-                lapackf77_ssyt21( &itwo, lapack_uplo_const(opts.uplo), &N, &ione,
-                                  h_A, &lda, diag, offdiag,
-                                  h_Q, &lda, h_R, &lda,
-                                  tau, work, &result[0] );
+                                  tau, work,
+                                  #ifdef COMPLEX
+                                  rwork,
+                                  #endif
+                                  &result[1] );
+                result[0] *= eps;
+                result[1] *= eps;
                 
-                lapackf77_ssyt21( &ithree, lapack_uplo_const(opts.uplo), &N, &ione,
-                                  h_A, &lda, diag, offdiag,
-                                  h_Q, &lda, h_R, &lda,
-                                  tau, work, &result[1] );
+                TESTING_FREE_CPU( h_Q  );
+                TESTING_FREE_CPU( work );
+                #ifdef COMPLEX
+                TESTING_FREE_CPU( rwork );
                 #endif
             }
-            
+                        
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
@@ -175,10 +181,9 @@ int main( int argc, char** argv)
                        (int) N, gpu_perf, gpu_time );
             }
             if ( opts.check ) {
-                printf("   %8.2e        %8.2e   %s\n", result[0]*eps, result[1]*eps,
-                        ( ( (result[0]*eps < tol) && (result[1]*eps < tol) ) ? "ok" : "failed")  );
-                status += ! (result[0]*eps < tol);
-                status += ! (result[1]*eps < tol);
+                printf("   %8.2e        %8.2e   %s\n", result[0], result[1],
+                        ((result[0] < tol && result[1] < tol) ? "ok" : "failed")  );
+                status += ! (result[0] < tol && result[1] < tol);
             } else {
                 printf("     ---             ---\n");
             }
@@ -194,13 +199,6 @@ int main( int argc, char** argv)
             TESTING_FREE_DEV( d_R   );
             TESTING_FREE_DEV( dwork );
             
-            if ( opts.check ) {
-                TESTING_FREE_CPU( h_Q  );
-                TESTING_FREE_CPU( work );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                TESTING_FREE_CPU( rwork );
-                #endif
-            }
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {

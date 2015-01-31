@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -113,6 +113,8 @@ magma_zssssm_gpu(
     magmaDoubleComplex_ptr dA1T, dA2T;
     magma_trans_t transL;
     int lddl2i, lddl2j;
+    
+    MAGMA_UNUSED( ip );  // used only if NOSWAPBLK
 
     /* Check input arguments */
     *info = 0;

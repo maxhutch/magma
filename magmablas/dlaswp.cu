@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.0) --
+    -- MAGMA (version 1.6.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date November 2014
+       @date January 2015
 
-       @generated from zlaswp.cu normal z -> d, Sat Nov 15 19:53:59 2014
+       @generated from zlaswp.cu normal z -> d, Fri Jan 30 19:00:09 2015
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -81,12 +81,12 @@ __global__ void dlaswp_kernel(
     \param[in]
     k1       INTEGER
              The first element of IPIV for which a row interchange will
-             be done. (Fortran one-based index: 1 <= k1 <= n.)
+             be done. (Fortran one-based index: 1 <= k1 .)
     
     \param[in]
     k2       INTEGER
              The last element of IPIV for which a row interchange will
-             be done. (Fortran one-based index: 1 <= k2 <= n.)
+             be done. (Fortran one-based index: 1 <= k2 .)
     
     \param[in]
     ipiv     INTEGER array, on CPU, dimension (K2*abs(INCI))
@@ -120,9 +120,11 @@ magmablas_dlaswp_q(
     magma_int_t info = 0;
     if ( n < 0 )
         info = -1;
-    else if ( k1 < 1 || k1 > n )
+    else if ( n > ldda )
+        info = -3;
+    else if ( k1 < 1 )
         info = -4;
-    else if ( k2 < 1 || k2 > n )
+    else if ( k2 < 1 )
         info = -5;
     else if ( inci <= 0 )
         info = -7;
@@ -131,8 +133,8 @@ magmablas_dlaswp_q(
         magma_xerbla( __func__, -(info) );
         return;  //info;
     }
-    
-    dim3 blocks( (n + NTHREADS - 1) / NTHREADS );
+  
+    dim3 grid( (n + NTHREADS - 1) / NTHREADS );
     dim3 threads( NTHREADS );
     dlaswp_params_t params;
     
@@ -142,7 +144,7 @@ magmablas_dlaswp_q(
         for( int j = 0; j < npivots; ++j ) {
             params.ipiv[j] = ipiv[(k+j)*inci] - k - 1;
         }
-        dlaswp_kernel<<< blocks, threads, 0, queue >>>( n, dAT(k,0), ldda, params );
+        dlaswp_kernel<<< grid, threads, 0, queue >>>( n, dAT(k,0), ldda, params );
     }
     
     #undef dAT
@@ -282,7 +284,7 @@ magmablas_dlaswpx_q(
         return;  //info;
     }
     
-    dim3 blocks( (n + NTHREADS - 1) / NTHREADS );
+    dim3 grid( (n + NTHREADS - 1) / NTHREADS );
     dim3 threads( NTHREADS );
     dlaswp_params_t params;
     
@@ -292,7 +294,7 @@ magmablas_dlaswpx_q(
         for( int j = 0; j < npivots; ++j ) {
             params.ipiv[j] = ipiv[(k+j)*inci] - k - 1;
         }
-        dlaswpx_kernel<<< blocks, threads, 0, queue >>>( n, dA(k,0), ldx, ldy, params );
+        dlaswpx_kernel<<< grid, threads, 0, queue >>>( n, dA(k,0), ldx, ldy, params );
     }
     
     #undef dA
@@ -328,7 +330,7 @@ magmablas_dlaswpx(
 
 __global__ void dlaswp2_kernel(
     int n, double *dAT, int ldda, int npivots,
-    const magma_int_t* d_ipiv, int inci )
+    const magma_int_t *d_ipiv, int inci )
 {
     int tid = threadIdx.x + blockDim.x*blockIdx.x;
     if ( tid < n ) {
@@ -430,9 +432,9 @@ magmablas_dlaswp2_q(
     
     magma_int_t nb = k2-(k1-1);
     
-    dim3 blocks( (n + NTHREADS - 1) / NTHREADS );
+    dim3 grid( (n + NTHREADS - 1) / NTHREADS );
     dim3 threads( NTHREADS );
-    dlaswp2_kernel<<< blocks, threads, 0, queue >>>
+    dlaswp2_kernel<<< grid, threads, 0, queue >>>
         ( n, dAT(k1-1,0), ldda, nb, d_ipiv, inci );
 }
 
