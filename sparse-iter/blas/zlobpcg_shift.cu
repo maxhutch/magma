@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions normal z -> c d s
 
@@ -98,7 +98,7 @@ magma_zlobpcg_shift(
     dim3 block( num_threads, 1, 1 );
 
     int dimgrid1 = (int) sqrt( (double) num_rows);
-    int dimgrid2 = (num_rows + dimgrid1 -1 ) / dimgrid1;
+    int dimgrid2 = magma_ceildiv( num_rows, dimgrid1 );
 
     dim3 grid( dimgrid1, dimgrid2, 1);
 

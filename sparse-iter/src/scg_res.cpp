@@ -1,19 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @author Hartwig Anzt 
+       @author Hartwig Anzt
 
-       @generated from zcg_res.cpp normal z -> s, Fri Jan 30 19:00:30 2015
+       @generated from zcg_res.cpp normal z -> s, Sun May  3 11:22:59 2015
 */
 
-#include "common_magma.h"
-#include "magmasparse.h"
-
-#include <assert.h>
+#include "common_magmasparse.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
@@ -32,15 +29,15 @@
     ---------
 
     @param[in]
-    A           magma_s_sparse_matrix
+    A           magma_s_matrix
                 input matrix A
 
     @param[in]
-    b           magma_s_vector
+    b           magma_s_matrix
                 RHS b
 
     @param[in,out]
-    x           magma_s_vector*
+    x           magma_s_matrix*
                 solution approximation
 
     @param[in,out]
@@ -50,138 +47,145 @@
     queue       magma_queue_t
                 Queue to execute in.
 
-    @ingroup magmasparse_ssysv
+    @ingroup magmasparse_sposv
     ********************************************************************/
 
 extern "C" magma_int_t
 magma_scg_res(
-    magma_s_sparse_matrix A, magma_s_vector b, magma_s_vector *x,  
+    magma_s_matrix A, magma_s_matrix b, magma_s_matrix *x,
     magma_s_solver_par *solver_par,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    
     // set queue for old dense routines
-    magma_queue_t orig_queue;
+    magma_queue_t orig_queue=NULL;
     magmablasGetKernelStream( &orig_queue );
 
     // prepare solver feedback
     solver_par->solver = Magma_CG;
     solver_par->numiter = 0;
-    solver_par->info = MAGMA_SUCCESS; 
+    solver_par->info = MAGMA_SUCCESS;
 
     // local variables
     float c_zero = MAGMA_S_ZERO, c_one = MAGMA_S_ONE;
     
-    magma_int_t dofs = A.num_rows;
+    magma_int_t dofs = A.num_rows * b.num_cols;
 
     // GPU workspace
-    magma_s_vector r, p, q;
-    magma_s_vinit( &r, Magma_DEV, dofs, c_zero, queue );
-    magma_s_vinit( &p, Magma_DEV, dofs, c_zero, queue );
-    magma_s_vinit( &q, Magma_DEV, dofs, c_zero, queue );
+    magma_s_matrix r={Magma_CSR}, p={Magma_CSR}, q={Magma_CSR};
+    CHECK( magma_svinit( &r, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_svinit( &p, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_svinit( &q, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
     
     // solver variables
     float alpha, beta;
-    float nom, nom0, r0, betanom, betanomsq, den, res;
+    float nom, nom0, r0, betanom, betanomsq, den, res, residual;
 
     // solver setup
-    magma_sscal( dofs, c_zero, x->dval, 1) ;                     // x = 0
-    magma_scopy( dofs, b.dval, 1, r.dval, 1 );                    // r = b
-    magma_scopy( dofs, b.dval, 1, p.dval, 1 );                    // p = b
-    nom0 = betanom = magma_snrm2( dofs, r.dval, 1 );           
-    nom  = nom0 * nom0;                                // nom = r' * r
-    magma_s_spmv( c_one, A, p, c_zero, q, queue );                     // q = A p
-    den = MAGMA_S_REAL( magma_sdot(dofs, p.dval, 1, q.dval, 1) );// den = p dot q
-    solver_par->init_res = nom0;
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE ) 
+    CHECK(  magma_sresidualvec( A, b, *x, &r, &nom0, queue));
+    magma_scopy( dofs, r.dval, 1, p.dval, 1 );                     // p = r
+    nom  = nom0 * nom0;                                            // nom = r' * r
+    CHECK( magma_s_spmv( c_one, A, p, c_zero, q, queue ));         // q = A p
+    den = MAGMA_S_REAL( magma_sdot(dofs, p.dval, 1, q.dval, 1) ); // den = p dot q
+    res = solver_par->init_res = nom0;
+    r0 = nom * solver_par->epsilon;
+    if ( r0 < ATOLERANCE )
         r0 = ATOLERANCE;
     if ( nom < r0 ) {
-        magmablasSetKernelStream( orig_queue );
-        return MAGMA_SUCCESS;
+        solver_par->final_res = solver_par->init_res;
+        solver_par->iter_res = solver_par->init_res;
+        goto cleanup;
     }
     // check positive definite
     if (den <= 0.0) {
-        printf("Operator A is not postive definite. (Ar,r) = %f\n", den);
-        magmablasSetKernelStream( orig_queue );
-        return MAGMA_NONSPD;
-        solver_par->info = MAGMA_NONSPD;;
+        info = MAGMA_NONSPD;
+        goto cleanup;
     }
 
-    //Chronometry
+    // Chronometry
     real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
     if ( solver_par->verbose > 0 ) {
-        solver_par->res_vec[0] = (real_Double_t)nom0;
+        solver_par->res_vec[0] = (real_Double_t) nom0;
         solver_par->timing[0] = 0.0;
     }
     
+    solver_par->numiter = 0;
     // start iteration
-    for( solver_par->numiter= 1; solver_par->numiter<solver_par->maxiter; 
-                                                    solver_par->numiter++ ) {
+    do
+    {
+        solver_par->numiter++;
         alpha = MAGMA_S_MAKE(nom/den, 0.);
         magma_saxpy(dofs,  alpha, p.dval, 1, x->dval, 1);     // x = x + alpha p
         magma_saxpy(dofs, -alpha, q.dval, 1, r.dval, 1);      // r = r - alpha q
-        res = betanom = magma_snrm2(dofs, r.dval, 1);       // betanom = || r ||
-        betanomsq = betanom * betanom;                      // betanoms = r' * r
+        res = betanom = magma_snrm2(dofs, r.dval, 1);        // betanom = || r ||
+        betanomsq = betanom * betanom;                        // betanoms = r' * r
 
         if ( solver_par->verbose > 0 ) {
             tempo2 = magma_sync_wtime( queue );
-            if ( (solver_par->numiter)%solver_par->verbose==0 ) {
-                solver_par->res_vec[(solver_par->numiter)/solver_par->verbose] 
+            if ( (solver_par->numiter)%solver_par->verbose == 0 ) {
+                solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
                         = (real_Double_t) res;
-                solver_par->timing[(solver_par->numiter)/solver_par->verbose] 
-                        = (real_Double_t) tempo2-tempo1;
+                solver_par->timing[(solver_par->numiter)/solver_par->verbose]
+                        = tempo2-tempo1;
             }
         }
-
-        if (  res/nom0  < solver_par->epsilon ) {
+        if ( res/nom0  < solver_par->epsilon ) {
             break;
         }
 
-        beta = MAGMA_S_MAKE(betanomsq/nom, 0.);           // beta = betanoms/nom
-        magma_sscal(dofs, beta, p.dval, 1);                // p = beta*p
-        magma_saxpy(dofs, c_one, r.dval, 1, p.dval, 1);     // p = p + r 
-        magma_s_spmv( c_one, A, p, c_zero, q, queue );           // q = A p
-        den = MAGMA_S_REAL(magma_sdot(dofs, p.dval, 1, q.dval, 1));    
-                // den = p dot q
+        beta = MAGMA_S_MAKE(betanomsq/nom, 0.);                       // beta = betanoms/nom
+        magma_sscal(dofs, beta, p.dval, 1);                           // p = beta*p
+        magma_saxpy(dofs, c_one, r.dval, 1, p.dval, 1);               // p = p + r
+        CHECK( magma_s_spmv( c_one, A, p, c_zero, q, queue ));        // q = A p
+        den = MAGMA_S_REAL(magma_sdot(dofs, p.dval, 1, q.dval, 1));  // den = p dot q
         nom = betanomsq;
-    } 
+    }
+    while ( solver_par->numiter+1 <= solver_par->maxiter );
+    
     tempo2 = magma_sync_wtime( queue );
-    solver_par->runtime = (real_Double_t) tempo2-tempo1;
-    float residual;
-    magma_sresidual( A, b, *x, &residual, queue );
+    solver_par->runtime = tempo2-tempo1;
+    residual=0.0;
+    CHECK(  magma_sresidualvec( A, b, *x, &r, &residual, queue));
     solver_par->iter_res = res;
     solver_par->final_res = residual;
 
-    if ( solver_par->numiter < solver_par->maxiter) {
-        solver_par->info = MAGMA_SUCCESS;
-    } else if ( solver_par->init_res > solver_par->final_res ) {
+    if ( solver_par->numiter < solver_par->maxiter ) {
+        info = MAGMA_SUCCESS;
+    }
+    else if ( solver_par->init_res > solver_par->final_res ) {
         if ( solver_par->verbose > 0 ) {
             if ( (solver_par->numiter)%solver_par->verbose==0 ) {
-                solver_par->res_vec[(solver_par->numiter)/solver_par->verbose] 
+                solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
                         = (real_Double_t) betanom;
-                solver_par->timing[(solver_par->numiter)/solver_par->verbose] 
-                        = (real_Double_t) tempo2-tempo1;
+                solver_par->timing[(solver_par->numiter)/solver_par->verbose]
+                        = tempo2-tempo1;
             }
         }
-        solver_par->info = MAGMA_SLOW_CONVERGENCE;
+        info = MAGMA_SLOW_CONVERGENCE;
+        if( res/nom0  < solver_par->epsilon ){
+            info = MAGMA_SUCCESS;
+        }
     }
     else {
         if ( solver_par->verbose > 0 ) {
             if ( (solver_par->numiter)%solver_par->verbose==0 ) {
-                solver_par->res_vec[(solver_par->numiter)/solver_par->verbose] 
+                solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
                         = (real_Double_t) betanom;
-                solver_par->timing[(solver_par->numiter)/solver_par->verbose] 
-                        = (real_Double_t) tempo2-tempo1;
+                solver_par->timing[(solver_par->numiter)/solver_par->verbose]
+                        = tempo2-tempo1;
             }
         }
-        solver_par->info = MAGMA_DIVERGENCE;
+        info = MAGMA_DIVERGENCE;
     }
-    magma_s_vfree(&r, queue );
-    magma_s_vfree(&p, queue );
-    magma_s_vfree(&q, queue );
+    
+cleanup:
+    magma_smfree( &r, queue );
+    magma_smfree( &p, queue );
+    magma_smfree( &q, queue );
 
     magmablasSetKernelStream( orig_queue );
-    return MAGMA_SUCCESS;
+    solver_par->info = info;
+    return info;
 }   /* magma_scg */
-
-

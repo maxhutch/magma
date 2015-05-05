@@ -1,17 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zgesellcmmv.cu normal z -> s, Fri Jan 30 19:00:29 2015
+       @generated from zgesellcmmv.cu normal z -> s, Sun May  3 11:22:58 2015
 
 */
-#include "cuda_runtime.h"
-#include <stdio.h>
-#include "common_magma.h"
-#include "sm_32_intrinsics.h"
+#include "common_magmasparse.h"
 
 #define PRECISION_s
 
@@ -826,7 +823,7 @@ magma_sgesellpmv(
     dim3 block( blocksize, alignment, 1);
 
     int dimgrid1 = (int) sqrt( (float)slices );
-    int dimgrid2 = (slices + dimgrid1 -1 ) / dimgrid1;
+    int dimgrid2 = magma_ceildiv( slices, dimgrid1 );
 
     dim3 grid( dimgrid1, dimgrid2, 1);
     int Ms = num_threads * sizeof( float );

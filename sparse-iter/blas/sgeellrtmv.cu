@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zgeellrtmv.cu normal z -> s, Fri Jan 30 19:00:29 2015
+       @generated from zgeellrtmv.cu normal z -> s, Sun May  3 11:22:58 2015
 
 */
 
@@ -36,7 +36,7 @@ extern __shared__ float shared[];
 
     if(i < num_rows ){
         float dot = MAGMA_S_MAKE(0.0, 0.0);
-        int max_ = (drowlength[i]+T-1)/T;  
+        int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
@@ -91,7 +91,7 @@ extern __shared__ float shared[];
 
     if(i < num_rows ){
         float dot = MAGMA_S_MAKE(0.0, 0.0);
-        int max_ = (drowlength[i]+T-1)/T;  
+        int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
@@ -145,7 +145,7 @@ extern __shared__ float shared[];
 
     if(i < num_rows ){
         float dot = MAGMA_S_MAKE(0.0, 0.0);
-        int max_ = (drowlength[i]+T-1)/T;  
+        int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
@@ -263,20 +263,19 @@ magma_sgeellrtmv(
     magma_int_t blocksize,
     magma_queue_t queue )
 {
-    int num_blocks = ( (m+blocksize-1)/blocksize);
+    int num_blocks = magma_ceildiv( m, blocksize );
 
     magma_int_t num_threads = alignment*blocksize;
     magma_int_t threads = alignment*blocksize;
 
-    int real_row_length = ((int)(nnz_per_row+alignment-1)/alignment)
-                            *alignment;
+    int real_row_length = magma_roundup( nnz_per_row, alignment );
 
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 && num_threads > 256 )
         printf("error: too much shared memory requested.\n");
 
     int dimgrid1 = (int) sqrt( (float) num_blocks );
-    int dimgrid2 = (num_blocks + dimgrid1 -1 ) / dimgrid1;
+    int dimgrid2 = magma_ceildiv( num_blocks, dimgrid1 );
     dim3 grid( dimgrid1, dimgrid2, 1);
 
     int Ms = alignment * blocksize * sizeof( float );

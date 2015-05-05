@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date
 
-       @generated from testing_ztrsm_batched.cpp normal z -> s, Fri Jan 30 19:00:26 2015
+       @generated from testing_ztrsm_batched.cpp normal z -> s, Fri May  1 21:31:40 2015
        @author Chongxiao Cao
        @author Tingxing Dong
        @author Azzam Haidar
@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+
+#include <cuda.h>  // for CUDA_VERSION
 
 // includes, project
 #include "testings.h"  // before magma.h, to include cublas_v2
@@ -63,9 +65,7 @@ int main( int argc, char** argv)
     float c_one = MAGMA_S_ONE;
     float alpha = MAGMA_S_MAKE(  0.29, -0.86 );
     magma_int_t status = 0;
-    magma_int_t batchCount = 1; 
-
-    magma_queue_t queue = magma_stream;
+    magma_int_t batchCount = 1;
 
     magma_opts opts;
     parse_opts( argc, argv, &opts );
@@ -94,8 +94,8 @@ int main( int argc, char** argv)
             
             ldb = M;
             
-            ldda = lda = ((lda+31)/32)*32;
-            lddb = ldb = ((ldb+31)/32)*32;
+            ldda = lda = magma_roundup( lda, opts.roundup );  // multiple of 32 by default
+            lddb = ldb = magma_roundup( ldb, opts.roundup );  // multiple of 32 by default
 
             sizeA = lda*Ak*batchCount;
             sizeB = ldb*N*batchCount;
@@ -123,19 +123,18 @@ int main( int argc, char** argv)
             magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
             float* dinvA=NULL;
-            float* dwork=NULL;// invA and work are workspace in strsm
+            float* dwork=NULL; // invA and work are workspace in strsm
  
-            magma_int_t dinvA_batchSize = ((Ak+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB;
+            magma_int_t dinvA_batchSize = magma_roundup( Ak, TRI_NB )*TRI_NB;
             magma_int_t dwork_batchSize = lddb*N;
             magma_smalloc( &dinvA, dinvA_batchSize * batchCount);
             magma_smalloc( &dwork, dwork_batchSize * batchCount );
     
-            sset_pointer(dwork_array, dwork, lddb, 0, 0, dwork_batchSize, batchCount, queue);
-            sset_pointer(dinvA_array, dinvA, ((Ak+TRI_NB-1)/TRI_NB)*TRI_NB, 0, 0, dinvA_batchSize, batchCount, queue);
+            sset_pointer(dwork_array, dwork, lddb, 0, 0, dwork_batchSize, batchCount, opts.queue);
+            sset_pointer(dinvA_array, dinvA, magma_roundup( Ak, TRI_NB ), 0, 0, dinvA_batchSize, batchCount, opts.queue);
 
             memset(h_Bmagma, 0, batchCount*ldb*N*sizeof(float));
             magmablas_slaset( MagmaFull, lddb, N*batchCount, c_zero, c_zero, dwork, lddb);
-
 
             /* Initialize the matrices */
             /* Factor A into LU to get well-conditioned triangular matrix.
@@ -143,7 +142,7 @@ int main( int argc, char** argv)
              * (i.e., from U), while U fails when used with unit diagonal. */
             lapackf77_slarnv( &ione, ISEED, &sizeA, h_A );
 
-            for(int s=0; s < batchCount; s++) {
+            for (int s=0; s < batchCount; s++) {
                 lapackf77_sgetrf( &Ak, &Ak, h_A + s * lda * Ak, &lda, ipiv, &info );
                 for( int j = 0; j < Ak; ++j ) {
                     for( int i = 0; i < j; ++i ) {
@@ -161,9 +160,9 @@ int main( int argc, char** argv)
             magma_ssetmatrix( Ak, Ak*batchCount, h_A, lda, d_A, ldda );
             magma_ssetmatrix( M,  N*batchCount, h_B, ldb, d_B, lddb );
 
-            sset_pointer(d_A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, queue);
-            sset_pointer(d_B_array, d_B, lddb, 0, 0, lddb*N, batchCount, queue);
-            sset_pointer(dwork_array, dwork, lddb, 0, 0, lddb*N, batchCount, queue);
+            sset_pointer(d_A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, opts.queue);
+            sset_pointer(d_B_array, d_B, lddb, 0, 0, lddb*N, batchCount, opts.queue);
+            sset_pointer(dwork_array, dwork, lddb, 0, 0, lddb*N, batchCount, opts.queue);
 
             magma_time = magma_sync_wtime( NULL );
             #if 1
@@ -173,36 +172,35 @@ int main( int argc, char** argv)
                     d_A_array,    ldda, // dA
                     d_B_array,    lddb, // dB
                     dwork_array,  lddb, // dX output
-                    dinvA_array,  dinvA_batchSize, 
-                    dW1_displ,   dW2_displ, 
+                    dinvA_array,  dinvA_batchSize,
+                    dW1_displ,   dW2_displ,
                     dW3_displ,   dW4_displ,
-                    1, batchCount, queue);
+                    1, batchCount, opts.queue);
                 magma_time = magma_sync_wtime( NULL ) - magma_time;
                 magma_perf = gflops / magma_time;
                 magma_sgetmatrix( M, N*batchCount, dwork, lddb, h_Bmagma, ldb );
             #else
                 magmablas_strsm_batched(
-                    opts.side, opts.uplo, opts.transA, opts.diag, 
-                    M, N, alpha, 
+                    opts.side, opts.uplo, opts.transA, opts.diag,
+                    M, N, alpha,
                     d_A_array, ldda,
-                    d_B_array, lddb, 
-                    batchCount, queue );
+                    d_B_array, lddb,
+                    batchCount, opts.queue );
                 magma_time = magma_sync_wtime( NULL ) - magma_time;
                 magma_perf = gflops / magma_time;
                 magma_sgetmatrix( M, N*batchCount, d_B, lddb, h_Bmagma, ldb );
-            #endif 
+            #endif
        
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
             magma_ssetmatrix( M, N*batchCount, h_B, ldb, d_B, lddb );
-            sset_pointer(d_B_array, d_B, lddb, 0, 0, lddb*N, batchCount, queue);
+            sset_pointer(d_B_array, d_B, lddb, 0, 0, lddb*N, batchCount, opts.queue);
 
             // CUBLAS version <= 6.0 has float **            dA_array, no cast needed.
             // CUBLAS version    6.5 has float const**       dA_array, requiring cast.
             // Correctly, it should be   float const* const* dA_array, to avoid requiring cast.
-            //#define HAVE_CUBLAS_65
-            #ifdef HAVE_CUBLAS_65
+            #if CUDA_VERSION >= 6050
                 cublas_time = magma_sync_wtime( NULL );
                 cublasStrsmBatched(
                     opts.handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
@@ -221,10 +219,10 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                for(int s=0; s < batchCount; s++) {
+                for (int s=0; s < batchCount; s++) {
                     blasf77_strsm(
                         lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                        lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                        lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                         &M, &N, &alpha,
                         h_A       + s * lda * Ak, &lda,
                         h_Blapack + s * ldb * N,  &ldb );
@@ -245,11 +243,11 @@ int main( int argc, char** argv)
             memcpy( h_X, h_Bmagma, sizeB*sizeof(float) );
 
             // check magma
-            for(int s=0; s < batchCount; s++) {
+            for (int s=0; s < batchCount; s++) {
                 normA = lapackf77_slange( "M", &Ak, &Ak, h_A + s * lda * Ak, &lda, work );
                 blasf77_strmm(
                     lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                    lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                    lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                     &M, &N, &alpha2,
                     h_A + s * lda * Ak, &lda,
                     h_X + s * ldb * N,  &ldb );
@@ -270,19 +268,19 @@ int main( int argc, char** argv)
 
             memcpy( h_X, h_Bcublas, sizeB*sizeof(float) );
             // check cublas
-            #ifdef HAVE_CUBLAS_65
-            for(int s=0; s < batchCount; s++) {
+            #if CUDA_VERSION >= 6050
+            for (int s=0; s < batchCount; s++) {
                 normA = lapackf77_slange( "M", &Ak, &Ak, h_A + s * lda * Ak, &lda, work );
                 blasf77_strmm(
                     lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                    lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                    lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                     &M, &N, &alpha2,
                     h_A + s * lda * Ak, &lda,
                     h_X + s * ldb * N, &ldb );
 
                 blasf77_saxpy( &NN, &c_neg_one, h_B + s * ldb * N, &ione, h_X  + s * ldb * N, &ione );
                 normR = lapackf77_slange( "M", &M, &N, h_X  + s * ldb * N,       &ldb, work );
-                normX = lapackf77_slange( "M", &M, &N, h_Bcublas  + s * ldb * N, &ldb, work );            
+                normX = lapackf77_slange( "M", &M, &N, h_Bcublas  + s * ldb * N, &ldb, work );
                 float cublas_err = normR/(normX*normA);
 
                 if ( isnan(cublas_err) || isinf(cublas_err) ) {
@@ -299,10 +297,10 @@ int main( int argc, char** argv)
                 // this verifies that the matrix wasn't so bad that it couldn't be solved accurately.
                 lapack_error = 0.0;
                 memcpy( h_X, h_Blapack, sizeB*sizeof(float) );
-                for(int s=0; s < batchCount; s++) {
+                for (int s=0; s < batchCount; s++) {
                     blasf77_strmm(
                         lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                        lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                        lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                         &M, &N, &alpha2,
                         h_A + s * lda * Ak, &lda,
                         h_X + s * ldb * N,  &ldb );

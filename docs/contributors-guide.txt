@@ -46,14 +46,14 @@ This guide is based on the PLASMA coding style guide, though slightly different.
   There should not be space between increment operators (`++, --`) and the variable.
   Space may be used around other operators (`+, -,` etc.) to aid readability.
 
-  Semi-colons are not preceded by a space, and are followed by a space
-  inside for loop headers.
+  Semi-colons are not preceded by a space.
+  Inside for loop statement, semi-colons are followed by a space, e.g., for(i=0; i < n; ++i).
   Similarly, commas are not preceded by a space, and are followed by a space.
   Occasionally, additional spaces can be used after the comma to line up items on
   consecutive lines for better readability.
 
 - **Blank Lines:**
-  Two blank lines between functions. Single blank lines may be used, sparingly,
+  Two blank lines go between functions. Single blank lines may be used, sparingly,
   inside functions to separate major sections.
   There should not be excessive blank lines. In particular, there should not be
   blank lines after an opening curly brace, or before a closing curly brace.

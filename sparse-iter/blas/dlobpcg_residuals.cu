@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zlobpcg_residuals.cu normal z -> d, Fri Jan 30 19:00:29 2015
+       @generated from zlobpcg_residuals.cu normal z -> d, Sun May  3 11:22:58 2015
 
 */
 
@@ -175,7 +175,7 @@ magma_dlobpcg_res(
     magma_int_t block_size = BLOCK_SIZE;
  
     dim3 threads( block_size );
-    dim3 grid( (num_rows+block_size-1)/block_size, 1, 1 );
+    dim3 grid( magma_ceildiv( num_rows, block_size ) );
 
     magma_dlobpcg_res_kernel<<< grid, threads, 0, queue >>>
                                 ( num_rows, num_vecs, evalues, X, R, res );

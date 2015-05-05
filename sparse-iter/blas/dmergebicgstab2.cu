@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zmergebicgstab2.cu normal z -> d, Fri Jan 30 19:00:29 2015
+       @generated from zmergebicgstab2.cu normal z -> d, Sun May  3 11:22:58 2015
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
-#include "magmasparse.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 256
 
@@ -185,7 +184,7 @@ magma_dbicgstab_alphakernel(
     ---------
 
     @param[in]
-    A           magma_d_sparse_matrix
+    A           magma_d_matrix
                 system matrix
 
     @param[in]
@@ -221,7 +220,7 @@ magma_dbicgstab_alphakernel(
 
 extern "C" magma_int_t
 magma_dbicgmerge_spmv1(
-    magma_d_sparse_matrix A,
+    magma_d_matrix A,
     magmaDouble_ptr d1,
     magmaDouble_ptr d2,
     magmaDouble_ptr dp,
@@ -237,7 +236,7 @@ magma_dbicgmerge_spmv1(
     int n = A.num_rows;
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  local_block_size * sizeof( double ); 
     magmaDouble_ptr aux1 = d1, aux2 = d2;
@@ -488,7 +487,7 @@ magma_dbicgstab_omegakernel(
     ---------
 
     @param[in]
-    A           magma_d_sparse_matrix
+    A           magma_d_matrix
                 input matrix 
 
     @param[in]
@@ -520,7 +519,7 @@ magma_dbicgstab_omegakernel(
 
 extern "C" magma_int_t
 magma_dbicgmerge_spmv2(
-    magma_d_sparse_matrix A,
+    magma_d_matrix A,
     magmaDouble_ptr d1,
     magmaDouble_ptr d2,
     magmaDouble_ptr ds,
@@ -535,7 +534,7 @@ magma_dbicgmerge_spmv2(
     int n = A.num_rows;
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( double ); 
     magmaDouble_ptr aux1 = d1, aux2 = d2;
@@ -769,7 +768,7 @@ magma_dbicgmerge_xrbeta(
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( double ); 
     magmaDouble_ptr aux1 = d1, aux2 = d2;

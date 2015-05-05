@@ -1,11 +1,11 @@
 /*
--- MAGMA (version 1.6.1) --
+-- MAGMA (version 1.1) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date January 2015
+ @date
 
- @generated from magmasparse_zc.h mixed zc -> ds, Fri Jan 30 19:00:27 2015
+ @generated from magmasparse_zc.h mixed zc -> ds, Fri May  1 21:08:05 2015
  @author Hartwig Anzt
 */
 
@@ -32,27 +32,27 @@ extern "C" {
 */
 magma_int_t
 magma_vector_dlag2s(
-    magma_d_vector x,
-    magma_s_vector *y,
+    magma_d_matrix x,
+    magma_s_matrix *y,
     magma_queue_t queue );
 
 magma_int_t
 magma_sparse_matrix_dlag2s(
-    magma_d_sparse_matrix A,
-    magma_s_sparse_matrix *B,
+    magma_d_matrix A,
+    magma_s_matrix *B,
     magma_queue_t queue );
 
 
 magma_int_t
 magma_vector_slag2d(
-    magma_s_vector x,
-    magma_d_vector *y,
+    magma_s_matrix x,
+    magma_d_matrix *y,
     magma_queue_t queue );
 
 magma_int_t
 magma_sparse_matrix_slag2d(
-    magma_s_sparse_matrix A,
-    magma_d_sparse_matrix *B,
+    magma_s_matrix A,
+    magma_d_matrix *B,
     magma_queue_t queue );
 
 void
@@ -79,20 +79,20 @@ magmablas_slag2d_sparse(
 
 void 
 magma_dlag2s_CSR_DENSE(
-    magma_d_sparse_matrix A,
-    magma_s_sparse_matrix *B,
+    magma_d_matrix A,
+    magma_s_matrix *B,
     magma_queue_t queue );
 
 void 
 magma_dlag2s_CSR_DENSE_alloc(
-    magma_d_sparse_matrix A,
-    magma_s_sparse_matrix *B,
+    magma_d_matrix A,
+    magma_s_matrix *B,
     magma_queue_t queue );
 
 void 
 magma_dlag2s_CSR_DENSE_convert(
-    magma_d_sparse_matrix A,
-    magma_s_sparse_matrix *B,
+    magma_d_matrix A,
+    magma_s_matrix *B,
     magma_queue_t queue );
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -109,36 +109,36 @@ magma_dlag2s_CSR_DENSE_convert(
 */
 magma_int_t
 magma_dspgmres(
-    magma_d_sparse_matrix A, 
-    magma_d_vector b, 
-    magma_d_vector *x,
+    magma_d_matrix A, 
+    magma_d_matrix b, 
+    magma_d_matrix *x,
     magma_d_solver_par *solver_par,
     magma_d_preconditioner *precond_par,
     magma_queue_t queue );
 
 magma_int_t
 magma_dspbicgstab(
-    magma_d_sparse_matrix A, 
-    magma_d_vector b, 
-    magma_d_vector *x,
+    magma_d_matrix A, 
+    magma_d_matrix b, 
+    magma_d_matrix *x,
     magma_d_solver_par *solver_par,
     magma_d_preconditioner *precond_par,
     magma_queue_t queue );
 
 magma_int_t
 magma_dsir(
-    magma_d_sparse_matrix A, 
-    magma_d_vector b, 
-    magma_d_vector *x,
+    magma_d_matrix A, 
+    magma_d_matrix b, 
+    magma_d_matrix *x,
     magma_d_solver_par *solver_par, 
     magma_d_preconditioner *precond_par,
     magma_queue_t queue );
 
 magma_int_t
 magma_dspir(
-    magma_d_sparse_matrix A, 
-    magma_d_vector b, 
-    magma_d_vector *x,
+    magma_d_matrix A, 
+    magma_d_matrix b, 
+    magma_d_matrix *x,
     magma_d_solver_par *solver_par, 
     magma_d_preconditioner *precond_par,
     magma_queue_t queue );

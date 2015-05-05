@@ -1,20 +1,22 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/include
 MAGMA_DIR = ../..
 include $(MAGMA_DIR)/Makefile.internal
 
-ZHDR = \
+ZHDR := \
 	magmasparse_z.h		\
 	magmasparse_zc.h	\
 	magmasparse_types.h	\
 
+
+# ------------------------------------------------------------
 -include Makefile.local
 -include Makefile.src
 

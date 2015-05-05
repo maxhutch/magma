@@ -1,18 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zbajac_csr.cu normal z -> d, Fri Jan 30 19:00:28 2015
+       @generated from zbajac_csr.cu normal z -> d, Sun May  3 11:22:57 2015
 
 */
-
-#include "common_magma.h"
-#include "magmasparse_d.h"
-#include "magma.h"
-
+#include "common_magmasparse.h"
 
 #define PRECISION_d
 #define BLOCKSIZE 256
@@ -152,19 +148,19 @@ magma_dbajac_csr_kernel(
                 number of local Jacobi-like updates
 
     @param[in]
-    D           magma_d_sparse_matrix
+    D           magma_d_matrix
                 input matrix with diagonal blocks
 
     @param[in]
-    R           magma_d_sparse_matrix
+    R           magma_d_matrix
                 input matrix with non-diagonal parts
 
     @param[in]
-    b           magma_d_vector
+    b           magma_d_matrix
                 RHS
 
     @param[in]
-    x           magma_d_vector*
+    x           magma_d_matrix*
                 iterate/solution
 
     
@@ -178,16 +174,16 @@ magma_dbajac_csr_kernel(
 extern "C" magma_int_t
 magma_dbajac_csr(
     magma_int_t localiters,
-    magma_d_sparse_matrix D,
-    magma_d_sparse_matrix R,
-    magma_d_vector b,
-    magma_d_vector *x,
+    magma_d_matrix D,
+    magma_d_matrix R,
+    magma_d_matrix b,
+    magma_d_matrix *x,
     magma_queue_t queue )
 {
     int blocksize1 = BLOCKSIZE;
     int blocksize2 = 1;
 
-    int dimgrid1 = ( D.num_rows + blocksize1 -1 ) / blocksize1;
+    int dimgrid1 = magma_ceildiv(  D.num_rows, blocksize1 );
     int dimgrid2 = 1;
     int dimgrid3 = 1;
 

@@ -1,34 +1,17 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_zutil_sparse.cpp normal z -> c, Fri Jan 30 19:00:32 2015
+       @generated from magma_zutil_sparse.cpp normal z -> c, Sun May  3 11:23:01 2015
 
        @author Hartwig Anzt
 
        Utilities for testing MAGMA-sparse.
 */
-
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <ostream>
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <errno.h>
-#include <sys/stat.h>
-
-// includes, project
-#include "magmasparse_c.h"
-#include "magma.h"
-#include "mmio.h"
+#include "common_magmasparse.h"
 
 
 // --------------------
@@ -41,8 +24,8 @@ static const char *usage_sparse =
 "               0   CSR\n"
 "               1   ELL\n"
 "               2   SELL-P\n"
-" --blocksize x Set a specific blocksize for SELL-P format.\n"   
-" --alignment x Set a specific alignment for SELL-P format.\n"   
+" --blocksize x Set a specific blocksize for SELL-P format.\n"
+" --alignment x Set a specific alignment for SELL-P format.\n"
 " --mscale      Possibility to scale the original matrix:\n"
 "               0   no scaling\n"
 "               1   symmetric scaling to unit diagonal\n"
@@ -64,12 +47,16 @@ static const char *usage_sparse =
 "               0   no preconditioner\n"
 "               1   Jacobi\n"
 "               2   ILU(0) / IC(0)\n"
+"               -2   iterative ILU(0) / IC(0)\n"
 "                   For Iterative Refinement also possible: \n"
 "                   3   CG\n"
 "                   4   BiCGSTAB\n"
 "                   5   GMRES\n"
 "                   6   Block-asynchronous Iteration\n"
-"                   --ptol eps    Relative resiudal stopping criterion for preconditioner.\n"               
+"                   --ptol eps    Relative resiudal stopping criterion for preconditioner.\n"
+"                   --psweeps k   Iteration count for iterative incomplete factorizations.\n"
+"                   --piter k     Iteration count for iterative preconditioner.\n"
+"                   --plevels k   Number of ILU levels.\n"
 " --ev x        For eigensolvers, set number of eigenvalues/eigenvectors to compute.\n"
 " --verbose x   Possibility to print intermediate residuals every x iteration.\n"
 " --maxiter x   Set an upper limit for the iteration count.\n"
@@ -112,16 +99,13 @@ static const char *usage_sparse =
 extern "C"
 magma_int_t
 magma_cparse_opts(
-    int argc, 
-    char** argv, 
-    magma_copts *opts, 
+    int argc,
+    char** argv,
+    magma_copts *opts,
     int *matrices,
     magma_queue_t queue )
 {
-    // negative flag indicating -m, -n, -k not given
-    int m = -1;
-    int n = -1;
-    int k = -1;
+
     
     // fill in default values
     opts->input_format = Magma_CSR;
@@ -141,6 +125,8 @@ magma_cparse_opts(
     opts->precond_par.epsilon = 0.01;
     opts->precond_par.maxiter = 100;
     opts->precond_par.restart = 10;
+    opts->precond_par.levels = 0;
+    opts->precond_par.sweeps = 5;
     opts->solver_par.solver = Magma_CG;
     
     printf( usage_sparse_short, argv[0] );
@@ -149,7 +135,6 @@ magma_cparse_opts(
     cudaGetDeviceCount( &ndevices );
     
     int info;
-    int ntest = 0;
     
 
     for( int i = 1; i < argc; ++i ) {
@@ -180,7 +165,7 @@ magma_cparse_opts(
                 case 5: opts->solver_par.solver = Magma_PBICGSTAB; break;
                 case 6: opts->solver_par.solver = Magma_GMRES; break;
                 case 7: opts->solver_par.solver = Magma_PGMRES; break;
-                case 8: opts->solver_par.solver = Magma_LOBPCG; 
+                case 8: opts->solver_par.solver = Magma_LOBPCG;
                             opts->solver_par.num_eigenvalues = 16;break;
                 case 9: opts->solver_par.solver = Magma_JACOBI; break;
                 case 10: opts->solver_par.solver = Magma_BAITER; break;
@@ -194,6 +179,7 @@ magma_cparse_opts(
                 case 0: opts->precond_par.solver = Magma_NONE; break;
                 case 1: opts->precond_par.solver = Magma_JACOBI; break;
                 case 2: opts->precond_par.solver = Magma_ILU; break;
+                case -2: opts->precond_par.solver = Magma_AILU; break;
                 case 3: opts->precond_par.solver = Magma_CG; break;
                 case 4: opts->precond_par.solver = Magma_BICGSTAB; break;
                 case 5: opts->precond_par.solver = Magma_GMRES; break;
@@ -202,6 +188,12 @@ magma_cparse_opts(
             }
         } else if ( strcmp("--ptol", argv[i]) == 0 && i+1 < argc ) {
             sscanf( argv[++i], "%f", &opts->precond_par.epsilon );
+        } else if ( strcmp("--piter", argv[i]) == 0 && i+1 < argc ) {
+            opts->precond_par.maxiter = atoi( argv[++i] );
+        } else if ( strcmp("--psweeps", argv[i]) == 0 && i+1 < argc ) {
+            opts->precond_par.sweeps = atoi( argv[++i] );
+        } else if ( strcmp("--plevels", argv[i]) == 0 && i+1 < argc ) {
+            opts->precond_par.levels = atoi( argv[++i] );
         } else if ( strcmp("--blocksize", argv[i]) == 0 && i+1 < argc ) {
             opts->blocksize = atoi( argv[++i] );
         } else if ( strcmp("--alignment", argv[i]) == 0 && i+1 < argc ) {
@@ -216,21 +208,24 @@ magma_cparse_opts(
             opts->solver_par.num_eigenvalues = atoi( argv[++i] );
         } else if ( strcmp("--version", argv[i]) == 0 && i+1 < argc ) {
             opts->solver_par.version = atoi( argv[++i] );
-        }        
+        }
         // ----- usage
         else if ( strcmp("-h",     argv[i]) == 0 ||
                   strcmp("--help", argv[i]) == 0 ) {
             fprintf( stderr, usage_sparse, argv[0] );
-            return -1;
         } else {
             *matrices = i;
             break;
         }
     }
     // ensure to take a symmetric preconditioner for the PCG
-    if ( opts->solver_par.solver == Magma_PCG 
+    if ( opts->solver_par.solver == Magma_PCG
         && opts->precond_par.solver == Magma_ILU )
             opts->precond_par.solver = Magma_ICC;
+    if ( opts->solver_par.solver == Magma_PCG
+        && opts->precond_par.solver == Magma_AILU )
+            opts->precond_par.solver = Magma_AICC;
+            
     return MAGMA_SUCCESS;
 }
 

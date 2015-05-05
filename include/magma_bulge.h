@@ -15,11 +15,6 @@
 extern "C" {
 #endif
 
-    inline magma_int_t magma_ceildiv(magma_int_t a, magma_int_t b)
-    {
-        return (a+b-1)/b;
-    }
-
     magma_int_t magma_bulge_get_nb(magma_int_t n);
 
     void cmp_vals(int n, double *wr1, double *wr2, double *nrmI, double *nrm1, double *nrm2);

@@ -20,20 +20,19 @@ CSRC = \
 	cbaiter.cpp \
 	cpcg.cpp \
 	cbpcg.cpp \
-	cgmres.cpp \
-	cpgmres.cpp \
 	cfgmres.cpp \
 	cpbicgstab.cpp \
 	clobpcg.cpp \
-	ccumilu.cpp \
-	cpastix.cpp \
+	citerilu.cpp \
 	magma_ccustomspmv.cpp \
 	magma_ccustomprecond.cpp \
-	magma_c_precond_wrapper.cpp \
-	magma_c_solver_wrapper.cpp \
+	ccumilu.cpp \
 	magma_ccuspmm.cpp \
 	magma_ccuspaxpy.cpp \
-	cresidual.cpp
+	magma_c_precond_wrapper.cpp \
+	magma_c_solver_wrapper.cpp \
+	cresidual.cpp \
+	cresidualvec.cpp
 
 DSRC = \
 	dcg.cpp \
@@ -47,20 +46,19 @@ DSRC = \
 	dbaiter.cpp \
 	dpcg.cpp \
 	dbpcg.cpp \
-	dgmres.cpp \
-	dpgmres.cpp \
 	dfgmres.cpp \
 	dpbicgstab.cpp \
 	dlobpcg.cpp \
-	dcumilu.cpp \
-	dpastix.cpp \
+	diterilu.cpp \
 	magma_dcustomspmv.cpp \
 	magma_dcustomprecond.cpp \
-	magma_d_precond_wrapper.cpp \
-	magma_d_solver_wrapper.cpp \
+	dcumilu.cpp \
 	magma_dcuspmm.cpp \
 	magma_dcuspaxpy.cpp \
-	dresidual.cpp
+	magma_d_precond_wrapper.cpp \
+	magma_d_solver_wrapper.cpp \
+	dresidual.cpp \
+	dresidualvec.cpp
 
 SSRC = \
 	scg.cpp \
@@ -74,17 +72,16 @@ SSRC = \
 	sbaiter.cpp \
 	spcg.cpp \
 	sbpcg.cpp \
-	sgmres.cpp \
-	spgmres.cpp \
 	sfgmres.cpp \
 	spbicgstab.cpp \
 	slobpcg.cpp \
-	scumilu.cpp \
-	spastix.cpp \
+	siterilu.cpp \
 	magma_scustomspmv.cpp \
 	magma_scustomprecond.cpp \
-	magma_s_precond_wrapper.cpp \
-	magma_s_solver_wrapper.cpp \
+	scumilu.cpp \
 	magma_scuspmm.cpp \
 	magma_scuspaxpy.cpp \
-	sresidual.cpp
+	magma_s_precond_wrapper.cpp \
+	magma_s_solver_wrapper.cpp \
+	sresidual.cpp \
+	sresidualvec.cpp

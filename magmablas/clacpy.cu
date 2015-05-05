@@ -1,25 +1,36 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date
 
-       @generated from zlacpy.cu normal z -> c, Fri Jan 30 19:00:08 2015
        @author Mark Gates
        @author Azzam Haidar
+       
+       @generated from zlacpy.cu normal z -> c, Fri Mar 13 15:22:41 2015
+
 */
 #include "common_magma.h"
 
+// To deal with really large matrices, this launchs multiple super blocks,
+// each with up to 64K-1 x 64K-1 thread blocks, which is up to 4194240 x 4194240 matrix with BLK=64.
+// CUDA architecture 2.0 limits each grid dimension to 64K-1.
+// Instances arose for vectors used by sparse matrices with M > 4194240, though N is small.
+const magma_int_t max_blocks = 65535;
+
+// BLK_X and BLK_Y need to be equal for claset_q to deal with diag & offdiag
+// when looping over super blocks.
+// Formerly, BLK_X and BLK_Y could be different.
 #define BLK_X 64
-#define BLK_Y 32
+#define BLK_Y BLK_X
 
 /*
     Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
     Each block has BLK_X threads.
     Each thread loops across one row, updating BLK_Y entries.
 
-    Code similar to claset.
+    Code similar to claset, clacpy, clag2z, clag2z, cgeadd.
 */
 static __device__
 void clacpy_full_device(
@@ -56,7 +67,7 @@ void clacpy_full_device(
     Similar to clacpy_full, but updates only the diagonal and below.
     Blocks that are fully above the diagonal exit immediately.
 
-    Code similar to claset.
+    Code similar to claset, clacpy, zlat2c, clat2z.
 */
 static __device__
 void clacpy_lower_device(
@@ -93,7 +104,7 @@ void clacpy_lower_device(
     Similar to clacpy_full, but updates only the diagonal and above.
     Blocks that are fully below the diagonal exit immediately.
 
-    Code similar to claset.
+    Code similar to claset, clacpy, zlat2c, clat2z.
 */
 static __device__
 void clacpy_upper_device(
@@ -127,8 +138,10 @@ void clacpy_upper_device(
     }
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////
 /*
-    kernel wrapper to call the device function.
+    kernel wrappers to call the device functions.
 */
 __global__
 void clacpy_full_kernel(
@@ -158,8 +171,9 @@ void clacpy_upper_kernel(
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 /*
-    kernel wrapper to call the device function for the batched routine.
+    kernel wrappers to call the device functions for the batched routine.
 */
 __global__
 void clacpy_full_kernel_batched(
@@ -192,6 +206,7 @@ void clacpy_upper_kernel_batched(
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
     -------
@@ -202,13 +217,12 @@ void clacpy_upper_kernel_batched(
     
     Arguments
     ---------
-    
     @param[in]
     uplo    magma_uplo_t
             Specifies the part of the matrix dA to be copied to dB.
       -     = MagmaUpper:      Upper triangular part
       -     = MagmaLower:      Lower triangular part
-            Otherwise:  All of the matrix dA
+      -     = MagmaFull:       All of the matrix dA
     
     @param[in]
     m       INTEGER
@@ -220,7 +234,7 @@ void clacpy_upper_kernel_batched(
     
     @param[in]
     dA      COMPLEX array, dimension (LDDA,N)
-            The m by n matrix dA.
+            The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
     
@@ -230,7 +244,7 @@ void clacpy_upper_kernel_batched(
     
     @param[out]
     dB      COMPLEX array, dimension (LDDB,N)
-            The m by n matrix dB.
+            The M-by-N matrix dB.
             On exit, dB = dA in the locations specified by UPLO.
     
     @param[in]
@@ -250,8 +264,13 @@ magmablas_clacpy_q(
     magmaFloatComplex_ptr       dB, magma_int_t lddb,
     magma_queue_t queue )
 {
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #define dB(i_, j_) (dB + (i_) + (j_)*lddb)
+    
     magma_int_t info = 0;
-    if ( m < 0 )
+    if ( uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull )
+        info = -1;
+    else if ( m < 0 )
         info = -2;
     else if ( n < 0 )
         info = -3;
@@ -262,25 +281,72 @@ magmablas_clacpy_q(
     
     if ( info != 0 ) {
         magma_xerbla( __func__, -(info) );
+        return;  //info;
+    }
+    
+    if ( m == 0 || n == 0 ) {
         return;
     }
     
-    if ( m == 0 || n == 0 )
-        return;
+    assert( BLK_X == BLK_Y );
+    const magma_int_t super_NB = max_blocks*BLK_X;
+    dim3 super_grid( magma_ceildiv( m, super_NB ), magma_ceildiv( n, super_NB ) );
     
     dim3 threads( BLK_X, 1 );
-    dim3 grid( (m + BLK_X - 1)/BLK_X, (n + BLK_Y - 1)/BLK_Y );
+    dim3 grid;
     
+    magma_int_t mm, nn;
     if ( uplo == MagmaLower ) {
-        clacpy_lower_kernel<<< grid, threads, 0, queue >>> ( m, n, dA, ldda, dB, lddb );
+        for( int i=0; i < super_grid.x; ++i ) {
+            mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
+            grid.x = magma_ceildiv( mm, BLK_X );
+            for( int j=0; j < super_grid.y && j <= i; ++j ) {  // from left to diagonal
+                nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
+                grid.y = magma_ceildiv( nn, BLK_Y );
+                if ( i == j ) {  // diagonal super block
+                    clacpy_lower_kernel<<< grid, threads, 0, queue >>>
+                        ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
+                }
+                else {           // off diagonal super block
+                    clacpy_full_kernel <<< grid, threads, 0, queue >>>
+                        ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
+                }
+            }
+        }
     }
     else if ( uplo == MagmaUpper ) {
-        clacpy_upper_kernel<<< grid, threads, 0, queue >>> ( m, n, dA, ldda, dB, lddb );
+        for( int i=0; i < super_grid.x; ++i ) {
+            mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
+            grid.x = magma_ceildiv( mm, BLK_X );
+            for( int j=i; j < super_grid.y; ++j ) {  // from diagonal to right
+                nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
+                grid.y = magma_ceildiv( nn, BLK_Y );
+                if ( i == j ) {  // diagonal super block
+                    clacpy_upper_kernel<<< grid, threads, 0, queue >>>
+                        ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
+                }
+                else {           // off diagonal super block
+                    clacpy_full_kernel <<< grid, threads, 0, queue >>>
+                        ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
+                }
+            }
+        }
     }
     else {
-        clacpy_full_kernel <<< grid, threads, 0, queue >>> ( m, n, dA, ldda, dB, lddb );
+        // TODO: use cudaMemcpy or cudaMemcpy2D ?
+        for( int i=0; i < super_grid.x; ++i ) {
+            mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
+            grid.x = magma_ceildiv( mm, BLK_X );
+            for( int j=0; j < super_grid.y; ++j ) {  // full row
+                nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
+                grid.y = magma_ceildiv( nn, BLK_Y );
+                clacpy_full_kernel <<< grid, threads, 0, queue >>>
+                    ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
+            }
+        }
     }
 }
+
 
 /**
     @see magmablas_clacpy_q
@@ -296,13 +362,12 @@ magmablas_clacpy(
 }
 
 
+////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
     -------
-    CLACPY_BATCHED_Q copies all or part of each two-dimensional matrix
+    CLACPY_BATCHED copies all or part of each two-dimensional matrix
     dAarray[i] to matrix dBarray[i], for 0 <= i < batchcount.
-    
-    This is the same as CLACPY_BATCHED, but adds queue argument.
     
     Arguments
     ---------
@@ -324,8 +389,8 @@ magmablas_clacpy(
     
     @param[in]
     dAarray COMPLEX* array, dimension (batchCount)
-            array of pointers to the matrices dA, where each dA is of dimension (LDDA,N)
-            The m by n matrix dA.
+            Array of pointers to the matrices dA, where each dA is of dimension (LDDA,N).
+            The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
     
@@ -335,8 +400,8 @@ magmablas_clacpy(
     
     @param[out]
     dBarray COMPLEX* array, dimension (batchCount)
-            array of pointers to the matrices dB, where each dB is of dimension (LDDB,N)
-            The m by n matrix dB.
+            Array of pointers to the matrices dB, where each dB is of dimension (LDDB,N).
+            The M-by-N matrix dB.
             On exit, dB = dA in the locations specified by UPLO.
     
     @param[in]
@@ -360,7 +425,9 @@ magmablas_clacpy_batched(
     magma_int_t batchCount, magma_queue_t queue )
 {
     magma_int_t info = 0;
-    if ( m < 0 )
+    if ( uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull )
+        info = -1;
+    else if ( m < 0 )
         info = -2;
     else if ( n < 0 )
         info = -3;
@@ -376,11 +443,12 @@ magmablas_clacpy_batched(
         return;
     }
     
-    if ( m == 0 || n == 0 || batchCount == 0 )
+    if ( m == 0 || n == 0 || batchCount == 0 ) {
         return;
+    }
     
     dim3 threads( BLK_X, 1, 1 );
-    dim3 grid( (m + BLK_X - 1)/BLK_X, (n + BLK_Y - 1)/BLK_Y, batchCount );
+    dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ), batchCount );
     
     if ( uplo == MagmaLower ) {
         clacpy_lower_kernel_batched<<< grid, threads, 0, queue >>> ( m, n, dAarray, ldda, dBarray, lddb );
@@ -392,7 +460,3 @@ magmablas_clacpy_batched(
         clacpy_full_kernel_batched <<< grid, threads, 0, queue >>> ( m, n, dAarray, ldda, dBarray, lddb );
     }
 }
-
-
-
-

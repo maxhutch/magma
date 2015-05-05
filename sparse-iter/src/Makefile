@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.2) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date May 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/src
@@ -22,76 +22,81 @@ INC += -g3
 
 # Krylov space linear solvers
 ZSRC += \
-	zcg.cpp			\
-	zcg_res.cpp		\
+	zcg.cpp				\
+	zcg_res.cpp			\
 	zcg_merge.cpp		\
 	zbicgstab.cpp		\
 	zbicgstab_merge.cpp	\
-	zbicgstab_merge2.cpp	\
+	zbicgstab_merge2.cpp\
 	ziterref.cpp		\
-	zjacobi.cpp		\
-	zbaiter.cpp 	        \
-	zpcg.cpp		\
-	zbpcg.cpp		\
- 	zgmres.cpp	\
-	zpgmres.cpp	\
-	zfgmres.cpp \
- 	zpbicgstab.cpp		\
+	zjacobi.cpp			\
+	zbaiter.cpp			\
+	zpcg.cpp			\
+	zbpcg.cpp			\
+	zfgmres.cpp 		\
+	zpbicgstab.cpp		\
 
 
 # Krylov space eigen-solvers
 ZSRC += \
-	zlobpcg.cpp		\
-	#zcgeig.cpp		\
-	#zlancsoz.cpp		\
+	zlobpcg.cpp			\
+#	zcgeig.cpp			\
+#	zlancsoz.cpp		\
 
 # Mixed-precision solvers
-ZSRC += \
+#ZSRC += \
 #	zcpbicgstab.cpp		\
 #	zcpgmres.cpp		\
 #	zciterref.cpp		\
-#	zcpir.cpp		\
+#	zcpir.cpp			\
 
 # QR and least squares, GPU interface
-ZSRC += \
-	#zungqr_lapack.cpp	\
-	#zungqr_cgs.cpp		\
-	#zungqr_mgs.cpp		\
-	#zungqr_chol.cpp	\
-	#zungqr_iter.cpp	\
+#ZSRC += \
+#	zungqr_lapack.cpp	\
+#	zungqr_cgs.cpp		\
+#	zungqr_mgs.cpp		\
+#	zungqr_chol.cpp		\
+#	zungqr_iter.cpp		\
 
-# ILU and sparse direct
+# iterative ILU
 ZSRC += \
-    zcumilu.cpp          \
-    zpastix.cpp		\
+	ziterilu.cpp			\
 
 
-# orthogonalization schemes
+# orthogonalization schemes    
 ZSRC += \
-#	zorthomgs.cpp   \
+#	zorthomgs.cpp		\
 
 # backward communication for SpMV and Preconditioner
 ZSRC += \
-    magma_zcustomspmv.cpp   \
-    magma_zcustomprecond.cpp   \
+	magma_zcustomspmv.cpp		\
+	magma_zcustomprecond.cpp	\
+
+# Wrappers to cusparse functions
+ZSRC += \
+	zcumilu.cpp			\
+	magma_zcuspmm.cpp				\
+	magma_zcuspaxpy.cpp				\
 
 # Wrappers, tools etc
 ZSRC += \
-	magma_z_precond_wrapper.cpp \
-	magma_z_solver_wrapper.cpp \
-    magma_zcuspmm.cpp   \
-    magma_zcuspaxpy.cpp   \
-	zresidual.cpp		\
+	magma_z_precond_wrapper.cpp		\
+	magma_z_solver_wrapper.cpp		\
+	zresidual.cpp					\
+	zresidualvec.cpp			\
 
+# research functions
+ZSRC += \
 
 # ------------------------------------------------------------
 -include Makefile.local
 -include Makefile.src
+#include "magmasparse_common.h"
 
 ALLSRC_F = \
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
-ALLOBJ := $(ALLSRC:.cpp=.o) $(ALLSRC_F:.f=.o)
+ALLOBJ := $(ALLSRC:.cpp=.$(o_ext)) $(ALLSRC_F:.f=.$(o_ext))
 
 all: $(LIBMAGMA_SPARSE)
 
@@ -104,7 +109,7 @@ stamp: $(ALLHDR) $(ALLOBJ)
 	touch $@
 
 clean:
-	rm -f *.o *~ *.linkinfo
+	rm -f *.$(o_ext) *~ *.linkinfo
 
 cleanall: clean
 	rm -f *.a

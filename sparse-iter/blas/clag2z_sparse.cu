@@ -1,45 +1,39 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions mixed zc -> ds
 
 */
-#include "common_magma.h"
-#include "magmasparse_z.h"
-#include "magmasparse_zc.h"
-#include "magma.h"
-#include "mmio.h"
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
-#define PRECISION_z
 #define blksize 512
 
 
 // TODO get rid of global variable!
-__device__ int flag = 0; 
+__device__ int flag = 0;
 
-__global__ void 
-magmaint_clag2z_sparse(  int M, int N, 
-                  const magmaFloatComplex *SA, int ldsa, 
-                  magmaDoubleComplex *A,       int lda, 
-                  double RMAX ) 
+__global__ void
+magmaint_clag2z_sparse(  int M, int N,
+                  const magmaFloatComplex *SA, int ldsa,
+                  magmaDoubleComplex *A,       int lda,
+                  double RMAX )
 {
     int inner_bsize = blockDim.x;
     int outer_bsize = inner_bsize * 512;
-    int thread_id = blockDim.x * blockIdx.x + threadIdx.x ; 
+    int thread_id = blockDim.x * blockIdx.x + threadIdx.x ;
             // global thread index
 
     if( thread_id < M ){
-        for( int i= outer_bsize * blockIdx.x  + threadIdx.x ; 
+        for( int i= outer_bsize * blockIdx.x  + threadIdx.x ;
             i<min( M, outer_bsize * ( blockIdx.x + 1));  i+=inner_bsize){
             A[i] = cuComplexFloatToDouble( SA[i] );
 
         }
-    } 
+    }
 }
 
 /**
@@ -95,9 +89,9 @@ magmaint_clag2z_sparse(  int M, int N,
 
 extern "C" void
 magmablas_clag2z_sparse(
-    magma_int_t M, magma_int_t N, 
-    const magmaFloatComplex *SA, magma_int_t ldsa, 
-    magmaDoubleComplex *A,       magma_int_t lda, 
+    magma_int_t M, magma_int_t N,
+    const magmaFloatComplex *SA, magma_int_t ldsa,
+    magmaDoubleComplex *A,       magma_int_t lda,
     magma_int_t *info,
     magma_queue_t queue )
 {
@@ -106,7 +100,7 @@ magmablas_clag2z_sparse(
     
     Note
     ----
-          - We have to provide INFO at the end that zlag2c isn't doable now. 
+          - We have to provide INFO at the end that zlag2c isn't doable now.
           - Transfer a single value TO/FROM CPU/GPU
           - SLAMCH that's needed is called from underlying BLAS
           - Only used in iterative refinement
@@ -137,10 +131,10 @@ magmablas_clag2z_sparse(
     dim3 dimGrid(block);// Number of Blocks
    
 
-    dim3 threads( blksize, 1, 1 );
-    dim3 grid( (M+blksize-1)/blksize, 1, 1);
+    dim3 threads( blksize );
+    dim3 grid( magma_ceildiv( M, blksize ) );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     magmaint_clag2z_sparse<<< dimGrid , dimBlock, 0, queue >>>
-                                        ( M, N, SA, lda, A, ldsa, RMAX ) ; 
+                                        ( M, N, SA, lda, A, ldsa, RMAX ) ;
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

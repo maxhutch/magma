@@ -41,7 +41,7 @@ SRC := \
 	thread_queue.cpp	\
 	trace.cpp		\
 	xerbla.cpp		\
-
+	sqrt.cpp	\
 # ilaenv was previously used by gesdd; it was the only required Fortran dependence
 #	ilaenv_f77.f		\
 #	ilaenv.cpp		\

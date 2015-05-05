@@ -1,21 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zmgeellmv.cu normal z -> s, Fri Jan 30 19:00:29 2015
+       @generated from zmgeellmv.cu normal z -> s, Sun May  3 11:22:58 2015
 
 */
 #include "common_magma.h"
 
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 128
-#else
-   #define BLOCK_SIZE 512
-#endif
-
+#define BLOCK_SIZE 512
 
 
 __global__ void 
@@ -132,7 +127,7 @@ magma_smgeellmv(
     magmaFloat_ptr dy,
     magma_queue_t queue )
 {
-    dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
     unsigned int MEM_SIZE =  num_vecs* BLOCK_SIZE 
                             * sizeof( float ); // num_vecs vectors 

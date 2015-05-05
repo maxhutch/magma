@@ -30,6 +30,8 @@ CSRC = \
 	cmgeelltmv.cu \
 	cmgesellcmmv.cu \
 	cpipelinedgmres.cu \
+	citerilu.cu \
+	citeric.cu \
 	ccompact.cu \
 	magma_cmcsrcompressor_gpu.cu
 
@@ -55,6 +57,8 @@ DSRC = \
 	dmgeelltmv.cu \
 	dmgesellcmmv.cu \
 	dpipelinedgmres.cu \
+	diterilu.cu \
+	diteric.cu \
 	dcompact.cu \
 	magma_dmcsrcompressor_gpu.cu
 
@@ -80,5 +84,7 @@ SSRC = \
 	smgeelltmv.cu \
 	smgesellcmmv.cu \
 	spipelinedgmres.cu \
+	siterilu.cu \
+	siteric.cu \
 	scompact.cu \
 	magma_smcsrcompressor_gpu.cu

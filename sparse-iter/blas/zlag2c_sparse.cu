@@ -1,36 +1,31 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions mixed zc -> ds
 
 */
-#include "common_magma.h"
-#include "magmasparse_z.h"
-#include "magmasparse_zc.h"
-#include "magma.h"
-#include "mmio.h"
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define PRECISION_z
 #define BLOCKSIZE 512
 
 
 // TODO get rid of global variable!
-__device__ int flag = 0; 
+__device__ int flag = 0;
 
-__global__ void 
-magmaint_zlag2c_sparse(  
-    int M, 
-    int N, 
+__global__ void
+magmaint_zlag2c_sparse(
+    int M,
+    int N,
     const magmaDoubleComplex_ptr A,
     magmaFloatComplex_ptr SA )
 {
 
-    int thread_id = blockDim.x * blockIdx.x + threadIdx.x ; 
+    int thread_id = blockDim.x * blockIdx.x + threadIdx.x ;
                                     // global thread index
 
     if( thread_id < M ){
@@ -39,11 +34,11 @@ magmaint_zlag2c_sparse(
             SA[i*M+thread_id] = cuComplexDoubleToFloat( A[i*M+thread_id] );
 
         }
-    } 
+    }
 }
 
 
-/** 
+/**
     Purpose
     -------
     ZLAG2C converts a COMPLEX_16 matrix A to a COMPLEX
@@ -95,12 +90,12 @@ magmaint_zlag2c_sparse(
     ********************************************************************/
 extern "C" void
 magmablas_zlag2c_sparse(
-    magma_int_t M, 
-    magma_int_t N, 
-    const magmaDoubleComplex_ptr A, 
-    magma_int_t lda, 
-    magmaFloatComplex *SA,       
-    magma_int_t ldsa, 
+    magma_int_t M,
+    magma_int_t N,
+    const magmaDoubleComplex_ptr A,
+    magma_int_t lda,
+    magmaFloatComplex *SA,
+    magma_int_t ldsa,
     magma_int_t *info,
     magma_queue_t queue )
 {
@@ -109,7 +104,7 @@ magmablas_zlag2c_sparse(
     
     Note
     ----
-          - We have to provide INFO at the end that zlag2c isn't doable now. 
+          - We have to provide INFO at the end that zlag2c isn't doable now.
           - Transfer a single value TO/FROM CPU/GPU
           - SLAMCH that's needed is called from underlying BLAS
           - Only used in iterative refinement
@@ -132,24 +127,24 @@ magmablas_zlag2c_sparse(
     }
 
 
-    dim3 grid( (M+BLOCKSIZE-1)/BLOCKSIZE, 1, 1);
+    dim3 grid( magma_ceildiv( M, BLOCKSIZE ) );
 
 
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     magmaint_zlag2c_sparse<<< grid, BLOCKSIZE, 0, queue >>>
-                                        ( M, N, A, SA ) ; 
+                                        ( M, N, A, SA ) ;
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }
 
 
 
 __global__ void
-magma_zlag2c_CSR_DENSE_kernel( 
-    int num_rows, 
-    int num_cols, 
-    magmaDoubleComplex_ptr Aval, 
-    magmaIndex_ptr Arow, 
-    magmaIndex_ptr Acol, 
+magma_zlag2c_CSR_DENSE_kernel(
+    int num_rows,
+    int num_cols,
+    magmaDoubleComplex_ptr Aval,
+    magmaIndex_ptr Arow,
+    magmaIndex_ptr Acol,
     magmaFloatComplex *Bval )
 {
 
@@ -167,9 +162,9 @@ magma_zlag2c_CSR_DENSE_kernel(
 }
 
 __global__ void
-magma_zlag2c_CSR_DENSE_kernel_1( 
-    int num_rows, 
-    int num_cols, 
+magma_zlag2c_CSR_DENSE_kernel_1(
+    int num_rows,
+    int num_cols,
     magmaFloatComplex_ptr Bval )
 {
 
@@ -183,11 +178,11 @@ magma_zlag2c_CSR_DENSE_kernel_1(
 }
 
 __global__ void
-magma_zlag2c_CSR_DENSE_kernel_2( 
-    int num_rows, int num_cols, 
-    magmaDoubleComplex_ptr Aval, 
-    magmaIndex_ptr Arow, 
-    magmaIndex_ptr Acol, 
+magma_zlag2c_CSR_DENSE_kernel_2(
+    int num_rows, int num_cols,
+    magmaDoubleComplex_ptr Aval,
+    magmaIndex_ptr Arow,
+    magmaIndex_ptr Acol,
     magmaFloatComplex_ptr Bval )
 {
 
@@ -207,7 +202,7 @@ magma_zlag2c_CSR_DENSE_kernel_2(
 
 extern "C" void
 magma_zlag2c_CSR_DENSE(
-    magma_z_sparse_matrix A, 
+    magma_z_matrix A,
     magma_c_sparse_matrix *B,
     magma_queue_t queue )
 {
@@ -220,11 +215,11 @@ magma_zlag2c_CSR_DENSE(
         B->num_cols = A.num_cols;
         B->nnz = A.nnz;
         stat = magma_cmalloc( &B->val, A.num_rows* A.num_cols );
-        if ( stat != 0 ) 
-        {printf("Memory Allocation Error converting matrix\n"); exit(0); }
+        if ( stat != 0 )
+        {printf("Memory Allocation Error converting matrix\n"); return -1;}
         
         dim3 Bs( BLOCKSIZE );
-        dim3 Gs( (A.num_rows+BLOCKSIZE-1)/BLOCKSIZE );
+        dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );
 
         magma_zlag2c_CSR_DENSE_kernel<<< Bs, Gs, 0, queue >>>
         ( A.num_rows, A.num_cols, A.dval, A.drow, A.dcol, B->val );
@@ -235,7 +230,7 @@ magma_zlag2c_CSR_DENSE(
 
 extern "C" void
 magma_zlag2c_CSR_DENSE_alloc(
-    magma_z_sparse_matrix A, 
+    magma_z_matrix A,
     magma_c_sparse_matrix *B,
     magma_queue_t queue )
 {
@@ -248,11 +243,11 @@ magma_zlag2c_CSR_DENSE_alloc(
         B->num_cols = A.num_cols;
         B->nnz = A.nnz;
         stat = magma_cmalloc( &B->val, A.num_rows* A.num_cols );
-        if ( stat != 0 ) 
-        {printf("Memory Allocation Error converting matrix\n"); exit(0); }
+        if ( stat != 0 )
+        {printf("Memory Allocation Error converting matrix\n"); return -1;}
         
         dim3 Bs( BLOCKSIZE );
-        dim3 Gs( (A.num_rows+BLOCKSIZE-1)/BLOCKSIZE );
+        dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );
 
         magma_zlag2c_CSR_DENSE_kernel_1<<< Bs, Gs, 0, queue >>>
         ( A.num_rows, A.num_cols, B->val );
@@ -262,13 +257,13 @@ magma_zlag2c_CSR_DENSE_alloc(
 
 extern "C" void
 magma_zlag2c_CSR_DENSE_convert(
-    magma_z_sparse_matrix A, 
+    magma_z_matrix A,
     magma_c_sparse_matrix *B,
     magma_queue_t queue )
 {
     if ( B->memory_location == Magma_DEV && B->storage_type == Magma_DENSE) {
         dim3 Bs( BLOCKSIZE );
-        dim3 Gs( (A.num_rows+BLOCKSIZE-1)/BLOCKSIZE );
+        dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );
 
         magma_zlag2c_CSR_DENSE_kernel_2<<< Bs, Gs, 0, queue >>>
         ( A.num_rows, A.num_cols, A.dval, A.drow, A.dcol, B->val );

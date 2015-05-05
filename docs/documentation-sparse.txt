@@ -27,7 +27,7 @@ For a more generic programming approach, the sparse data structures
 (matrices and vectors) are stored in data structures containing all information
 necessary to access the sparse-BLAS via wrappers:
 
-    struct magma_z_sparse_matrix{
+    struct magma_z_matrix{
         magma_storage_t    storage_type;            // matrix format - CSR, ELL, SELL-P
         magma_location_t   memory_location;         // CPU or DEV
         magma_symmetry_t   sym;                     // opt: indicate symmetry
@@ -62,9 +62,9 @@ necessary to access the sparse-BLAS via wrappers:
         magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
         magma_int_t        numblocks;               // opt: info for SELL-P/BCSR
         magma_int_t        alignment;               // opt: info for SELL-P/BCSR
-    }magma_z_sparse_matrix;
+    }magma_z_matrix;
     
-    struct magma_z_vector{
+    struct magma_z_matrix{
         magma_location_t   memory_location;         // CPU or DEV
         magma_int_t        num_rows;                // number of rows
         magma_int_t        num_cols;                // number of columns (in case of a block of vectors)
@@ -74,7 +74,7 @@ necessary to access the sparse-BLAS via wrappers:
             magmaDoubleComplex_ptr  dval;           // array containing values in DEV case
         };
         magma_order_t      major;                   // storage type:Row/Column-Major
-    }magma_z_vector;
+    }magma_z_matrix;
 
 The purpose of the unions (e.g. for the val array) is to support different
 hardware platforms, where the magmaXXX_ptr is adapted to the respective
@@ -88,10 +88,10 @@ matrix, the sparse matrix vector product can then be used via the wrapper:
 
     magma_z_spmv(
             magmaDoubleComplex alpha,
-            magma_z_sparse_matrix A,
-            magma_z_vector x,
+            magma_z_matrix A,
+            magma_z_matrix x,
             magmaDoubleComplex beta,
-            magma_z_vector y,
+            magma_z_matrix y,
             magma_queue_t queue );
 
 
@@ -101,7 +101,7 @@ Sparse I/O {#io}
 A sparse matrix stored in mtx format can be read from disk via the function:
     
     magma_z_csr_mtx(
-            magma_z_sparse_matrix *A,
+            magma_z_matrix *A,
             const char *filename,
             magma_queue_t queue );
 
@@ -114,7 +114,7 @@ passed to MAGMA via the function:
             magma_index_t *row,
             magma_index_t *col,
             magmaDoubleComplex *val,
-            magma_z_sparse_matrix *A,
+            magma_z_matrix *A,
             magma_queue_t queue );
 
 where row, col, val contain the matrix in CSR format.
@@ -127,14 +127,14 @@ If the matrix is already present in DEV memory, the corresponding function is
         magmaIndex_ptr row,
         magmaIndex_ptr col,
         magmaDoubleComplex_ptr val,
-        magma_z_sparse_matrix *A,
+        magma_z_matrix *A,
         magma_queue_t queue );
     
     
 Similarly, matrices handled in MAGMA can be returned via the functions
     
     magma_zcsrget(
-        magma_z_sparse_matrix A,
+        magma_z_matrix A,
         magma_int_t *m,
         magma_int_t *n,
         magma_index_t **row,
@@ -143,7 +143,7 @@ Similarly, matrices handled in MAGMA can be returned via the functions
         magma_queue_t queue );
 
     magma_zcsrget_gpu(
-        magma_z_sparse_matrix A,
+        magma_z_matrix A,
         magma_int_t *m,
         magma_int_t *n,
         magmaIndex_ptr *row,
@@ -154,7 +154,7 @@ Similarly, matrices handled in MAGMA can be returned via the functions
     respectively
     
     write_z_csrtomtx(
-        magma_z_sparse_matrix A,
+        magma_z_matrix A,
         const char *filename,
         magma_queue_t queue );
 
@@ -165,7 +165,7 @@ of different kind.
 Vectors can be initiated inside MAGMA via
 
     magma_z_vinit(
-        magma_z_vector *x,
+        magma_z_matrix *x,
         magma_location_t memory_location,
         magma_int_t num_rows,
         magmaDoubleComplex values,
@@ -175,7 +175,7 @@ where ''memory_location'' sets the location (Magma_CPU or Magma_DEV).
 Also, vectors can be read from file via
 
     magma_z_vread(
-        magma_z_vector *x,
+        magma_z_matrix *x,
         magma_int_t length,
         char * filename,
         magma_queue_t queue );
@@ -183,7 +183,7 @@ Also, vectors can be read from file via
 or - in case of a block of sparse vectors stored as CSR matrix - via
 
     magma_z_vspread(
-        magma_z_vector *x,
+        magma_z_matrix *x,
         const char * filename,
         magma_queue_t queue );
 
@@ -193,11 +193,11 @@ or passed from/to main memory:
         magma_int_t m,
         magma_int_t n,
         magmaDoubleComplex *val,
-        magma_z_vector *b,
+        magma_z_matrix *b,
         magma_queue_t queue );
 
     magma_zvget(
-        magma_z_vector b
+        magma_z_matrix b
         magma_int_t *m,
         magma_int_t *n,
         magmaDoubleComplex **val,
@@ -208,8 +208,8 @@ Matrix Formats {#formats}
 To convert a matrix from one into another format, the CPU-based routine
 
     magma_z_mconvert(
-        magma_z_sparse_matrix A,
-        magma_z_sparse_matrix *B,
+        magma_z_matrix A,
+        magma_z_matrix *B,
         magma_storage_t old_format,
         magma_storage_t new_format,
         magma_queue_t queue );
@@ -225,15 +225,15 @@ work on the device. Hence, it is required to send the respective data structures
 to the device for solving, and back to access the solution. The functions
 
     magma_z_mtransfer(
-        magma_z_sparse_matrix A,
-        magma_z_sparse_matrix *B,
+        magma_z_matrix A,
+        magma_z_matrix *B,
         magma_location_t src,
         magma_location_t dst,
         magma_queue_t queue );
 
     magma_z_vtransfer(
-        magma_z_vector x,
-        magma_z_vector *y,
+        magma_z_matrix x,
+        magma_z_matrix *y,
         magma_location_t src,
         magma_location_t dst,
         magma_queue_t queue );
@@ -244,11 +244,11 @@ device to host or host to host.
 Linear algebra objects can be deallocated via
 
     magma_z_mfree(
-        magma_z_sparse_matrix *A,
+        magma_z_matrix *A,
         magma_queue_t queue );
 
     magma_z_vfree(
-        magma_z_vector *x,
+        magma_z_matrix *x,
         magma_queue_t queue );
 
 
@@ -321,18 +321,18 @@ deallocates all memory used within the solver and preconditioner structure.
 A solver can then be called via
 
     magma_z*solvername*(
-        magma_z_sparse_matrix A,
-        magma_z_vector b,
-        magma_z_vector *x,
+        magma_z_matrix A,
+        magma_z_matrix b,
+        magma_z_matrix *x,
         magma_z_solver_par *solver_par,
         magma_queue_t queue );
 
 respectively
 
     magma_z*solvername*(
-        magma_z_sparse_matrix A,
-        magma_z_vector b,
-        magma_z_vector *x,
+        magma_z_matrix A,
+        magma_z_matrix b,
+        magma_z_matrix *x,
         magma_z_solver_par *solver_par,
         magma_z_preconditioner *precond_par,
         magma_queue_t queue );
@@ -340,8 +340,8 @@ respectively
 More conveniant is the use the wrapper
 
     magma_z_solver(
-        magma_z_sparse_matrix A, magma_z_vector b,
-        magma_z_vector *x, magma_zopts *zopts,
+        magma_z_matrix A, magma_z_matrix b,
+        magma_z_matrix *x, magma_zopts *zopts,
         magma_queue_t queue );
 
 where zopts is a structure containing both, the solver and the preconditioner

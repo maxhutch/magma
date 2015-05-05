@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date
 
        @author Mark Gates
        @author Azzam Haidar
@@ -14,15 +14,24 @@
 #include "common_magma.h"
 #include "batched_kernel_param.h"
 
+// To deal with really large matrices, this launchs multiple super blocks,
+// each with up to 64K-1 x 64K-1 thread blocks, which is up to 4194240 x 4194240 matrix with BLK=64.
+// CUDA architecture 2.0 limits each grid dimension to 64K-1.
+// Instances arose for vectors used by sparse matrices with M > 4194240, though N is small.
+const magma_int_t max_blocks = 65535;
+
+// BLK_X and BLK_Y need to be equal for zlaset_q to deal with diag & offdiag
+// when looping over super blocks.
+// Formerly, BLK_X and BLK_Y could be different.
 #define BLK_X 64
-#define BLK_Y 32
+#define BLK_Y BLK_X
 
 /*
     Divides matrix into ceil( m/BLK_X ) x ceil( n/BLK_Y ) blocks.
     Each block has BLK_X threads.
     Each thread loops across one row, updating BLK_Y entries.
 
-    Code similar to zlacpy, zlag2c, clag2z, zgeadd.
+    Code similar to zlaset, zlacpy, zlag2c, clag2z, zgeadd.
 */
 static __device__
 void zlaset_full_device(
@@ -61,7 +70,7 @@ void zlaset_full_device(
     Similar to zlaset_full, but updates only the diagonal and below.
     Blocks that are fully above the diagonal exit immediately.
 
-    Code similar to zlacpy, zlat2c, clat2z.
+    Code similar to zlaset, zlacpy, zlat2c, clat2z.
 */
 static __device__
 void zlaset_lower_device(
@@ -100,7 +109,7 @@ void zlaset_lower_device(
     Similar to zlaset_full, but updates only the diagonal and above.
     Blocks that are fully below the diagonal exit immediately.
 
-    Code similar to zlacpy, zlat2c, clat2z.
+    Code similar to zlaset, zlacpy, zlat2c, clat2z.
 */
 static __device__
 void zlaset_upper_device(
@@ -133,9 +142,11 @@ void zlaset_upper_device(
         }
     }
 }
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 /*
-    kernel wrapper to call the device function.
+    kernel wrappers to call the device functions.
 */
 __global__
 void zlaset_full_kernel(
@@ -145,6 +156,7 @@ void zlaset_full_kernel(
 {
     zlaset_full_device(m, n, offdiag, diag, dA, ldda);
 }
+
 __global__
 void zlaset_lower_kernel(
     int m, int n,
@@ -153,6 +165,7 @@ void zlaset_lower_kernel(
 {
     zlaset_lower_device(m, n, offdiag, diag, dA, ldda);
 }
+
 __global__
 void zlaset_upper_kernel(
     int m, int n,
@@ -161,9 +174,11 @@ void zlaset_upper_kernel(
 {
     zlaset_upper_device(m, n, offdiag, diag, dA, ldda);
 }
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 /*
-    kernel wrapper to call the device function for the batched routine.
+    kernel wrappers to call the device functions for the batched routine.
 */
 __global__
 void zlaset_full_kernel_batched(
@@ -174,6 +189,7 @@ void zlaset_full_kernel_batched(
     int batchid = blockIdx.z;
     zlaset_full_device(m, n, offdiag, diag, dAarray[batchid], ldda);
 }
+
 __global__
 void zlaset_lower_kernel_batched(
     int m, int n,
@@ -183,6 +199,7 @@ void zlaset_lower_kernel_batched(
     int batchid = blockIdx.z;
     zlaset_lower_device(m, n, offdiag, diag, dAarray[batchid], ldda);
 }
+
 __global__
 void zlaset_upper_kernel_batched(
     int m, int n,
@@ -192,11 +209,13 @@ void zlaset_upper_kernel_batched(
     int batchid = blockIdx.z;
     zlaset_upper_device(m, n, offdiag, diag, dAarray[batchid], ldda);
 }
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
     -------
-    ZLASET_STREAM initializes a 2-D array A to DIAG on the diagonal and
+    ZLASET_Q initializes a 2-D array A to DIAG on the diagonal and
     OFFDIAG on the off-diagonals.
     
     This is the same as ZLASET, but adds queue argument.
@@ -208,7 +227,7 @@ void zlaset_upper_kernel_batched(
             Specifies the part of the matrix dA to be set.
       -     = MagmaUpper:      Upper triangular part
       -     = MagmaLower:      Lower triangular part
-            Otherwise:         All of the matrix dA is set.
+      -     = MagmaFull:       All of the matrix dA
     
     @param[in]
     m       INTEGER
@@ -251,6 +270,8 @@ void magmablas_zlaset_q(
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magma_queue_t queue)
 {
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    
     magma_int_t info = 0;
     if ( uplo != MagmaLower && uplo != MagmaUpper && uplo != MagmaFull )
         info = -1;
@@ -270,29 +291,83 @@ void magmablas_zlaset_q(
         return;
     }
     
-    dim3 threads( BLK_X, 1 );
-    dim3 grid( (m-1)/BLK_X + 1, (n-1)/BLK_Y + 1 );
+    assert( BLK_X == BLK_Y );
+    const magma_int_t super_NB = max_blocks*BLK_X;
+    dim3 super_grid( magma_ceildiv( m, super_NB ), magma_ceildiv( n, super_NB ) );
     
+    dim3 threads( BLK_X, 1 );
+    dim3 grid;
+    
+    magma_int_t mm, nn;
     if (uplo == MagmaLower) {
-        zlaset_lower_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+        for( int i=0; i < super_grid.x; ++i ) {
+            mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
+            grid.x = magma_ceildiv( mm, BLK_X );
+            for( int j=0; j < super_grid.y && j <= i; ++j ) {  // from left to diagonal
+                nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
+                grid.y = magma_ceildiv( nn, BLK_Y );
+                if ( i == j ) {  // diagonal super block
+                    zlaset_lower_kernel<<< grid, threads, 0, queue >>>
+                        ( mm, nn, offdiag, diag, dA(i*super_NB, j*super_NB), ldda );
+                }
+                else {           // off diagonal super block
+                    zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                        ( mm, nn, offdiag, offdiag, dA(i*super_NB, j*super_NB), ldda );
+                }
+            }
+        }
     }
     else if (uplo == MagmaUpper) {
-        zlaset_upper_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+        for( int i=0; i < super_grid.x; ++i ) {
+            mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
+            grid.x = magma_ceildiv( mm, BLK_X );
+            for( int j=i; j < super_grid.y; ++j ) {  // from diagonal to right
+                nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
+                grid.y = magma_ceildiv( nn, BLK_Y );
+                if ( i == j ) {  // diagonal super block
+                    zlaset_upper_kernel<<< grid, threads, 0, queue >>>
+                        ( mm, nn, offdiag, diag, dA(i*super_NB, j*super_NB), ldda );
+                }
+                else {           // off diagonal super block
+                    zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                        ( mm, nn, offdiag, offdiag, dA(i*super_NB, j*super_NB), ldda );
+                }
+            }
+        }
     }
     else {
         // if continuous in memory & set to zero, cudaMemset is faster.
+        // TODO: use cudaMemset2D ?
         if ( m == ldda &&
              MAGMA_Z_EQUAL( offdiag, MAGMA_Z_ZERO ) &&
              MAGMA_Z_EQUAL( diag,    MAGMA_Z_ZERO ) )
         {
-            magma_int_t size = m*n;
-            cudaMemsetAsync( dA, 0, size*sizeof(magmaDoubleComplex), queue );
+            size_t size = m*n;
+            cudaError_t err = cudaMemsetAsync( dA, 0, size*sizeof(magmaDoubleComplex), queue );
+            assert( err == cudaSuccess );
         }
         else {
-            zlaset_full_kernel<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+            for( int i=0; i < super_grid.x; ++i ) {
+                mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
+                grid.x = magma_ceildiv( mm, BLK_X );
+                for( int j=0; j < super_grid.y; ++j ) {  // full row
+                    nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
+                    grid.y = magma_ceildiv( nn, BLK_Y );
+                    if ( i == j ) {  // diagonal super block
+                        zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                            ( mm, nn, offdiag, diag, dA(i*super_NB, j*super_NB), ldda );
+                    }
+                    else {           // off diagonal super block
+                        zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                            ( mm, nn, offdiag, offdiag, dA(i*super_NB, j*super_NB), ldda );
+                    }
+                }
+            }
         }
     }
 }
+
+
 /**
     @see magmablas_zlaset_q
     @ingroup magma_zaux2
@@ -305,8 +380,9 @@ void magmablas_zlaset(
 {
     magmablas_zlaset_q( uplo, m, n, offdiag, diag, dA, ldda, magma_stream );
 }
-////////////////////////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////////////////////////
 extern "C"
 void magmablas_zlaset_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -333,8 +409,8 @@ void magmablas_zlaset_batched(
         return;
     }
     
-    dim3 threads( BLK_X, 1 );
-    dim3 grid( (m-1)/BLK_X + 1, (n-1)/BLK_Y + 1, batchCount );
+    dim3 threads( BLK_X, 1, 1 );
+    dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ), batchCount );
     
     if (uplo == MagmaLower) {
         zlaset_lower_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
@@ -346,34 +422,3 @@ void magmablas_zlaset_batched(
         zlaset_full_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-#define A(n, bound) d##A[min(n, bound)]
-#define TH_NCHUNK   8
-static
-__global__ void
-zmemset_kernel_batched(int length, magmaDoubleComplex **dAarray, magmaDoubleComplex val)
-{
-    int tid = threadIdx.x;
-    magmaDoubleComplex *dA = dAarray[blockIdx.z];
-
-    #pragma unroll
-    for (int l = 0; l < TH_NCHUNK; l++)
-        A(l*MAX_NTHREADS+tid, length) = val;
-}
-#undef A
-
-extern "C"
-void magmablas_zmemset_batched(magma_int_t length, 
-        magmaDoubleComplex_ptr dAarray[], magmaDoubleComplex val, 
-        magma_int_t batchCount, magma_queue_t queue)
-{
-
-    magma_int_t size_per_block = TH_NCHUNK * MAX_NTHREADS;
-    magma_int_t nblock = (length-1)/size_per_block + 1;
-    dim3 grid(nblock, 1, batchCount );  // emulate 3D grid: NX * (NY*npages), for CUDA ARCH 1.x
-
-    zmemset_kernel_batched<<< grid, MAX_NTHREADS, 0, queue >>>(length, dAarray, val); 
-}
-
-

@@ -1,28 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_zmgenerator.cpp normal z -> c, Fri Jan 30 19:00:32 2015
+       @generated from magma_zmgenerator.cpp normal z -> c, Sun May  3 11:23:01 2015
        @author Hartwig Anzt
 */
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <ostream>
-#include <assert.h>
-#include <stdio.h>
+#include "common_magmasparse.h"
 
-#include "magmasparse_c.h"
-#include "magma.h"
-#include "mmio.h"
-
-
-using namespace std;
 
 /**
     Purpose
@@ -39,11 +26,11 @@ using namespace std;
 
     @param[in]
     offdiags    magma_int_t
-                number of offdiagonals 
+                number of offdiagonals
 
     @param[in]
     diag_offset magma_int_t*
-                array containing the offsets 
+                array containing the offsets
 
                                                 (length offsets+1)
     @param[in]
@@ -52,8 +39,8 @@ using namespace std;
 
                                                 (length offsets+1)
     @param[out]
-    A           magma_c_sparse_matrix*
-                matrix to generate   
+    A           magma_c_matrix*
+                matrix to generate
     @param[in]
     queue       magma_queue_t
                 Queue to execute in.
@@ -68,14 +55,13 @@ magma_cmgenerator(
     magma_int_t offdiags,
     magma_index_t *diag_offset,
     magmaFloatComplex *diag_vals,
-    magma_c_sparse_matrix *A,
+    magma_c_matrix *A,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
     
+    magma_c_matrix B={Magma_CSR};
     
-    magma_c_sparse_matrix B;
-    
-    magma_int_t stat_cpu = 0, stat_dev = 0;
     B.val = NULL;
     B.col = NULL;
     B.row = NULL;
@@ -95,56 +81,56 @@ magma_cmgenerator(
     B.storage_type = Magma_ELLPACKT;
     B.max_nnz_row = (2*offdiags+1);
 
-    stat_cpu += magma_cmalloc_cpu( &B.val, B.max_nnz_row*n );
-    stat_cpu += magma_index_malloc_cpu( &B.col, B.max_nnz_row*n );
-    if( stat_cpu != 0 ){
-        magma_c_mfree( &B, queue );
-        return MAGMA_ERR_HOST_ALLOC;
-    }
+    CHECK( magma_cmalloc_cpu( &B.val, B.max_nnz_row*n ));
+    CHECK( magma_index_malloc_cpu( &B.col, B.max_nnz_row*n ));
     
     for( int i=0; i<n; i++ ) { // stride over rows
         // stride over the number of nonzeros in each row
         // left of diagonal
-        for( int j=0; j<offdiags; j++ ) { 
+        for( int j=0; j<offdiags; j++ ) {
             B.val[ i*B.max_nnz_row + j ] = diag_vals[ offdiags - j ];
             B.col[ i*B.max_nnz_row + j ] = -1 * diag_offset[ offdiags-j ] + i;
-        } 
+        }
         // elements on the diagonal
         B.val[ i*B.max_nnz_row + offdiags ] = diag_vals[ 0 ];
         B.col[ i*B.max_nnz_row + offdiags ] = i;
         // right of diagonal
-        for( int j=0; j<offdiags; j++ ) { 
+        for( int j=0; j<offdiags; j++ ) {
             B.val[ i*B.max_nnz_row + j + offdiags +1 ] = diag_vals[ j+1 ];
             B.col[ i*B.max_nnz_row + j + offdiags +1 ] = diag_offset[ j+1 ] + i;
-        } 
+        }
     }
 
     // set invalid entries to zero
     for( int i=0; i<n; i++ ) { // stride over rows
         for( int j=0; j<B.max_nnz_row; j++ ) { // nonzeros in every row
-            if ( (B.col[i*B.max_nnz_row + j] < 0) || 
+            if ( (B.col[i*B.max_nnz_row + j] < 0) ||
                     (B.col[i*B.max_nnz_row + j] >= n) ) {
                 B.val[ i*B.max_nnz_row + j ] = MAGMA_C_MAKE( 0.0, 0.0 );
             }
-        } 
+        }
 
-    }    
+    }
 
     B.nnz = 0;
 
     for( int i=0; i<n; i++ ) { // stride over rows
         for( int j=0; j<B.max_nnz_row; j++ ) { // nonzeros in every row
-            if ( MAGMA_C_REAL( B.val[i*B.max_nnz_row + j]) != 0.0 ) 
+            if ( MAGMA_C_REAL( B.val[i*B.max_nnz_row + j]) != 0.0 )
                 B.nnz++;
-        } 
+        }
 
-    }  
+    }
 
     // converting it to CSR will remove the invalit entries completely
-    magma_c_mconvert( B, A, Magma_ELLPACKT, Magma_CSR, queue );
+    CHECK( magma_cmconvert( B, A, Magma_ELLPACKT, Magma_CSR, queue ));
 
-    return MAGMA_SUCCESS;
-}   
+cleanup:
+    if( info != 0 ){
+        magma_cmfree( &B, queue );
+    }
+    return info;
+}
 
 
 
@@ -163,8 +149,8 @@ magma_cmgenerator(
                 number of rows
 
     @param[out]
-    A           magma_c_sparse_matrix*
-                matrix to generate   
+    A           magma_c_matrix*
+                matrix to generate
     @param[in]
     queue       magma_queue_t
                 Queue to execute in.
@@ -176,25 +162,23 @@ extern "C"
 magma_int_t
 magma_cm_27stencil(
     magma_int_t n,
-    magma_c_sparse_matrix *A,
+    magma_c_matrix *A,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    
     magma_int_t i,j,k;
-    magma_c_sparse_matrix hA;
-    magma_int_t stat_cpu = 0;
+    magma_c_matrix hA={Magma_CSR};
+
     
     // generate matrix of desired structure and size (3d 27-point stencil)
     magma_int_t nn = n*n*n;
     magma_int_t offdiags = 13;
-    magma_index_t *diag_offset;
-    magmaFloatComplex *diag_vals;
-    stat_cpu += magma_cmalloc_cpu( &diag_vals, offdiags+1 );
-    stat_cpu += magma_index_malloc_cpu( &diag_offset, offdiags+1 );
-    if( stat_cpu != 0 ){
-        magma_free_cpu( diag_vals );
-        magma_free_cpu( diag_offset );
-        return MAGMA_ERR_HOST_ALLOC;
-    }
+    magma_index_t *diag_offset=NULL;
+    magmaFloatComplex *diag_vals=NULL;
+    CHECK( magma_cmalloc_cpu( &diag_vals, offdiags+1 ));
+    CHECK( magma_index_malloc_cpu( &diag_offset, offdiags+1 ));
+
     diag_offset[0] = 0;
     diag_offset[1] = 1;
     diag_offset[2] = n-1;
@@ -224,15 +208,13 @@ magma_cm_27stencil(
     diag_vals[11] = MAGMA_C_MAKE( -1.0, 0.0 );
     diag_vals[12] = MAGMA_C_MAKE( -1.0, 0.0 );
     diag_vals[13] = MAGMA_C_MAKE( -1.0, 0.0 );
-    magma_cmgenerator( nn, offdiags, diag_offset, diag_vals, &hA, queue );
+    CHECK( magma_cmgenerator( nn, offdiags, diag_offset, diag_vals, &hA, queue ));
 
 
     // now set some entries to zero (boundary...)
     for( i=0; i<n*n; i++ ) {
     for( j=0; j<n; j++ ) {
         magma_index_t row = i*n+j;
-        magma_index_t l_bound = i*n;
-        magma_index_t u_bound = (i+1)*n;
         for( k=hA.row[row]; k<hA.row[row+1]; k++) {
 
             if ((hA.col[k] == row-1 ||
@@ -262,11 +244,14 @@ magma_cm_27stencil(
         
     }
     }
-    magma_c_mconvert( hA, A, Magma_CSR, Magma_CSR, queue );
-    magma_c_mfree( &hA, queue );
+    CHECK( magma_cmconvert( hA, A, Magma_CSR, Magma_CSR, queue ));
 
-    return MAGMA_SUCCESS;
-}   
+cleanup:
+    magma_free_cpu( diag_vals );
+    magma_free_cpu( diag_offset );
+    magma_cmfree( &hA, queue );
+    return info;
+}
 
 
 
@@ -284,8 +269,8 @@ magma_cm_27stencil(
                 number of rows
 
     @param[out]
-    A           magma_c_sparse_matrix*
-                matrix to generate   
+    A           magma_c_matrix*
+                matrix to generate
     @param[in]
     queue       magma_queue_t
                 Queue to execute in.
@@ -297,40 +282,46 @@ extern "C"
 magma_int_t
 magma_cm_5stencil(
     magma_int_t n,
-    magma_c_sparse_matrix *A,
+    magma_c_matrix *A,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    
     magma_int_t i,j,k;
-    magma_c_sparse_matrix hA;
-    magma_int_t stat_cpu = 0; 
+    magma_c_matrix hA={Magma_CSR};
     
     // generate matrix of desired structure and size (2d 5-point stencil)
     magma_int_t nn = n*n;
     magma_int_t offdiags = 2;
-    magma_index_t *diag_offset;
-    magmaFloatComplex *diag_vals;
-    stat_cpu += magma_cmalloc_cpu( &diag_vals, offdiags+1 );
-    stat_cpu += magma_index_malloc_cpu( &diag_offset, offdiags+1 );
-    if( stat_cpu != 0 ){
-        magma_free_cpu( diag_vals );
-        magma_free_cpu( diag_offset );
-        return MAGMA_ERR_HOST_ALLOC;
-    } 
+    magma_index_t *diag_offset=NULL;
+    magmaFloatComplex *diag_vals=NULL;
+    CHECK( magma_cmalloc_cpu( &diag_vals, offdiags+1 ));
+    CHECK( magma_index_malloc_cpu( &diag_offset, offdiags+1 ));
+
     diag_offset[0] = 0;
     diag_offset[1] = 1;
     diag_offset[2] = n;
-
-    diag_vals[0] = MAGMA_C_MAKE( 4.0, 0.0 );
-    diag_vals[1] = MAGMA_C_MAKE( -1.0, 0.0 );
-    diag_vals[2] = MAGMA_C_MAKE( -1.0, 0.0 );
-    magma_cmgenerator( nn, offdiags, diag_offset, diag_vals, &hA, queue );
+    
+    #define COMPLEX
+    
+    #ifdef COMPLEX
+        // complex case
+        diag_vals[0] = MAGMA_C_MAKE( 4.0, 4.0 );
+        diag_vals[1] = MAGMA_C_MAKE( -1.0, -1.0 );
+        diag_vals[2] = MAGMA_C_MAKE( -1.0, -1.0 );
+        
+    #else
+        // real case
+        diag_vals[0] = MAGMA_C_MAKE( 4.0, 0.0 );
+        diag_vals[1] = MAGMA_C_MAKE( -1.0, 0.0 );
+        diag_vals[2] = MAGMA_C_MAKE( -1.0, 0.0 );
+    #endif
+    CHECK( magma_cmgenerator( nn, offdiags, diag_offset, diag_vals, &hA, queue ));
 
     // now set some entries to zero (boundary...)
     for( i=0; i<n; i++ ) {
     for( j=0; j<n; j++ ) {
         magma_index_t row = i*n+j;
-        magma_index_t l_bound = i*n;
-        magma_index_t u_bound = (i+1)*n;
         for( k=hA.row[row]; k<hA.row[row+1]; k++) {
 
             if ((hA.col[k] == row-1 ) && (row+1)%n == 1 )
@@ -345,9 +336,11 @@ magma_cm_5stencil(
     }
     }
 
-    magma_c_mconvert( hA, A, Magma_CSR, Magma_CSR, queue );
-    magma_c_mfree( &hA, queue );
-
-    return MAGMA_SUCCESS;
-}   
-
+    CHECK( magma_cmconvert( hA, A, Magma_CSR, Magma_CSR, queue ));
+    
+cleanup:
+    magma_free_cpu( diag_vals );
+    magma_free_cpu( diag_offset );
+    magma_cmfree( &hA, queue );
+    return info;
+}

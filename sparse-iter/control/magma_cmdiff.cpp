@@ -1,37 +1,23 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_zmdiff.cpp normal z -> c, Fri Jan 30 19:00:32 2015
+       @generated from magma_zmdiff.cpp normal z -> c, Sun May  3 11:23:01 2015
        @author Hartwig Anzt
 */
-
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <ostream>
-#include <assert.h>
-#include <stdio.h>
-#include "magmasparse_c.h"
-#include "magma.h"
-#include "mmio.h"
-
+#include "common_magmasparse.h"
 
 #define THRESHOLD 10e-99
-
-using namespace std;
 
 
 /**
     Purpose
     -------
 
-    Computes the Frobenius norm of the difference between the CSR matrices A 
+    Computes the Frobenius norm of the difference between the CSR matrices A
     and B. They do not need to share the same sparsity pattern!
         
             res = ||A-B||_F = sqrt( sum_ij (A_ij-B_ij)^2 )
@@ -41,16 +27,16 @@ using namespace std;
     ---------
 
     @param[in]
-    A           magma_c_sparse_matrix
+    A           magma_c_matrix
                 sparse matrix in CSR
 
     @param[in]
-    B           magma_c_sparse_matrix
-                sparse matrix in CSR    
+    B           magma_c_matrix
+                sparse matrix in CSR
                 
     @param[out]
-    res         real_Double_t* 
-                residual 
+    res         real_Double_t*
+                residual
     @param[in]
     queue       magma_queue_t
                 Queue to execute in.
@@ -60,10 +46,11 @@ using namespace std;
 
 extern "C" magma_int_t
 magma_cmdiff(
-    magma_c_sparse_matrix A, magma_c_sparse_matrix B, 
+    magma_c_matrix A, magma_c_matrix B,
     real_Double_t *res,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
     
     if( A.memory_location == Magma_CPU && B.memory_location == Magma_CPU
             && A.storage_type == Magma_CSR && B.storage_type == Magma_CSR ){
@@ -82,16 +69,15 @@ magma_cmdiff(
                         (*res) = (*res) + tmp2* tmp2;
                     }
                 }
-            }      
+            }
         }
 
         (*res) =  sqrt((*res));
-
-        return MAGMA_SUCCESS;
     }
     else{
         printf("error: mdiff only supported for CSR matrices on the CPU.\n");
-        return MAGMA_ERR_NOT_SUPPORTED;
+        info = MAGMA_ERR_NOT_SUPPORTED;
     }
+    return info;
 }
 

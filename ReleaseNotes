@@ -25,7 +25,31 @@ Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
 
- 1.6.1 - January 30, 2014
+
+ 1.6.2 - May 4, 2015
+    * Added magma_{s,d,c,z}sqrt for real and complex scalar square root.
+    * Added magma_ceildiv and magma_roundup.
+    * Fixed magmablas_zlaset and magmablas_zlacpy for large M or N > 4M.
+    * Fixed testers for geqrf_batched and trsm_batched to compile with CUDA 5.x.
+
+    MAGMA sparse
+    * All allocation failures and other errors now return error codes.
+    * cuSPARSE error codes mapped to MAGMA error codes.
+    * LOBPCG sparse eigensolver enabled for preconditioning using Jacobi and
+      incomplete LU factorizations.
+    * Some name changes in MAGMA sparse for consistency with dense MAGMA.
+      All functions working on matrices now start with the prefix magma_zm***
+      instead some of them starting with magma_z_m***.
+    * magma_zmvisu for printing a matrix is now called magma_zprint_matrix.
+    * Added a tester for the sparse level 1 BLAS.
+    * Rename magma_z_sparse_matrix into magma_z_matrix.
+    * Redefine all vectors as dense matrices.
+    * Replace the vector functions with matrix functions.
+    * Bug fix in complex FGMRES.
+    * Added iterative incomplete factorization routines (iterative ILU/iterative IC).
+    * Enhance the ILU/IC with fill-in (level-ILU).
+
+ 1.6.1 - January 30, 2015
     * Building as both shared and static library is default now.
       Comment out FPIC in make.inc to build only static library.
     * Added max norm and one norm to [zcsd]lange.
@@ -37,13 +61,13 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Made fast magmablas_zhemv default in symmetric/Hermitian eigenvalue solvers
       (previously needed to define -DFAST_HEMV option).
     * Added FGMRES for non-constant preconditioner operator.
-    * Added backward communication interfaces for SpMV and 
+    * Added backward communication interfaces for SpMV and
       preconditioner passing the vectors on the GPU.
     * Added function to generate cuSPARSE ILU level-scheduling information
       for a given matrix.
-    * Adding the batched QR routine.
+    * Added the batched QR routine.
     * Performance improvments of all batched routines.
-    * Fixing "nan" output for batched factorizations.
+    * Fixed "nan" output for batched factorizations.
 
  1.6.0 - November 16, 2014
     * Added MAGMA Batched linear algebra routines:

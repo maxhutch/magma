@@ -1,53 +1,55 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.2) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date May 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/blas
 MAGMA_DIR = ../..
 include $(MAGMA_DIR)/Makefile.internal
 
-ZHDR  = 
+ZHDR := 
 
 # alphabetic order by base name (ignoring precision)
 ZSRC := \
 	magma_z_blaswrapper.cpp	\
-	zbajac_csr.cu		\
-	zgecsrmv.cu		\
-	zgeellmv.cu		\
-	zgeelltmv.cu		\
-	zgeellrtmv.cu		\
-	zgesellcmv.cu		\
-	zgesellcmmv.cu		\
-	zjacobisetup.cu		\
-	zlobpcg_shift.cu	\
+	zbajac_csr.cu			\
+	zgecsrmv.cu				\
+	zgeellmv.cu				\
+	zgeelltmv.cu			\
+	zgeellrtmv.cu			\
+	zgesellcmv.cu			\
+	zgesellcmmv.cu			\
+	zjacobisetup.cu			\
+	zlobpcg_shift.cu		\
 	zlobpcg_residuals.cu	\
-	zlobpcg_maxpy.cu	\
-	zmdot.cu		\
-	zmergebicgstab.cu	\
-	zmergebicgstab2.cu	\
-	zmergecg.cu		\
-	zmgecsrmv.cu		\
-	zmgeellmv.cu		\
-	zmgeelltmv.cu		\
-	zmgesellcmmv.cu		\
-	zpipelinedgmres.cu	\
+	zlobpcg_maxpy.cu		\
+	zmdot.cu				\
+	zmergebicgstab.cu		\
+	zmergebicgstab2.cu		\
+	zmergecg.cu				\
+	zmgecsrmv.cu			\
+	zmgeellmv.cu			\
+	zmgeelltmv.cu			\
+	zmgesellcmmv.cu			\
+	zpipelinedgmres.cu		\
 
-	#zbcsrswp.cu		\
-	#zbcsrtrsv.cu		\
-	#zbcsrcpy.cu		\
-	#zbcsrlugemm.cu		\
-	#zbcsrlupivloc.cu	\
+
+# Iterative factorizations
+ZSRC += \
+	ziterilu.cu	\
+	ziteric.cu	\
+
 
 # Auxiliary routines
 ZSRC += \
-	zcompact.cu		\
-	magma_zmcsrcompressor_gpu.cu		\
+	zcompact.cu				\
+	magma_zmcsrcompressor_gpu.cu	\
 
 
+# ------------------------------------------------------------
 -include Makefile.local
 -include Makefile.src
 
@@ -55,8 +57,8 @@ ALLHDR := $(ZHDR) $(CHDR) $(DHDR) $(SHDR)
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 
-ALLOBJ := $(ALLSRC:.cu=.o) 
-ALLOBJ := $(ALLOBJ:.cpp=.o)
+ALLOBJ := $(ALLSRC:.cu=.$(o_ext)) 
+ALLOBJ := $(ALLOBJ:.cpp=.$(o_ext))
 
 .PHONY: all clean cleanall
 
@@ -71,7 +73,7 @@ stamp: $(ALLHDR) $(ALLOBJ)
 	touch $@
 
 clean:
-	rm -f *.cu_o *.o *~ *.linkinfo
+	rm -f *.$(o_ext) *~ *.linkinfo
 
 cleanall: clean
 	rm -f $(LIBMAGMA_SPARSE)

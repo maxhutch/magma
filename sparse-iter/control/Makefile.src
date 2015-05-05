@@ -9,73 +9,82 @@ SHDR = \
 	
 
 CSRC = \
+	magma_cdomainoverlap.cpp \
 	magma_cutil_sparse.cpp \
-	magma_c_free.cpp \
-	magma_c_init.cpp \
-	magma_c_matrixchar.cpp \
+	magma_cfree.cpp \
+	magma_cmatrixchar.cpp \
 	magma_cmconverter.cpp \
-	magma_cmtransfer.cpp \
-	magma_c_vio.cpp \
 	magma_cmgenerator.cpp \
 	magma_cmio.cpp \
 	magma_csolverinfo.cpp \
 	magma_ccsrsplit.cpp \
+	magma_citeriluutils.cpp \
 	magma_cmcsrpass.cpp \
 	magma_cmcsrpass_gpu.cpp \
 	magma_cmcsrcompressor.cpp \
 	magma_cmscale.cpp \
 	magma_cmdiff.cpp \
 	magma_cmlumerge.cpp \
-	magma_cvtranspose.cpp \
 	magma_cmtranspose.cpp \
-	magma_cvtransfer.cpp \
+	magma_cmtransfer.cpp \
+	magma_cmilustruct.cpp \
+	magma_csort.cpp \
+	magma_cvinit.cpp \
+	magma_cvio.cpp \
+	magma_cvtranspose.cpp \
 	magma_cvpass.cpp \
 	magma_cvpass_gpu.cpp
 
 DSRC = \
+	magma_ddomainoverlap.cpp \
 	magma_dutil_sparse.cpp \
-	magma_d_free.cpp \
-	magma_d_init.cpp \
-	magma_d_matrixchar.cpp \
+	magma_dfree.cpp \
+	magma_dmatrixchar.cpp \
 	magma_dmconverter.cpp \
-	magma_dmtransfer.cpp \
-	magma_d_vio.cpp \
 	magma_dmgenerator.cpp \
 	magma_dmio.cpp \
 	magma_dsolverinfo.cpp \
 	magma_dcsrsplit.cpp \
+	magma_diteriluutils.cpp \
 	magma_dmcsrpass.cpp \
 	magma_dmcsrpass_gpu.cpp \
 	magma_dmcsrcompressor.cpp \
 	magma_dmscale.cpp \
 	magma_dmdiff.cpp \
 	magma_dmlumerge.cpp \
-	magma_dvtranspose.cpp \
 	magma_dmtranspose.cpp \
-	magma_dvtransfer.cpp \
+	magma_dmtransfer.cpp \
+	magma_dmilustruct.cpp \
+	magma_dsort.cpp \
+	magma_dvinit.cpp \
+	magma_dvio.cpp \
+	magma_dvtranspose.cpp \
 	magma_dvpass.cpp \
 	magma_dvpass_gpu.cpp
 
 SSRC = \
+	magma_sdomainoverlap.cpp \
 	magma_sutil_sparse.cpp \
-	magma_s_free.cpp \
-	magma_s_init.cpp \
-	magma_s_matrixchar.cpp \
+	magma_sfree.cpp \
+	magma_smatrixchar.cpp \
 	magma_smconverter.cpp \
-	magma_smtransfer.cpp \
-	magma_s_vio.cpp \
 	magma_smgenerator.cpp \
 	magma_smio.cpp \
 	magma_ssolverinfo.cpp \
 	magma_scsrsplit.cpp \
+	magma_siteriluutils.cpp \
 	magma_smcsrpass.cpp \
 	magma_smcsrpass_gpu.cpp \
 	magma_smcsrcompressor.cpp \
 	magma_smscale.cpp \
 	magma_smdiff.cpp \
 	magma_smlumerge.cpp \
-	magma_svtranspose.cpp \
 	magma_smtranspose.cpp \
-	magma_svtransfer.cpp \
+	magma_smtransfer.cpp \
+	magma_smilustruct.cpp \
+	magma_ssort.cpp \
+	magma_svinit.cpp \
+	magma_svio.cpp \
+	magma_svtranspose.cpp \
 	magma_svpass.cpp \
 	magma_svpass_gpu.cpp

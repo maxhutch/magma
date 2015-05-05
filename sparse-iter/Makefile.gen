@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.2) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date May 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 clean_generation: clean_generation_sparse

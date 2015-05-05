@@ -1,25 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_zmlumerge.cpp normal z -> s, Fri Jan 30 19:00:32 2015
+       @generated from magma_zmlumerge.cpp normal z -> s, Sun May  3 11:23:01 2015
        @author Hartwig Anzt
 
 */
-#include "magma_lapack.h"
-#include "common_magma.h"
-#include "../include/magmasparse.h"
-
-#include <assert.h>
-
-// includes CUDA
-#include <cuda_runtime_api.h>
-#include <cublas.h>
-#include <cusparse_v2.h>
-#include <cuda_profiler_api.h>
+#include "common_magmasparse.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
@@ -30,23 +20,23 @@
     -------
 
     Takes an strictly lower triangular matrix L and an upper triangular matrix U
-    and merges them into a matrix A containing the upper and lower triangular 
+    and merges them into a matrix A containing the upper and lower triangular
     parts.
 
     Arguments
     ---------
 
     @param[in]
-    L           magma_s_sparse_matrix
+    L           magma_s_matrix
                 input strictly lower triangular matrix L
 
     @param[in]
-    U           magma_s_sparse_matrix
+    U           magma_s_matrix
                 input upper triangular matrix U
     
     @param[out]
-    A           magma_s_sparse_matrix*
-                output matrix 
+    A           magma_s_matrix*
+                output matrix
                 
     @param[in]
     queue       magma_queue_t
@@ -56,15 +46,18 @@
     ********************************************************************/
 
 extern "C" magma_int_t
-magma_smlumerge(    
-    magma_s_sparse_matrix L, 
-    magma_s_sparse_matrix U,
-    magma_s_sparse_matrix *A,
-    magma_queue_t queue ){
+magma_smlumerge(
+    magma_s_matrix L,
+    magma_s_matrix U,
+    magma_s_matrix *A,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;    
+
     if( L.storage_type == Magma_CSR && U.storage_type == Magma_CSR ){
         if( L.memory_location == Magma_CPU && U.memory_location == Magma_CPU ){
             
-            magma_s_mtransfer( L, A, Magma_CPU, Magma_CPU, queue );
+            CHECK( magma_smtransfer( L, A, Magma_CPU, Magma_CPU, queue ));
             magma_free_cpu( A->col );
             magma_free_cpu( A->val );
             // make sure it is strictly lower triangular
@@ -81,14 +74,8 @@ magma_smlumerge(
             }
             A->nnz = z;
             // fill A with the new structure;
-            magma_int_t stat_cpu = 0;
-            stat_cpu += magma_index_malloc_cpu( &A->col, A->nnz );
-            stat_cpu += magma_smalloc_cpu( &A->val, A->nnz );
-            if( stat_cpu != 0 ){
-                magma_s_mfree( A, queue );
-                printf("error: memory allocation.\n");
-                return MAGMA_ERR_HOST_ALLOC;
-            }
+            CHECK( magma_index_malloc_cpu( &A->col, A->nnz ));
+            CHECK( magma_smalloc_cpu( &A->val, A->nnz ));
             z = 0;
             for(magma_int_t i=0; i<A->num_rows; i++){
                 A->row[i] = z;
@@ -107,21 +94,21 @@ magma_smlumerge(
             }
             A->row[A->num_rows] = z;
             A->nnz = z;
-            return MAGMA_SUCCESS; 
         }
         else{
-    
             printf("error: matrix not on CPU.\n"); 
-    
-            return MAGMA_SUCCESS; 
+            info = MAGMA_ERR_NOT_SUPPORTED;
         }
     }
     else{
-        
-        printf("error: matrix not on CPU.\n"); 
-    
-        return MAGMA_SUCCESS; 
+            printf("error: matrix in wrong format.\n"); 
+            info = MAGMA_ERR_NOT_SUPPORTED;
     }
+cleanup:
+    if( info != 0 ){
+        magma_smfree( A, queue );
+    }
+    return info;
 }
 
 

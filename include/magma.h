@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date
 */
 
 #ifndef MAGMA_H
@@ -172,6 +172,34 @@ void magma_queue_wait_event( magma_queue_t queue, magma_event_t event );
 void magma_xerbla( const char *name, magma_int_t info );
 
 const char* magma_strerror( magma_int_t error );
+
+
+// ========================================
+/// For integers x >= 0, y > 0, returns ceil( x/y ).
+/// For x == 0, this is 0.
+__host__ __device__
+static inline magma_int_t magma_ceildiv( magma_int_t x, magma_int_t y )
+{
+    return (x + y - 1)/y;
+}
+
+/// For integers x >= 0, y > 0, returns x rounded up to multiple of y.
+/// For x == 0, this is 0.
+/// This implementation does not assume y is a power of 2.
+__host__ __device__
+static inline magma_int_t magma_roundup( magma_int_t x, magma_int_t y )
+{
+    return magma_ceildiv( x, y ) * y;
+}
+
+
+// ========================================
+// real and complex square root
+// sqrt alone cannot be caught by the generation script because of tsqrt
+static inline float  magma_ssqrt( float  x ) { return sqrtf( x ); }
+static inline double magma_dsqrt( double x ) { return sqrt( x ); }
+magmaFloatComplex    magma_csqrt( magmaFloatComplex  x );
+magmaDoubleComplex   magma_zsqrt( magmaDoubleComplex x );
 
 #ifdef __cplusplus
 }

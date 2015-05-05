@@ -20,6 +20,7 @@ SRC := \
 	error.cpp	\
 	interface.cpp	\
 	set_get.cpp	\
+	error.cpp	\
 
 -include Makefile.local
 -include Makefile.src

@@ -1,34 +1,18 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_zmcsrpass_gpu.cpp normal z -> d, Fri Jan 30 19:00:32 2015
+       @generated from magma_zmcsrpass_gpu.cpp normal z -> d, Sun May  3 11:23:01 2015
        @author Hartwig Anzt
 */
 
-//  in this file, many routines are taken from 
+//  in this file, many routines are taken from
 //  the IO functions provided by MatrixMarket
 
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <ostream>
-#include <assert.h>
-#include <stdio.h>
-
-#include "magmasparse_d.h"
-#include "magma.h"
-#include "mmio.h"
-
-
-using namespace std;
-
-
+#include "common_magmasparse.h"
 
 
 /**
@@ -41,27 +25,27 @@ using namespace std;
     ---------
 
     @param[in]
-    m           magma_int_t 
+    m           magma_int_t
                 number of rows
 
     @param[in]
-    n           magma_int_t 
+    n           magma_int_t
                 number of columns
 
     @param[in]
-    row         magmaIndex_ptr 
+    row         magmaIndex_ptr
                 row pointer
 
     @param[in]
-    col         magmaIndex_ptr 
+    col         magmaIndex_ptr
                 column indices
 
     @param[in]
-    val         magmaDouble_ptr 
+    val         magmaDouble_ptr
                 array containing matrix entries
 
     @param[out]
-    A           magma_d_sparse_matrix*
+    A           magma_d_matrix*
                 matrix in magma sparse matrix format
     @param[in]
     queue       magma_queue_t
@@ -73,14 +57,14 @@ using namespace std;
 extern "C"
 magma_int_t
 magma_dcsrset_gpu(
-    magma_int_t m, 
-    magma_int_t n, 
-    magmaIndex_ptr row, 
-    magmaIndex_ptr col, 
+    magma_int_t m,
+    magma_int_t n,
+    magmaIndex_ptr row,
+    magmaIndex_ptr col,
     magmaDouble_ptr val,
-    magma_d_sparse_matrix *A,
+    magma_d_matrix *A,
     magma_queue_t queue )
-{
+{   
     A->num_rows = m;
     A->num_cols = n;
     magma_index_t nnz;
@@ -106,27 +90,27 @@ magma_dcsrset_gpu(
     ---------
 
     @param[in]
-    A           magma_d_sparse_matrix
+    A           magma_d_matrix
                 magma sparse matrix in CSR format
 
     @param[out]
-    m           magma_int_t 
+    m           magma_int_t
                 number of rows
 
     @param[out]
-    n           magma_int_t 
+    n           magma_int_t
                 number of columns
 
     @param[out]
-    row         magmaIndex_ptr 
+    row         magmaIndex_ptr
                 row pointer
 
     @param[out]
-    col         magmaIndex_ptr 
+    col         magmaIndex_ptr
                 column indices
 
     @param[out]
-    val         magmaDouble_ptr 
+    val         magmaDouble_ptr
                 array containing matrix entries
 
     @param[in]
@@ -139,30 +123,34 @@ magma_dcsrset_gpu(
 extern "C"
 magma_int_t
 magma_dcsrget_gpu(
-    magma_d_sparse_matrix A,
-    magma_int_t *m, 
-    magma_int_t *n, 
-    magmaIndex_ptr *row, 
-    magmaIndex_ptr *col, 
+    magma_d_matrix A,
+    magma_int_t *m,
+    magma_int_t *n,
+    magmaIndex_ptr *row,
+    magmaIndex_ptr *col,
     magmaDouble_ptr *val,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    
+    magma_d_matrix A_DEV={Magma_CSR}, A_CSR={Magma_CSR};
+    
     if ( A.memory_location == Magma_DEV && A.storage_type == Magma_CSR ) {
-
         *m = A.num_rows;
         *n = A.num_cols;
         *val = A.dval;
         *col = A.dcol;
         *row = A.drow;
     } else {
-        magma_d_sparse_matrix A_DEV, A_CSR;
-        magma_d_mconvert( A, &A_CSR, A.storage_type, Magma_CSR, queue ); 
-        magma_d_mtransfer( A_CSR, &A_DEV, A.memory_location, Magma_DEV, queue ); 
+        CHECK( magma_dmconvert( A, &A_CSR, A.storage_type, Magma_CSR, queue ));
+        CHECK( magma_dmtransfer( A_CSR, &A_DEV, A.memory_location, Magma_DEV, queue ));
         magma_dcsrget_gpu( A_DEV, m, n, row, col, val, queue );
-        magma_d_mfree( &A_CSR, queue );
-        magma_d_mfree( &A_DEV, queue );
     }
-    return MAGMA_SUCCESS;
+    
+cleanup:
+    magma_dmfree( &A_CSR, queue );
+    magma_dmfree( &A_DEV, queue );
+    return info;
 }
 
 

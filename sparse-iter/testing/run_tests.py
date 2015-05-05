@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 1.6.1) --
+# MAGMA (version 1.6.2) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date January 2015
+# @date May 2015
 
 ## @file run_tests.py
 #  @author Mark Gates
@@ -174,7 +174,8 @@ parser.add_option(      '--jacobi'           , action='store_true', dest='jacobi
 parser.add_option(      '--ba'               , action='store_true', dest='ba'             ,help='run ba-iter'       )    
 
 parser.add_option(      '--jacobi-prec'      , action='store_true', dest='jacobi_prec'    ,help='run Jacobi preconditioner'        )
-parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_prec'       ,help='run ILU preconditioner'       )    
+parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_prec'       ,help='run ILU preconditioner'       )  
+parser.add_option(      '--iter-ilu-prec'    , action='store_true', dest='iter_ilu_prec'       ,help='run iterative ILU preconditioner'       )    
 
 (opts, args) = parser.parse_args()
 
@@ -237,8 +238,9 @@ if (     not opts.cg
 # default if no preconditioners given all
 if (     not opts.jacobi_prec
      and not opts.ilu_prec ):
-    opts.jacobi_prec = True
-    opts.ilu_prec    = True
+    opts.jacobi_prec      = True
+    opts.ilu_prec         = True
+    opts.iter_ilu_prec    = True
 # end
 
 # default if no sizes given is all sizes
@@ -321,6 +323,9 @@ if ( opts.jacobi_prec ):
 # end
 if ( opts.ilu_prec ):
     precs += ['--precond 2']
+# end
+if ( opts.iter_ilu_prec ):
+    precs += ['--precond -2']
 # end
 
 

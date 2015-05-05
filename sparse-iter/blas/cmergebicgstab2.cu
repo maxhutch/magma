@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zmergebicgstab2.cu normal z -> c, Fri Jan 30 19:00:29 2015
+       @generated from zmergebicgstab2.cu normal z -> c, Sun May  3 11:22:58 2015
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
-#include "magmasparse.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 256
 
@@ -185,7 +184,7 @@ magma_cbicgstab_alphakernel(
     ---------
 
     @param[in]
-    A           magma_c_sparse_matrix
+    A           magma_c_matrix
                 system matrix
 
     @param[in]
@@ -221,7 +220,7 @@ magma_cbicgstab_alphakernel(
 
 extern "C" magma_int_t
 magma_cbicgmerge_spmv1(
-    magma_c_sparse_matrix A,
+    magma_c_matrix A,
     magmaFloatComplex_ptr d1,
     magmaFloatComplex_ptr d2,
     magmaFloatComplex_ptr dp,
@@ -237,7 +236,7 @@ magma_cbicgmerge_spmv1(
     int n = A.num_rows;
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  local_block_size * sizeof( magmaFloatComplex ); 
     magmaFloatComplex_ptr aux1 = d1, aux2 = d2;
@@ -488,7 +487,7 @@ magma_cbicgstab_omegakernel(
     ---------
 
     @param[in]
-    A           magma_c_sparse_matrix
+    A           magma_c_matrix
                 input matrix 
 
     @param[in]
@@ -520,7 +519,7 @@ magma_cbicgstab_omegakernel(
 
 extern "C" magma_int_t
 magma_cbicgmerge_spmv2(
-    magma_c_sparse_matrix A,
+    magma_c_matrix A,
     magmaFloatComplex_ptr d1,
     magmaFloatComplex_ptr d2,
     magmaFloatComplex_ptr ds,
@@ -535,7 +534,7 @@ magma_cbicgmerge_spmv2(
     int n = A.num_rows;
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( magmaFloatComplex ); 
     magmaFloatComplex_ptr aux1 = d1, aux2 = d2;
@@ -769,7 +768,7 @@ magma_cbicgmerge_xrbeta(
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( magmaFloatComplex ); 
     magmaFloatComplex_ptr aux1 = d1, aux2 = d2;

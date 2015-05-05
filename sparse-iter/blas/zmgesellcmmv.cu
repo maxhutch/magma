@@ -1,18 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions normal z -> c d s
 
 */
-#include "cuda_runtime.h"
-#include <stdio.h>
-#include "common_magma.h"
-#include <cublas_v2.h>
-
+#include "common_magmasparse.h"
 
 #define PRECISION_z
 
@@ -1299,7 +1295,7 @@ magma_zmgesellpmv(
         dim3 block( blocksize, alignment, num_vecs/2 );
 
         int dimgrid1 = sqrt(slices);
-        int dimgrid2 = (slices + dimgrid1 -1 ) / dimgrid1;
+        int dimgrid2 = magma_ceildiv( slices, dimgrid1 );
 
         dim3 grid( dimgrid1, dimgrid2, 1);
         int Ms = num_vecs * blocksize*alignment * sizeof( magmaDoubleComplex );
@@ -1382,7 +1378,7 @@ magma_zmgesellpmv(
             printf("error: too many threads requested.\n");
 
         int dimgrid1 = sqrt(slices);
-        int dimgrid2 = (slices + dimgrid1 -1 ) / dimgrid1;
+        int dimgrid2 = magma_ceildiv( slices, dimgrid1 );
 
         dim3 grid( dimgrid1, dimgrid2, 1);
         int Ms =  num_threads * sizeof( magmaDoubleComplex );

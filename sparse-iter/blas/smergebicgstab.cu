@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zmergebicgstab.cu normal z -> s, Fri Jan 30 19:00:29 2015
+       @generated from zmergebicgstab.cu normal z -> s, Sun May  3 11:22:58 2015
        @author Hartwig Anzt
 
 */
@@ -92,7 +92,7 @@ magma_sbicgmerge1(
 
     
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( (n+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
     magma_sbicgmerge1_kernel<<<Gs, Bs, 0>>>( n, skp, v, r, p );
 
    return MAGMA_SUCCESS;
@@ -168,7 +168,7 @@ magma_sbicgmerge2(
 
     
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( (n+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
 
     magma_sbicgmerge2_kernel<<<Gs, Bs, 0>>>( n, skp, r, v, s );
 
@@ -264,7 +264,7 @@ magma_sbicgmerge3(
 
     
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( (n+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
     magma_sbicgmerge3_kernel<<<Gs, Bs, 0>>>( n, skp, p, s, t, x, r );
 
    return MAGMA_SUCCESS;

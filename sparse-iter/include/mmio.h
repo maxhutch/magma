@@ -5,6 +5,7 @@
 *
 *
 */
+#include <stdio.h>
 
 #include "magma.h"
 #include "magmasparse.h"

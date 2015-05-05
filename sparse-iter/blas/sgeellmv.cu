@@ -1,21 +1,17 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zgeellmv.cu normal z -> s, Fri Jan 30 19:00:28 2015
+       @generated from zgeellmv.cu normal z -> s, Sun May  3 11:22:58 2015
 
 */
 
 #include "common_magma.h"
 
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 128
-#else
-   #define BLOCK_SIZE 512
-#endif
+#define BLOCK_SIZE 512
 
 
 // ELLPACK SpMV kernel
@@ -153,7 +149,7 @@ magma_sgeellmv(
     magmaFloat_ptr dy,
     magma_queue_t queue )
 {
-    dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
    sgeellmv_kernel<<< grid, threads, 0, queue >>>
                   ( m, n, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
@@ -254,7 +250,7 @@ magma_sgeellmv_shift(
     magmaFloat_ptr dy,
     magma_queue_t queue )
 {
-    dim3 grid( (m+BLOCK_SIZE-1)/BLOCK_SIZE, 1, 1);
+    dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
    sgeellmv_kernel_shift<<< grid, threads, 0, queue >>>
                   ( m, n, nnz_per_row, alpha, lambda, dval, dcolind, dx, 

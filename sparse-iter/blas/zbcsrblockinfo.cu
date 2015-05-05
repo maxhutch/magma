@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions normal z -> c d s
 
@@ -11,12 +11,7 @@
 
 #include "common_magma.h"
 
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 128
-#else
-   #define BLOCK_SIZE 512
-#endif
-
+#define BLOCK_SIZE 512
 
 #define  blockinfo(i,j)  blockinfo[(i)*c_blocks   + (j)]
 #define  val(i,j) val+((blockinfo(i,j)-1)*size_b*size_b)
@@ -100,7 +95,7 @@ magma_zbcsrblockinfo5(
 {
     dim3 dimBlock( BLOCK_SIZE, 1, 1 );
 
-        int dimgrid = (num_blocks+BLOCK_SIZE-1)/BLOCK_SIZE;
+        int dimgrid = magma_ceildiv( num_blocks, BLOCK_SIZE );
         dim3 dimGrid( dimgrid, 1, 1 );
 
 

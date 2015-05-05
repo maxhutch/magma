@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
@@ -31,6 +31,11 @@ FFLAGS          ?= $(F77OPTS)
 F90FLAGS        ?= $(FOPTS)
 NVCCFLAGS       ?= $(NVOPTS)
 LDFLAGS         ?= $(LDOPTS)
+
+#
+# Extension for object files; o for unix, obj for Windows?
+#
+o_ext           ?= o
 
 #
 # If not set, make CXXFLAGS same as CFLAGS
@@ -140,7 +145,11 @@ endif
 # INC is all external include directories (CUDA, MKL, etc.).
 # It is used for external programs that link with MAGMA, e.g., via pkgconfig.
 # CPPFLAGS adds internal MAGMA directories needed to compile MAGMA itself.
-CPPFLAGS = $(INC) -I$(MAGMA_DIR)/include -I$(MAGMA_DIR)/control -I$(MAGMA_DIR)/sparse-iter/include
+CPPFLAGS = $(INC) \
+	-I$(MAGMA_DIR)/include \
+	-I$(MAGMA_DIR)/control \
+	-I$(MAGMA_DIR)/sparse-iter/include \
+	-I$(MAGMA_DIR)/sparse-iter/control \
 
 # check whether all FLAGS have -fPIC
 have_fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
@@ -151,7 +160,7 @@ have_fpic = $(and $(findstring -fPIC, $(CFLAGS)),   \
 
 # Define the pointer size for fortran compilation
 PTRFILE = $(MAGMA_DIR)/control/sizeptr.c
-PTROBJ  = $(MAGMA_DIR)/control/sizeptr.o
+PTROBJ  = $(MAGMA_DIR)/control/sizeptr.$(o_ext)
 PTREXEC = $(MAGMA_DIR)/control/sizeptr
 PTRSIZE = $(shell $(PTREXEC))
 PTROPT  = -Dmagma_devptr_t="integer(kind=$(PTRSIZE))"
@@ -179,22 +188,22 @@ F90FLAGS += $(PTROPT)
 %.i: %.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -E $< -o $@
 
-%.o: %.cpp
+%.$(o_ext): %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
-%.o: %.c
+%.$(o_ext): %.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-%.o: %.cu
+%.$(o_ext): %.cu
 	$(NVCC) $(NVCCFLAGS) $(CPPFLAGS) -c $< -o $@
 
-%.o: %.f90  $(PTREXEC)
+%.$(o_ext): %.f90  $(PTREXEC)
 	$(FORT) $(F90FLAGS) $(CPPFLAGS) -c $< -o $@
 
-%.o: %.F90  $(PTREXEC)
+%.$(o_ext): %.F90  $(PTREXEC)
 	$(FORT) $(F90FLAGS) $(CPPFLAGS) -c $< -o $@
 
-%.o: %.f
+%.$(o_ext): %.f
 	$(FORT) $(FFLAGS) $(CPPFLAGS) -c $< -o $@
 
 -include $(MAGMA_DIR)/Makefile.gen

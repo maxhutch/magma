@@ -1,19 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_zmcsrcompressor.cpp normal z -> d, Fri Jan 30 19:00:32 2015
+       @generated from magma_zmcsrcompressor.cpp normal z -> d, Sun May  3 11:23:01 2015
        @author Hartwig Anzt
 
 */
-#include "magma_lapack.h"
-#include "common_magma.h"
-#include "magmasparse.h"
-
-#include <assert.h>
+#include "common_magmasparse.h"
 
 
 /**
@@ -26,8 +22,8 @@
     ---------
 
     @param[in,out]
-    A           magma_d_sparse_matrix*
-                input/output matrix 
+    A           magma_d_matrix*
+                input/output matrix
     @param[in]
     queue       magma_queue_t
                 Queue to execute in.
@@ -37,45 +33,48 @@
 
 extern "C" magma_int_t
 magma_dmcsrcompressor(
-    magma_d_sparse_matrix *A,
+    magma_d_matrix *A,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+
+    magma_d_matrix B={Magma_CSR};
+    magma_d_matrix hA={Magma_CSR}, CSRA={Magma_CSR};
+        
     if ( A->memory_location == Magma_CPU && A->storage_type == Magma_CSR ) {
 
-        magma_d_sparse_matrix B;
 
-        magma_d_mconvert( *A, &B, Magma_CSR, Magma_CSR, queue );
+        CHECK( magma_dmconvert( *A, &B, Magma_CSR, Magma_CSR, queue ));
 
         magma_free_cpu( A->row );
         magma_free_cpu( A->col );
         magma_free_cpu( A->val );
-        magma_d_csr_compressor(&B.val, &B.row, &B.col, 
-                       &A->val, &A->row, &A->col, &A->num_rows, queue );  
+        CHECK( magma_d_csr_compressor(&B.val, &B.row, &B.col,
+                       &A->val, &A->row, &A->col, &A->num_rows, queue ));
         A->nnz = A->row[A->num_rows];
-
-        magma_d_mfree( &B, queue );       
-
-        return MAGMA_SUCCESS; 
     }
     else {
 
-        magma_d_sparse_matrix hA, CSRA;
         magma_storage_t A_storage = A->storage_type;
         magma_location_t A_location = A->memory_location;
-        magma_d_mtransfer( *A, &hA, A->memory_location, Magma_CPU, queue );
-        magma_d_mconvert( hA, &CSRA, hA.storage_type, Magma_CSR, queue );
+        CHECK( magma_dmtransfer( *A, &hA, A->memory_location, Magma_CPU, queue ));
+        CHECK( magma_dmconvert( hA, &CSRA, hA.storage_type, Magma_CSR, queue ));
 
-        magma_dmcsrcompressor( &CSRA, queue );
+        CHECK( magma_dmcsrcompressor( &CSRA, queue ));
 
-        magma_d_mfree( &hA, queue );
-        magma_d_mfree( A, queue );
-        magma_d_mconvert( CSRA, &hA, Magma_CSR, A_storage, queue );
-        magma_d_mtransfer( hA, A, Magma_CPU, A_location, queue );
-        magma_d_mfree( &hA, queue );
-        magma_d_mfree( &CSRA, queue );    
-
-        return MAGMA_SUCCESS; 
+        magma_dmfree( &hA, queue );
+        magma_dmfree( A, queue );
+        CHECK( magma_dmconvert( CSRA, &hA, Magma_CSR, A_storage, queue ));
+        CHECK( magma_dmtransfer( hA, A, Magma_CPU, A_location, queue ));
+        magma_dmfree( &hA, queue );
+        magma_dmfree( &CSRA, queue );
     }
+    
+cleanup:
+    magma_dmfree( &hA, queue );
+    magma_dmfree( &CSRA, queue );
+    magma_dmfree( &B, queue );
+    return info;
 }
 
 

@@ -1,22 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zgesellcmv.cu normal z -> c, Fri Jan 30 19:00:29 2015
+       @generated from zgesellcmv.cu normal z -> c, Sun May  3 11:22:58 2015
 
 */
-#include "cuda_runtime.h"
-#include <stdio.h>
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 128
-#else
-   #define BLOCK_SIZE 512
-#endif
+#define BLOCK_SIZE 512
 
 
 #define PRECISION_c

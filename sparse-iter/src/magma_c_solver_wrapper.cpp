@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_z_solver_wrapper.cpp normal z -> c, Fri Jan 30 19:00:30 2015
+       @generated from magma_z_solver_wrapper.cpp normal z -> c, Sun May  3 11:22:59 2015
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
-#include "magmasparse.h"
+#include "common_magmasparse.h"
 
 
 
@@ -25,16 +24,16 @@
     ---------
 
     @param[in]
-    A           magma_c_sparse_matrix
-                sparse matrix A    
+    A           magma_c_matrix
+                sparse matrix A
 
     @param[in]
-    b           magma_c_vector
-                input vector b     
+    b           magma_c_matrix
+                input vector b
 
     @param[in]
-    x           magma_c_vector*
-                output vector x        
+    x           magma_c_matrix*
+                output vector x
 
     @param[in]
     zopts     magma_copts
@@ -48,42 +47,77 @@
 
 extern "C" magma_int_t
 magma_c_solver(
-    magma_c_sparse_matrix A, magma_c_vector b, 
-    magma_c_vector *x, magma_copts *zopts,
+    magma_c_matrix A, magma_c_matrix b,
+    magma_c_matrix *x, magma_copts *zopts,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    
+    // make sure RHS is a dense matrix
+    if ( b.storage_type != Magma_DENSE ) {
+        printf( "error: sparse RHS not yet supported.\n" );
+        return MAGMA_ERR_NOT_SUPPORTED;
+    }
+    if( b.num_cols == 1 ){
     // preconditioner
         if ( zopts->solver_par.solver != Magma_ITERREF ) {
-            magma_c_precondsetup( A, b, &zopts->precond_par, queue );
+            int stat = magma_c_precondsetup( A, b, &zopts->precond_par, queue );
+            if (  stat != MAGMA_SUCCESS ){
+                printf("error: bad preconditioner.\n");
+                return MAGMA_ERR_BADPRECOND; 
+            }
         }
         switch( zopts->solver_par.solver ) {
             case  Magma_CG:
-                    magma_ccg_res( A, b, x, &zopts->solver_par, queue );break;
+                    CHECK( magma_ccg_res( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_CGMERGE:
-                    magma_ccg_merge( A, b, x, &zopts->solver_par, queue );break;
+                    CHECK( magma_ccg_merge( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_PCG:
-                    magma_cpcg( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
+                    CHECK( magma_cpcg( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_BICGSTAB:
-                    magma_cbicgstab( A, b, x, &zopts->solver_par, queue );break;
+                    CHECK( magma_cbicgstab( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_BICGSTABMERGE: 
-                    magma_cbicgstab_merge( A, b, x, &zopts->solver_par, queue );break;
-            case  Magma_PBICGSTAB: 
-                    magma_cpbicgstab( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
-            case  Magma_GMRES: 
-                    magma_cfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
-            case  Magma_PGMRES: 
-                    magma_cfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
-            case  Magma_LOBPCG: 
-                    magma_clobpcg( A, &zopts->solver_par, queue );break;
+                    CHECK( magma_cbicgstab_merge( A, b, x, &zopts->solver_par, queue )); break;
+            case  Magma_PBICGSTAB:
+                    CHECK( magma_cpbicgstab( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_GMRES:
+                    CHECK( magma_cfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_PGMRES:
+                    CHECK( magma_cfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_LOBPCG:
+                    CHECK( magma_clobpcg( A, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_ITERREF:
-                    magma_citerref( A, b, x, &zopts->solver_par, &zopts->precond_par, queue );break;
-            case  Magma_JACOBI: 
-                    magma_cjacobi( A, b, x, &zopts->solver_par, queue );break;
-            case  Magma_BAITER: 
-                    magma_cbaiter( A, b, x, &zopts->solver_par, queue );break;
-            
+                    CHECK( magma_citerref( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_JACOBI:
+                    CHECK( magma_cjacobi( A, b, x, &zopts->solver_par, queue )); break;
+            case  Magma_BAITER:
+                    CHECK( magma_cbaiter( A, b, x, &zopts->solver_par, queue ) ); break;
+            default:
+                    printf("error: solver class not supported.\n"); break;
         }
-    return MAGMA_SUCCESS;
+    }
+    else{
+  // preconditioner
+        if ( zopts->solver_par.solver != Magma_ITERREF ) {
+            int stat = magma_c_precondsetup( A, b, &zopts->precond_par, queue );
+            if (  stat != MAGMA_SUCCESS ){
+                printf("error: bad preconditioner.\n");
+                return MAGMA_ERR_BADPRECOND; 
+            }
+        }
+        switch( zopts->solver_par.solver ) {
+            case  Magma_CG:
+                    CHECK( magma_cbpcg( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_PCG:
+                    CHECK( magma_cbpcg( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_LOBPCG:
+                    CHECK( magma_clobpcg( A, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            default:
+                    printf("error: only 1 RHS supported for this solver class.\n"); break;
+        }
+    }
+cleanup:
+    return info; 
 }
 
 

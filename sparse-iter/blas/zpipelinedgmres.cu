@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -11,12 +11,10 @@
 */
 #include "common_magma.h"
 
+#define COMPLEX
 
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 128
-#else
-   #define BLOCK_SIZE 512
-#endif
+#define BLOCK_SIZE 512
+
 
 template< int n >
 __device__ void sum_reduce( /*int n,*/ int i, double* x )
@@ -116,16 +114,14 @@ magma_zpipelineddznrm2_kernel(
     // get norm of dx
     lsum = 0;
     for( int j = i; j < m; j += 512 ) {
-
-    #if (defined(PRECISION_s) || defined(PRECISION_d))
-        re = dx[j];
-        lsum += re*re;
-    #else
-        re = MAGMA_Z_REAL( dx[j] );
-        double im = MAGMA_Z_IMAG( dx[j] );
-        lsum += re*re + im*im;
-    #endif
-
+        #ifdef REAL
+            re = dx[j];
+            lsum += re*re;
+        #else
+            re = MAGMA_Z_REAL( dx[j] );
+            double im = MAGMA_Z_IMAG( dx[j] );
+            lsum += re*re + im*im;
+        #endif
     }
     sum[i] = lsum;
     sum_reduce< 512 >( i, sum );
@@ -199,10 +195,10 @@ magma_zcopyscale(
     magma_queue_t queue )
 {
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( (k+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( k, BLOCK_SIZE ) );
     unsigned int Ms =   Bs.x * sizeof( magmaDoubleComplex ); 
 
-    dim3 Gs2( (n+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs2( magma_ceildiv( n, BLOCK_SIZE ) );
 
 
     magma_zpipelined_correction<<<Gs, Bs, Ms, queue >>>
@@ -228,7 +224,7 @@ magma_dznrm2scale(
                                 ( m, r, lddr, drnorm );
 
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs2( (m+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs2( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_zpipelinedscale<<<Gs2, Bs, 0, queue >>>( m, r, drnorm );
 
     return MAGMA_SUCCESS;

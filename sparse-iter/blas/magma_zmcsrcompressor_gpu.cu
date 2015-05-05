@@ -1,35 +1,28 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
 
 */
+#include "common_magmasparse.h"
 
-#include "common_magma.h"
-#include "magmasparse.h"
-
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE1 256
-   #define BLOCK_SIZE2 1
-#else
-   #define BLOCK_SIZE1 256
-   #define BLOCK_SIZE2 1
-#endif
+#define BLOCK_SIZE1 256
+#define BLOCK_SIZE2 1
 
 
 // copy nonzeros into new structure
 __global__ void
-magma_zmcsrgpu_kernel1( int num_rows,  
-                 magmaDoubleComplex *A_val, 
-                 magma_index_t *A_rowptr, 
+magma_zmcsrgpu_kernel1( int num_rows,
+                 magmaDoubleComplex *A_val,
+                 magma_index_t *A_rowptr,
                  magma_index_t *A_colind,
-                 magmaDoubleComplex *B_val, 
-                 magma_index_t *B_rowptr, 
+                 magmaDoubleComplex *B_val,
+                 magma_index_t *B_rowptr,
                  magma_index_t *B_colind ){
 
     int row = blockIdx.x*blockDim.x+threadIdx.x;
@@ -45,7 +38,7 @@ magma_zmcsrgpu_kernel1( int num_rows,
        //         B_val[new_location] = A_val[j];
        //         B_colind[new_location] = A_colind[j];
                 new_location++;
-            } 
+            }
         }
         // this is not a correctr rowpointer! this is nn_z in this row!
         B_rowptr[ row ] = new_location-start;
@@ -55,7 +48,7 @@ magma_zmcsrgpu_kernel1( int num_rows,
 
 // generate a valid rowpointer
 __global__ void
-magma_zmcsrgpu_kernel2( int num_rows,  
+magma_zmcsrgpu_kernel2( int num_rows,
                  magma_index_t *B_rowptr,
                  magma_index_t *A_rowptr ){
 
@@ -75,13 +68,13 @@ magma_zmcsrgpu_kernel2( int num_rows,
 
 // copy new structure into original matrix
 __global__ void
-magma_zmcsrgpu_kernel3( int num_rows,  
-                 magmaDoubleComplex *B_val, 
-                 magma_index_t *B_rowptr, 
+magma_zmcsrgpu_kernel3( int num_rows,
+                 magmaDoubleComplex *B_val,
+                 magma_index_t *B_rowptr,
                  magma_index_t *B_colind,
-                 magma_index_t *B2_rowptr, 
-                 magmaDoubleComplex *A_val, 
-                 magma_index_t *A_rowptr, 
+                 magma_index_t *B2_rowptr,
+                 magmaDoubleComplex *A_val,
+                 magma_index_t *A_rowptr,
                  magma_index_t *A_colind
                                             ){
 
@@ -98,7 +91,7 @@ magma_zmcsrgpu_kernel3( int num_rows,
                 B_val[new_location] = A_val[j];
                 B_colind[new_location] = A_colind[j];
                 new_location++;
-            } 
+            }
                // A_val[ j ] = B_val[ j ];
                // A_colind[ j ] = B_colind[ j ];
         }
@@ -110,15 +103,15 @@ magma_zmcsrgpu_kernel3( int num_rows,
     Purpose
     -------
 
-    Removes zeros in a CSR matrix. This is a GPU implementation of the 
+    Removes zeros in a CSR matrix. This is a GPU implementation of the
     CSR compressor.
 
     Arguments
     ---------
 
     @param
-    A           magma_z_sparse_matrix*
-                input/output matrix 
+    A           magma_z_matrix*
+                input/output matrix
     @param[in]
     queue       magma_queue_t
                 Queue to execute in.
@@ -128,114 +121,77 @@ magma_zmcsrgpu_kernel3( int num_rows,
 
 extern "C" magma_int_t
 magma_zmcsrcompressor_gpu(
-    magma_z_sparse_matrix *A,
+    magma_z_matrix *A,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    magma_z_matrix B={Magma_CSR}, B2={Magma_CSR};
+    magma_z_matrix dA={Magma_CSR}, CSRA={Magma_CSR};
+    magma_index_t *cputmp = NULL;
+    
     if ( A->memory_location == Magma_DEV && A->storage_type == Magma_CSR ) {
 
-        magma_int_t stat_cpu = 0, stat_dev = 0;
-        magma_z_sparse_matrix B, B2;
-        
-        B.val = NULL;
-        B.col = NULL;
-        B.row = NULL;
-        B.rowidx = NULL;
-        B.blockinfo = NULL;
-        B.diag = NULL;
-        B.dval = NULL;
-        B.dcol = NULL;
-        B.drow = NULL;
-        B.drowidx = NULL;
-        B.ddiag = NULL;
-        
-        B2.val = NULL;
-        B2.col = NULL;
-        B2.row = NULL;
-        B2.rowidx = NULL;
-        B2.blockinfo = NULL;
-        B2.diag = NULL;
-        B2.dval = NULL;
-        B2.dcol = NULL;
-        B2.drow = NULL;
-        B2.drowidx = NULL;
-        B2.ddiag = NULL;
-
-        stat_dev += magma_index_malloc( &B.drow, A->num_rows + 1 );
-        stat_dev += magma_index_malloc( &B2.drow, A->num_rows + 1 );
-        if( stat_dev != 0 ){         
-            magma_z_mfree( &B, queue );
-            magma_z_mfree( &B2, queue ); 
-            return MAGMA_ERR_DEVICE_ALLOC;
-        }
+        CHECK( magma_index_malloc( &B.drow, A->num_rows + 1 ));
+        CHECK( magma_index_malloc( &B2.drow, A->num_rows + 1 ));
         
         magma_index_copyvector( (A->num_rows+1), A->drow, 1, B2.drow, 1 );
 
-        dim3 grid1( (A->num_rows+BLOCK_SIZE1-1)/BLOCK_SIZE1, 1, 1);  
+        dim3 grid1( magma_ceildiv( A->num_rows, BLOCK_SIZE1 ) );
 
         // copying the nonzeros into B and write in B.drow how many there are
         magma_zmcsrgpu_kernel1<<< grid1, BLOCK_SIZE1, 0, queue >>>
                 ( A->num_rows, A->dval, A->drow, A->dcol, B.dval, B.drow, B.dcol );
 
         // correct the row pointer
-        dim3 grid2( 1, 1, 1);  
+        dim3 grid2( 1, 1, 1);
         magma_zmcsrgpu_kernel2<<< grid2, BLOCK_SIZE2, 0, queue >>>
                 ( A->num_rows, B.drow, A->drow );
         // access the true number of nonzeros
-        magma_index_t *cputmp;
-        stat_cpu += magma_index_malloc_cpu( &cputmp, 1 );
-        if( stat_cpu != 0 ){
-            magma_free_cpu( cputmp );
-            magma_z_mfree( &B, queue );
-            magma_z_mfree( &B2, queue );
-            return MAGMA_ERR_HOST_ALLOC;
-        }
+
+        CHECK( magma_index_malloc_cpu( &cputmp, 1 ));
+
         magma_index_getvector( 1, A->row+(A->num_rows), 1, cputmp, 1 );
         A->nnz = (magma_int_t) cputmp[0];
 
         // reallocate with right size
-        stat_dev += magma_zmalloc( &B.dval, A->nnz );
-        stat_dev += magma_index_malloc( &B.dcol, A->nnz );
-        if( stat_dev != 0 ){         
-            magma_z_mfree( &B, queue );
-            magma_z_mfree( &B2, queue ); 
-            return MAGMA_ERR_DEVICE_ALLOC;
-        }
+        CHECK( magma_zmalloc( &B.dval, A->nnz ));
+        CHECK( magma_index_malloc( &B.dcol, A->nnz ));
         
         // copy correct values back
         magma_zmcsrgpu_kernel3<<< grid1, BLOCK_SIZE1, 0, queue >>>
                 ( A->num_rows, B.dval, B.drow, B.dcol, B2.drow, A->dval, A->drow, A->dcol );
 
         magma_free( A->dcol );
-        magma_free( A->dval );                
+        magma_free( A->dval );
 
         A->dcol = B.dcol;
         A->dval = B.dval;
 
-        magma_free( B2.drow );
-        magma_free( B.drow );  
 
-
-        return MAGMA_SUCCESS; 
     }
     else {
-
-        magma_z_sparse_matrix dA, CSRA;
         magma_storage_t A_storage = A->storage_type;
         magma_location_t A_location = A->memory_location;
-        magma_z_mconvert( *A, &CSRA, A->storage_type, Magma_CSR, queue );
-        magma_z_mtransfer( *A, &dA, A->memory_location, Magma_DEV, queue );
+        CHECK( magma_zmconvert( *A, &CSRA, A->storage_type, Magma_CSR, queue ));
+        CHECK( magma_zmtransfer( *A, &dA, A->memory_location, Magma_DEV, queue ));
 
-        magma_zmcsrcompressor_gpu( &dA, queue );
+        CHECK( magma_zmcsrcompressor_gpu( &dA, queue ));
 
-        magma_z_mfree( &dA, queue );
-        magma_z_mfree( A, queue );
-        magma_z_mtransfer( dA, &CSRA, Magma_DEV, A_location, queue );
-        magma_z_mconvert( CSRA, A, Magma_CSR, A_storage, queue );
-        magma_z_mfree( &dA, queue );
-        magma_z_mfree( &CSRA, queue );    
+        magma_zmfree( &dA, queue );
+        magma_zmfree( A, queue );
+        CHECK( magma_zmtransfer( dA, &CSRA, Magma_DEV, A_location, queue ));
+        CHECK( magma_zmconvert( CSRA, A, Magma_CSR, A_storage, queue ));
+        magma_zmfree( &dA, queue );
+        magma_zmfree( &CSRA, queue );
 
-        return MAGMA_SUCCESS; 
     }
+    
+cleanup:
+    magma_zmfree( &dA, queue );
+    magma_zmfree( &CSRA, queue );
+    magma_free( B2.drow );
+    magma_free( B.drow );
+    return info;
 }
 
 

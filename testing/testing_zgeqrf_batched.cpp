@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date
 
        @author Tingxing Dong
        @author Azzam Haidar
@@ -18,15 +18,14 @@
 #include <string.h>
 #include <math.h>
 
+#include <cuda.h>  // for CUDA_VERSION
+
 // includes, project
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
 #include "testings.h"
 #include "batched_kernel_param.h"
-
-
-
 
 
 void get_QR_error(magma_int_t M, magma_int_t N, magma_int_t min_mn,
@@ -37,48 +36,46 @@ void get_QR_error(magma_int_t M, magma_int_t N, magma_int_t min_mn,
                     magmaDoubleComplex *h_work,  magma_int_t lwork,
                     double *work, double *error, double *error2)
 {
-
-       /* h_R:input the factorized matrix by lapack QR, 
-          h_A:input the original matrix copy 
-          tau: input 
-       */
-
-       const double             d_neg_one = MAGMA_D_NEG_ONE;
-       const double             d_one     = MAGMA_D_ONE;
-       const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-       const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
-       const magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
-       double           Anorm;
-
-       magma_int_t info;
-
-       // generate M by K matrix Q, where K = min(M,N)
-       lapackf77_zlacpy( "Lower", &M, &min_mn, h_R, &lda, Q, &ldq );
-       lapackf77_zungqr( &M, &min_mn, &min_mn, Q, &ldq, tau, h_work, &lwork, &info );
-       assert( info == 0 );
-                
-       // copy K by N matrix R
-       lapackf77_zlaset( "Lower", &min_mn, &N, &c_zero, &c_zero, R, &ldr );
-       lapackf77_zlacpy( "Upper", &min_mn, &N, h_R, &lda,        R, &ldr );
-                
-       // error = || R - Q^H*A || / (N * ||A||)
-       blasf77_zgemm( "Conj", "NoTrans", &min_mn, &N, &M,
-       &c_neg_one, Q, &ldq, h_A, &lda, &c_one, R, &ldr );
-       
-       Anorm = lapackf77_zlange( "1", &M,      &N, h_A, &lda, work );
-       *error = lapackf77_zlange( "1", &min_mn, &N, R,   &ldr, work );
-       
-       if ( N > 0 && Anorm > 0 )
-           *error /= (N*Anorm);
-                
-       // set R = I (K by K identity), then R = I - Q^H*Q
-       // error = || I - Q^H*Q || / N
-       lapackf77_zlaset( "Upper", &min_mn, &min_mn, &c_zero, &c_one, R, &ldr );
-       blasf77_zherk( "Upper", "Conj", &min_mn, &M, &d_neg_one, Q, &ldq, &d_one, R, &ldr );
-       *error2 = lapackf77_zlanhe( "1", "Upper", &min_mn, R, &ldr, work );
-       if ( N > 0 )
-           *error2 /= N;
-                
+    /* h_R:input the factorized matrix by lapack QR,
+       h_A:input the original matrix copy
+       tau: input
+    */
+    
+    const double             d_neg_one = MAGMA_D_NEG_ONE;
+    const double             d_one     = MAGMA_D_ONE;
+    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    const magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
+    double           Anorm;
+    
+    magma_int_t info;
+    
+    // generate M by K matrix Q, where K = min(M,N)
+    lapackf77_zlacpy( "Lower", &M, &min_mn, h_R, &lda, Q, &ldq );
+    lapackf77_zungqr( &M, &min_mn, &min_mn, Q, &ldq, tau, h_work, &lwork, &info );
+    assert( info == 0 );
+    
+    // copy K by N matrix R
+    lapackf77_zlaset( "Lower", &min_mn, &N, &c_zero, &c_zero, R, &ldr );
+    lapackf77_zlacpy( "Upper", &min_mn, &N, h_R, &lda,        R, &ldr );
+    
+    // error = || R - Q^H*A || / (N * ||A||)
+    blasf77_zgemm( "Conj", "NoTrans", &min_mn, &N, &M,
+    &c_neg_one, Q, &ldq, h_A, &lda, &c_one, R, &ldr );
+    
+    Anorm = lapackf77_zlange( "1", &M,      &N, h_A, &lda, work );
+    *error = lapackf77_zlange( "1", &min_mn, &N, R,   &ldr, work );
+    
+    if ( N > 0 && Anorm > 0 )
+        *error /= (N*Anorm);
+    
+    // set R = I (K by K identity), then R = I - Q^H*Q
+    // error = || I - Q^H*Q || / N
+    lapackf77_zlaset( "Upper", &min_mn, &min_mn, &c_zero, &c_one, R, &ldr );
+    blasf77_zherk( "Upper", "Conj", &min_mn, &M, &d_neg_one, Q, &ldq, &d_one, R, &ldr );
+    *error2 = lapackf77_zlanhe( "1", "Upper", &min_mn, R, &ldr, work );
+    if ( N > 0 )
+        *error2 /= N;
 }
 
 
@@ -89,14 +86,14 @@ int main( int argc, char** argv)
 {
     TESTING_INIT();
 
-    real_Double_t    gflops, magma_perf, magma_time, cublas_perf, cublas_time, cpu_perf, cpu_time;
+    real_Double_t    gflops, magma_perf, magma_time, cublas_perf=0, cublas_time=0, cpu_perf, cpu_time;
     double           magma_error=0.0, cublas_error=0.0, magma_error2=0.0, cublas_error2=0.0, error, error2;
 
     magmaDoubleComplex *h_A, *h_R, *h_Amagma, *tau, *h_work, tmp[1];
     magmaDoubleComplex *d_A, *dtau_magma, *dtau_cublas;
 
     magmaDoubleComplex **dA_array = NULL;
-    magmaDoubleComplex **dtau_array = NULL; 
+    magmaDoubleComplex **dtau_array = NULL;
 
     magma_int_t   *dinfo_magma, *dinfo_cublas;
 
@@ -108,10 +105,9 @@ int main( int argc, char** argv)
     magma_int_t batchCount = 1;
     magma_int_t column;
 
-
     magma_opts opts;
     parse_opts( argc, argv, &opts );
-    batchCount = opts.batchcount ;
+    batchCount = opts.batchcount;
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
@@ -129,14 +125,14 @@ int main( int argc, char** argv)
             lda    = M;
             n2     = lda*N * batchCount;
             ldda = M;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.roundup );  // multiple of 32 by default
 
             gflops = (FLOPS_ZGEQRF( M, N ) + FLOPS_ZGEQRT( M, N )) / 1e9 * batchCount;
 
             /* Allocate memory for the matrix */
             TESTING_MALLOC_CPU( tau,   magmaDoubleComplex, min_mn * batchCount );
             TESTING_MALLOC_CPU( h_A,   magmaDoubleComplex, n2     );
-            TESTING_MALLOC_CPU( h_Amagma,   magmaDoubleComplex, n2     );        
+            TESTING_MALLOC_CPU( h_Amagma,   magmaDoubleComplex, n2     );
             TESTING_MALLOC_PIN( h_R,   magmaDoubleComplex, n2     );
         
             TESTING_MALLOC_DEV( d_A,   magmaDoubleComplex, ldda*N * batchCount );
@@ -147,7 +143,6 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV(  dinfo_magma,  magma_int_t, batchCount);
             TESTING_MALLOC_DEV(  dinfo_cublas,  magma_int_t, batchCount);
 
-
             magma_malloc((void**)&dA_array, batchCount * sizeof(*dA_array));
             magma_malloc((void**)&dtau_array, batchCount * sizeof(*dtau_array));
         
@@ -155,26 +150,30 @@ int main( int argc, char** argv)
             lwork = -1;
             lapackf77_zgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
             lwork = (magma_int_t)MAGMA_Z_REAL( tmp[0] );
-            lwork = max(lwork, N*N);        
+            lwork = max(lwork, N*N);
            
             TESTING_MALLOC_CPU( h_work, magmaDoubleComplex, lwork * batchCount);
 
             column = N * batchCount;
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_zlacpy( MagmaUpperLowerStr, &M, &column, h_A, &lda, h_R, &lda );
+            for(int i=0; i<batchCount; i++)
+			{
+				magma_zmake_hpd( N, h_A + i * lda * N, lda );// need modification
+			}
+			
+			lapackf77_zlacpy( MagmaUpperLowerStr, &M, &column, h_A, &lda, h_R, &lda );
        
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-
             magma_zsetmatrix( M, column, h_R, lda,  d_A, ldda );
-            zset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, magma_stream); 
-            zset_pointer(dtau_array, dtau_magma, 1, 0, 0, min_mn, batchCount, magma_stream);
+            zset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue);
+            zset_pointer(dtau_array, dtau_magma, 1, 0, 0, min_mn, batchCount, opts.queue);
     
             magma_time = magma_sync_wtime(0);
     
-            info = magma_zgeqrf_batched(M, N, dA_array, ldda, dtau_array, dinfo_magma, batchCount, magma_stream);
+            info = magma_zgeqrf_batched(M, N, dA_array, ldda, dtau_array, dinfo_magma, batchCount, opts.queue);
 
             magma_time = magma_sync_wtime(0) - magma_time;
             magma_perf = gflops / magma_time;
@@ -186,13 +185,14 @@ int main( int argc, char** argv)
                        (int) info, magma_strerror( info ));
             
             /* ====================================================================
-               Performs operation using CUBLAS 
+               Performs operation using CUBLAS
                =================================================================== */
 
-            /* This routine is only available from CUBLAS v6.5 */
+            /* cublasZgeqrfBatched is only available from CUBLAS v6.5 */
+            #if CUDA_VERSION >= 6050
             magma_zsetmatrix( M, column, h_R, lda,  d_A, ldda );
-            zset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, magma_stream); 
-            zset_pointer(dtau_array, dtau_cublas, 1, 0, 0, min_mn, batchCount, magma_stream);
+            zset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue);
+            zset_pointer(dtau_array, dtau_cublas, 1, 0, 0, min_mn, batchCount, opts.queue);
 
             cublas_time = magma_sync_wtime(0);
     
@@ -205,22 +205,20 @@ int main( int argc, char** argv)
             if (cublas_info != 0)
                 printf("cublasZgeqrfBatched returned error %d: %s.\n",
                        (int) cublas_info, magma_strerror( cublas_info ));
+            #endif
 
             /* =====================================================================
-                   Performs operation using LAPACK
-            =================================================================== */
-
+               Performs operation using LAPACK
+               =================================================================== */
             if ( opts.check ) {
-
                 cpu_time = magma_wtime();
 
-                for(int i=0; i<batchCount; i++)
+                for (int i=0; i < batchCount; i++)
                 {
                     lapackf77_zgeqrf(&M, &N, h_A + i*lda*N, &lda, tau + i*min_mn, h_work + i * lwork, &lwork, &info);
                   
                     /* lapackf77_zlarft( MagmaForwardStr, MagmaColumnwiseStr,
                                      &M, &N, h_A + i*lda*N, &lda, tau + i*min_mn, h_work + i * lwork, &N); */
-
                 }
 
                 cpu_time = magma_wtime() - cpu_time;
@@ -229,11 +227,9 @@ int main( int argc, char** argv)
                     printf("lapackf77_zgeqrf returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 
-
                 /* =====================================================================
                    Check the MAGMA CUBLAS result compared to LAPACK
                    =================================================================== */
-
                 magma_int_t ldq = M;
                 magma_int_t ldr = min_mn;
                 magmaDoubleComplex *Q, *R;
@@ -243,60 +239,65 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_CPU( R,    magmaDoubleComplex, ldr*N );       // K by N
                 TESTING_MALLOC_CPU( work, double,             min_mn );
 
-                /* check magma result */  
+                /* check magma result */
                 magma_zgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1);
-                for(int i=0; i<batchCount; i++)
+                for (int i=0; i < batchCount; i++)
                 {
-                    get_QR_error(M, N, min_mn, 
-                             h_Amagma + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn, 
+                    get_QR_error(M, N, min_mn,
+                             h_Amagma + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn,
                              Q, ldq, R, ldr, h_work, lwork,
                              work, &error, &error2);
 
                     if ( isnan(error) || isinf(error) ) {
-                         magma_error = error;
-                         break;
+                        magma_error = error;
+                        break;
                     }
-                    magma_error = max(fabs(error),magma_error);
-                    magma_error2 = max(fabs(error2),magma_error2);
-                 }
+                    magma_error  = max( fabs(error),  magma_error  );
+                    magma_error2 = max( fabs(error2), magma_error2 );
+                }
 
-                /* check cublas result */  
+                /* check cublas result */
+                #if CUDA_VERSION >= 6050
                 magma_zgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1);
                 magma_zgetmatrix( M, column, d_A, ldda, h_A, lda);
-                for(int i=0; i<batchCount; i++)
+                for (int i=0; i < batchCount; i++)
                 {
-                    get_QR_error(M, N, min_mn, 
-                             h_A + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn, 
+                    get_QR_error(M, N, min_mn,
+                             h_A + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn,
                              Q, ldq, R, ldr, h_work, lwork,
                              work, &error, &error2);
 
                     if ( isnan(error) || isinf(error) ) {
-                         cublas_error = error;
-                         break;
+                        cublas_error = error;
+                        break;
                     }
-                    cublas_error = max(fabs(error),cublas_error);
-                    cublas_error2 = max(fabs(error2),cublas_error2);
+                    cublas_error  = max( fabs(error),  cublas_error  );
+                    cublas_error2 = max( fabs(error2), cublas_error2 );
                 }
+                #endif
 
                 TESTING_FREE_CPU( Q    );  Q    = NULL;
                 TESTING_FREE_CPU( R    );  R    = NULL;
                 TESTING_FREE_CPU( work );  work = NULL;
 
-                bool okay_mag = (magma_error < tol && magma_error2 < tol);
-                bool okay_cub = (cublas_error < tol && cublas_error2 < tol);
-                status += ! okay_mag;
+                bool okay = (magma_error < tol && magma_error2 < tol);
+                //bool okay_cublas = (cublas_error < tol && cublas_error2 < tol);
+                status += ! okay;
 
-                printf("%5d       %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %15.2e   %15.2e   %15.2e   %15.2e   %s   %s \n",
-                       (int)batchCount, (int) M, (int) N, magma_perf, 1000.*magma_time, cublas_perf, 1000.*cublas_time, cpu_perf, 1000.*cpu_time, 
-                       magma_error, magma_error2, cublas_error, cublas_error2, (okay_mag ? "ok" : "failed"), " " );
-                status += ! (magma_error < tol);
-
-
-
+                printf("%5d       %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %15.2e   %15.2e   %15.2e   %15.2e   %s\n",
+                       (int)batchCount, (int) M, (int) N,
+                       magma_perf,  1000.*magma_time,
+                       cublas_perf, 1000.*cublas_time,
+                       cpu_perf,    1000.*cpu_time,
+                       magma_error, magma_error2,
+                       cublas_error, cublas_error2,
+                       (okay ? "ok" : "failed") );
             }
             else {
                 printf("%5d       %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)      ---   (  ---  )   ---  \n",
-                       (int)batchCount, (int) M, (int) N, magma_perf, 1000.*magma_time, cublas_perf, 1000.*cublas_time);
+                       (int)batchCount, (int) M, (int) N,
+                       magma_perf,  1000.*magma_time,
+                       cublas_perf, 1000.*cublas_time );
             }
             
             TESTING_FREE_CPU( tau    );
@@ -314,7 +315,6 @@ int main( int argc, char** argv)
 
             TESTING_FREE_DEV( dA_array   );
             TESTING_FREE_DEV( dtau_array  );
-
 
             fflush( stdout );
         }

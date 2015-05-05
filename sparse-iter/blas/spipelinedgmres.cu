@@ -1,22 +1,20 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zpipelinedgmres.cu normal z -> s, Fri Jan 30 19:00:29 2015
+       @generated from zpipelinedgmres.cu normal z -> s, Sun May  3 11:22:58 2015
        @author Hartwig Anzt
 
 */
 #include "common_magma.h"
 
+#define REAL
 
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 128
-#else
-   #define BLOCK_SIZE 512
-#endif
+#define BLOCK_SIZE 512
+
 
 template< int n >
 __device__ void sum_reduce( /*int n,*/ int i, float* x )
@@ -116,16 +114,14 @@ magma_spipelinedsnrm2_kernel(
     // get norm of dx
     lsum = 0;
     for( int j = i; j < m; j += 512 ) {
-
-    #if (defined(PRECISION_s) || defined(PRECISION_d))
-        re = dx[j];
-        lsum += re*re;
-    #else
-        re = MAGMA_S_REAL( dx[j] );
-        float im = MAGMA_S_IMAG( dx[j] );
-        lsum += re*re + im*im;
-    #endif
-
+        #ifdef REAL
+            re = dx[j];
+            lsum += re*re;
+        #else
+            re = MAGMA_S_REAL( dx[j] );
+            float im = MAGMA_S_IMAG( dx[j] );
+            lsum += re*re + im*im;
+        #endif
     }
     sum[i] = lsum;
     sum_reduce< 512 >( i, sum );
@@ -199,10 +195,10 @@ magma_scopyscale(
     magma_queue_t queue )
 {
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( (k+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( k, BLOCK_SIZE ) );
     unsigned int Ms =   Bs.x * sizeof( float ); 
 
-    dim3 Gs2( (n+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs2( magma_ceildiv( n, BLOCK_SIZE ) );
 
 
     magma_spipelined_correction<<<Gs, Bs, Ms, queue >>>
@@ -228,7 +224,7 @@ magma_snrm2scale(
                                 ( m, r, lddr, drnorm );
 
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs2( (m+BLOCK_SIZE-1)/BLOCK_SIZE );
+    dim3 Gs2( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_spipelinesscale<<<Gs2, Bs, 0, queue >>>( m, r, drnorm );
 
     return MAGMA_SUCCESS;

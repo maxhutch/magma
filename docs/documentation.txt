@@ -8,7 +8,7 @@ This file is processed with Doxygen. See docs/html/index.html for formatted vers
 Univ. of Tennessee, Knoxville \n
 Univ. of California, Berkeley \n
 Univ. of Colorado, Denver
-@date January 2015
+@date May 2015
 
 The goal of the MAGMA project is to create a new generation of linear algebra
 libraries that achieves the fastest possible time to an accurate solution on
@@ -446,9 +446,12 @@ parent matrix.
 
 On the GPU, it is often beneficial to round the leading dimension up to a
 multiple of 32, to provide better performance. This aligns memory reads so they
-are coalesced. One formula to do this (relying on floored integer division) is:
+are coalesced. This is provided by the magma_roundup function:
 
-    ldda = (( m + 31 )/32) * 32;
+    ldda = magma_roundup( m, 32 );
+
+The formula ((m + 31)/32)*32 also works, relying on floored integer division,
+but the roundup function is clearer to use.
 
 On the CPU, it is often beneficial to ensure that the leading dimension
 is **not** a multiple of the page size (often 4 KiB), to minimize TLB misses.

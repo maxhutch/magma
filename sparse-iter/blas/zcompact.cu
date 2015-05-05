@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions normal z -> s d c
        @author Stan Tomov
 */
-#include "common_magma.h"
-#include <assert.h>
+#include "common_magmasparse.h"
 
 #define NB 64
 
@@ -121,7 +120,7 @@ zcompactactive_kernel(
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
-extern "C" void
+extern "C" magma_int_t
 magma_zcompact(
     magma_int_t m, 
     magma_int_t n,
@@ -143,19 +142,20 @@ magma_zcompact(
     
     if ( info != 0 ) {
         magma_xerbla( __func__, -(info) );
-        return;
+        return info;
     }
     
     if ( m == 0 || n == 0 )
-        return;
+        return info;
     
     dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
     
     zcompact_kernel<<< grid, threads, 0, queue >>>(
             m, n, dA, ldda, dnorms, tol, active, active+n );
 
     magma_igetvector( 1, active+n, 1, cBlock, 1 );
+    return info;
 }
 
 
@@ -195,7 +195,7 @@ magma_zcompact(
     @ingroup magmasparse_z
     ********************************************************************/
 
-extern "C" void
+extern "C" magma_int_t
 magma_zcompactActive(
     magma_int_t m, 
     magma_int_t n,
@@ -214,17 +214,18 @@ magma_zcompactActive(
 
     if ( info != 0 ) {
         magma_xerbla( __func__, -(info) );
-        return;
+        return info;
     }
 
     if ( m == 0 || n == 0 )
-        return;
+        return info;
 
     dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
 
     zcompactactive_kernel<<< grid, threads, 0, queue >>>(
             m, n, dA, ldda, active);
+    return info;
 }
 
 /* ===================================================================== */

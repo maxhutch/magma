@@ -1,40 +1,27 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions mixed zc -> ds
        @author Hartwig Anzt
 */
-
-#include <fstream>
-#include <stdlib.h>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <ostream>
-#include <assert.h>
-#include <stdio.h>
-#include "magmasparse_z.h"
-#include "magmasparse_zc.h"
-#include "magma.h"
-#include "mmio.h"
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 
 /**
     Purpose
     -------
 
-    convertes magma_z_vector from Z to C
+    convertes magma_z_matrix from Z to C
 
     Arguments
     ---------
 
     @param
-    x           magma_z_vector
+    x           magma_z_matrix
                 input vector descriptor
 
     @param
@@ -49,7 +36,7 @@
 
 extern "C" magma_int_t
 magma_vector_zlag2c(
-    magma_z_vector x, magma_c_vector *y,
+    magma_z_matrix x, magma_c_vector *y,
     magma_queue_t queue )
 {
     magma_int_t info;
@@ -58,7 +45,7 @@ magma_vector_zlag2c(
         y->num_rows = x.num_rows;
         y->nnz = x.nnz;
         magma_cmalloc( &y->val, x.num_rows );
-        magmablas_zlag2c_sparse( x.num_rows, 1, x.dval, x.num_rows, y->val, 
+        magmablas_zlag2c_sparse( x.num_rows, 1, x.dval, x.num_rows, y->val,
                     x.num_rows, &info, queue );
         return MAGMA_SUCCESS;
     }
@@ -70,8 +57,8 @@ magma_vector_zlag2c(
 
         magma_int_t one= 1;
         magma_int_t info;
-        lapackf77_zlag2c( &x.num_rows, &one, 
-                       x.dval, &x.num_rows, 
+        lapackf77_zlag2c( &x.num_rows, &one,
+                       x.dval, &x.num_rows,
                        y->val, &x.num_rows, &info);
         return MAGMA_SUCCESS;
 
@@ -86,13 +73,13 @@ magma_vector_zlag2c(
     Purpose
     -------
 
-    convertes magma_z_sparse_matrix from Z to C
+    convertes magma_z_matrix from Z to C
 
     Arguments
     ---------
 
     @param
-    A           magma_z_sparse_matrix
+    A           magma_z_matrix
                 input matrix descriptor
 
     @param
@@ -107,7 +94,7 @@ magma_vector_zlag2c(
 
 extern "C" magma_int_t
 magma_sparse_matrix_zlag2c(
-    magma_z_sparse_matrix A, magma_c_sparse_matrix *B,
+    magma_z_matrix A, magma_c_sparse_matrix *B,
     magma_queue_t queue )
 {
     magma_int_t info;
@@ -120,40 +107,37 @@ magma_sparse_matrix_zlag2c(
         B->max_nnz_row = A.max_nnz_row;
         if ( A.storage_type == Magma_CSR ) {
             magma_cmalloc( &B->val, A.nnz );
-            magmablas_zlag2c_sparse( A.nnz, 1, A.dval, A.nnz, B->val, 
+            magmablas_zlag2c_sparse( A.nnz, 1, A.dval, A.nnz, B->val,
                     A.nnz, &info, queue );
             B->row = A.drow;
             B->col = A.dcol;
-            return MAGMA_SUCCESS;
         }
         if ( A.storage_type == Magma_ELLPACK ) {
             magma_cmalloc( &B->val, A.num_rows*A.max_nnz_row );
-            magmablas_zlag2c_sparse( A.num_rows*A.max_nnz_row, 1, A.dval, 
+            magmablas_zlag2c_sparse( A.num_rows*A.max_nnz_row, 1, A.dval,
             A.num_rows*A.max_nnz_row, B->val, A.num_rows*A.max_nnz_row, &info, queue );
             B->col = A.dcol;
-            return MAGMA_SUCCESS;
         }
         if ( A.storage_type == Magma_ELL ) {
             magma_cmalloc( &B->val, A.num_rows*A.max_nnz_row );
-            magmablas_zlag2c_sparse(  A.num_rows*A.max_nnz_row, 1, A.dval, 
+            magmablas_zlag2c_sparse(  A.num_rows*A.max_nnz_row, 1, A.dval,
             A.num_rows*A.max_nnz_row, B->val, A.num_rows*A.max_nnz_row, &info, queue );
             B->col = A.dcol;
-            return MAGMA_SUCCESS;
         }
         if ( A.storage_type == Magma_DENSE ) {
             magma_cmalloc( &B->val, A.num_rows*A.num_cols );
-            magmablas_zlag2c_sparse(  A.num_rows, A.num_cols, A.dval, A.num_rows, 
+            magmablas_zlag2c_sparse(  A.num_rows, A.num_cols, A.dval, A.num_rows,
                     B->val, A.num_rows, &info, queue );
-            return MAGMA_SUCCESS;
         }
         else {
-            return MAGMA_ERR_NOT_SUPPORTED;
-            printf("error:format not supported\n");
+            info = MAGMA_ERR_NOT_SUPPORTED;
         }
     }
     else {
-        return MAGMA_ERR_NOT_SUPPORTED;
-        printf("error:matrix not on GPU\n");
+        info = MAGMA_ERR_NOT_SUPPORTED;
     }
+    
+cleanup:
+    return info;
 }
 

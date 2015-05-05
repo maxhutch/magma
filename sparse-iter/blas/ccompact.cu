@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zcompact.cu normal z -> c, Fri Jan 30 19:00:29 2015
+       @generated from zcompact.cu normal z -> c, Sun May  3 11:22:58 2015
        @author Stan Tomov
 */
-#include "common_magma.h"
-#include <assert.h>
+#include "common_magmasparse.h"
 
 #define NB 64
 
@@ -121,7 +120,7 @@ ccompactactive_kernel(
     @ingroup magmasparse_cgegpuk
     ********************************************************************/
 
-extern "C" void
+extern "C" magma_int_t
 magma_ccompact(
     magma_int_t m, 
     magma_int_t n,
@@ -143,19 +142,20 @@ magma_ccompact(
     
     if ( info != 0 ) {
         magma_xerbla( __func__, -(info) );
-        return;
+        return info;
     }
     
     if ( m == 0 || n == 0 )
-        return;
+        return info;
     
     dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
     
     ccompact_kernel<<< grid, threads, 0, queue >>>(
             m, n, dA, ldda, dnorms, tol, active, active+n );
 
     magma_igetvector( 1, active+n, 1, cBlock, 1 );
+    return info;
 }
 
 
@@ -195,7 +195,7 @@ magma_ccompact(
     @ingroup magmasparse_c
     ********************************************************************/
 
-extern "C" void
+extern "C" magma_int_t
 magma_ccompactActive(
     magma_int_t m, 
     magma_int_t n,
@@ -214,17 +214,18 @@ magma_ccompactActive(
 
     if ( info != 0 ) {
         magma_xerbla( __func__, -(info) );
-        return;
+        return info;
     }
 
     if ( m == 0 || n == 0 )
-        return;
+        return info;
 
     dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
 
     ccompactactive_kernel<<< grid, threads, 0, queue >>>(
             m, n, dA, ldda, active);
+    return info;
 }
 
 /* ===================================================================== */

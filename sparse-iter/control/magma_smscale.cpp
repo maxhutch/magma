@@ -1,25 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from magma_zmscale.cpp normal z -> s, Fri Jan 30 19:00:32 2015
+       @generated from magma_zmscale.cpp normal z -> s, Sun May  3 11:23:01 2015
        @author Hartwig Anzt
 
 */
-#include "magma_lapack.h"
-#include "common_magma.h"
-#include "magmasparse.h"
-
-#include <assert.h>
-
-// includes CUDA
-#include <cuda_runtime_api.h>
-#include <cublas.h>
-#include <cusparse_v2.h>
-#include <cuda_profiler_api.h>
+#include "common_magmasparse.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
@@ -35,8 +25,8 @@
     ---------
 
     @param[in,out]
-    A           magma_s_sparse_matrix*
-                input/output matrix 
+    A           magma_s_matrix*
+                input/output matrix
 
     @param[in]
     scaling     magma_scale_t
@@ -51,10 +41,16 @@
 
 extern "C" magma_int_t
 magma_smscale(
-    magma_s_sparse_matrix *A, 
+    magma_s_matrix *A,
     magma_scale_t scaling,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    
+    float *tmp=NULL;
+    
+    magma_s_matrix hA={Magma_CSR}, CSRA={Magma_CSR};
+
     if ( A->memory_location == Magma_CPU && A->storage_type == Magma_CSRCOO ) {
         if ( scaling == Magma_NOSCALE ) {
             // no scale
@@ -62,23 +58,20 @@ magma_smscale(
         }
         else if ( scaling == Magma_UNITROW ) {
             // scale to unit rownorm
-            float *tmp;
-            magma_smalloc_cpu( &tmp, A->num_rows );
+            CHECK( magma_smalloc_cpu( &tmp, A->num_rows ));
             for( magma_int_t z=0; z<A->num_rows; z++ ) {
                 float s = MAGMA_S_MAKE( 0.0, 0.0 );
                 for( magma_int_t f=A->row[z]; f<A->row[z+1]; f++ )
                     s+= MAGMA_S_REAL(A->val[f])*MAGMA_S_REAL(A->val[f]);
-                tmp[z] = MAGMA_S_MAKE( 1.0/sqrt(  MAGMA_S_REAL( s )  ), 0.0 );                   
-            }
+                tmp[z] = MAGMA_S_MAKE( 1.0/sqrt(  MAGMA_S_REAL( s )  ), 0.0 );
+            }        printf("inhere1\n");
             for( magma_int_t z=0; z<A->nnz; z++ ) {
                 A->val[z] = A->val[z] * tmp[A->col[z]] * tmp[A->rowidx[z]];
             }
-            magma_free_cpu( tmp );
         }
         else if (scaling == Magma_UNITDIAG ) {
             // scale to unit diagonal
-            float *tmp;
-            magma_smalloc_cpu( &tmp, A->num_rows );
+            CHECK( magma_smalloc_cpu( &tmp, A->num_rows ));
             for( magma_int_t z=0; z<A->num_rows; z++ ) {
                 float s = MAGMA_S_MAKE( 0.0, 0.0 );
                 for( magma_int_t f=A->row[z]; f<A->row[z+1]; f++ ) {
@@ -88,39 +81,41 @@ magma_smscale(
                         s = A->val[f];
                     }
                 }
-                if ( s == MAGMA_S_MAKE( 0.0, 0.0 ) )
+                if ( s == MAGMA_S_MAKE( 0.0, 0.0 ) ){
                     printf("error: zero diagonal element.\n");
-                tmp[z] = MAGMA_S_MAKE( 1.0/sqrt(  MAGMA_S_REAL( s )  ), 0.0 );    
+                    info = MAGMA_ERR;
+                }
+                tmp[z] = MAGMA_S_MAKE( 1.0/sqrt(  MAGMA_S_REAL( s )  ), 0.0 );
                    
             }
             for( magma_int_t z=0; z<A->nnz; z++ ) {
                 A->val[z] = A->val[z] * tmp[A->col[z]] * tmp[A->rowidx[z]];
             }
-            magma_free_cpu( tmp );
         }
-        else
-            printf( "error: scaling not supported\n" );
-        return MAGMA_SUCCESS; 
+        else{
+            printf( "error: scaling not supported.\n" );
+            info = MAGMA_ERR_NOT_SUPPORTED;
+        }
     }
     else {
-
-        magma_s_sparse_matrix hA, CSRA;
         magma_storage_t A_storage = A->storage_type;
         magma_location_t A_location = A->memory_location;
-        magma_s_mtransfer( *A, &hA, A->memory_location, Magma_CPU, queue );
-        magma_s_mconvert( hA, &CSRA, hA.storage_type, Magma_CSRCOO, queue );
+        CHECK( magma_smtransfer( *A, &hA, A->memory_location, Magma_CPU, queue ));
+        CHECK( magma_smconvert( hA, &CSRA, hA.storage_type, Magma_CSRCOO, queue ));
 
-        magma_smscale( &CSRA, scaling, queue );
+        CHECK( magma_smscale( &CSRA, scaling, queue ));
 
-        magma_s_mfree( &hA, queue );
-        magma_s_mfree( A, queue );
-        magma_s_mconvert( CSRA, &hA, Magma_CSRCOO, A_storage, queue );
-        magma_s_mtransfer( hA, A, Magma_CPU, A_location, queue );
-        magma_s_mfree( &hA, queue );
-        magma_s_mfree( &CSRA, queue );    
-
-        return MAGMA_SUCCESS; 
+        magma_smfree( &hA, queue );
+        magma_smfree( A, queue );
+        CHECK( magma_smconvert( CSRA, &hA, Magma_CSRCOO, A_storage, queue ));
+        CHECK( magma_smtransfer( hA, A, Magma_CPU, A_location, queue ));
     }
+    
+cleanup:
+    magma_free_cpu( tmp );
+    magma_smfree( &hA, queue );
+    magma_smfree( &CSRA, queue );
+    return info;
 }
 
 
@@ -134,8 +129,8 @@ magma_smscale(
     ---------
 
     @param[in,out]
-    A           magma_s_sparse_matrix*
-                input/output matrix 
+    A           magma_s_matrix*
+                input/output matrix
 
     @param[in]
     add         float
@@ -149,10 +144,14 @@ magma_smscale(
 
 extern "C" magma_int_t
 magma_smdiagadd(
-    magma_s_sparse_matrix *A, 
+    magma_s_matrix *A,
     float add,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+    
+    magma_s_matrix hA={Magma_CSR}, CSRA={Magma_CSR};
+    
     if ( A->memory_location == Magma_CPU && A->storage_type == Magma_CSRCOO ) {
         for( magma_int_t z=0; z<A->nnz; z++ ) {
             if ( A->col[z]== A->rowidx[z] ) {
@@ -160,27 +159,25 @@ magma_smdiagadd(
                 A->val[z] = A->val[z] +  add;
             }
         }
-        return MAGMA_SUCCESS; 
     }
     else {
-
-        magma_s_sparse_matrix hA, CSRA;
         magma_storage_t A_storage = A->storage_type;
         magma_location_t A_location = A->memory_location;
-        magma_s_mtransfer( *A, &hA, A->memory_location, Magma_CPU, queue );
-        magma_s_mconvert( hA, &CSRA, hA.storage_type, Magma_CSRCOO, queue );
+        CHECK( magma_smtransfer( *A, &hA, A->memory_location, Magma_CPU, queue ));
+        CHECK( magma_smconvert( hA, &CSRA, hA.storage_type, Magma_CSRCOO, queue ));
 
-        magma_smdiagadd( &CSRA, add, queue );
+        CHECK( magma_smdiagadd( &CSRA, add, queue ));
 
-        magma_s_mfree( &hA, queue );
-        magma_s_mfree( A, queue );
-        magma_s_mconvert( CSRA, &hA, Magma_CSRCOO, A_storage, queue );
-        magma_s_mtransfer( hA, A, Magma_CPU, A_location, queue );
-        magma_s_mfree( &hA, queue );
-        magma_s_mfree( &CSRA, queue );    
-
-        return MAGMA_SUCCESS; 
+        magma_smfree( &hA, queue );
+        magma_smfree( A, queue );
+        CHECK( magma_smconvert( CSRA, &hA, Magma_CSRCOO, A_storage, queue ));
+        CHECK( magma_smtransfer( hA, A, Magma_CPU, A_location, queue ));
     }
+    
+cleanup:
+    magma_smfree( &hA, queue );
+    magma_smfree( &CSRA, queue );
+    return info;
 }
 
 

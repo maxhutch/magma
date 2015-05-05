@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
        @precisions normal z -> c d s
 
@@ -11,12 +11,7 @@
 
 #include "common_magma.h"
 
-#if (GPUSHMEM < 200)
-   #define BLOCK_SIZE 128
-#else
-   #define BLOCK_SIZE 512
-#endif
-
+#define BLOCK_SIZE 512
 
 
 // every multiprocessor handles one BCSR-block to copy from A
@@ -119,8 +114,8 @@ magma_zbcsrvalcpy(
         // the grids are adapted to the number of nonzero/zero blocks 
         // the upper block-number the kernels can handle is 65535*65535
         int dimgrid1 = 65535;
-        int dimgrid2 = (num_blocks+65535-1)/65535;
-        int dimgrid3 = (num_zblocks+65535-1)/65535;
+        int dimgrid2 = magma_ceildiv( num_blocks, 65535 );
+        int dimgrid3 = magma_ceildiv( num_zblocks, 65535 );
         dim3 dimGrid( dimgrid2, dimgrid1, 1 );
 
         zbcsrvalcpy_kernel<<<dimGrid,dimBlock, 0, queue >>>

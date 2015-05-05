@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zmdot.cu normal z -> s, Fri Jan 30 19:00:29 2015
+       @generated from zmdot.cu normal z -> s, Sun May  3 11:22:58 2015
        @author Hartwig Anzt
 
 */
@@ -487,7 +487,7 @@ magma_smdotc(
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  (k)* (local_block_size) * sizeof( float ); // k vecs 
     magmaFloat_ptr aux1 = d1, aux2 = d2;

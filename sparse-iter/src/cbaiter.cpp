@@ -1,19 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @author Hartwig Anzt 
+       @author Hartwig Anzt
 
-       @generated from zbaiter.cpp normal z -> c, Fri Jan 30 19:00:30 2015
+       @generated from zbaiter.cpp normal z -> c, Sun May  3 11:22:59 2015
 */
 
-#include "common_magma.h"
-#include "magmasparse.h"
-
-#include <assert.h>
+#include "common_magmasparse.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
@@ -31,15 +28,15 @@
     ---------
 
     @param[in]
-    A           magma_c_sparse_matrix
+    A           magma_c_matrix
                 input matrix A
 
     @param[in]
-    b           magma_c_vector
+    b           magma_c_matrix
                 RHS b
 
     @param[in,out]
-    x           magma_c_vector*
+    x           magma_c_matrix*
                 solution approximation
 
     @param[in,out]
@@ -55,66 +52,73 @@
 
 extern "C" magma_int_t
 magma_cbaiter(
-    magma_c_sparse_matrix A, 
-    magma_c_vector b, 
-    magma_c_vector *x,  
+    magma_c_matrix A,
+    magma_c_matrix b,
+    magma_c_matrix *x,
     magma_c_solver_par *solver_par,
     magma_queue_t queue )
 {
+    magma_int_t info = 0;
+        
     // prepare solver feedback
     solver_par->solver = Magma_BAITER;
     solver_par->info = MAGMA_SUCCESS;
 
-
-
-    magma_c_sparse_matrix Ah, ACSR, A_d, D, R, D_d, R_d;
-
-    magma_c_mtransfer( A, &Ah, A.memory_location, Magma_CPU, queue );
-    magma_c_mconvert( Ah, &ACSR, Ah.storage_type, Magma_CSR, queue );
-
-    magma_c_mtransfer( ACSR, &A_d, Magma_CPU, Magma_DEV, queue );
-
     // initial residual
     real_Double_t tempo1, tempo2;
     float residual;
-    magma_cresidual( A_d, b, *x, &residual, queue );
+    magma_int_t localiter = 1;
+    
+    magma_c_matrix Ah={Magma_CSR}, ACSR={Magma_CSR}, A_d={Magma_CSR}, D={Magma_CSR}, 
+                    R={Magma_CSR}, D_d={Magma_CSR}, R_d={Magma_CSR};
+    
+    CHECK( magma_cresidual( A, b, *x, &residual, queue ));
     solver_par->init_res = residual;
     solver_par->res_vec = NULL;
     solver_par->timing = NULL;
 
 
-    // setup
-    magma_ccsrsplit( 256, ACSR, &D, &R, queue );
-    magma_c_mtransfer( D, &D_d, Magma_CPU, Magma_DEV, queue );
-    magma_c_mtransfer( R, &R_d, Magma_CPU, Magma_DEV, queue );
 
-    magma_int_t localiter = 1;
+    CHECK( magma_cmtransfer( A, &Ah, A.memory_location, Magma_CPU, queue ));
+    CHECK( magma_cmconvert( Ah, &ACSR, Ah.storage_type, Magma_CSR, queue ));
+
+    CHECK( magma_cmtransfer( ACSR, &A_d, Magma_CPU, Magma_DEV, queue ));
+
+    // setup
+    CHECK( magma_ccsrsplit( 256, ACSR, &D, &R, queue ));
+    CHECK( magma_cmtransfer( D, &D_d, Magma_CPU, Magma_DEV, queue ));
+    CHECK( magma_cmtransfer( R, &R_d, Magma_CPU, Magma_DEV, queue ));
+
 
     tempo1 = magma_sync_wtime( queue );
 
     // block-asynchronous iteration iterator
     for( int iter=0; iter<solver_par->maxiter; iter++)
-        magma_cbajac_csr( localiter, D_d, R_d, b, x, queue );
+        CHECK( magma_cbajac_csr( localiter, D_d, R_d, b, x, queue ));
 
     tempo2 = magma_sync_wtime( queue );
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
-    magma_cresidual( A_d, b, *x, &residual, queue );
+    CHECK(  magma_cresidual( A, b, *x, &residual, queue));
     solver_par->final_res = residual;
     solver_par->numiter = solver_par->maxiter;
 
-    if ( solver_par->init_res > solver_par->final_res )
-        solver_par->info = MAGMA_SUCCESS;
-    else
-        solver_par->info = MAGMA_DIVERGENCE;
+    if ( solver_par->init_res > solver_par->final_res ){
+        info = MAGMA_SUCCESS;
+    }
+    else{
+        info = MAGMA_DIVERGENCE;
+    }
+    
+cleanup:
+    magma_cmfree(&D, queue );
+    magma_cmfree(&R, queue );
+    magma_cmfree(&D_d, queue );
+    magma_cmfree(&R_d, queue );
+    magma_cmfree(&A_d, queue );
+    magma_cmfree(&ACSR, queue );
+    magma_cmfree(&Ah, queue );
 
-    magma_c_mfree(&D, queue );
-    magma_c_mfree(&R, queue );
-    magma_c_mfree(&D_d, queue );
-    magma_c_mfree(&R_d, queue );
-    magma_c_mfree(&A_d, queue );
-    magma_c_mfree(&ACSR, queue );
-    magma_c_mfree(&Ah, queue );
-
-    return MAGMA_SUCCESS;
+    solver_par->info = info;
+    return info;
 }   /* magma_cbaiter */
 

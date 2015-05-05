@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from testing_zio.cpp normal z -> d, Fri Jan 30 19:00:33 2015
+       @generated from testing_zio.cpp normal z -> d, Sun May  3 11:23:02 2015
        @author Hartwig Anzt
 */
 
@@ -14,43 +14,43 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <unistd.h>
 
 // includes, project
 #include "flops.h"
 #include "magma.h"
-#include "magmasparse.h"
 #include "magma_lapack.h"
 #include "testings.h"
+#include "common_magmasparse.h"
 
 
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- testing any solver 
+   -- testing any solver
 */
 int main(  int argc, char** argv )
 {
+    magma_int_t info = 0;
     TESTING_INIT();
 
     magma_dopts zopts;
-    magma_queue_t queue;
+    magma_queue_t queue=NULL;
     magma_queue_create( /*devices[ opts->device ],*/ &queue );
     
-    int i=1;
-    magma_dparse_opts( argc, argv, &zopts, &i, queue );
-
-
     real_Double_t res;
-    magma_d_sparse_matrix A, A2, A3, A4, A5;
+    magma_d_matrix A={Magma_CSR}, A2={Magma_CSR}, 
+    A3={Magma_CSR}, A4={Magma_CSR}, A5={Magma_CSR};
+    
+    int i=1;
+    CHECK( magma_dparse_opts( argc, argv, &zopts, &i, queue ));
 
     while(  i < argc ) {
 
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
-            magma_dm_5stencil(  laplace_size, &A, queue );
+            CHECK( magma_dm_5stencil(  laplace_size, &A, queue ));
         } else {                        // file-matrix test
-            magma_d_csr_mtx( &A,  argv[i], queue );
+            CHECK( magma_d_csr_mtx( &A,  argv[i], queue ));
         }
 
         printf( "# matrix info: %d-by-%d with %d nonzeros\n",
@@ -60,57 +60,61 @@ int main(  int argc, char** argv )
         const char *filename = "testmatrix.mtx";
 
         // write to file
-        write_d_csrtomtx( A, filename, queue );
-
+        CHECK( magma_dwrite_csrtomtx( A, filename, queue ));
         // read from file
-        magma_d_csr_mtx( &A2, filename, queue );
+        CHECK( magma_d_csr_mtx( &A2, filename, queue ));
 
         // delete temporary matrix
         unlink( filename );
                 
         //visualize
         printf("A2:\n");
-        magma_d_mvisu( A2, queue );
+        CHECK( magma_dprint_matrix( A2, queue ));
         
         //visualize
-        magma_d_mconvert(A2, &A4, Magma_CSR, Magma_CSRL, queue );
+        CHECK( magma_dmconvert(A2, &A4, Magma_CSR, Magma_CSRL, queue ));
         printf("A4:\n");
-        magma_d_mvisu( A4, queue );
-        magma_d_mconvert(A4, &A5, Magma_CSR, Magma_ELL, queue );
+        CHECK( magma_dprint_matrix( A4, queue ));
+        CHECK( magma_dmconvert(A4, &A5, Magma_CSR, Magma_ELL, queue ));
         printf("A5:\n");
-        magma_d_mvisu( A5, queue );
+        CHECK( magma_dprint_matrix( A5, queue ));
 
         // pass it to another application and back
         magma_int_t m, n;
         magma_index_t *row, *col;
-        double *val;
-        magma_dcsrget( A2, &m, &n, &row, &col, &val, queue );
-        magma_dcsrset( m, n, row, col, val, &A3, queue );
+        double *val=NULL;
+        CHECK( magma_dcsrget( A2, &m, &n, &row, &col, &val, queue ));
+        CHECK( magma_dcsrset( m, n, row, col, val, &A3, queue ));
 
-        magma_dmdiff( A, A2, &res, queue );
+        CHECK( magma_dmdiff( A, A2, &res, queue ));
         printf("# ||A-B||_F = %8.2e\n", res);
         if ( res < .000001 )
             printf("# tester IO:  ok\n");
         else
             printf("# tester IO:  failed\n");
 
-        magma_dmdiff( A, A3, &res, queue );
+        CHECK( magma_dmdiff( A, A3, &res, queue ));
         printf("# ||A-B||_F = %8.2e\n", res);
         if ( res < .000001 )
             printf("# tester matrix interface:  ok\n");
         else
             printf("# tester matrix interface:  failed\n");
 
-        magma_d_mfree(&A, queue ); 
-        magma_d_mfree(&A2, queue ); 
-        magma_d_mfree(&A4, queue ); 
-        magma_d_mfree(&A5, queue ); 
+        magma_dmfree(&A, queue );
+        magma_dmfree(&A2, queue );
+        magma_dmfree(&A4, queue );
+        magma_dmfree(&A5, queue );
 
 
         i++;
     }
     
+cleanup:
+    magma_dmfree(&A, queue );
+    magma_dmfree(&A2, queue );
+    magma_dmfree(&A4, queue );
+    magma_dmfree(&A5, queue );
     magma_queue_destroy( queue );
     TESTING_FINALIZE();
-    return 0;
+    return info;
 }

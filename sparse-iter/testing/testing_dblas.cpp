@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from testing_zblas.cpp normal z -> d, Fri Jan 30 19:00:33 2015
+       @generated from testing_zblas.cpp normal z -> d, Sun May  3 11:23:02 2015
        @author Hartwig Anzt
 */
 
@@ -18,57 +18,90 @@
 // includes, project
 #include "flops.h"
 #include "magma.h"
-#include "magmasparse.h"
 #include "magma_lapack.h"
 #include "testings.h"
+#include "common_magmasparse.h"
 
 
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- testing any solver 
+   -- testing any solver
 */
 int main(  int argc, char** argv )
 {
+    magma_int_t info = 0;
     /* Initialize */
     TESTING_INIT();
-        magma_queue_t queue;
-            magma_queue_create( /*devices[ opts->device ],*/ &queue );
+    magma_queue_t queue=NULL;
+    magma_queue_create( &queue );
+    magmablasSetKernelStream( queue );
 
-    magma_int_t n=10000;
+    magma_int_t j, n=1000000, FLOPS;
     
     double one = MAGMA_D_MAKE( 1.0, 0.0 );
     double two = MAGMA_D_MAKE( 2.0, 0.0 );
 
-    magma_d_vector a, ad, bd, cd;
-    magma_d_vinit( &a, Magma_CPU, n, one, queue );
-    magma_d_vinit( &bd, Magma_DEV, n, two, queue );
-    magma_d_vinit( &cd, Magma_DEV, n, one, queue );
+    magma_d_matrix a={Magma_CSR}, ad={Magma_CSR}, bd={Magma_CSR}, cd={Magma_CSR};
+    CHECK( magma_dvinit( &a, Magma_CPU, n, 1, one, queue ));
+    CHECK( magma_dvinit( &bd, Magma_DEV, n, 1, two, queue ));
+    CHECK( magma_dvinit( &cd, Magma_DEV, n, 1, one, queue ));
     
-    magma_d_vtransfer( a, &ad, Magma_CPU, Magma_DEV, queue ); 
+    CHECK( magma_dmtransfer( a, &ad, Magma_CPU, Magma_DEV, queue ));
 
-    double res;
-    res = magma_dnrm2(n, ad.dval, 1); 
+    real_Double_t start, end, res;
     
-    printf("res: %f\n", res);
-    magma_dscal( n, two, ad.dval, 1 );   
+    FLOPS = 2*n;
+    start = magma_sync_wtime( queue );
+    for (j=0; j<100; j++)
+        res = magma_dnrm2(n, ad.dval, 1);
+    end = magma_sync_wtime( queue );
+    printf( " > MAGMA nrm2: %.2e seconds %.2e GFLOP/s\n",
+                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+    FLOPS = n;
+    start = magma_sync_wtime( queue );
+    for (j=0; j<100; j++)
+        magma_dscal( n, two, ad.dval, 1 );
+    end = magma_sync_wtime( queue );
+    printf( " > MAGMA scal: %.2e seconds %.2e GFLOP/s\n",
+                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+    FLOPS = 2*n;
+    start = magma_sync_wtime( queue );
+    for (j=0; j<100; j++)
+        magma_daxpy( n, one, ad.dval, 1, bd.dval, 1 );
+    end = magma_sync_wtime( queue );
+    printf( " > MAGMA axpy: %.2e seconds %.2e GFLOP/s\n",
+                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+    FLOPS = n;
+    start = magma_sync_wtime( queue );
+    for (j=0; j<100; j++)
+        magma_dcopy( n, bd.dval, 1, ad.dval, 1 );
+    end = magma_sync_wtime( queue );
+    printf( " > MAGMA copy: %.2e seconds %.2e GFLOP/s\n",
+                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+    FLOPS = 2*n;
+    start = magma_sync_wtime( queue );
+    for (j=0; j<100; j++)
+        res = MAGMA_D_REAL( magma_ddot(n, ad.dval, 1, bd.dval, 1) );
+    end = magma_sync_wtime( queue );
+    printf( " > MAGMA dotc: %.2e seconds %.2e GFLOP/s\n",
+                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
 
-    magma_daxpy( n, one, ad.dval, 1, bd.dval, 1 );
+    printf("# tester BLAS:  ok\n");
+
+
+    magma_dmfree( &a, queue);
+    magma_dmfree(&ad, queue);
+    magma_dmfree(&bd, queue);
+    magma_dmfree(&cd, queue);
+
     
-    magma_dcopy( n, bd.dval, 1, ad.dval, 1 );
-
-    res = MAGMA_D_REAL( magma_ddot(n, ad.dval, 1, bd.dval, 1) );
-
-    printf("res: %f\n", res);
-
-
-    magma_d_vfree( &a, queue);
-    magma_d_vfree(&ad, queue);
-    magma_d_vfree(&bd, queue);
-    magma_d_vfree(&cd, queue);
-
-    /* Shutdown */
+cleanup:
+    magma_dmfree( &a, queue);
+    magma_dmfree(&ad, queue);
+    magma_dmfree(&bd, queue);
+    magma_dmfree(&cd, queue);
+    magmablasSetKernelStream( NULL );
     magma_queue_destroy( queue );
     magma_finalize();
-    
-    return 0;
+    return info;
 }

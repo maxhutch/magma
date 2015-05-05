@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 */
 
 #ifndef MAGMA_TYPES_H
@@ -271,7 +271,7 @@ typedef double real_Double_t;
 // ----------------------------------------
 #define MAGMA_VERSION_MAJOR 1
 #define MAGMA_VERSION_MINOR 6
-#define MAGMA_VERSION_MICRO 1
+#define MAGMA_VERSION_MICRO 2
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
 #define MAGMA_VERSION_STAGE ""
@@ -302,12 +302,25 @@ typedef double real_Double_t;
 #define MAGMA_ERR_INVALID_PTR      -115
 #define MAGMA_ERR_UNKNOWN          -116
 #define MAGMA_ERR_NOT_IMPLEMENTED  -117
+
 // some sparse-iter errors
 #define MAGMA_SLOW_CONVERGENCE     -201
 #define MAGMA_DIVERGENCE           -202
 #define MAGMA_NONSPD               -203
+#define MAGMA_ERR_BADPRECOND       -204
 
 // When adding error codes, please add to interface_cuda/error.cpp
+
+// map cusparse errors to magma errors
+#define MAGMA_ERR_CUSPARSE_NOT_INITIALIZED            -3001
+#define MAGMA_ERR_CUSPARSE_ALLOC_FAILED               -3002
+#define MAGMA_ERR_CUSPARSE_INVALID_VALUE              -3003
+#define MAGMA_ERR_CUSPARSE_ARCH_MISMATCH              -3004
+#define MAGMA_ERR_CUSPARSE_MAPPING_ERROR              -3005
+#define MAGMA_ERR_CUSPARSE_EXECUTION_FAILED           -3006
+#define MAGMA_ERR_CUSPARSE_INTERNAL_ERROR             -3007
+#define MAGMA_ERR_CUSPARSE_MATRIX_TYPE_NOT_SUPPORTED  -3008
+#define MAGMA_ERR_CUSPARSE_ZERO_PIVOT                 -3009
 
 
 // ----------------------------------------

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zlobpcg_shift.cu normal z -> c, Fri Jan 30 19:00:29 2015
+       @generated from zlobpcg_shift.cu normal z -> c, Sun May  3 11:22:58 2015
 
 */
 
@@ -98,7 +98,7 @@ magma_clobpcg_shift(
     dim3 block( num_threads, 1, 1 );
 
     int dimgrid1 = (int) sqrt( (float) num_rows);
-    int dimgrid2 = (num_rows + dimgrid1 -1 ) / dimgrid1;
+    int dimgrid2 = magma_ceildiv( num_rows, dimgrid1 );
 
     dim3 grid( dimgrid1, dimgrid2, 1);
 

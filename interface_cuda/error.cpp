@@ -294,13 +294,44 @@ const char* magma_strerror( magma_int_t error )
         
         // some sparse-iter errors
         case MAGMA_SLOW_CONVERGENCE:
-            return "slow convergence";
+            return "stopping criterion not reached";
         
         case MAGMA_DIVERGENCE:
             return "divergence";
         
         case MAGMA_NONSPD:
             return "not positive definite (SPD/HPD)";
+        
+        case MAGMA_ERR_BADPRECOND:
+            return "bad preconditioner";
+        
+        // map cusparse errors to magma errors
+        case MAGMA_ERR_CUSPARSE_NOT_INITIALIZED:
+            return "cusparse: not initialized";
+
+        case MAGMA_ERR_CUSPARSE_ALLOC_FAILED:
+            return "cusparse: allocation failed";
+
+        case MAGMA_ERR_CUSPARSE_INVALID_VALUE:
+            return "cusparse: invalid value";
+
+        case MAGMA_ERR_CUSPARSE_ARCH_MISMATCH:
+            return "cusparse: architecture mismatch";
+
+        case MAGMA_ERR_CUSPARSE_MAPPING_ERROR:
+            return "cusparse: mapping error";
+
+        case MAGMA_ERR_CUSPARSE_EXECUTION_FAILED:
+            return "cusparse: execution failed";
+
+        case MAGMA_ERR_CUSPARSE_INTERNAL_ERROR:
+            return "cusparse: internal error";
+
+        case MAGMA_ERR_CUSPARSE_MATRIX_TYPE_NOT_SUPPORTED:
+            return "cusparse: matrix type not supported";
+
+        case MAGMA_ERR_CUSPARSE_ZERO_PIVOT:
+            return "cusparse: zero pivot";
         
         default:
             return "unknown MAGMA error code";

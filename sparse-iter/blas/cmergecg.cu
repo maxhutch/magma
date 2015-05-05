@@ -1,16 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date May 2015
 
-       @generated from zmergecg.cu normal z -> c, Fri Jan 30 19:00:29 2015
+       @generated from zmergecg.cu normal z -> c, Sun May  3 11:22:58 2015
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
-#include "magmasparse.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
@@ -339,7 +338,7 @@ extern __shared__ magmaFloatComplex shared[];
 
     if(i < n ){
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
-        int max_ = (drowlength[i]+T-1)/T;  
+        int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
@@ -391,7 +390,7 @@ extern __shared__ magmaFloatComplex shared[];
 
     if(i < n ){
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
-        int max_ = (drowlength[i]+T-1)/T;  
+        int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
@@ -444,7 +443,7 @@ extern __shared__ magmaFloatComplex shared[];
 
     if(i < n ){
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
-        int max_ = (drowlength[i]+T-1)/T;  
+        int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
         for ( int k = 0; k < max_ ; k++ ){
@@ -826,7 +825,7 @@ magma_ccg_rhokernel(
     ---------
 
     @param[in]
-    A           magma_c_sparse_matrix
+    A           magma_c_matrix
                 input matrix 
 
     @param[in]
@@ -858,7 +857,7 @@ magma_ccg_rhokernel(
 
 extern "C" magma_int_t
 magma_ccgmerge_spmv1(
-    magma_c_sparse_matrix A,
+    magma_c_matrix A,
     magmaFloatComplex_ptr d1,
     magmaFloatComplex_ptr d2,
     magmaFloatComplex_ptr dd,
@@ -872,7 +871,7 @@ magma_ccgmerge_spmv1(
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (A.num_rows+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( A.num_rows, local_block_size ) );
     dim3 Gs_next;
     int Ms =  local_block_size * sizeof( magmaFloatComplex ); 
     magmaFloatComplex_ptr aux1 = d1, aux2 = d2;
@@ -895,7 +894,7 @@ magma_ccgmerge_spmv1(
 
             dim3 block( A.blocksize, A.alignment, 1);
             int dimgrid1 = sqrt(A.numblocks);
-            int dimgrid2 = (A.numblocks + dimgrid1 -1 ) / dimgrid1;
+            int dimgrid2 = magma_ceildiv( A.numblocks, dimgrid1 );
 
             dim3 gridsellp( dimgrid1, dimgrid2, 1);
             int Mssellp = num_threadssellp * sizeof( magmaFloatComplex );
@@ -947,7 +946,7 @@ magma_ccgmerge_spmv1(
         printf("error: too much shared memory requested.\n");
 
     int dimgrid1 = sqrt(num_blocks);
-    int dimgrid2 = (num_blocks + dimgrid1 -1 ) / dimgrid1;
+    int dimgrid2 = magma_ceildiv( num_blocks, dimgrid1 );
     dim3 gridellrt( dimgrid1, dimgrid2, 1);
 
     int Mellrt = A.alignment * A.blocksize * sizeof( magmaFloatComplex );
@@ -1183,7 +1182,7 @@ magma_ccgmerge_xrbeta(
 
     int local_block_size=256;
     dim3 Bs( local_block_size );
-    dim3 Gs( (n+local_block_size-1)/local_block_size );
+    dim3 Gs( magma_ceildiv( n, local_block_size ) );
     dim3 Gs_next;
     int Ms =  2*local_block_size * sizeof( magmaFloatComplex ); 
     magmaFloatComplex_ptr aux1 = d1, aux2 = d2;
@@ -1212,7 +1211,7 @@ magma_ccgmerge_xrbeta(
     magma_ccg_alphabetakernel<<<Gs2, Bs2, 0>>>( skp );
 
     dim3 Bs3( local_block_size );
-    dim3 Gs3( (n+local_block_size-1)/local_block_size );
+    dim3 Gs3( magma_ceildiv( n, local_block_size ) );
     magma_ccg_d_kernel<<<Gs3, Bs3, 0>>>( n, skp, dr, dd );  
 
    magmablasSetKernelStream( orig_queue );
