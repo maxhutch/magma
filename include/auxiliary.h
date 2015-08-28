@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 */
 
 #ifndef MAGMA_AUXILIARY_H
@@ -40,7 +40,7 @@ void magma_indices_1D_bcyclic( magma_int_t nb, magma_int_t ngpu, magma_int_t dev
 
 void magma_print_environment();
 
-void swp2pswp(magma_trans_t trans, magma_int_t n, magma_int_t *ipiv, magma_int_t *newipiv);
+void magma_swp2pswp(magma_trans_t trans, magma_int_t n, magma_int_t *ipiv, magma_int_t *newipiv);
 
 #ifdef __cplusplus
 }

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from dsyevd.cpp normal d -> s, Fri Jan 30 19:00:17 2015
+       @generated from dsyevd.cpp normal d -> s, Tue Aug 25 16:35:17 2015
 
 */
 #include "common_magma.h"

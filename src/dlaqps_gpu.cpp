@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlaqps_gpu.cpp normal z -> d, Fri Jan 30 19:00:16 2015
+       @generated from zlaqps_gpu.cpp normal z -> d, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -180,15 +180,7 @@ magma_dlaqps_gpu(
             jpvt[k]   = itemp;
             //vn1[pvt] = vn1[k];
             //vn2[pvt] = vn2[k];
-            #if defined(PRECISION_d) || defined(PRECISION_z)
-                //magma_dswap( 1, &vn1[pvt], 1, &vn1[k], 1 );
-                //magma_dswap( 1, &vn2[pvt], 1, &vn2[k], 1 );
-                magma_dswap( 2, &vn1[pvt], n+offset, &vn1[k], n+offset );
-            #else
-                //magma_sswap( 1, &vn1[pvt], 1, &vn1[k], 1 );
-                //magma_sswap( 1, &vn2[pvt], 1, &vn2[k], 1 );
-                magma_sswap(2, &vn1[pvt], n+offset, &vn1[k], n+offset);
-            #endif
+            magma_dswap( 2, &vn1[pvt], n+offset, &vn1[k], n+offset );
         }
 
         /* Apply previous Householder reflectors to column K:
@@ -374,11 +366,7 @@ magma_dlaqps_gpu(
             magmablas_dnrm2_row_check_adjust(n-k-1, tol3z, &vn1[k+1], &vn2[k+1], dA(rk,k+1), ldda, dlsticcs);
 
             magma_device_sync();
-            #if defined(PRECISION_d) || defined(PRECISION_z)
             magma_dgetvector( 1, &dlsticcs[0], 1, &lsticc, 1 );
-            #else
-            magma_sgetvector( 1, &dlsticcs[0], 1, &lsticc, 1 );
-            #endif
         }
 
 

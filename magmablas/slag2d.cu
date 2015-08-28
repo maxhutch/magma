@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from clag2z.cu mixed zc -> ds, Fri Jan 30 19:00:07 2015
+       @generated from clag2z.cu mixed zc -> ds, Tue Aug 25 16:35:07 2015
        @author Mark Gates
 */
 #include "common_magma.h"
-
-#define PRECISION_d
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -130,7 +128,7 @@ magmablas_slag2d_q(
     }
 
     dim3 threads( BLK_X, 1 );
-    dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     slag2d_kernel<<< grid, threads, 0, queue >>> ( m, n, SA, ldsa, A, lda );
 }
 

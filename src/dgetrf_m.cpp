@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgetrf_m.cpp normal z -> d, Fri Jan 30 19:00:14 2015
+       @generated from zgetrf_m.cpp normal z -> d, Tue Aug 25 16:35:15 2015
 
 */
 
@@ -125,7 +125,7 @@ magma_dgetrf_m(
     
     /* initialize nb */
     nb = magma_get_dgetrf_nb(m);
-    maxm = ((m  + 31)/32)*32;
+    maxm = magma_roundup( m, 32 );
 
     /* figure out NB */
     size_t freeMem, totalMem;
@@ -177,7 +177,7 @@ magma_dgetrf_m(
         if ( NB%(nb*ngpu) != 0 )
             n_local[0]++;
         n_local[0] *= nb;
-        ldn_local = ((n_local[0]+31)/32)*32;
+        ldn_local = magma_roundup( n_local[0], 32 );
     
         for( d=0; d < ngpu; d++ ) {
             magma_setdevice(d);
@@ -200,7 +200,7 @@ magma_dgetrf_m(
             N = min( NB, n-I );       /* number of columns in this big panel             */
             //s = min( max(m-I,0), N )/nb; /* number of small block-columns in this big panel */
     
-            maxm = ((M + 31)/32)*32;
+            maxm = magma_roundup( M, 32 );
             if ( ngpu0 > ceil((double)N/nb) ) {
                 ngpu = (int)ceil((double)N/nb);
             } else {
@@ -214,7 +214,7 @@ magma_dgetrf_m(
                 else if (d == (N/nb)%ngpu)
                     n_local[d] += N%nb;
             }
-            ldn_local = ((n_local[0]+31)/32)*32;
+            ldn_local = magma_roundup( n_local[0], 32 );
             
             /* upload the next big panel into GPU, transpose (A->A'), and pivot it */
             timer_start( time );
@@ -292,7 +292,6 @@ magma_dgetrf_m(
                                 dPT(d,1,(jj/nb)%2), nb, c_one, dAT(d,ib+1,0), ldn_local );
                         }
                         magma_event_record( event[d][(jj/nb)%2], stream[d][1] );
-                    
                     } /* end of for each block-columns in a big-panel */
                 }
             } /* end of for each previous big-panels */

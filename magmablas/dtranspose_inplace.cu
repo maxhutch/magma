@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from ztranspose_inplace.cu normal z -> d, Fri Jan 30 19:00:09 2015
+       @generated from ztranspose_inplace.cu normal z -> d, Tue Aug 25 16:35:09 2015
 
        @author Stan Tomov
        @author Mark Gates
@@ -46,7 +46,7 @@ __global__ void dtranspose_inplace_odd( int n, double *matrix, int lda )
     jj *= NB;
 
     double *A = matrix + ii+i + (jj+j)*lda;
-    if( ii == jj ) {
+    if ( ii == jj ) {
         if ( ii+i < n && jj+j < n ) {
             sA[j][i] = *A;
         }
@@ -108,7 +108,7 @@ __global__ void dtranspose_inplace_even( int n, double *matrix, int lda )
     jj *= NB;
 
     double *A = matrix + ii+i + (jj+j)*lda;
-    if( ii == jj ) {
+    if ( ii == jj ) {
         if ( ii+i < n && jj+j < n ) {
             sA[j][i] = *A;
         }
@@ -182,11 +182,11 @@ magmablas_dtranspose_inplace_q(
     }
     
     dim3 threads( NB, NB );
-    int nblock = (n + NB - 1)/NB;
+    int nblock = magma_ceildiv( n, NB );
     
     // need 1/2 * (nblock+1) * nblock to cover lower triangle and diagonal of matrix.
     // block assignment differs depending on whether nblock is odd or even.
-    if( nblock % 2 == 1 ) {
+    if ( nblock % 2 == 1 ) {
         dim3 grid( nblock, (nblock+1)/2 );
         dtranspose_inplace_odd<<< grid, threads, 0, queue >>>( n, dA, ldda );
     }

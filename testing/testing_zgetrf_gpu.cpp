@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -122,7 +122,7 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     // copy LU to L and U, and set diagonal to 1
     lapackf77_zlacpy( MagmaLowerStr, &M, &min_mn, LU, &lda, L, &M      );
     lapackf77_zlacpy( MagmaUpperStr, &min_mn, &N, LU, &lda, U, &min_mn );
-    for(j=0; j<min_mn; j++)
+    for (j=0; j < min_mn; j++)
         L[j+j*M] = MAGMA_Z_MAKE( 1., 0. );
     
     matnorm = lapackf77_zlange("f", &M, &N, A, &lda, work);
@@ -161,17 +161,17 @@ int main( int argc, char** argv)
     magma_int_t status   = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     if ( opts.check == 2 ) {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
     }
     else {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |PA-LU|/(N*|A|)\n");
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |PA-LU|/(N*|A|)\n");
     }
-    printf("=========================================================================\n");
+    printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -179,7 +179,7 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_ZGETRF( M, N ) / 1e9;
             
             TESTING_MALLOC_CPU( ipiv, magma_int_t,        min_mn );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zpotrf_m.cpp normal z -> c, Fri Jan 30 19:00:14 2015
+       @generated from zpotrf_m.cpp normal z -> c, Tue Aug 25 16:35:14 2015
 
 */
 #include "common_magma.h"
@@ -15,7 +15,7 @@
 /**
     Purpose
     -------
-    CPOTRF_OOC computes the Cholesky factorization of a complex Hermitian
+    CPOTRF computes the Cholesky factorization of a complex Hermitian
     positive definite matrix A. This version does not require work
     space on the GPU passed as input. GPU memory is allocated in the
     routine. The matrix A may exceed the GPU memory.
@@ -130,9 +130,9 @@ magma_cpotrf_m(
     } else {
         ngpu = ngpu0;
     }
-    //ldda  = ((n+31)/32)*32;
-    ldda  = ((n+nb-1)/nb)*nb;
-    lddla = ((nb*((n+nb*ngpu-1)/(nb*ngpu))+31)/32)*32;
+    //ldda  = magma_roundup( n, 32 );
+    ldda  = magma_roundup( n, nb );
+    lddla = magma_roundup( nb*((n+nb*ngpu-1)/(nb*ngpu)), 32 );
 
     /* figure out NB */
     size_t freeMem, totalMem;
@@ -293,7 +293,7 @@ magma_cpotrf_m(
             } /* end of updates with previous rows */
             
             /* factor the big panel */
-            h  = (JB+nb-1)/nb; // big diagonal of big panel will be on CPU
+            h  = magma_ceildiv( JB, nb ); // big diagonal of big panel will be on CPU
             // using three streams
             magma_cpotrf3_mgpu(ngpu, uplo, JB, n-J, J, J, nb,
                                dwork, NB, dt, ldda, A, lda, h, stream, event, &iinfo);
@@ -414,7 +414,7 @@ magma_cpotrf_m(
             }
             
             /* factor the big panel */
-            h = (JB+nb-1)/nb; // big diagonal of big panel will be on CPU
+            h = magma_ceildiv( JB, nb ); // big diagonal of big panel will be on CPU
             // using three streams
             magma_cpotrf3_mgpu(ngpu, uplo, n-J, JB, J, J, nb,
                                dwork, lddla, dt, ldda, A, lda, h, stream, event, &iinfo);
@@ -426,7 +426,6 @@ magma_cpotrf_m(
             
             /* upload the off-diagonal big panel */
             magma_cdtohpo( ngpu, uplo, n, JB, J, J, nb, JB, A, lda, dwork, lddla, stream, &iinfo);
-        
         } /* end of for J */
     } /* if upper */
     } /* if nb */
@@ -452,7 +451,7 @@ magma_cpotrf_m(
     }
     magma_setdevice( orig_dev );
     magmablasSetKernelStream( orig_stream );
-                 
+    
     timer_printf( "\n n=%d NB=%d nb=%d\n", (int) n, (int) NB, (int) nb );
     timer_printf( " Without memory allocation: %f / %f = %f GFlop/s\n",
                   FLOPS_CPOTRF(n) / 1e9,  time_total,

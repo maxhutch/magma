@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmcsrcompressor_gpu.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from magma_zmcsrcompressor_gpu.cu normal z -> c, Tue Aug 25 16:35:31 2015
        @author Hartwig Anzt
 
 */
@@ -23,8 +23,8 @@ magma_cmcsrgpu_kernel1( int num_rows,
                  magma_index_t *A_colind,
                  magmaFloatComplex *B_val,
                  magma_index_t *B_rowptr,
-                 magma_index_t *B_colind ){
-
+                 magma_index_t *B_colind )
+{
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
@@ -50,8 +50,8 @@ magma_cmcsrgpu_kernel1( int num_rows,
 __global__ void
 magma_cmcsrgpu_kernel2( int num_rows,
                  magma_index_t *B_rowptr,
-                 magma_index_t *A_rowptr ){
-
+                 magma_index_t *A_rowptr )
+{
     int idx = blockIdx.x*blockDim.x+threadIdx.x;
     int j, nnz = 0;
 
@@ -76,8 +76,8 @@ magma_cmcsrgpu_kernel3( int num_rows,
                  magmaFloatComplex *A_val,
                  magma_index_t *A_rowptr,
                  magma_index_t *A_colind
-                                            ){
-
+                                            )
+{
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j, new_location;
     
@@ -130,7 +130,6 @@ magma_cmcsrcompressor_gpu(
     magma_index_t *cputmp = NULL;
     
     if ( A->memory_location == Magma_DEV && A->storage_type == Magma_CSR ) {
-
         CHECK( magma_index_malloc( &B.drow, A->num_rows + 1 ));
         CHECK( magma_index_malloc( &B2.drow, A->num_rows + 1 ));
         
@@ -166,8 +165,6 @@ magma_cmcsrcompressor_gpu(
 
         A->dcol = B.dcol;
         A->dval = B.dval;
-
-
     }
     else {
         magma_storage_t A_storage = A->storage_type;
@@ -183,7 +180,6 @@ magma_cmcsrcompressor_gpu(
         CHECK( magma_cmconvert( CSRA, A, Magma_CSR, A_storage, queue ));
         magma_cmfree( &dA, queue );
         magma_cmfree( &CSRA, queue );
-
     }
     
 cleanup:
@@ -193,5 +189,3 @@ cleanup:
     magma_free( B.drow );
     return info;
 }
-
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -28,9 +28,9 @@ void magma_zlarfg_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComplex
     magmaDoubleComplex dxi;
 
 #if (defined(PRECISION_s) || defined(PRECISION_d))
-    if( n <= 1 ) {
+    if ( n <= 1 ) {
 #else
-    if( n <= 0 ) {
+    if ( n <= 0 ) {
 #endif
         *dtau = MAGMA_Z_ZERO;
         *dAkk = *dx0;
@@ -76,8 +76,8 @@ void magma_zlarfg_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComplex
         __syncthreads();
         if ( xnorm != 0 && j < n-1)
             dx[j] = MAGMA_Z_MUL(dxi, scale);
-
-    } else {
+    }
+    else {
         *dtau = MAGMA_Z_ZERO;
         *dAkk = *dx0; 
     }
@@ -105,7 +105,7 @@ magma_zlarfg_gpu(
     magmaDouble_ptr        dxnorm,
     magmaDoubleComplex_ptr dAkk)
 {
-    dim3 blocks((n+BLOCK_SIZE-1) / BLOCK_SIZE);
+    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
     dim3 threads( BLOCK_SIZE );
 
     /* recomputing the norm */

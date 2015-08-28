@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
-       @generated from zbpcg.cpp normal z -> s, Sun May  3 11:22:59 2015
+       @generated from zbpcg.cpp normal z -> s, Tue Aug 25 16:35:33 2015
 */
 
 #include "common_magmasparse.h"
@@ -147,7 +147,7 @@ magma_sbpcg(
 
     solver_par->init_res = nom0[0];
     
-    if ( (r0[0] = nom[0] * solver_par->epsilon) < ATOLERANCE )
+    if ( (r0[0] = nom[0] * solver_par->rtol) < ATOLERANCE )
         r0[0] = ATOLERANCE;
     // check positive definite
     if (den[0] <= 0.0) {
@@ -222,7 +222,7 @@ magma_sbpcg(
         }
 
 
-        if (  res[0]/nom0[0]  < solver_par->epsilon ) {
+        if (  res[0]/nom0[0]  < solver_par->rtol ) {
             break;
         }
     }
@@ -246,7 +246,7 @@ magma_sbpcg(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->rtol*solver_par->init_res ){
             info = MAGMA_SUCCESS;
         }
     }
@@ -291,5 +291,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* magma_sbpcg */
-
-

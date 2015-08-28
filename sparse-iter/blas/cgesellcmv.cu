@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zgesellcmv.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zgesellcmv.cu normal z -> c, Tue Aug 25 16:35:30 2015
 
 */
 #include "common_magmasparse.h"
@@ -34,7 +34,7 @@ cgesellcmv_kernel(
     magmaFloatComplex * dy)
 {
     // threads assigned to rows
-    int Idx = blockDim.x * blockIdx.x + threadIdx.x ;
+    int Idx = blockDim.x * blockIdx.x + threadIdx.x;
     int offset = drowptr[ blockIdx.x ];
     int border = (drowptr[ blockIdx.x+1 ]-offset)/blocksize;
     if(Idx < num_rows ){
@@ -147,4 +147,3 @@ magma_cgesellcmv(
 
    return MAGMA_SUCCESS;
 }
-

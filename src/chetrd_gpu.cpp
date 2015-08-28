@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zhetrd_gpu.cpp normal z -> c, Fri Jan 30 19:00:17 2015
+       @generated from zhetrd_gpu.cpp normal z -> c, Tue Aug 25 16:35:18 2015
 
 */
 #include "common_magma.h"
@@ -187,7 +187,7 @@ magma_chetrd_gpu(
 
     /* Determine the block size. */
     ldw = n;
-    lddw = roundup( n, 32 );
+    lddw = magma_roundup( n, 32 );
     lwkopt = n * nb;
     if (*info == 0) {
         work[0] = MAGMA_C_MAKE( lwkopt, 0 );
@@ -206,12 +206,13 @@ magma_chetrd_gpu(
         return *info;
     }
 
-    //if (n < 2048)
-    //    nx = n;
-    //else
-    //    nx = 512;
-    nx = min( 128, n );  // nx <= n is required
-    
+    // nx <= n is required
+    // use LAPACK for n < 3000, otherwise switch at 512
+    if (n < 3000)
+        nx = n;
+    else
+        nx = 512;
+
     magmaFloatComplex_ptr dwork;
     if (MAGMA_SUCCESS != magma_cmalloc( &dwork, lddw*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -225,7 +226,7 @@ magma_chetrd_gpu(
     if (upper) {
         /* Reduce the upper triangle of A.
            Columns 1:kk are handled by the unblocked method. */
-        kk = n - (n - nx + nb - 1) / nb * nb;
+        kk = n - magma_roundup( n - nx, nb );
         
         for (i = n - nb; i >= kk; i -= nb) {
             /* Reduce columns i:i+nb-1 to tridiagonal form and form the

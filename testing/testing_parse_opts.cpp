@@ -3,7 +3,7 @@
 int main( int argc, char** argv )
 {
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         printf( "m %5d, n %5d, k %5d\n",
@@ -17,7 +17,7 @@ int main( int argc, char** argv )
     printf( "kmax     %d\n", (int) opts.kmax  );
     printf( "\n" );
     
-    printf( "nb       %d\n", (int) opts.nb       ); 
+    printf( "nb       %d\n", (int) opts.nb       );
     printf( "nrhs     %d\n", (int) opts.nrhs     );
     printf( "nstream  %d\n", (int) opts.nstream  );
     printf( "ngpu     %d\n", (int) opts.ngpu     );

@@ -17,6 +17,7 @@ int mm_read_unsymmetric_sparse(
     magma_index_t **I_, 
     magma_index_t **J_)
 {
+    char buffer[ 1024 ];
     FILE *f;
     MM_typecode matcode;
     magma_index_t M, N, nz;
@@ -28,23 +29,20 @@ int mm_read_unsymmetric_sparse(
  
     if ((f = fopen(fname, "r")) == NULL)
             info = -1;
- 
- 
+
     if (mm_read_banner(f, &matcode) != 0)
     {
-        printf("#mm_read_unsymetric: Could not process Matrix Market banner ");
-        printf("# in file [%s]\n", fname);
+        printf("%% mm_read_unsymetric: Could not process Matrix Market banner ");
+        printf("%% in file [%s]\n", fname);
         info = -1;
     }
- 
- 
  
     if ( !(mm_is_real(matcode) && mm_is_matrix(matcode) &&
             mm_is_sparse(matcode)))
     {
-        fprintf(stderr, "#Sorry, this application does not support ");
-        fprintf(stderr, "#Market Market type: [%s]\n",
-                mm_typecode_to_str(matcode));
+        mm_snprintf_typecode( buffer, sizeof(buffer), matcode );
+        fprintf(stderr, "%% Sorry, MAGMA-sparse does not support ");
+        fprintf(stderr, "%% Market Market type: [%s]\n", buffer );
         info = -1;
     }
  
@@ -52,7 +50,7 @@ int mm_read_unsymmetric_sparse(
  
     if (mm_read_mtx_crd_size(f, &M, &N, &nz) !=0)
     {
-        fprintf(stderr, "#read_unsymmetric_sparse(): could not parse matrix size.\n");
+        fprintf(stderr, "%% read_unsymmetric_sparse(): could not parse matrix size.\n");
         info = -1;
     }
  
@@ -312,7 +310,6 @@ int mm_read_mtx_crd_data(FILE *f, magma_index_t M, magma_index_t N, magma_index_
         {
             if (fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i])
                 != 3) info = MM_PREMATURE_EOF;
-
         }
     }
 
@@ -326,7 +323,6 @@ int mm_read_mtx_crd_data(FILE *f, magma_index_t M, magma_index_t N, magma_index_
         info = MM_UNSUPPORTED_TYPE;
 
     return info;
-        
 }
 
 int mm_read_mtx_crd_entry(FILE *f, magma_index_t *I, magma_index_t *J,
@@ -343,7 +339,6 @@ int mm_read_mtx_crd_entry(FILE *f, magma_index_t *I, magma_index_t *J,
     {
             if (fscanf(f, "%d %d %lg\n", I, J, real)
                 != 3) info = MM_PREMATURE_EOF;
-
     }
 
     else if (mm_is_pattern(matcode))
@@ -354,7 +349,6 @@ int mm_read_mtx_crd_entry(FILE *f, magma_index_t *I, magma_index_t *J,
         info = MM_UNSUPPORTED_TYPE;
 
     return info;
-        
 }
 
 
@@ -431,11 +425,11 @@ int mm_write_banner(FILE *f, MM_typecode matcode)
 {
     magma_int_t info = 0;
     
-    char *str = mm_typecode_to_str(matcode);
+    char buffer[ 1024 ];
+    mm_snprintf_typecode( buffer, sizeof(buffer), matcode );
     int ret_code;
 
-    ret_code = fprintf(f, "%s %s\n", MatrixMarketBanner, str);
-    free(str);
+    ret_code = fprintf(f, "%s %s\n", MatrixMarketBanner, buffer);
     if (ret_code !=2 )
         info = MM_COULD_NOT_WRITE_FILE;
     else
@@ -447,6 +441,7 @@ int mm_write_banner(FILE *f, MM_typecode matcode)
 int mm_write_mtx_crd(char fname[], magma_index_t M, magma_index_t N, magma_index_t nz, 
         magma_index_t I[], magma_index_t J[], double val[], MM_typecode matcode)
 {
+    char buffer[ 1024 ];
     magma_int_t info = 0;
         
     FILE *f;
@@ -459,8 +454,9 @@ int mm_write_mtx_crd(char fname[], magma_index_t M, magma_index_t N, magma_index
         info = MM_COULD_NOT_WRITE_FILE;
     
     /* print banner followed by typecode */
+    mm_snprintf_typecode( buffer, sizeof(buffer), matcode );
     fprintf(f, "%s ", MatrixMarketBanner);
-    fprintf(f, "%s\n", mm_typecode_to_str(matcode));
+    fprintf(f, "%s\n", buffer );
 
     /* print matrix sizes and nonzeros */
     fprintf(f, "%d %d %d\n", M, N, nz);
@@ -490,32 +486,18 @@ int mm_write_mtx_crd(char fname[], magma_index_t M, magma_index_t N, magma_index
 }
   
 
-/**
-*  Create a new copy of a string s.  mm_strdup() is a common routine, but
-*  not part of ANSI C, so it is included here.  Used by mm_typecode_to_str().
-*
-*/
-char *mm_strdup(const char *s)
+void mm_snprintf_typecode( char *buffer, size_t buflen, MM_typecode matcode )
 {
-    
-    int len = strlen(s);
-    char *s2 = (char *) malloc((len+1)*sizeof(char));
-    return strcpy(s2, s);
-}
-
-char  *mm_typecode_to_str(MM_typecode matcode)
-{
- 
-    char buffer[MM_MAX_LINE_LENGTH];
     const char *types[4];
-    char *mm_strdup(const char *);
     //int error =0;
 
+    buffer[0] = '\0';
+    
     /* check for MTX type */
     if (mm_is_matrix(matcode)) 
         types[0] = MM_MTX_STR;
-    //else
-    //    error=1;
+    else
+        types[0] = MM_UNKNOWN;
 
     /* check for CRD or ARR matrix */
     if (mm_is_sparse(matcode))
@@ -524,7 +506,7 @@ char  *mm_typecode_to_str(MM_typecode matcode)
     if (mm_is_dense(matcode))
         types[1] = MM_DENSE_STR;
     else
-        return NULL;
+        types[1] = MM_UNKNOWN;
 
     /* check for element data type */
     if (mm_is_real(matcode))
@@ -539,7 +521,7 @@ char  *mm_typecode_to_str(MM_typecode matcode)
     if (mm_is_integer(matcode))
         types[2] = MM_INT_STR;
     else
-        return NULL;
+        types[2] = MM_UNKNOWN;
 
 
     /* check for symmetry type */
@@ -555,9 +537,7 @@ char  *mm_typecode_to_str(MM_typecode matcode)
     if (mm_is_skew(matcode))
         types[3] = MM_SKEW_STR;
     else
-        return NULL;
+        types[3] = MM_UNKNOWN;
 
-    sprintf(buffer,"%s %s %s %s", types[0], types[1], types[2], types[3]);
-    return mm_strdup(buffer);
-
+    snprintf( buffer, buflen, "%s %s %s %s", types[0], types[1], types[2], types[3] );
 }

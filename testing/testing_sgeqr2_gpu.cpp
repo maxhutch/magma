@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgeqr2_gpu.cpp normal z -> s, Fri Jan 30 19:00:25 2015
+       @generated from testing_zgeqr2_gpu.cpp normal z -> s, Tue Aug 25 16:35:26 2015
        @author Stan Tomov
 
 */
@@ -41,13 +41,13 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     float tol = opts.tolerance * lapackf77_slamch("E");
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||R||_F / ||A||_F\n");
-    printf("=======================================================================\n");
+    printf("%% M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||R||_F / ||A||_F\n");
+    printf("%%======================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_SGEQRF( M, N ) / 1e9;
             
             // query for workspace size
@@ -87,11 +87,12 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            gpu_time = magma_sync_wtime( 0 );
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
 
             magma_sgeqr2_gpu( M, N, d_A, ldda, dtau, dwork, &info );
 
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
                 printf("magma_sgeqr2_gpu returned error %d: %s.\n",

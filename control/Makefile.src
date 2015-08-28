@@ -11,14 +11,17 @@ SHDR = \
 CSRC = \
 	magma_cnan_inf.cpp \
 	cpanel_to_q.cpp \
-	cprint.cpp
+	cprint.cpp \
+	magma_cbulge.cpp
 
 DSRC = \
 	magma_dnan_inf.cpp \
 	dpanel_to_q.cpp \
-	dprint.cpp
+	dprint.cpp \
+	magma_dbulge.cpp
 
 SSRC = \
 	magma_snan_inf.cpp \
 	spanel_to_q.cpp \
-	sprint.cpp
+	sprint.cpp \
+	magma_sbulge.cpp

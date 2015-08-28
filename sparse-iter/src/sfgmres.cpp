@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
-       @generated from zfgmres.cpp normal z -> s, Sun May  3 11:22:59 2015
+       @generated from zfgmres.cpp normal z -> s, Tue Aug 25 16:35:33 2015
 */
 #include "common_magmasparse.h"
 
@@ -39,35 +39,41 @@
 static void
 GeneratePlaneRotation(float dx, float dy, float *cs, float *sn)
 {
-    
+#if defined(PRECISION_s) | defined(PRECISION_d)
     if (dy == MAGMA_S_ZERO) {
         *cs = MAGMA_S_ONE;
         *sn = MAGMA_S_ZERO;
     } else if (MAGMA_S_ABS((dy)) > MAGMA_S_ABS((dx))) {
         float temp = dx / dy;
-        *sn = MAGMA_S_ONE / magma_ssqrt( ( MAGMA_S_ONE + temp*temp)) ;
-        *cs = temp * *sn;
+        *sn = MAGMA_S_ONE / magma_ssqrt( ( MAGMA_S_ONE + temp*temp));
+        *cs = temp * (*sn);
     } else {
         float temp = dy / dx;
-        *cs = MAGMA_S_ONE / magma_ssqrt( ( MAGMA_S_ONE + temp*temp )) ;
-        *sn = temp * *cs;
+        *cs = MAGMA_S_ONE / magma_ssqrt( ( MAGMA_S_ONE + temp*temp ));
+        *sn = temp * (*cs);
     }
-
-  //  real_Double_t rho = sqrt(MAGMA_S_REAL(MAGMA_S_CNJG(dx)*dx + MAGMA_S_CNJG(dy)*dy));
-  //  *cs = dx / rho;
-  //  *sn = dy / rho;
+#else   
+    // below the code Joss Knight from MathWorks provided me with - this works. 
+    // No idea why the above code fails for real - maybe rounding.
+    real_Double_t rho = sqrt(MAGMA_S_REAL(MAGMA_S_CNJG(dx)*dx + MAGMA_S_CNJG(dy)*dy));
+    *cs = dx / rho;
+    *sn = dy / rho;
+#endif
 }
 
 static void ApplyPlaneRotation(float *dx, float *dy, float cs, float sn)
 {
-
-    float temp = *dx;
-    *dx =  cs * *dx + sn * *dy;
-    *dy = -sn * temp + cs * *dy;
-
- //   float temp  =  MAGMA_S_CNJG(cs) * *dx +  MAGMA_S_CNJG(sn) * *dy;
- //   *dy = -(sn) * *dx + cs * *dy;
- //   *dx = temp;
+#if defined(PRECISION_s) | defined(PRECISION_d)
+      float temp = (*dx);
+      *dx =  cs * (*dx) + sn * (*dy);
+      *dy = -sn * temp + cs * (*dy);
+#else  
+    // below the code Joss Knight from MathWorks provided me with - this works. 
+    // No idea why the above code fails for real - maybe rounding.
+    float temp  =  MAGMA_S_CNJG(cs) * (*dx) +  MAGMA_S_CNJG(sn) * (*dy);
+    *dy = -(sn) * (*dx) + cs * (*dy);
+    *dx = temp;
+#endif
 }
 
 
@@ -135,7 +141,7 @@ magma_sfgmres(
     magma_int_t i, j, k;
     float beta;
     
-    float rel_resid, resid0, r0=0.0, betanom = 0.0, nom;
+    float rel_resid, resid0=1, r0=0.0, betanom = 0.0, nom;
     
     magma_s_matrix v_t={Magma_CSR}, w_t={Magma_CSR}, t={Magma_CSR}, t2={Magma_CSR}, V={Magma_CSR}, W={Magma_CSR};
     v_t.memory_location = Magma_DEV;
@@ -170,7 +176,7 @@ magma_sfgmres(
 
     solver_par->init_res = nom;
     
-    if ( ( nom * solver_par->epsilon) < ATOLERANCE )
+    if ( ( nom * solver_par->rtol) < ATOLERANCE )
         r0 = ATOLERANCE;
     
     solver_par->numiter = 0;
@@ -191,7 +197,8 @@ magma_sfgmres(
             solver_par->init_res = MAGMA_S_REAL( beta );
             resid0 = MAGMA_S_REAL( beta );
         
-            if ( (r0 = resid0 * solver_par->epsilon) < ATOLERANCE )
+            r0 = resid0 * solver_par->rtol;
+            if ( r0 < ATOLERANCE )
                 r0 = ATOLERANCE;
             if ( resid0 < r0 ) {
                 solver_par->final_res = solver_par->init_res;
@@ -262,7 +269,7 @@ magma_sfgmres(
                             = (real_Double_t) tempo2-tempo1;
                 }
             }
-            if (rel_resid <= solver_par->epsilon){
+            if (rel_resid <= solver_par->rtol || betanom <= solver_par->atol ){
                 break;
             }
         }
@@ -283,7 +290,7 @@ magma_sfgmres(
             magma_saxpy(dofs, s[j], W(j), 1, x->dval, 1);
         }
     }
-    while (rel_resid > solver_par->epsilon
+    while (rel_resid > solver_par->rtol
                 && solver_par->numiter+1 <= solver_par->maxiter);
 
     tempo2 = magma_sync_wtime( queue );
@@ -305,7 +312,8 @@ magma_sfgmres(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->rtol*solver_par->init_res ||
+            solver_par->iter_res < solver_par->atol ) {
             info = MAGMA_SUCCESS;
         }
     }
@@ -336,9 +344,4 @@ cleanup:
 
     solver_par->info = info;
     return info;
-
 } /* magma_sfgmres */
-
-
-
-

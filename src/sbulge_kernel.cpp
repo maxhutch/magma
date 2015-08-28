@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel.cpp normal z -> s, Fri Jan 30 19:00:17 2015
+ *     @generated from zbulge_kernel.cpp normal z -> s, Tue Aug 25 16:35:18 2015
  *
  */
 

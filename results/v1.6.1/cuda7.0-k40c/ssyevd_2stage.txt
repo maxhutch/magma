@@ -1,0 +1,101 @@
+numactl --interleave=all ./testing_ssyevdx_2stage -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevdx_2stage [options] [-h|--help]
+
+using: itype = 1, jobz = No vectors, range = All, uplo = Lower, check = 0, fraction = 1.0000
+    N     M  GPU Time (sec)  ||I-Q'Q||/.  ||A-QDQ'||/.  ||D-D_magma||/.
+=======================================================================
+  100   100     0.0008      
+ 1000  1000     0.1306      
+On entry to magma_ssyevdx_2stage, parameter 14 had an illegal value (info = -14)
+   10     0     0.0000      
+On entry to magma_ssyevdx_2stage, parameter 14 had an illegal value (info = -14)
+   20     0     0.0000      
+On entry to magma_ssyevdx_2stage, parameter 14 had an illegal value (info = -14)
+   30     0     0.0000      
+On entry to magma_ssyevdx_2stage, parameter 14 had an illegal value (info = -14)
+   40     0     0.0000      
+On entry to magma_ssyevdx_2stage, parameter 14 had an illegal value (info = -14)
+   50     0     0.0000      
+On entry to magma_ssyevdx_2stage, parameter 14 had an illegal value (info = -14)
+   60     0     0.0000      
+   70    70     0.0003      
+   80    80     0.0004      
+   90    90     0.0004      
+  100   100     0.0005      
+  200   200     0.0028      
+  300   300     0.0156      
+  400   400     0.0272      
+  500   500     0.0442      
+  600   600     0.0605      
+  700   700     0.0795      
+  800   800     0.0963      
+  900   900     0.1214      
+ 1000  1000     0.1235      
+ 2000  2000     0.5216      
+ 3000  3000     0.7768      
+ 4000  4000     1.1041      
+ 5000  5000     1.3587      
+ 6000  6000     1.8045      
+ 7000  7000     2.3656      
+ 8000  8000     2.9823      
+ 9000  9000     3.7799      
+10000 10000     4.4917      
+12000 12000     6.5610      
+14000 14000     8.9986      
+16000 16000    12.0558      
+18000 18000    15.9094      
+20000 20000    20.1123      
+
+numactl --interleave=all ./testing_ssyevdx_2stage -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevdx_2stage [options] [-h|--help]
+
+using: itype = 1, jobz = Vectors needed, range = All, uplo = Lower, check = 0, fraction = 1.0000
+    N     M  GPU Time (sec)  ||I-Q'Q||/.  ||A-QDQ'||/.  ||D-D_magma||/.
+=======================================================================
+  100   100     0.0022      
+ 1000  1000     0.1828      
+   10    10     0.0001      
+   20    20     0.0001      
+   30    30     0.0002      
+   40    40     0.0003      
+   50    50     0.0003      
+   60    60     0.0005      
+   70    70     0.0006      
+   80    80     0.0007      
+   90    90     0.0009      
+  100   100     0.0010      
+  200   200     0.0048      
+  300   300     0.0382      
+  400   400     0.0558      
+  500   500     0.0750      
+  600   600     0.0928      
+  700   700     0.0948      
+  800   800     0.1354      
+  900   900     0.1444      
+ 1000  1000     0.1599      
+ 2000  2000     0.6484      
+ 3000  3000     0.9724      
+ 4000  4000     1.6108      
+ 5000  5000     2.1483      
+ 6000  6000     3.2763      
+ 7000  7000     4.0355      
+ 8000  8000     5.1646      
+ 9000  9000     7.5894      
+10000 10000    10.0678      
+12000 12000    14.1138      
+14000 14000    22.1149      
+16000 16000    33.2558      
+18000 18000    40.8178      
+20000 20000    54.7261      

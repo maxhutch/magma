@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zbajac_csr.cu normal z -> d, Sun May  3 11:22:57 2015
+       @generated from zbajac_csr.cu normal z -> d, Tue Aug 25 16:35:30 2015
 
 */
 #include "common_magmasparse.h"
@@ -23,17 +23,15 @@ magma_dbajac_csr_ls_kernel(int localiters, int n,
                             magma_index_t * rowR,
                             magma_index_t * colR, 
                             const double *  __restrict__ b,                            
-                            double * x ){
-
+                            double * x )
+{
     int inddiag =  blockIdx.x*blockDim.x;
     int index = blockIdx.x*blockDim.x+threadIdx.x;
-    int i, j, start, end;   
+    int i, j, start, end;
 
-
-    if(index<n){
-    
-        start=rowR[index];
-        end  =rowR[index+1];
+    if (index < n) {
+        start = rowR[index];
+        end   = rowR[index+1];
 
         double zero = MAGMA_D_MAKE(0.0, 0.0);
         double bl, tmp = zero, v = zero; 
@@ -48,8 +46,8 @@ magma_dbajac_csr_ls_kernel(int localiters, int n,
         for( i=start; i<end; i++ )
              v += valR[i] * x[ colR[i] ];
 
-        start=rowD[index];
-        end  =rowD[index+1];
+        start = rowD[index];
+        end   = rowD[index+1];
 
         #pragma unroll
         for( i=start; i<end; i++ )
@@ -88,13 +86,12 @@ magma_dbajac_csr_kernel(
     magma_index_t * rowR,
     magma_index_t * colR, 
     double * b,                                
-    double * x ){
-
+    double * x )
+{
     int index = blockIdx.x*blockDim.x+threadIdx.x;
     int i, start, end;   
 
-    if(index<n){
-        
+    if (index < n) {
         double zero = MAGMA_D_MAKE(0.0, 0.0);
         double bl, tmp = zero, v = zero; 
 
@@ -104,8 +101,8 @@ magma_dbajac_csr_kernel(
         bl = b[index];
 #endif
 
-        start=rowR[index];
-        end  =rowR[index+1];
+        start = rowR[index];
+        end   = rowR[index+1];
 
         #pragma unroll
         for( i=start; i<end; i++ )
@@ -113,8 +110,8 @@ magma_dbajac_csr_kernel(
 
         v =  bl - v;
 
-        start=rowD[index];
-        end  =rowD[index+1];
+        start = rowD[index];
+        end   = rowD[index+1];
 
         #pragma unroll
         for( i=start; i<end; i++ )
@@ -123,13 +120,6 @@ magma_dbajac_csr_kernel(
         x[index] = x[index] + ( v - tmp ) / (valD[start]); 
     }
 }
-
-
-
-
-
-
-
 
 
 /**
@@ -205,6 +195,3 @@ magma_dbajac_csr(
 
     return MAGMA_SUCCESS;
 }
-
-
-

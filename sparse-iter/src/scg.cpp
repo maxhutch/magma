@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
-       @generated from zcg.cpp normal z -> s, Sun May  3 11:22:59 2015
+       @generated from zcg.cpp normal z -> s, Tue Aug 25 16:35:32 2015
 */
 
 #include "common_magmasparse.h"
@@ -88,10 +88,10 @@ magma_scg(
     betanom = nom0;
     nom  = nom0 * nom0;                                // nom = r' * r
     CHECK( magma_s_spmv( c_one, A, p, c_zero, q, queue ));             // q = A p
-    den = MAGMA_S_REAL( magma_sdot(dofs, p.dval, 1, q.dval, 1) );// den = p dot q
+    den = MAGMA_S_REAL( magma_sdot(dofs, p.dval, 1, q.dval, 1) ); // den = p dot q
     solver_par->init_res = nom0;
     
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE )
+    if ( (r0 = nom * solver_par->rtol) < ATOLERANCE )
         r0 = ATOLERANCE;
     if ( nom < r0 ) {
         solver_par->final_res = solver_par->init_res;
@@ -167,7 +167,7 @@ magma_scg(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->rtol*solver_par->init_res ){
             info = MAGMA_SUCCESS;
         }
     }
@@ -192,5 +192,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* magma_scg */
-
-

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
-       @generated from testing_zunmbr.cpp normal z -> c, Fri Jan 30 19:00:26 2015
+       @generated from testing_zunmbr.cpp normal z -> c, Tue Aug 25 16:35:28 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -40,7 +40,7 @@ int main( int argc, char** argv )
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     // need slightly looser bound (60*eps instead of 30*eps) for some tests
     opts.tolerance = max( 60., opts.tolerance );
@@ -51,8 +51,8 @@ int main( int argc, char** argv )
     magma_side_t  side [] = { MagmaLeft,       MagmaRight   };
     magma_trans_t trans[] = { Magma_ConjTrans, MagmaNoTrans };
 
-    printf("    M     N     K   vect side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
-    printf("===============================================================================================\n");
+    printf("%%   M     N     K   vect side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
+    printf("%%==============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int ivect = 0; ivect < 2; ++ivect ) {
       for( int iside = 0; iside < 2; ++iside ) {

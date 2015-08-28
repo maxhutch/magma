@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from testing_zmcompressor.cpp normal z -> c, Sun May  3 11:23:02 2015
+       @generated from testing_zmcompressor.cpp normal z -> c, Tue Aug 25 16:35:35 2015
        @author Hartwig Anzt
 */
 
@@ -34,7 +34,7 @@ int main(  int argc, char** argv )
 
     magma_copts zopts;
     magma_queue_t queue=NULL;
-    magma_queue_create( /*devices[ opts->device ],*/ &queue );
+    magma_queue_create( &queue );
 
     real_Double_t res;
     magma_c_matrix A={Magma_CSR}, AT={Magma_CSR}, A2={Magma_CSR}, 
@@ -47,8 +47,7 @@ int main(  int argc, char** argv )
     B.blocksize = zopts.blocksize;
     B.alignment = zopts.alignment;
 
-    while(  i < argc ) {
-
+    while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
@@ -94,11 +93,11 @@ int main(  int argc, char** argv )
         CHECK( magma_cmtranspose( AT, &A2, queue ));
         magma_cmfree(&AT, queue );
         CHECK( magma_cmdiff( A, A2, &res, queue ));
-        printf("# ||A-B||_F = %8.2e\n", res);
+        printf("%% ||A-B||_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester matrix compressor:  ok\n");
+            printf("%% tester matrix compressor:  ok\n");
         else
-            printf("# tester matrix compressor:  failed\n");
+            printf("%% tester matrix compressor:  failed\n");
 
         magma_cmfree(&A, queue );
         magma_cmfree(&A2, queue );

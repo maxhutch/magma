@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
@@ -84,6 +84,9 @@ endif
 ifneq ($(findstring Kepler, $(GPU_TARGET)),)
     GPU_TARGET += sm30 sm35
 endif
+ifneq ($(findstring Maxwell, $(GPU_TARGET)),)
+    GPU_TARGET += sm50
+endif
 
 #
 # Next, add compile options for specific smXX
@@ -123,8 +126,13 @@ ifneq ($(findstring sm35, $(GPU_TARGET)),)
     NV_SM    += -gencode arch=compute_35,code=sm_35
     NV_COMP  := -gencode arch=compute_35,code=compute_35
 endif
+ifneq ($(findstring sm50, $(GPU_TARGET)),)
+    MIN_ARCH ?= 500
+    NV_SM    += -gencode arch=compute_50,code=sm_50
+    NV_COMP  := -gencode arch=compute_50,code=compute_50
+endif
 ifeq ($(NV_COMP),)
-    $(error GPU_TARGET, currently $(GPU_TARGET), must contain one or more of Tesla, Fermi, Kepler, or sm{10,13,20,30,35}. Please edit your make.inc file)
+    $(error GPU_TARGET, currently $(GPU_TARGET), must contain one or more of Tesla, Fermi, Kepler, Maxwell, or sm{10,13,20,30,35,50}. Please edit your make.inc file)
 endif
 NVCCFLAGS += $(NV_SM) $(NV_COMP)
 CFLAGS    += -DMIN_CUDA_ARCH=$(MIN_ARCH)

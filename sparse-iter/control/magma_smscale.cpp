@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmscale.cpp normal z -> s, Sun May  3 11:23:01 2015
+       @generated from magma_zmscale.cpp normal z -> s, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 
 */
@@ -86,13 +86,12 @@ magma_smscale(
                     info = MAGMA_ERR;
                 }
                 tmp[z] = MAGMA_S_MAKE( 1.0/sqrt(  MAGMA_S_REAL( s )  ), 0.0 );
-                   
             }
             for( magma_int_t z=0; z<A->nnz; z++ ) {
                 A->val[z] = A->val[z] * tmp[A->col[z]] * tmp[A->rowidx[z]];
             }
         }
-        else{
+        else {
             printf( "error: scaling not supported.\n" );
             info = MAGMA_ERR_NOT_SUPPORTED;
         }
@@ -179,6 +178,3 @@ cleanup:
     magma_smfree( &CSRA, queue );
     return info;
 }
-
-
-

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmtr_m.cpp normal z -> s, Fri Jan 30 19:00:17 2015
+       @generated from zunmtr_m.cpp normal z -> s, Tue Aug 25 16:35:18 2015
 
 */
 #include "common_magma.h"
@@ -206,7 +206,7 @@ magma_sormtr_m(
         //magma_sormql_m(ngpu, side, trans, mi, ni, i__2, A(0,1), lda, tau,
         //               C, ldc, work, lwork, &iinfo);
         magma_sormql(side, trans, mi, ni, i__2, A(0,1), lda, tau,
-                       C, ldc, work, lwork, &iinfo); 
+                       C, ldc, work, lwork, &iinfo);
     }
     else {
         /* Q was determined by a call to SSYTRD with UPLO = 'L' */

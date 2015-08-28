@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    Solves a system of linear equations
+    ZGESV solves a system of linear equations
        A * X = B
     where A is a general N-by-N matrix and X and B are N-by-NRHS matrices.
     The LU decomposition with partial pivoting and row interchanges is
@@ -101,7 +101,7 @@ magma_zgesv(
     if ( ngpu > 1 ) {
         goto CPU_INTERFACE;
     }
-    ldda = ((n+31)/32)*32;
+    ldda = magma_roundup( n, 32 );
     lddb = ldda;
     if ( MAGMA_SUCCESS != magma_zmalloc( &dA, ldda*n )) {
         goto CPU_INTERFACE;

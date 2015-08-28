@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
-       @generated from dlaqtrsd.cpp normal d -> s, Fri Jan 30 19:00:19 2015
+       @generated from dlaqtrsd.cpp normal d -> s, Tue Aug 25 16:35:20 2015
 */
 #include "common_magma.h"
 
@@ -270,7 +270,6 @@ magma_int_t magma_slaqtrsd(
             }
             
             //printf( "real x=\n%s\n", buf );
-            
         }  // end real eigenvalue
         else {
             // ------------------------------------------------------------
@@ -401,7 +400,6 @@ magma_int_t magma_slaqtrsd(
             }
             
             //printf( "complex x=\n%s\n", buf );
-            
         }  // end complex eigenvalue
     }  // end notran
     else { // transposed

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal d -> s
        @author Stan Tomov
@@ -116,8 +116,8 @@
 
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= (2+nb)*N.
-            For optimal performance, LWORK >= (2+2*nb)*N.
+            The dimension of the array WORK.  LWORK >= (2 +   nb + nb*ngpu)*N.
+            For optimal performance,          LWORK >= (2 + 2*nb + nb*ngpu)*N.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -167,6 +167,7 @@ magma_dgeev_m(
     magma_int_t scalea, minwrk, optwrk, lquery, wantvl, wantvr, select[1];
     
     magma_side_t side = MagmaRight;
+    magma_int_t ngpu = magma_num_gpus();
     
     magma_timer_t time_total=0, time_gehrd=0, time_unghr=0, time_hseqr=0, time_trevc=0, time_sum=0;
     magma_flops_t flop_total=0, flop_gehrd=0, flop_unghr=0, flop_hseqr=0, flop_trevc=0, flop_sum=0;
@@ -194,8 +195,8 @@ magma_dgeev_m(
     /* Compute workspace */
     nb = magma_get_dgehrd_nb( n );
     if (*info == 0) {
-        minwrk = (2 +   nb)*n;
-        optwrk = (2 + 2*nb)*n;
+        minwrk = (2 +   nb + nb*ngpu)*n;
+        optwrk = (2 + 2*nb + nb*ngpu)*n;
         work[0] = MAGMA_D_MAKE( (double) optwrk, 0. );
         
         if (lwork < minwrk && ! lquery) {
@@ -261,7 +262,8 @@ magma_dgeev_m(
     lapackf77_dgebal( "B", &n, A, &lda, &ilo, &ihi, &work[ibal], &ierr );
 
     /* Reduce to upper Hessenberg form
-     * (Workspace: need 3*N, prefer 2*N + N*NB)
+     * (Workspace: need 3*N, prefer 2*N + N*NB + NB*NGPU)
+     *  - added NB*NGPU needed for multi-GPU magma_dgehrd_m
      *  - including N reserved for gebal/gebak, unused by dgehrd */
     itau = ibal + n;
     iwrk = itau + n;

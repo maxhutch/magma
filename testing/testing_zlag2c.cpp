@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
        @precisions mixed zc -> ds
@@ -38,20 +38,20 @@ int main( int argc, char** argv )
     magma_int_t status = 0;
     magmaFloatComplex   *SA, *SR;
     magmaDoubleComplex   *A,  *R;
-    magmaFloatComplex  *dSA;
+    magmaFloatComplex_ptr dSA;
     magmaDoubleComplex_ptr dA;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
-    printf("func       M     N     CPU GB/s (ms)       GPU GB/s (ms)     ||R||_F\n");
-    printf("=====================================================================\n");
+    printf("%% func     M     N     CPU GB/s (ms)       GPU GB/s (ms)     ||R||_F\n");
+    printf("%%====================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             m = opts.msize[itest];
             n = opts.nsize[itest];
             lda  = m;
-            ldda = ((m+31)/32)*32;
+            ldda = magma_roundup( m, opts.align );  // multiple of 32 by default
             // m*n double-complex loads and m*n single-complex stores (and vice-versa for clag2z)
             gbytes = (real_Double_t) m*n * (sizeof(magmaDoubleComplex) + sizeof(magmaFloatComplex)) / 1e9;
             size = ldda*n;  // ldda >= lda
@@ -83,10 +83,11 @@ int main( int argc, char** argv )
             
             /* ====================================================================
                Performs operation using MAGMA zlag2c
-               =================================================================== */            
-            gpu_time = magma_sync_wtime(0);
+               =================================================================== */
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             magmablas_zlag2c( m, n, dA, ldda, dSA, ldda, &info );
-            gpu_time = magma_sync_wtime(0) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0)
                 printf("magmablas_zlag2c returned error %d: %s.\n",
@@ -106,7 +107,6 @@ int main( int argc, char** argv )
                     cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
                     serror, (serror == 0 ? "ok" : "failed") );
             status += ! (serror == 0);
-            
             
             /* =====================================================================
                Reset matrices
@@ -133,9 +133,9 @@ int main( int argc, char** argv )
                =================================================================== */
             magma_csetmatrix( m, n, SA, lda, dSA, ldda );
             
-            gpu_time = magma_sync_wtime(0);
+            gpu_time = magma_sync_wtime( opts.queue );
             magmablas_clag2z( m, n, dSA, ldda, dA, ldda, &info );
-            gpu_time = magma_sync_wtime(0) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             if (info != 0)
                 printf("magmablas_clag2z returned error %d: %s.\n",
@@ -160,7 +160,7 @@ int main( int argc, char** argv )
             TESTING_FREE_CPU(   A );
             TESTING_FREE_CPU(  SR );
             TESTING_FREE_CPU(   R );
-                                 
+            
             TESTING_FREE_DEV( dSA );
             TESTING_FREE_DEV(  dA );
             printf( "\n" );

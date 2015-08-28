@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgemm_reduce.cu normal z -> d, Fri Jan 30 19:00:08 2015
+       @generated from zgemm_reduce.cu normal z -> d, Tue Aug 25 16:35:07 2015
 
 */
 #include "common_magma.h"
@@ -38,8 +38,7 @@ void dgemm_reduce_kernel(
 #if (__CUDA_ARCH__ >= 200)
     const int tx = threadIdx.x;
     
-    if (blockIdx.x*BLK_M + threadIdx.y < m && blockIdx.y*BLK_N + threadIdx.z < n){
-    
+    if (blockIdx.x*BLK_M + threadIdx.y < m && blockIdx.y*BLK_N + threadIdx.z < n) {
         dA += (blockIdx.x*BLK_M + threadIdx.y) * lda;
         dB += (blockIdx.y*BLK_N + threadIdx.z) * ldb;
         dC +=  blockIdx.x*BLK_M + blockIdx.y*BLK_N * ldc;
@@ -121,7 +120,7 @@ magmablas_dgemm_reduce(
         // call CUDA ARCH 1.x -- maximum 512 threads
         const int NUM_THREADS = 512;
         const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N)); // == 2
-        dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
+        dim3 blocks( magma_ceildiv( m, BLK_M ), magma_ceildiv( n, BLK_N ) );
         dim3 threads( BLK_K, BLK_M, BLK_N );
         dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
             ( m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
@@ -131,7 +130,7 @@ magmablas_dgemm_reduce(
         // call CUDA ARCH 2.x -- maximum 1024 threads
         const int NUM_THREADS = 1024;
         const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N)); // == 4
-        dim3 blocks( (m-1)/BLK_M + 1, (n-1)/BLK_N + 1 );
+        dim3 blocks( magma_ceildiv( m, BLK_M ), magma_ceildiv( n, BLK_N ) );
         dim3 threads( BLK_K, BLK_M, BLK_N );
         dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
             ( m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );

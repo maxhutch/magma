@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zcsrsplit.cpp normal z -> c, Sun May  3 11:23:01 2015
+       @generated from magma_zcsrsplit.cpp normal z -> c, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 
 */
@@ -82,10 +82,8 @@ magma_ccsrsplit(
     
     if (  A.memory_location == Magma_CPU &&
             (   A.storage_type == Magma_CSR ||
-                A.storage_type == Magma_CSRCOO ) ) {
-
-
-
+                A.storage_type == Magma_CSRCOO ) )
+    {
         nnz_diag = nnz_offd = 0;
         // Count the new number of nonzeroes in the two matrices
         for( i=0; i<A.num_rows; i+=bsize ){
@@ -104,7 +102,7 @@ magma_ccsrsplit(
                         nnz_offd++;
                 }
                 if( check == 0 ){
-                    printf("error: matrix contains zero on diagonal at (%d,%d).\n", i, i);
+                    printf("error: matrix contains zero on diagonal at (%d,%d).\n", int(i), int(i));
                     info = -1;
                     goto cleanup;
                 }
@@ -208,6 +206,3 @@ cleanup:
     }
     return info;
 }
-
-
-

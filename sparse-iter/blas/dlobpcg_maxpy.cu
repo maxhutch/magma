@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zlobpcg_maxpy.cu normal z -> d, Sun May  3 11:22:58 2015
+       @generated from zlobpcg_maxpy.cu normal z -> d, Tue Aug 25 16:35:30 2015
 
 */
 
@@ -23,12 +23,10 @@ magma_dlobpcg_maxpy_kernel(
     double * X, 
     double * Y)
 {
-
     int row = blockIdx.x * blockDim.x + threadIdx.x; // global row index
 
-    if( row<num_rows ){
-        for( int i=0; i<num_vecs; i++ ){ 
-
+    if ( row < num_rows ) {
+        for( int i=0; i < num_vecs; i++ ) {
             Y[ row + i*num_rows ] += X[ row + i*num_rows ];
         }
     }
@@ -70,7 +68,7 @@ magma_dlobpcg_maxpy_kernel(
     X           magmaDouble_ptr 
                 input vector X
 
-    @param[in/out]
+    @param[in,out]
     Y           magmaDouble_ptr 
                 input/output vector Y
 
@@ -102,6 +100,3 @@ magma_dlobpcg_maxpy(
 
     return MAGMA_SUCCESS;
 }
-
-
-

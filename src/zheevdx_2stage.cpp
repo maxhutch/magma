@@ -1,23 +1,20 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
+       @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
-       @author Azzam Haidar
 
-       @precisions normal z -> c
+       @precisions normal z -> c d s
 
 */
 #include "common_magma.h"
 #include "magma_timer.h"
-#include "magma_bulge.h"
-#include "magma_zbulge.h"
 
-#define PRECISION_z
 #define COMPLEX
 
 /**
@@ -98,7 +95,7 @@
             If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
 
     @param[out]
-    w       DOUBLE PRECISION array, dimension (N)
+    W       DOUBLE PRECISION array, dimension (N)
             If INFO = 0, the required m eigenvalues in ascending order.
 
     @param[out]
@@ -109,10 +106,10 @@
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N + N*NB.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 2*N + N**2.
-            where LQ2 is the size needed to store the Q2 matrix
-            and is returned by magma_bulge_get_lq2.
+            If JOBZ = MagmaNoVec and N > 1, LWORK >= LWSTG2 + N + N*NB.
+            If JOBZ = MagmaVec   and N > 1, LWORK >= LWSTG2 + 2*N + N**2.
+            where LWSTG2 is the size needed to store the matrices of stage 2
+            and is returned by magma_zbulge_getlwstg2.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal sizes of the WORK, RWORK and
@@ -175,7 +172,7 @@
 
     Modified description of INFO. Sven, 16 Feb 05.
 
-    @ingroup magma_zheev_driver
+    @ingroup magma_zheevd_driver
     ********************************************************************/
 extern "C" magma_int_t
 magma_zheevdx_2stage(
@@ -183,7 +180,7 @@ magma_zheevdx_2stage(
     magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *m, double *W,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -208,8 +205,10 @@ magma_zheevdx_2stage(
     magma_int_t imax;
     double rmin, rmax;
     double sigma;
-    //magma_int_t iinfo;
-    magma_int_t lwmin, lrwmin, liwmin;
+    #ifdef COMPLEX
+    magma_int_t lrwmin;
+    #endif
+    magma_int_t lwmin, liwmin;
     magma_int_t lower;
     magma_int_t wantz;
     magma_int_t iscale;
@@ -220,19 +219,34 @@ magma_zheevdx_2stage(
     magma_int_t alleig, valeig, indeig;
     magma_int_t len;
 
-    double* dwork;
+    double* dwedc;
 
-    /* determine the number of threads */
-    magma_int_t parallel_threads = magma_get_parallel_numthreads();
-
-    wantz = (jobz == MagmaVec);
-    lower = (uplo == MagmaLower);
-
+    wantz  = (jobz == MagmaVec);
+    lower  = (uplo == MagmaLower);
     alleig = (range == MagmaRangeAll);
     valeig = (range == MagmaRangeV);
     indeig = (range == MagmaRangeI);
 
+    /* determine the number of threads and other parameter */
+    magma_int_t Vblksiz, ldv, ldt, blkcnt, sizTAU2, sizT2, sizV2, sizTAU1, ldz, lwstg1, lda2;
+    magma_int_t parallel_threads = magma_get_parallel_numthreads();
+    magma_int_t nb               = magma_zbulge_get_nb(n, parallel_threads);
+    magma_int_t lwstg2           = magma_zbulge_getlwstg2( n, parallel_threads, wantz, 
+                                                           &Vblksiz, &ldv, &ldt, &blkcnt, 
+                                                           &sizTAU2, &sizT2, &sizV2);
+    lwstg1                       = magma_bulge_getlwstg1( n, nb, &lda2 ); // lwstg1=nb*n but since used also to store the band A2 so it is 2nb*n;
+
+    sizTAU1                      = n;
+    ldz                          = n;
+
+    //magma_int_t sizZ;
+    //sizZ                         = wantz == 0 ? 0 : n*ldz;
+
+    #ifdef COMPLEX
     lquery = (lwork == -1 || lrwork == -1 || liwork == -1);
+    #else
+    lquery = (lwork == -1 || liwork == -1);
+    #endif
 
     *info = 0;
     if (! (wantz || (jobz == MagmaNoVec))) {
@@ -259,20 +273,14 @@ magma_zheevdx_2stage(
         }
     }
 
-    magma_int_t nb = magma_get_zbulge_nb(n,parallel_threads);
-    magma_int_t Vblksiz = magma_zbulge_get_Vblksiz(n, nb, parallel_threads);
 
-    magma_int_t ldt = Vblksiz;
-    magma_int_t ldv = nb + Vblksiz;
-    magma_int_t blkcnt = magma_bulge_get_blkcnt(n, nb, Vblksiz);
-    magma_int_t lq2 = magma_zbulge_get_lq2(n, parallel_threads);
-
+    #ifdef COMPLEX
     if (wantz) {
-        lwmin  = lq2 + 2*n + n*n;
+        lwmin  = lwstg2 + 2*n + max(lwstg1, n*n);
         lrwmin = 1 + 5*n + 2*n*n;
         liwmin = 5*n + 3;
     } else {
-        lwmin  = lq2 + n + n*nb;
+        lwmin  = lwstg2 + n + lwstg1;
         lrwmin = n;
         liwmin = 1;
     }
@@ -291,6 +299,27 @@ magma_zheevdx_2stage(
     } else if ((liwork < liwmin) && ! lquery) {
         *info = -18;
     }
+    #else
+    if (wantz) {
+        lwmin  = lwstg2 + 1 + 6*n + max(lwstg1, 2*n*n);
+        liwmin = 5*n + 3;
+    } else {
+        lwmin  = lwstg2 + 2*n + lwstg1;
+        liwmin = 1;
+    }
+
+    // multiply by 1+eps (in Double!) to ensure length gets rounded up,
+    // if it cannot be exactly represented in floating point.
+    real_Double_t one_eps = 1. + lapackf77_dlamch("Epsilon");
+    work[0]  = lwmin * one_eps;
+    iwork[0] = liwmin;
+
+    if ((lwork < lwmin) && !lquery) {
+        *info = -14;
+    } else if ((liwork < liwmin) && ! lquery) {
+        *info = -16;
+    }
+    #endif
 
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
@@ -306,7 +335,7 @@ magma_zheevdx_2stage(
     }
 
     if (n == 1) {
-        w[0] = MAGMA_Z_REAL(A[0]);
+        W[0] = MAGMA_Z_REAL(A[0]);
         if (wantz) {
             A[0] = MAGMA_Z_ONE;
         }
@@ -325,9 +354,9 @@ magma_zheevdx_2stage(
         printf("--------------------------------------------------------------\n");
         #endif
         lapackf77_zheevd(jobz_, uplo_, &n,
-                        A, &lda, w,
+                        A, &lda, W,
                         work, &lwork,
-                        #if defined(PRECISION_z) || defined(PRECISION_c)
+                        #ifdef COMPLEX
                         rwork, &lrwork,
                         #endif
                         iwork, &liwork,
@@ -345,7 +374,11 @@ magma_zheevdx_2stage(
     rmax = magma_dsqrt(bignum);
 
     /* Scale matrix to allowable range, if necessary. */
+    #ifdef COMPLEX
     anrm = lapackf77_zlanhe("M", uplo_, &n, A, &lda, rwork);
+    #else
+    anrm = lapackf77_dlansy("M", uplo_, &n, A, &lda, work);
+    #endif
     iscale = 0;
     if (anrm > 0. && anrm < rmin) {
         iscale = 1;
@@ -359,17 +392,45 @@ magma_zheevdx_2stage(
                          &lda, info);
     }
 
-    magma_int_t indT2   = 0;
-    magma_int_t indTAU2 = indT2  + blkcnt*ldt*Vblksiz;
-    magma_int_t indV2   = indTAU2+ blkcnt*Vblksiz;
-    magma_int_t indtau1 = indV2  + blkcnt*ldv*Vblksiz;
-    magma_int_t indwrk  = indtau1+ n;
-    //magma_int_t indwk2  = indwrk + n*n;
-    magma_int_t llwork = lwork - indwrk;
-    //magma_int_t llwrk2 = lwork - indwk2;
-    magma_int_t inde = 0;
-    magma_int_t indrwk = inde + n;
-    magma_int_t llrwk = lrwork - indrwk;
+
+/*
+    #ifdef COMPLEX
+    magma_int_t indTAU1 = 0;
+    #else
+    magma_int_t indTAU1 = n;
+    #endif
+    magma_int_t indTAU2 = indTAU1 + sizTAU1;
+    magma_int_t indV2   = indTAU2 + sizTAU2;
+    magma_int_t indT2   = indV2   + sizV2;
+    magma_int_t indWORK = indT2   + sizT2;
+    magma_int_t indA2   = indWORK;
+    magma_int_t indZ    = indWORK;
+    magma_int_t indWEDC = indZ   + sizZ;
+*/
+
+    #ifdef COMPLEX
+    double *E                 = rwork;
+    magma_int_t sizE_onwork   = 0;
+    #else
+    double *E                 = work;
+    magma_int_t sizE_onwork   = n;
+    #endif
+    
+    magmaDoubleComplex *TAU1  = work + sizE_onwork;
+    magmaDoubleComplex *TAU2  = TAU1 + sizTAU1;
+    magmaDoubleComplex *V2    = TAU2 + sizTAU2;
+    magmaDoubleComplex *T2    = V2   + sizV2;
+    magmaDoubleComplex *Wstg1 = T2   + sizT2;
+    magmaDoubleComplex *A2    = Wstg1; /* PAY ATTENTION THAT work[indA2] should be able to be of size lda2*n which it should be checked in any future modification of lwork.*/
+    magmaDoubleComplex *Z     = Wstg1;
+    #ifdef COMPLEX
+    double *Wedc              = E + n; 
+    magma_int_t lwedc         = 1 + 4*n + 2*n*n; // lrwork - n;//used only for wantz>0
+    #else
+    double *Wedc              = Wstg1 + n*n;
+    magma_int_t lwedc         = 1 + 4*n + n*n; // lwork - indWEDC;//used only for wantz>0
+    #endif
+
 
     magma_timer_t time=0, time_total=0;
     timer_start( time_total );
@@ -380,16 +441,13 @@ magma_zheevdx_2stage(
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-    magma_zhetrd_he2hb(uplo, n, nb, A, lda, &work[indtau1], &work[indwrk], llwork, dT1, info);
+    magma_zhetrd_he2hb(uplo, n, nb, A, lda, TAU1, Wstg1, lwstg1, dT1, info);
 
     timer_stop( time );
-    timer_printf( "  time zhetrd_he2hb = %6.2f\n", time );
+    timer_printf( "  N= %10d  nb= %5d time zhetrd_he2hb= %6.2f\n", (int)n, (int)nb, time );
     timer_start( time );
 
     /* copy the input matrix into WORK(INDWRK) with band storage */
-    /* PAY ATTENTION THAT work[indwrk] should be able to be of size lda2*n which it should be checked in any future modification of lwork.*/
-    magma_int_t lda2 = 2*nb; //nb+1+(nb-1);
-    magmaDoubleComplex* A2 = &work[indwrk];
     memset(A2, 0, n*lda2*sizeof(magmaDoubleComplex));
 
     for (magma_int_t j = 0; j < n-nb; j++) {
@@ -405,15 +463,15 @@ magma_zheevdx_2stage(
     }
 
     timer_stop( time );
-    timer_printf( "  time zhetrd_convert = %6.2f\n", time );
+    timer_printf( "  N= %10d  nb= %5d time zhetrd_convert = %6.2f\n", (int)n, (int)nb, time );
     timer_start( time );
 
-    magma_zhetrd_hb2st(uplo, n, nb, Vblksiz, A2, lda2, w, &rwork[inde], &work[indV2], ldv, &work[indTAU2], wantz, &work[indT2], ldt);
+    magma_zhetrd_hb2st(uplo, n, nb, Vblksiz, A2, lda2, W, E, V2, ldv, TAU2, wantz, T2, ldt);
 
     timer_stop( time );
     timer_stop( time_total );
-    timer_printf( "  time zhetrd_hb2st = %6.2f\n", time );
-    timer_printf( "  time zhetrd = %6.2f\n", time_total );
+    timer_printf( "  N= %10d  nb= %5d time zhetrd_hb2st= %6.2f\n", (int)n, (int)nb, time );
+    timer_printf( "  N= %10d  nb= %5d time zhetrd= %6.2f\n", (int)n, (int)nb, time_total );
 
     /* For eigenvalues only, call DSTERF.  For eigenvectors, first call
      ZSTEDC to generate the eigenvector matrix, WORK(INDWRK), of the
@@ -422,69 +480,69 @@ magma_zheevdx_2stage(
     if (! wantz) {
         timer_start( time );
 
-        lapackf77_dsterf(&n, w, &rwork[inde], info);
-        magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
+        lapackf77_dsterf(&n, W, E, info);
+        magma_dmove_eig(range, n, W, &il, &iu, vl, vu, m);
 
         timer_stop( time );
-        timer_printf( "  time dstedc = %6.2f\n", time );
+        timer_printf( "  N= %10d  nb= %5d time dstedc = %6.2f\n", (int)n, (int)nb, time );
     }
     else {
         timer_start( time_total );
         timer_start( time );
         
-        if (MAGMA_SUCCESS != magma_dmalloc( &dwork, 3*n*(n/2 + 1) )) {
+        if (MAGMA_SUCCESS != magma_dmalloc( &dwedc, 3*n*(n/2 + 1) )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
 
-        magma_zstedx(range, n, vl, vu, il, iu, w, &rwork[inde],
-                     &work[indwrk], n, &rwork[indrwk],
-                     llrwk, iwork, liwork, dwork, info);
+        magma_zstedx(range, n, vl, vu, il, iu, W, E,
+                     Z, ldz, Wedc, lwedc,
+                     iwork, liwork, dwedc, info);
 
-        magma_free( dwork );
+        magma_free( dwedc );
 
         timer_stop( time );
-        timer_printf( "  time zstedx = %6.2f\n", time );
+        timer_printf( "  N= %10d  nb= %5d time zstedx = %6.2f\n", (int)n, (int)nb, time );
         timer_start( time );
         
         magmaDoubleComplex *dZ;
         magma_int_t lddz = n;
 
-        magmaDoubleComplex *da;
+        magmaDoubleComplex *dA;
         magma_int_t ldda = n;
 
-        magma_dmove_eig(range, n, w, &il, &iu, vl, vu, m);
+        magma_dmove_eig(range, n, W, &il, &iu, vl, vu, m);
 
         if (MAGMA_SUCCESS != magma_zmalloc( &dZ, *m*lddz)) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
-        if (MAGMA_SUCCESS != magma_zmalloc( &da, n*ldda )) {
+        if (MAGMA_SUCCESS != magma_zmalloc( &dA, n*ldda )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
 
-        magma_zbulge_back(uplo, n, nb, *m, Vblksiz, &work[indwrk + n * (il-1)], n, dZ, lddz,
-                          &work[indV2], ldv, &work[indTAU2], &work[indT2], ldt, info);
+        magma_zbulge_back(uplo, n, nb, *m, Vblksiz, Z +ldz*(il-1), ldz, dZ, lddz,
+                          V2, ldv, TAU2, T2, ldt, info);
 
         timer_stop( time );
-        timer_printf( "  time zbulge_back = %6.2f\n", time );
+        timer_printf( "  N= %10d  nb= %5d time zbulge_back = %6.2f\n", (int)n, (int)nb, time );
         timer_start( time );
 
-        magma_zsetmatrix( n, n, A, lda, da, ldda );
+        magma_zsetmatrix( n, n, A, lda, dA, ldda );
 
-        magma_zunmqr_gpu_2stages(MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, da+nb, ldda,
+        magma_zunmqr_gpu_2stages(MagmaLeft, MagmaNoTrans, n-nb, *m, n-nb, dA+nb, ldda,
                                  dZ+nb, n, dT1, nb, info);
 
         magma_zgetmatrix( n, *m, dZ, lddz, A, lda );
         magma_free(dT1);
         magma_free(dZ);
-        magma_free(da);
+        magma_free(dA);
 
         timer_stop( time );
         timer_stop( time_total );
-        timer_printf( "  time zunmqr + copy = %6.2f\n", time );
-        timer_printf( "  time eigenvectors backtransf. = %6.2f\n", time_total );
+        timer_printf( "  N= %10d  nb= %5d time zunmqr + copy = %6.2f\n", (int)n, (int)nb, time );
+        timer_printf( "  N= %10d  nb= %5d time eigenvectors backtransf. = %6.2f\n", (int)n, (int)nb, time_total );
     }
 
     /* If matrix was scaled, then rescale eigenvalues appropriately. */
@@ -495,11 +553,13 @@ magma_zheevdx_2stage(
             imax = *info - 1;
         }
         d__1 = 1. / sigma;
-        blasf77_dscal(&imax, &d__1, w, &ione);
+        blasf77_dscal(&imax, &d__1, W, &ione);
     }
 
     work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0.);  // round up
+    #ifdef COMPLEX
     rwork[0] = lrwmin * one_eps;
+    #endif
     iwork[0] = liwmin;
 
     return *info;

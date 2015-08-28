@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Raffaele Solca
        @precisions normal d -> s
@@ -16,12 +16,16 @@
 #include "common_magma.h"
 #include "magma_timer.h"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 magma_int_t magma_get_dlaex3_m_k()  { return  512; }
 magma_int_t magma_get_dlaex3_m_nb() { return 1024; }
 
+#ifdef __cplusplus
 }  // end extern "C"
+#endif
 
 /**
     Purpose
@@ -214,7 +218,7 @@ magma_dlaex3_m(
     magma_int_t ineg_one = -1;
 
     magma_int_t iil, iiu, rk;
-    magma_int_t n1_loc, n2_loc, ib, nb, ib2, igpu;
+    magma_int_t n1_loc, n2_loc, nb, ib2, igpu;
     magma_int_t ni_loc[MagmaMaxGPUs];
 
     magma_int_t i, ind, iq2, j, n12, n2, n23, tmp;
@@ -339,7 +343,7 @@ magma_dlaex3_m(
     magma_timer_t time=0;
     timer_start( time );
 
-#pragma omp parallel private(i, j, tmp, temp)
+    #pragma omp parallel private(i, j, tmp, temp)
     {
         magma_int_t id = omp_get_thread_num();
         magma_int_t tot = omp_get_num_threads();
@@ -357,16 +361,16 @@ magma_dlaex3_m(
             lapackf77_dlaed4(&k, &tmpp, dlamda, w, Q(0,j), &rho, &d[j], &iinfo);
             // If the zero finder fails, the computation is terminated.
             if (iinfo != 0) {
-#pragma omp critical (info)
+                #pragma omp critical (info)
                 *info = iinfo;
                 break;
             }
         }
 
-#pragma omp barrier
+        #pragma omp barrier
 
         if (*info == 0) {
-#pragma omp single
+            #pragma omp single
             {
                 //Prepare the INDXQ sorting permutation.
                 magma_int_t nk = n - k;
@@ -385,7 +389,7 @@ magma_dlaex3_m(
             }
 
             if (k == 2) {
-#pragma omp single
+                #pragma omp single
                 {
                     for (j = 0; j < k; ++j) {
                         w[0] = *Q(0,j);
@@ -418,7 +422,7 @@ magma_dlaex3_m(
                 for (i = ib; i < ie; ++i)
                     w[i] = copysign( sqrt( -w[i] ), s[i]);
 
-#pragma omp barrier
+                #pragma omp barrier
 
                 //reduce the number of used threads to have enough S workspace
                 tot = min(n1, omp_get_num_threads());
@@ -446,7 +450,7 @@ magma_dlaex3_m(
                 }
             }
         }
-    }
+    }  // end omp parallel
     if (*info != 0)
         return *info;
 
@@ -560,7 +564,7 @@ magma_dlaex3_m(
         }
         else {
             //use the gpus
-            ib = min(nb, rk);
+            magma_int_t ib = min(nb, rk);
             for (igpu = 0; igpu < ngpu-1; igpu += 2) {
                 if (n23 != 0) {
                     magma_setdevice(igpu+1);

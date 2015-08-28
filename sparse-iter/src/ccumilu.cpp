@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
-       @generated from zcumilu.cpp normal z -> c, Sun May  3 11:22:59 2015
+       @generated from zcumilu.cpp normal z -> c, Tue Aug 25 16:35:33 2015
 */
 #include "common_magmasparse.h"
+#include <cuda.h>  // for CUDA_VERSION
 
 #define PRECISION_c
 
@@ -49,6 +50,10 @@ magma_ccumilusetup(
     cusparseMatDescr_t descrA=NULL;
     cusparseMatDescr_t descrL=NULL;
     cusparseMatDescr_t descrU=NULL;
+#if CUDA_VERSION >= 7000
+    csrilu02Info_t info_M=NULL;
+    void *pBuffer = NULL;
+#endif
     
     //magma_cprint_matrix(A, queue );
     // copy matrix into preconditioner parameter
@@ -78,6 +83,40 @@ magma_ccumilusetup(
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrA, CUSPARSE_DIAG_TYPE_NON_UNIT ));
     CHECK_CUSPARSE( cusparseSetMatIndexBase( descrA, CUSPARSE_INDEX_BASE_ZERO ));
     CHECK_CUSPARSE( cusparseCreateSolveAnalysisInfo( &(precond->cuinfo) ));
+    // use kernel to manually check for zeros n the diagonal
+    CHECK( magma_cdiagcheck( precond->M, queue ) );
+    
+#if CUDA_VERSION >= 7000
+    // this version has the bug fixed where a zero on the diagonal causes a crash
+    CHECK_CUSPARSE( cusparseCreateCsrilu02Info(&info_M) );
+    int buffersize;
+    int structural_zero;
+    int numerical_zero;
+    
+    CHECK_CUSPARSE(
+    cusparseCcsrilu02_bufferSize( cusparseHandle,
+                         precond->M.num_rows, precond->M.nnz, descrA,
+                         precond->M.dval, precond->M.drow, precond->M.dcol,
+                         info_M,
+                         &buffersize ) );
+    
+    CHECK( magma_malloc((void**)&pBuffer, buffersize) );
+
+    CHECK_CUSPARSE( cusparseCcsrilu02_analysis( cusparseHandle,
+            precond->M.num_rows, precond->M.nnz, descrA,
+            precond->M.dval, precond->M.drow, precond->M.dcol,
+            info_M, CUSPARSE_SOLVE_POLICY_NO_LEVEL, pBuffer ));
+    
+    CHECK_CUSPARSE( cusparseXcsrilu02_zeroPivot( cusparseHandle, info_M, &numerical_zero ) );
+    CHECK_CUSPARSE( cusparseXcsrilu02_zeroPivot( cusparseHandle, info_M, &structural_zero ) );
+    
+    CHECK_CUSPARSE(
+    cusparseCcsrilu02( cusparseHandle,
+                         precond->M.num_rows, precond->M.nnz, descrA,
+                         precond->M.dval, precond->M.drow, precond->M.dcol,
+                         info_M, CUSPARSE_SOLVE_POLICY_NO_LEVEL, pBuffer) );
+#else
+    // this version contains the bug but is needed for backward compability
     CHECK_CUSPARSE( cusparseCcsrsm_analysis( cusparseHandle,
                 CUSPARSE_OPERATION_NON_TRANSPOSE,
                 precond->M.num_rows, precond->M.nnz, descrA,
@@ -89,6 +128,7 @@ magma_ccumilusetup(
                       precond->M.drow,
                       precond->M.dcol,
                       precond->cuinfo ));
+#endif
 
     CHECK( magma_cmtransfer( precond->M, &hA, Magma_DEV, Magma_CPU, queue ));
 
@@ -137,6 +177,10 @@ magma_ccumilusetup(
 
     
 cleanup:
+#if CUDA_VERSION >= 7000
+    magma_free( pBuffer );
+    cusparseDestroyCsrilu02Info( info_M );
+#endif
     cusparseDestroySolveAnalysisInfo( precond->cuinfo );
     cusparseDestroyMatDescr( descrA );
     cusparseDestroyMatDescr( descrL );
@@ -188,9 +232,8 @@ magma_ccumilugeneratesolverinfo(
     magma_c_matrix hA={Magma_CSR}, hL={Magma_CSR}, hU={Magma_CSR};
     
     if (precond->L.memory_location != Magma_DEV ){
-        
         CHECK( magma_cmtransfer( precond->M, &hA,
-            precond->M.memory_location, Magma_CPU, queue ));
+        precond->M.memory_location, Magma_CPU, queue ));
 
         hL.diagorder_type = Magma_UNITY;
         CHECK( magma_cmconvert( hA, &hL , Magma_CSR, Magma_CSRL, queue ));
@@ -202,7 +245,6 @@ magma_ccumilugeneratesolverinfo(
         magma_cmfree(&hA, queue );
         magma_cmfree(&hL, queue );
         magma_cmfree(&hU, queue );
-        
     }
     
     // CUSPARSE context //
@@ -444,6 +486,10 @@ magma_ccumiccsetup(
     cusparseMatDescr_t descrA=NULL;
     cusparseMatDescr_t descrL=NULL;
     cusparseMatDescr_t descrU=NULL;
+#if CUDA_VERSION >= 7000
+    csric02Info_t info_M=NULL;
+    void *pBuffer = NULL;
+#endif
     
     magma_c_matrix hA={Magma_CSR}, hACSR={Magma_CSR}, U={Magma_CSR};
     CHECK( magma_cmtransfer( A, &hA, A.memory_location, Magma_CPU, queue ));
@@ -466,11 +512,48 @@ magma_ccumiccsetup(
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
     CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrA ));
+    CHECK_CUSPARSE( cusparseCreateSolveAnalysisInfo( &(precond->cuinfo) ));
+    // use kernel to manually check for zeros n the diagonal
+    CHECK( magma_cdiagcheck( precond->M, queue ) );
+        
+#if CUDA_VERSION >= 7000
+    // this version has the bug fixed where a zero on the diagonal causes a crash
+    CHECK_CUSPARSE( cusparseCreateCsric02Info(&info_M) );
+    CHECK_CUSPARSE( cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_GENERAL ));
+    CHECK_CUSPARSE( cusparseSetMatIndexBase( descrA, CUSPARSE_INDEX_BASE_ZERO ));
+    int buffersize;
+    int structural_zero;
+    int numerical_zero;
+    
+    CHECK_CUSPARSE(
+    cusparseCcsric02_bufferSize( cusparseHandle,
+                         precond->M.num_rows, precond->M.nnz, descrA,
+                         precond->M.dval, precond->M.drow, precond->M.dcol,
+                         info_M,
+                         &buffersize ) );
+    
+    CHECK( magma_malloc((void**)&pBuffer, buffersize) );
+
+    CHECK_CUSPARSE( cusparseCcsric02_analysis( cusparseHandle,
+            precond->M.num_rows, precond->M.nnz, descrA,
+            precond->M.dval, precond->M.drow, precond->M.dcol,
+            info_M, CUSPARSE_SOLVE_POLICY_NO_LEVEL, pBuffer ));
+    CHECK_CUSPARSE( cusparseXcsric02_zeroPivot( cusparseHandle, info_M, &numerical_zero ) );
+    CHECK_CUSPARSE( cusparseXcsric02_zeroPivot( cusparseHandle, info_M, &structural_zero ) );
+
+    CHECK_CUSPARSE(
+    cusparseCcsric02( cusparseHandle,
+                         precond->M.num_rows, precond->M.nnz, descrA,
+                         precond->M.dval, precond->M.drow, precond->M.dcol,
+                         info_M, CUSPARSE_SOLVE_POLICY_NO_LEVEL, pBuffer) );    
+
+#else
+    // this version contains the bug but is needed for backward compability
     CHECK_CUSPARSE( cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_SYMMETRIC ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrA, CUSPARSE_DIAG_TYPE_NON_UNIT ));
     CHECK_CUSPARSE( cusparseSetMatIndexBase( descrA, CUSPARSE_INDEX_BASE_ZERO ));
     CHECK_CUSPARSE( cusparseSetMatFillMode( descrA, CUSPARSE_FILL_MODE_LOWER ));
-    CHECK_CUSPARSE( cusparseCreateSolveAnalysisInfo( &(precond->cuinfo) ));
+    
     CHECK_CUSPARSE( cusparseCcsrsm_analysis( cusparseHandle,
                 CUSPARSE_OPERATION_NON_TRANSPOSE,
                 precond->M.num_rows, precond->M.nnz, descrA,
@@ -482,6 +565,8 @@ magma_ccumiccsetup(
                       precond->M.drow,
                       precond->M.dcol,
                       precond->cuinfo ));
+#endif
+
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrL ));
     CHECK_CUSPARSE( cusparseSetMatType( descrL, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrL, CUSPARSE_DIAG_TYPE_NON_UNIT ));
@@ -502,7 +587,7 @@ magma_ccumiccsetup(
         CUSPARSE_OPERATION_TRANSPOSE, precond->M.num_rows,
         precond->M.nnz, descrU,
         precond->M.dval, precond->M.drow, precond->M.dcol, precond->cuinfoU ));
-    
+
     if( precond->maxiter < 50 ){
         //prepare for iterative solves
         
@@ -550,6 +635,10 @@ magma_ccumiccsetup(
 */
 
 cleanup:
+#if CUDA_VERSION >= 7000
+    magma_free( pBuffer );
+    cusparseDestroyCsric02Info( info_M );
+#endif
     cusparseDestroySolveAnalysisInfo( precond->cuinfo );
     cusparseDestroyMatDescr( descrL );
     cusparseDestroyMatDescr( descrU );
@@ -557,7 +646,7 @@ cleanup:
     cusparseDestroy( cusparseHandle );
     magma_cmfree(&U, queue );
     magma_cmfree(&hA, queue );
-    
+
     return info;
 }
 
@@ -799,12 +888,3 @@ cleanup:
     cusparseDestroy( cusparseHandle );
     return info; 
 }
-
-
-
-
-
-
-
-
-

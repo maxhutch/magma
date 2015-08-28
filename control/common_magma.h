@@ -1,12 +1,13 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
- 
+       @date August 2015
+
        @author Mathieu Faverge
- 
+       @author Mark Gates
+
        Based on PLASMA common.h
 */
 
@@ -24,7 +25,7 @@
 
 #if defined( _WIN32 ) || defined( _WIN64 )
 
-    #include "magmawinthread.h"
+    #include "magma_winthread.h"
     #include <windows.h>
     #include <limits.h>
     #include <io.h>
@@ -33,7 +34,7 @@
     // (only with Microsoft, not with nvcc on Windows)
     // in both common_magma.h and testings.h
     #ifndef __NVCC__
-    
+
         #include <float.h>
         #define copysign(x,y) _copysign(x,y)
         #define isnan(x)      _isnan(x)
@@ -41,7 +42,7 @@
         #define isfinite(x)   _finite(x)
         // note _snprintf has slightly different semantics than snprintf
         #define snprintf _snprintf
-    
+
     #endif
 
 #else
@@ -82,30 +83,13 @@
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-// for integers a >  0, b > 0, returns ceil( a/b ).
-// for integers a == 0, b > 0, returns 1.
-#ifndef ceildiv
-#define ceildiv(a, b) ((a - 1)/b + 1)
-#endif
-
-// for integers a >  0, b > 0, returns a rounded up to multiple of b.
-// for integers a == 0, b > 0, returns b.
-// old implementation assumes b is power of 2:
-// (b <= 0) ? (a) : (((a) + (b)-1) & ~((b)-1))
-#ifndef roundup
-#define roundup(a, b) (ceildiv((a), (b)) * (b))
-#endif
-
 // suppress "warning: unused variable" in a portable fashion
 #define MAGMA_UNUSED(var)  ((void)var)
 
 
 /** ****************************************************************************
- *  Define magma_[sd]sqrt functions
- *    - sqrt alone cannot be caught by the generation script because of tsqrt
+ *  Internal global variables
  */
-
-#define magma_dsqrt sqrt
-#define magma_ssqrt sqrtf
+extern magma_queue_t magma_stream;
 
 #endif /* MAGMA_COMMON_H */

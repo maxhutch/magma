@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -82,8 +82,8 @@ void zlag2c_kernel(
 /**
     Purpose
     -------
-    ZLAG2C_STREAM converts a double-complex matrix, A,
-                        to a single-complex matrix, SA.
+    ZLAG2C_Q converts a double-complex matrix, A,
+                   to a single-complex matrix, SA.
     
     RMAX is the overflow for the single-complex arithmetic.
     ZLAG2C checks that all the entries of A are between -RMAX and
@@ -163,7 +163,7 @@ magmablas_zlag2c_q(
     double rmax = (double)lapackf77_slamch("O");
 
     dim3 threads( BLK_X, 1 );
-    dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
     zlag2c_kernel<<< grid, threads, 0, queue >>>( m, n, A, lda, SA, ldsa, rmax );

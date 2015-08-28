@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Azzam Haidar
        @author Stan Tomov
@@ -16,7 +16,7 @@
 #include "magma_bulge.h"
 #include "magma_zbulge.h"
 
-#ifdef MAGMA_SETAFFINITY
+#ifndef MAGMA_NOAFFINITY
 #include "affinity.h"
 #endif
 
@@ -34,8 +34,8 @@ static void magma_ztile_bulge_applyQ(
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class magma_zapplyQ_m_data {
-
+class magma_zapplyQ_m_data
+{
 public:
 
     magma_zapplyQ_m_data(magma_int_t ngpu_, magma_int_t threads_num_, magma_int_t n_, magma_int_t ne_, magma_int_t n_gpu_,
@@ -91,8 +91,8 @@ private:
     magma_zapplyQ_m_data(magma_zapplyQ_m_data& data); // disable copy
 };
 
-class magma_zapplyQ_m_id_data {
-
+class magma_zapplyQ_m_id_data
+{
 public:
 
     magma_zapplyQ_m_id_data()
@@ -250,7 +250,7 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
     // it need that all threads setting it to 1.
     magma_set_lapack_numthreads(1);
 
-#ifdef MAGMA_SETAFFINITY
+#ifndef MAGMA_NOAFFINITY
     //#define PRINTAFFINITY
 #ifdef PRINTAFFINITY
     affinity_set print_set;
@@ -316,7 +316,7 @@ static void *magma_zapplyQ_m_parallel_section(void *arg)
         #endif
     } // END if my_core_id
 
-#ifdef MAGMA_SETAFFINITY
+#ifndef MAGMA_NOAFFINITY
     // unbind threads
     if (check == 0) {
         check2 = original_set.set_affinity();

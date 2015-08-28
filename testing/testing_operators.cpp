@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
 */
@@ -22,6 +22,9 @@
 #include "magma_operators.h"
 #include "testings.h"
 
+
+////////////////////////////////////////////////////////////////////////////
+// check( flag ) keeps tally in gStatus of tests that fail
 int gStatus;
 
 void check_( bool flag, const char* msg, int line )
@@ -33,6 +36,94 @@ void check_( bool flag, const char* msg, int line )
 }
 
 #define check( flag ) check_( flag, #flag, __LINE__ )
+
+
+////////////////////////////////////////////////////////////////////////////
+void test_sqrt( double dtol, double stol )
+{
+    int s = gStatus;
+    
+    float              sx, sr;
+    double             dx, dr;
+    magmaFloatComplex  cx, cr;
+    magmaDoubleComplex zx, zr;
+    
+    sx = 4;
+    dx = 4;
+    cx = MAGMA_C_MAKE( 4, 0 );
+    zx = MAGMA_Z_MAKE( 4, 0 );
+    
+    sr = magma_ssqrt( sx );
+    dr = magma_dsqrt( dx );
+    cr = magma_csqrt( cx );
+    zr = magma_zsqrt( zx );
+    
+    // check that single, double, single-complex, double-complex agree
+    // check that r^2 == x
+    // check that r > 0 (principal sqrt)
+    check( sr == dr );
+    check( sr == cr );
+    check( sr == zr );
+    check( fabs( sr*sr - sx ) < stol );
+    check( fabs( dr*dr - dx ) < dtol );
+    check( fabs( cr*cr - cx ) < stol );
+    check( fabs( zr*zr - zx ) < dtol );
+    check( real(cr) >= 0 );
+    
+    // complex sqrt
+    cx = MAGMA_C_MAKE( -4, 0 );
+    zx = MAGMA_Z_MAKE( -4, 0 );
+    cr = magma_csqrt( cx );
+    zr = magma_zsqrt( zx );
+    check( fabs( real(cr) - real(zr) ) < stol &&
+           fabs( imag(cr) - imag(zr) ) < stol );
+    check( fabs( cr*cr - cx ) < stol );
+    check( fabs( zr*zr - zx ) < dtol );
+    check( real(cr) >= 0 );
+    
+    cx = MAGMA_C_MAKE( 2, 2 );
+    zx = MAGMA_Z_MAKE( 2, 2 );
+    cr = magma_csqrt( cx );
+    zr = magma_zsqrt( zx );
+    check( fabs( real(cr) - real(zr) ) < stol &&
+           fabs( imag(cr) - imag(zr) ) < stol );
+    check( fabs( cr*cr - cx ) < stol );
+    check( fabs( zr*zr - zx ) < dtol );
+    check( real(cr) >= 0 );
+    
+    cx = MAGMA_C_MAKE( -2, 2 );
+    zx = MAGMA_Z_MAKE( -2, 2 );
+    cr = magma_csqrt( cx );
+    zr = magma_zsqrt( zx );
+    check( fabs( real(cr) - real(zr) ) < stol &&
+           fabs( imag(cr) - imag(zr) ) < stol );
+    check( fabs( cr*cr - cx ) < stol );
+    check( fabs( zr*zr - zx ) < dtol );
+    check( real(cr) >= 0 );
+    
+    cx = MAGMA_C_MAKE( 2, -2 );
+    zx = MAGMA_Z_MAKE( 2, -2 );
+    cr = magma_csqrt( cx );
+    zr = magma_zsqrt( zx );
+    check( fabs( real(cr) - real(zr) ) < stol &&
+           fabs( imag(cr) - imag(zr) ) < stol );
+    check( fabs( cr*cr - cx ) < stol );
+    check( fabs( zr*zr - zx ) < dtol );
+    check( real(cr) >= 0 );
+    
+    cx = MAGMA_C_MAKE( -2, -2 );
+    zx = MAGMA_Z_MAKE( -2, -2 );
+    cr = magma_csqrt( cx );
+    zr = magma_zsqrt( zx );
+    check( fabs( real(cr) - real(zr) ) < stol &&
+           fabs( imag(cr) - imag(zr) ) < stol );
+    check( fabs( cr*cr - cx ) < stol );
+    check( fabs( zr*zr - zx ) < dtol );
+    check( real(cr) >= 0 );
+    
+    printf( "sqrt                            %s\n", (s == gStatus ? "ok" : "failed"));
+}
+
 
 int main( int argc, char** argv)
 {
@@ -54,13 +145,12 @@ int main( int argc, char** argv)
     bool                 eq3;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     // most operators are simple, so should be exactly the same.
     // some operators (divide, abs) have different implementations, so may differ slightly, within tol.
     double dtol = opts.tolerance * lapackf77_dlamch("E");
     double stol = opts.tolerance * lapackf77_slamch("E");
-
 
     // --------------------
     // MAGMA operator                 std::complex operator                      verify
@@ -83,7 +173,6 @@ int main( int argc, char** argv)
     eq = (za == zb);                  eq3 = (za3 == zb3);                        check( eq == eq3 );
     eq = (za == zc);                  eq3 = (za3 == zc3);                        check( eq == eq3 );
     printf( "std::complex<double> operators  %s\n", (s == gStatus ? "ok" : "failed"));
-
 
     // --------------------
     // MAGMA operator                 std::complex operator                      verify
@@ -129,7 +218,6 @@ int main( int argc, char** argv)
     eq = (za == zc);                  eq2 = MAGMA_Z_EQUAL( za2, zc2 );   check( eq == eq2 );
     printf( "magmaDoubleComplex operators    %s\n", (s == gStatus ? "ok" : "failed"));
 
-
     // --------------------
     // MAGMA operator                 MAGMA MACRO                        verify
     s = gStatus;
@@ -151,7 +239,6 @@ int main( int argc, char** argv)
     eq = (ca == cb);                  eq2 = MAGMA_C_EQUAL( ca2, cb2 );   check( eq == eq2 );
     eq = (ca == cc);                  eq2 = MAGMA_C_EQUAL( ca2, cc2 );   check( eq == eq2 );
     printf( "magmaFloatComplex  operators    %s\n", (s == gStatus ? "ok" : "failed"));
-
 
     // --------------------
     // MAGMA operator                 MAGMA MACRO                        verify
@@ -175,7 +262,6 @@ int main( int argc, char** argv)
     eq = (da == dc);                  eq2 = MAGMA_D_EQUAL( da2, dc2 );   check( eq == eq2 );
     printf( "double operators                %s\n", (s == gStatus ? "ok" : "failed"));
 
-
     // --------------------
     // MAGMA operator                 MAGMA MACRO                        verify
     s = gStatus;
@@ -198,6 +284,9 @@ int main( int argc, char** argv)
     eq = (sa == sc);                  eq2 = MAGMA_S_EQUAL( sa2, sc2 );   check( eq == eq2 );
     printf( "float  operators                %s\n", (s == gStatus ? "ok" : "failed"));
 
+    // --------------------
+    test_sqrt( dtol, stol );
+    
     TESTING_FINALIZE();
     return gStatus;
 }

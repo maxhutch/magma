@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -12,6 +12,7 @@
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
+#include "cublas_v2.h"
 ///////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -69,52 +70,35 @@
     @ingroup magma_zposv_comp
     ********************************************************************/
 extern "C" magma_int_t
-magma_zpotrf_batched(
+magma_zpotrf_lg_batched(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex **dA_array, magma_int_t ldda,
     magma_int_t *info_array,  magma_int_t batchCount, magma_queue_t queue)
 {
+    magma_int_t arginfo = 0;
+
 #define A(i_, j_)  (A + (i_) + (j_)*ldda)   
     double d_alpha = -1.0;
     double d_beta  = 1.0;
-    cudaMemset(info_array, 0, batchCount*sizeof(magma_int_t));
 
-    magma_int_t arginfo = 0;
-    if ( uplo != MagmaUpper && uplo != MagmaLower) {
-        arginfo = -1;
-    } else if (n < 0) {
-        arginfo = -2;
-    } else if (ldda < max(1,n)) {
-        arginfo = -4;
-    }
-
-    if (arginfo != 0) {
-        magma_xerbla( __func__, -(arginfo) );
-        return arginfo;
-    }
-
-    // Quick return if possible
-    if (n == 0) {
-        return arginfo;
-    }
-
-    if( n > 2048 ){
+    if ( n > 2048 ) {
+        #ifndef MAGMA_NOWARNING
         printf("=========================================================================================\n");
         printf("   WARNING batched routines are designed for small sizes it might be better to use the\n   Native/Hybrid classical routines if you want performance\n");
         printf("=========================================================================================\n");
+        #endif
     }
 
 
-    magma_int_t j, k, ib;
-    magma_int_t nb = POTRF_NB;
-    magma_int_t gemm_crossover = 127;//nb > 32 ? 127 : 160;
+    magma_int_t j, k, ib, use_stream;
+    magma_int_t nb, recnb;
+    magma_get_zpotrf_batched_nbparam(n, &nb, &recnb);
 
-#if defined(USE_CUOPT)    
     cublasHandle_t myhandle;
     cublasCreate_v2(&myhandle);
-#else
-    cublasHandle_t myhandle=NULL;
-#endif
+    cublasSetStream(myhandle, queue);
+
+
 
     magmaDoubleComplex **dA_displ   = NULL;
     magmaDoubleComplex **dW0_displ  = NULL;
@@ -134,10 +118,10 @@ magma_zpotrf_batched(
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array,    batchCount * sizeof(*dwork_array));
 
-    magma_int_t invA_msize = ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
     magma_int_t dwork_msize = n*nb;
     magmaDoubleComplex* dinvA      = NULL;
-    magmaDoubleComplex* dwork      = NULL;// dinvA and dwork are workspace in ztrsm
+    magmaDoubleComplex* dwork      = NULL; // dinvA and dwork are workspace in ztrsm
     magmaDoubleComplex **cpuAarray = NULL;
     magma_zmalloc( &dinvA, invA_msize * batchCount);
     magma_zmalloc( &dwork, dwork_msize * batchCount );
@@ -156,36 +140,31 @@ magma_zpotrf_batched(
         magma_free(dwork_array);
         magma_free( dinvA );
         magma_free( dwork );
-        free(cpuAarray);
+        magma_free_cpu(cpuAarray);
         magma_int_t info = MAGMA_ERR_DEVICE_ALLOC;
         magma_xerbla( __func__, -(info) );
         return info;
     }
-
     magmablas_zlaset_q(MagmaFull, invA_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvA, invA_msize, queue);
     magmablas_zlaset_q(MagmaFull, dwork_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dwork, dwork_msize, queue);
     zset_pointer(dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue);
     zset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
 
 
-    magma_queue_t cstream;
-    magmablasGetKernelStream(&cstream);
     magma_int_t streamid;
-    const magma_int_t nbstreams=32;
+    const magma_int_t nbstreams=10;
     magma_queue_t stream[nbstreams];
-    for(k=0; k<nbstreams; k++){
+    for (k=0; k < nbstreams; k++) {
         magma_queue_create( &stream[k] );
     }
     magma_getvector( batchCount, sizeof(magmaDoubleComplex*), dA_array, 1, cpuAarray, 1);
-
-    magmablasSetKernelStream(NULL);
 
     if (uplo == MagmaUpper) {
         printf("Upper side is unavailable \n");
         goto fin;
     }
     else {
-        for(j = 0; j < n; j+=nb) {
+        for (j = 0; j < n; j += nb) {
             ib = min(nb, n-j);
 #if 1
             //===============================================
@@ -196,27 +175,29 @@ magma_zpotrf_batched(
             zset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
 
 
-            #if 0
-            arginfo = magma_zpotrf_panel_batched(
-                               uplo, n-j, ib,
-                               dA_displ, ldda,
-                               dwork_array, dwork_msize,
-                               dinvA_array, invA_msize,
-                               dW0_displ, dW1_displ, dW2_displ,
-                               dW3_displ, dW4_displ,
-                               info_array, j, batchCount, myhandle);
-            #else
-            //arginfo = magma_zpotrf_rectile_batched(
-            arginfo = magma_zpotrf_recpanel_batched(
-                               uplo, n-j, ib, 32,
-                               dA_displ, ldda,
-                               dwork_array, dwork_msize,
-                               dinvA_array, invA_msize,
-                               dW0_displ, dW1_displ, dW2_displ,
-                               dW3_displ, dW4_displ, 
-                               info_array, j, batchCount, myhandle, queue);
-            #endif
-            if(arginfo != 0 ) goto fin;
+            if (recnb == nb)
+            {
+                arginfo = magma_zpotrf_panel_batched(
+                                   uplo, n-j, ib,
+                                   dA_displ, ldda,
+                                   dwork_array, dwork_msize,
+                                   dinvA_array, invA_msize,
+                                   dW0_displ, dW1_displ, dW2_displ,
+                                   dW3_displ, dW4_displ,
+                                   info_array, j, batchCount, myhandle, queue);
+            }
+            else {
+                //arginfo = magma_zpotrf_rectile_batched(
+                arginfo = magma_zpotrf_recpanel_batched(
+                                   uplo, n-j, ib, recnb,
+                                   dA_displ, ldda,
+                                   dwork_array, dwork_msize,
+                                   dinvA_array, invA_msize,
+                                   dW0_displ, dW1_displ, dW2_displ,
+                                   dW3_displ, dW4_displ, 
+                                   info_array, j, batchCount, myhandle, queue);
+            }
+            if (arginfo != 0 ) goto fin;
             //===============================================
             // end of panel
             //===============================================
@@ -224,8 +205,9 @@ magma_zpotrf_batched(
 #if 1
             //real_Double_t gpu_time;
             //gpu_time = magma_sync_wtime(NULL);
-            if( (n-j-ib) > 0){
-                if( (n-j-ib) > gemm_crossover)   
+            if ( (n-j-ib) > 0) {
+                use_stream = magma_zrecommend_cublas_gemm_stream(MagmaNoTrans, MagmaConjTrans, n-j-ib, n-j-ib, ib);
+                if (use_stream)
                 { 
                     //-------------------------------------------
                     //          USE STREAM  HERK
@@ -235,7 +217,8 @@ magma_zpotrf_batched(
                     // so I don't need it, because the NULL stream do the sync by itself
                     //magma_queue_sync(NULL); 
                     /* you must know the matrix layout inorder to do it */  
-                    for(k=0; k<batchCount; k++)
+                    magma_queue_sync(queue); 
+                    for (k=0; k < batchCount; k++)
                     {
                         streamid = k%nbstreams;                                       
                         magmablasSetKernelStream(stream[streamid]);
@@ -245,14 +228,17 @@ magma_zpotrf_batched(
                             (const magmaDoubleComplex*) cpuAarray[k] + j+ib+j*ldda, ldda, 
                             d_beta,
                             cpuAarray[k] + j+ib+(j+ib)*ldda, ldda);
-
                      }
                      // need to synchronise to be sure that panel do not start before
                      // finishing the update at least of the next panel
                      // BUT no need for it as soon as the other portion of the code 
                      // use the NULL stream which do the sync by itself 
                      //magma_device_sync(); 
-                     magmablasSetKernelStream(NULL);
+                     if ( queue != NULL ) {
+                         for (magma_int_t s=0; s < nbstreams; s++)
+                             magma_queue_sync(stream[s]);
+                     }
+                     magmablasSetKernelStream(queue);
                 }
                 else
                 {
@@ -276,17 +262,12 @@ magma_zpotrf_batched(
     }
 
 fin:
-    magma_queue_sync(NULL);
-    for(k=0; k<nbstreams; k++){
+    magmablasSetKernelStream(queue);
+    magma_queue_sync(queue);
+    for (k=0; k < nbstreams; k++) {
         magma_queue_destroy( stream[k] );
     }
-    magmablasSetKernelStream(cstream);
-
-
-#if defined(USE_CUOPT)    
     cublasDestroy_v2(myhandle);
-#endif
-
 
     magma_free(dA_displ);
     magma_free(dW0_displ);
@@ -298,10 +279,60 @@ fin:
     magma_free(dwork_array);
     magma_free( dinvA );
     magma_free( dwork );
-    free(cpuAarray);
+    magma_free_cpu(cpuAarray);
 
     return arginfo;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+extern "C" magma_int_t
+magma_zpotrf_batched(
+    magma_uplo_t uplo, magma_int_t n,
+    magmaDoubleComplex **dA_array, magma_int_t ldda,
+    magma_int_t *info_array,  magma_int_t batchCount, magma_queue_t queue)
+{
+    cudaMemset(info_array, 0, batchCount*sizeof(magma_int_t));
+    magma_int_t arginfo = 0;
+    
+    if ( uplo != MagmaUpper && uplo != MagmaLower) {
+        arginfo = -1;
+    } else if (n < 0) {
+        arginfo = -2;
+    } else if (ldda < max(1,n)) {
+        arginfo = -4;
+    }
 
+    if (arginfo != 0) {
+        magma_xerbla( __func__, -(arginfo) );
+        return arginfo;
+    }
 
+    // Quick return if possible
+    if (n == 0) {
+        return arginfo;
+    }
+    
+
+    magma_int_t crossover = magma_get_zpotrf_batched_crossover();
+
+    if (n > crossover )
+    {   
+        // The memory allocation/deallocation inside this routine takes about 3-4ms 
+        arginfo = magma_zpotrf_lg_batched(uplo, n, dA_array, ldda, info_array, batchCount, queue);
+    }
+    else
+    {
+        #if defined(VERSION20)
+            arginfo = magma_zpotrf_lpout_batched(uplo, n, dA_array, ldda, 0, info_array, batchCount, queue);
+        #elif defined(VERSION33)
+            arginfo = magma_zpotrf_v33_batched(uplo, n, dA_array, ldda, info_array, batchCount, queue);
+        #elif defined(VERSION31)
+            arginfo = magma_zpotrf_lpin_batched(uplo, n, dA_array, ldda, 0, info_array, batchCount, queue);
+        #else
+            printf("ERROR NO VERSION CHOSEN\n");
+        #endif
+    }
+    magma_queue_sync(queue);
+
+    return arginfo;
+}

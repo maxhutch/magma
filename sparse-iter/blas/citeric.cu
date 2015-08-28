@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from ziteric.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from ziteric.cu normal z -> c, Tue Aug 25 16:35:31 2015
 
 */
 #include "common_magmasparse.h"
@@ -22,10 +22,10 @@ magma_citeric_csr_kernel(
     const magmaFloatComplex * __restrict__  A_val,
     magma_index_t *rowptr, 
     magma_index_t *colidx, 
-    magmaFloatComplex *val ){
-
+    magmaFloatComplex *val )
+{
     int i, j;
-    int k = (blockDim.x * blockIdx.x + threadIdx.x);// % nnz;
+    int k = (blockDim.x * blockIdx.x + threadIdx.x); // % nnz;
 
 
     magmaFloatComplex zero = MAGMA_C_MAKE(0.0, 0.0);
@@ -64,7 +64,6 @@ magma_citeric_csr_kernel(
                 il++;
                 iu++;
             }
-
         }
         // undo the last operation (it must be the last)
         s += sp;
@@ -72,12 +71,10 @@ magma_citeric_csr_kernel(
 
         // modify entry
         if (i == j)
-            val[il-1] = MAGMA_C_MAKE(sqrt(abs(MAGMA_C_REAL(s))), 0.0);
+            val[il-1] = MAGMA_C_MAKE( sqrt( fabs( MAGMA_C_REAL(s) )), 0.0 );
         else
             val[il-1] =  s / val[iu-1];
-
     }
-
 }// kernel 
 
 
@@ -109,14 +106,14 @@ magma_citeric_csr_kernel(
     A           magma_c_matrix
                 input matrix A - initial guess (lower triangular)
 
-    @param[in][out]
+    @param[in,out]
     A_CSR       magma_c_matrix
                 input/output matrix containing the IC approximation
                 
     @param[in]
-    A_CSR       magma_c_matrix
-                input/output matrix containing the IC approximation
-
+    queue       magma_queue_t
+                Queue to execute in.
+                
     @ingroup magmasparse_cgegpuk
     ********************************************************************/
 
@@ -124,15 +121,12 @@ extern "C" magma_int_t
 magma_citeric_csr( 
     magma_c_matrix A,
     magma_c_matrix A_CSR,
-    magma_queue_t queue ){
-
-
-
-    
+    magma_queue_t queue )
+{
     int blocksize1 = 128;
     int blocksize2 = 1;
 
-    int dimgrid1 = ( A.nnz + blocksize1 -1 ) / blocksize1;
+    int dimgrid1 = magma_ceildiv( A.nnz, blocksize1 );
     int dimgrid2 = 1;
     int dimgrid3 = 1;
 
@@ -154,6 +148,3 @@ magma_citeric_csr(
 
     return MAGMA_SUCCESS;
 }
-
-
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -244,7 +244,7 @@ magma_dsyevd_gpu(
     // dsytrd2_gpu requires ldda*ceildiv(n,64) + 2*ldda*nb
     // dormtr_gpu  requires lddc*n
     // dlansy      requires n
-    magma_int_t ldwork = max( ldda*ceildiv(n,64) + 2*ldda*nb, lddc*n );
+    magma_int_t ldwork = max( ldda*magma_ceildiv(n,64) + 2*ldda*nb, lddc*n );
     ldwork = max( ldwork, n );
     if ( wantz ) {
         // dstedx requires 3n^2/2

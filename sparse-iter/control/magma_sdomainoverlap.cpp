@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zdomainoverlap.cpp normal z -> s, Sun May  3 11:23:01 2015
+       @generated from magma_zdomainoverlap.cpp normal z -> s, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -77,7 +77,7 @@ extern "C"
 magma_int_t
 magma_sdomainoverlap(
     magma_index_t num_rows,
-    magma_index_t *num_indices,
+    magma_int_t *num_indices,
     magma_index_t *rowptr,
     magma_index_t *colidx,
     magma_index_t *x,
@@ -122,6 +122,4 @@ magma_sdomainoverlap(
 cleanup:
     magma_free_cpu( tmp_x );
     return info;
-
 }
-

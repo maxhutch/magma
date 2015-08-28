@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zhesv.cpp normal z -> s, Fri Jan 30 19:00:15 2015
+       @generated from zhesv.cpp normal z -> s, Tue Aug 25 16:35:16 2015
 */
 
 #include "common_magma.h"
@@ -92,47 +92,45 @@
                  has been completed, but the block diagonal matrix D is
                  exactly singular, so the solution could not be computed.
 
-    @ingroup magma_ssysv_comp
+    @ingroup magma_ssysv_driver
     ********************************************************************/
 extern "C" magma_int_t
 magma_ssysv(
-    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs, 
-    float *A, magma_int_t lda, magma_int_t *ipiv, 
-    float *B, magma_int_t ldb, 
-    magma_int_t *info ) 
+    magma_uplo_t uplo, magma_int_t n, magma_int_t nrhs,
+    float *A, magma_int_t lda, magma_int_t *ipiv,
+    float *B, magma_int_t ldb,
+    magma_int_t *info )
 {
     /* .. Local Scalars .. */
-    magma_int_t upper = (uplo == MagmaUpper);;
+    magma_int_t upper = (uplo == MagmaUpper);
 
     /* Test the input parameters. */
     *info = 0;
-    if( !upper && uplo != MagmaLower ) {
-       *info = -1;
+    if ( !upper && uplo != MagmaLower ) {
+        *info = -1;
     } else if ( n < 0 ) {
-       *info = -2;
+        *info = -2;
     } else if ( nrhs < 0 ) {
-       *info = -3;
+        *info = -3;
     } else if ( lda < max( 1, n ) ) {
-       *info = -5;
+        *info = -5;
     } else if ( ldb < max( 1, n ) ) {
-       *info = -8;
+        *info = -8;
     }
 
-    if( *info != 0 ) {
+    if ( *info != 0 ) {
         magma_xerbla( __func__, -(*info) );
         return *info;
     }
 
     /* Compute the factorization A = U*D*U' or A = L*D*L'. */
     magma_ssytrf( uplo, n, A, lda, ipiv, info );
-    if( *info == 0 ) {
-
+    if ( *info == 0 ) {
         /* Solve the system A*X = B, overwriting B with X. */
-        lapackf77_ssytrs( (upper ? MagmaUpperStr: MagmaLowerStr), 
+        lapackf77_ssytrs( (upper ? MagmaUpperStr: MagmaLowerStr),
                            &n, &nrhs, A, &lda, ipiv, B, &ldb, info );
     }
 
     return *info;
     /* End of SSYSV */
 }
-

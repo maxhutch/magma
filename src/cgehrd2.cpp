@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgehrd2.cpp normal z -> c, Fri Jan 30 19:00:19 2015
+       @generated from zgehrd2.cpp normal z -> c, Tue Aug 25 16:35:19 2015
        
        @author Stan Tomov
        @author Mark Gates
@@ -131,7 +131,7 @@ magma_cgehrd2(
     magmaFloatComplex c_zero = MAGMA_C_ZERO;
 
     magma_int_t nb = magma_get_cgehrd_nb(n);
-    magma_int_t ldda = ((n+31)/32)*32;
+    magma_int_t ldda = magma_roundup( n, 32 );
 
     magma_int_t i, nh, iws;
     magma_int_t iinfo;
@@ -197,7 +197,7 @@ magma_cgehrd2(
         magmaFloatComplex *dA = dwork + nb*ldda*2;
         magmaFloatComplex *dT = dwork + nb*ldda*2 + n*ldda;
         ldwork = ldda;
-            
+        
         magmaFloatComplex *T;
         magma_cmalloc_cpu( &T, nb*nb );
         if ( T == NULL ) {

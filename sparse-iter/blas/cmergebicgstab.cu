@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmergebicgstab.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zmergebicgstab.cu normal z -> c, Tue Aug 25 16:35:30 2015
        @author Hartwig Anzt
 
 */
@@ -33,11 +33,9 @@ magma_cbicgmerge1_kernel(
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaFloatComplex beta=skp[1];
     magmaFloatComplex omega=skp[2];
-    if( i<n ){
+    if ( i<n ) {
         p[i] =  r[i] + beta * ( p[i] - omega * v[i] );
-
     }
-
 }
 
 /**
@@ -60,24 +58,24 @@ magma_cbicgmerge1_kernel(
                 dimension n
 
     @param[in]
-    skp         magmaFloatComplex_ptr 
+    skp         magmaFloatComplex_ptr
                 set of scalar parameters
 
     @param[in]
-    v           magmaFloatComplex_ptr 
-                input v
+    v           magmaFloatComplex_ptr
+                input vector v
 
     @param[in]
-    r           magmaFloatComplex_ptr 
-                input r
+    r           magmaFloatComplex_ptr
+                input vector r
 
-    @param[in/out]
+    @param[in,out]
     p           magmaFloatComplex_ptr 
-                input/output p
+                input/output vector p
 
     @param[in]
     queue       magma_queue_t
-                Queue to execute in.
+                queue to execute in.
 
     @ingroup magmasparse_cgegpuk
     ********************************************************************/
@@ -88,12 +86,12 @@ magma_cbicgmerge1(
     magmaFloatComplex_ptr skp,
     magmaFloatComplex_ptr v, 
     magmaFloatComplex_ptr r, 
-    magmaFloatComplex_ptr p ){
-
-    
+    magmaFloatComplex_ptr p,
+    magma_queue_t queue )
+{
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
-    magma_cbicgmerge1_kernel<<<Gs, Bs, 0>>>( n, skp, v, r, p );
+    magma_cbicgmerge1_kernel<<<Gs, Bs, 0, queue>>>( n, skp, v, r, p );
 
    return MAGMA_SUCCESS;
 }
@@ -110,10 +108,9 @@ magma_cbicgmerge2_kernel(
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaFloatComplex alpha=skp[0];
-    if( i<n ){
-        s[i] =  r[i] - alpha * v[i] ;
+    if ( i < n ) {
+        s[i] =  r[i] - alpha * v[i];
     }
-
 }
 
 /**
@@ -140,19 +137,19 @@ magma_cbicgmerge2_kernel(
 
     @param[in]
     r           magmaFloatComplex_ptr 
-                input r
+                input vector r
 
     @param[in]
     v           magmaFloatComplex_ptr 
-                input v
+                input vector v
 
-    @param[s]
+    @param[out]
     s           magmaFloatComplex_ptr 
-                output s
+                output vector s
 
     @param[in]
     queue       magma_queue_t
-                Queue to execute in.
+                queue to execute in.
 
     @ingroup magmasparse_cgegpuk
     ********************************************************************/
@@ -163,14 +160,13 @@ magma_cbicgmerge2(
     magmaFloatComplex_ptr skp, 
     magmaFloatComplex_ptr r,
     magmaFloatComplex_ptr v, 
-    magmaFloatComplex_ptr s )
+    magmaFloatComplex_ptr s,
+    magma_queue_t queue )
 {
-
-    
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
 
-    magma_cbicgmerge2_kernel<<<Gs, Bs, 0>>>( n, skp, r, v, s );
+    magma_cbicgmerge2_kernel<<<Gs, Bs, 0, queue>>>( n, skp, r, v, s );
 
    return MAGMA_SUCCESS;
 }
@@ -185,18 +181,18 @@ magma_cbicgmerge3_kernel(
     magmaFloatComplex * se,
     magmaFloatComplex * t,
     magmaFloatComplex * x, 
-    magmaFloatComplex * r )
+    magmaFloatComplex * r
+    )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     magmaFloatComplex alpha=skp[0];
     magmaFloatComplex omega=skp[2];
-    if( i<n ){
+    if ( i<n ) {
         magmaFloatComplex s;
         s = se[i];
         x[i] = x[i] + alpha * p[i] + omega * s;
         r[i] = s - omega * t[i];
     }
-
 }
 
 /**
@@ -236,11 +232,11 @@ magma_cbicgmerge3_kernel(
     t           magmaFloatComplex_ptr 
                 input t
 
-    @param[in/out]
+    @param[in,out]
     x           magmaFloatComplex_ptr 
                 input/output x
 
-    @param[in/out]
+    @param[in,out]
     r           magmaFloatComplex_ptr 
                 input/output r
 
@@ -259,13 +255,12 @@ magma_cbicgmerge3(
     magmaFloatComplex_ptr s,
     magmaFloatComplex_ptr t,
     magmaFloatComplex_ptr x, 
-    magmaFloatComplex_ptr r )
+    magmaFloatComplex_ptr r,
+    magma_queue_t queue )
 {
-
-    
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
-    magma_cbicgmerge3_kernel<<<Gs, Bs, 0>>>( n, skp, p, s, t, x, r );
+    magma_cbicgmerge3_kernel<<<Gs, Bs, 0, queue>>>( n, skp, p, s, t, x, r );
 
    return MAGMA_SUCCESS;
 }
@@ -278,7 +273,7 @@ magma_cbicgmerge4_kernel_1(
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if( i==0 ){
+    if ( i==0 ) {
         magmaFloatComplex tmp = skp[0];
         skp[0] = skp[4]/tmp;
     }
@@ -290,7 +285,7 @@ magma_cbicgmerge4_kernel_2(
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if( i==0 ){
+    if ( i==0 ) {
         skp[2] = skp[6]/skp[7];
         skp[3] = skp[4];
     }
@@ -302,12 +297,11 @@ magma_cbicgmerge4_kernel_3(
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if( i==0 ){
+    if ( i==0 ) {
         magmaFloatComplex tmp1 = skp[4]/skp[3];
         magmaFloatComplex tmp2 = skp[0] / skp[2];
         skp[1] =  tmp1*tmp2;
         //skp[1] =  skp[4]/skp[3] * skp[0] / skp[2];
-
     }
 }
 
@@ -324,7 +318,7 @@ magma_cbicgmerge4_kernel_3(
     type        int
                 kernel type
 
-    @param[in/out]
+    @param[in,out]
     skp         magmaFloatComplex_ptr 
                 vector with parameters
 
@@ -340,18 +334,16 @@ magma_cbicgmerge4(
     int type, 
     magmaFloatComplex_ptr skp )
 {
-
     dim3 Bs( 1 );
     dim3 Gs( 1 );
-    if( type == 1 )
+    if ( type == 1 )
         magma_cbicgmerge4_kernel_1<<<Gs, Bs, 0>>>( skp );
-    else if( type == 2 )
+    else if ( type == 2 )
         magma_cbicgmerge4_kernel_2<<<Gs, Bs, 0>>>( skp );
-    else if( type == 3 )
+    else if ( type == 3 )
         magma_cbicgmerge4_kernel_3<<<Gs, Bs, 0>>>( skp );
     else
         printf("error: no kernel called\n");
 
    return MAGMA_SUCCESS;
 }
-

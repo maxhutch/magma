@@ -25,6 +25,7 @@ CSRC = \
 	clauum.cpp \
 	ctrtri.cpp \
 	cpotrf_m.cpp \
+	cgerfs_nopiv_gpu.cpp \
 	cgesv_gpu.cpp \
 	cgesv_nopiv_gpu.cpp \
 	cgetrf_gpu.cpp \
@@ -67,8 +68,8 @@ CSRC = \
 	cgeqp3_gpu.cpp \
 	claqps_gpu.cpp \
 	cgelqf.cpp \
+	cgels.cpp \
 	cgeqlf.cpp \
-	cgeqrf-v4.cpp \
 	cgeqrf.cpp \
 	cgeqrf_ooc.cpp \
 	cungqr.cpp \
@@ -78,15 +79,21 @@ CSRC = \
 	cunmqr.cpp \
 	cgeqp3.cpp \
 	claqps.cpp \
+	cgeqrf_m.cpp \
 	cungqr_m.cpp \
 	cunmqr_m.cpp \
 	chesv.cpp \
 	chetrf.cpp \
+	chetrf_aasen.cpp \
 	chetrf_nopiv.cpp \
 	chetrf_nopiv_cpu.cpp \
+	csytrf_nopiv_cpu.cpp \
 	chetrf_nopiv_gpu.cpp \
+	csytrf_nopiv_gpu.cpp \
 	chetrs_nopiv_gpu.cpp \
+	csytrs_nopiv_gpu.cpp \
 	chesv_nopiv_gpu.cpp \
+	csysv_nopiv_gpu.cpp \
 	clahef_gpu.cpp \
 	cheevd_gpu.cpp \
 	cheevdx_gpu.cpp \
@@ -121,14 +128,18 @@ CSRC = \
 	cbulge_back.cpp \
 	cungqr_2stage_gpu.cpp \
 	cunmqr_gpu_2stage.cpp \
-	cheevdx_2stage.cpp \
 	chegvdx_2stage.cpp \
+	cheevdx_2stage.cpp \
 	cbulge_back_m.cpp \
 	cbulge_applyQ_v2_m.cpp \
 	cheevdx_2stage_m.cpp \
 	chegvdx_2stage_m.cpp \
 	chetrd_he2hb_mgpu.cpp \
 	chetrd_he2hb_mgpu_spec.cpp \
+	core_clarfy.cpp \
+	core_chbtype1cb.cpp \
+	core_chbtype2cb.cpp \
+	core_chbtype3cb.cpp \
 	chegst.cpp \
 	chegvd.cpp \
 	chegvdx.cpp \
@@ -179,7 +190,8 @@ CSRC = \
 	clarft_batched.cpp \
 	clarfb_gemm_batched.cpp \
 	cgeqrf_panel_batched.cpp \
-	cgeqrf_batched.cpp
+	cgeqrf_batched.cpp \
+	cgeqrf_expert_batched.cpp
 
 DSRC = \
 	cblas_d.cpp \
@@ -201,6 +213,7 @@ DSRC = \
 	dpotrf_m.cpp \
 	dsgesv_gpu.cpp \
 	dsgetrs_gpu.cpp \
+	dgerfs_nopiv_gpu.cpp \
 	dgesv_gpu.cpp \
 	dgesv_nopiv_gpu.cpp \
 	dgetrf_gpu.cpp \
@@ -244,8 +257,8 @@ DSRC = \
 	dgeqp3_gpu.cpp \
 	dlaqps_gpu.cpp \
 	dgelqf.cpp \
+	dgels.cpp \
 	dgeqlf.cpp \
-	dgeqrf-v4.cpp \
 	dgeqrf.cpp \
 	dgeqrf_ooc.cpp \
 	dorgqr.cpp \
@@ -255,10 +268,12 @@ DSRC = \
 	dormqr.cpp \
 	dgeqp3.cpp \
 	dlaqps.cpp \
+	dgeqrf_m.cpp \
 	dorgqr_m.cpp \
 	dormqr_m.cpp \
 	dsysv.cpp \
 	dsytrf.cpp \
+	dsytrf_aasen.cpp \
 	dsytrf_nopiv.cpp \
 	dsytrf_nopiv_cpu.cpp \
 	dsytrf_nopiv_gpu.cpp \
@@ -285,10 +300,15 @@ DSRC = \
 	dbulge_back.cpp \
 	dorgqr_2stage_gpu.cpp \
 	dormqr_gpu_2stage.cpp \
+	dsyevdx_2stage.cpp \
 	dbulge_back_m.cpp \
 	dbulge_applyQ_v2_m.cpp \
 	dsytrd_sy2sb_mgpu.cpp \
 	dsytrd_sy2sb_mgpu_spec.cpp \
+	core_dlarfy.cpp \
+	core_dsbtype1cb.cpp \
+	core_dsbtype2cb.cpp \
+	core_dsbtype3cb.cpp \
 	dsygst.cpp \
 	dsygst_gpu.cpp \
 	dsygst_m.cpp \
@@ -326,7 +346,8 @@ DSRC = \
 	dlarft_batched.cpp \
 	dlarfb_gemm_batched.cpp \
 	dgeqrf_panel_batched.cpp \
-	dgeqrf_batched.cpp
+	dgeqrf_batched.cpp \
+	dgeqrf_expert_batched.cpp
 
 SSRC = \
 	cblas_s.cpp \
@@ -345,6 +366,7 @@ SSRC = \
 	slauum.cpp \
 	strtri.cpp \
 	spotrf_m.cpp \
+	sgerfs_nopiv_gpu.cpp \
 	sgesv_gpu.cpp \
 	sgesv_nopiv_gpu.cpp \
 	sgetrf_gpu.cpp \
@@ -387,8 +409,8 @@ SSRC = \
 	sgeqp3_gpu.cpp \
 	slaqps_gpu.cpp \
 	sgelqf.cpp \
+	sgels.cpp \
 	sgeqlf.cpp \
-	sgeqrf-v4.cpp \
 	sgeqrf.cpp \
 	sgeqrf_ooc.cpp \
 	sorgqr.cpp \
@@ -398,10 +420,12 @@ SSRC = \
 	sormqr.cpp \
 	sgeqp3.cpp \
 	slaqps.cpp \
+	sgeqrf_m.cpp \
 	sorgqr_m.cpp \
 	sormqr_m.cpp \
 	ssysv.cpp \
 	ssytrf.cpp \
+	ssytrf_aasen.cpp \
 	ssytrf_nopiv.cpp \
 	ssytrf_nopiv_cpu.cpp \
 	ssytrf_nopiv_gpu.cpp \
@@ -444,14 +468,18 @@ SSRC = \
 	sbulge_back.cpp \
 	sorgqr_2stage_gpu.cpp \
 	sormqr_gpu_2stage.cpp \
-	ssyevdx_2stage.cpp \
 	ssygvdx_2stage.cpp \
+	ssyevdx_2stage.cpp \
 	sbulge_back_m.cpp \
 	sbulge_applyQ_v2_m.cpp \
 	ssyevdx_2stage_m.cpp \
 	ssygvdx_2stage_m.cpp \
 	ssytrd_sy2sb_mgpu.cpp \
 	ssytrd_sy2sb_mgpu_spec.cpp \
+	core_slarfy.cpp \
+	core_ssbtype1cb.cpp \
+	core_ssbtype2cb.cpp \
+	core_ssbtype3cb.cpp \
 	ssygvd.cpp \
 	ssygvdx.cpp \
 	ssygst.cpp \
@@ -501,4 +529,5 @@ SSRC = \
 	slarft_batched.cpp \
 	slarfb_gemm_batched.cpp \
 	sgeqrf_panel_batched.cpp \
-	sgeqrf_batched.cpp
+	sgeqrf_batched.cpp \
+	sgeqrf_expert_batched.cpp

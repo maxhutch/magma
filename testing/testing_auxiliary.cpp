@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
 */
@@ -33,7 +33,7 @@ void warn_helper( int cond, const char* str, const char* file, int line )
 ////////////////////////////////////////////////////////////////////////////
 void test_num_gpus()
 {
-    printf( "======================================================================\n%s\n", __func__ );
+    printf( "%%=====================================================================\n%s\n", __func__ );
     
     int ngpu;
     int ndevices;
@@ -41,7 +41,7 @@ void test_num_gpus()
     int maxgpu = min( ndevices, MagmaMaxGPUs );
     
     printf( "$MAGMA_NUM_GPUS     ngpu     expect\n" );
-    printf( "===================================\n" );
+    printf( "%%==================================\n" );
     
 #ifndef _MSC_VER // not Windows
     
@@ -107,7 +107,7 @@ void test_num_gpus()
 ////////////////////////////////////////////////////////////////////////////
 void test_num_threads()
 {
-    printf( "======================================================================\n%s\n", __func__ );
+    printf( "%%=====================================================================\n%s\n", __func__ );
     
     // test that getting & setting numthreads works
     int p_nthread_orig = magma_get_parallel_numthreads();
@@ -164,7 +164,7 @@ void test_num_threads()
     printf( "\nusing ncores=%d, omp_num_threads=%d\n\n", ncores, omp_threads );
     
     printf( "$MAGMA_NUM_THREADS  nthread  expect\n" );
-    printf( "===================================\n" );
+    printf( "%%==================================\n" );
     
     unsetenv("MAGMA_NUM_THREADS");
     p_nthread = magma_get_parallel_numthreads();

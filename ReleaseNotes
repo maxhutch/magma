@@ -25,6 +25,21 @@ Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
 
+ 1.6.3 - July 2015
+    * Added results archive to compare historical performance.
+    * Added Fortran code to example directory.
+    * Added magmaf_wtime for consistency with other Fortran interfaces; deprecated magma_wtime_f.
+    * Tuned symmetric eigenvalue code, {sy|he}evd, to improve performance for N < 2000.
+    * Fixed Fortran constants (MagmaTrans, MagmaUpper, etc.).
+    * Fixed workspace requirements for Hessenberg (gehrd and gehrd_m) and multi-GPU geev_m.
+    * Fixed trtri for unit diagonal, and added tester.
+    * Fixed testing check for inverse (getri).
+    * Rename lapack_const to lapack_const_str, to avoid name conflict with PLASMA.
+
+    MAGMA sparse
+    * Added Induced Dimension Reduction Iterative solver (IDR).
+    * Added iterative sparse triangular solves for 
+      incomplete factorization preconditioners.
 
  1.6.2 - May 4, 2015
     * Added magma_{s,d,c,z}sqrt for real and complex scalar square root.

@@ -1,13 +1,14 @@
 /*
-   -- MAGMA (version 1.6.1) --
+   -- MAGMA (version 1.6.3-beta1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date January 2015
+   @date August 2015
 
    @author Azzam Haidar
+   @author Mark Gates
 
-   @generated from testing_zgetri_batched.cpp normal z -> d, Fri Jan 30 19:00:26 2015
+   @generated from testing_zgetri_batched.cpp normal z -> d, Tue Aug 25 16:35:28 2015
  */
 // includes, system
 #include <stdlib.h>
@@ -21,198 +22,230 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
+#if defined(_OPENMP)
+#include <omp.h>
+#include "magma_threadsetting.h"
+#endif
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing dgetrf_batched
+   -- Testing dgetri_batched
 */
 int main( int argc, char** argv)
 {
     TESTING_INIT();
 
-    real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf=0, cpu_time=0;
-    double *h_A, *h_R;
-    double *d_A, *d_invA;
-    double **dA_array = NULL;
-    double **dinvA_array = NULL;
-    double **C_array = NULL;
-    magma_int_t  **dipiv_array = NULL;
-    magma_int_t *dinfo_array = NULL;
-
-    magma_int_t     *ipiv;
-    magma_int_t     *d_ipiv, *d_info;
-    magma_int_t M, N, n2, lda, ldda, min_mn, info, info1, info2;
+    // constants
+    const double c_zero    = MAGMA_D_ZERO;
+    const double c_one     = MAGMA_D_ONE;
+    const double c_neg_one = MAGMA_D_NEG_ONE;
+    
+    real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
+    double *h_A, *h_Ainv, *h_R, *work;
+    magmaDouble_ptr d_A, d_invA;
+    magmaDouble_ptr *dA_array;
+    magmaDouble_ptr *dinvA_array;
+    magma_int_t **dipiv_array;
+    magma_int_t *dinfo_array;
+    magma_int_t *ipiv, *cpu_info;
+    magma_int_t *d_ipiv, *d_info;
+    magma_int_t N, n2, lda, ldda, info, info1, info2, lwork;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_opts opts;
-    parse_opts( argc, argv, &opts );
-    opts.lapack |= opts.check; 
-
-    magma_queue_t queue = magma_stream;
-    magma_int_t batchCount = opts.batchcount ;
+    double tmp;
+    double  error, rwork[1];
     magma_int_t columns;
-    double error=0.0, rwork[1];
-    double c_neg_one = MAGMA_D_NEG_ONE;
-    magma_int_t     status = 0;
-    // need looser bound (3000*eps instead of 30*eps) for tests
-    // TODO: should compute ||I - A*A^{-1}|| / (n*||A||*||A^{-1}||)
-    opts.tolerance = max( 3000., opts.tolerance );
+    magma_int_t status = 0;
+    
+    magma_opts opts( MagmaOptsBatched );
+    opts.parse_opts( argc, argv );
+    
+    magma_int_t batchCount = opts.batchcount;
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
-    printf("batchCount      M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||PA-LU||/(||A||*N    tolerance )\n");
-    printf("====================================================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
-    
-      for( int iter = 0; iter < opts.niter; ++iter ) {
-            
-            M = opts.msize[i];
-            N = opts.nsize[i];
-            min_mn = min(M, N);
-            lda    = M;
+    printf("%% batchCount   N    CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||I - A*A^{-1}||_1 / (N*cond(A))\n");
+    printf("%%===============================================================================\n");
+    for( int itest = 0; itest < opts.ntest; ++itest ) {    
+        for( int iter = 0; iter < opts.niter; ++iter ) {
+            N = opts.nsize[itest];
+            lda    = N;
             n2     = lda*N * batchCount;
-            ldda   = ((M+31)/32)*32;
-            //gflops = (FLOPS_DGETRF( M, N ) + FLOPS_DGETRI( min(M,N) ))/ 1e9 * batchCount; // This is the correct flops but since this getri_batched is based on 2 trsm = getrs and to know the real flops I am using the getrs one
-            gflops = (FLOPS_DGETRF( M, N ) + FLOPS_DGETRS( min(M,N), min(M,N) ))/ 1e9 * batchCount;
+            ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
+            // This is the correct flops but since this getri_batched is based on
+            // 2 trsm = getrs and to know the real flops I am using the getrs one
+            //gflops = (FLOPS_DGETRF( N, N ) + FLOPS_DGETRI( N ))/ 1e9 * batchCount;
+            gflops = (FLOPS_DGETRF( N, N ) + FLOPS_DGETRS( N, N ))/ 1e9 * batchCount;
 
-            TESTING_MALLOC_CPU(  ipiv, magma_int_t,     min_mn * batchCount);
-            TESTING_MALLOC_CPU(  h_A,  double, n2     );
-            TESTING_MALLOC_PIN(  h_R,  double, n2     );
-            TESTING_MALLOC_DEV(  d_A,  double, ldda*N * batchCount);
-            TESTING_MALLOC_DEV(  d_invA,  double, ldda*N * batchCount);
-            TESTING_MALLOC_DEV(  d_ipiv,  magma_int_t, min_mn * batchCount);
-            TESTING_MALLOC_DEV(  d_info,  magma_int_t, batchCount);
+            // query for workspace size
+            lwork = -1;
+            lapackf77_dgetri( &N, NULL, &lda, NULL, &tmp, &lwork, &info );
+            if (info != 0)
+                printf("lapackf77_dgetri returned error %d: %s.\n",
+                       (int) info, magma_strerror( info ));
+            lwork = magma_int_t( MAGMA_D_REAL( tmp ));
+            
+            TESTING_MALLOC_CPU( cpu_info, magma_int_t,        batchCount );
+            TESTING_MALLOC_CPU( ipiv,     magma_int_t,        N * batchCount );
+            TESTING_MALLOC_CPU( work,     double, lwork*batchCount );
+            TESTING_MALLOC_CPU( h_A,      double, n2     );
+            TESTING_MALLOC_CPU( h_Ainv,   double, n2     );
+            TESTING_MALLOC_CPU( h_R,      double, n2     );
+            
+            TESTING_MALLOC_DEV( d_A,      double, ldda*N * batchCount );
+            TESTING_MALLOC_DEV( d_invA,   double, ldda*N * batchCount );
+            TESTING_MALLOC_DEV( d_ipiv,   magma_int_t,        N * batchCount );
+            TESTING_MALLOC_DEV( d_info,   magma_int_t,        batchCount );
 
-
-            magma_malloc((void**)&dA_array, batchCount * sizeof(*dA_array));
-            magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
-            magma_malloc((void**)&dinfo_array, batchCount * sizeof(magma_int_t));
-            magma_malloc((void**)&C_array, batchCount * sizeof(*C_array));
-            magma_malloc((void**)&dipiv_array, batchCount * sizeof(*dipiv_array));
-
+            TESTING_MALLOC_DEV( dA_array,    double*, batchCount );
+            TESTING_MALLOC_DEV( dinvA_array, double*, batchCount );
+            TESTING_MALLOC_DEV( dinfo_array, magma_int_t,         batchCount );
+            TESTING_MALLOC_DEV( dipiv_array, magma_int_t*,        batchCount );
+            
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
             columns = N * batchCount;
-            lapackf77_dlacpy( MagmaUpperLowerStr, &M, &columns, h_A, &lda, h_R, &lda );
-            magma_dsetmatrix( M, columns, h_R, lda, d_A, ldda );
+            lapackf77_dlacpy( MagmaFullStr, &N, &columns, h_A, &lda, h_R,  &lda );
+            lapackf77_dlacpy( MagmaFullStr, &N, &columns, h_A, &lda, h_Ainv, &lda );
+            magma_dsetmatrix( N, columns, h_R, lda, d_A, ldda );
 
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            dset_pointer(dA_array, d_A, ldda, 0, 0, ldda * N, batchCount, queue);
-            dset_pointer(dinvA_array, d_invA, ldda, 0, 0, ldda * N, batchCount, queue);
-            set_ipointer(dipiv_array, d_ipiv, 1, 0, 0, min(M,N), batchCount, queue);
+            dset_pointer(dA_array, d_A, ldda, 0, 0, ldda * N, batchCount, opts.queue);
+            dset_pointer(dinvA_array, d_invA, ldda, 0, 0, ldda * N, batchCount, opts.queue);
+            set_ipointer(dipiv_array, d_ipiv, 1, 0, 0, N, batchCount, opts.queue);
 
-            gpu_time = magma_sync_wtime(0);
-            info1 = magma_dgetrf_batched( M, N, dA_array, ldda, dipiv_array, dinfo_array, batchCount, queue);
-            info2 = magma_dgetri_outofplace_batched( min(M,N), dA_array, ldda, dipiv_array, dinvA_array, ldda, dinfo_array, batchCount, queue);
-            gpu_time = magma_sync_wtime(0) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue );
+            info1 = magma_dgetrf_batched( N, N, dA_array, ldda, dipiv_array, dinfo_array, batchCount, opts.queue);
+            info2 = magma_dgetri_outofplace_batched( N, dA_array, ldda, dipiv_array, dinvA_array, ldda, dinfo_array, batchCount, opts.queue);
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
 
-
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-            magma_int_t *cpu_info = (magma_int_t*) malloc(batchCount*sizeof(magma_int_t));
             magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1);
-            for(int i=0; i<batchCount; i++)
+            for (magma_int_t i=0; i < batchCount; i++)
             {
-                if(cpu_info[i] != 0 ){
-                    printf("magma_dgetrf_batched matrix %d returned error %d\n", i, (int)cpu_info[i] );
+                if (cpu_info[i] != 0 ) {
+                    printf("magma_dgetrf_batched matrix %d returned error %d\n", (int) i, (int)cpu_info[i] );
                 }
             }
             if (info1 != 0) printf("magma_dgetrf_batched returned argument error %d: %s.\n", (int) info1, magma_strerror( info1 ));
             if (info2 != 0) printf("magma_dgetri_batched returned argument error %d: %s.\n", (int) info2, magma_strerror( info2 ));
+            
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
             if ( opts.lapack ) {
-                // query for workspace size
-                double *work;
-                double tmp;
-                magma_int_t lwork = -1;
-                lapackf77_dgetri( &N, NULL, &lda, NULL, &tmp, &lwork, &info );
-                if (info != 0)
-                    printf("lapackf77_dgetri returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
-                lwork = magma_int_t( MAGMA_D_REAL( tmp ));
-                TESTING_MALLOC_CPU( work,  double, lwork  );
-                lapackf77_dlacpy( MagmaUpperLowerStr, &M, &columns, h_R, &lda, h_A, &lda );
                 cpu_time = magma_wtime();
-                for(int i=0; i<batchCount; i++)
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                magma_int_t nthreads = magma_get_lapack_numthreads();
+                magma_set_lapack_numthreads(1);
+                magma_set_omp_numthreads(nthreads);
+                #pragma omp parallel for schedule(dynamic)
+                #endif
+                for (int i=0; i < batchCount; i++)
                 {
-                    lapackf77_dgetrf(&M, &N, h_A + i * lda*N, &lda, ipiv + i * min_mn, &info);
-                    if (info != 0)
+                    magma_int_t locinfo;
+                    lapackf77_dgetrf(&N, &N, h_Ainv + i*lda*N, &lda, ipiv + i*N, &locinfo);
+                    if (locinfo != 0)
                         printf("lapackf77_dgetrf returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
-                    lapackf77_dgetri(&N, h_A + i * lda*N, &lda, ipiv + i * min_mn, work, &lwork, &info );
-                    if (info != 0)
+                               (int) locinfo, magma_strerror( locinfo ));
+                    lapackf77_dgetri(&N, h_Ainv + i*lda*N, &lda, ipiv + i*N, work + i*lwork, &lwork, &locinfo );
+                    if (locinfo != 0)
                         printf("lapackf77_dgetri returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
+                               (int) locinfo, magma_strerror( locinfo ));
                 }
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                    magma_set_lapack_numthreads(nthreads);
+                #endif
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-            }
-            /* =====================================================================
-               Check the factorization
-               =================================================================== */
-            if ( opts.lapack ) {
-                printf("%10d %6d %6d   %7.2f (%7.2f)   %7.2f (%7.2f)",
-                       (int) batchCount, (int) M, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000. );
+                
+                printf("%10d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
+                       (int) batchCount, (int) N, cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000. );
             }
             else {
-                printf("%10d %6d %6d     ---   (  ---  )   %7.2f (%7.2f)",
-                       (int) batchCount, (int) M, (int) N, gpu_perf, gpu_time*1000. );
+                printf("%10d %5d     ---   (  ---  )   %7.2f (%7.2f)",
+                       (int) batchCount, (int) N, gpu_perf, gpu_time*1000. );
             }
-
-            double err = 0.0;
+            
+            /* =====================================================================
+               Check the result
+               =================================================================== */
             if ( opts.check ) {
-                magma_getvector( min_mn * batchCount, sizeof(magma_int_t), d_ipiv, 1, ipiv, 1 );
-                magma_dgetmatrix( min(M,N), N*batchCount, d_invA, ldda, h_R, lda );
-                int stop=0;
-                n2     = lda*N;
-                for(int i=0; i < batchCount; i++)
+                magma_igetvector( N*batchCount, d_ipiv, 1, ipiv, 1 );
+                magma_dgetmatrix( N, N*batchCount, d_invA, ldda, h_Ainv, lda );
+                error = 0;
+                for (magma_int_t i=0; i < batchCount; i++)
                 {
-                    for(int k=0; k < min_mn; k++){
-                        if(ipiv[i*min_mn+k] < 1 || ipiv[i*min_mn+k] > M )
+                    for (magma_int_t k=0; k < N; k++) {
+                        if (ipiv[i*N+k] < 1 || ipiv[i*N+k] > N )
                         {
-                            printf("error for matrix %d ipiv @ %d = %d\n", (int) i, (int) k, (int) ipiv[i*min_mn+k]);
-                            stop=1;
+                            printf("error for matrix %d ipiv @ %d = %d\n", (int) i, (int) k, (int) ipiv[i*N+k]);
+                            error = -1;
                         }
                     }
-                    if(stop==1){
-                        err=-1.0;
+                    if (error == -1) {
                         break;
                     }
-                    error = lapackf77_dlange( "f", &N, &N, h_A+ i * lda*N, &lda, rwork );
-                    blasf77_daxpy( &n2, &c_neg_one, h_A+ i * lda*N, &ione, h_R+ i * lda*N, &ione );
-                    error = lapackf77_dlange( "f", &N, &N, h_R+ i * lda*N, &lda, rwork ) / (N*error);
-                    if ( isnan(error) || isinf(error) ) {
-                        err = error;
+                    
+                    // compute 1-norm condition number estimate, following LAPACK's zget03
+                    double normA, normAinv, rcond, err;
+                    normA    = lapackf77_dlange( "1", &N, &N, h_A    + i*lda*N, &lda, rwork );
+                    normAinv = lapackf77_dlange( "1", &N, &N, h_Ainv + i*lda*N, &lda, rwork );
+                    if ( normA <= 0 || normAinv <= 0 ) {
+                        rcond = 0;
+                        err = 1 / (tol/opts.tolerance);  // == 1/eps
+                    }
+                    else {
+                        rcond = (1 / normA) / normAinv;
+                        // R = I
+                        // R -= A*A^{-1}
+                        // err = ||I - A*A^{-1}|| / ( N ||A||*||A^{-1}|| ) = ||R|| * rcond / N, using 1-norm
+                        lapackf77_dlaset( "full", &N, &N, &c_zero, &c_one, h_R + i*lda*N, &lda );
+                        blasf77_dgemm( "no", "no", &N, &N, &N, &c_neg_one,
+                                       h_A    + i*lda*N, &lda,
+                                       h_Ainv + i*lda*N, &lda, &c_one,
+                                       h_R    + i*lda*N, &lda );
+                        err = lapackf77_dlange( "1", &N, &N, h_R + i*lda*N, &lda, rwork );
+                        err = err * rcond / N;
+                    }
+                    if ( isnan(err) || isinf(err) ) {
+                        error = err;
                         break;
                     }
-                    err = max(fabs(error), err);
+                    error = max( err, error );
                 }
-                printf("   %18.2e   %10.2e   %s\n", err, tol, (err < tol ? "ok" : "failed") );
-                status += ! (error < tol);
+                bool okay = (error < tol);
+                status += ! okay;
+                printf("   %8.2e   %s\n", error, (okay ? "ok" : "failed") );
             }
             else {
-                printf("     ---  \n");
+                printf("\n");
             }
 
-            TESTING_FREE_CPU( ipiv );
-            TESTING_FREE_CPU( h_A );
-            TESTING_FREE_PIN( h_R );
+            TESTING_FREE_CPU( cpu_info );
+            TESTING_FREE_CPU( ipiv   );
+            TESTING_FREE_CPU( work   );
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( h_Ainv );
+            TESTING_FREE_CPU( h_R    );
+            
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_invA );
             TESTING_FREE_DEV( d_ipiv );
             TESTING_FREE_DEV( d_info );
-            TESTING_FREE_DEV( dipiv_array );
+            
             TESTING_FREE_DEV( dA_array );
+            TESTING_FREE_DEV( dinvA_array );
             TESTING_FREE_DEV( dinfo_array );
-            TESTING_FREE_DEV( C_array );
-            free(cpu_info);
+            TESTING_FREE_DEV( dipiv_array );
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );
         }
     }
+    
     TESTING_FINALIZE();
     return status;
 }

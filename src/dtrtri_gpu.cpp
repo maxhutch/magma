@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from ztrtri_gpu.cpp normal z -> d, Fri Jan 30 19:00:13 2015
+       @generated from ztrtri_gpu.cpp normal z -> d, Tue Aug 25 16:35:14 2015
 
 */
 #include "common_magma.h"
@@ -60,7 +60,7 @@
                     matrix is singular and its inverse cannot be computed.
                  (Singularity check is currently disabled.)
 
-    @ingroup magma_dgesv_aux
+    @ingroup magma_dgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
 magma_dtrtri_gpu(
@@ -68,7 +68,7 @@ magma_dtrtri_gpu(
     magmaDouble_ptr dA, magma_int_t ldda,
     magma_int_t *info)
 {
-#define dA(i, j) (dA+(j)*ldda + (i))
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
     /* Local variables */
     const char* uplo_ = lapack_uplo_const( uplo );
@@ -119,42 +119,41 @@ magma_dtrtri_gpu(
         return *info;
     }
 
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_t queues[2];
+    magma_queue_create( &queues[0] );
+    magma_queue_create( &queues[1] );
 
     if (nb <= 1 || nb >= n) {
-        magma_dgetmatrix( n, n, dA, ldda, work, n );
+        magma_dgetmatrix( n, n, dA(0,0), ldda, work, n );
         lapackf77_dtrtri( uplo_, diag_, &n, work, &n, info );
-        magma_dsetmatrix( n, n, work, n, dA, ldda );
+        magma_dsetmatrix( n, n, work, n, dA(0,0), ldda );
     }
     else {
         if (upper) {
             /* Compute inverse of upper triangular matrix */
             for (j=0; j < n; j += nb) {
-                jb = min(nb, (n-j));
+                jb = min(nb, n-j);
 
                 /* Compute rows 1:j-1 of current block column */
                 magma_dtrmm( MagmaLeft, MagmaUpper,
-                             MagmaNoTrans, MagmaNonUnit, j, jb,
+                             MagmaNoTrans, diag, j, jb,
                              c_one, dA(0,0), ldda, dA(0, j), ldda );
 
                 magma_dtrsm( MagmaRight, MagmaUpper,
-                             MagmaNoTrans, MagmaNonUnit, j, jb,
+                             MagmaNoTrans, diag, j, jb,
                              c_neg_one, dA(j,j), ldda, dA(0, j), ldda );
 
                 magma_dgetmatrix_async( jb, jb,
                                         dA(j, j), ldda,
-                                        work,     jb, stream[1] );
-
-                magma_queue_sync( stream[1] );
+                                        work,     jb, queues[1] );
+                magma_queue_sync( queues[1] );
 
                 /* Compute inverse of current diagonal block */
                 lapackf77_dtrtri( MagmaUpperStr, diag_, &jb, work, &jb, info );
-
+                
                 magma_dsetmatrix_async( jb, jb,
                                         work,     jb,
-                                        dA(j, j), ldda, stream[0] );
+                                        dA(j, j), ldda, queues[0] );
             }
         }
         else {
@@ -162,37 +161,35 @@ magma_dtrtri_gpu(
             nn = ((n-1)/nb)*nb+1;
 
             for (j=nn-1; j >= 0; j -= nb) {
-                jb = min(nb,(n-j));
-
-                if ((j+jb) < n) {
+                jb = min(nb, n-j);
+                
+                if (j+jb < n) {
                     /* Compute rows j+jb:n of current block column */
                     magma_dtrmm( MagmaLeft, MagmaLower,
-                                 MagmaNoTrans, MagmaNonUnit, (n-j-jb), jb,
+                                 MagmaNoTrans, diag, (n-j-jb), jb,
                                  c_one, dA(j+jb,j+jb), ldda, dA(j+jb, j), ldda );
 
                     magma_dtrsm( MagmaRight, MagmaLower,
-                                 MagmaNoTrans, MagmaNonUnit, (n-j-jb), jb,
+                                 MagmaNoTrans, diag, (n-j-jb), jb,
                                  c_neg_one, dA(j,j), ldda, dA(j+jb, j), ldda );
                 }
-
                 magma_dgetmatrix_async( jb, jb,
                                         dA(j, j), ldda,
-                                        work,     jb, stream[1] );
-
-                magma_queue_sync( stream[1] );
+                                        work,     jb, queues[1] );
+                magma_queue_sync( queues[1] );
 
                 /* Compute inverse of current diagonal block */
                 lapackf77_dtrtri( MagmaLowerStr, diag_, &jb, work, &jb, info );
-
+                
                 magma_dsetmatrix_async( jb, jb,
                                         work,     jb,
-                                        dA(j, j), ldda, stream[0] );
+                                        dA(j, j), ldda, queues[0] );
             }
         }
     }
 
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     magma_free_pinned( work );
 
     return *info;

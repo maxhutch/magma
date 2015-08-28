@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmergebicgstab2.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zmergebicgstab2.cu normal z -> c, Tue Aug 25 16:35:31 2015
        @author Hartwig Anzt
 
 */
@@ -30,7 +30,6 @@ magma_creduce_kernel_spmv1(
     magmaFloatComplex * vtmp,
     magmaFloatComplex * vtmp2 )
 {
-
     extern __shared__ magmaFloatComplex temp[];    
     int Idx = threadIdx.x;
     int blockSize = 128;
@@ -50,12 +49,12 @@ magma_creduce_kernel_spmv1(
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
         if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
@@ -97,7 +96,6 @@ magma_cbicgmerge_spmv1_kernel(
     magmaFloatComplex * v,
     magmaFloatComplex * vtmp)
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -126,12 +124,12 @@ magma_cbicgmerge_spmv1_kernel(
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
         if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
@@ -207,7 +205,7 @@ magma_cbicgstab_alphakernel(
     dv          magmaFloatComplex_ptr
                 output vector v
 
-    @param[in/out]
+    @param[in,out]
     skp         magmaFloatComplex_ptr
                 array for parameters ( skp[0]=alpha )
 
@@ -249,7 +247,7 @@ magma_cbicgmerge_spmv1(
         printf("error: only CSR format supported.\n");
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_creduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                             ( Gs.x, n, aux1, aux2 );
@@ -280,7 +278,6 @@ magma_creduce_kernel_spmv2(
     magmaFloatComplex * vtmp,
     magmaFloatComplex * vtmp2 )
 {
-
     extern __shared__ magmaFloatComplex temp[];    
     int Idx = threadIdx.x;
     int blockSize = 128;
@@ -370,7 +367,6 @@ magma_cbicgmerge_spmv2_kernel(
     magmaFloatComplex * t,
     magmaFloatComplex * vtmp )
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -393,9 +389,9 @@ magma_cbicgmerge_spmv2_kernel(
             temp[Idx] = s[i] * tmp2;
             temp[Idx+blockDim.x] = tmp2 * tmp2;
     }
-    else{
+    else {
         for( j=0; j<2; j++)
-            temp[Idx+j*blockDim.x] =MAGMA_C_MAKE( 0.0, 0.0);
+            temp[Idx+j*blockDim.x] = MAGMA_C_MAKE( 0.0, 0.0);
     }
     __syncthreads();
     if ( Idx < 128 ){
@@ -506,7 +502,7 @@ magma_cbicgstab_omegakernel(
     dt          magmaFloatComplex_ptr
                 output vector t
 
-    @param[in/out]
+    @param[in,out]
     skp         magmaFloatComplex_ptr
                 array for parameters
 
@@ -546,7 +542,7 @@ magma_cbicgmerge_spmv2(
         printf("error: only CSR format supported.\n");
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_creduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                     ( Gs.x, n, aux1, aux2 );
@@ -582,7 +578,6 @@ magma_cbicgmerge_xrbeta_kernel(
     magmaFloatComplex * skp,
     magmaFloatComplex * vtmp )
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -606,9 +601,9 @@ magma_cbicgmerge_xrbeta_kernel(
             temp[Idx] = rr[i] * tmp2;
             temp[Idx+blockDim.x] = tmp2 * tmp2;
     }
-    else{
+    else {
         for( j=0; j<2; j++)
-            temp[Idx+j*blockDim.x] =MAGMA_C_MAKE( 0.0, 0.0);
+            temp[Idx+j*blockDim.x] = MAGMA_C_MAKE( 0.0, 0.0);
     }
     __syncthreads();
     if ( Idx < 128 ){
@@ -777,7 +772,7 @@ magma_cbicgmerge_xrbeta(
                     ( n, rr, r, p, s, t, x, skp, d1);  
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_creduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                             ( Gs.x, n, aux1, aux2 );
@@ -800,4 +795,3 @@ magma_cbicgmerge_xrbeta(
 }
 
 /* -------------------------------------------------------------------------- */
-

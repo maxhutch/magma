@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
-       @generated from zpotrf.cpp normal z -> s, Fri Jan 30 19:00:14 2015
+       @generated from zpotrf.cpp normal z -> s, Tue Aug 25 16:35:14 2015
 */
 #include "common_magma.h"
 
@@ -121,7 +121,7 @@ magma_spotrf(
         return magma_spotrf_m(ngpu, uplo, n, A, lda, info);
     }
 
-    ldda = ((n+31)/32)*32;
+    ldda = magma_roundup( n, 32 );
     
     if (MAGMA_SUCCESS != magma_smalloc( &dA, (n)*ldda )) {
         /* alloc failed so call the non-GPU-resident version */

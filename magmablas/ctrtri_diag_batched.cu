@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from ztrtri_diag_batched.cu normal z -> c, Fri Jan 30 19:00:10 2015
+       @generated from ztrtri_diag_batched.cu normal z -> c, Tue Aug 25 16:35:10 2015
 
        @author Peng Du
        @author Tingxing Dong
@@ -17,7 +17,7 @@
 */
 
 #include "common_magma.h"
-#include "ctrtri.h"
+#include "ctrtri.cuh"
 
 
 /**
@@ -73,7 +73,7 @@
             The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
-    dinvA_array COMPLEX array of dimension (NB, ((n+NB-1)/NB)*NB),
+    dinvA_array COMPLEX array of dimension (NB, ceil(n/NB)*NB),
             where NB = 128.
             On exit, contains inverses of the NB-by-NB diagonal blocks of A.
 
@@ -105,13 +105,10 @@ magmablas_ctrtri_diag_batched(
         return;  //info
     }
     
-    int nblocks = (n + IB - 1)/IB;
+    int nblocks = magma_ceildiv( n, IB );
 
-
-    if(resetozero)
-    { 
-        magmablas_claset_batched(MagmaFull, ((n+NB-1)/NB)*NB, NB, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA_array, ((n+NB-1)/NB)*NB, batchCount, queue);
-       //magmablas_cmemset_batched( dinvA_array, ((n+NB-1)/NB)*NB*NB, batchCount, queue);
+    if ( resetozero ) {
+        magmablas_claset_batched(MagmaFull, magma_roundup( n, NB ), NB, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA_array, magma_roundup( n, NB ), batchCount, queue);
     }
     // if someone want to use cudamemset he need to set the whole vectors 
     // of initial size otherwise it is a bug and thus need to have dinvA_length 
@@ -131,7 +128,7 @@ magmablas_ctrtri_diag_batched(
         // then 128 x 128 blocks to build 256 x 256 blocks,  2 x (8 x npages) grid, 16 x 4 threads.
         for( int jb=IB; jb < NB; jb *= 2 ) {
             int kb = jb*2;
-            int npages = (n + kb - 1)/kb;
+            int npages = magma_ceildiv( n, kb );
             dim3 threads( (jb <= 32 ? jb/4 : 16), 4 );
             dim3 grid( jb/(threads.x*threads.y), npages*(jb/16), batchCount );  // emulate 3D grid: NX * (NY*npages), for CUDA ARCH 1.x
             
@@ -163,9 +160,9 @@ magmablas_ctrtri_diag_batched(
         ctrtri_diag_upper_kernel_batched<<< diaggrid, IB, 0, queue >>>( diag, n, dA_array, ldda, dinvA_array );
 
         // update the inverse up to the size of IB
-        for( int jb=IB; jb < NB; jb*=2 ) {
+        for( int jb=IB; jb < NB; jb *= 2 ) {
             int kb = jb*2;
-            int npages = (n + kb - 1)/kb;
+            int npages = magma_ceildiv( n, kb );
             dim3 threads( (jb <= 32 ? jb/4 : 16), 4 );
             dim3 grid( jb/(threads.x*threads.y), npages*(jb/16), batchCount );  // emulate 3D grid: NX * (NY*npages), for CUDA ARCH 1.x
             
@@ -192,5 +189,3 @@ magmablas_ctrtri_diag_batched(
         }
     }
 }
-
-

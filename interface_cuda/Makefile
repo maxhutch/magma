@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = interface_cuda
@@ -20,14 +20,15 @@ SRC := \
 	error.cpp	\
 	interface.cpp	\
 	set_get.cpp	\
-	error.cpp	\
 
+
+# ------------------------------------------------------------
 -include Makefile.local
 -include Makefile.src
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC) $(SRC)
 
-ALLOBJ := $(ALLSRC:.cpp=.o)
+ALLOBJ := $(ALLSRC:.cpp=.$(o_ext))
 
 .PHONY: all clean cleanall
 
@@ -43,7 +44,7 @@ stamp: $(ALLOBJ)
 	touch $@
 
 clean:
-	rm -f *.o *~ *.linkinfo stamp
+	rm -f *.$(o_ext) *~ *.linkinfo stamp
 
 cleanall: clean
 	rm -f $(LIBMAGMA)

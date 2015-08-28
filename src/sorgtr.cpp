@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zungtr.cpp normal z -> s, Fri Jan 30 19:00:16 2015
+       @generated from zungtr.cpp normal z -> s, Tue Aug 25 16:35:18 2015
 
 */
 #include "common_magma.h"
@@ -153,7 +153,6 @@ magma_sorgtr(
         lapackf77_sorgql(&i__1, &i__1, &i__1, A(0,0), &lda, tau, work,
                          &lwork, &iinfo);
     } else {
-        
         /*  Q was determined by a call to SSYTRD with UPLO = 'L'.
             Shift the vectors which define the elementary reflectors one
             column to the right, and set the first row and column of Q to

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -14,8 +14,6 @@
 */
 #include "common_magma.h"
 #include "magma_timer.h"
-#include "magma_bulge.h"
-#include "magma_dbulge.h"
 
 #define PRECISION_d
 #define REAL
@@ -242,13 +240,12 @@ magma_dsyevdx_2stage_m(
         }
     }
 
-    magma_int_t nb = magma_get_dbulge_nb(n, parallel_threads);
+    magma_int_t nb      = magma_dbulge_get_nb(n, parallel_threads);
     magma_int_t Vblksiz = magma_dbulge_get_Vblksiz(n, nb, parallel_threads);
-
-    magma_int_t ldt = Vblksiz;
-    magma_int_t ldv = nb + Vblksiz;
-    magma_int_t blkcnt = magma_bulge_get_blkcnt(n, nb, Vblksiz);
-    magma_int_t lq2 = magma_dbulge_get_lq2(n, parallel_threads);
+    magma_int_t blkcnt  = magma_bulge_get_blkcnt(n, nb, Vblksiz);
+    magma_int_t lq2     = magma_dbulge_get_lq2(n, parallel_threads, wantz);
+    magma_int_t ldt     = Vblksiz;
+    magma_int_t ldv     = nb + Vblksiz;
 
     if (wantz) {
         lwmin  = lq2 + 1 + 6*n + 2*n*n;
@@ -361,7 +358,7 @@ magma_dsyevdx_2stage_m(
     magma_int_t nstream = max(3,ngpu+2);
     magma_queue_t streams[MagmaMaxGPUs][20];
     double *dA[MagmaMaxGPUs], *dT1[MagmaMaxGPUs];
-    magma_int_t ldda = ((n+31)/32)*32;
+    magma_int_t ldda = magma_roundup( n, 32 );
 
     magma_int_t ver = 0;
     magma_int_t distblk = max(256, 4*nb);

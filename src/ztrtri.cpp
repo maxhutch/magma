@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -59,7 +59,7 @@
       -     > 0: if INFO = i, A(i,i) is exactly zero.  The triangular
                     matrix is singular and its inverse cannot be computed.
 
-    @ingroup magma_zgesv_aux
+    @ingroup magma_zgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
 magma_ztrtri(
@@ -115,15 +115,15 @@ magma_ztrtri(
     /* Determine the block size for this environment */
     nb = magma_get_zpotrf_nb(n);
 
-    ldda = ((n+31)/32)*32;
+    ldda = magma_roundup( n, 32 );
     if (MAGMA_SUCCESS != magma_zmalloc( &dA, (n)*ldda )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_t queues[2];
+    magma_queue_create( &queues[0] );
+    magma_queue_create( &queues[1] );
 
     if (nb <= 1 || nb >= n)
         lapackf77_ztrtri(uplo_, diag_, &n, A, &lda, info);
@@ -138,22 +138,22 @@ magma_ztrtri(
 
                 /* Compute rows 1:j-1 of current block column */
                 magma_ztrmm( MagmaLeft, MagmaUpper,
-                             MagmaNoTrans, MagmaNonUnit, j, jb,
+                             MagmaNoTrans, diag, j, jb,
                              c_one, dA(0,0), ldda, dA(0, j),ldda);
 
                 magma_ztrsm( MagmaRight, MagmaUpper,
-                             MagmaNoTrans, MagmaNonUnit, j, jb,
+                             MagmaNoTrans, diag, j, jb,
                              c_neg_one, dA(j,j), ldda, dA(0, j),ldda);
 
                 magma_zgetmatrix_async( jb, jb,
                                         dA(j, j), ldda,
-                                        A(j, j),  lda, stream[1] );
+                                        A(j, j),  lda, queues[1] );
 
                 magma_zgetmatrix_async( j, jb,
                                         dA(0, j), ldda,
-                                        A(0, j),  lda, stream[0] );
+                                        A(0, j),  lda, queues[0] );
 
-                magma_queue_sync( stream[1] );
+                magma_queue_sync( queues[1] );
 
                 /* Compute inverse of current diagonal block */
                 lapackf77_ztrtri(MagmaUpperStr, diag_, &jb, A(j,j), &lda, info);
@@ -177,22 +177,22 @@ magma_ztrtri(
 
                     /* Compute rows j+jb:n of current block column */
                     magma_ztrmm( MagmaLeft, MagmaLower,
-                                 MagmaNoTrans, MagmaNonUnit, (n-j-jb), jb,
+                                 MagmaNoTrans, diag, (n-j-jb), jb,
                                  c_one, dA(j+jb,j+jb), ldda, dA(j+jb, j), ldda );
 
                     magma_ztrsm( MagmaRight, MagmaLower,
-                                 MagmaNoTrans, MagmaNonUnit, (n-j-jb), jb,
+                                 MagmaNoTrans, diag, (n-j-jb), jb,
                                  c_neg_one, dA(j,j), ldda, dA(j+jb, j), ldda );
 
                     magma_zgetmatrix_async( n-j-jb, jb,
                                             dA(j+jb, j), ldda,
-                                            A(j+jb, j),  lda, stream[1] );
+                                            A(j+jb, j),  lda, queues[1] );
 
                     magma_zgetmatrix_async( jb, jb,
                                             dA(j,j), ldda,
-                                            A(j,j),  lda, stream[0] );
+                                            A(j,j),  lda, queues[0] );
 
-                    magma_queue_sync( stream[0] );
+                    magma_queue_sync( queues[0] );
                 }
 
                 /* Compute inverse of current diagonal block */
@@ -205,8 +205,8 @@ magma_ztrtri(
         }
     }
 
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     magma_free( dA );
 
     return *info;

@@ -319,7 +319,7 @@ const char *magma2lapack_constants[] =
 };
 
 extern "C"
-const char* lapack_const( int magma_const )
+const char* lapack_const_str( int magma_const )
 {
     assert( magma_const >= Magma2lapack_Min );
     assert( magma_const <= Magma2lapack_Max );
@@ -448,10 +448,10 @@ const char* lapack_storev_const( magma_storev_t magma_const )
 
 
 // ----------------------------------------
-// Convert magma constants to clAmdBlas constants.
+// Convert magma constants to clBLAS constants.
 
-#ifdef HAVE_clAmdBlas
-const int magma2amdblas_constants[] =
+#ifdef HAVE_clBLAS
+const int magma2clblas_constants[] =
 {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -464,64 +464,64 @@ const int magma2amdblas_constants[] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0,                      // 100
-    clAmdBlasRowMajor,      // 101: MagmaRowMajor
-    clAmdBlasColumnMajor,   // 102: MagmaColMajor
+    clblasRowMajor,         // 101: MagmaRowMajor
+    clblasColumnMajor,      // 102: MagmaColMajor
     0, 0, 0, 0, 0, 0, 0, 0,
-    clAmdBlasNoTrans,       // 111: MagmaNoTrans
-    clAmdBlasTrans,         // 112: MagmaTrans
-    clAmdBlasConjTrans,     // 113: MagmaConjTrans
+    clblasNoTrans,          // 111: MagmaNoTrans
+    clblasTrans,            // 112: MagmaTrans
+    clblasConjTrans,        // 113: MagmaConjTrans
     0, 0, 0, 0, 0, 0, 0,
-    clAmdBlasUpper,         // 121: MagmaUpper
-    clAmdBlasLower,         // 122: MagmaLower
+    clblasUpper,            // 121: MagmaUpper
+    clblasLower,            // 122: MagmaLower
     0, 0, 0, 0, 0, 0, 0, 0,
-    clAmdBlasNonUnit,       // 131: MagmaNonUnit
-    clAmdBlasUnit,          // 132: MagmaUnit
+    clblasNonUnit,          // 131: MagmaNonUnit
+    clblasUnit,             // 132: MagmaUnit
     0, 0, 0, 0, 0, 0, 0, 0,
-    clAmdBlasLeft,          // 141: MagmaLeft
-    clAmdBlasRight,         // 142: MagmaRight
+    clblasLeft,             // 141: MagmaLeft
+    clblasRight,            // 142: MagmaRight
     0, 0, 0, 0, 0, 0, 0, 0
 };
 
 extern "C"
-clAmdBlasOrder       amdblas_order_const( magma_order_t magma_const )
+clblasOrder       clblas_order_const( magma_order_t magma_const )
 {
     assert( magma_const >= MagmaRowMajor );
     assert( magma_const <= MagmaColMajor );
-    return (clAmdBlasOrder)     magma2amdblas_constants[ magma_const ];
+    return (clblasOrder)     magma2clblas_constants[ magma_const ];
 }
 
 extern "C"
-clAmdBlasTranspose   amdblas_trans_const( magma_trans_t magma_const )
+clblasTranspose   clblas_trans_const( magma_trans_t magma_const )
 {
     assert( magma_const >= MagmaNoTrans   );
     assert( magma_const <= MagmaConjTrans );
-    return (clAmdBlasTranspose) magma2amdblas_constants[ magma_const ];
+    return (clblasTranspose) magma2clblas_constants[ magma_const ];
 }
 
 extern "C"
-clAmdBlasUplo        amdblas_uplo_const ( magma_uplo_t magma_const )
+clblasUplo        clblas_uplo_const ( magma_uplo_t magma_const )
 {
     assert( magma_const >= MagmaUpper );
     assert( magma_const <= MagmaLower );
-    return (clAmdBlasUplo)      magma2amdblas_constants[ magma_const ];
+    return (clblasUplo)      magma2clblas_constants[ magma_const ];
 }
 
 extern "C"
-clAmdBlasDiag        amdblas_diag_const ( magma_diag_t magma_const )
+clblasDiag        clblas_diag_const ( magma_diag_t magma_const )
 {
     assert( magma_const >= MagmaNonUnit );
     assert( magma_const <= MagmaUnit    );
-    return (clAmdBlasDiag)      magma2amdblas_constants[ magma_const ];
+    return (clblasDiag)      magma2clblas_constants[ magma_const ];
 }
 
 extern "C"
-clAmdBlasSide        amdblas_side_const ( magma_side_t magma_const )
+clblasSide        clblas_side_const ( magma_side_t magma_const )
 {
     assert( magma_const >= MagmaLeft  );
     assert( magma_const <= MagmaRight );
-    return (clAmdBlasSide)      magma2amdblas_constants[ magma_const ];
+    return (clblasSide)      magma2clblas_constants[ magma_const ];
 }
-#endif  // HAVE_clAmdBlas
+#endif  // HAVE_clBLAS
 
 
 // ----------------------------------------

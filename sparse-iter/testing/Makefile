@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.2) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/testing
@@ -29,13 +29,38 @@ ZSRC += \
 ZSRC += \
 	testing_zdot.cpp			\
 	testing_zspmv.cpp			\
+	testing_zspmv_check.cpp		\
 	testing_zspmm.cpp			\
 	testing_zmadd.cpp			\
 
 # ----------
-# iterative solvers
+# iterative solvers and preconditioners
 ZSRC += \
 	testing_zsolver.cpp			\
+	testing_zpreconditioner.cpp	\
+
+# ----------
+# Mixed-precision solvers
+#ZSRC += \
+#	testing_zpcg.cpp			\
+#	testing_zpbicgstab.cpp		\
+#	testing_zcpbicgstab.cpp		\
+#	testing_zpgmres.cpp			\
+#	testing_zgmres_pipe.cpp		\
+#	testing_zcpgmres.cpp		\
+#	testing_zdot.cpp			\
+#	testing_zkernel.cpp			\
+#	testing_z_csrmv.cpp			\
+#	testing_z_mpk_4.cpp			\
+#	testing_z_mpk_5.cpp			\
+
+# debugging
+ZSRC += \
+#	testing_zluwrite.cpp	\
+#   testing_zbug.cpp	\
+#	testing_zsolver_debug.cpp	\
+#	testing_spmvELLRT.cpp 		\
+#	testing_zcdebug.cpp			\
 
 
 # ------------------------------------------------------------

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        
@@ -16,7 +16,7 @@
 
 // MAX_PIVOTS is maximum number of pivots to apply in each kernel launch
 // NTHREADS is number of threads in a block
-// 64 and 256 are better on Kepler; 
+// 64 and 256 are better on Kepler;
 //#define MAX_PIVOTS 64
 //#define NTHREADS   256
 #define MAX_PIVOTS 32
@@ -64,41 +64,41 @@ __global__ void zlaswp_kernel(
     
     Arguments:
     ==========
-    \param[in]
-    n        INTEGER
-             The number of columns of the matrix A.
+    @param[in]
+    n       INTEGER
+            The number of columns of the matrix A.
     
-    \param[in,out]
-    dAT      COMPLEX*16 array on GPU, stored row-wise, dimension (LDDA,N)
-             On entry, the matrix of column dimension N to which the row
-             interchanges will be applied.
-             On exit, the permuted matrix.
+    @param[in,out]
+    dAT     COMPLEX*16 array on GPU, stored row-wise, dimension (LDDA,N)
+            On entry, the matrix of column dimension N to which the row
+            interchanges will be applied.
+            On exit, the permuted matrix.
     
-    \param[in]
-    ldda     INTEGER
-             The leading dimension of the array A. ldda >= n.
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array A. ldda >= n.
     
-    \param[in]
-    k1       INTEGER
-             The first element of IPIV for which a row interchange will
-             be done. (Fortran one-based index: 1 <= k1 .)
+    @param[in]
+    k1      INTEGER
+            The first element of IPIV for which a row interchange will
+            be done. (Fortran one-based index: 1 <= k1 .)
     
-    \param[in]
-    k2       INTEGER
-             The last element of IPIV for which a row interchange will
-             be done. (Fortran one-based index: 1 <= k2 .)
+    @param[in]
+    k2      INTEGER
+            The last element of IPIV for which a row interchange will
+            be done. (Fortran one-based index: 1 <= k2 .)
     
-    \param[in]
-    ipiv     INTEGER array, on CPU, dimension (K2*abs(INCI))
-             The vector of pivot indices.  Only the elements in positions
-             K1 through K2 of IPIV are accessed.
-             IPIV(K) = L implies rows K and L are to be interchanged.
+    @param[in]
+    ipiv    INTEGER array, on CPU, dimension (K2*abs(INCI))
+            The vector of pivot indices.  Only the elements in positions
+            K1 through K2 of IPIV are accessed.
+            IPIV(K) = L implies rows K and L are to be interchanged.
     
-    \param[in]
-    inci     INTEGER
-             The increment between successive values of IPIV.
-             Currently, INCI > 0.
-             TODO: If INCI is negative, the pivots are applied in reverse order.
+    @param[in]
+    inci    INTEGER
+            The increment between successive values of IPIV.
+            Currently, INCI > 0.
+            TODO: If INCI is negative, the pivots are applied in reverse order.
 
     @param[in]
     queue   magma_queue_t
@@ -133,8 +133,8 @@ magmablas_zlaswp_q(
         magma_xerbla( __func__, -(info) );
         return;  //info;
     }
-  
-    dim3 grid( (n + NTHREADS - 1) / NTHREADS );
+    
+    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dim3 threads( NTHREADS );
     zlaswp_params_t params;
     
@@ -211,43 +211,43 @@ __global__ void zlaswpx_kernel(
     
     Arguments:
     ==========
-    \param[in]
+    @param[in]
     n        INTEGER
              The number of columns of the matrix A.
     
-    \param[in,out]
+    @param[in,out]
     dA       COMPLEX*16 array on GPU, dimension (*,*)
              On entry, the matrix of column dimension N to which the row
              interchanges will be applied.
              On exit, the permuted matrix.
     
-    \param[in]
+    @param[in]
     ldx      INTEGER
              Stride between elements in same column.
     
-    \param[in]
+    @param[in]
     ldy      INTEGER
              Stride between elements in same row.
              For A stored row-wise,    set ldx=ldda and ldy=1.
              For A stored column-wise, set ldx=1    and ldy=ldda.
     
-    \param[in]
+    @param[in]
     k1       INTEGER
              The first element of IPIV for which a row interchange will
              be done. (One based index.)
     
-    \param[in]
+    @param[in]
     k2       INTEGER
              The last element of IPIV for which a row interchange will
              be done. (One based index.)
     
-    \param[in]
+    @param[in]
     ipiv     INTEGER array, on CPU, dimension (K2*abs(INCI))
              The vector of pivot indices.  Only the elements in positions
              K1 through K2 of IPIV are accessed.
              IPIV(K) = L implies rows K and L are to be interchanged.
     
-    \param[in]
+    @param[in]
     inci     INTEGER
              The increment between successive values of IPIV.
              Currently, IPIV > 0.
@@ -273,7 +273,7 @@ magmablas_zlaswpx_q(
     if ( n < 0 )
         info = -1;
     else if ( k1 < 0 )
-        info = -4;  
+        info = -4;
     else if ( k2 < 0 || k2 < k1 )
         info = -5;
     else if ( inci <= 0 )
@@ -284,7 +284,7 @@ magmablas_zlaswpx_q(
         return;  //info;
     }
     
-    dim3 grid( (n + NTHREADS - 1) / NTHREADS );
+    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dim3 threads( NTHREADS );
     zlaswp_params_t params;
     
@@ -362,38 +362,38 @@ __global__ void zlaswp2_kernel(
     
     Arguments:
     ==========
-    \param[in]
+    @param[in]
     n        INTEGER
              The number of columns of the matrix A.
     
-    \param[in,out]
+    @param[in,out]
     dAT      COMPLEX*16 array on GPU, stored row-wise, dimension (LDDA,*)
              On entry, the matrix of column dimension N to which the row
              interchanges will be applied.
              On exit, the permuted matrix.
     
-    \param[in]
+    @param[in]
     ldda     INTEGER
              The leading dimension of the array A.
              (I.e., stride between elements in a column.)
     
-    \param[in]
+    @param[in]
     k1       INTEGER
              The first element of IPIV for which a row interchange will
              be done. (One based index.)
     
-    \param[in]
+    @param[in]
     k2       INTEGER
              The last element of IPIV for which a row interchange will
              be done. (One based index.)
     
-    \param[in]
+    @param[in]
     d_ipiv   INTEGER array, on GPU, dimension (K2*abs(INCI))
              The vector of pivot indices.  Only the elements in positions
              K1 through K2 of IPIV are accessed.
              IPIV(K) = L implies rows K and L are to be interchanged.
     
-    \param[in]
+    @param[in]
     inci     INTEGER
              The increment between successive values of IPIV.
              Currently, IPIV > 0.
@@ -419,7 +419,7 @@ magmablas_zlaswp2_q(
     if ( n < 0 )
         info = -1;
     else if ( k1 < 0 )
-        info = -4;  
+        info = -4;
     else if ( k2 < 0 || k2 < k1 )
         info = -5;
     else if ( inci <= 0 )
@@ -432,7 +432,7 @@ magmablas_zlaswp2_q(
     
     magma_int_t nb = k2-(k1-1);
     
-    dim3 grid( (n + NTHREADS - 1) / NTHREADS );
+    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dim3 threads( NTHREADS );
     zlaswp2_kernel<<< grid, threads, 0, queue >>>
         ( n, dAT(k1-1,0), ldda, nb, d_ipiv, inci );

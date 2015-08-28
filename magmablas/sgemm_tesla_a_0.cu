@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from dgemm_tesla_a_0.cu normal d -> s, Fri Jan 30 19:00:10 2015
+       @generated from dgemm_tesla_a_0.cu normal d -> s, Tue Aug 25 16:35:09 2015
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -229,7 +229,7 @@ magmablas_sgemm_a_0(
     float alpha, float beta )
 {
     dim3 threads( 16, 4 );
-    dim3 grid( (m - 1)/64 + 1, (n - 1)/16 + 1 );
+    dim3 grid( magma_ceildiv( m, 64 ), magma_ceildiv( n, 16 ) );
     sgemm_kernel_a_0<<< grid, threads, 0, magma_stream >>>
         ( C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
 }

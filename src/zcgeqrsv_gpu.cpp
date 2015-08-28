@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 
@@ -177,7 +177,7 @@ magma_zcgeqrsv_gpu(
      * Allocate temporary buffers
      */
     /* dworks(dSA + dSX + dST) */
-    size = lddsa*n + lddsx*nrhs + ( 2*minmn + ((n+31)/32)*32 )*nb;
+    size = lddsa*n + lddsx*nrhs + ( 2*minmn + magma_roundup( n, 32 ) )*nb;
     if (MAGMA_SUCCESS != magma_cmalloc( &dworks, size )) {
         fprintf(stderr, "Allocation of dworks failed (%d)\n", (int) size);
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -371,7 +371,7 @@ FALLBACK:
      */
     /* dworkd = dT for zgeqrf */
     nb   = magma_get_zgeqrf_nb( m );
-    size = (2*min(m, n) + (n+31)/32*32 )*nb;
+    size = (2*min(m, n) + magma_roundup( n, 32 ) )*nb;
     if ( size > ldworkd ) {
         magma_free( dworkd );
         if (MAGMA_SUCCESS != magma_zmalloc( &dworkd, size )) {

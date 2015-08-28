@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -34,7 +34,7 @@ zgesellcmv_kernel(
     magmaDoubleComplex * dy)
 {
     // threads assigned to rows
-    int Idx = blockDim.x * blockIdx.x + threadIdx.x ;
+    int Idx = blockDim.x * blockIdx.x + threadIdx.x;
     int offset = drowptr[ blockIdx.x ];
     int border = (drowptr[ blockIdx.x+1 ]-offset)/blocksize;
     if(Idx < num_rows ){
@@ -147,4 +147,3 @@ magma_zgesellcmv(
 
    return MAGMA_SUCCESS;
 }
-

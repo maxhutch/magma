@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from testing_zio.cpp normal z -> d, Sun May  3 11:23:02 2015
+       @generated from testing_zio.cpp normal z -> d, Tue Aug 25 16:35:35 2015
        @author Hartwig Anzt
 */
 
@@ -34,7 +34,7 @@ int main(  int argc, char** argv )
 
     magma_dopts zopts;
     magma_queue_t queue=NULL;
-    magma_queue_create( /*devices[ opts->device ],*/ &queue );
+    magma_queue_create( &queue );
     
     real_Double_t res;
     magma_d_matrix A={Magma_CSR}, A2={Magma_CSR}, 
@@ -43,8 +43,7 @@ int main(  int argc, char** argv )
     int i=1;
     CHECK( magma_dparse_opts( argc, argv, &zopts, &i, queue ));
 
-    while(  i < argc ) {
-
+    while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
@@ -53,7 +52,7 @@ int main(  int argc, char** argv )
             CHECK( magma_d_csr_mtx( &A,  argv[i], queue ));
         }
 
-        printf( "# matrix info: %d-by-%d with %d nonzeros\n",
+        printf("%% matrix info: %d-by-%d with %d nonzeros\n",
                             (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
 
         // filename for temporary matrix storage
@@ -87,24 +86,23 @@ int main(  int argc, char** argv )
         CHECK( magma_dcsrset( m, n, row, col, val, &A3, queue ));
 
         CHECK( magma_dmdiff( A, A2, &res, queue ));
-        printf("# ||A-B||_F = %8.2e\n", res);
+        printf("%% ||A-B||_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester IO:  ok\n");
+            printf("%% tester IO:  ok\n");
         else
-            printf("# tester IO:  failed\n");
+            printf("%% tester IO:  failed\n");
 
         CHECK( magma_dmdiff( A, A3, &res, queue ));
-        printf("# ||A-B||_F = %8.2e\n", res);
+        printf("%% ||A-B||_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester matrix interface:  ok\n");
+            printf("%% tester matrix interface:  ok\n");
         else
-            printf("# tester matrix interface:  failed\n");
+            printf("%% tester matrix interface:  failed\n");
 
         magma_dmfree(&A, queue );
         magma_dmfree(&A2, queue );
         magma_dmfree(&A4, queue );
         magma_dmfree(&A5, queue );
-
 
         i++;
     }

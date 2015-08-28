@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from testing_zspmv.cpp normal z -> s, Sun May  3 11:23:02 2015
+       @generated from testing_zspmv.cpp normal z -> s, Tue Aug 25 16:35:35 2015
        @author Hartwig Anzt
 */
 
@@ -44,7 +44,7 @@ int main(  int argc, char** argv )
     magma_int_t info = 0;
     TESTING_INIT();
     magma_queue_t queue=NULL;
-    magma_queue_create( /*devices[ opts->device ],*/ &queue );
+    magma_queue_create( &queue );
 
     magma_s_matrix hA={Magma_CSR}, hA_SELLP={Magma_CSR}, hA_ELL={Magma_CSR}, 
     dA={Magma_CSR}, dA_SELLP={Magma_CSR}, dA_ELL={Magma_CSR};
@@ -81,8 +81,7 @@ int main(  int argc, char** argv )
         " [ --blocksize %d --alignment %d (for SELLP) ]"
         " matrices \n\n", (int) hA_SELLP.blocksize, (int) hA_SELLP.alignment );
 
-    while(  i < argc ) {
-
+    while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
@@ -107,7 +106,7 @@ int main(  int argc, char** argv )
 
         #ifdef MAGMA_WITH_MKL
             // calling MKL with CSR
-            CHECK( magma_index_malloc_cpu( &pntre, hA.num_rows + 1 ) );
+            CHECK( magma_imalloc_cpu( &pntre, hA.num_rows + 1 ) );
             pntre[0] = 0;
             for (j=0; j<hA.num_rows; j++ ) {
                 pntre[j] = hA.row[j+1];
@@ -147,6 +146,11 @@ int main(  int argc, char** argv )
 
         // copy matrix to GPU
         CHECK( magma_smtransfer( hA, &dA, Magma_CPU, Magma_DEV, queue ));
+        
+        // warmup
+        for (j=0; j<10; j++)
+            CHECK( magma_s_spmv( c_one, dA, dx, c_zero, dy, queue ));
+
         // SpMV on GPU (CSR) -- this is the reference!
         start = magma_sync_wtime( queue );
         for (j=0; j<10; j++)
@@ -154,6 +158,7 @@ int main(  int argc, char** argv )
         end = magma_sync_wtime( queue );
         printf( " > MAGMA: %.2e seconds %.2e GFLOP/s    (standard CSR).\n",
                                         (end-start)/10, FLOPS*10/(end-start) );
+        
         magma_smfree(&dA, queue );
         CHECK( magma_smtransfer( dy, &hrefvec , Magma_DEV, Magma_CPU, queue ));
 
@@ -176,9 +181,9 @@ int main(  int argc, char** argv )
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_S_REAL(hcheck.val[k]) - MAGMA_S_REAL(hrefvec.val[k]);
         if ( res < .000001 )
-            printf("# tester spmv ELL:  ok\n");
+            printf("%% tester spmv ELL:  ok\n");
         else
-            printf("# tester spmv ELL:  failed\n");
+            printf("%% tester spmv ELL:  failed\n");
         magma_smfree( &hcheck, queue );
 
         // convert to SELLP and copy to GPU
@@ -199,11 +204,11 @@ int main(  int argc, char** argv )
         res = 0.0;
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_S_REAL(hcheck.val[k]) - MAGMA_S_REAL(hrefvec.val[k]);
-        printf("# |x-y|_F = %8.2e\n", res);
+        printf("%% |x-y|_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester spmv SELL-P:  ok\n");
+            printf("%% tester spmv SELL-P:  ok\n");
         else
-            printf("# tester spmv SELL-P:  failed\n");
+            printf("%% tester spmv SELL-P:  failed\n");
         magma_smfree( &hcheck, queue );
 
         magma_smfree(&dA_SELLP, queue );
@@ -241,11 +246,11 @@ int main(  int argc, char** argv )
         res = 0.0;
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_S_REAL(hcheck.val[k]) - MAGMA_S_REAL(hrefvec.val[k]);
-        printf("# |x-y|_F = %8.2e\n", res);
+        printf("%% |x-y|_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester spmv cuSPARSE CSR:  ok\n");
+            printf("%% tester spmv cuSPARSE CSR:  ok\n");
         else
-            printf("# tester spmv cuSPARSE CSR:  failed\n");
+            printf("%% tester spmv cuSPARSE CSR:  failed\n");
         magma_smfree( &hcheck, queue );
         magma_smfree( &dy, queue );
         CHECK( magma_svinit( &dy, Magma_DEV, hA.num_rows, 1, c_zero, queue ));
@@ -268,11 +273,11 @@ int main(  int argc, char** argv )
         res = 0.0;
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_S_REAL(hcheck.val[k]) - MAGMA_S_REAL(hrefvec.val[k]);
-        printf("# |x-y|_F = %8.2e\n", res);
+        printf("%% |x-y|_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester spmv cuSPARSE HYB:  ok\n");
+            printf("%% tester spmv cuSPARSE HYB:  ok\n");
         else
-            printf("# tester spmv cuSPARSE HYB:  failed\n");
+            printf("%% tester spmv cuSPARSE HYB:  failed\n");
         magma_smfree( &hcheck, queue );
 
         cusparseDestroyMatDescr( descrA );
@@ -296,7 +301,6 @@ int main(  int argc, char** argv )
         printf("\n\n");
 
         i++;
-
     }
     
 cleanup:

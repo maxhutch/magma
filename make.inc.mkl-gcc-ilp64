@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
@@ -16,6 +16,9 @@
 #
 #GPU_TARGET ?= Fermi Kepler
 
+# --------------------
+# programs
+
 CC        = gcc
 CXX       = g++
 NVCC      = nvcc
@@ -25,14 +28,18 @@ ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
 
+
+# --------------------
+# flags
+
 # Use -fPIC to make shared (.so) and static (.a) library;
 # can be commented out if making only static library.
 FPIC      = -fPIC
 
-CFLAGS    = -O3 $(FPIC) -DADD_ -Wall -fopenmp -DMAGMA_SETAFFINITY -DMAGMA_WITH_MKL
+CFLAGS    = -O3 $(FPIC) -DADD_ -Wall -Wshadow -fopenmp -DMAGMA_SETAFFINITY -DMAGMA_WITH_MKL
 FFLAGS    = -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument
 F90FLAGS  = -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument -x f95-cpp-input
-NVCCFLAGS = -O3         -DADD_       -Xcompiler "-fno-strict-aliasing $(FPIC)"
+NVCCFLAGS = -O3         -DADD_       -Xcompiler "$(FPIC) -Wall -Wno-unused-function"
 LDFLAGS   =     $(FPIC)              -fopenmp
 
 # Defining MAGMA_ILP64 or MKL_ILP64 changes magma_int_t to int64_t in include/magma_types.h
@@ -48,13 +55,23 @@ CFLAGS   += -pedantic -Wno-long-long
 CXXFLAGS := $(CFLAGS) -std=c++98
 CFLAGS   += -std=c99
 
+
+# --------------------
+# libraries
+
 # IMPORTANT: this link line is for 64-bit int !!!!
 # For regular 64-bit builds using 64-bit pointers and 32-bit int,
 # use the lp64 library, not the ilp64 library. See make.inc.mkl-gcc or make.inc.mkl-icc.
 # see MKL Link Advisor at http://software.intel.com/sites/products/mkl/
 # gcc with MKL 10.3, Intel threads, 64-bit int
 # note -DMAGMA_ILP64 or -DMKL_ILP64, and -fdefault-integer-8 in FFLAGS above
-LIB       = -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lpthread -lcublas -lcudart -lstdc++ -lm -liomp5 -lgfortran
+LIB       = -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -lpthread -lstdc++ -lm -liomp5 -lgfortran
+
+LIB      += -lcublas -lcudart
+
+
+# --------------------
+# directories
 
 # define library directories preferably in your environment, or here.
 # for MKL run, e.g.: source /opt/intel/composerxe/mkl/bin/mklvars.sh intel64

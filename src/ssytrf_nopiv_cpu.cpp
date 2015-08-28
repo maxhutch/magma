@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
        November 2011
 
-       @generated from zhetrf_nopiv_cpu.cpp normal z -> s, Fri Jan 30 19:00:16 2015
+       @generated from zhetrf_nopiv_cpu.cpp normal z -> s, Tue Aug 25 16:35:16 2015
  
 */
 #include "common_magma.h"
@@ -15,7 +15,7 @@
 #define  C(i, j) ( C[(j)*ldc  + (i)])
 #define  D(i)    ( D[(i)*incD] )
 
-// trailing submatrix update with inner-blocking 
+// trailing submatrix update with inner-blocking
 int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
             float alpha, float *A, magma_int_t lda,
             float beta,  float *C, magma_int_t ldc,
@@ -51,33 +51,28 @@ int ssyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
         return MAGMA_SUCCESS;
     }
 
-    if ( uplo == MagmaLower )
-    {
-        for(int j=0; j<m; j++)
-        {
-            for(int i=j; i<m; i++)
-            {
+    if ( uplo == MagmaLower ) {
+        for (int j=0; j < m; j++) {
+            for (int i=j; i < m; i++) {
                 float tmp = MAGMA_S_ZERO;
                 Aik = A+i;
                 Dkk = D;
                 Akj = A+j;
-                for(int k=0; k<n; k++, Aik+=lda, Dkk+=incD, Akj+=lda )
-                {
+                for (int k=0; k < n; k++) {
                     tmp += (*Aik) * (*Dkk) * conj( *Akj );
+                    Aik += lda;
+                    Dkk += incD;
+                    Akj += lda;
                 }
                 C(i, j) = beta * C(i, j) + alpha * tmp;
             }
         }
     }
-    else
-    {
-        for(int j=0; j<m; j++)
-        {
-            for(int i=0; i<=j; i++)
-            {
+    else {
+        for (int j=0; j < m; j++) {
+            for (int i=0; i <= j; i++) {
                 float tmp = MAGMA_S_ZERO;
-                for(int k=0; k<n; k++)
-                {
+                for (int k=0; k < n; k++) {
                     tmp += A(i, k) * D( k ) * conj( A(k, j) );
                 }
                 C(i, j) = beta * C(i, j) + alpha * tmp;
@@ -120,103 +115,108 @@ int ssyrk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
         return MAGMA_SUCCESS;
     }
 
-    if ( uplo == MagmaLower )
-    {
-         blasf77_sgemm( MagmaNoTransStr, MagmaNoTransStr, 
-                        &n, &n, &k,
-                        &c_mone, A,    &lda,
-                                 work, &ldw,
-                        &c_one,  C,    &ldc );
+    if ( uplo == MagmaLower ) {
+        blasf77_sgemm( MagmaNoTransStr, MagmaNoTransStr,
+                       &n, &n, &k,
+                       &c_mone, A,    &lda,
+                                work, &ldw,
+                       &c_one,  C,    &ldc );
     }
-    else
-    {
-         blasf77_sgemm( MagmaNoTransStr, MagmaNoTransStr, 
-                        &n, &n, &k,
-                        &c_mone, work, &ldw,
-                                 A,    &lda,
-                        &c_one,  C,    &ldc );
+    else {
+        blasf77_sgemm( MagmaNoTransStr, MagmaNoTransStr,
+                       &n, &n, &k,
+                       &c_mone, work, &ldw,
+                                A,    &lda,
+                       &c_one,  C,    &ldc );
     }
     return MAGMA_SUCCESS;
 }
 
 // diagonal factorization with inner-block
-int ssytrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n, 
+int ssytrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
                       float *A, magma_int_t lda)
 {
     /* Quick return */
     if (n == 1)
         return 0;
-    if (lda < n) 
+    if (lda < n)
         return -1;
 
     /**/
     magma_int_t info = 0, ione = 1;
     float *Ak1k = NULL;
-    float Akk;
+    float *Akk = NULL;
     float done = 1.0;
     float alpha;
 
-    if ( uplo == MagmaLower )
-    {
+    if ( uplo == MagmaLower ) {
         /* Diagonal element */
-        Akk  = *A;
+        Akk  = A;
 
         /* Pointer on first extra diagonal element */
         Ak1k = A + 1;
 
-        for (magma_int_t k=n-1; k>0; k--) {
-            if ( fabs(Akk) < lapackf77_slamch("Epsilon") ) {
+        for (magma_int_t k=n-1; k > 0; k--) {
+            alpha = MAGMA_S_REAL( *Akk );
+            if ( fabs(alpha) < lapackf77_slamch("Epsilon") ) {
                 info = k;
                 return info;
             }
+            *Akk = MAGMA_S_MAKE(alpha, 0.0);
 
             // scale off-diagonals
-            alpha = done / MAGMA_S_REAL( Akk );
+            alpha = done / alpha;
             blasf77_sscal(&k, &alpha, Ak1k, &ione);
 
             // update remaining
-            alpha = - MAGMA_S_REAL( Akk );
-            blasf77_ssyr(MagmaLowerStr, &k, 
+            alpha = - MAGMA_S_REAL( *Akk );
+            blasf77_ssyr(MagmaLowerStr, &k,
                          &alpha, Ak1k, &ione, Ak1k + lda, &lda);
 
             /* Move to next diagonal element */
-            Ak1k += lda;
-            Akk = *Ak1k;
-            Ak1k++;
+            if (k > 1) { 
+                Ak1k += lda;
+                Akk = Ak1k;
+                Ak1k++;
+            }
         }
     } else {
         /* Diagonal element */
-        Akk  = *A;
+        Akk  = A;
 
         /* Pointer on first extra diagonal element */
         Ak1k = A + lda;
 
-        for (magma_int_t k=n-1; k>0; k--) {
-            if ( fabs(Akk) < lapackf77_slamch("Epsilon") ) {
+        for (magma_int_t k=n-1; k > 0; k--) {
+            alpha = MAGMA_S_REAL( *Akk );
+            if ( fabs(alpha) < lapackf77_slamch("Epsilon") ) {
                 info = k;
                 return info;
             }
+            *Akk = MAGMA_S_MAKE(alpha, 0.0);
 
             // scale off-diagonals
-            alpha = done / MAGMA_S_REAL( Akk );
+            alpha = done / alpha;
             blasf77_sscal(&k, &alpha, Ak1k, &lda);
 
             // update remaining
-            alpha = - MAGMA_S_REAL( Akk );
+            alpha = - MAGMA_S_REAL( *Akk );
 
             #if defined(PRECISION_z) | defined(PRECISION_c)
             lapackf77_slacgv(&k, Ak1k, &lda);
             #endif
-            blasf77_ssyr(MagmaUpperStr, &k, 
+            blasf77_ssyr(MagmaUpperStr, &k,
                          &alpha, Ak1k, &lda, Ak1k + 1, &lda);
             #if defined(PRECISION_z) | defined(PRECISION_c)
             lapackf77_slacgv(&k, Ak1k, &lda);
             #endif
 
             /* Move to next diagonal element */
-            Ak1k ++;
-            Akk = *Ak1k;
-            Ak1k += lda;
+            if (k > 1) {
+                Ak1k ++;
+                Akk = Ak1k;
+                Ak1k += lda;
+            }
         }
     }
     return info;
@@ -248,7 +248,7 @@ ssytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
     }
 
     if ( uplo == MagmaLower ) {
-        for(magma_int_t i = 0; i < n; i += ib) {
+        for (magma_int_t i = 0; i < n; i += ib) {
             magma_int_t sb = min(n-i, ib);
 
             /* Factorize the diagonal block */
@@ -260,17 +260,19 @@ ssytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
 
                 /* Solve the lower panel ( L21*D11 )*/
                 blasf77_strsm(
-                    MagmaRightStr, MagmaLowerStr, 
+                    MagmaRightStr, MagmaLowerStr,
                     MagmaConjTransStr, MagmaUnitStr,
-                    &height, &sb, 
+                    &height, &sb,
                     &zone, &A(i, i),    &lda,
                            &A(i+sb, i), &lda);
 
                 /* Scale the block to divide by D */
-                for (magma_int_t k=0; k<sb; k++) {
+                for (magma_int_t k=0; k < sb; k++) {
                     #define SSYRK_D_WORKSPACE
                     #ifdef SSYRK_D_WORKSPACE
-                    for (magma_int_t ii=i+sb; ii<n; ii++) A(i+k, ii) = MAGMA_S_CNJG(A(ii, i+k));
+                    for (magma_int_t ii=i+sb; ii < n; ii++) {
+                        A(i+k, ii) = MAGMA_S_CNJG( A(ii, i+k) );
+                    }
                     #endif
                     alpha = done / MAGMA_S_REAL(A(i+k, i+k));
                     blasf77_sscal(&height, &alpha, &A(i+sb, i+k), &ione);
@@ -292,7 +294,7 @@ ssytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
             }
         }
     } else {
-        for(magma_int_t i = 0; i < n; i += ib) {
+        for (magma_int_t i = 0; i < n; i += ib) {
             magma_int_t sb = min(n-i, ib);
 
             /* Factorize the diagonal block */
@@ -304,17 +306,19 @@ ssytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
 
                 /* Solve the lower panel ( L21*D11 )*/
                 blasf77_strsm(
-                    MagmaLeftStr, MagmaUpperStr, 
+                    MagmaLeftStr, MagmaUpperStr,
                     MagmaConjTransStr, MagmaUnitStr,
-                    &sb, &height, 
+                    &sb, &height,
                     &zone, &A(i, i),    &lda,
                            &A(i, i+sb), &lda);
 
                 /* Scale the block to divide by D */
-                for (magma_int_t k=0; k<sb; k++) {
+                for (magma_int_t k=0; k < sb; k++) {
                     #define SSYRK_D_WORKSPACE
                     #ifdef SSYRK_D_WORKSPACE
-                    for (magma_int_t ii=i+sb; ii<n; ii++) A(ii, i+k) = MAGMA_S_CNJG(A(i+k, ii));
+                    for (magma_int_t ii=i+sb; ii < n; ii++) {
+                        A(ii, i+k) = MAGMA_S_CNJG( A(i+k, ii) );
+                    }
                     #endif
                     alpha = done / MAGMA_S_REAL(A(i+k, i+k));
                     blasf77_sscal(&height, &alpha, &A(i+k, i+sb), &lda);
@@ -339,4 +343,3 @@ ssytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
 
     return *info;
 }
-

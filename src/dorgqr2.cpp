@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zungqr2.cpp normal z -> d, Fri Jan 30 19:00:16 2015
+       @generated from zungqr2.cpp normal z -> d, Tue Aug 25 16:35:16 2015
 
        @author Stan Tomov
        @author Mark Gates
@@ -122,8 +122,8 @@ magma_dorgqr2(
     // ldda*n     for matrix dA
     // ldda*nb    for dV
     // lddwork*nb for dW larfb workspace
-    ldda    = ((m + 31) / 32) * 32;
-    lddwork = ((n + 31) / 32) * 32;
+    ldda    = magma_roundup( m, 32 );
+    lddwork = magma_roundup( n, 32 );
     if (MAGMA_SUCCESS != magma_dmalloc( &dA, ldda*n + ldda*nb + lddwork*nb + nb*nb)) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;

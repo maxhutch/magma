@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgeqrf.cpp normal z -> d, Fri Jan 30 19:00:26 2015
+       @generated from testing_zgeqrf.cpp normal z -> d, Tue Aug 25 16:35:27 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -40,14 +40,14 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     magma_int_t status = 0;
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("ngpu %d\n", (int) opts.ngpu );
-    printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
-    printf("===============================================================================\n");
+    printf("%% ngpu %d\n", (int) opts.ngpu );
+    printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
+    printf("%%==============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -75,7 +75,7 @@ int main( int argc, char** argv)
             lapackf77_dlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             
             if ( opts.warmup ) {
-                magma_dgeqrf(M, N, h_R, lda, tau, h_work, lwork, &info);
+                magma_dgeqrf( M, N, h_R, lda, tau, h_work, lwork, &info );
                 lapackf77_dlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             }
 
@@ -83,7 +83,7 @@ int main( int argc, char** argv)
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            magma_dgeqrf(M, N, h_R, lda, tau, h_work, lwork, &info);
+            magma_dgeqrf( M, N, h_R, lda, tau, h_work, lwork, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)

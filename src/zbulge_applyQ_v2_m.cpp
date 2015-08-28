@@ -458,7 +458,7 @@ magma_zbulge_applyQ_v2_m(
     }
 
 
-    for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+    for( dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magmablasSetKernelStream(streams[dev][0]);
         magma_queue_wait_event( streams[dev][0], myevent[dev][0] );

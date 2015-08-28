@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Raffaele Solca
        
-       @generated from dstedx_m.cpp normal d -> s, Fri Jan 30 19:00:18 2015
+       @generated from dstedx_m.cpp normal d -> s, Tue Aug 25 16:35:18 2015
 */
 #include "common_magma.h"
 
@@ -250,7 +250,6 @@ magma_sstedx_m(
         if (alleig) {
             start = 0;
             while ( start < n ) {
-
                 // Let FINISH be the position of the next subdiagonal entry
                 // such that E( END ) <= TINY or FINISH = N if no such
                 // subdiagonal exists.  The matrix identified by the elements

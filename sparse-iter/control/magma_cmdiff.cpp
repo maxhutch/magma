@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmdiff.cpp normal z -> c, Sun May  3 11:23:01 2015
+       @generated from magma_zmdiff.cpp normal z -> c, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -52,7 +52,7 @@ magma_cmdiff(
 {
     magma_int_t info = 0;
     
-    if( A.memory_location == Magma_CPU && B.memory_location == Magma_CPU
+    if ( A.memory_location == Magma_CPU && B.memory_location == Magma_CPU
             && A.storage_type == Magma_CSR && B.storage_type == Magma_CSR ){
         real_Double_t tmp2;
         magma_int_t i,j,k;
@@ -74,10 +74,9 @@ magma_cmdiff(
 
         (*res) =  sqrt((*res));
     }
-    else{
+    else {
         printf("error: mdiff only supported for CSR matrices on the CPU.\n");
         info = MAGMA_ERR_NOT_SUPPORTED;
     }
     return info;
 }
-

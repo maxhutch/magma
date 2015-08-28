@@ -2,11 +2,11 @@
 #define PTHREAD_BARRIER_H
 
 // MacOS doesn't provide pthread_barrier
-// magmawinthread.c doesn't provide pthread_barrier
+// magma_winthread.c doesn't provide pthread_barrier
 #if (defined( _WIN32 ) || defined( _WIN64 ) || defined( __APPLE__ )) && ! defined( __MINGW32__ )
 
 #if defined( _WIN32 ) || defined( _WIN64 )
-    #include "magmawinthread.h"
+    #include "magma_winthread.h"
 #else
     #include <pthread.h>
 #endif

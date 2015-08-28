@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -127,19 +127,20 @@ magma_zpotrf3_mgpu(
     /* used by ztrsm_work */
     magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
     int trsm_nb = 128;
-    int trsm_n = trsm_nb*((nb+trsm_nb-1)/trsm_nb);
+    int trsm_n = magma_roundup( nb, trsm_nb );
     magmaDoubleComplex *d_dinvA[MagmaMaxGPUs];
-    magmaDoubleComplex *d_x[MagmaMaxGPUs];
+    magmaDoubleComplex *dx[MagmaMaxGPUs];
     #define dinvA(d,j) &(d_dinvA[(d)][(j)*trsm_nb*trsm_n])
-    #define dx(d,j) &(d_x[(d)][(j)*nb*m])
+    #define dx(d,j) &(dx[(d)][(j)*nb*m])
     /*
      * Allocate device memory for the inversed diagonal blocks, size=N*BLOCK_SIZE
      */
     // TODO free memory on failure.
+    magma_int_t dinvA_length = 2*trsm_nb*trsm_n;
     for( d=0; d < ngpu; d++ ) {
         magma_setdevice(d);
-        if ( (MAGMA_SUCCESS != magma_zmalloc( &d_dinvA[d], 2*trsm_nb*trsm_n )) ||
-             (MAGMA_SUCCESS != magma_zmalloc( &d_x[d],     2*nb*(upper ? n : m) )) ) {
+        if ( (MAGMA_SUCCESS != magma_zmalloc( &d_dinvA[d], dinvA_length )) ||
+             (MAGMA_SUCCESS != magma_zmalloc( &dx[d],      2*nb*(upper ? n : m) )) ) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
@@ -301,22 +302,23 @@ magma_zpotrf3_mgpu(
                         magmablasSetKernelStream( queues[d][stream1] );
                         magma_queue_wait_event( queues[d][stream1], events[d][2] ); // wait for gemm update
                         trace_gpu_start( d, stream1, "trsm", "trsm" );
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                        magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
-                        magmablas_zlaset( MagmaFull, nb0,     jb,     c_zero, c_zero, dx(d,0), nb0 );
-                        magmablas_ztrsm_work( MagmaLeft, MagmaUpper,
-                                              MagmaConjTrans, MagmaNonUnit,
-                                              jb, nb0, c_one,
-                                              dlpanel, ldpanel,
-                                              dlA(d, j, nb*j_local2), ldda,
-                                              1, dinvA(d,0), dx(d,0) );
-#else
-                        magma_ztrsm( MagmaLeft, MagmaUpper,
-                                     MagmaConjTrans, MagmaNonUnit,
-                                     jb, nb0, c_one,
-                                     dlpanel,                ldpanel,
-                                     dlA(d, j, nb*j_local2), ldda);
-#endif
+                        #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+                            //magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                            //magmablas_zlaset( MagmaFull, nb0,     jb,     c_zero, c_zero, dx(d,0), nb0 );
+                            magmablas_ztrsm_work( MagmaLeft, MagmaUpper,
+                                                  MagmaConjTrans, MagmaNonUnit,
+                                                  jb, nb0, c_one,
+                                                  dlpanel, ldpanel,
+                                                  dlA(d, j, nb*j_local2), ldda,
+                                                  dx(d,0), jb,
+                                                  1, dinvA(d,0), dinvA_length );
+                        #else
+                            magma_ztrsm( MagmaLeft, MagmaUpper,
+                                         MagmaConjTrans, MagmaNonUnit,
+                                         jb, nb0, c_one,
+                                         dlpanel,                ldpanel,
+                                         dlA(d, j, nb*j_local2), ldda);
+                        #endif
                         magma_event_record( events[d][4], queues[d][stream1] );
                         trace_gpu_end( d, stream1 );
                     } else if ( nb2 > 0 ) {
@@ -324,22 +326,23 @@ magma_zpotrf3_mgpu(
                         magma_queue_wait_event( queues[d][stream2], events[d][1] ); // wait for cholesky factor
                         trace_gpu_start( d, stream2, "trsm", "trsm" );
                         magmablasSetKernelStream( queues[d][stream2] );
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                        magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
-                        magmablas_zlaset( MagmaFull, nb2,     jb,     c_zero, c_zero, dx(d,0), nb2 );
-                        magmablas_ztrsm_work( MagmaLeft, MagmaUpper,
-                                              MagmaConjTrans, MagmaNonUnit,
-                                              jb, nb2, c_one,
-                                              dlpanel, ldpanel,
-                                              dlA(d, j, nb*j_local2), ldda,
-                                              1, dinvA(d,0), dx(d,0) );
-#else
-                        magma_ztrsm( MagmaLeft, MagmaUpper,
-                                     MagmaConjTrans, MagmaNonUnit,
-                                     jb, nb2, c_one,
-                                     dlpanel,                ldpanel,
-                                     dlA(d, j, nb*j_local2), ldda);
-#endif
+                        #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+                            //magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                            //magmablas_zlaset( MagmaFull, nb2,     jb,     c_zero, c_zero, dx(d,0), nb2 );
+                            magmablas_ztrsm_work( MagmaLeft, MagmaUpper,
+                                                  MagmaConjTrans, MagmaNonUnit,
+                                                  jb, nb2, c_one,
+                                                  dlpanel, ldpanel,
+                                                  dlA(d, j, nb*j_local2), ldda,
+                                                  dx(d,0), jb,
+                                                  1, dinvA(d,0), dinvA_length );
+                        #else
+                            magma_ztrsm( MagmaLeft, MagmaUpper,
+                                         MagmaConjTrans, MagmaNonUnit,
+                                         jb, nb2, c_one,
+                                         dlpanel,                ldpanel,
+                                         dlA(d, j, nb*j_local2), ldda);
+                        #endif
                         trace_gpu_end( d, stream2 );
                     }
                     d = (d+1)%ngpu;
@@ -401,27 +404,28 @@ magma_zpotrf3_mgpu(
                         magma_setdevice(d);
                         magmablasSetKernelStream( queues[d][stream2] );
                         trace_gpu_start( d, stream2, "trsm", "trsm" );
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                        int flag = 0;
-                        if (flag == 0) {
-                            magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
-                        } else {
-                            magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,flag), trsm_nb );
-                            magma_queue_wait_event( queues[d][stream2], events[d][1] ); // panel received
-                        }
-                        magmablas_zlaset( MagmaFull, nb2, jb, c_zero, c_zero, dx(d,1), nb2 );
-                        magmablas_ztrsm_work( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
-                                              jb, nb2, c_one,
-                                              dlpanel, ldpanel,
-                                              dlA(d, j, nb*j_local2+nb0), ldda,
-                                              flag, dinvA(d,flag), dx(d,1) );
-#else
-                        magma_queue_wait_event( queues[d][stream2], events[d][1] ); // wait for cholesky factor
-                        magma_ztrsm( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
-                                     jb, nb2, c_one,
-                                     dlpanel, ldpanel,
-                                     dlA(d, j, nb*j_local2+nb0), ldda);
-#endif
+                        #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+                            int flag = 0;
+                            if (flag == 0) {
+                                magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
+                            } else {
+                                magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,flag), trsm_nb );
+                                magma_queue_wait_event( queues[d][stream2], events[d][1] ); // panel received
+                            }
+                            magmablas_zlaset( MagmaFull, nb2, jb, c_zero, c_zero, dx(d,1), nb2 );
+                            magmablas_ztrsm_work( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
+                                                  jb, nb2, c_one,
+                                                  dlpanel, ldpanel,
+                                                  dlA(d, j, nb*j_local2+nb0), ldda,
+                                                  dx(d,1), jb,
+                                                  flag, dinvA(d,flag), dinvA_length );
+                        #else
+                            magma_queue_wait_event( queues[d][stream2], events[d][1] ); // wait for cholesky factor
+                            magma_ztrsm( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
+                                         jb, nb2, c_one,
+                                         dlpanel, ldpanel,
+                                         dlA(d, j, nb*j_local2+nb0), ldda);
+                        #endif
                         trace_gpu_end( d, stream2 );
                     }
                 }
@@ -433,7 +437,6 @@ magma_zpotrf3_mgpu(
         /* > Compute the Cholesky factorization A = L*L'. */
         /* ---------------------------------------------- */
         for (j=0; j < n; j += nb) {
-        
             /* Set the GPU number that holds the current panel */
             id  = (j/nb)%ngpu;
             buf = (j/nb)%ngpu;
@@ -545,41 +548,43 @@ magma_zpotrf3_mgpu(
                     if ( j+nb < n && d == (j/nb+1)%ngpu ) { /* owns next column, look-ahead next block on stream1 */
                         if ( j > 0 ) magma_queue_wait_event( queues[d][stream1], events[d][2] ); // wait for gemm update
                         magmablasSetKernelStream( queues[d][stream1] );
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                        magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
-                        magmablas_zlaset( MagmaFull, nb0,     jb,     c_zero, c_zero, dx(d,0), nb0 );
-                        magmablas_ztrsm_work( MagmaRight, MagmaLower,
-                                              MagmaConjTrans, MagmaNonUnit,
-                                              nb0, jb, c_one,
-                                              dlpanel, ldpanel,
-                                              dlA(d, nb*j_local2, j), ldda,
-                                              1, dinvA(d,0), dx(d,0) );
-#else
-                        magma_ztrsm( MagmaRight, MagmaLower,
-                                     MagmaConjTrans, MagmaNonUnit,
-                                     nb0, jb, c_one,
-                                     dlpanel, ldpanel,
-                                     dlA(d, nb*j_local2, j), ldda);
-#endif
+                        #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+                            //magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                            //magmablas_zlaset( MagmaFull, nb0,     jb,     c_zero, c_zero, dx(d,0), nb0 );
+                            magmablas_ztrsm_work( MagmaRight, MagmaLower,
+                                                  MagmaConjTrans, MagmaNonUnit,
+                                                  nb0, jb, c_one,
+                                                  dlpanel, ldpanel,
+                                                  dlA(d, nb*j_local2, j), ldda,
+                                                  dx(d,0), nb0,
+                                                  1, dinvA(d,0), dinvA_length );
+                        #else
+                            magma_ztrsm( MagmaRight, MagmaLower,
+                                         MagmaConjTrans, MagmaNonUnit,
+                                         nb0, jb, c_one,
+                                         dlpanel, ldpanel,
+                                         dlA(d, nb*j_local2, j), ldda);
+                        #endif
                         magma_event_record( events[d][4], queues[d][stream1] );
                     } else if ( nb2 > 0 ) { /* other gpus updating all the blocks on stream2 */
                         /* update the entire column */
                         magma_queue_wait_event( queues[d][stream2], events[d][1] ); // wait for the cholesky factor
                         magmablasSetKernelStream( queues[d][stream2] );
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                        magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
-                        magmablas_zlaset( MagmaFull, nb2,     jb,     c_zero, c_zero, dx(d,0), nb2 );
-                        magmablas_ztrsm_work( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
-                                              nb2, jb, c_one,
-                                              dlpanel,                ldpanel,
-                                              dlA(d, nb*j_local2, j), ldda,
-                                              1, dinvA(d,0), dx(d,0) );
-#else
-                        magma_ztrsm( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
-                                     nb2, jb, c_one,
-                                     dlpanel,                ldpanel,
-                                     dlA(d, nb*j_local2, j), ldda);
-#endif
+                        #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+                            //magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,0), trsm_nb );
+                            //magmablas_zlaset( MagmaFull, nb2,     jb,     c_zero, c_zero, dx(d,0), nb2 );
+                            magmablas_ztrsm_work( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+                                                  nb2, jb, c_one,
+                                                  dlpanel,                ldpanel,
+                                                  dlA(d, nb*j_local2, j), ldda,
+                                                  dx(d,0), nb2,
+                                                  1, dinvA(d,0), dinvA_length );
+                        #else
+                            magma_ztrsm( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+                                         nb2, jb, c_one,
+                                         dlpanel,                ldpanel,
+                                         dlA(d, nb*j_local2, j), ldda);
+                        #endif
                     }
                     d = (d+1)%ngpu;
                 } /* end for d */
@@ -657,27 +662,28 @@ magma_zpotrf3_mgpu(
                         magma_setdevice(d);
                         magmablasSetKernelStream( queues[d][stream2] );
                         /* update the remaining blocks in the column */
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
-                        int flag = 0;
-                        if (flag == 0) {
-                            magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
-                        } else {
-                            magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,flag), trsm_nb );
+                        #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+                            int flag = 0;
+                            if (flag == 0) {
+                                magma_queue_wait_event( queues[d][stream2], events[d][4] ); // lookahead -> diagonal inversion
+                            } else {
+                                magmablas_zlaset( MagmaFull, trsm_nb, trsm_n, c_zero, c_zero, dinvA(d,flag), trsm_nb );
+                                magma_queue_wait_event( queues[d][stream2], events[d][1] ); // panel received
+                            }
+                            magmablas_zlaset( MagmaFull, nb2, jb, c_zero, c_zero, dx(d,1), nb2 );
+                            magmablas_ztrsm_work( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+                                                  nb2, jb, c_one,
+                                                  dlpanel,                    ldpanel,
+                                                  dlA(d, nb*j_local2+nb0, j), ldda,
+                                                  dx(d,1), nb2,
+                                                  flag, dinvA(d,flag), dinvA_length );
+                        #else
                             magma_queue_wait_event( queues[d][stream2], events[d][1] ); // panel received
-                        }
-                        magmablas_zlaset( MagmaFull, nb2, jb, c_zero, c_zero, dx(d,1), nb2 );
-                        magmablas_ztrsm_work( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
-                                              nb2, jb, c_one,
-                                              dlpanel,                    ldpanel,
-                                              dlA(d, nb*j_local2+nb0, j), ldda,
-                                              flag, dinvA(d,flag), dx(d,1) );
-#else
-                        magma_queue_wait_event( queues[d][stream2], events[d][1] ); // panel received
-                        magma_ztrsm( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
-                                     nb2, jb, c_one,
-                                     dlpanel,                    ldpanel,
-                                     dlA(d, nb*j_local2+nb0, j), ldda);
-#endif
+                            magma_ztrsm( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+                                         nb2, jb, c_one,
+                                         dlpanel,                    ldpanel,
+                                         dlA(d, nb*j_local2+nb0, j), ldda);
+                        #endif
                     }
                 }
             }
@@ -691,10 +697,10 @@ magma_zpotrf3_mgpu(
         for( j=0; j < 3; j++ ) {
             magma_queue_sync( queues[d][j] );
         }
-#if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
+        #if (defined(PRECISION_d) || defined(PRECISION_s)) && defined(ZTRSM_WORK)
         magma_free( d_dinvA[d] );
-        magma_free( d_x[d] );
-#endif
+        magma_free( dx[d] );
+        #endif
     }
     magma_setdevice( orig_dev );
     magmablasSetKernelStream( orig_stream );

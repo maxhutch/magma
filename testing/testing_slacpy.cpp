@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zlacpy.cpp normal z -> s, Fri Jan 30 19:00:23 2015
+       @generated from testing_zlacpy.cpp normal z -> s, Tue Aug 25 16:35:25 2015
        @author Mark Gates
 */
 
@@ -37,12 +37,12 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     magma_uplo_t uplo[] = { MagmaLower, MagmaUpper, MagmaFull };
     
-    printf("uplo      M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
-    printf("=================================================================\n");
+    printf("%% uplo    M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
+    printf("%%================================================================\n");
     for( int iuplo = 0; iuplo < 3; ++iuplo ) {
       for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -50,16 +50,28 @@ int main( int argc, char** argv)
             N = opts.nsize[itest];
             lda    = M;
             ldb    = lda;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             lddb   = ldda;
             size   = lda*N;
-            if ( uplo[iuplo] == MagmaLower || uplo[iuplo] == MagmaUpper ) {
-                // load and save triangle (with diagonal)
-                gbytes = sizeof(float) * 1.*N*(N+1) / 1e9;
+            if ( uplo[iuplo] == MagmaLower ) {
+                // load & save lower trapezoid (with diagonal)
+                if ( M > N ) {
+                    gbytes = 2. * sizeof(float) * (1.*M*N - 0.5*N*(N-1)) / 1e9;
+                } else {
+                    gbytes = 2. * sizeof(float) * 0.5*M*(M+1) / 1e9;
+                }
+            }
+            else if ( uplo[iuplo] == MagmaUpper ) {
+                // load & save upper trapezoid (with diagonal)
+                if ( N > M ) {
+                    gbytes = 2. * sizeof(float) * (1.*M*N - 0.5*M*(M-1)) / 1e9;
+                } else {
+                    gbytes = 2. * sizeof(float) * 0.5*N*(N+1) / 1e9;
+                }
             }
             else {
-              // load entire matrix, save entire matrix
-              gbytes = sizeof(float) * 2.*M*N / 1e9;
+                // load & save entire matrix
+                gbytes = 2. * sizeof(float) * 1.*M*N / 1e9;
             }
     
             TESTING_MALLOC_CPU( h_A, float, size   );
@@ -67,7 +79,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_CPU( h_R, float, size   );
             
             TESTING_MALLOC_DEV( d_A, float, ldda*N );
-            TESTING_MALLOC_DEV( d_B, float, ldda*N );
+            TESTING_MALLOC_DEV( d_B, float, lddb*N );
             
             /* Initialize the matrix */
             for( int j = 0; j < N; ++j ) {
@@ -83,10 +95,11 @@ int main( int argc, char** argv)
             magma_ssetmatrix( M, N, h_A, lda, d_A, ldda );
             magma_ssetmatrix( M, N, h_B, ldb, d_B, lddb );
             
-            gpu_time = magma_sync_wtime( 0 );
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             //magmablas_slacpy( uplo[iuplo], M-2, N-2, d_A+1+ldda, ldda, d_B+1+lddb, lddb );  // inset by 1 row & col
             magmablas_slacpy( uplo[iuplo], M, N, d_A, ldda, d_B, lddb );
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
             /* =====================================================================
@@ -102,15 +115,15 @@ int main( int argc, char** argv)
             
             if ( opts.verbose ) {
                 printf( "A= " );  magma_sprint(     M, N, h_A, lda );
-                printf( "B= " );  magma_sprint(     M, N, h_B, lda );
+                printf( "B= " );  magma_sprint(     M, N, h_B, ldb );
                 printf( "dA=" );  magma_sprint_gpu( M, N, d_A, ldda );
-                printf( "dB=" );  magma_sprint_gpu( M, N, d_B, ldda );
+                printf( "dB=" );  magma_sprint_gpu( M, N, d_B, lddb );
             }
             
             /* =====================================================================
                Check the result
                =================================================================== */
-            magma_sgetmatrix( M, N, d_B, ldda, h_R, lda );
+            magma_sgetmatrix( M, N, d_B, lddb, h_R, lda );
             
             blasf77_saxpy(&size, &c_neg_one, h_B, &ione, h_R, &ione);
             error = lapackf77_slange("f", &M, &N, h_R, &lda, work);

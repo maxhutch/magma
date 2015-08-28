@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgetrf_incpiv_gpu.cpp normal z -> s, Fri Jan 30 19:00:14 2015
+       @generated from zgetrf_incpiv_gpu.cpp normal z -> s, Tue Aug 25 16:35:15 2015
 
 */
 #ifdef MAGMA_WITH_PLASMA
@@ -186,7 +186,7 @@ magma_sgetrf_incpiv_gpu(
     }
     else {
         /* Use hybrid blocked code. */
-        maxm = ((m + 31)/32)*32;
+        maxm = magma_roundup( m, 32 );
 
         if ( order == MagmaColMajor ) {
             magmablas_sgetmo_in( dA, dAT, ldda, m, n );

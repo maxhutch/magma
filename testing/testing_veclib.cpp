@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
 */
@@ -21,12 +21,11 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "magma_types.h"
+// hack to NOT include magma_lapack.h, by pre-defining MAGMA_LAPACK_H.
+// we re-define the lapack prototypes below, so can't include that header.
+#define MAGMA_LAPACK_H
+#include "testings.h"
 #include "magma_mangling.h"
-
-// ------------------------------------------------------------
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 // ------------------------------------------------------------
 //#define LAPACK_RETURN_DOUBLE
@@ -58,7 +57,7 @@ blasf77_sdot(   const magma_int_t *n,
                 const float *x, const magma_int_t *incx,
                 const float *y, const magma_int_t *incy );
                 
-RETURN_FLOAT    
+RETURN_FLOAT
 blasf77_snrm2(  const magma_int_t *n,
                 const float *x, const magma_int_t *incx );
 
@@ -114,19 +113,20 @@ float test( magma_int_t m, magma_int_t n )
     double dnorm_one, dnorm_inf, dnorm_fro, dnorm_max;
     
     const magma_int_t ione = 1;
-    magma_int_t lda = MAX(m,n);
+    magma_int_t lda = max(m,n);
     
-    sA    = (float*)  malloc( lda*n * sizeof(float)  );
-    dA    = (double*) malloc( lda*n * sizeof(double) );
-    swork = (float*)  malloc( m     * sizeof(float)  );
-    dwork = (double*) malloc( m     * sizeof(double) );
+    magma_smalloc_cpu( &sA,    lda*n );
+    magma_dmalloc_cpu( &dA,    lda*n );
+    magma_smalloc_cpu( &swork, m     );
+    magma_dmalloc_cpu( &dwork, m     );
     
     for( magma_int_t j = 0; j < n; ++j ) {
-    for( magma_int_t i = 0; i < lda; ++i ) {
-        double tmp = rand() / (double)(RAND_MAX);
-        *sA(i,j) = tmp;
-        *dA(i,j) = tmp;
-    }}
+        for( magma_int_t i = 0; i < lda; ++i ) {
+            double tmp = rand() / (double)(RAND_MAX);
+            *sA(i,j) = tmp;
+            *dA(i,j) = tmp;
+        }
+    }
     
     double error;
     magma_int_t status;
@@ -157,7 +157,7 @@ float test( magma_int_t m, magma_int_t n )
         snorm_inf = lapackf77_slange( "inf", &m, &n, sA, &lda, swork );
         snorm_max = lapackf77_slange( "max", &m, &n, sA, &lda, swork );
         snorm_fro = lapackf77_slange( "fro", &m, &n, sA, &lda, swork );
-                                                      
+        
         dnorm_one = lapackf77_dlange( "one", &m, &n, dA, &lda, dwork );
         dnorm_inf = lapackf77_dlange( "inf", &m, &n, dA, &lda, dwork );
         dnorm_max = lapackf77_dlange( "max", &m, &n, dA, &lda, dwork );
@@ -185,7 +185,7 @@ float test( magma_int_t m, magma_int_t n )
         snorm_inf = lapackf77_slansy( "inf", "up", &n, sA, &lda, swork );
         snorm_max = lapackf77_slansy( "max", "up", &n, sA, &lda, swork );
         snorm_fro = lapackf77_slansy( "fro", "up", &n, sA, &lda, swork );
-                                                  
+        
         dnorm_one = lapackf77_dlansy( "one", "up", &n, dA, &lda, dwork );
         dnorm_inf = lapackf77_dlansy( "inf", "up", &n, dA, &lda, dwork );
         dnorm_max = lapackf77_dlansy( "max", "up", &n, dA, &lda, dwork );

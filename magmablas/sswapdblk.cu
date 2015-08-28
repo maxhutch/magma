@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zswapdblk.cu normal z -> s, Fri Jan 30 19:00:09 2015
+       @generated from zswapdblk.cu normal z -> s, Tue Aug 25 16:35:09 2015
 
 */
 #include "common_magma.h"
@@ -32,7 +32,7 @@ sswapdblk_kernel( int nb,
     float tmp;
 
     #pragma unroll
-    for( int i = 0; i < nb; i++ ){
+    for( int i = 0; i < nb; i++ ) {
         tmp        = dA[i*ldda];
         dA[i*ldda] = dB[i*lddb];
         dB[i*lddb] = tmp;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from magmablas_z_q.h normal z -> d, Fri Jan 30 19:00:05 2015
+       @generated from magmablas_z_q.h normal z -> d, Tue Aug 25 16:35:05 2015
 */
 
 #ifndef MAGMABLAS_D_Q_H
@@ -187,6 +187,14 @@ magmablas_dtrtri_diag_q(
   /*
    * Level 1 BLAS
    */
+void
+magmablas_daxpycp_q(
+    magma_int_t m,
+    magmaDouble_ptr r,
+    magmaDouble_ptr x,
+    magmaDouble_const_ptr b,
+    magma_queue_t queue );
+
 void
 magmablas_dswap_q(
     magma_int_t n,

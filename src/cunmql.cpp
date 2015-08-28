@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Mark Gates
 
-       @generated from zunmql.cpp normal z -> c, Fri Jan 30 19:00:16 2015
+       @generated from zunmql.cpp normal z -> c, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -198,7 +198,7 @@ magma_cunmql(
          * nb*nb  for dT
          * lddc*n for dC.
          */
-        magma_int_t lddc = ((m+31)/32)*32;
+        magma_int_t lddc = magma_roundup( m, 32 );
         magmaFloatComplex *dwork, *dV, *dT, *dC;
         magma_cmalloc( &dwork, (nw + nq + nb)*nb + lddc*n );
         if ( dwork == NULL ) {
@@ -255,9 +255,9 @@ magma_cunmql(
             /* 1) set lower triangle of panel in A to identity,
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
-            cpanel_to_q( MagmaLower, ib, A(nq_i-ib,i), lda, T2 );
+            magma_cpanel_to_q( MagmaLower, ib, A(nq_i-ib,i), lda, T2 );
             magma_csetmatrix( nq_i,  ib, A(0,      i), lda, dV, nq_i );
-            cq_to_panel( MagmaLower, ib, A(nq_i-ib,i), lda, T2 );
+            magma_cq_to_panel( MagmaLower, ib, A(nq_i-ib,i), lda, T2 );
             
             if (left) {
                 /* H or H**H is applied to C(1:m-k+i+ib-1,1:n) */

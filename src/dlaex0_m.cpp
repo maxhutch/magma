@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Raffaele Solca
        
@@ -136,7 +136,7 @@ magma_dlaex0_m(
     magma_getdevice( &orig_dev );
     
     // workspace dimension for ngpu > 1
-    size_t tmp = (n-1)/2+1;
+    size_t tmp = magma_ceildiv( n, 2 );
     if (ngpu > 1) {
         size_t tmp2 = (tmp-1) / (ngpu/2) + 1;
         tmp = tmp * tmp2 + 2 * magma_get_dlaex3_m_nb()*(tmp + tmp2);

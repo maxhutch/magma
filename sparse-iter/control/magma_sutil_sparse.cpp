@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zutil_sparse.cpp normal z -> s, Sun May  3 11:23:01 2015
+       @generated from magma_zutil_sparse.cpp normal z -> s, Tue Aug 25 16:35:34 2015
 
        @author Hartwig Anzt
 
@@ -13,10 +13,11 @@
 */
 #include "common_magmasparse.h"
 
+#define PRECISION_s
 
 // --------------------
 static const char *usage_sparse_short =
-"Usage: %s [options] [-h|--help]  matrices\n\n";
+"%% Usage: %s [options] [-h|--help]  matrices\n\n";
 
 static const char *usage_sparse =
 "Options are:\n"
@@ -41,8 +42,11 @@ static const char *usage_sparse =
 "               8   LOBPCG\n"
 "               9   Jacobi\n"
 "               10  Block-asynchronous Iteration\n"
+"               11  IDR (smoothed)\n"
+"               12  PIDR (smoothed)\n"
 "               21  Iterative Refinement\n"
 " --restart     For GMRES: possibility to choose the restart.\n"
+"               For IDR: Number of distinct subspaces (1,2,4,8).\n"
 " --precond x   Possibility to choose a preconditioner:\n"
 "               0   no preconditioner\n"
 "               1   Jacobi\n"
@@ -53,14 +57,19 @@ static const char *usage_sparse =
 "                   4   BiCGSTAB\n"
 "                   5   GMRES\n"
 "                   6   Block-asynchronous Iteration\n"
-"                   --ptol eps    Relative resiudal stopping criterion for preconditioner.\n"
+"                   --patol atol  Absolute residual stopping criterion for preconditioner.\n"
+"                   --prtol rtol  Relative residual stopping criterion for preconditioner.\n"
 "                   --psweeps k   Iteration count for iterative incomplete factorizations.\n"
 "                   --piter k     Iteration count for iterative preconditioner.\n"
 "                   --plevels k   Number of ILU levels.\n"
+"                   7   IDR\n"
+" --piter x     Number of relaxation steps for approximate triangular solve (ILU case).\n"
+" --psweeps x   Number of iterative ILU sweeps for to generate preconditioner (iterative ILU case).\n"
 " --ev x        For eigensolvers, set number of eigenvalues/eigenvectors to compute.\n"
 " --verbose x   Possibility to print intermediate residuals every x iteration.\n"
 " --maxiter x   Set an upper limit for the iteration count.\n"
-" --tol eps     Set a relative residual stopping criterion.\n";
+" --atol atol   Set an absolute residual stopping criterion.\n"
+" --rtol rtol   Set a relative residual stopping criterion.\n";
 
 
 
@@ -105,8 +114,6 @@ magma_sparse_opts(
     int *matrices,
     magma_queue_t queue )
 {
-
-    
     // fill in default values
     opts->input_format = Magma_CSR;
     opts->blocksize = 8;
@@ -115,14 +122,26 @@ magma_sparse_opts(
     opts->input_location = Magma_CPU;
     opts->output_location = Magma_CPU;
     opts->scaling = Magma_NOSCALE;
-    opts->solver_par.epsilon = 10e-16;
+    #if defined(PRECISION_z) | defined(PRECISION_d)
+        opts->solver_par.atol = 1e-16;
+        opts->solver_par.rtol = 1e-10;
+    #else
+        opts->solver_par.atol = 1e-8;
+        opts->solver_par.rtol = 1e-5;
+    #endif
     opts->solver_par.maxiter = 1000;
     opts->solver_par.verbose = 0;
     opts->solver_par.version = 0;
-    opts->solver_par.restart = 30;
+    opts->solver_par.restart = 50;
     opts->solver_par.num_eigenvalues = 0;
     opts->precond_par.solver = Magma_NONE;
-    opts->precond_par.epsilon = 0.01;
+    #if defined(PRECISION_z) | defined(PRECISION_d)
+        opts->precond_par.atol = 1e-16;
+        opts->precond_par.rtol = 1e-10;
+    #else
+        opts->precond_par.atol = 1e-8;
+        opts->precond_par.rtol = 1e-5;
+    #endif
     opts->precond_par.maxiter = 100;
     opts->precond_par.restart = 10;
     opts->precond_par.levels = 0;
@@ -153,7 +172,6 @@ magma_sparse_opts(
                 case 1: opts->scaling = Magma_UNITDIAG; break;
                 case 2: opts->scaling = Magma_UNITROW; break;
             }
-
         } else if ( strcmp("--solver", argv[i]) == 0 && i+1 < argc ) {
             info = atoi( argv[++i] );
             switch( info ) {
@@ -166,9 +184,13 @@ magma_sparse_opts(
                 case 6: opts->solver_par.solver = Magma_GMRES; break;
                 case 7: opts->solver_par.solver = Magma_PGMRES; break;
                 case 8: opts->solver_par.solver = Magma_LOBPCG;
-                            opts->solver_par.num_eigenvalues = 16;break;
+                        opts->solver_par.num_eigenvalues = 16; break;
                 case 9: opts->solver_par.solver = Magma_JACOBI; break;
                 case 10: opts->solver_par.solver = Magma_BAITER; break;
+                case 11: opts->solver_par.solver = Magma_IDR; 
+                         opts->solver_par.restart = 4; break;
+                case 12: opts->solver_par.solver = Magma_PIDR;
+                         opts->solver_par.restart = 4; break;
                 case 21: opts->solver_par.solver = Magma_ITERREF; break;
             }
         } else if ( strcmp("--restart", argv[i]) == 0 && i+1 < argc ) {
@@ -184,10 +206,12 @@ magma_sparse_opts(
                 case 4: opts->precond_par.solver = Magma_BICGSTAB; break;
                 case 5: opts->precond_par.solver = Magma_GMRES; break;
                 case 6: opts->precond_par.solver = Magma_BAITER; break;
-
+                case 7: opts->precond_par.solver = Magma_IDR; break;
             }
-        } else if ( strcmp("--ptol", argv[i]) == 0 && i+1 < argc ) {
-            sscanf( argv[++i], "%f", &opts->precond_par.epsilon );
+        } else if ( strcmp("--patol", argv[i]) == 0 && i+1 < argc ) {
+            sscanf( argv[++i], "%f", &opts->precond_par.atol );
+        } else if ( strcmp("--prtol", argv[i]) == 0 && i+1 < argc ) {
+            sscanf( argv[++i], "%f", &opts->precond_par.rtol );
         } else if ( strcmp("--piter", argv[i]) == 0 && i+1 < argc ) {
             opts->precond_par.maxiter = atoi( argv[++i] );
         } else if ( strcmp("--psweeps", argv[i]) == 0 && i+1 < argc ) {
@@ -202,8 +226,10 @@ magma_sparse_opts(
             opts->solver_par.verbose = atoi( argv[++i] );
         }  else if ( strcmp("--maxiter", argv[i]) == 0 && i+1 < argc ) {
             opts->solver_par.maxiter = atoi( argv[++i] );
-        } else if ( strcmp("--tol", argv[i]) == 0 && i+1 < argc ) {
-            sscanf( argv[++i], "%f", &opts->solver_par.epsilon );
+        } else if ( strcmp("--atol", argv[i]) == 0 && i+1 < argc ) {
+            sscanf( argv[++i], "%f", &opts->solver_par.atol );
+        } else if ( strcmp("--rtol", argv[i]) == 0 && i+1 < argc ) {
+            sscanf( argv[++i], "%f", &opts->solver_par.rtol );
         } else if ( strcmp("--ev", argv[i]) == 0 && i+1 < argc ) {
             opts->solver_par.num_eigenvalues = atoi( argv[++i] );
         } else if ( strcmp("--version", argv[i]) == 0 && i+1 < argc ) {
@@ -218,6 +244,7 @@ magma_sparse_opts(
             break;
         }
     }
+    
     // ensure to take a symmetric preconditioner for the PCG
     if ( opts->solver_par.solver == Magma_PCG
         && opts->precond_par.solver == Magma_ILU )
@@ -228,6 +255,3 @@ magma_sparse_opts(
             
     return MAGMA_SUCCESS;
 }
-
-    
-

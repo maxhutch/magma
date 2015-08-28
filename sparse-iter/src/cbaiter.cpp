@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
-       @generated from zbaiter.cpp normal z -> c, Sun May  3 11:22:59 2015
+       @generated from zbaiter.cpp normal z -> c, Tue Aug 25 16:35:32 2015
 */
 
 #include "common_magmasparse.h"
@@ -105,7 +105,7 @@ magma_cbaiter(
     if ( solver_par->init_res > solver_par->final_res ){
         info = MAGMA_SUCCESS;
     }
-    else{
+    else {
         info = MAGMA_DIVERGENCE;
     }
     
@@ -121,4 +121,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* magma_cbaiter */
-

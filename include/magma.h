@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date
+       @date August 2015
 */
 
 #ifndef MAGMA_H
@@ -14,6 +14,7 @@
  * --------------------------------------------------------- */
 #include "magmablas.h"
 #include "magma_batched.h"
+#include "magma_bulge.h"
 
 /* ------------------------------------------------------------
  * MAGMA functions
@@ -200,6 +201,7 @@ static inline float  magma_ssqrt( float  x ) { return sqrtf( x ); }
 static inline double magma_dsqrt( double x ) { return sqrt( x ); }
 magmaFloatComplex    magma_csqrt( magmaFloatComplex  x );
 magmaDoubleComplex   magma_zsqrt( magmaDoubleComplex x );
+
 
 #ifdef __cplusplus
 }

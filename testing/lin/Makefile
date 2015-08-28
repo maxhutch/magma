@@ -45,7 +45,7 @@ ZSRC := magma_z_no_fortran.cpp
 
 NO_FORT_SRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 
-NO_FORT_OBJ := $(NO_FORT_SRC:.cpp=.o)
+NO_FORT_OBJ := $(NO_FORT_SRC:.cpp=.$(o_ext))
 
 # ----------
 # sources for liblapacktest.a, if Fortran IS available.
@@ -89,7 +89,7 @@ SRC =   zbdt01.f  \
         slarfy.f  \
         sstt21.f
 
-OBJ = $(SRC:.f=.o)
+OBJ = $(SRC:.f=.$(o_ext))
 
 ifeq ($(FORT),no_fortran)
 liblapacktest.a: $(NO_FORT_OBJ)
@@ -105,173 +105,173 @@ endif
 #######################################################################
 
 ALINTST = \
-   aladhd.o alaerh.o alaesm.o alahd.o alareq.o \
-   alasum.o alasvm.o chkxer.o icopy.o ilaenv.o xlaenv.o xerbla.o
+   aladhd.$(o_ext) alaerh.$(o_ext) alaesm.$(o_ext) alahd.$(o_ext) alareq.$(o_ext) \
+   alasum.$(o_ext) alasvm.$(o_ext) chkxer.$(o_ext) icopy.$(o_ext) ilaenv.$(o_ext) xlaenv.$(o_ext) xerbla.$(o_ext)
 
-SCLNTST= slaord.o
+SCLNTST= slaord.$(o_ext)
 
-DZLNTST= dlaord.o 
+DZLNTST= dlaord.$(o_ext) 
 
-SLINTST = schkaa.o \
-   schkeq.o schkgb.o schkge.o schkgt.o \
-   schklq.o schkpb.o schkpo.o schkps.o schkpp.o \
-   schkpt.o schkq3.o schkql.o schkqp.o schkqr.o schkrq.o \
-   schktb.o schktp.o schktr.o \
-   schktz.o \
-   sdrvgt.o sdrvls.o sdrvpb.o \
-   sdrvpp.o sdrvpt.o sdrvsp.o \
-   serrgt.o serrlq.o serrls.o \
-   serrps.o serrql.o serrqp.o serrqr.o \
-   serrrq.o serrtr.o serrtz.o \
-   sgbt01.o sgbt02.o sgbt05.o sgelqs.o sgeqls.o sgeqrs.o \
-   sgerqs.o sget01.o sget02.o \
-   sget03.o sget04.o sget06.o sget07.o sgtt01.o sgtt02.o \
-   sgtt05.o slaptm.o slarhs.o slatb4.o slatb5.o slattb.o slattp.o \
-   slattr.o slavsp.o slavsy.o slqt01.o slqt02.o \
-   slqt03.o spbt01.o spbt02.o spbt05.o spot01.o \
-   spot02.o spot03.o spot05.o spst01.o sppt01.o \
-   sppt02.o sppt03.o sppt05.o sptt01.o sptt02.o \
-   sptt05.o sqlt01.o sqlt02.o sqlt03.o sqpt01.o \
-   sqrt01.o sqrt02.o sqrt03.o sqrt11.o sqrt12.o \
-   sqrt13.o sqrt14.o sqrt15.o sqrt16.o sqrt17.o \
-   srqt01.o srqt02.o srqt03.o srzt01.o srzt02.o \
-   sspt01.o ssyt01.o \
-   stbt02.o stbt03.o stbt05.o stbt06.o stpt01.o \
-   stpt02.o stpt03.o stpt05.o stpt06.o strt01.o \
-   strt02.o strt03.o strt05.o strt06.o \
-   stzt01.o stzt02.o sgennd.o
+SLINTST = schkaa.$(o_ext) \
+   schkeq.$(o_ext) schkgb.$(o_ext) schkge.$(o_ext) schkgt.$(o_ext) \
+   schklq.$(o_ext) schkpb.$(o_ext) schkpo.$(o_ext) schkps.$(o_ext) schkpp.$(o_ext) \
+   schkpt.$(o_ext) schkq3.$(o_ext) schkql.$(o_ext) schkqp.$(o_ext) schkqr.$(o_ext) schkrq.$(o_ext) \
+   schktb.$(o_ext) schktp.$(o_ext) schktr.$(o_ext) \
+   schktz.$(o_ext) \
+   sdrvgt.$(o_ext) sdrvls.$(o_ext) sdrvpb.$(o_ext) \
+   sdrvpp.$(o_ext) sdrvpt.$(o_ext) sdrvsp.$(o_ext) \
+   serrgt.$(o_ext) serrlq.$(o_ext) serrls.$(o_ext) \
+   serrps.$(o_ext) serrql.$(o_ext) serrqp.$(o_ext) serrqr.$(o_ext) \
+   serrrq.$(o_ext) serrtr.$(o_ext) serrtz.$(o_ext) \
+   sgbt01.$(o_ext) sgbt02.$(o_ext) sgbt05.$(o_ext) sgelqs.$(o_ext) sgeqls.$(o_ext) sgeqrs.$(o_ext) \
+   sgerqs.$(o_ext) sget01.$(o_ext) sget02.$(o_ext) \
+   sget03.$(o_ext) sget04.$(o_ext) sget06.$(o_ext) sget07.$(o_ext) sgtt01.$(o_ext) sgtt02.$(o_ext) \
+   sgtt05.$(o_ext) slaptm.$(o_ext) slarhs.$(o_ext) slatb4.$(o_ext) slatb5.$(o_ext) slattb.$(o_ext) slattp.$(o_ext) \
+   slattr.$(o_ext) slavsp.$(o_ext) slavsy.$(o_ext) slqt01.$(o_ext) slqt02.$(o_ext) \
+   slqt03.$(o_ext) spbt01.$(o_ext) spbt02.$(o_ext) spbt05.$(o_ext) spot01.$(o_ext) \
+   spot02.$(o_ext) spot03.$(o_ext) spot05.$(o_ext) spst01.$(o_ext) sppt01.$(o_ext) \
+   sppt02.$(o_ext) sppt03.$(o_ext) sppt05.$(o_ext) sptt01.$(o_ext) sptt02.$(o_ext) \
+   sptt05.$(o_ext) sqlt01.$(o_ext) sqlt02.$(o_ext) sqlt03.$(o_ext) sqpt01.$(o_ext) \
+   sqrt01.$(o_ext) sqrt02.$(o_ext) sqrt03.$(o_ext) sqrt11.$(o_ext) sqrt12.$(o_ext) \
+   sqrt13.$(o_ext) sqrt14.$(o_ext) sqrt15.$(o_ext) sqrt16.$(o_ext) sqrt17.$(o_ext) \
+   srqt01.$(o_ext) srqt02.$(o_ext) srqt03.$(o_ext) srzt01.$(o_ext) srzt02.$(o_ext) \
+   sspt01.$(o_ext) ssyt01.$(o_ext) \
+   stbt02.$(o_ext) stbt03.$(o_ext) stbt05.$(o_ext) stbt06.$(o_ext) stpt01.$(o_ext) \
+   stpt02.$(o_ext) stpt03.$(o_ext) stpt05.$(o_ext) stpt06.$(o_ext) strt01.$(o_ext) \
+   strt02.$(o_ext) strt03.$(o_ext) strt05.$(o_ext) strt06.$(o_ext) \
+   stzt01.$(o_ext) stzt02.$(o_ext) sgennd.$(o_ext)
 
-SLINTST += serrvx.o sdrvge.o serrge.o sdrvgb.o sdrvpo.o \
-	serrpo.o
+SLINTST += serrvx.$(o_ext) sdrvge.$(o_ext) serrge.$(o_ext) sdrvgb.$(o_ext) sdrvpo.$(o_ext) \
+	serrpo.$(o_ext)
 
-CLINTST = cchkaa.o \
-   cchkeq.o cchkgb.o cchkge.o cchkgt.o \
-   cchklq.o cchkpb.o \
-   cchkpo.o cchkps.o cchkpp.o cchkpt.o cchkq3.o cchkql.o cchkqp.o \
-   cchkqr.o cchkrq.o cchktb.o \
-   cchktp.o cchktr.o cchktz.o \
-   cdrvgt.o cdrvhp.o \
-   cdrvls.o cdrvpb.o cdrvpp.o cdrvpt.o \
-   cdrvsp.o \
-   cerrgt.o cerrlq.o \
-   cerrls.o cerrps.o cerrql.o cerrqp.o \
-   cerrqr.o cerrrq.o cerrtr.o cerrtz.o \
-   cgbt01.o cgbt02.o cgbt05.o cgelqs.o cgeqls.o cgeqrs.o \
-   cgerqs.o cget01.o cget02.o \
-   cget03.o cget04.o cget07.o cgtt01.o cgtt02.o \
-   cgtt05.o chet01.o chpt01.o claipd.o claptm.o clarhs.o clatb4.o clatb5.o \
-   clatsp.o clatsy.o clattb.o clattp.o clattr.o \
-   clavhe.o clavhp.o clavsp.o clavsy.o clqt01.o \
-   clqt02.o clqt03.o cpbt01.o cpbt02.o cpbt05.o \
-   cpot01.o cpot02.o cpot03.o cpot05.o cpst01.o \
-   cppt01.o cppt02.o cppt03.o cppt05.o cptt01.o \
-   cptt02.o cptt05.o cqlt01.o cqlt02.o cqlt03.o \
-   cqpt01.o cqrt01.o cqrt02.o cqrt03.o cqrt11.o \
-   cqrt12.o cqrt13.o cqrt14.o cqrt15.o cqrt16.o \
-   cqrt17.o crqt01.o crqt02.o crqt03.o crzt01.o crzt02.o \
-   csbmv.o  cspt01.o \
-   cspt02.o cspt03.o csyt01.o csyt02.o csyt03.o \
-   ctbt02.o ctbt03.o ctbt05.o ctbt06.o ctpt01.o \
-   ctpt02.o ctpt03.o ctpt05.o ctpt06.o ctrt01.o \
-   ctrt02.o ctrt03.o ctrt05.o ctrt06.o \
-   ctzt01.o ctzt02.o sget06.o cgennd.o
+CLINTST = cchkaa.$(o_ext) \
+   cchkeq.$(o_ext) cchkgb.$(o_ext) cchkge.$(o_ext) cchkgt.$(o_ext) \
+   cchklq.$(o_ext) cchkpb.$(o_ext) \
+   cchkpo.$(o_ext) cchkps.$(o_ext) cchkpp.$(o_ext) cchkpt.$(o_ext) cchkq3.$(o_ext) cchkql.$(o_ext) cchkqp.$(o_ext) \
+   cchkqr.$(o_ext) cchkrq.$(o_ext) cchktb.$(o_ext) \
+   cchktp.$(o_ext) cchktr.$(o_ext) cchktz.$(o_ext) \
+   cdrvgt.$(o_ext) cdrvhp.$(o_ext) \
+   cdrvls.$(o_ext) cdrvpb.$(o_ext) cdrvpp.$(o_ext) cdrvpt.$(o_ext) \
+   cdrvsp.$(o_ext) \
+   cerrgt.$(o_ext) cerrlq.$(o_ext) \
+   cerrls.$(o_ext) cerrps.$(o_ext) cerrql.$(o_ext) cerrqp.$(o_ext) \
+   cerrqr.$(o_ext) cerrrq.$(o_ext) cerrtr.$(o_ext) cerrtz.$(o_ext) \
+   cgbt01.$(o_ext) cgbt02.$(o_ext) cgbt05.$(o_ext) cgelqs.$(o_ext) cgeqls.$(o_ext) cgeqrs.$(o_ext) \
+   cgerqs.$(o_ext) cget01.$(o_ext) cget02.$(o_ext) \
+   cget03.$(o_ext) cget04.$(o_ext) cget07.$(o_ext) cgtt01.$(o_ext) cgtt02.$(o_ext) \
+   cgtt05.$(o_ext) chet01.$(o_ext) chpt01.$(o_ext) claipd.$(o_ext) claptm.$(o_ext) clarhs.$(o_ext) clatb4.$(o_ext) clatb5.$(o_ext) \
+   clatsp.$(o_ext) clatsy.$(o_ext) clattb.$(o_ext) clattp.$(o_ext) clattr.$(o_ext) \
+   clavhe.$(o_ext) clavhp.$(o_ext) clavsp.$(o_ext) clavsy.$(o_ext) clqt01.$(o_ext) \
+   clqt02.$(o_ext) clqt03.$(o_ext) cpbt01.$(o_ext) cpbt02.$(o_ext) cpbt05.$(o_ext) \
+   cpot01.$(o_ext) cpot02.$(o_ext) cpot03.$(o_ext) cpot05.$(o_ext) cpst01.$(o_ext) \
+   cppt01.$(o_ext) cppt02.$(o_ext) cppt03.$(o_ext) cppt05.$(o_ext) cptt01.$(o_ext) \
+   cptt02.$(o_ext) cptt05.$(o_ext) cqlt01.$(o_ext) cqlt02.$(o_ext) cqlt03.$(o_ext) \
+   cqpt01.$(o_ext) cqrt01.$(o_ext) cqrt02.$(o_ext) cqrt03.$(o_ext) cqrt11.$(o_ext) \
+   cqrt12.$(o_ext) cqrt13.$(o_ext) cqrt14.$(o_ext) cqrt15.$(o_ext) cqrt16.$(o_ext) \
+   cqrt17.$(o_ext) crqt01.$(o_ext) crqt02.$(o_ext) crqt03.$(o_ext) crzt01.$(o_ext) crzt02.$(o_ext) \
+   csbmv.$(o_ext)  cspt01.$(o_ext) \
+   cspt02.$(o_ext) cspt03.$(o_ext) csyt01.$(o_ext) csyt02.$(o_ext) csyt03.$(o_ext) \
+   ctbt02.$(o_ext) ctbt03.$(o_ext) ctbt05.$(o_ext) ctbt06.$(o_ext) ctpt01.$(o_ext) \
+   ctpt02.$(o_ext) ctpt03.$(o_ext) ctpt05.$(o_ext) ctpt06.$(o_ext) ctrt01.$(o_ext) \
+   ctrt02.$(o_ext) ctrt03.$(o_ext) ctrt05.$(o_ext) ctrt06.$(o_ext) \
+   ctzt01.$(o_ext) ctzt02.$(o_ext) sget06.$(o_ext) cgennd.$(o_ext)
 
-CLINTST += cerrvx.o cdrvge.o cdrvgb.o cerrge.o cdrvpo.o \
-	cerrpo.o 
+CLINTST += cerrvx.$(o_ext) cdrvge.$(o_ext) cdrvgb.$(o_ext) cerrge.$(o_ext) cdrvpo.$(o_ext) \
+	cerrpo.$(o_ext) 
 
-DLINTST = dchkaa.o \
-   dchkeq.o dchkgb.o dchkge.o dchkgt.o \
-   dchklq.o dchkpb.o dchkpo.o dchkps.o dchkpp.o \
-   dchkpt.o dchkq3.o dchkql.o dchkqp.o dchkqr.o dchkrq.o \
-   dchktb.o dchktp.o dchktr.o \
-   dchktz.o \
-   ddrvgt.o ddrvls.o ddrvpb.o \
-   ddrvpp.o ddrvpt.o ddrvsp.o \
-   derrgt.o derrlq.o derrls.o \
-   derrps.o derrql.o derrqp.o derrqr.o \
-   derrrq.o derrtr.o derrtz.o \
-   dgbt01.o dgbt02.o dgbt05.o dgelqs.o dgeqls.o dgeqrs.o \
-   dgerqs.o dget01.o dget02.o \
-   dget03.o dget04.o dget06.o dget07.o dgtt01.o dgtt02.o \
-   dgtt05.o dlaptm.o dlarhs.o dlatb4.o dlatb5.o dlattb.o dlattp.o \
-   dlattr.o dlavsp.o dlavsy.o dlqt01.o dlqt02.o \
-   dlqt03.o dpbt01.o dpbt02.o dpbt05.o dpot01.o \
-   dpot02.o dpot03.o dpot05.o dpst01.o dppt01.o \
-   dppt02.o dppt03.o dppt05.o dptt01.o dptt02.o \
-   dptt05.o dqlt01.o dqlt02.o dqlt03.o dqpt01.o \
-   dqrt01.o dqrt02.o dqrt03.o dqrt11.o dqrt12.o \
-   dqrt13.o dqrt14.o dqrt15.o dqrt16.o dqrt17.o \
-   drqt01.o drqt02.o drqt03.o drzt01.o drzt02.o \
-   dspt01.o dsyt01.o \
-   dtbt02.o dtbt03.o dtbt05.o dtbt06.o dtpt01.o \
-   dtpt02.o dtpt03.o dtpt05.o dtpt06.o dtrt01.o \
-   dtrt02.o dtrt03.o dtrt05.o dtrt06.o \
-   dtzt01.o dtzt02.o dgennd.o
+DLINTST = dchkaa.$(o_ext) \
+   dchkeq.$(o_ext) dchkgb.$(o_ext) dchkge.$(o_ext) dchkgt.$(o_ext) \
+   dchklq.$(o_ext) dchkpb.$(o_ext) dchkpo.$(o_ext) dchkps.$(o_ext) dchkpp.$(o_ext) \
+   dchkpt.$(o_ext) dchkq3.$(o_ext) dchkql.$(o_ext) dchkqp.$(o_ext) dchkqr.$(o_ext) dchkrq.$(o_ext) \
+   dchktb.$(o_ext) dchktp.$(o_ext) dchktr.$(o_ext) \
+   dchktz.$(o_ext) \
+   ddrvgt.$(o_ext) ddrvls.$(o_ext) ddrvpb.$(o_ext) \
+   ddrvpp.$(o_ext) ddrvpt.$(o_ext) ddrvsp.$(o_ext) \
+   derrgt.$(o_ext) derrlq.$(o_ext) derrls.$(o_ext) \
+   derrps.$(o_ext) derrql.$(o_ext) derrqp.$(o_ext) derrqr.$(o_ext) \
+   derrrq.$(o_ext) derrtr.$(o_ext) derrtz.$(o_ext) \
+   dgbt01.$(o_ext) dgbt02.$(o_ext) dgbt05.$(o_ext) dgelqs.$(o_ext) dgeqls.$(o_ext) dgeqrs.$(o_ext) \
+   dgerqs.$(o_ext) dget01.$(o_ext) dget02.$(o_ext) \
+   dget03.$(o_ext) dget04.$(o_ext) dget06.$(o_ext) dget07.$(o_ext) dgtt01.$(o_ext) dgtt02.$(o_ext) \
+   dgtt05.$(o_ext) dlaptm.$(o_ext) dlarhs.$(o_ext) dlatb4.$(o_ext) dlatb5.$(o_ext) dlattb.$(o_ext) dlattp.$(o_ext) \
+   dlattr.$(o_ext) dlavsp.$(o_ext) dlavsy.$(o_ext) dlqt01.$(o_ext) dlqt02.$(o_ext) \
+   dlqt03.$(o_ext) dpbt01.$(o_ext) dpbt02.$(o_ext) dpbt05.$(o_ext) dpot01.$(o_ext) \
+   dpot02.$(o_ext) dpot03.$(o_ext) dpot05.$(o_ext) dpst01.$(o_ext) dppt01.$(o_ext) \
+   dppt02.$(o_ext) dppt03.$(o_ext) dppt05.$(o_ext) dptt01.$(o_ext) dptt02.$(o_ext) \
+   dptt05.$(o_ext) dqlt01.$(o_ext) dqlt02.$(o_ext) dqlt03.$(o_ext) dqpt01.$(o_ext) \
+   dqrt01.$(o_ext) dqrt02.$(o_ext) dqrt03.$(o_ext) dqrt11.$(o_ext) dqrt12.$(o_ext) \
+   dqrt13.$(o_ext) dqrt14.$(o_ext) dqrt15.$(o_ext) dqrt16.$(o_ext) dqrt17.$(o_ext) \
+   drqt01.$(o_ext) drqt02.$(o_ext) drqt03.$(o_ext) drzt01.$(o_ext) drzt02.$(o_ext) \
+   dspt01.$(o_ext) dsyt01.$(o_ext) \
+   dtbt02.$(o_ext) dtbt03.$(o_ext) dtbt05.$(o_ext) dtbt06.$(o_ext) dtpt01.$(o_ext) \
+   dtpt02.$(o_ext) dtpt03.$(o_ext) dtpt05.$(o_ext) dtpt06.$(o_ext) dtrt01.$(o_ext) \
+   dtrt02.$(o_ext) dtrt03.$(o_ext) dtrt05.$(o_ext) dtrt06.$(o_ext) \
+   dtzt01.$(o_ext) dtzt02.$(o_ext) dgennd.$(o_ext)
 
-DLINTST += derrvx.o ddrvge.o ddrvgb.o derrge.o ddrvpo.o derrpo.o
+DLINTST += derrvx.$(o_ext) ddrvge.$(o_ext) ddrvgb.$(o_ext) derrge.$(o_ext) ddrvpo.$(o_ext) derrpo.$(o_ext)
 
-ZLINTST = zchkaa.o \
-   zchkeq.o zchkgb.o zchkge.o zchkgt.o \
-   zchklq.o zchkpb.o \
-   zchkpo.o zchkps.o zchkpp.o zchkpt.o zchkq3.o zchkql.o zchkqp.o \
-   zchkqr.o zchkrq.o zchktb.o \
-   zchktp.o zchktr.o zchktz.o \
-   zdrvgt.o zdrvhp.o \
-   zdrvls.o zdrvpb.o zdrvpp.o zdrvpt.o \
-   zdrvsp.o \
-   zerrgt.o zerrlq.o \
-   zerrls.o zerrps.o zerrql.o zerrqp.o \
-   zerrqr.o zerrrq.o zerrtr.o zerrtz.o \
-   zgbt01.o zgbt02.o zgbt05.o zgelqs.o zgeqls.o zgeqrs.o \
-   zgerqs.o zget01.o zget02.o \
-   zget03.o zget04.o zget07.o zgtt01.o zgtt02.o \
-   zgtt05.o zhet01.o zhpt01.o zlaipd.o zlaptm.o zlarhs.o zlatb4.o zlatb5.o \
-   zlatsp.o zlatsy.o zlattb.o zlattp.o zlattr.o \
-   zlavhe.o zlavhp.o zlavsp.o zlavsy.o zlqt01.o \
-   zlqt02.o zlqt03.o zpbt01.o zpbt02.o zpbt05.o \
-   zpot01.o zpot02.o zpot03.o zpot05.o zpst01.o \
-   zppt01.o zppt02.o zppt03.o zppt05.o zptt01.o \
-   zptt02.o zptt05.o zqlt01.o zqlt02.o zqlt03.o \
-   zqpt01.o zqrt01.o zqrt02.o zqrt03.o zqrt11.o \
-   zqrt12.o zqrt13.o zqrt14.o zqrt15.o zqrt16.o \
-   zqrt17.o zrqt01.o zrqt02.o zrqt03.o zrzt01.o zrzt02.o \
-   zsbmv.o  zspt01.o \
-   zspt02.o zspt03.o zsyt01.o zsyt02.o zsyt03.o \
-   ztbt02.o ztbt03.o ztbt05.o ztbt06.o ztpt01.o \
-   ztpt02.o ztpt03.o ztpt05.o ztpt06.o ztrt01.o \
-   ztrt02.o ztrt03.o ztrt05.o ztrt06.o \
-   ztzt01.o ztzt02.o dget06.o zgennd.o
+ZLINTST = zchkaa.$(o_ext) \
+   zchkeq.$(o_ext) zchkgb.$(o_ext) zchkge.$(o_ext) zchkgt.$(o_ext) \
+   zchklq.$(o_ext) zchkpb.$(o_ext) \
+   zchkpo.$(o_ext) zchkps.$(o_ext) zchkpp.$(o_ext) zchkpt.$(o_ext) zchkq3.$(o_ext) zchkql.$(o_ext) zchkqp.$(o_ext) \
+   zchkqr.$(o_ext) zchkrq.$(o_ext) zchktb.$(o_ext) \
+   zchktp.$(o_ext) zchktr.$(o_ext) zchktz.$(o_ext) \
+   zdrvgt.$(o_ext) zdrvhp.$(o_ext) \
+   zdrvls.$(o_ext) zdrvpb.$(o_ext) zdrvpp.$(o_ext) zdrvpt.$(o_ext) \
+   zdrvsp.$(o_ext) \
+   zerrgt.$(o_ext) zerrlq.$(o_ext) \
+   zerrls.$(o_ext) zerrps.$(o_ext) zerrql.$(o_ext) zerrqp.$(o_ext) \
+   zerrqr.$(o_ext) zerrrq.$(o_ext) zerrtr.$(o_ext) zerrtz.$(o_ext) \
+   zgbt01.$(o_ext) zgbt02.$(o_ext) zgbt05.$(o_ext) zgelqs.$(o_ext) zgeqls.$(o_ext) zgeqrs.$(o_ext) \
+   zgerqs.$(o_ext) zget01.$(o_ext) zget02.$(o_ext) \
+   zget03.$(o_ext) zget04.$(o_ext) zget07.$(o_ext) zgtt01.$(o_ext) zgtt02.$(o_ext) \
+   zgtt05.$(o_ext) zhet01.$(o_ext) zhpt01.$(o_ext) zlaipd.$(o_ext) zlaptm.$(o_ext) zlarhs.$(o_ext) zlatb4.$(o_ext) zlatb5.$(o_ext) \
+   zlatsp.$(o_ext) zlatsy.$(o_ext) zlattb.$(o_ext) zlattp.$(o_ext) zlattr.$(o_ext) \
+   zlavhe.$(o_ext) zlavhp.$(o_ext) zlavsp.$(o_ext) zlavsy.$(o_ext) zlqt01.$(o_ext) \
+   zlqt02.$(o_ext) zlqt03.$(o_ext) zpbt01.$(o_ext) zpbt02.$(o_ext) zpbt05.$(o_ext) \
+   zpot01.$(o_ext) zpot02.$(o_ext) zpot03.$(o_ext) zpot05.$(o_ext) zpst01.$(o_ext) \
+   zppt01.$(o_ext) zppt02.$(o_ext) zppt03.$(o_ext) zppt05.$(o_ext) zptt01.$(o_ext) \
+   zptt02.$(o_ext) zptt05.$(o_ext) zqlt01.$(o_ext) zqlt02.$(o_ext) zqlt03.$(o_ext) \
+   zqpt01.$(o_ext) zqrt01.$(o_ext) zqrt02.$(o_ext) zqrt03.$(o_ext) zqrt11.$(o_ext) \
+   zqrt12.$(o_ext) zqrt13.$(o_ext) zqrt14.$(o_ext) zqrt15.$(o_ext) zqrt16.$(o_ext) \
+   zqrt17.$(o_ext) zrqt01.$(o_ext) zrqt02.$(o_ext) zrqt03.$(o_ext) zrzt01.$(o_ext) zrzt02.$(o_ext) \
+   zsbmv.$(o_ext)  zspt01.$(o_ext) \
+   zspt02.$(o_ext) zspt03.$(o_ext) zsyt01.$(o_ext) zsyt02.$(o_ext) zsyt03.$(o_ext) \
+   ztbt02.$(o_ext) ztbt03.$(o_ext) ztbt05.$(o_ext) ztbt06.$(o_ext) ztpt01.$(o_ext) \
+   ztpt02.$(o_ext) ztpt03.$(o_ext) ztpt05.$(o_ext) ztpt06.$(o_ext) ztrt01.$(o_ext) \
+   ztrt02.$(o_ext) ztrt03.$(o_ext) ztrt05.$(o_ext) ztrt06.$(o_ext) \
+   ztzt01.$(o_ext) ztzt02.$(o_ext) dget06.$(o_ext) zgennd.$(o_ext)
 
-ZLINTST += zerrvx.o zdrvge.o zdrvgb.o zerrge.o zdrvpo.o \
-	zerrpo.o 
+ZLINTST += zerrvx.$(o_ext) zdrvge.$(o_ext) zdrvgb.$(o_ext) zerrge.$(o_ext) zdrvpo.$(o_ext) \
+	zerrpo.$(o_ext) 
 
-DSLINTST = dchkab.o \
-	ddrvab.o ddrvac.o derrab.o derrac.o dget08.o          \
-	alaerh.o alahd.o  aladhd.o alareq.o \
-	chkxer.o dlarhs.o dlatb4.o xerbla.o \
-	dget02.o dpot06.o
+DSLINTST = dchkab.$(o_ext) \
+	ddrvab.$(o_ext) ddrvac.$(o_ext) derrab.$(o_ext) derrac.$(o_ext) dget08.$(o_ext)          \
+	alaerh.$(o_ext) alahd.$(o_ext)  aladhd.$(o_ext) alareq.$(o_ext) \
+	chkxer.$(o_ext) dlarhs.$(o_ext) dlatb4.$(o_ext) xerbla.$(o_ext) \
+	dget02.$(o_ext) dpot06.$(o_ext)
 
-ZCLINTST = zchkab.o \
-	zdrvab.o zdrvac.o zerrab.o zerrac.o zget08.o          \
-	alaerh.o alahd.o  aladhd.o alareq.o \
-	chkxer.o zget02.o zlarhs.o zlatb4.o \
-	zsbmv.o  xerbla.o zpot06.o zlaipd.o
+ZCLINTST = zchkab.$(o_ext) \
+	zdrvab.$(o_ext) zdrvac.$(o_ext) zerrab.$(o_ext) zerrac.$(o_ext) zget08.$(o_ext)          \
+	alaerh.$(o_ext) alahd.$(o_ext)  aladhd.$(o_ext) alareq.$(o_ext) \
+	chkxer.$(o_ext) zget02.$(o_ext) zlarhs.$(o_ext) zlatb4.$(o_ext) \
+	zsbmv.$(o_ext)  xerbla.$(o_ext) zpot06.$(o_ext) zlaipd.$(o_ext)
 
-SLINTSTRFP = schkrfp.o sdrvrfp.o sdrvrf1.o sdrvrf2.o sdrvrf3.o sdrvrf4.o serrrfp.o \
-	slatb4.o slarhs.o sget04.o spot01.o spot03.o spot02.o \
-	chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o 
+SLINTSTRFP = schkrfp.$(o_ext) sdrvrfp.$(o_ext) sdrvrf1.$(o_ext) sdrvrf2.$(o_ext) sdrvrf3.$(o_ext) sdrvrf4.$(o_ext) serrrfp.$(o_ext) \
+	slatb4.$(o_ext) slarhs.$(o_ext) sget04.$(o_ext) spot01.$(o_ext) spot03.$(o_ext) spot02.$(o_ext) \
+	chkxer.$(o_ext) xerbla.$(o_ext) alaerh.$(o_ext) aladhd.$(o_ext) alahd.$(o_ext) alasvm.$(o_ext) 
 
-DLINTSTRFP = dchkrfp.o ddrvrfp.o ddrvrf1.o ddrvrf2.o ddrvrf3.o ddrvrf4.o derrrfp.o \
-	dlatb4.o dlarhs.o dget04.o dpot01.o dpot03.o dpot02.o \
-	chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o 
+DLINTSTRFP = dchkrfp.$(o_ext) ddrvrfp.$(o_ext) ddrvrf1.$(o_ext) ddrvrf2.$(o_ext) ddrvrf3.$(o_ext) ddrvrf4.$(o_ext) derrrfp.$(o_ext) \
+	dlatb4.$(o_ext) dlarhs.$(o_ext) dget04.$(o_ext) dpot01.$(o_ext) dpot03.$(o_ext) dpot02.$(o_ext) \
+	chkxer.$(o_ext) xerbla.$(o_ext) alaerh.$(o_ext) aladhd.$(o_ext) alahd.$(o_ext) alasvm.$(o_ext) 
 
-CLINTSTRFP = cchkrfp.o cdrvrfp.o cdrvrf1.o cdrvrf2.o cdrvrf3.o cdrvrf4.o cerrrfp.o \
-	claipd.o clatb4.o clarhs.o csbmv.o cget04.o cpot01.o cpot03.o cpot02.o \
-	chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o 
+CLINTSTRFP = cchkrfp.$(o_ext) cdrvrfp.$(o_ext) cdrvrf1.$(o_ext) cdrvrf2.$(o_ext) cdrvrf3.$(o_ext) cdrvrf4.$(o_ext) cerrrfp.$(o_ext) \
+	claipd.$(o_ext) clatb4.$(o_ext) clarhs.$(o_ext) csbmv.$(o_ext) cget04.$(o_ext) cpot01.$(o_ext) cpot03.$(o_ext) cpot02.$(o_ext) \
+	chkxer.$(o_ext) xerbla.$(o_ext) alaerh.$(o_ext) aladhd.$(o_ext) alahd.$(o_ext) alasvm.$(o_ext) 
 
-ZLINTSTRFP = zchkrfp.o zdrvrfp.o zdrvrf1.o zdrvrf2.o zdrvrf3.o zdrvrf4.o zerrrfp.o \
-	zlatb4.o zlaipd.o zlarhs.o zsbmv.o zget04.o zpot01.o zpot03.o zpot02.o \
-	chkxer.o xerbla.o alaerh.o aladhd.o alahd.o alasvm.o 
+ZLINTSTRFP = zchkrfp.$(o_ext) zdrvrfp.$(o_ext) zdrvrf1.$(o_ext) zdrvrf2.$(o_ext) zdrvrf3.$(o_ext) zdrvrf4.$(o_ext) zerrrfp.$(o_ext) \
+	zlatb4.$(o_ext) zlaipd.$(o_ext) zlarhs.$(o_ext) zsbmv.$(o_ext) zget04.$(o_ext) zpot01.$(o_ext) zpot03.$(o_ext) zpot02.$(o_ext) \
+	chkxer.$(o_ext) xerbla.$(o_ext) alaerh.$(o_ext) aladhd.$(o_ext) alahd.$(o_ext) alasvm.$(o_ext) 
 
 TMGLIB = ../matgen/tmglib.a
 
@@ -285,31 +285,31 @@ complex16: xlintstz
 $(TMGLIB):
 	cd ../matgen && $(MAKE)
 
-xlintsts : $(ALINTST) $(SLINTST) $(SCLNTST) ../fortran.o $(TMGLIB)
+xlintsts : $(ALINTST) $(SLINTST) $(SCLNTST) ../fortran.$(o_ext) $(TMGLIB)
 	$(FORT) $(ALINTST) $(SCLNTST) $(SLINTST) \
 	$(TMGLIB) -o xlintsts \
-	../fortran.o \
+	../fortran.$(o_ext) \
 	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
 
-xlintstc : $(ALINTST) $(CLINTST) $(SCLNTST) ../fortran.o $(TMGLIB)
+xlintstc : $(ALINTST) $(CLINTST) $(SCLNTST) ../fortran.$(o_ext) $(TMGLIB)
 	$(FORT) $(ALINTST) $(SCLNTST) $(CLINTST) \
 	$(TMGLIB) -o xlintstc \
-	../fortran.o \
+	../fortran.$(o_ext) \
 	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
  
-xlintstd : $(ALINTST) $(DLINTST) $(DZLNTST) ../fortran.o $(TMGLIB)
+xlintstd : $(ALINTST) $(DLINTST) $(DZLNTST) ../fortran.$(o_ext) $(TMGLIB)
 	$(FORT) $(ALINTST) $(DLINTST) $(DZLNTST) \
 	$(TMGLIB) -o xlintstd \
-	../fortran.o \
+	../fortran.$(o_ext) \
 	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
  
-xlintstz : $(ALINTST) $(ZLINTST) $(DZLNTST) ../fortran.o $(TMGLIB)
+xlintstz : $(ALINTST) $(ZLINTST) $(DZLNTST) ../fortran.$(o_ext) $(TMGLIB)
 	$(FORT) $(ALINTST) $(DZLNTST) $(ZLINTST) \
 	$(TMGLIB) -o xlintstz \
-	../fortran.o \
+	../fortran.$(o_ext) \
 	$(LDFLAGS) -L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) $(LIB) 
  
@@ -325,24 +325,24 @@ FRC:
 	@FRC=$(FRC)
  
 clean:
-	rm -f *.o *.mod liblapacktest.a *~
+	rm -f *.$(o_ext) *.mod liblapacktest.a *~
 
 cleanall: clean
 	rm -f liblapacktest.a xlintsts xlintstd xlintstc xlintstz testing_results.txt
 
-# These are handled by generic %.o: %.f rule in Makefile.internal
-#schkaa.o: schkaa.f
+# These are handled by generic %.$(o_ext): %.f rule in Makefile.internal
+#schkaa.$(o_ext): schkaa.f
 #	cp $(MAGMA_DIR)/control/magma.mod . 
 #	$(FORT) $(FFLAGS) -c $< -o $@
 #
-#dchkaa.o: dchkaa.f
+#dchkaa.$(o_ext): dchkaa.f
 #	$(FORT) $(FFLAGS) -c $< -o $@
 #
-#cchkaa.o: cchkaa.f
+#cchkaa.$(o_ext): cchkaa.f
 #	$(FORT) $(FFLAGS) -c $< -o $@
 #
-#zchkaa.o: zchkaa.f
+#zchkaa.$(o_ext): zchkaa.f
 #	$(FORT) $(FFLAGS) -c $< -o $@
 
-../fortran.o:
-	cd .. && $(MAKE) fortran.o
+../fortran.$(o_ext):
+	cd .. && $(MAKE) fortran.$(o_ext)

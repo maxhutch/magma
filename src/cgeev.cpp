@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeev.cpp normal z -> c, Fri Jan 30 19:00:19 2015
+       @generated from zgeev.cpp normal z -> c, Tue Aug 25 16:35:19 2015
        @author Stan Tomov
        @author Mark Gates
 */
@@ -108,8 +108,8 @@
 
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= (1+nb)*N.
-            For optimal performance, LWORK >= (1+2*nb)*N.
+            The dimension of the array WORK.  LWORK >= (1 +   nb)*N.
+            For optimal performance,          LWORK >= (1 + 2*nb)*N.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -191,8 +191,8 @@ magma_cgeev(
     /* Compute workspace */
     nb = magma_get_cgehrd_nb( n );
     if (*info == 0) {
-        minwrk = (1+  nb)*n;
-        optwrk = (1+2*nb)*n;
+        minwrk = (1 +   nb)*n;
+        optwrk = (1 + 2*nb)*n;
         work[0] = MAGMA_C_MAKE( optwrk, 0 );
 
         if (lwork < minwrk && ! lquery) {

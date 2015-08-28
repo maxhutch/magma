@@ -363,11 +363,11 @@ magma_int_t magma_dlaln2(
             icmax = 0;
         
             for (j = 1; j <= 4; ++j) {
-            if (   fabs( crv[j - 1] ) + fabs( civ[j - 1] ) > cmax) {
-                cmax = fabs( crv[j - 1] ) + fabs( civ[j - 1] );
-                icmax = j;
-            }
-            /* L20: */
+                if (fabs( crv[j - 1] ) + fabs( civ[j - 1] ) > cmax) {
+                    cmax = fabs( crv[j - 1] ) + fabs( civ[j - 1] );
+                    icmax = j;
+                }
+                /* L20: */
             }
         
             /* If norm(C) < SMINI, use SMINI*identity. */

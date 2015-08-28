@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -97,11 +97,11 @@
     If UPLO = MagmaUpper, the matrix Q is represented as a product of elementary
     reflectors
 
-       Q = H(n-1) . . . H(2) H(1).
+        Q = H(n-1) . . . H(2) H(1).
 
     Each H(i) has the form
 
-       H(i) = I - tau * v * v'
+        H(i) = I - tau * v * v'
 
     where tau is a complex scalar, and v is a complex vector with
     v(i+1:n) = 0 and v(i) = 1; v(1:i-1) is stored on exit in
@@ -110,11 +110,11 @@
     If UPLO = MagmaLower, the matrix Q is represented as a product of elementary
     reflectors
 
-       Q = H(1) H(2) . . . H(n-1).
+        Q = H(1) H(2) . . . H(n-1).
 
     Each H(i) has the form
 
-       H(i) = I - tau * v * v'
+        H(i) = I - tau * v * v'
 
     where tau is a complex scalar, and v is a complex vector with
     v(1:i) = 0 and v(i+1) = 1; v(i+2:n) is stored on exit in A(i+2:n,i),
@@ -125,11 +125,11 @@
 
     if UPLO = MagmaUpper:                if UPLO = MagmaLower:
 
-      (  d   e   v2  v3  v4 )              (  d                  )
-      (      d   e   v3  v4 )              (  e   d              )
-      (          d   e   v4 )              (  v1  e   d          )
-      (              d   e  )              (  v1  v2  e   d      )
-      (                  d  )              (  v1  v2  v3  e   d  )
+        (  d   e   v2  v3  v4 )              (  d                  )
+        (      d   e   v3  v4 )              (  e   d              )
+        (          d   e   v4 )              (  v1  e   d          )
+        (              d   e  )              (  v1  v2  e   d      )
+        (                  d  )              (  v1  v2  v3  e   d  )
 
     where d and e denote diagonal and off-diagonal elements of T, and vi
     denotes an element of the vector defining H(i).
@@ -168,7 +168,6 @@ magma_zhetrd_he2hb_mgpu(
 
     assert (nqueue >= 3);
     assert (nqueue >= (ngpu+1));
-
 
     *info = 0;
     int upper = (uplo == MagmaUpper);
@@ -241,8 +240,8 @@ magma_zhetrd_he2hb_mgpu(
         dwork[dev]    = dw[dev]      + nb*lddw;
         dworkbis[dev] = dwork[dev]   + nb*ldda;
         magmablasSetKernelStream( queues[ dev ][ 0 ] );
-        for( magma_int_t i = 0; i < nbevents; ++i ) {
-            cudaEventCreateWithFlags(&redevents[dev][i],cudaEventDisableTiming);
+        for( i = 0; i < nbevents; ++i ) {
+            cudaEventCreateWithFlags( &redevents[dev][i], cudaEventDisableTiming );
         }
     }
     magma_zmalloc_pinned ( &workngpu[ngpu], worksiz);
@@ -261,236 +260,236 @@ magma_zhetrd_he2hb_mgpu(
     } else {
         /* Reduce the lower triangle of A */
         for (i = 1; i <= n-nb; i += nb) {
-             indi = i+nb;
-             indj = i;
-             pm   = n - i - nb + 1;
-             //pn   = min(i+nb-1, n-nb) -i + 1;
-             pn   = nb;
-             
-             /*   Get the current panel (no need for the 1st iteration) */
-             if (i > 1 ) {
-                 // zpanel_to_q copy the upper oof diagonal part of
-                 // the matrix to work to be restored later. acctually
-                 //  the zero's and one's putted are not used this is only
-                 //   because we don't have a function that copy only the
-                 //    upper part of A to be restored after copying the
-                 //    lookahead panel that has been computted from GPU to CPU.
-                 zpanel_to_q(MagmaUpper, pn-1, A(i, i+1), lda, work);
+            indi = i+nb;
+            indj = i;
+            pm   = n - i - nb + 1;
+            //pn   = min(i+nb-1, n-nb) -i + 1;
+            pn   = nb;
+            
+            /*   Get the current panel (no need for the 1st iteration) */
+            if (i > 1 ) {
+                // magma_zpanel_to_q copy the upper oof diagonal part of
+                // the matrix to work to be restored later. acctually
+                //  the zero's and one's putted are not used this is only
+                //   because we don't have a function that copy only the
+                //    upper part of A to be restored after copying the
+                //    lookahead panel that has been computted from GPU to CPU.
+                magma_zpanel_to_q(MagmaUpper, pn-1, A(i, i+1), lda, work);
 
-                 // find the device who own the panel then send it to the CPU.
-                 // below a -1 was added and then a -1 was done on di because of the fortran indexing
-                 iblock = ((i-1) / distblk) / ngpu;          // local block id
-                 di     = iblock*distblk + (i-1)%distblk;     // local index in parent matrix
-                 idev   = ((i-1) / distblk) % ngpu;          // device with this block
-
-
-                 //printf("Receiving panel ofsize %d %d from idev %d A(%d,%d) \n",(pm+pn), pn,idev,i-1,di);
-                 magma_setdevice( idev );
-
-                 //magma_device_sync();
-                 magma_zgetmatrix_async( (pm+pn), pn,
-                                         dA(idev, i, di+1), ldda,
-                                         A( i, i), lda, queues[ idev ][ nqueue-1 ] );
-               
-                 //magma_setdevice( 0 );
-                 //printf("updating zher2k on A(%d,%d) of size %d %d \n",indi_old+pn_old-1,indi_old+pn_old-1,pm_old-pn_old,pn_old);
-                 // compute ZHER2K_MGPU
-                 magmablas_zher2k_mgpu2(
-                      MagmaLower, MagmaNoTrans, pm_old-pn_old, pn_old,
-                      c_neg_one, dv, pm_old, pn_old,
-                                 dw, pm_old, pn_old,
-                      d_one,     dAmgpu, ldda, indi_old+pn_old-1,
-                      ngpu, distblk, queues, 2 );
-                 //magma_setdevice( 0 );
-
-                 magma_setdevice( idev );
-                 magma_queue_sync( queues[idev][ nqueue-1 ] );
-                 //magma_setdevice( 0 );
-                 zq_to_panel(MagmaUpper, pn-1, A(i, i+1), lda, work);
-             }
-
-             /* ==========================================================
-                QR factorization on a panel starting nb off of the diagonal.
-                Prepare the V and T matrices.
-                ==========================================================  */
-             lapackf77_zgeqrf(&pm, &pn, A(indi, indj), &lda,
-                        tau_ref(i), work, &lwork, info);
-             
-             /* Form the matrix T */
-             pk=min(pm,pn);
-             lapackf77_zlarft( MagmaForwardStr, MagmaColumnwiseStr,
-                           &pm, &pk, A(indi, indj), &lda,
-                           tau_ref(i), hT, &nb);
-
-             /* Prepare V - put 0s in the upper triangular part of the panel
-                (and 1s on the diagonal), temporaly storing the original in work */
-             zpanel_to_q(MagmaUpper, pk, A(indi, indj), lda, work);
+                // find the device who own the panel then send it to the CPU.
+                // below a -1 was added and then a -1 was done on di because of the fortran indexing
+                iblock = ((i-1) / distblk) / ngpu;          // local block id
+                di     = iblock*distblk + (i-1)%distblk;     // local index in parent matrix
+                idev   = ((i-1) / distblk) % ngpu;          // device with this block
 
 
+                //printf("Receiving panel ofsize %d %d from idev %d A(%d,%d) \n",(pm+pn), pn,idev,i-1,di);
+                magma_setdevice( idev );
 
-             /* Send V and T from the CPU to the GPU */
-             // To be able to overlap the GET with the ZHER2K
-             // it should be done on last stream.
-             // TO Avoid a BUG that is overwriting the old_V
-             // used atthis moment by zher2k with the new_V
-             // send it now, we decide to have a flipflop
-             // vector of Vs. if step%2=0 use V[0] else use V[nb*n]
-             flipV = ((i-1)/nb)%2;
-             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-                 dv[dev] = dvall[dev] + flipV*nb*lddv;
-             }
+                //magma_device_sync();
+                magma_zgetmatrix_async( (pm+pn), pn,
+                                        dA(idev, i, di+1), ldda,
+                                        A( i, i), lda, queues[ idev ][ nqueue-1 ] );
+              
+                //magma_setdevice( 0 );
+                //printf("updating zher2k on A(%d,%d) of size %d %d \n",indi_old+pn_old-1,indi_old+pn_old-1,pm_old-pn_old,pn_old);
+                // compute ZHER2K_MGPU
+                magmablas_zher2k_mgpu2(
+                    MagmaLower, MagmaNoTrans, pm_old-pn_old, pn_old,
+                    c_neg_one, dv, pm_old, pn_old,
+                               dw, pm_old, pn_old,
+                    d_one,     dAmgpu, ldda, indi_old+pn_old-1,
+                    ngpu, distblk, queues, 2 );
+                //magma_setdevice( 0 );
 
-             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-                 magma_setdevice( dev );
+                magma_setdevice( idev );
+                magma_queue_sync( queues[idev][ nqueue-1 ] );
+                //magma_setdevice( 0 );
+                magma_zq_to_panel(MagmaUpper, pn-1, A(i, i+1), lda, work);
+            }
+
+            /* ==========================================================
+               QR factorization on a panel starting nb off of the diagonal.
+               Prepare the V and T matrices.
+               ==========================================================  */
+            lapackf77_zgeqrf(&pm, &pn, A(indi, indj), &lda,
+                       tau_ref(i), work, &lwork, info);
+            
+            /* Form the matrix T */
+            pk=min(pm,pn);
+            lapackf77_zlarft( MagmaForwardStr, MagmaColumnwiseStr,
+                          &pm, &pk, A(indi, indj), &lda,
+                          tau_ref(i), hT, &nb);
+
+            /* Prepare V - put 0s in the upper triangular part of the panel
+               (and 1s on the diagonal), temporaly storing the original in work */
+            magma_zpanel_to_q(MagmaUpper, pk, A(indi, indj), lda, work);
+
+
+
+            /* Send V and T from the CPU to the GPU */
+            // To be able to overlap the GET with the ZHER2K
+            // it should be done on last stream.
+            // TO Avoid a BUG that is overwriting the old_V
+            // used atthis moment by zher2k with the new_V
+            // send it now, we decide to have a flipflop
+            // vector of Vs. if step%2=0 use V[0] else use V[nb*n]
+            flipV = ((i-1)/nb)%2;
+            for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+                dv[dev] = dvall[dev] + flipV*nb*lddv;
+            }
+
+            for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+                magma_setdevice( dev );
                 // send V
-                 magma_zsetmatrix_async( pm, pk,
-                                     A(indi, indj),  lda,
-                                     dv[dev], pm, queues[dev][nqueue-1] );
+                magma_zsetmatrix_async( pm, pk,
+                                        A(indi, indj),  lda,
+                                        dv[dev], pm, queues[dev][nqueue-1] );
 
                 // Send the triangular factor T to the GPU
                 magma_zsetmatrix_async( pk, pk,
-                                     hT,       nb,
-                                     dT(dev, 1, i), lddt, queues[dev][nqueue-1] );
-             }
+                                        hT,       nb,
+                                        dT(dev, 1, i), lddt, queues[dev][nqueue-1] );
+            }
 
-             /* ==========================================================
-                Compute W:
-                1. X = A (V T)
-                2. W = X - 0.5* V * (T' * (V' * X))
-                ==========================================================  */
-             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-                 // dwork = V T
-                 magma_setdevice( dev );
-                 magmablasSetKernelStream( queues[ dev ][ nqueue-1 ] );
-                 magma_queue_sync( queues[dev][nqueue-1] );
-                 magma_zgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
-                         c_one, dv[dev], pm,
-                         dT(dev, 1, i), lddt,
-                         c_zero, dwork[dev], pm);
-             }
+            /* ==========================================================
+               Compute W:
+               1. X = A (V T)
+               2. W = X - 0.5* V * (T' * (V' * X))
+               ==========================================================  */
+            for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+                // dwork = V T
+                magma_setdevice( dev );
+                magmablasSetKernelStream( queues[ dev ][ nqueue-1 ] );
+                magma_queue_sync( queues[dev][nqueue-1] );
+                magma_zgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
+                        c_one, dv[dev], pm,
+                        dT(dev, 1, i), lddt,
+                        c_zero, dwork[dev], pm);
+            }
 
-             // ===============================================
-             //   SYNC TO BE SURE THAT BOTH V AND T WERE
-             //   RECEIVED AND VT IS COMPUTED and SYR2K is done
-             // ===============================================
-             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-                 magma_setdevice( dev );
-                 for( magma_int_t s = 0; s < nqueue; ++s )
-                 magma_queue_sync( queues[dev][s] );
-             }
+            // ===============================================
+            //   SYNC TO BE SURE THAT BOTH V AND T WERE
+            //   RECEIVED AND VT IS COMPUTED and SYR2K is done
+            // ===============================================
+            for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+                magma_setdevice( dev );
+                for( magma_int_t s = 0; s < nqueue; ++s )
+                magma_queue_sync( queues[dev][s] );
+            }
 
+            // compute ZHEMM_MGPU
+            // The broadcast of the result done inside this function
+            // should be done in stream [0] because i am assuming this
+            // for the GEMMs below otherwise I have to SYNC over the
+            // Broadcasting stream.
+            if (ngpu == 1) {
+                magmablasSetKernelStream( queues[ 0 ][ 0 ] );
+                magma_zhemm(
+                    MagmaLeft, uplo, pm, pk,
+                    c_one, dAmgpu[0]+(indi-1)*ldda+(indi-1), ldda,
+                    dwork[0], pm,
+                    c_zero, dw[0], pm);
+            } else {
+                magmablas_zhemm_mgpu_com(
+                    MagmaLeft, uplo, pm, pk,
+                    c_one, dAmgpu, ldda, indi-1,
+                    dwork, pm,
+                    c_zero, dw, pm, dworkbis, dwrk2siz, worktest, pm, workngpu, worksiz,
+                    ngpu, distblk, queues, nqueue-1, redevents, nbevents, gnode, nbcmplx);
+            }
 
-              // compute ZHEMM_MGPU
-              // The broadcast of the result done inside this function
-              // should be done in stream [0] because i am assuming this
-              // for the GEMMs below otherwise I have to SYNC over the
-              // Broadcasting stream.
-              if (ngpu == 1) {
-                 magmablasSetKernelStream( queues[ 0 ][ 0 ] );
-                 magma_zhemm(MagmaLeft, uplo, pm, pk,
-                         c_one, dAmgpu[0]+(indi-1)*ldda+(indi-1), ldda,
-                         dwork[0], pm,
-                         c_zero, dw[0], pm);
-              } else {
-                 magmablas_zhemm_mgpu_com(
-                       MagmaLeft, uplo, pm, pk,
-                       c_one, dAmgpu, ldda, indi-1,
-                                   dwork, pm,
-                       c_zero,     dw, pm, dworkbis, dwrk2siz, worktest, pm, workngpu, worksiz,
-                       ngpu, distblk, queues, nqueue-1, redevents, nbevents, gnode, nbcmplx);
-             }
+            
+            /* dwork = V*T already ==> dwork' = T'*V'
+             * compute T'*V'*X ==> dwork'*W ==>
+             * dwork + pm*nb = ((T' * V') * X) = dwork' * X = dwork' * W */
+            for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+                // Here we have to wait until the broadcast of ZHEMM has been done.
+                // Note that the broadcast should be done on stream[0] so in a way
+                // we can continue here on the same stream and avoid a sync
+                magma_setdevice( dev );
+                magmablasSetKernelStream( queues[ dev ][ 0 ] );
+                // magma_queue_sync( queues[dev][0] );
+                magma_zgemm(MagmaConjTrans, MagmaNoTrans, pk, pk, pm,
+                            c_one, dwork[dev], pm,
+                            dw[dev], pm,
+                            c_zero, dworkbis[dev], nb);
+                
+                /* W = X - 0.5 * V * T'*V'*X
+                 *   = X - 0.5 * V * (dwork + pm*nb) = W - 0.5 * V * (dwork + pm*nb) */
+                magma_zgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
+                            c_neg_half, dv[dev], pm,
+                            dworkbis[dev], nb,
+                            c_one,     dw[dev], pm);
+            }
+            /* restore the panel it is put here to overlap with the previous GEMM*/
+            magma_zq_to_panel(MagmaUpper, pk, A(indi, indj), lda, work);
+            // ===============================================
+            //   SYNC TO BE SURE THAT BOTH V AND W ARE DONE
+            // ===============================================
+            // Synchronise to be sure that W has been computed
+            // because next ZHER2K use streaming and may happen
+            // that lunch a gemm on stream 2 while stream 0
+            // which compute those 2 GEMM above has not been
+            // computed and also used for the same reason in
+            // the panel update below and also for the last HER2K
+            for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+                magma_setdevice( dev );
+                magma_queue_sync( queues[dev][0] );
+            }
 
-             
-             /* dwork = V*T already ==> dwork' = T'*V'
-              * compute T'*V'*X ==> dwork'*W ==>
-              * dwork + pm*nb = ((T' * V') * X) = dwork' * X = dwork' * W */
-             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-                 // Here we have to wait until the broadcast of ZHEMM has been done.
-                 // Note that the broadcast should be done on stream[0] so in a way
-                 // we can continue here on the same stream and avoid a sync
-                 magma_setdevice( dev );
-                 magmablasSetKernelStream( queues[ dev ][ 0 ] );
-                 // magma_queue_sync( queues[dev][0] );
-                 magma_zgemm(MagmaConjTrans, MagmaNoTrans, pk, pk, pm,
-                             c_one, dwork[dev], pm,
-                             dw[dev], pm,
-                             c_zero, dworkbis[dev], nb);
-                 
-                 /* W = X - 0.5 * V * T'*V'*X
-                  *   = X - 0.5 * V * (dwork + pm*nb) = W - 0.5 * V * (dwork + pm*nb) */
-                 magma_zgemm(MagmaNoTrans, MagmaNoTrans, pm, pk, pk,
-                             c_neg_half, dv[dev], pm,
-                             dworkbis[dev], nb,
-                             c_one,     dw[dev], pm);
-             }
-             /* restore the panel it is put here to overlap with the previous GEMM*/
-             zq_to_panel(MagmaUpper, pk, A(indi, indj), lda, work);
-             // ===============================================
-             //   SYNC TO BE SURE THAT BOTH V AND W ARE DONE
-             // ===============================================
-             // Synchronise to be sure that W has been computed
-             // because next ZHER2K use streaming and may happen
-             // that lunch a gemm on stream 2 while stream 0
-             // which compute those 2 GEMM above has not been
-             // computed and also used for the same reason in
-             // the panel update below and also for the last HER2K
-             for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
-                 magma_setdevice( dev );
-                 magma_queue_sync( queues[dev][0] );
-             }
-
-             /* ==========================================================
-                Update the unreduced submatrix A(i+ib:n,i+ib:n), using
-                an update of the form:  A := A - V*W' - W*V'
-                ==========================================================  */
-             if (i + nb <= n-nb) {
-                 /* There would be next iteration;
-                    do lookahead - update the next panel */
-                 // below a -1 was added and then a -1 was done on di because of the fortran indexing
-                 iblock = ((indi-1) / distblk) / ngpu;          // local block id
-                 di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix
-                 idev   = ((indi-1) / distblk) % ngpu;          // device with this block
-                 magma_setdevice( idev );
-                 magmablasSetKernelStream( queues[ idev ][ nqueue-1 ] );
-                 //magma_queue_sync( queues[idev][0] ); removed because the sync has been done in the loop above
-                 magma_zgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
+            /* ==========================================================
+               Update the unreduced submatrix A(i+ib:n,i+ib:n), using
+               an update of the form:  A := A - V*W' - W*V'
+               ==========================================================  */
+            if (i + nb <= n-nb) {
+                /* There would be next iteration;
+                   do lookahead - update the next panel */
+                // below a -1 was added and then a -1 was done on di because of the fortran indexing
+                iblock = ((indi-1) / distblk) / ngpu;          // local block id
+                di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix
+                idev   = ((indi-1) / distblk) % ngpu;          // device with this block
+                magma_setdevice( idev );
+                magmablasSetKernelStream( queues[ idev ][ nqueue-1 ] );
+                //magma_queue_sync( queues[idev][0] ); removed because the sync has been done in the loop above
+                magma_zgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
+                            dv[idev], pm,
+                            dw[idev], pm, c_one,
+                            dA(idev, indi, di+1), ldda);
+            
+                magma_zgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
+                            dw[idev], pm,
+                            dv[idev], pm, c_one,
+                            dA(idev, indi, di+1), ldda);
+                //printf("updating next panel distblk %d  idev %d  on A(%d,%d) of size %d %d %d \n",distblk,idev,indi-1,di,pm,pn,pn);
+            }
+            else {
+                /* no look-ahead as this is last iteration */
+                // below a -1 was added and then a -1 was done on di because of the fortran indexing
+                iblock = ((indi-1) / distblk) / ngpu;          // local block id
+                di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix
+                idev   = ((indi-1) / distblk) % ngpu;          // device with this block
+                magma_setdevice( idev );
+                magmablasSetKernelStream( queues[ idev ][ 0 ] );
+                //printf("LAST ZHER2K idev %d on A(%d,%d) of size %d \n",idev, indi-1,di,pk);
+                magma_zher2k(MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
                              dv[idev], pm,
-                             dw[idev], pm, c_one,
+                             dw[idev], pm, d_one,
                              dA(idev, indi, di+1), ldda);
-             
-                 magma_zgemm(MagmaNoTrans, MagmaConjTrans, pm, pn, pn, c_neg_one,
-                             dw[idev], pm,
-                             dv[idev], pm, c_one,
-                             dA(idev, indi, di+1), ldda);
-                 //printf("updating next panel distblk %d  idev %d  on A(%d,%d) of size %d %d %d \n",distblk,idev,indi-1,di,pm,pn,pn);
-             }
-             else {
-                 /* no look-ahead as this is last iteration */
-                 // below a -1 was added and then a -1 was done on di because of the fortran indexing
-                 iblock = ((indi-1) / distblk) / ngpu;          // local block id
-                 di     = iblock*distblk + (indi-1)%distblk;     // local index in parent matrix
-                 idev   = ((indi-1) / distblk) % ngpu;          // device with this block
-                 magma_setdevice( idev );
-                 magmablasSetKernelStream( queues[ idev ][ 0 ] );
-                 //printf("LAST ZHER2K idev %d on A(%d,%d) of size %d \n",idev, indi-1,di,pk);
-                 magma_zher2k(MagmaLower, MagmaNoTrans, pk, pk, c_neg_one,
-                              dv[idev], pm,
-                              dw[idev], pm, d_one,
-                              dA(idev, indi, di+1), ldda);
 
 
-                 /* Send the last block to the CPU */
-                 zpanel_to_q(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
-                 magma_zgetmatrix( pk, pk,
-                                   dA(idev, indi, di+1), ldda,
-                                   A(n-pk+1, n-pk+1),  lda );
-                 zq_to_panel(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
-             }
-
-             indi_old = indi;
-             //indj_old = indj;
-             pm_old   = pm;
-             pn_old   = pn;
+                /* Send the last block to the CPU */
+                magma_zpanel_to_q(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
+                magma_zgetmatrix( pk, pk,
+                                  dA(idev, indi, di+1), ldda,
+                                  A(n-pk+1, n-pk+1),  lda );
+                magma_zq_to_panel(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
+            }
+            
+            indi_old = indi;
+            //indj_old = indj;
+            pm_old   = pm;
+            pn_old   = pn;
         }  // end loop for (i)
     }// end of LOWER
     //magma_setdevice( 0 );

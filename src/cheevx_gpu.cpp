@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zheevx_gpu.cpp normal z -> c, Fri Jan 30 19:00:17 2015
+       @generated from zheevx_gpu.cpp normal z -> c, Tue Aug 25 16:35:18 2015
 
  */
 #include "common_magma.h"
@@ -411,7 +411,6 @@ magma_cheevx_gpu(
                          &nsplit, &w[1], &iwork[indibl], &iwork[indisp], &rwork[indrwk], &iwork[indiwk], info);
         
         if (wantz) {
-            
             lapackf77_cstein(&n, &rwork[indd], &rwork[inde], m, &w[1], &iwork[indibl], &iwork[indisp],
                              wZ, &ldwz, &rwork[indrwk], &iwork[indiwk], &ifail[1], info);
             
@@ -467,5 +466,4 @@ magma_cheevx_gpu(
     work[1] = MAGMA_C_MAKE( lopt, 0 );
     
     return *info;
-    
 } /* magma_cheevx_gpu */

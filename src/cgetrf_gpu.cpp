@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
-       @generated from zgetrf_gpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
+       @generated from zgetrf_gpu.cpp normal z -> c, Tue Aug 25 16:35:15 2015
 */
 #include "common_magma.h"
 
@@ -118,8 +118,8 @@ magma_cgetrf_gpu(
     }
     else {
         /* Use hybrid blocked code. */
-        maxm = ((m + 31)/32)*32;
-        maxn = ((n + 31)/32)*32;
+        maxm = magma_roundup( m, 32 );
+        maxn = magma_roundup( n, 32 );
 
         if (MAGMA_SUCCESS != magma_cmalloc( &dAP, nb*maxm )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;

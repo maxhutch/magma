@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
-       @generated from zjacobi.cpp normal z -> d, Sun May  3 11:22:59 2015
+       @generated from zjacobi.cpp normal z -> d, Tue Aug 25 16:35:33 2015
 */
 
 #include "common_magmasparse.h"
@@ -70,9 +70,9 @@ magma_djacobi(
     // some useful variables
     double c_zero = MAGMA_D_ZERO;
     
-    double nom0 = 0.0;
+    //double nom0 = 0.0;
 
-    magma_d_matrix r={Magma_CSR}, d={Magma_CSR}, ACSR={Magma_CSR} ;
+    magma_d_matrix r={Magma_CSR}, d={Magma_CSR}, ACSR={Magma_CSR};
     
     CHECK( magma_dmconvert(A, &ACSR, A.storage_type, Magma_CSR, queue ) );
 
@@ -86,31 +86,52 @@ magma_djacobi(
     CHECK( magma_dvinit( &r, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
     CHECK(  magma_dresidualvec( ACSR, b, *x, &r, &residual, queue));
     solver_par->init_res = residual;
-    solver_par->res_vec = NULL;
-    solver_par->timing = NULL;
-    nom0 = residual;
+    if ( solver_par->verbose > 0 ) {
+        solver_par->res_vec[0] = (real_Double_t) residual;
+    }
+    //nom0 = residual;
 
     // Jacobi setup
     CHECK( magma_djacobisetup_diagscal( ACSR, &d, queue ));
     magma_d_solver_par jacobiiter_par;
-    jacobiiter_par.maxiter = solver_par->maxiter;
+    if ( solver_par->verbose > 0 ) {
+        jacobiiter_par.maxiter = solver_par->verbose;
+    }
+    else {
+        jacobiiter_par.maxiter = solver_par->maxiter;
+    }
 
     tempo1 = magma_sync_wtime( queue );
 
+    solver_par->numiter = 0;
     // Jacobi iterator
-    CHECK( magma_djacobispmvupdate(jacobiiter_par.maxiter, ACSR, r, b, d, x, queue ));
+    do
+    {
+        solver_par->numiter = solver_par->numiter+jacobiiter_par.maxiter;
+        //CHECK( magma_djacobiiter_sys( A, b, d, r, x, &jacobiiter_par, queue ) );
+        CHECK( magma_djacobispmvupdate(jacobiiter_par.maxiter, ACSR, r, b, d, x, queue ));
+        //CHECK( magma_djacobispmvupdate_bw(jacobiiter_par.maxiter, A, r, b, d, x, queue ));
+        CHECK(  magma_dresidualvec( ACSR, b, *x, &r, &residual, queue));
+        tempo2 = magma_sync_wtime( queue );
+        if ( solver_par->verbose > 0 ) {
+            solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
+                = (real_Double_t) residual;
+            solver_par->timing[(solver_par->numiter)/solver_par->verbose]
+                = (real_Double_t) tempo2-tempo1;
+        }
+    }
+    while ( solver_par->numiter+1 <= solver_par->maxiter );
 
     tempo2 = magma_sync_wtime( queue );
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     CHECK(  magma_dresidualvec( A, b, *x, &r, &residual, queue));
     solver_par->final_res = residual;
-    solver_par->numiter = solver_par->maxiter;
 
     if ( solver_par->init_res > solver_par->final_res )
         info = MAGMA_SUCCESS;
     else
         info = MAGMA_DIVERGENCE;
-    
+
 cleanup:
     magma_dmfree( &r, queue );
     magma_dmfree( &d, queue );
@@ -353,7 +374,6 @@ magma_djacobisetup_vector(
     magma_d_matrix diag={Magma_CSR}, c_t={Magma_CSR}, b_h={Magma_CSR}, tmp={Magma_CSR};
     
     if ( b.memory_location == Magma_CPU ) {
-
         CHECK( magma_dvinit( &c_t, Magma_CPU, b.num_rows, b.num_cols, MAGMA_D_ZERO, queue ));
 
         CHECK( magma_dmtransfer( b, &b_h, b.memory_location, Magma_CPU, queue ));
@@ -361,7 +381,6 @@ magma_djacobisetup_vector(
 
         for( magma_int_t rowindex=0; rowindex<b.num_rows; rowindex++ ) {
             c_t.val[rowindex] = b_h.val[rowindex] / diag.val[rowindex];
-
         }
         CHECK( magma_dmtransfer( c_t, c, Magma_CPU, b.memory_location, queue ));
     }
@@ -457,7 +476,6 @@ magma_djacobisetup(
             }
         }
         c_t.val[rowindex] = b_h.val[rowindex] / diag.val[rowindex];
-
     }
 
     CHECK( magma_d_csr_compressor(&B.val, &B.drow, &B.dcol,
@@ -588,10 +606,6 @@ cleanup:
     M           magma_d_matrix
                 input matrix M = D^(-1) * (L+U)
 
-    @param[in]
-    c           magma_d_matrix
-                c = D^(-1) * b
-
     @param[in,out]
     x           magma_d_matrix*
                 iteration vector x
@@ -601,7 +615,7 @@ cleanup:
                 solver parameters
 
     @param[in]
-    solver_par  magma_d_precond_par*
+    precond     magma_d_precond_par*
                 precond parameters
     @param[in]
     queue       magma_queue_t
@@ -612,8 +626,10 @@ cleanup:
 
 extern "C" magma_int_t
 magma_djacobiiter_precond(
-    magma_d_matrix M, magma_d_matrix *x,
-    magma_d_solver_par *solver_par, magma_d_preconditioner *precond,
+    magma_d_matrix M, 
+    magma_d_matrix *x,
+    magma_d_solver_par *solver_par, 
+    magma_d_preconditioner *precond,
     magma_queue_t queue )
 {
     magma_int_t info = 0;
@@ -664,12 +680,21 @@ cleanup:
     ---------
 
     @param[in]
-    M           magma_d_matrix
+    A           magma_d_matrix
                 input matrix M = D^(-1) * (L+U)
-
+                
     @param[in]
-    c           magma_d_matrix
-                c = D^(-1) * b
+    b           magma_d_matrix
+                input RHS b
+                
+    @param[in]
+    d           magma_d_matrix
+                input matrix diagonal elements diag(A)
+                
+    @param[in]
+    t           magma_d_matrix
+                temporary vector
+
 
     @param[in,out]
     x           magma_d_matrix*

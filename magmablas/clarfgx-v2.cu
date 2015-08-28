@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlarfgx-v2.cu normal z -> c, Fri Jan 30 19:00:09 2015
+       @generated from zlarfgx-v2.cu normal z -> c, Tue Aug 25 16:35:09 2015
 
 */
 #include "common_magma.h"
@@ -50,14 +50,13 @@ void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex*
             *dA   = *dx0;
         }
         else {
-
 #if (defined(PRECISION_s) || defined(PRECISION_d))
             // no need to compute the norm as it is passed as input
             float beta  = xnorm; // sqrt( alpha*alpha + xnorm*xnorm );
             beta  = -copysign( beta, alpha );
  
             // todo: deal with badly scaled vectors (see lapack's larfg)
-            if (j==0){
+            if (j == 0) {
                 *dtau = (beta - alpha) / beta;
                 //*dx0  = 1.; //cannot be done here because raise condition all threadblock need to read it for alpha
                 *dA   = beta;
@@ -70,7 +69,7 @@ void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex*
             beta  = -copysign( beta, alphar );
 
             // todo: deal with badly scaled vectors (see lapack's larfg)
-            if (j==0){
+            if (j == 0) {
                 *dtau = MAGMA_C_MAKE((beta - alphar)/beta, -alphai/beta);
                 //*dx0  = MAGMA_C_MAKE(  1., 0.); //cannot be done here because raise condition all threadblock need to read it for alpha
                 *dA   = MAGMA_C_MAKE(beta, 0.);
@@ -87,7 +86,7 @@ void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex*
     if ( xnorm != 0 && j < n-1)
         dx[j] = MAGMA_C_MUL(dxi, scale);
 
-    if (j<it){
+    if (j < it) {
         *( dA-it+j) = *(dx0-it+j);
         *(dx0-it+j) = MAGMA_C_MAKE(0., 0.);
     }
@@ -116,7 +115,7 @@ magma_clarfgx_gpu(
     magmaFloat_ptr        dxnorm,
     magmaFloatComplex_ptr dA, magma_int_t iter)
 {
-    dim3 blocks((n+BLOCK_SIZE-1) / BLOCK_SIZE);
+    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
     dim3 threads( BLOCK_SIZE );
  
     magma_clarfgx_gpu_kernel<<< blocks, threads, 0, magma_stream >>>( n, dx0, dx, dtau, dxnorm, dA, iter);
@@ -151,7 +150,7 @@ magma_clarfgtx_gpu(
     /*  Generate the elementary reflector H(iter)  */
     magma_clarfgx_gpu(n, dx0, dx, dtau, dxnorm, dA, iter);
     
-    if (iter==0) {
+    if (iter == 0) {
         magmaFloatComplex tt = MAGMA_C_ONE;
         magmablas_clacpy(MagmaUpperLower, 1, 1, dtau, 1, T+iter+iter*ldt, 1);
         magma_csetmatrix(1,1, &tt,1, dx0,1);

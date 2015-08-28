@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -56,7 +56,6 @@ magma_zmlumerge(
 
     if( L.storage_type == Magma_CSR && U.storage_type == Magma_CSR ){
         if( L.memory_location == Magma_CPU && U.memory_location == Magma_CPU ){
-            
             CHECK( magma_zmtransfer( L, A, Magma_CPU, Magma_CPU, queue ));
             magma_free_cpu( A->col );
             magma_free_cpu( A->val );
@@ -95,12 +94,12 @@ magma_zmlumerge(
             A->row[A->num_rows] = z;
             A->nnz = z;
         }
-        else{
+        else {
             printf("error: matrix not on CPU.\n"); 
             info = MAGMA_ERR_NOT_SUPPORTED;
         }
     }
-    else{
+    else {
             printf("error: matrix in wrong format.\n"); 
             info = MAGMA_ERR_NOT_SUPPORTED;
     }
@@ -110,8 +109,3 @@ cleanup:
     }
     return info;
 }
-
-
-
-
-

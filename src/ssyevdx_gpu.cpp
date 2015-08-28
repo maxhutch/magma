@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from dsyevdx_gpu.cpp normal d -> s, Fri Jan 30 19:00:17 2015
+       @generated from dsyevdx_gpu.cpp normal d -> s, Tue Aug 25 16:35:18 2015
 
 */
 #include "common_magma.h"
@@ -301,7 +301,7 @@ magma_ssyevdx_gpu(
     // ssytrd2_gpu requires ldda*ceildiv(n,64) + 2*ldda*nb
     // sormtr_gpu  requires lddc*n
     // slansy      requires n
-    magma_int_t ldwork = max( ldda*ceildiv(n,64) + 2*ldda*nb, lddc*n );
+    magma_int_t ldwork = max( ldda*magma_ceildiv(n,64) + 2*ldda*nb, lddc*n );
     ldwork = max( ldwork, n );
     if ( wantz ) {
         // sstedx requires 3n^2/2

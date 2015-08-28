@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zunmqr_m.cpp normal z -> d, Fri Jan 30 19:00:16 2015
+       @generated from zunmqr_m.cpp normal z -> d, Tue Aug 25 16:35:17 2015
 
 */
 #include "common_magma.h"
@@ -175,7 +175,6 @@ magma_dormqr_m(
         nw = m;
     }
 
-
     if (! left && side != MagmaRight) {
         *info = -1;
     } else if (! notran && trans != MagmaTrans) {
@@ -220,7 +219,7 @@ magma_dormqr_m(
         return *info;
     }
 
-    magma_int_t lddc = (m+63)/64*64;
+    magma_int_t lddc = magma_roundup( m, 64 );  // TODO why 64 instead of 32 ?
     magma_int_t lddac = nq;
     magma_int_t lddar = nb;
     magma_int_t lddwork = nw;
@@ -228,10 +227,10 @@ magma_dormqr_m(
     magma_int_t nlocal[ MagmaMaxGPUs ] = { 0 };
 
     magma_int_t nb_l=256;
-    magma_int_t nbl = (n-1)/nb_l+1; // number of blocks
-    magma_int_t maxnlocal = (nbl+ngpu-1)/ngpu*nb_l;
+    magma_int_t nbl = magma_ceildiv( n, nb_l ); // number of blocks
+    magma_int_t maxnlocal = magma_ceildiv( nbl, ngpu )*nb_l;
 
-    ngpu = min(ngpu, (n+nb_l-1)/nb_l); // Don't use GPU that will not have data.
+    ngpu = min(ngpu, magma_ceildiv( n, nb_l )); // Don't use GPU that will not have data.
 
     magma_int_t ldw = maxnlocal*lddc // dC
                     + 2*lddac*lddar // 2*dA
@@ -254,7 +253,7 @@ magma_dormqr_m(
     if (left) {
         //copy C to mgpus
         for (magma_int_t i = 0; i < nbl; ++i) {
-            magma_int_t igpu = i%ngpu;
+            igpu = i % ngpu;
             magma_setdevice(igpu);
             magma_int_t kb = min(nb_l, n-i*nb_l);
             magma_dsetmatrix_async( m, kb,
@@ -327,7 +326,7 @@ magma_dormqr_m(
 
         //copy C from mgpus
         for (magma_int_t i = 0; i < nbl; ++i) {
-            magma_int_t igpu = i%ngpu;
+            igpu = i % ngpu;
             magma_setdevice(igpu);
             magma_int_t kb = min(nb_l, n-i*nb_l);
             magma_dgetmatrix( m, kb,

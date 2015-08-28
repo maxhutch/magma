@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 # GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
@@ -16,6 +16,9 @@
 #
 #GPU_TARGET ?= Fermi Kepler
 
+# --------------------
+# programs
+
 CC        = gcc
 CXX       = g++
 NVCC      = nvcc
@@ -24,6 +27,10 @@ FORT      = gfortran
 ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
+
+
+# --------------------
+# flags
 
 # use -m32 to compile with 32-bit long & pointers.
 # use -m64 to compile with 64-bit long & pointers (lp64). int is still 32-bit.
@@ -41,16 +48,26 @@ RANLIB    = ranlib
 # can be commented out if making only static library.
 FPIC      = -fPIC
 
-CFLAGS    = -m64 -O3 $(FPIC) -DADD_ -Wall
+CFLAGS    = -m64 -O3 $(FPIC) -DADD_ -Wall -Wshadow -DMAGMA_NOAFFINITY
 FFLAGS    = -m64 -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument
 F90FLAGS  = -m64 -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument -x f95-cpp-input
-NVCCFLAGS = -m64 -O3         -DADD_       -Xcompiler "-fno-strict-aliasing $(FPIC)"
+NVCCFLAGS = -m64 -O3         -DADD_       -Xcompiler "$(FPIC) -Wall -Wno-unused-function"
 LDFLAGS   = -m64     $(FPIC)
 
 # MacOS likes the library's path to be set
 INSTALL_NAME = -install_name @rpath/
 
-LIB       = -framework Accelerate -lcublas -lcudart -lstdc++ -lm
+
+# --------------------
+# libraries
+
+LIB       = -framework Accelerate -lstdc++ -lm
+
+LIB      += -lcublas -lcudart
+
+
+# --------------------
+# directories
 
 # define library directories preferably in your environment, or here.
 #CUDADIR ?= /usr/local/cuda
@@ -76,3 +93,6 @@ blas_fix:
 	@echo
 
 lib: blas_fix
+
+# reset default goal
+.DEFAULT_GOAL :=

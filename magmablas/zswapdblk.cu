@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -32,7 +32,7 @@ zswapdblk_kernel( int nb,
     magmaDoubleComplex tmp;
 
     #pragma unroll
-    for( int i = 0; i < nb; i++ ){
+    for( int i = 0; i < nb; i++ ) {
         tmp        = dA[i*ldda];
         dA[i*ldda] = dB[i*lddb];
         dB[i*lddb] = tmp;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
        @precisions normal d -> s
@@ -270,7 +270,6 @@ magma_int_t magma_dlaqtrsd(
             }
             
             //printf( "real x=\n%s\n", buf );
-            
         }  // end real eigenvalue
         else {
             // ------------------------------------------------------------
@@ -401,7 +400,6 @@ magma_int_t magma_dlaqtrsd(
             }
             
             //printf( "complex x=\n%s\n", buf );
-            
         }  // end complex eigenvalue
     }  // end notran
     else { // transposed

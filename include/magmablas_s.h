@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from magmablas_z.h normal z -> s, Fri Jan 30 19:00:06 2015
+       @generated from magmablas_z.h normal z -> s, Tue Aug 25 16:35:05 2015
 */
 
 #ifndef MAGMABLAS_S_H
@@ -26,6 +26,17 @@ void
 magmablas_stranspose_inplace(
     magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda );
+
+void
+magmablas_stranspose_inplace(
+    magma_int_t n,
+    magmaFloat_ptr dA, magma_int_t ldda );
+
+void
+magmablas_stranspose(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_const_ptr dA,  magma_int_t ldda,
+    magmaFloat_ptr       dAT, magma_int_t lddat );
 
 void
 magmablas_stranspose(
@@ -65,11 +76,6 @@ void
 magmablas_sprbt_mtv(
     magma_int_t n, 
     float *du, float *db);
-
-void
-magmablas_saxpycp2(
-    magma_int_t m, float *r, float *x,
-    const float *b);
 
   /*
    * Multi-GPU copy functions
@@ -353,6 +359,20 @@ magmablas_slacpy_cnjg(
     magma_int_t n, float *dA1, magma_int_t lda1,
     float *dA2, magma_int_t lda2);
 
+void
+magmablas_slacpy_sym_in(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    magma_int_t *rows, magma_int_t *perm,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dB, magma_int_t lddb );
+
+void
+magmablas_slacpy_sym_out(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    magma_int_t *rows, magma_int_t *perm,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr       dB, magma_int_t lddb );
+
 float
 magmablas_slange(
     magma_norm_t norm,
@@ -441,7 +461,10 @@ magmablas_slaswp2(
     magmaFloat_ptr dAT, magma_int_t ldda,
     magma_int_t k1, magma_int_t k2,
     magmaInt_const_ptr d_ipiv, magma_int_t inci );
-
+void
+magmablas_slaswp_sym( magma_int_t n, float *dA, magma_int_t lda,
+                      magma_int_t k1, magma_int_t k2,
+                        const magma_int_t *ipiv, magma_int_t inci );
 void
 magmablas_slaswpx(
     magma_int_t n,
@@ -549,6 +572,13 @@ magma_slarfx_gpu(
    * Level 1 BLAS (alphabetical order)
    */
 void
+magmablas_saxpycp(
+    magma_int_t m,
+    magmaFloat_ptr r,
+    magmaFloat_ptr x,
+    magmaFloat_const_ptr b );
+
+void
 magmablas_sswap(
     magma_int_t n,
     magmaFloat_ptr dx, magma_int_t incx,
@@ -573,6 +603,38 @@ magmablas_sswapdblk(
   /*
    * Level 2 BLAS (alphabetical order)
    */
+void magmablas_strsv(
+    magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t n,
+    const float * __restrict__ A, magma_int_t lda,
+    float *b, magma_int_t incb,
+    magma_queue_t queue);
+
+void magmablas_strsv_work_batched(
+    magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t n,
+    float ** A_array, magma_int_t lda,
+    float **b_array, magma_int_t incb,
+    float **x_array,
+    magma_int_t batchCount, magma_queue_t queue);
+
+void magmablas_strsv_outofplace(
+    magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t n,
+    const float * __restrict__ A, magma_int_t lda,
+    float *b, magma_int_t incb,
+    float *x, magma_queue_t queue, magma_int_t flag);
+
+void
+magmablas_sgemv_q(
+    magma_trans_t trans, magma_int_t m, magma_int_t n, 
+    float alpha,
+    magmaFloat_const_ptr dA, magma_int_t ldda,
+    magmaFloat_const_ptr dx, magma_int_t incx,
+    float beta,
+    magmaFloat_ptr dy, magma_int_t incy, 
+    magma_queue_t queue);
+
 void
 magmablas_sgemv(
     magma_trans_t trans, magma_int_t m, magma_int_t n,
@@ -581,7 +643,6 @@ magmablas_sgemv(
     magmaFloat_const_ptr dx, magma_int_t incx,
     float beta,
     magmaFloat_ptr       dy, magma_int_t incy );
-
 
 void
 magmablas_sgemv_conjv(
@@ -726,7 +787,9 @@ magmablas_strsm_outofplace(
     float alpha,
     magmaFloat_const_ptr dA, magma_int_t ldda,
     magmaFloat_ptr       dB, magma_int_t lddb,
-    magma_int_t flag, magmaFloat_ptr d_dinvA, magmaFloat_ptr dX );
+    magmaFloat_ptr       dX, magma_int_t lddx,
+    magma_int_t flag,
+    magmaFloat_ptr d_dinvA, magma_int_t dinvA_length );
 
 void
 magmablas_strsm_work(
@@ -735,7 +798,9 @@ magmablas_strsm_work(
     float alpha,
     magmaFloat_const_ptr dA, magma_int_t ldda,
     magmaFloat_ptr       dB, magma_int_t lddb,
-    magma_int_t flag, magmaFloat_ptr d_dinvA, magmaFloat_ptr dX );
+    magmaFloat_ptr       dX, magma_int_t lddx,
+    magma_int_t flag,
+    magmaFloat_ptr d_dinvA, magma_int_t dinvA_length );
 
 
   /*

@@ -8,7 +8,7 @@
  *     @author Stan Tomov
  *     @author Raffaele Solca
  *
- *     @generated from zbulge_applyQ_v2.cpp normal z -> c, Fri Jan 30 19:00:18 2015
+ *     @generated from zbulge_applyQ_v2.cpp normal z -> c, Tue Aug 25 16:35:19 2015
  *
  */
 
@@ -112,13 +112,13 @@ magma_cbulge_applyQ_v2(
     magma_int_t lddv = ldv;
     magma_int_t lddt = ldt;
     magma_int_t lddw = 0;
-    magma_int_t lddwork  = ((NE+31)/32)*32;
+    magma_int_t lddwork  = magma_roundup( NE, 32 );
     magma_int_t dwVTsiz  = lddv*Vblksiz; // lddv*lddv + lddv*lddwork; (v2) // lddv*Vblksiz; (v1,v3)
     magma_int_t dworksiz = lddwork*Vblksiz;  // lddv*Vblksiz; (v2)   // NE*Vblksiz=lddwork*Vblksiz; (v1,v3)
 
     if (MAGMA_SUCCESS != magma_cmalloc( &dwork, 2*dworksiz + 2*dwVTsiz +  2*Vchunksiz* (Vblksiz* (lddv+lddt)) )) {
-       printf ("!!!!  magma_cbulge_applyQ magma_alloc failed for: dwork\n" );
-       exit(-1);
+        printf ("!!!!  magma_cbulge_applyQ magma_alloc failed for: dwork\n" );
+        exit(-1);
     }
     dwork0 = dwork;               // size = dworksiz;
     dwork1 = dwork0 + dworksiz;   // size = dworksiz;
@@ -140,8 +140,9 @@ magma_cbulge_applyQ_v2(
 
     // performance loss if the reflector are applied to a big number of eigenvectors (~10000)
     // => apply the reflectors to blocks of eigenvectors.
+    magma_int_t sz_bl = NE;
     //magma_int_t nr_bl = magma_ceildiv(NE,10000);        //nr of blocks
-    magma_int_t sz_bl = NE; //magma_ceildiv(NE,nr_bl*64)*64; //maximum size of blocks (to have blocks of around the same size and multiple of 64)
+    //magma_int_t sz_bl = magma_ceildiv(NE,nr_bl*64)*64; //maximum size of blocks (to have blocks of around the same size and multiple of 64)
     magma_int_t ib;                                      //size of current block
 
 
@@ -151,7 +152,7 @@ magma_cbulge_applyQ_v2(
      *            Also E is splitten by col meaning each apply consist in a block of col (vertical block) */
 
     #ifdef ENABLE_DEBUG
-    printf("  APPLY Q_v22 GPU with  N %d, NE %d,  NB %d, Vblksiz %d, versionL %d versionR %d  SIDE %c \n",
+    printf("  APPLY Q_v22 GPU with  N %5d, NE %5d,  NB %5d, Vblksiz %5d, versionL %5d versionR %5d  SIDE %5d \n",
            N, NE, NB, Vblksiz, versionL, versionR, side);
     #endif
 
@@ -299,9 +300,9 @@ magma_cbulge_applyQ_v2(
                     }
 
                     if ((Vm > 0) && (Vn > 0)) {
-                    /*calculate the pointer to the Vs and the Ts.
-                     * Note that Vs and Ts have special storage done
-                     * by the bulgechasing function*/
+                        /* calculate the pointer to the Vs and the Ts.
+                         * Note that Vs and Ts have special storage done
+                         * by the bulgechasing function*/
                         magma_bulge_findVTpos(N, NB, Vblksiz, mycol, myrow, ldv, ldt, &vpos, &tpos);
                         magma_csetmatrix_async(Vm, Vn, V(vpos), ldv, dV0, lddv, NULL);
                         magma_csetmatrix_async(Vn,  Vn, T(tpos), ldt, dT0, lddt, NULL);

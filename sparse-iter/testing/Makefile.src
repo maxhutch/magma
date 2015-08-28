@@ -17,9 +17,11 @@ CSRC = \
 	testing_csort.cpp \
 	testing_cdot.cpp \
 	testing_cspmv.cpp \
+	testing_cspmv_check.cpp \
 	testing_cspmm.cpp \
 	testing_cmadd.cpp \
-	testing_csolver.cpp
+	testing_csolver.cpp \
+	testing_cpreconditioner.cpp
 
 DSRC = \
 	testing_dblas.cpp \
@@ -30,9 +32,11 @@ DSRC = \
 	testing_dsort.cpp \
 	testing_ddot.cpp \
 	testing_dspmv.cpp \
+	testing_dspmv_check.cpp \
 	testing_dspmm.cpp \
 	testing_dmadd.cpp \
-	testing_dsolver.cpp
+	testing_dsolver.cpp \
+	testing_dpreconditioner.cpp
 
 SSRC = \
 	testing_sblas.cpp \
@@ -43,6 +47,8 @@ SSRC = \
 	testing_ssort.cpp \
 	testing_sdot.cpp \
 	testing_sspmv.cpp \
+	testing_sspmv_check.cpp \
 	testing_sspmm.cpp \
 	testing_smadd.cpp \
-	testing_ssolver.cpp
+	testing_ssolver.cpp \
+	testing_spreconditioner.cpp

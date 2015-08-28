@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 
@@ -27,7 +27,7 @@ zclaswp_kernel(int n, magmaDoubleComplex *A, int lda, magmaFloatComplex *SA, int
         
         newind = ipiv[0];
         
-        for(int i=0; i < n; i++) {
+        for (int i=0; i < n; i++) {
             res = MAGMA_C_MAKE( (float)cuCreal(A[newind+i*lda]),
                                 (float)cuCimag(A[newind+i*lda]) );
             SA[i*lda] = res; 
@@ -48,7 +48,7 @@ zclaswp_inv_kernel(int n, magmaDoubleComplex *A, int lda, magmaFloatComplex *SA,
 
         newind = ipiv[0];
 
-        for(int i=0; i < n; i++) {
+        for (int i=0; i < n; i++) {
             res = MAGMA_Z_MAKE( (double)cuCrealf(SA[newind+i*lda]),
                                 (double)cuCimagf(SA[newind+i*lda]) );
             A[i*lda] = res;
@@ -109,9 +109,9 @@ magmablas_zclaswp_q(
     const magma_int_t *ipiv, magma_int_t incx,
     magma_queue_t queue )
 {
-    int blocks = (m - 1)/NB + 1;
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(NB, 1, 1);
+    int blocks = magma_ceildiv( m, NB );
+    dim3 grid( blocks );
+    dim3 threads( NB );
 
     if (incx >= 0)
         zclaswp_kernel<<< grid, threads, 0, queue >>>(n, A, lda, SA, m, ipiv);

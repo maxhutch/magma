@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
  
        @author Mark Gates
 */
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -47,12 +48,18 @@ struct magma_device* g_magma_devices = NULL;
 // ========================================
 // initialization
 // --------------------
-// Caches information about available CUDA devices.
-// When renumbering devices after calling magma_init,
-// call magma_finalize, then cudaSetValidDevices, then magma_init again.
-// Ideally magma_init is paired with magma_finalize, but this implementation
-// ensures there isn't a memory leak if magma_init is called multiple times
-// without calling magma_finalize.
+/**
+    Caches information about available CUDA devices.
+    When renumbering devices after calling magma_init,
+    call magma_finalize, then cudaSetValidDevices, then magma_init again.
+    Ideally magma_init is paired with magma_finalize, but this implementation
+    ensures there isn't a memory leak if magma_init is called multiple times
+    without calling magma_finalize.
+    
+    @see magma_finalize
+    
+    @ingroup magma_init
+*/
 extern "C"
 magma_int_t magma_init()
 {
@@ -60,7 +67,10 @@ magma_int_t magma_init()
         cudaError_t err;
         err = cudaGetDeviceCount( &g_magma_devices_cnt );
         check_error( err );
-        g_magma_devices = (struct magma_device*) malloc( g_magma_devices_cnt * sizeof(struct magma_device) );
+        magma_malloc_cpu( (void**) &g_magma_devices, g_magma_devices_cnt * sizeof(struct magma_device) );
+        if ( g_magma_devices == NULL ) {
+            return MAGMA_ERR_HOST_ALLOC;
+        }
         for( int i = 0; i < g_magma_devices_cnt; ++i ) {
             cudaDeviceProp prop;
             err = cudaGetDeviceProperties( &prop, i );
@@ -73,24 +83,31 @@ magma_int_t magma_init()
 }
 
 // --------------------
-// Frees information about CUDA devices.
+/**
+    Frees information about CUDA devices.
+    @ingroup magma_init
+*/
 extern "C"
 magma_int_t magma_finalize()
 {
-    free( g_magma_devices );
+    magma_free_cpu( g_magma_devices );
     g_magma_devices = NULL;
     return MAGMA_SUCCESS;
 }
 
 // --------------------
-// Print the available GPU devices. Used in testing.
+/**
+    Print the available GPU devices. Used in testing.
+    @ingroup magma_init
+*/
 extern "C"
 void magma_print_environment()
 {
     magma_int_t major, minor, micro;
     magma_version( &major, &minor, &micro );
-    printf( "MAGMA %d.%d.%d %s compiled for CUDA capability >= %.1f\n",
-            (int) major, (int) minor, (int) micro, MAGMA_VERSION_STAGE, MIN_CUDA_ARCH/100. );
+    printf( "%% MAGMA %d.%d.%d %s compiled for CUDA capability >= %.1f, %d-bit magma_int_t, %d-bit pointer.\n",
+            (int) major, (int) minor, (int) micro, MAGMA_VERSION_STAGE, MIN_CUDA_ARCH/100.,
+            (int) (8*sizeof(magma_int_t)), (int) (8*sizeof(void*)) );
     
     int cuda_runtime, cuda_driver;
     cudaError_t err;
@@ -98,7 +115,7 @@ void magma_print_environment()
     check_error( err );
     err = cudaRuntimeGetVersion( &cuda_runtime );
     check_error( err );
-    printf( "CUDA runtime %d, driver %d. ", cuda_runtime, cuda_driver );
+    printf( "%% CUDA runtime %d, driver %d. ", cuda_runtime, cuda_driver );
     
 #if defined(_OPENMP)
     int omp_threads = 0;
@@ -132,13 +149,12 @@ void magma_print_environment()
     
     int ndevices = 0;
     err = cudaGetDeviceCount( &ndevices );
-printf( "ndevices %d\n", ndevices );
     check_error( err );
     for( int dev = 0; dev < ndevices; dev++ ) {
         cudaDeviceProp prop;
         err = cudaGetDeviceProperties( &prop, dev );
         check_error( err );
-        printf( "device %d: %s, %.1f MHz clock, %.1f MB memory, capability %d.%d\n",
+        printf( "%% device %d: %s, %.1f MHz clock, %.1f MB memory, capability %d.%d\n",
                 dev,
                 prop.name,
                 prop.clockRate / 1000.,
@@ -156,6 +172,9 @@ printf( "ndevices %d\n", ndevices );
                    MIN_CUDA_ARCH/100., dev, arch/100. );
         }
     }
+    
+    time_t t = time( NULL );
+    printf( "%% %s", ctime( &t ));
 }
 
 

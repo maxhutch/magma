@@ -1,36 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlange.cu normal z -> d, Fri Jan 30 19:00:09 2015
+       @generated from zlange.cu normal z -> d, Tue Aug 25 16:35:09 2015
        @author Mark Gates
 */
 #include "common_magma.h"
 #include "magma_templates.h"
-
-
-// ----------------------------------------
-// max reduction, for arbitrary size vector. Leaves max(x) in x[0].
-// Uses only one thread block of 512 threads, so is not efficient for really large vectors.
-template< typename T >
-__global__ void
-max_nan_kernel( int n, T* x )
-{
-    __shared__ T smax[ 512 ];
-    int tx = threadIdx.x;
-    
-    smax[tx] = 0;
-    for( int i=tx; i < n; i += 512 ) {
-        smax[tx] = max_nan( smax[tx], x[i] );
-    }
-    magma_max_nan_reduce< 512 >( tx, smax );
-    if ( tx == 0 ) {
-        x[0] = smax[0];
-    }
-}
 
 
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:m-1, for || A ||_inf,
@@ -227,16 +206,18 @@ dlange_one_kernel(
             DLANGE is set to zero.
     
     @param[in]
-    A       DOUBLE PRECISION array on the GPU, dimension (LDA,N)
+    dA      DOUBLE PRECISION array on the GPU, dimension (LDDA,N)
             The m by n matrix A.
     
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array A.  LDA >= max(M,1).
+    ldda    INTEGER
+            The leading dimension of the array A.  LDDA >= max(M,1).
     
     @param
     dwork   (workspace) DOUBLE PRECISION array on the GPU, dimension (LWORK).
     
+@cond
+TODO add lwork parameter
     @param[in]
     lwork   INTEGER
             The dimension of the array WORK.
@@ -244,6 +225,7 @@ dlange_one_kernel(
             If NORM = '1',        LWORK >= max( 1, N ).
             Note this is different than LAPACK, which requires WORK only for
             NORM = 'I', and does not pass LWORK.
+@endcond
 
     @ingroup magma_daux2
     ********************************************************************/
@@ -279,21 +261,21 @@ magmablas_dlange(
     dim3 threads( 64 );
     double result = -1;
     if ( norm == MagmaInfNorm ) {
-        dim3 grid( (m-1)/64 + 1 );
+        dim3 grid( magma_ceildiv( m, 64 ) );
         dlange_inf_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        max_nan_kernel<<< 1, 512, 0, magma_stream >>>( m, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( m, dwork );
         cudaMemcpy( &result, &dwork[0], sizeof(double), cudaMemcpyDeviceToHost );
     }
     else if ( norm == MagmaMaxNorm ) {
-        dim3 grid( (m-1)/64 + 1 );
+        dim3 grid( magma_ceildiv( m, 64 ) );
         dlange_max_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        max_nan_kernel<<< 1, 512, 0, magma_stream >>>( m, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( m, dwork );
         cudaMemcpy( &result, &dwork[0], sizeof(double), cudaMemcpyDeviceToHost );
     }
     else if ( norm == MagmaOneNorm ) {
         dim3 grid( n );
         dlange_one_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );
         cudaMemcpy( &result, &dwork[0], sizeof(double), cudaMemcpyDeviceToHost );
     }
     

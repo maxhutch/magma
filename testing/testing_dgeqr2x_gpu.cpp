@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgeqr2x_gpu.cpp normal z -> d, Fri Jan 30 19:00:25 2015
+       @generated from testing_zgeqr2x_gpu.cpp normal z -> d, Tue Aug 25 16:35:27 2015
 
 */
 
@@ -48,17 +48,17 @@ int main( int argc, char** argv)
     #define BLOCK_SIZE 64
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     double tol = 10. * opts.tolerance * lapackf77_dlamch("E");
     
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_t queues[2];
+    magma_queue_create( &queues[0] );
+    magma_queue_create( &queues[1] );
 
-    printf("version %d\n", (int) opts.version );
-    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||R - Q^H*A||   ||R_T||\n");
-    printf("=============================================================================\n");
+    printf("%% version %d\n", (int) opts.version );
+    printf("%% M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)   ||R - Q^H*A||   ||R_T||\n");
+    printf("%%============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M     = opts.msize[itest];
@@ -78,7 +78,7 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = (FLOPS_DGEQRF( M, N ) + FLOPS_DGEQRT( M, N )) / 1e9;
 
             /* Allocate memory for the matrix */
@@ -123,14 +123,15 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            gpu_time = magma_sync_wtime(0);
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
     
             if (opts.version == 1)
-                magma_dgeqr2x_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info);
+                magma_dgeqr2x_gpu( M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info );
             else if (opts.version == 2)
-                magma_dgeqr2x2_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info);
+                magma_dgeqr2x2_gpu( M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info );
             else if (opts.version == 3)
-                magma_dgeqr2x3_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info);
+                magma_dgeqr2x3_gpu( M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info );
             else {
                 printf( "call magma_dgeqr2x4_gpu\n" );
                 /*
@@ -139,19 +140,15 @@ int main( int argc, char** argv)
                   Doing two streams in parallel is slower than doing them sequentially
                   Queuing happens on the NULL stream - user defined buffers are smaller?
                 */
-                magma_dgeqr2x4_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, NULL, &info);
-                //magma_dgeqr2x4_gpu(M, N, d_A, ldda, dtau, d_T, ddA, dwork, &info, stream[1]);
-                //magma_dgeqr2x4_gpu(M, N, d_A2, ldda, dtau2, d_T2, ddA2, dwork2, &info, stream[0]);
-                //magma_dgeqr2x4_gpu(M, N, d_A2, ldda, dtau2, d_T2, ddA2, dwork2, &info, NULL);
-                //gflops *= 2;
+                magma_dgeqr2x4_gpu( M, N, d_A, ldda, dtau, d_T, ddA, dwork, opts.queue, &info );
             }
-            gpu_time = magma_sync_wtime(0) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
 
             if (info != 0) {
                 printf("magma_dgeqr2x_gpu version %d returned error %d: %s.\n",
                        (int) opts.version, (int) info, magma_strerror( info ));
-            } 
+            }
             else {
                 if ( opts.check ) {
                     /* =====================================================================
@@ -163,8 +160,8 @@ int main( int argc, char** argv)
                     magma_dgetmatrix( min_mn, 1, dtau, min_mn,   tau, min_mn );
 
                     // Restore the upper triangular part of A before the check
-                    for(int col=0; col < N; col++){
-                        for(int row=0; row <= col; row++)
+                    for (int col=0; col < N; col++) {
+                        for (int row=0; row <= col; row++)
                             h_R[row + col*M] = h_T[row + col*N];
                     }
 
@@ -206,21 +203,20 @@ int main( int argc, char** argv)
                     lapackf77_dlarft( MagmaForwardStr, MagmaColumnwiseStr,
                                       &M, &N, h_A, &lda, tau, h_work, &N);
                     //magma_dgeqr2(&M, &N, h_A, &lda, tau, h_work, &info);
-                                              
+                    
                     cpu_time = magma_wtime() - cpu_time;
                     cpu_perf = gflops / cpu_time;
                     if (info != 0)
                         printf("lapackf77_dgeqrf returned error %d: %s.\n",
                                (int) info, magma_strerror( info ));
 
-
                     /* =====================================================================
                        Check the result compared to LAPACK
                        =================================================================== */
 
                     // Restore the upper triangular part of A before the check
-                    for(int col=0; col < N; col++){
-                        for(int row=0; row <= col; row++)
+                    for (int col=0; col < N; col++) {
+                        for (int row=0; row <= col; row++)
                             h_R[row + col*M] = h_T[row + col*N];
                     }
                 
@@ -232,17 +228,17 @@ int main( int argc, char** argv)
                     magma_dgetmatrix( N, N, d_T, N, h_T, N );
     
                     double terr = 0.;
-                    for(int col=0; col < N; col++)
-                        for(int row=0; row <= col; row++)
+                    for (int col=0; col < N; col++)
+                        for (int row=0; row <= col; row++)
                             terr += (  MAGMA_D_ABS(h_work[row + col*N] - h_T[row + col*N])*
                                        MAGMA_D_ABS(h_work[row + col*N] - h_T[row + col*N])  );
                     terr = sqrt( terr );
     
                     // If comparison to LAPACK fail, check || R - Q^H*A || / (N * ||A||)
-                    // and print fail if both fails, otherwise print ok (*) 
+                    // and print fail if both fails, otherwise print ok (*)
                     printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)     %8.2e     %8.2e   %s\n",
                            (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
-                           error2, terr, (error2 < tol ? "ok" : "failed" )); 
+                           error2, terr, (error2 < tol ? "ok" : "failed" ));
 
                     status += ! (error2 < tol);
                 }
@@ -277,8 +273,8 @@ int main( int argc, char** argv)
         }
     }
     
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
 
     TESTING_FINALIZE();
     return status;

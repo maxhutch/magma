@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmtranspose.cpp normal z -> c, Sun May  3 11:23:01 2015
+       @generated from magma_zmtranspose.cpp normal z -> c, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
        @author Mark Gates
 
@@ -111,7 +111,7 @@ c_transpose_csr(
     // [ x 0 x x ]
     // [ x x 0 0 ]
     // rowptr = [ 0 3 6, 8 ]
-    // colind = [ 0 1 3 ; 0 2 3 ; 0 1 ]
+    // colind = [ 0 1 3; 0 2 3; 0 1 ]
     
     // sum up nnz in each original column
     // colptr = [ 3 2 1 2, X ]
@@ -136,7 +136,7 @@ c_transpose_csr(
     // copy row indices and values
     // this increments colptr until it effectively shifts left one
     // colptr = [ 3 5 6 8, 8 ]
-    // rowind = [ 0 1 2 ; 0 2 ; 1 ; 0 1 ]
+    // rowind = [ 0 1 2; 0 2; 1; 0 1 ]
     for( i=0; i < n_rows; ++i ) {
         for( k=rowptr[i]; k < rowptr[i+1]; ++k ) {
             j = colind[k];
@@ -251,7 +251,6 @@ magma_c_cucsrtranspose(
     magma_c_matrix A_d={Magma_CSR}, B_d={Magma_CSR};
 
     if( A.storage_type == Magma_CSR && A.memory_location == Magma_DEV ) {
-                  
         // fill in information for B
         B->storage_type    = A.storage_type;
         B->diagorder_type  = A.diagorder_type;
@@ -260,14 +259,14 @@ magma_c_cucsrtranspose(
         B->num_cols        = A.num_rows;  // transposed
         B->nnz             = A.nnz;
         
-        if ( A.fill_mode == Magma_FULL ) {
-            B->fill_mode = Magma_FULL;
+        if ( A.fill_mode == MagmaFull ) {
+            B->fill_mode = MagmaFull;
         }
-        else if ( A.fill_mode == Magma_LOWER ) {
-            B->fill_mode = Magma_UPPER;
+        else if ( A.fill_mode == MagmaLower ) {
+            B->fill_mode = MagmaUpper;
         }
-        else if ( A.fill_mode == Magma_UPPER ) {
-            B->fill_mode = Magma_LOWER;
+        else if ( A.fill_mode == MagmaUpper ) {
+            B->fill_mode = MagmaLower;
         }
         
         B->dval = NULL;
@@ -293,13 +292,11 @@ magma_c_cucsrtranspose(
                           A.dval, A.drow, A.dcol, B->dval, B->dcol, B->drow,
                           CUSPARSE_ACTION_NUMERIC,
                           CUSPARSE_INDEX_BASE_ZERO) );
-        
-    }else if( A.storage_type == Magma_CSR && A.memory_location == Magma_CPU ){
+    } else if ( A.storage_type == Magma_CSR && A.memory_location == Magma_CPU ){
         CHECK( magma_cmtransfer( A, &A_d, A.memory_location, Magma_DEV, queue ));
         CHECK( magma_c_cucsrtranspose( A_d, &B_d, queue ));
         CHECK( magma_cmtransfer( B_d, B, Magma_DEV, A.memory_location, queue ));
-                
-    }else {
+    } else {
         CHECK( magma_cmconvert( A, &ACSR, A.storage_type, Magma_CSR, queue ));
         CHECK( magma_c_cucsrtranspose( ACSR, &BCSR, queue ));
         CHECK( magma_cmconvert( BCSR, B, Magma_CSR, A.storage_type, queue ));
@@ -317,6 +314,3 @@ cleanup:
     }
     return info;
 }
-
-
-

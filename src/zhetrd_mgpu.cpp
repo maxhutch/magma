@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -235,10 +235,10 @@ magma_zhetrd_mgpu(
     magma_event_create( &stop  );
     #endif
 
-    ldda = roundup( lda, 32 );
+    ldda = magma_roundup( lda, 32 );
     lddw = ldda;
     nlocal = nb*(1 + n/(nb*ngpu));
-    ldwork2 = ldda*( ((n - 1)/nb + 1) + 1);  // i.e., ldda*(blocks + 1)
+    ldwork2 = ldda*( magma_ceildiv( n, nb ) + 1);  // i.e., ldda*(blocks + 1)
     for( dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
         // TODO fix memory leak
@@ -261,12 +261,12 @@ magma_zhetrd_mgpu(
         goto CLEANUP;
     }
 
-    // crossover point: use CPU code for last nx columns
-    //if (n < 2048)
-    //    nx = n;
-    //else
-    //    nx = 512;
-    nx = min( 128, n );  // nx <= n is required
+    // nx <= n is required
+    // use LAPACK for n < 3000, otherwise switch at 512
+    if (n < 3000)
+        nx = n;
+    else
+        nx = 512;
 
     if (upper) {
         /* Copy the matrix to the GPU */

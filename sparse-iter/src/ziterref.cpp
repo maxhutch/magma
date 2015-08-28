@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
@@ -79,7 +79,7 @@ magma_ziterref(
     magma_int_t dofs = A.num_rows*b.num_cols;
 
     // solver variables
-    double nom, nom0, r0;
+    double nom, nom0;
     
     // workspace
     magma_z_matrix r={Magma_CSR}, z={Magma_CSR};
@@ -92,16 +92,15 @@ magma_ziterref(
    
 
     // solver setup
-    magma_zscal( dofs, c_zero, x->dval, 1) ;                    // x = 0
+    magma_zscal( dofs, c_zero, x->dval, 1);                    // x = 0
     //CHECK(  magma_zresidualvec( A, b, *x, &r, nom, queue));
     magma_zcopy( dofs, b.dval, 1, r.dval, 1 );                    // r = b
     nom0 = magma_dznrm2(dofs, r.dval, 1);                       // nom0 = || r ||
     nom = nom0 * nom0;
     solver_par->init_res = nom0;
 
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE )
-        r0 = ATOLERANCE;
-    if ( nom < r0 ) {
+    if( nom0 < solver_par->atol ||
+        nom0/solver_par->init_res < solver_par->rtol ){
         solver_par->final_res = solver_par->init_res;
         solver_par->iter_res = solver_par->init_res;
         goto cleanup;
@@ -118,10 +117,9 @@ magma_ziterref(
     // start iteration
     for( solver_par->numiter= 1; solver_par->numiter<solver_par->maxiter;
                                                     solver_par->numiter++ ) {
-
-        magma_zscal( dofs, MAGMA_Z_MAKE(1./nom, 0.), r.dval, 1) ;  // scale it
+        magma_zscal( dofs, MAGMA_Z_MAKE(1./nom, 0.), r.dval, 1);  // scale it
         CHECK( magma_z_precond( A, r, &z, precond_par, queue )); // inner solver:  A * z = r
-        magma_zscal( dofs, MAGMA_Z_MAKE(nom, 0.), z.dval, 1) ;  // scale it
+        magma_zscal( dofs, MAGMA_Z_MAKE(nom, 0.), z.dval, 1);  // scale it
         magma_zaxpy(dofs,  c_one, z.dval, 1, x->dval, 1);        // x = x + z
         CHECK( magma_z_spmv( c_mone, A, *x, c_zero, r, queue ));      // r = - A x
         magma_zaxpy(dofs,  c_one, b.dval, 1, r.dval, 1);         // r = r + b
@@ -137,7 +135,8 @@ magma_ziterref(
             }
         }
 
-        if (  nom  < r0 ) {
+        if( nom < solver_par->atol ||
+            nom/solver_par->init_res < solver_par->rtol ){
             break;
         }
     }
@@ -159,7 +158,8 @@ magma_ziterref(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->atol ||
+            solver_par->iter_res/solver_par->init_res < solver_par->rtol ){
             info = MAGMA_SUCCESS;
         }
     }
@@ -179,10 +179,7 @@ cleanup:
     magma_zmfree(&r, queue );
     magma_zmfree(&z, queue );
 
-
     magmablasSetKernelStream( orig_queue );
     solver_par->info = info;
     return info;
 }   /* magma_ziterref */
-
-

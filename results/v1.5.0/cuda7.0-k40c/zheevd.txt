@@ -1,0 +1,198 @@
+
+Tue May  5 08:26:12 EDT 2015
+numactl --interleave=all ./testing_zheevd -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.5.0  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevd [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.07
+ 1000     ---               0.23
+   10     ---               0.00
+   20     ---               0.00
+   30     ---               0.00
+   40     ---               0.00
+   50     ---               0.00
+   60     ---               0.00
+   70     ---               0.00
+   80     ---               0.00
+   90     ---               0.00
+  100     ---               0.00
+  200     ---               0.01
+  300     ---               0.02
+  400     ---               0.03
+  500     ---               0.05
+  600     ---               0.06
+  700     ---               0.09
+  800     ---               0.12
+  900     ---               0.15
+ 1000     ---               0.19
+ 2000     ---               0.84
+ 3000     ---               3.47
+ 4000     ---               7.10
+ 5000     ---              12.64
+ 6000     ---              20.77
+ 7000     ---              30.39
+ 8000     ---              43.31
+ 9000     ---              59.43
+10000     ---              78.97
+12000     ---             131.90
+14000     ---             200.80
+16000     ---             293.85
+18000     ---             412.45
+20000     ---             558.43
+Tue May  5 08:58:32 EDT 2015
+
+Tue May  5 08:58:32 EDT 2015
+numactl --interleave=all ./testing_zheevd -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.5.0  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevd [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.13
+ 1000     ---               0.21
+   10     ---               0.03
+   20     ---               0.00
+   30     ---               0.00
+   40     ---               0.00
+   50     ---               0.00
+   60     ---               0.00
+   70     ---               0.00
+   80     ---               0.01
+   90     ---               0.00
+  100     ---               0.00
+  200     ---               0.01
+  300     ---               0.02
+  400     ---               0.03
+  500     ---               0.05
+  600     ---               0.07
+  700     ---               0.09
+  800     ---               0.12
+  900     ---               0.15
+ 1000     ---               0.20
+ 2000     ---               0.79
+ 3000     ---               3.87
+ 4000     ---               7.86
+ 5000     ---              14.04
+ 6000     ---              22.89
+ 7000     ---              33.87
+ 8000     ---              48.23
+ 9000     ---              66.43
+10000     ---              88.34
+12000     ---             147.52
+14000     ---             225.06
+16000     ---             329.76
+18000     ---             464.36
+20000     ---             625.79
+Tue May  5 09:34:56 EDT 2015
+
+Tue May  5 09:34:56 EDT 2015
+numactl --interleave=all ./testing_zheevd_gpu -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.5.0  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevd_gpu [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.00
+ 1000       ---              0.20
+   10       ---              0.00
+   20       ---              0.00
+   30       ---              0.00
+   40       ---              0.00
+   50       ---              0.00
+   60       ---              0.00
+   70       ---              0.00
+   80       ---              0.00
+   90       ---              0.00
+  100       ---              0.00
+  200       ---              0.01
+  300       ---              0.02
+  400       ---              0.03
+  500       ---              0.04
+  600       ---              0.06
+  700       ---              0.08
+  800       ---              0.10
+  900       ---              0.12
+ 1000       ---              0.16
+ 2000       ---              0.67
+ 3000       ---              5.53
+ 4000       ---             11.58
+ 5000       ---             19.20
+ 6000       ---             28.93
+ 7000       ---             41.79
+ 8000       ---             56.64
+ 9000       ---             75.79
+10000       ---             97.05
+12000       ---            154.13
+14000       ---            230.00
+16000       ---            325.21
+18000       ---            447.97
+magma_zheevd_gpu returned error -113: cannot allocate memory on GPU device.
+20000       ---              0.00
+Tue May  5 10:01:29 EDT 2015
+
+Tue May  5 10:01:29 EDT 2015
+numactl --interleave=all ./testing_zheevd_gpu -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.5.0  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevd_gpu [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.09
+ 1000       ---              2.14
+   10       ---              0.00
+   20       ---              0.00
+   30       ---              0.00
+   40       ---              0.00
+   50       ---              0.00
+   60       ---              0.00
+   70       ---              0.00
+   80       ---              0.00
+   90       ---              0.00
+  100       ---              0.00
+  200       ---              0.01
+  300       ---              0.03
+  400       ---              0.04
+  500       ---              0.07
+  600       ---              0.20
+  700       ---              0.37
+  800       ---              0.26
+  900       ---              9.35
+ 1000       ---              0.33
+ 2000       ---             11.87
+ 3000       ---              3.81
+ 4000       ---              7.83
+ 5000       ---             14.02
+ 6000       ---             22.43
+ 7000       ---             34.20
+ 8000       ---             48.43
+ 9000       ---             67.44
+10000       ---             89.21
+12000       ---            147.54
+14000       ---            228.14
+16000       ---            330.58
+18000       ---            464.52
+magma_zheevd_gpu returned error -113: cannot allocate memory on GPU device.
+20000       ---              0.00
+Tue May  5 10:28:07 EDT 2015

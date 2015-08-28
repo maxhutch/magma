@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing_zhegvdx_2stage_m.cpp normal z -> s, Fri Jan 30 19:00:26 2015
+       @generated from testing_zhegvdx_2stage_m.cpp normal z -> s, Tue Aug 25 16:35:27 2015
 
 */
 
@@ -33,7 +33,6 @@
 */
 int main( int argc, char** argv)
 {
-
     TESTING_INIT();
 
     real_Double_t   mgpu_time;
@@ -55,7 +54,7 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
 
@@ -68,30 +67,27 @@ int main( int argc, char** argv)
         opts.jobz = MagmaVec;
     }
 
-    printf("using: ngpu = %d, itype = %d, jobz = %s, range = %s, uplo = %s, opts.check = %d, fraction = %6.4f\n",
+    printf("%% ngpu = %d, itype = %d, jobz = %s, range = %s, uplo = %s, opts.check = %d, fraction = %6.4f\n",
            (int) opts.ngpu, (int) opts.itype,
            lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
            (int) opts.check, opts.fraction);
     
-    printf("    N     M   ngpu   MGPU Time (sec)\n");
-    printf("====================================\n");
+    printf("%%   N     M   ngpu   MGPU Time (sec)\n");
+    printf("%%===================================\n");
     magma_int_t threads = magma_get_parallel_numthreads();
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             n2     = N*N;
-            #if defined(PRECISION_z) || defined(PRECISION_c)
-            lwork  = magma_sbulge_get_lq2(N, threads) + 2*N + N*N;
-            lrwork = 1 + 5*N +2*N*N;
-            #else
-            lwork  = magma_sbulge_get_lq2(N, threads) + 1 + 6*N + 2*N*N;
-            #endif
-            liwork = 3 + 5*N;
-
-
-            //magma_int_t NB = 96;//magma_bulge_get_nb(N);
-            //magma_int_t sizvblg = magma_sbulge_get_lq2(N, threads);        
-            //magma_int_t siz = max(sizvblg,n2)+2*(N*NB+N)+24*N; 
+            magma_ssyevdx_getworksize(N, threads, (opts.jobz == MagmaVec), 
+                                     &lwork, 
+                                     #if defined(PRECISION_z) || defined(PRECISION_c)
+                                     &lrwork, 
+                                     #endif
+                                     &liwork);
+            //magma_int_t NB = 96; //magma_bulge_get_nb(N);
+            //magma_int_t sizvblg = magma_sbulge_get_lq2(N, threads);
+            //magma_int_t siz = max(sizvblg,n2)+2*(N*NB+N)+24*N;
             /* Allocate host memory for the matrix */
             TESTING_MALLOC_PIN( h_A,    float, n2 );
             TESTING_MALLOC_PIN( h_B,    float, n2 );
@@ -116,8 +112,6 @@ int main( int argc, char** argv)
                 lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_Binit, &N );
             }
 
-
-
             magma_int_t m1 = 0;
             float vl = 0;
             float vu = 0;
@@ -130,7 +124,6 @@ int main( int argc, char** argv)
             }
 
             if ( opts.warmup ) {
-
                 // ==================================================================
                 // Warmup using MAGMA. I prefer to use smalltest to warmup A-
                 // ==================================================================
@@ -175,25 +168,25 @@ int main( int argc, char** argv)
                 #endif
                 result = 1.;
                 result /= lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_Ainit, &N, rwork);
-                result /= lapackf77_slange("1", &N , &m1, h_A, &N, rwork);
+                result /= lapackf77_slange("1", &N, &m1, h_A, &N, rwork);
 
                 if (opts.itype == 1) {
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_Ainit, &N, h_A, &N, &c_zero, h_work, &N);
-                    for(int i=0; i<m1; ++i)
+                    for (int i=0; i < m1; ++i)
                         blasf77_sscal(&N, &w1[i], &h_A[i*N], &ione);
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_neg_one, h_Binit, &N, h_A, &N, &c_one, h_work, &N);
                     result *= lapackf77_slange("1", &N, &m1, h_work, &N, rwork)/N;
                 }
                 else if (opts.itype == 2) {
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_Binit, &N, h_A, &N, &c_zero, h_work, &N);
-                    for(int i=0; i<m1; ++i)
+                    for (int i=0; i < m1; ++i)
                         blasf77_sscal(&N, &w1[i], &h_A[i*N], &ione);
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_Ainit, &N, h_work, &N, &c_neg_one, h_A, &N);
                     result *= lapackf77_slange("1", &N, &m1, h_A, &N, rwork)/N;
                 }
                 else if (opts.itype == 3) {
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_Ainit, &N, h_A, &N, &c_zero, h_work, &N);
-                    for(int i=0; i<m1; ++i)
+                    for (int i=0; i < m1; ++i)
                         blasf77_sscal(&N, &w1[i], &h_A[i*N], &ione);
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_Binit, &N, h_work, &N, &c_neg_one, h_A, &N);
                     result *= lapackf77_slange("1", &N, &m1, h_A, &N, rwork)/N;
@@ -207,13 +200,13 @@ int main( int argc, char** argv)
                    (int) N, (int) m1, (int) opts.ngpu, mgpu_time);
             if ( opts.check && opts.jobz != MagmaNoVec ) {
                 printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if (opts.itype==1) {
+                if (opts.itype == 1) {
                     printf("    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
                 }
-                else if (opts.itype==2) {
+                else if (opts.itype == 2) {
                     printf("    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
                 }
-                else if (opts.itype==3) {
+                else if (opts.itype == 3) {
                     printf("    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n", result, (result < tol ? "ok" : "failed") );
                 }
                 printf("\n");

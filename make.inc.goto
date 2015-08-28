@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #
 #      Contributed by: Allan Menezes (Ontario, Canada)
 #      Note that GOTO BLAS is no longer maintained.
@@ -20,6 +20,9 @@
 #
 #GPU_TARGET ?= Fermi Kepler
 
+# --------------------
+# programs
+
 CC        = gcc
 CXX       = g++
 NVCC      = nvcc
@@ -29,6 +32,10 @@ ARCH      = ar
 ARCHFLAGS = cr
 RANLIB    = ranlib
 
+
+# --------------------
+# flags
+
 # Use -fPIC to make shared (.so) and static (.a) library;
 # can be commented out if making only static library.
 FPIC      = -fPIC
@@ -36,19 +43,27 @@ FPIC      = -fPIC
 CFLAGS    = -O3 $(FPIC) -DADD_ -Wall
 FFLAGS    = -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument
 F90FLAGS  = -O3 $(FPIC) -DADD_ -Wall -Wno-unused-dummy-argument -x f95-cpp-input
-NVCCFLAGS = -O3         -DADD_       -Xcompiler "-fno-strict-aliasing $(FPIC)"
+NVCCFLAGS = -O3         -DADD_       -Xcompiler "$(FPIC)"
 LDFLAGS   =     $(FPIC)
 
-LIB       = -lgoto  -lpthread -lcublas -lcudart -llapack -lm
+
+# --------------------
+# libraries
+
+LIB       = -lgoto  -lpthread -llapack -lm
+
+LIB      += -lcublas -lcudart
+
+
+# --------------------
+# directories
 
 # define library directories preferably in your environment, or here.
 #GOTODIR  ?= /opt/gotoblas
-#CBLASDIR ?= /opt/CBLAS
 #CUDADIR  ?= /usr/local/cuda
 -include make.check-cuda
 
 LIBDIR    = -L$(CUDADIR)/lib64 \
             -L$(GOTODIR)/GotoBLAS \
-            -L$(CBLASDIR)/lib
 
 INC       = -I$(CUDADIR)/include

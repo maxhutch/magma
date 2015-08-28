@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -146,8 +146,8 @@ magma_zgeqlf(
     if (k == 0)
         return *info;
 
-    lddwork = ((n+31)/32)*32;
-    ldda    = ((m+31)/32)*32;
+    lddwork = magma_roundup( n, 32 );
+    ldda    = magma_roundup( m, 32 );
 
     if (MAGMA_SUCCESS != magma_zmalloc( &dA, (n)*ldda + nb*lddwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -210,11 +210,11 @@ magma_zgeqlf(
                                   &rows, &ib,
                                   A(0, cols), &lda, tau + i, work, &ib);
 
-                zpanel_to_q( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
+                magma_zpanel_to_q( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
                 magma_zsetmatrix( rows, ib,
                                   A(0,cols),  lda,
                                   dA(0,cols), ldda );
-                zq_to_panel( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
+                magma_zq_to_panel( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
 
                 // Send the triangular part on the GPU
                 magma_zsetmatrix( ib, ib, work, ib, dwork(0), lddwork );

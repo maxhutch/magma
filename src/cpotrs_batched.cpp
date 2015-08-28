@@ -1,16 +1,18 @@
+
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Azzam Haidar
 
-       @generated from zpotrs_batched.cpp normal z -> c, Fri Jan 30 19:00:19 2015
+       @generated from zpotrs_batched.cpp normal z -> c, Tue Aug 25 16:35:20 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
+#include "cublas_v2.h"
 /**
     Purpose
     -------
@@ -87,7 +89,10 @@ magma_cpotrs_batched(
     if ( (n == 0) || (nrhs == 0) ) {
         return info;
     }
-
+    
+    cublasHandle_t myhandle;
+    cublasCreate_v2(&myhandle);
+    cublasSetStream(myhandle, queue);
 
     magmaFloatComplex **dW1_displ  = NULL;
     magmaFloatComplex **dW2_displ  = NULL;
@@ -106,10 +111,10 @@ magma_cpotrs_batched(
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
 
-    magma_int_t invA_msize = ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
     magma_int_t dwork_msize = n*nrhs;
     magmaFloatComplex* dinvA      = NULL;
-    magmaFloatComplex* dwork      = NULL;// dinvA and dwork are workspace in ctrsm
+    magmaFloatComplex* dwork      = NULL; // dinvA and dwork are workspace in ctrsm
     magma_cmalloc( &dinvA, invA_msize * batchCount);
     magma_cmalloc( &dwork, dwork_msize * batchCount );
    /* check allocation */
@@ -138,62 +143,108 @@ magma_cpotrs_batched(
 
 
     if ( uplo == MagmaUpper) {
-        // A = U^T U
-        // solve U^{T}X = B ==> dworkX = U^-T * B
-        magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit, 1,
-                n, nrhs,
-                c_one,
-                dA_array,       ldda, // dA
-                dB_array,      lddb, // dB
-                dwork_array,        n, // dX //output
-                dinvA_array,  invA_msize, 
-                dW1_displ,   dW2_displ, 
-                dW3_displ,   dW4_displ,
-                1, batchCount, queue);
+        if (nrhs > 1)
+        {
+            // A = U^T U
+            // solve U^{T}X = B ==> dworkX = U^-T * B
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit, 1,
+                    n, nrhs,
+                    c_one,
+                    dA_array,       ldda, // dA
+                    dB_array,      lddb, // dB
+                    dwork_array,        n, // dX //output
+                    dinvA_array,  invA_msize, 
+                    dW1_displ,   dW2_displ, 
+                    dW3_displ,   dW4_displ,
+                    1, batchCount, queue, myhandle);
 
-        // solve U X = dwork ==> X = U^-1 * dwork
-        magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, 1,
-                n, nrhs,
-                c_one,
-                dA_array,       ldda, // dA
-                dwork_array,        n, // dB 
-                dB_array,   lddb, // dX //output
-                dinvA_array,  invA_msize, 
-                dW1_displ,   dW2_displ, 
-                dW3_displ,   dW4_displ,
-                1, batchCount, queue);
+            // solve U X = dwork ==> X = U^-1 * dwork
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, 1,
+                    n, nrhs,
+                    c_one,
+                    dA_array,       ldda, // dA
+                    dwork_array,        n, // dB 
+                    dB_array,   lddb, // dX //output
+                    dinvA_array,  invA_msize, 
+                    dW1_displ,   dW2_displ, 
+                    dW3_displ,   dW4_displ,
+                    1, batchCount, queue, myhandle);
+        }
+        else
+        {
+            // A = U^T U
+            // solve U^{T}X = B ==> dworkX = U^-T * B
+            magmablas_ctrsv_outofplace_batched( MagmaUpper, MagmaConjTrans, MagmaNonUnit,
+                    n, 
+                    dA_array,       ldda, // dA
+                    dB_array,      1, // dB
+                    dwork_array,     // dX //output
+                    batchCount, queue, 0);
+
+            // solve U X = dwork ==> X = U^-1 * dwork
+            magmablas_ctrsv_outofplace_batched( MagmaUpper, MagmaNoTrans, MagmaNonUnit, 
+                    n, 
+                    dA_array,       ldda, // dA
+                    dwork_array,        1, // dB 
+                    dB_array,   // dX //output
+                    batchCount, queue, 0);
+        }
     }
-    else{
-        // A = L L^T
-        // solve LX= B ==> dwork = L^{-1} B
-        magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaNonUnit, 1,
-                n, nrhs,
-                c_one,
-                dA_array,       ldda, // dA
-                dB_array,      lddb, // dB
-                dwork_array,        n, // dX //output
-                dinvA_array,  invA_msize, 
-                dW1_displ,   dW2_displ, 
-                dW3_displ,   dW4_displ,
-                1, batchCount, queue);
+    else {
+        if (nrhs > 1)
+        {
+            // A = L L^T
+            // solve LX= B ==> dwork = L^{-1} B
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaNonUnit, 1,
+                    n, nrhs,
+                    c_one,
+                    dA_array,       ldda, // dA
+                    dB_array,      lddb, // dB
+                    dwork_array,        n, // dX //output
+                    dinvA_array,  invA_msize, 
+                    dW1_displ,   dW2_displ, 
+                    dW3_displ,   dW4_displ,
+                    1, batchCount, queue, myhandle);
 
-        // solve L^{T}X= dwork ==> X = L^{-T} dwork
-        magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaLower, MagmaConjTrans, MagmaNonUnit, 1,
-                n, nrhs,
-                c_one,
-                dA_array,       ldda, // dA
-                dwork_array,        n, // dB 
-                dB_array,   lddb, // dX //output
-                dinvA_array,  invA_msize, 
-                dW1_displ,   dW2_displ, 
-                dW3_displ,   dW4_displ,
-                1, batchCount, queue);
+            // solve L^{T}X= dwork ==> X = L^{-T} dwork
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaLower, MagmaConjTrans, MagmaNonUnit, 1,
+                    n, nrhs,
+                    c_one,
+                    dA_array,       ldda, // dA
+                    dwork_array,        n, // dB 
+                    dB_array,   lddb, // dX //output
+                    dinvA_array,  invA_msize, 
+                    dW1_displ,   dW2_displ, 
+                    dW3_displ,   dW4_displ,
+                    1, batchCount, queue, myhandle);
+        }
+        else
+        {
+            // A = L L^T
+            // solve LX= B ==> dwork = L^{-1} B
+            magmablas_ctrsv_outofplace_batched( MagmaLower, MagmaNoTrans, MagmaNonUnit, 
+                    n,
+                    dA_array,       ldda, // dA
+                    dB_array,      1, // dB
+                    dwork_array,   // dX //output
+                    batchCount, queue, 0);
+
+            // solve L^{T}X= dwork ==> X = L^{-T} dwork
+            magmablas_ctrsv_outofplace_batched( MagmaLower, MagmaConjTrans, MagmaNonUnit,
+                    n,
+                    dA_array,       ldda, // dA
+                    dwork_array,        1, // dB 
+                    dB_array,     // dX //output
+                    batchCount, queue, 0);
+        }
     }
 
 
 
+    magmablasSetKernelStream(queue);
+    magma_queue_sync(queue);
+    cublasDestroy_v2(myhandle);
 
-    magma_queue_sync(cstream);
 
     magma_free(dW1_displ);
     magma_free(dW2_displ);

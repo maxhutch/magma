@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 */
 
 #include "common_magma.h"
@@ -82,7 +82,7 @@ magma_timestr_t get_current_time(void)
 
   magma_timestr_t time;
 
-  cudaDeviceSynchronize();
+  magma_device_sync();
   gettimeofday(&time_val, NULL);
 
   time.sec  = time_val.tv_sec;

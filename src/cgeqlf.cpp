@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeqlf.cpp normal z -> c, Fri Jan 30 19:00:16 2015
+       @generated from zgeqlf.cpp normal z -> c, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -146,8 +146,8 @@ magma_cgeqlf(
     if (k == 0)
         return *info;
 
-    lddwork = ((n+31)/32)*32;
-    ldda    = ((m+31)/32)*32;
+    lddwork = magma_roundup( n, 32 );
+    ldda    = magma_roundup( m, 32 );
 
     if (MAGMA_SUCCESS != magma_cmalloc( &dA, (n)*ldda + nb*lddwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -210,11 +210,11 @@ magma_cgeqlf(
                                   &rows, &ib,
                                   A(0, cols), &lda, tau + i, work, &ib);
 
-                cpanel_to_q( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
+                magma_cpanel_to_q( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
                 magma_csetmatrix( rows, ib,
                                   A(0,cols),  lda,
                                   dA(0,cols), ldda );
-                cq_to_panel( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
+                magma_cq_to_panel( MagmaLower, ib, A(rows-ib,cols), lda, work+ib*ib);
 
                 // Send the triangular part on the GPU
                 magma_csetmatrix( ib, ib, work, ib, dwork(0), lddwork );

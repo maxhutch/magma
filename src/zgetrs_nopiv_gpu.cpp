@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        @author Adrien REMY
 
        @precisions normal z -> s d c
@@ -14,7 +14,7 @@
 /**
     Purpose
     -------
-    Solves a system of linear equations
+    ZGETRS solves a system of linear equations
       A * X = B,  A**T * X = B,  or  A**H * X = B
     with a general N-by-N matrix A using the LU factorization computed by ZGETRF_NOPIV_GPU.
 

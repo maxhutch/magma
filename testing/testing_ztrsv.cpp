@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -44,20 +44,20 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("uplo = %s, transA = %s, diag = %s\n",
+    printf("%% uplo = %s, transA = %s, diag = %s\n",
            lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
-    printf("    N  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)   CUBLAS error\n");
-    printf("============================================================\n");
+    printf("%%   N  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)   CUBLAS error\n");
+    printf("%%===========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             gflops = FLOPS_ZTRSM(opts.side, N, 1) / 1e9;
             lda    = N;
-            ldda   = ((lda+31)/32)*32;
+            ldda   = magma_roundup( lda, opts.align );  // multiple of 32 by default
             sizeA  = lda*N;
             
             TESTING_MALLOC_CPU( ipiv,      magma_int_t,        N     );
@@ -90,13 +90,21 @@ int main( int argc, char** argv)
             magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
             magma_zsetvector( N, h_x, 1, d_x, 1 );
             
-            cublas_time = magma_sync_wtime( NULL );
-            cublasZtrsv( opts.handle, cublas_uplo_const(opts.uplo),
-                         cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
-                         N,
-                         d_A, ldda,
-                         d_x, 1 );
-            cublas_time = magma_sync_wtime( NULL ) - cublas_time;
+            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
+            cublas_time = magma_sync_wtime( opts.queue );
+            #ifdef HAVE_CUBLAS
+                cublasZtrsv( opts.handle, cublas_uplo_const(opts.uplo),
+                             cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
+                             N,
+                             d_A, ldda,
+                             d_x, 1 );
+            #else
+                magma_ztrsv( opts.uplo, opts.transA, opts.diag,
+                             N,
+                             d_A, 0, ldda,
+                             d_x, 0, 1, opts.queue );
+            #endif
+            cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
             magma_zgetvector( N, d_x, 1, h_xcublas, 1 );

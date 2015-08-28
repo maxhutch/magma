@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -46,10 +46,8 @@ zbcsrlupivloc_kernel(
                     *A1 = tmp;
                 }               
             }
-            
         }
     }
-
 }
 
 
@@ -102,12 +100,7 @@ magma_zbcsrlupivloc(
     dim3 grid(kblocks, 1, 1);
     zbcsrlupivloc_kernel<<< grid, threads, 0, queue >>>( 
                   size_b, kblocks, dA, ipiv );
-
-#endif
-
+    #endif
 
     return MAGMA_SUCCESS;
 }
-
-
-

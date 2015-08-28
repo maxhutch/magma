@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -22,7 +22,7 @@
 
 #define PRECISION_z
 
-// if ( A==B ) return 0, else return 1
+// if ( A == B ) return 0, else return 1
 static int diff_matrix( magma_int_t m, magma_int_t n, magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex *B, magma_int_t ldb )
 {
     for( magma_int_t j = 0; j < n; j++ ) {
@@ -52,6 +52,21 @@ static void init_matrix( magma_int_t m, magma_int_t n, magmaDoubleComplex *A, ma
 int main( int argc, char** argv)
 {
     TESTING_INIT();
+    
+    // OpenCL use:  cl_mem  , offset  (two arguments);
+    // else   use:  pointer + offset  (one argument).
+    #ifdef HAVE_clBLAS
+        #define d_A1(i_, j_)   d_A1    , (i_) + (j_)*ldda
+        #define d_A2(i_, j_)   d_A2    , (i_) + (j_)*ldda
+        #define d_ipiv(i_)     d_ipiv  , (i_)
+    #else
+        #define d_A1(i_, j_)  (d_A1    + (i_) + (j_)*ldda)
+        #define d_A2(i_, j_)  (d_A2    + (i_) + (j_)*ldda)
+        #define d_ipiv(i_)    (d_ipiv  + (i_))
+    #endif
+    
+    #define h_A1(i_, j_)  (h_A1 + (i_) + (j_)*lda)
+    #define h_A2(i_, j_)  (h_A2 + (i_) + (j_)*lda)
 
     magmaDoubleComplex *h_A1, *h_A2;
     magmaDoubleComplex *h_R1, *h_R2;
@@ -76,13 +91,11 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
-    magma_queue_t queue = 0;
-    
-    printf("            %8s zswap    zswap             zswapblk          zlaswp   zlaswp2  zlaswpx           zcopymatrix      CPU      (all in )\n", g_platform_str );
-    printf("    N   nb  row-maj/col-maj   row-maj/col-maj   row-maj/col-maj   row-maj  row-maj  row-maj/col-maj   row-blk/col-blk  zlaswp   (GByte/s)\n");
-    printf("=========================================================================================================================================\n");
+    printf("%%           %8s zswap    zswap             zswapblk          zlaswp   zlaswp2  zlaswpx           zcopymatrix      CPU      (all in )\n", g_platform_str );
+    printf("%%   N   nb  row-maj/col-maj   row-maj/col-maj   row-maj/col-maj   row-maj  row-maj  row-maj/col-maj   row-blk/col-blk  zlaswp   (GByte/s)\n");
+    printf("%%========================================================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             // For an N x N matrix, swap nb rows or nb columns using various methods.
@@ -92,7 +105,7 @@ int main( int argc, char** argv)
             int check = 0;
             N = opts.nsize[itest];
             lda    = N;
-            ldda   = ((N+31)/32)*32;
+            ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
             nb     = (opts.nb > 0 ? opts.nb : magma_get_zgetrf_nb( N ));
             nb     = min( N, nb );
             // each swap does 2N loads and 2N stores, for nb swaps
@@ -125,29 +138,30 @@ int main( int argc, char** argv)
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
-            magma_zsetmatrix( N, N, h_A2, lda, d_A2, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_zsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
+            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
+            time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
                     #ifdef HAVE_CUBLAS
-                        cublasZswap( opts.handle, N, d_A1+ldda*j, 1, d_A2+ldda*(ipiv[j]-1), 1 );
+                        cublasZswap( opts.handle, N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1 );
                     #else
-                        magma_zswap( N, d_A1, ldda*j, 1, d_A2, ldda*(ipiv[j]-1), 1, opts.queue );
+                        magma_zswap(              N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1, opts.queue );
                     #endif
                 }
             }
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue ) - time;
             row_perf0 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_zswap( &N, h_A1+lda*j, &ione, h_A2+lda*(ipiv[j]-1), &ione);
+                    blasf77_zswap( &N, h_A1(0,j), &ione, h_A2(0,ipiv[j]-1), &ione);
                 }
             }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
-            magma_zgetmatrix( N, N, d_A2, ldda, h_R2, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -155,20 +169,20 @@ int main( int argc, char** argv)
             /* Column Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
-            magma_zsetmatrix( N, N, h_A2, lda, d_A2, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_zsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
+            time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
                     #ifdef HAVE_CUBLAS
-                        cublasZswap( opts.handle, N, d_A1+j, ldda, d_A2+ipiv[j]-1, ldda );
+                        cublasZswap( opts.handle, N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda );
                     #else
-                        magma_zswap( N, d_A1, j, ldda, d_A2, ipiv[j]-1, ldda, opts.queue );
+                        magma_zswap(              N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda, opts.queue );
                     #endif
                 }
             }
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue ) - time;
             col_perf0 = gbytes / time;
             
             for( j=0; j < nb; j++) {
@@ -176,8 +190,8 @@ int main( int argc, char** argv)
                     blasf77_zswap( &N, h_A1+j, &lda, h_A2+(ipiv[j]-1), &lda);
                 }
             }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
-            magma_zgetmatrix( N, N, d_A2, ldda, h_R2, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -189,25 +203,25 @@ int main( int argc, char** argv)
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
-            magma_zsetmatrix( N, N, h_A2, lda, d_A2, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_zsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
+            time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    magmablas_zswap( N, d_A1+ldda*j, 1, d_A2+ldda*(ipiv[j]-1), 1);
+                    magmablas_zswap( N, d_A1(0,j), 1, d_A2(0,ipiv[j]-1), 1);
                 }
             }
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue ) - time;
             row_perf1 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_zswap( &N, h_A1+lda*j, &ione, h_A2+lda*(ipiv[j]-1), &ione);
+                    blasf77_zswap( &N, h_A1(0,j), &ione, h_A2(0,ipiv[j]-1), &ione);
                 }
             }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
-            magma_zgetmatrix( N, N, d_A2, ldda, h_R2, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -215,16 +229,16 @@ int main( int argc, char** argv)
             /* Column Major */
             init_matrix( N, N, h_A1, lda, 0 );
             init_matrix( N, N, h_A2, lda, 100 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
-            magma_zsetmatrix( N, N, h_A2, lda, d_A2, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+            magma_zsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
+            time = magma_sync_wtime( opts.queue );
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    magmablas_zswap( N, d_A1+j, ldda, d_A2+ipiv[j]-1, ldda );
+                    magmablas_zswap( N, d_A1(j,0), ldda, d_A2(ipiv[j]-1,0), ldda );
                 }
             }
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue ) - time;
             col_perf1 = gbytes / time;
             
             for( j=0; j < nb; j++) {
@@ -232,8 +246,8 @@ int main( int argc, char** argv)
                     blasf77_zswap( &N, h_A1+j, &lda, h_A2+(ipiv[j]-1), &lda);
                 }
             }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
-            magma_zgetmatrix( N, N, d_A2, ldda, h_R2, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
             check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
                       diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
             shift *= 2;
@@ -243,132 +257,126 @@ int main( int argc, char** argv)
              */
             
             #ifdef HAVE_CUBLAS
-            /* Row Major */
-            init_matrix( N, N, h_A1, lda, 0 );
-            init_matrix( N, N, h_A2, lda, 100 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
-            magma_zsetmatrix( N, N, h_A2, lda, d_A2, ldda );
-            
-            time = magma_sync_wtime( queue );
-            magmablas_zswapblk( MagmaRowMajor, N, d_A1, ldda, d_A2, ldda, 1, nb, ipiv, 1, 0);
-            time = magma_sync_wtime( queue ) - time;
-            row_perf2 = gbytes / time;
-            
-            for( j=0; j < nb; j++) {
-                if ( j != (ipiv[j]-1)) {
-                    blasf77_zswap( &N, h_A1+lda*j, &ione, h_A2+lda*(ipiv[j]-1), &ione);
+                /* Row Major */
+                init_matrix( N, N, h_A1, lda, 0 );
+                init_matrix( N, N, h_A2, lda, 100 );
+                magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+                magma_zsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+                
+                time = magma_sync_wtime( opts.queue );
+                magmablas_zswapblk( MagmaRowMajor, N, d_A1(0,0), ldda, d_A2(0,0), ldda, 1, nb, ipiv, 1, 0);
+                time = magma_sync_wtime( opts.queue ) - time;
+                row_perf2 = gbytes / time;
+                
+                for( j=0; j < nb; j++) {
+                    if ( j != (ipiv[j]-1)) {
+                        blasf77_zswap( &N, h_A1(0,j), &ione, h_A2(0,ipiv[j]-1), &ione);
+                    }
                 }
-            }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
-            magma_zgetmatrix( N, N, d_A2, ldda, h_R2, lda );
-            check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
-                      diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
-            shift *= 2;
-            
-            /* Column Major */
-            init_matrix( N, N, h_A1, lda, 0 );
-            init_matrix( N, N, h_A2, lda, 100 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
-            magma_zsetmatrix( N, N, h_A2, lda, d_A2, ldda );
-            
-            time = magma_sync_wtime( queue );
-            magmablas_zswapblk( MagmaColMajor, N, d_A1, ldda, d_A2, ldda, 1, nb, ipiv, 1, 0);
-            time = magma_sync_wtime( queue ) - time;
-            col_perf2 = gbytes / time;
-            
-            for( j=0; j < nb; j++) {
-                if ( j != (ipiv[j]-1)) {
-                    blasf77_zswap( &N, h_A1+j, &lda, h_A2+(ipiv[j]-1), &lda);
+                magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+                magma_zgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+                check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
+                          diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
+                shift *= 2;
+                
+                /* Column Major */
+                init_matrix( N, N, h_A1, lda, 0 );
+                init_matrix( N, N, h_A2, lda, 100 );
+                magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
+                magma_zsetmatrix( N, N, h_A2, lda, d_A2(0,0), ldda );
+                
+                time = magma_sync_wtime( opts.queue );
+                magmablas_zswapblk( MagmaColMajor, N, d_A1(0,0), ldda, d_A2(0,0), ldda, 1, nb, ipiv, 1, 0);
+                time = magma_sync_wtime( opts.queue ) - time;
+                col_perf2 = gbytes / time;
+                
+                for( j=0; j < nb; j++) {
+                    if ( j != (ipiv[j]-1)) {
+                        blasf77_zswap( &N, h_A1(j,0), &lda, h_A2(ipiv[j]-1,0), &lda);
+                    }
                 }
-            }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
-            magma_zgetmatrix( N, N, d_A2, ldda, h_R2, lda );
-            check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
-                      diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
-            shift *= 2;
+                magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
+                magma_zgetmatrix( N, N, d_A2(0,0), ldda, h_R2, lda );
+                check += (diff_matrix( N, N, h_A1, lda, h_R1, lda ) ||
+                          diff_matrix( N, N, h_A2, lda, h_R2, lda ))*shift;
+                shift *= 2;
             #endif
-
+            
             /* =====================================================================
              * LAPACK-style zlaswp (1 matrix)
              */
             
-            #ifdef HAVE_CUBLAS
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
-            magmablas_zlaswp( N, d_A1, ldda, 1, nb, ipiv, 1);
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue );
+            magmablas_zlaswp( N, d_A1(0,0), ldda, 1, nb, ipiv, 1);
+            time = magma_sync_wtime( opts.queue ) - time;
             row_perf4 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_zswap( &N, h_A1+lda*j, &ione, h_A1+lda*(ipiv[j]-1), &ione);
+                    blasf77_zswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione);
                 }
             }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
-            #endif
 
             /* =====================================================================
              * LAPACK-style zlaswp (1 matrix) - d_ipiv on GPU
              */
             
-            #ifdef HAVE_CUBLAS
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
-            magma_setvector( nb, sizeof(magma_int_t), ipiv, 1, d_ipiv, 1 );
-            magmablas_zlaswp2( N, d_A1, ldda, 1, nb, d_ipiv, 1 );
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue );
+            magma_setvector( nb, sizeof(magma_int_t), ipiv, 1, d_ipiv(0), 1 );
+            magmablas_zlaswp2( N, d_A1(0,0), ldda, 1, nb, d_ipiv(0), 1 );
+            time = magma_sync_wtime( opts.queue ) - time;
             row_perf7 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_zswap( &N, h_A1+lda*j, &ione, h_A1+lda*(ipiv[j]-1), &ione);
+                    blasf77_zswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione);
                 }
             }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
-            #endif
 
             /* =====================================================================
              * LAPACK-style zlaswpx (extended for row- and col-major) (1 matrix)
              */
             
-            #ifdef HAVE_CUBLAS
             /* Row Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
-            magmablas_zlaswpx( N, d_A1, ldda, 1, 1, nb, ipiv, 1);
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue );
+            magmablas_zlaswpx( N, d_A1(0,0), ldda, 1, 1, nb, ipiv, 1);
+            time = magma_sync_wtime( opts.queue ) - time;
             row_perf5 = gbytes / time;
             
             for( j=0; j < nb; j++) {
                 if ( j != (ipiv[j]-1)) {
-                    blasf77_zswap( &N, h_A1+lda*j, &ione, h_A1+lda*(ipiv[j]-1), &ione);
+                    blasf77_zswap( &N, h_A1(0,j), &ione, h_A1(0,ipiv[j]-1), &ione);
                 }
             }
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
             
             /* Col Major */
             init_matrix( N, N, h_A1, lda, 0 );
-            magma_zsetmatrix( N, N, h_A1, lda, d_A1, ldda );
+            magma_zsetmatrix( N, N, h_A1, lda, d_A1(0,0), ldda );
             
-            time = magma_sync_wtime( queue );
-            magmablas_zlaswpx( N, d_A1, 1, ldda, 1, nb, ipiv, 1);
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue );
+            magmablas_zlaswpx( N, d_A1(0,0), 1, ldda, 1, nb, ipiv, 1);
+            time = magma_sync_wtime( opts.queue ) - time;
             col_perf5 = gbytes / time;
-            #endif
             
             /* LAPACK swap on CPU for comparison */
             time = magma_wtime();
@@ -376,25 +384,23 @@ int main( int argc, char** argv)
             time = magma_wtime() - time;
             cpu_perf = gbytes / time;
             
-            #ifdef HAVE_CUBLAS
-            magma_zgetmatrix( N, N, d_A1, ldda, h_R1, lda );
+            magma_zgetmatrix( N, N, d_A1(0,0), ldda, h_R1, lda );
             check += diff_matrix( N, N, h_A1, lda, h_R1, lda )*shift;
             shift *= 2;
-            #endif
 
             /* =====================================================================
              * Copy matrix.
              */
             
-            time = magma_sync_wtime( queue );
-            magma_zcopymatrix( N, nb, d_A1, ldda, d_A2, ldda );
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue );
+            magma_zcopymatrix( N, nb, d_A1(0,0), ldda, d_A2(0,0), ldda );
+            time = magma_sync_wtime( opts.queue ) - time;
             // copy reads 1 matrix and writes 1 matrix, so has half gbytes of swap
             col_perf6 = 0.5 * gbytes / time;
             
-            time = magma_sync_wtime( queue );
-            magma_zcopymatrix( nb, N, d_A1, ldda, d_A2, ldda );
-            time = magma_sync_wtime( queue ) - time;
+            time = magma_sync_wtime( opts.queue );
+            magma_zcopymatrix( nb, N, d_A1(0,0), ldda, d_A2(0,0), ldda );
+            time = magma_sync_wtime( opts.queue ) - time;
             // copy reads 1 matrix and writes 1 matrix, so has half gbytes of swap
             row_perf6 = 0.5 * gbytes / time;
 

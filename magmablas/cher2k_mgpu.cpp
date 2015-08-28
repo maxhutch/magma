@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zher2k_mgpu.cpp normal z -> c, Fri Jan 30 19:00:10 2015
+       @generated from zher2k_mgpu.cpp normal z -> c, Tue Aug 25 16:35:10 2015
        @author Mark Gates
        @author Azzam Haidar 
 */

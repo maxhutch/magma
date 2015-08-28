@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from ztrtri_upper.cu normal z -> s, Fri Jan 30 19:00:10 2015
+       @generated from ztrtri_upper.cu normal z -> s, Tue Aug 25 16:35:10 2015
 
        @author Peng Du
        @author Tingxing Dong
@@ -17,7 +17,7 @@
 */
 
 #include "common_magma.h"
-#include "strtri.h"
+#include "strtri.cuh"
 
 
 /*
@@ -1153,4 +1153,3 @@ triple_sgemm_above64_part3_upper_kernel_batched(
     triple_sgemm_above64_part3_upper_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-

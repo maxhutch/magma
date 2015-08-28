@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
-       @generated from zcg_merge.cpp normal z -> s, Sun May  3 11:22:59 2015
+       @generated from zcg_merge.cpp normal z -> s, Tue Aug 25 16:35:33 2015
 */
 
 #include "common_magmasparse.h"
@@ -70,7 +70,7 @@ magma_scg_merge(
     
     // solver variables
     float alpha, beta, gamma, rho, tmp1, *skp_h={0};
-    float nom, nom0, r0, betanom, den;
+    float nom, nom0, betanom, den;
 
     // some useful variables
     float c_zero = MAGMA_S_ZERO, c_one = MAGMA_S_ONE;
@@ -98,7 +98,7 @@ magma_scg_merge(
     // skp = [alpha|beta|gamma|rho|tmp1|tmp2]
 
     // solver setup
-    magma_sscal( dofs, c_zero, x->dval, 1) ;                     // x = 0
+    magma_sscal( dofs, c_zero, x->dval, 1);                      // x = 0
     //CHECK(  magma_sresidualvec( A, b, *x, &r, nom0, queue));
     magma_scopy( dofs, b.dval, 1, r.dval, 1 );                    // r = b
     magma_scopy( dofs, r.dval, 1, d.dval, 1 );                    // d = r
@@ -122,9 +122,8 @@ magma_scg_merge(
 
     magma_ssetvector( 6, skp_h, 1, skp, 1 );
     
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE )
-        r0 = ATOLERANCE;
-    if ( nom < r0 ) {
+    if( nom0 < solver_par->atol ||
+        nom0/solver_par->init_res < solver_par->rtol ){
         solver_par->final_res = solver_par->init_res;
         solver_par->iter_res = solver_par->init_res;
         goto cleanup;
@@ -173,7 +172,8 @@ magma_scg_merge(
             }
         }
 
-        if (  betanom  < r0 ) {
+        if (  betanom  < solver_par->atol || 
+              betanom/solver_par->init_res < solver_par->rtol ) {
             break;
         }
     }
@@ -182,7 +182,7 @@ magma_scg_merge(
     tempo2 = magma_sync_wtime( queue );
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     float residual;
-    CHECK(  magma_sresidualvec( A, b, *x, &r, &residual, queue));
+    CHECK(  magma_sresidualvec( A, b, *x, &r, &residual, NULL));
     solver_par->iter_res = betanom;
     solver_par->final_res = residual;
 
@@ -198,7 +198,8 @@ magma_scg_merge(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->atol ||
+            solver_par->iter_res/solver_par->init_res < solver_par->rtol ){
             info = MAGMA_SUCCESS;
         }
     }
@@ -228,5 +229,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* magma_scg_merge */
-
-

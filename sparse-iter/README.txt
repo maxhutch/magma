@@ -2,29 +2,7 @@
 #                       README FILE FOR MAGMA-SPARSE                           #
 #==============================================================================#
 
-
-==============
- INSTALLATION 
-==============
-1) unzip the tar.gz file into some folder
-
-2) "cd magma-x.y.z-lll/"
-
-3) set a symbolic link via 
-        "ln -s make.inc.xxx-yyy make.inc" 
-   to the most suitable configuration. You may still have to adapt some paths 
-   inside.
-
-3) compile magma using "make -j8" (in case you want to use 8 cores...)
-
-4) "cd sparse-iter"
-
-5) compile magma-sparse using "make -j8" (in case you want to use 8 cores...)
-
-6) If no errors show up, everything has worked out fine. 
-   In the sparse-iter/testing folder you find example testers - for proper
-   usage see section below.
-
+For installation, see the top level magma/README.txt.
 
 ==============
  USAGE     

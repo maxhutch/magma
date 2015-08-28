@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -130,8 +130,8 @@ magmablas_zgeadd_batched_q(
         return;
     
     dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB, batchCount );
-        
+    dim3 grid( magma_ceildiv( m, NB ), batchCount );
+    
     zgeadd_batched_kernel<<< grid, threads, 0, queue >>>(
         m, n, alpha, dAarray, ldda, dBarray, lddb );
 }

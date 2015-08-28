@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zlobpcg_residuals.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zlobpcg_residuals.cu normal z -> c, Tue Aug 25 16:35:30 2015
 
 */
 
@@ -57,12 +57,10 @@ magma_clobpcg_res_kernel(
     magmaFloatComplex * R,
     magmaFloat_ptr res)
 {
-
     int row = blockIdx.x * blockDim.x + threadIdx.x; // global row index
 
-    if( row<num_rows){
-        for( int i=0; i<num_vecs; i++ ){ 
-
+    if ( row < num_rows) {
+        for( int i=0; i < num_vecs; i++ ) {
             R[row + i*num_rows] = R[row + i*num_rows] 
                                     + MAGMA_C_MAKE( -evals[i], 0.0 )
                                                 * X[ row + i*num_rows ];
@@ -87,16 +85,14 @@ magmablas_scnrm2_kernel(
     // get norm of dx
     lsum = 0;
     for( int j = i; j < m; j += BLOCK_SIZE ) {
-
-#if (defined(PRECISION_s) || defined(PRECISION_d))
-        re = dx[j];
-        lsum += re*re;
-#else
-        re = MAGMA_C_REAL( dx[j] );
-        float im = MAGMA_C_IMAG( dx[j] );
-        lsum += re*re + im*im;
-#endif
-
+        #if (defined(PRECISION_s) || defined(PRECISION_d))
+            re = dx[j];
+            lsum += re*re;
+        #else
+            re = MAGMA_C_REAL( dx[j] );
+            float im = MAGMA_C_IMAG( dx[j] );
+            lsum += re*re + im*im;
+        #endif
     }
     sum[i] = lsum;
     sum_reduce< BLOCK_SIZE >( i, sum );
@@ -115,7 +111,7 @@ magmablas_scnrm2_kernel(
     This routine computes for Block-LOBPCG, the set of residuals. 
                             R = Ax - x evalues
     It replaces:
-    for(int i=0; i < n; i++){
+    for(int i=0; i < n; i++) {
         magma_caxpy(m, MAGMA_C_MAKE(-evalues[i],0),blockX+i*m,1,blockR+i*m,1);
     }
     The memory layout of x is:
@@ -183,6 +179,3 @@ magma_clobpcg_res(
 
     return MAGMA_SUCCESS;
 }
-
-
-

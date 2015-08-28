@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -14,7 +14,7 @@
 /**
     Purpose
     -------
-    Solves a system of linear equations
+    ZGESV solves a system of linear equations
        A * X = B
     where A is a general N-by-N matrix and X and B are N-by-NRHS matrices.
     The LU decomposition with partial pivoting and row interchanges is
@@ -98,24 +98,25 @@ magma_zgesv_nopiv_batched(
         return info;
     }
     info = magma_zgetrf_nopiv_batched( n, n, dA_array, ldda, info_array, batchCount, queue);
-    if ( (info != MAGMA_SUCCESS) ){
+    if ( info != MAGMA_SUCCESS ) {
         return info;
     }
 
 #ifdef CHECK_INFO
     // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-    magma_int_t *cpu_info = (magma_int_t*) malloc(batchCount*sizeof(magma_int_t));
+    magma_int_t *cpu_info = NULL;
+    magma_imalloc_cpu( &cpu_info, batchCount );
     magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1);
-    for(int i=0; i<batchCount; i++)
+    for (int i=0; i < batchCount; i++)
     {
-        if(cpu_info[i] != 0 ){
+        if (cpu_info[i] != 0 ) {
             printf("magma_zgetrf_batched matrix %d returned error %d\n",i, (int)cpu_info[i] );
             info = cpu_info[i];
-            free (cpu_info);
+            magma_free_cpu (cpu_info);
             return info;
         }
     }
-    free (cpu_info);
+    magma_free_cpu (cpu_info);
 #endif
            
     info = magma_zgetrs_nopiv_batched( MagmaNoTrans, n, nrhs, dA_array, ldda, dB_array, lddb, info_array, batchCount, queue );

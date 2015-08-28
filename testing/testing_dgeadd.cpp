@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgeadd.cpp normal z -> d, Fri Jan 30 19:00:23 2015
+       @generated from testing_zgeadd.cpp normal z -> d, Tue Aug 25 16:35:24 2015
        @author Mark Gates
 */
 // includes, system
@@ -39,7 +39,7 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
@@ -50,14 +50,14 @@ int main( int argc, char** argv)
     //magmablas_dgeadd(  M,  N, alpha, d_A, M-1,  d_B, ldda );
     //magmablas_dgeadd(  M,  N, alpha, d_A, ldda, d_B, N-1  );
 
-    printf("    M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    |Bl-Bm|/|Bl|\n");
-    printf("=========================================================================\n");
+    printf("%%   M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    |Bl-Bm|/|Bl|\n");
+    printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
             lda    = M;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             size   = lda*N;
             gflops = 2.*M*N / 1e9;
             
@@ -76,9 +76,10 @@ int main( int argc, char** argv)
             magma_dsetmatrix( M, N, h_A, lda, d_A, ldda );
             magma_dsetmatrix( M, N, h_B, lda, d_B, ldda );
             
-            gpu_time = magma_sync_wtime( NULL );
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             magmablas_dgeadd( M, N, alpha, d_A, ldda, d_B, ldda );
-            gpu_time = magma_sync_wtime( NULL ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             
             /* =====================================================================

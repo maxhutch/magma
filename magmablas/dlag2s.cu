@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlag2c.cu mixed zc -> ds, Fri Jan 30 19:00:08 2015
+       @generated from zlag2c.cu mixed zc -> ds, Tue Aug 25 16:35:07 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -82,8 +82,8 @@ void dlag2s_kernel(
 /**
     Purpose
     -------
-    DLAG2S_STREAM converts a double-real matrix, A,
-                        to a single-real matrix, SA.
+    DLAG2S_Q converts a double-real matrix, A,
+                   to a single-real matrix, SA.
     
     RMAX is the overflow for the single-real arithmetic.
     DLAG2S checks that all the entries of A are between -RMAX and
@@ -163,7 +163,7 @@ magmablas_dlag2s_q(
     double rmax = (double)lapackf77_slamch("O");
 
     dim3 threads( BLK_X, 1 );
-    dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
     dlag2s_kernel<<< grid, threads, 0, queue >>>( m, n, A, lda, SA, ldsa, rmax );

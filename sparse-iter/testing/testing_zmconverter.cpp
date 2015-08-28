@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -34,7 +34,7 @@ int main(  int argc, char** argv )
 
     magma_zopts zopts;
     magma_queue_t queue=NULL;
-    magma_queue_create( /*devices[ opts->device ],*/ &queue );
+    magma_queue_create( &queue );
 
     real_Double_t res;
     magma_z_matrix Z={Magma_CSR}, Z2={Magma_CSR}, A={Magma_CSR}, A2={Magma_CSR}, 
@@ -46,8 +46,7 @@ int main(  int argc, char** argv )
     B.blocksize = zopts.blocksize;
     B.alignment = zopts.alignment;
 
-    while(  i < argc ) {
-
+    while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
@@ -56,7 +55,7 @@ int main(  int argc, char** argv )
             CHECK( magma_z_csr_mtx( &Z,  argv[i], queue ));
         }
 
-        printf( "# matrix info: %d-by-%d with %d nonzeros\n",
+        printf("%% matrix info: %d-by-%d with %d nonzeros\n",
                             (int) Z.num_rows,(int) Z.num_cols,(int) Z.nnz );
         
         // convert to be non-symmetric
@@ -107,32 +106,26 @@ int main(  int argc, char** argv )
         magma_zmfree(&AT, queue );
         CHECK( magma_zmconvert( AT2, &AT, Magma_CSRD, Magma_CSR, queue ));
         magma_zmfree(&AT2, queue );
-        //BCSR
-        CHECK( magma_zmconvert( AT, &AT2, Magma_CSR, Magma_BCSR, queue ));
-        magma_zmfree(&AT, queue );
-        CHECK( magma_zmconvert( AT2, &AT, Magma_BCSR, Magma_CSR, queue ));
-        magma_zmfree(&AT2, queue );
         
         // transpose
         CHECK( magma_zmtranspose( AT, &A2, queue ));
         
         CHECK( magma_zmdiff( A, A2, &res, queue));
-        printf("# ||A-A2||_F = %8.2e\n", res);
+        printf("%% ||A-A2||_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# conversion tester:  ok\n");
+            printf("%% conversion tester:  ok\n");
         else
-            printf("# conversion tester:  failed\n");
+            printf("%% conversion tester:  failed\n");
         
         CHECK( magma_zmlumerge( A2, B, &Z2, queue ));
 
         
         CHECK( magma_zmdiff( Z, Z2, &res, queue));
-        printf("# ||Z-Z2||_F = %8.2e\n", res);
+        printf("%% ||Z-Z2||_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# LUmerge tester:  ok\n");
+            printf("%% LUmerge tester:  ok\n");
         else
-            printf("# LUmerge tester:  failed\n");
-
+            printf("%% LUmerge tester:  failed\n");
 
         magma_zmfree(&A, queue );
         magma_zmfree(&A2, queue );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgesv_rbt.cpp normal z -> s, Fri Jan 30 19:00:25 2015
+       @generated from testing_zgesv_rbt.cpp normal z -> s, Tue Aug 25 16:35:26 2015
        @author Mark Gates
 */
 // includes, system
@@ -39,15 +39,15 @@ int main(int argc, char **argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
     nrhs = opts.nrhs;
     
-    printf("ngpu %d\n", (int) opts.ngpu );
-    printf("    N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
-    printf("================================================================================\n");
+    printf("%% ngpu %d\n", (int) opts.ngpu );
+    printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
             if (info != 0)
                 printf("magma_sgesv_rbt returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
-            for(int i = 0; i < N; i++)
+            for (int i = 0; i < N; i++)
                 ipiv[i] = i+1;
 
             //=====================================================================

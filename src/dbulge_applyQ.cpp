@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_applyQ.cpp normal z -> d, Fri Jan 30 19:00:18 2015
+ *     @generated from zbulge_applyQ.cpp normal z -> d, Tue Aug 25 16:35:19 2015
  *
  */
 
@@ -60,7 +60,7 @@ extern "C" void magma_dbulge_applyQ(
     LDT      = Vblksiz;
     LDV      = NB+Vblksiz-1;
     //blklen = LDV*Vblksiz;
-    nbGblk   = plasma_ceildiv((N-1), Vblksiz);
+    nbGblk   = magma_ceildiv((N-1), Vblksiz);
     //magma_dmalloc_cpu( &WORK, LWORK );
 
     /* find the size of the matrix T V*/
@@ -121,9 +121,9 @@ extern "C" void magma_dbulge_applyQ(
             for (bg = nbGblk; bg > 0; bg--) {
                 firstcolj = (bg-1)*Vblksiz + 1;
                 if (bg == nbGblk)
-                    rownbm = plasma_ceildiv((N-(firstcolj)), NB);  // last blk has size=1 used for real to handle A(N,N-1)
+                    rownbm = magma_ceildiv((N-(firstcolj)), NB);  // last blk has size=1 used for real to handle A(N,N-1)
                 else
-                    rownbm = plasma_ceildiv((N-(firstcolj+1)), NB);
+                    rownbm = magma_ceildiv((N-(firstcolj+1)), NB);
                 
                 for (m = rownbm; m > 0; m--) {
                     vlen = 0;
@@ -153,11 +153,11 @@ extern "C" void magma_dbulge_applyQ(
                 }
             }
         } else if (versionL == 114) {
-            rownbm = plasma_ceildiv((N-1), NB);
+            rownbm = magma_ceildiv((N-1), NB);
             for (m = rownbm; m > 0; m--) {
                 ncolinvolvd = min(N-1, m*NB);
                 avai_blksiz=min(Vblksiz, ncolinvolvd);
-                nbgr = plasma_ceildiv(ncolinvolvd, avai_blksiz);
+                nbgr = magma_ceildiv(ncolinvolvd, avai_blksiz);
                 for (n = nbgr; n > 0; n--) {
                     vlen = 0;
                     vnb  = 0;
@@ -192,8 +192,8 @@ extern "C" void magma_dbulge_applyQ(
         if (versionR == 91) {
             for (bg =1; bg <= nbGblk; bg++) {
                 firstcolj = (bg-1)*Vblksiz + 1;
-                rownbm    = plasma_ceildiv((N-(firstcolj+1)), NB);
-                if (bg == nbGblk) rownbm    = plasma_ceildiv((N-(firstcolj)), NB);  // last blk has size=1 used for real to handle A(N,N-1)
+                rownbm    = magma_ceildiv((N-(firstcolj+1)), NB);
+                if (bg == nbGblk) rownbm    = magma_ceildiv((N-(firstcolj)), NB);  // last blk has size=1 used for real to handle A(N,N-1)
                 for (m = 1; m <= rownbm; m++) {
                     vlen = 0;
                     vnb  = 0;
@@ -225,11 +225,11 @@ extern "C" void magma_dbulge_applyQ(
                 }
             }
         } else if (versionR == 92) {
-            rownbm = plasma_ceildiv((N-1), NB);
+            rownbm = magma_ceildiv((N-1), NB);
             for (m = 1; m <= rownbm; m++) {
                 ncolinvolvd = min(N-1, m*NB);
                 avai_blksiz=min(Vblksiz, ncolinvolvd);
-                nbgr = plasma_ceildiv(ncolinvolvd, avai_blksiz);
+                nbgr = magma_ceildiv(ncolinvolvd, avai_blksiz);
                 for (n = 1; n <= nbgr; n++) {
                     vlen = 0;
                     vnb  = 0;
@@ -260,7 +260,7 @@ extern "C" void magma_dbulge_applyQ(
             }
         }
     } else {
-            printf("ERROR SIDE %d\n", SIDE);
+        printf("ERROR SIDE %d\n", SIDE);
     }
 
 #if defined(USESTREAM)

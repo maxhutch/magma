@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -69,13 +69,11 @@ magma_zresidualvec(
     magma_int_t dofs = A.num_rows;
     
     if ( A.num_rows == b.num_rows ) {
-
         CHECK( magma_z_spmv( mone, A, x, zero, *r, queue ));      // r = A x
         magma_zaxpy(dofs, one, b.dval, 1, r->dval, 1);          // r = r - b
         *res =  magma_dznrm2(dofs, r->dval, 1);            // res = ||r||
         //               /magma_dznrm2(dofs, b.dval, 1);               /||b||
         //printf( "relative residual: %e\n", *res );
-
     } else if ((b.num_rows*b.num_cols)%A.num_rows== 0 ) {
         magma_int_t num_vecs = b.num_rows*b.num_cols/A.num_rows;
 
@@ -96,4 +94,3 @@ cleanup:
     magmablasSetKernelStream( orig_queue );
     return info;
 }
-

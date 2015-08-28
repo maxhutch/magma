@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
   
-       @generated from zgeqp3_gpu.cpp normal z -> d, Fri Jan 30 19:00:15 2015
+       @generated from zgeqp3_gpu.cpp normal z -> d, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -105,7 +105,8 @@ magma_dgeqp3_gpu(
 {
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
-    magma_int_t ione = 1;
+    const double c_zero = MAGMA_D_ZERO;
+    const magma_int_t ione = 1;
 
     //magma_int_t na;
     magma_int_t n_j;
@@ -153,7 +154,7 @@ magma_dgeqp3_gpu(
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-    cudaMemset( df, 0, (n+1)*nb*sizeof(double) );
+    magmablas_dlaset( MagmaFull, n+1, nb, c_zero, c_zero, df, n+1 );
 
     nfxd = 0;
     /* Move initial columns up front.

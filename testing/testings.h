@@ -52,20 +52,6 @@ void flops_init();
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-// for integers a >  0, b > 0, returns ceil( a/b ).
-// for integers a == 0, b > 0, returns 1.
-#ifndef ceildiv
-#define ceildiv(a, b) ((a - 1)/b + 1)
-#endif
-
-// for integers a >  0, b > 0, returns a rounded up to multiple of b.
-// for integers a == 0, b > 0, returns b.
-// old implementation assumes b is power of 2:
-// (b <= 0) ? (a) : (((a) + (b)-1) & ~((b)-1))
-#ifndef roundup
-#define roundup(a, b) (ceildiv((a), (b)) * (b))
-#endif
-
 // suppress "warning: unused variable" in a portable fashion
 #define MAGMA_UNUSED(var)  ((void)var)
 
@@ -148,11 +134,15 @@ void flops_init();
 /***************************************************************************//**
  * Functions and data structures used for testing.
  */
+void magma_zmake_symmetric( magma_int_t N, magmaDoubleComplex* A, magma_int_t lda );
+void magma_cmake_symmetric( magma_int_t N, magmaFloatComplex*  A, magma_int_t lda );
 void magma_zmake_hermitian( magma_int_t N, magmaDoubleComplex* A, magma_int_t lda );
 void magma_cmake_hermitian( magma_int_t N, magmaFloatComplex*  A, magma_int_t lda );
 void magma_dmake_symmetric( magma_int_t N, double*             A, magma_int_t lda );
 void magma_smake_symmetric( magma_int_t N, float*              A, magma_int_t lda );
 
+void magma_zmake_spd( magma_int_t N, magmaDoubleComplex* A, magma_int_t lda );
+void magma_cmake_spd( magma_int_t N, magmaFloatComplex*  A, magma_int_t lda );
 void magma_zmake_hpd( magma_int_t N, magmaDoubleComplex* A, magma_int_t lda );
 void magma_cmake_hpd( magma_int_t N, magmaFloatComplex*  A, magma_int_t lda );
 void magma_dmake_hpd( magma_int_t N, double*             A, magma_int_t lda );
@@ -164,8 +154,20 @@ void magma_assert_warn( bool condition, const char* msg, ... );
 
 #define MAX_NTEST 1050
 
-typedef struct magma_opts
+typedef enum {
+    MagmaOptsDefault = 0,
+    MagmaOptsBatched = 1000
+} magma_opts_t;
+
+class magma_opts
 {
+public:
+    // constructor
+    magma_opts( magma_opts_t flag=MagmaOptsDefault );
+    
+    // parse command line
+    void parse_opts( int argc, char** argv );
+    
     // matrix size
     magma_int_t ntest;
     magma_int_t msize[ MAX_NTEST ];
@@ -176,13 +178,18 @@ typedef struct magma_opts
     magma_int_t kmax;
     magma_int_t batchcount;
     
+    magma_int_t default_nstart;
+    magma_int_t default_nend;
+    magma_int_t default_nstep;
+    
     // scalars
     magma_int_t device;
-    magma_int_t roundup;
+    magma_int_t align;
     magma_int_t nb;
     magma_int_t nrhs;
     magma_int_t nstream;
     magma_int_t ngpu;
+    magma_int_t nsub;
     magma_int_t niter;
     magma_int_t nthread;
     magma_int_t offset;
@@ -192,7 +199,8 @@ typedef struct magma_opts
     double      fraction;  // hegvdx
     double      tolerance;
     magma_int_t panel_nthread; //in magma_amc: first dimension for a 2D big panel
-    double fraction_dcpu; //in magma_amc: fraction of the work for the cpu 
+    double fraction_dcpu; //in magma_amc: fraction of the work for the cpu
+    
     // boolean arguments
     int check;
     int lapack;
@@ -224,9 +232,7 @@ typedef struct magma_opts
     // misc
     int flock_op;   // shared or exclusive lock
     int flock_fd;   // lock file
-} magma_opts;
-
-void parse_opts( int argc, char** argv, magma_opts *opts );
+};
 
 extern const char* g_platform_str;
 

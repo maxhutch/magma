@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Azzam Haidar
        @author Ichi Yamazaki
 
-       @generated from zherk_mgpu.cpp normal z -> d, Fri Jan 30 19:00:10 2015
+       @generated from zherk_mgpu.cpp normal z -> d, Tue Aug 25 16:35:10 2015
 
 */
 #include "common_magma.h"
@@ -20,7 +20,7 @@
     This dsyrk_mgpu is internal routine used by dpotrf_mgpu_right.
     it has specific assumption on the block diagonal.
     
-    @ingroup magma_dsyrk_comp
+    @ingroup magma_dblas3_internal
     ********************************************************************/
 
 extern "C" void
@@ -201,4 +201,3 @@ magma_dsyrk_mgpu2(
 #undef dB
 #undef dC
 #undef STREAM_ID
-

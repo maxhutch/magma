@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeqr2x_gpu-v3.cpp normal z -> s, Fri Jan 30 19:00:14 2015
+       @generated from zgeqr2x_gpu-v3.cpp normal z -> s, Tue Aug 25 16:35:15 2015
 
 */
 #include "common_magma.h"
@@ -131,7 +131,7 @@ magma_slarfb2_gpu(
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_sgeqrf_comp
+    @ingroup magma_sgeqrf_aux
     ********************************************************************/
 extern "C" magma_int_t
 magma_sgeqr2x3_gpu(

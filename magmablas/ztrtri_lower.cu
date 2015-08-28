@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -16,7 +16,7 @@
 */
 
 #include "common_magma.h"
-#include "ztrtri.h"
+#include "ztrtri.cuh"
 /*
     This inverts the diagonal IB by IB inner blocks of A,
     and stores the results in d_dinvA.
@@ -1181,4 +1181,3 @@ triple_zgemm_above64_part3_lower_kernel_batched(
     triple_zgemm_above64_part3_lower_device( n, Ain_array[batchid], lda, dinvA_array[batchid], jb, npages);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
 
@@ -21,6 +21,8 @@
 /**
     Purpose
     -------
+    ZUNMBR multiplies by Q or P as part of the SVD decomposition.
+    
     If VECT = MagmaQ, ZUNMBR overwrites the general complex M-by-N matrix C with
                                  SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:        Q*C                  C*Q

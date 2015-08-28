@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgehrd_m.cpp normal z -> d, Fri Jan 30 19:00:26 2015
+       @generated from testing_zgehrd_m.cpp normal z -> d, Tue Aug 25 16:35:28 2015
 
 */
 
@@ -45,12 +45,12 @@ int main( int argc, char** argv)
     eps   = lapackf77_dlamch( "E" );
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("    N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
-    printf("=========================================================================\n");
+    printf("%%   N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
+    printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -107,7 +107,7 @@ int main( int argc, char** argv)
                 if ( info != 0 ) {
                     printf("magma_dorghr returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                    exit(1);
+                    return -1;
                 }
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 lapackf77_dhst01(&N, &ione, &N,

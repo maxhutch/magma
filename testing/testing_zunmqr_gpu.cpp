@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -40,7 +40,7 @@ int main( int argc, char** argv )
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     double tol = 2. * opts.tolerance * lapackf77_dlamch("E");
     
@@ -48,18 +48,18 @@ int main( int argc, char** argv )
     magma_side_t  side [] = { MagmaLeft,       MagmaRight   };
     magma_trans_t trans[] = { Magma_ConjTrans, MagmaNoTrans };
 
-    printf("    M     N     K   side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
-    printf("===============================================================================================\n");
+    printf("%%   M     N     K   side   trans   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / ||QC||_F\n");
+    printf("%%==============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int iside = 0; iside < 2; ++iside ) {
       for( int itran = 0; itran < 2; ++itran ) {
-        for( int iter = 0; iter < opts.niter; ++iter ) {        
+        for( int iter = 0; iter < opts.niter; ++iter ) {
             m = opts.msize[itest];
             n = opts.nsize[itest];
             k = opts.ksize[itest];
             nb  = magma_get_zgeqrf_nb( m );
-            ldc = ((m + 31)/32)*32;
-            lda = ((max(m,n) + 31)/32)*32;
+            ldc = magma_roundup( m, opts.align );  // multiple of 32 by default
+            lda = magma_roundup( max(m,n), opts.align );  // multiple of 32 by default
             gflops = FLOPS_ZUNMQR( m, n, k, side[iside] ) / 1e9;
             
             if ( side[iside] == MagmaLeft && m < k ) {
@@ -80,12 +80,12 @@ int main( int argc, char** argv )
             if ( side[iside] == MagmaLeft ) {
                 // side = left
                 lwork_max = (m - k + nb)*(n + nb) + n*nb;
-                dt_size = ( 2*min(m,k) + ((max(m,n) + 31)/32)*32 )*nb;
+                dt_size = ( 2*min(m,k) + magma_roundup( max(m,n), 32) )*nb;
             }
             else {
                 // side = right
                 lwork_max = (n - k + nb)*(m + nb) + m*nb;
-                dt_size = ( 2*min(n,k) + ((max(m,n) + 31)/32)*32 )*nb;
+                dt_size = ( 2*min(n,k) + magma_roundup( max(m,n), 32 ) )*nb;
             }
             
             TESTING_MALLOC_CPU( C,   magmaDoubleComplex, ldc*n );
@@ -144,11 +144,19 @@ int main( int argc, char** argv )
             if ( lwork < 0 || lwork > lwork_max )
                 printf("invalid lwork %d, lwork_max %d\n", (int) lwork, (int) lwork_max );
             
-            gpu_time = magma_sync_wtime( 0 );  // sync needed for L,N and R,T cases
-            magma_zunmqr_gpu( side[iside], trans[itran],
-                              m, n, k,
-                              dA, lda, tau, dC, ldc, W, lwork, dT, nb, &info );
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );  // sync needed for L,N and R,T cases
+            if ( opts.version == 1 ) {
+                magma_zunmqr_gpu( side[iside], trans[itran],
+                                  m, n, k,
+                                  dA, lda, tau, dC, ldc, W, lwork, dT, nb, &info );
+            }
+            else if ( opts.version == 2 ) {
+                magma_zunmqr2_gpu( side[iside], trans[itran],
+                                   m, n, k,
+                                   dA, lda, tau, dC, ldc, W, lwork, &info );
+            }
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
                 printf("magma_zunmqr_gpu returned error %d: %s.\n",

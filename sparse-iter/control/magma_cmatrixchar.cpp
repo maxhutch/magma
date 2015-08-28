@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmatrixchar.cpp normal z -> c, Sun May  3 11:23:01 2015
+       @generated from magma_zmatrixchar.cpp normal z -> c, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -133,7 +133,6 @@ magma_cdiameter(
         }
         // Dense
         else if ( A->storage_type == Magma_DENSE ) {
-            magma_index_t i, j, tmp,  *dim, maxdim=0;
             CHECK( magma_index_malloc_cpu( &dim, A->num_rows));
             for( i=0; i<A->num_rows; i++ ) {
                 dim[i] = 0;

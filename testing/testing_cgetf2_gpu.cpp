@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgetf2_gpu.cpp normal z -> c, Fri Jan 30 19:00:24 2015
+       @generated from testing_zgetf2_gpu.cpp normal z -> c, Tue Aug 25 16:35:26 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -41,7 +41,7 @@ float get_LU_error(magma_int_t M, magma_int_t N,
     lapackf77_clacpy( MagmaLowerStr, &M, &min_mn, LU, &lda, L, &M      );
     lapackf77_clacpy( MagmaUpperStr, &min_mn, &N, LU, &lda, U, &min_mn );
 
-    for(j=0; j<min_mn; j++)
+    for (j=0; j < min_mn; j++)
         L[j+j*M] = MAGMA_C_MAKE( 1., 0. );
     
     matnorm = lapackf77_clange("f", &M, &N, A, &lda, work);
@@ -80,12 +80,12 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("    M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)  Copy time (ms)  ||PA-LU||/(||A||*N)\n");
-    printf("=======================================================================================\n");
+    printf("%%   M     N   CPU GFlop/s (ms)    GPU GFlop/s (ms)  Copy time (ms)  ||PA-LU||/(||A||*N)\n");
+    printf("%%======================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -93,7 +93,7 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_CGETRF( M, N ) / 1e9;
             
             if ( N > 512 ) {

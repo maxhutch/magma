@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 */
 
 #include "common_magma.h"
@@ -117,85 +117,83 @@ magma_int_t magma_num_gpus( void )
       has to be done sequentially.
 */
 extern "C"
-void swp2pswp( magma_trans_t trans, magma_int_t n, magma_int_t *ipiv, magma_int_t *newipiv)
+void magma_swp2pswp( magma_trans_t trans, magma_int_t n, magma_int_t *ipiv, magma_int_t *newipiv)
 {
-  magma_int_t i, newind, ind;
-  magma_int_t    notran = (trans == MagmaNoTrans);
-
-  for(i=0; i<n; i++)
-    newipiv[i] = -1;
-  
-  if (notran){
-    for(i=0; i<n; i++){
-      newind = ipiv[i] - 1;
-      if (newipiv[newind] == -1) {
-        if (newipiv[i]==-1){
-          newipiv[i] = newind;
-          if (newind>i)
-            newipiv[newind]= i;
+    magma_int_t i, newind, ind;
+    magma_int_t    notran = (trans == MagmaNoTrans);
+    
+    for (i=0; i < n; i++)
+        newipiv[i] = -1;
+    
+    if (notran) {
+        for (i=0; i < n; i++) {
+            newind = ipiv[i] - 1;
+            if (newipiv[newind] == -1) {
+                if (newipiv[i] == -1) {
+                    newipiv[i] = newind;
+                    if (newind > i)
+                        newipiv[newind]= i;
+                }
+                else {
+                    ind = newipiv[i];
+                    newipiv[i] = newind;
+                    if (newind > i)
+                        newipiv[newind]= ind;
+                }
+            }
+            else {
+                if (newipiv[i] == -1) {
+                    if (newind > i) {
+                        ind = newipiv[newind];
+                        newipiv[newind] = i;
+                        newipiv[i] = ind;
+                    }
+                    else
+                        newipiv[i] = newipiv[newind];
+                }
+                else {
+                    ind = newipiv[i];
+                    newipiv[i] = newipiv[newind];
+                    if (newind > i)
+                        newipiv[newind] = ind;
+                }
+            }
         }
-        else
-          {
-            ind = newipiv[i];
-            newipiv[i] = newind;
-            if (newind>i)
-              newipiv[newind]= ind;
-          }
-      }
-      else {
-        if (newipiv[i]==-1){
-          if (newind>i){
-            ind = newipiv[newind];
-            newipiv[newind] = i;
-            newipiv[i] = ind;
-          }
-          else
-            newipiv[i] = newipiv[newind];
+    } else {
+        for (i=n-1; i >= 0; i--) {
+            newind = ipiv[i] - 1;
+            if (newipiv[newind] == -1) {
+                if (newipiv[i] == -1) {
+                    newipiv[i] = newind;
+                    if (newind > i)
+                        newipiv[newind]= i;
+                }
+                else {
+                    ind = newipiv[i];
+                    newipiv[i] = newind;
+                    if (newind > i)
+                        newipiv[newind]= ind;
+                }
+            }
+            else {
+                if (newipiv[i] == -1) {
+                    if (newind > i) {
+                        ind = newipiv[newind];
+                        newipiv[newind] = i;
+                        newipiv[i] = ind;
+                    }
+                    else
+                        newipiv[i] = newipiv[newind];
+                }
+                else {
+                    ind = newipiv[i];
+                    newipiv[i] = newipiv[newind];
+                    if (newind > i)
+                        newipiv[newind] = ind;
+                }
+            }
         }
-        else{
-          ind = newipiv[i];
-          newipiv[i] = newipiv[newind];
-          if (newind > i)
-            newipiv[newind] = ind;
-        }
-      }
     }
-  } else {
-    for(i=n-1; i>=0; i--){
-      newind = ipiv[i] - 1;
-      if (newipiv[newind] == -1) {
-        if (newipiv[i]==-1){
-          newipiv[i] = newind;
-          if (newind>i)
-            newipiv[newind]= i;
-        }
-        else
-          {
-            ind = newipiv[i];
-            newipiv[i] = newind;
-            if (newind>i)
-              newipiv[newind]= ind;
-          }
-      }
-      else {
-        if (newipiv[i]==-1){
-          if (newind>i){
-            ind = newipiv[newind];
-            newipiv[newind] = i;
-            newipiv[i] = ind;
-          }
-          else
-            newipiv[i] = newipiv[newind];
-        }
-        else{
-          ind = newipiv[i];
-          newipiv[i] = newipiv[newind];
-          if (newind > i)
-            newipiv[newind] = ind;
-        }
-      }
-    }
-  }
 }
 
 // --------------------
@@ -209,7 +207,7 @@ void swp2pswp( magma_trans_t trans, magma_int_t n, magma_int_t *ipiv, magma_int_
 // -------------------------------------------
 // gpu 0: 2  blocks, cols:  0- 9, 30-39, 60-69
 // gpu 1: 1+ blocks, cols: 10-19, 40-49, 70-74 (partial)
-// gpu 2: 1  block , cols: 20-29, 50-59
+// gpu 2: 1  block,  cols: 20-29, 50-59
 //
 // j0 = 15, j0dev = 1
 // j1 = 70, j1dev = 0

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmgeelltmv.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zmgeelltmv.cu normal z -> c, Tue Aug 25 16:35:31 2015
 
 */
 
@@ -28,22 +28,23 @@ cmgeelltmv_kernel(
         magmaFloatComplex * dy)
 {
     extern __shared__ magmaFloatComplex dot[];
-    int row = blockDim.x * blockIdx.x + threadIdx.x ;
-    if(row < num_rows ){
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
+    if(row < num_rows ) {
         for( int i=0; i<num_vecs; i++ )
-                dot[ threadIdx.x+ i*blockDim.x ] = MAGMA_C_MAKE(0.0, 0.0);
-        for ( int n = 0; n < num_cols_per_row ; n ++){
+            dot[ threadIdx.x+ i*blockDim.x ] = MAGMA_C_MAKE(0.0, 0.0);
+        for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_rows * n + row ];
             magmaFloatComplex val = dval [ num_rows * n + row ];
-            if( val != 0){
+            if( val != 0) {
                 for( int i=0; i<num_vecs; i++ )
                     dot[ threadIdx.x + i*blockDim.x ] += 
                                         val * dx[col + i * num_cols ];
             }
         }
-        for( int i=0; i<num_vecs; i++ )
-                dy[ row + i*num_cols ] = dot[ threadIdx.x + i*blockDim.x ] 
-                                * alpha + beta * dy [ row + i*num_cols ];
+        for( int i=0; i<num_vecs; i++ ) {
+            dy[ row + i*num_cols ] = dot[ threadIdx.x + i*blockDim.x ] 
+                            * alpha + beta * dy [ row + i*num_cols ];
+        }
     }
 }
 
@@ -136,6 +137,3 @@ magma_cmgeelltmv(
 
     return MAGMA_SUCCESS;
 }
-
-
-

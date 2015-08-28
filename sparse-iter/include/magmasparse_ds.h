@@ -1,11 +1,11 @@
 /*
--- MAGMA (version 1.1) --
+-- MAGMA (version 1.6.3-beta1) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date
+ @date August 2015
 
- @generated from magmasparse_zc.h mixed zc -> ds, Fri May  1 21:08:05 2015
+ @generated from magmasparse_zc.h mixed zc -> ds, Tue Aug 25 16:35:29 2015
  @author Hartwig Anzt
 */
 
@@ -107,23 +107,6 @@ magma_dlag2s_CSR_DENSE_convert(
 /* ////////////////////////////////////////////////////////////////////////////
  -- MAGMA_SPARSE function definitions / Data on GPU
 */
-magma_int_t
-magma_dspgmres(
-    magma_d_matrix A, 
-    magma_d_matrix b, 
-    magma_d_matrix *x,
-    magma_d_solver_par *solver_par,
-    magma_d_preconditioner *precond_par,
-    magma_queue_t queue );
-
-magma_int_t
-magma_dspbicgstab(
-    magma_d_matrix A, 
-    magma_d_matrix b, 
-    magma_d_matrix *x,
-    magma_d_solver_par *solver_par,
-    magma_d_preconditioner *precond_par,
-    magma_queue_t queue );
 
 magma_int_t
 magma_dsir(
@@ -134,14 +117,6 @@ magma_dsir(
     magma_d_preconditioner *precond_par,
     magma_queue_t queue );
 
-magma_int_t
-magma_dspir(
-    magma_d_matrix A, 
-    magma_d_matrix b, 
-    magma_d_matrix *x,
-    magma_d_solver_par *solver_par, 
-    magma_d_preconditioner *precond_par,
-    magma_queue_t queue );
 
 
 /* ////////////////////////////////////////////////////////////////////////////

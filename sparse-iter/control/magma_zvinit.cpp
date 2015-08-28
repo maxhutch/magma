@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -33,6 +33,10 @@
     @param[in]
     num_rows    magma_int_t
                 desired length of vector
+                
+    @param[in]
+    num_cols    magma_int_t
+                desired width of vector-block (columns of dense matrix)
 
     @param[in]
     values      magmaDoubleComplex
@@ -57,35 +61,47 @@ magma_zvinit(
     magma_int_t info = 0;
     
     // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
+    magma_queue_t orig_queue = NULL;
     magmablasGetKernelStream( &orig_queue );
 
-    x->memory_location = Magma_CPU;
-    x->num_rows = num_rows;
+    x->val = NULL;
+    x->diag = NULL;
+    x->row = NULL;
+    x->rowidx = NULL;
+    x->col = NULL;
+    x->blockinfo = NULL;
+    x->dval = NULL;
+    x->ddiag = NULL;
+    x->drow = NULL;
+    x->drowidx = NULL;
+    x->dcol = NULL;
     x->storage_type = Magma_DENSE;
-    x->ld = num_rows;
+    x->memory_location = mem_loc;
+    x->sym = Magma_GENERAL;
+    x->diagorder_type = Magma_VALUE;
+    x->fill_mode = MagmaFull;
+    x->num_rows = num_rows;
     x->num_cols = num_cols;
     x->nnz = num_rows*num_cols;
+    x->max_nnz_row = num_cols;
+    x->diameter = 0;
+    x->blocksize = 1;
+    x->numblocks = 1;
+    x->alignment = 1;
     x->major = MagmaColMajor;
+    x->ld = num_rows;
     if ( mem_loc == Magma_CPU ) {
-        x->memory_location = Magma_CPU;
         CHECK( magma_zmalloc_cpu( &x->val, x->nnz ));
-        for( magma_int_t i=0; i<x->nnz; i++)
+        for( magma_int_t i=0; i<x->nnz; i++) {
              x->val[i] = values;
+        }
     }
     else if ( mem_loc == Magma_DEV ) {
-        x->memory_location = Magma_DEV;
         CHECK( magma_zmalloc( &x->val, x->nnz ));
         magmablas_zlaset(MagmaFull, x->num_rows, x->num_cols, values, values, x->val, x->num_rows);
     }
     
 cleanup:
     magmablasSetKernelStream( orig_queue );
-    return MAGMA_SUCCESS;
+    return info; 
 }
-
-
-
-   
-
-

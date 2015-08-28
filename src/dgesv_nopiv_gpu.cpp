@@ -1,23 +1,22 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        @author Adrien REMY
 
-       @generated from zgesv_nopiv_gpu.cpp normal z -> d, Fri Jan 30 19:00:14 2015
+       @generated from zgesv_nopiv_gpu.cpp normal z -> d, Tue Aug 25 16:35:14 2015
 */
 #include "common_magma.h"
 
 /**
     Purpose
     -------
-    Solves a system of linear equations
+    DGESV solves a system of linear equations
         A * X = B
     where A is a general n-by-n matrix and X and B are n-by-nrhs matrices.
-    The LU decomposition with no pivoting is
-    used to factor A as
+    The LU decomposition with no pivoting is used to factor A as
         A = L * U,
     where L is unit lower triangular, and U is
     upper triangular.  The factored form of A is then used to solve the

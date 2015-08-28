@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgeqrf_mgpu.cpp normal z -> d, Fri Jan 30 19:00:26 2015
+       @generated from testing_zgeqrf_mgpu.cpp normal z -> d, Tue Aug 25 16:35:27 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -39,21 +39,21 @@ int main( int argc, char** argv )
     magma_int_t ISEED[4] = {0,0,0,1}, ISEED2[4];
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     opts.lapack |= (opts.check == 2);  // check (-c2) implies lapack (-l)
  
     magma_int_t status = 0;
     double tol, eps = lapackf77_dlamch("E");
     tol = opts.tolerance * eps;
 
-    printf("ngpu %d\n", (int) opts.ngpu );
+    printf("%% ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 1 ) {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R-Q'A||_1 / (M*||A||_1) ||I-Q'Q||_1 / M\n");
-        printf("================================================================================================\n");
-
-    } else {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F /(M*||A||_F)\n");
-        printf("==========================================================================\n");
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R-Q'A||_1 / (M*||A||_1) ||I-Q'Q||_1 / M\n");
+        printf("%%===============================================================================================\n");
+    }
+    else {
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F /(M*||A||_F)\n");
+        printf("%%=========================================================================\n");
     }
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -62,12 +62,12 @@ int main( int argc, char** argv )
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             nb     = magma_get_dgeqrf_nb( M );
             gflops = FLOPS_DGEQRF( M, N ) / 1e9;
             
             // ngpu must be at least the number of blocks
-            ngpu = min( opts.ngpu, int((N+nb-1)/nb) );
+            ngpu = min( opts.ngpu, magma_ceildiv(N,nb) );
             if ( ngpu < opts.ngpu ) {
                 printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) ngpu );
             }
@@ -96,7 +96,7 @@ int main( int argc, char** argv )
             }
             
             /* Initialize the matrix */
-            for ( int j=0; j<4; j++ )
+            for( int j=0; j < 4; j++ )
                 ISEED2[j] = ISEED[j]; // save seeds
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
             lapackf77_dlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
@@ -197,7 +197,7 @@ int main( int argc, char** argv )
             
             TESTING_FREE_PIN( h_R    );
             
-            for( int dev=0; dev < ngpu; dev++ ){
+            for( int dev=0; dev < ngpu; dev++ ) {
                 magma_setdevice( dev );
                 TESTING_FREE_DEV( d_lA[dev] );
             }

@@ -1,0 +1,99 @@
+
+Tue May  5 10:56:24 EDT 2015
+numactl --interleave=all ./testing_zheevdx_2stage -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+MAGMA 1.5.0  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevdx_2stage [options] [-h|--help]
+
+using: itype = 1, jobz = No vectors, range = All, uplo = Lower, check = 0, fraction = 1.0000
+    N     M  GPU Time (sec)  ||I-Q'Q||/.  ||A-QDQ'||/.  ||D-D_magma||/.
+=======================================================================
+  100     0     0.00
+1000  1000     0.52      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   10     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   20     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   30     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   40     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   50     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   60     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   70     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   80     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   90     0     0.00      On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+  100     0     0.00
+200   200     0.01
+300   300     0.04
+400   400     0.08
+500   500     0.13
+600   600     0.17
+700   700     0.23
+800   800     0.32
+900   900     0.35
+1000  1000     0.42
+2000  2000     1.31
+3000  3000     2.09
+4000  4000     3.76
+5000  5000    12.71
+6000  6000     7.84
+7000  7000     7.84
+8000  8000     9.60
+9000  9000    28.38
+10000 10000    14.05
+12000 12000    21.18
+14000 14000    46.21
+16000 16000    42.50
+18000 18000    79.63
+20000 20000    77.40
+Tue May  5 11:04:47 EDT 2015
+
+Tue May  5 11:04:48 EDT 2015
+numactl --interleave=all ./testing_zheevdx_2stage -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.5.0  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevdx_2stage [options] [-h|--help]
+
+using: itype = 1, jobz = Vectors needed, range = All, uplo = Lower, check = 0, fraction = 1.0000
+    N     M  GPU Time (sec)  ||I-Q'Q||/.  ||A-QDQ'||/.  ||D-D_magma||/.
+=======================================================================
+  100   100     0.01
+1000  1000     0.40
+10    10     0.00
+20    20     0.00
+30    30     0.00
+40    40     0.00
+50    50     0.00
+60    60     0.00
+70    70     0.00
+80    80     0.00
+90    90     0.00
+100   100     0.00
+200   200     0.01
+300   300     0.05
+400   400     0.08
+500   500     0.12
+600   600     0.17
+700   700     0.22
+800   800     0.29
+900   900     0.36
+1000  1000     0.41
+2000  2000     1.21
+3000  3000     2.43
+4000  4000     3.90
+5000  5000     7.77
+6000  6000    13.40
+7000  7000    13.84
+8000  8000    18.87
+9000  9000    29.79
+10000 10000    34.73
+12000 12000    62.32
+14000 14000    88.87
+16000 16000   129.35
+18000 18000   192.90
+20000 20000    82.94
+Tue May  5 11:18:36 EDT 2015

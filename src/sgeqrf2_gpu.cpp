@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
-       @generated from zgeqrf2_gpu.cpp normal z -> s, Fri Jan 30 19:00:15 2015
+       @generated from zgeqrf2_gpu.cpp normal z -> s, Tue Aug 25 16:35:15 2015
 
 */
 #include "common_magma.h"
@@ -181,7 +181,7 @@ magma_sgeqrf2_gpu(
                               &rows, &ib,
                               work_ref(i), &ldwork, tau+i, hwork, &ib);
 
-            spanel_to_q( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
+            magma_spanel_to_q( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
 
             /* download the i-th V matrix */
             magma_ssetmatrix_async( rows, ib, work_ref(i), ldwork, dA(i,i), ldda, stream[0] );
@@ -198,14 +198,14 @@ magma_sgeqrf2_gpu(
                                       rows, ib, ib,
                                       dA(i, i   ), ldda, dwork,    lddwork,
                                       dA(i, i+ib), ldda, dwork+ib, lddwork);
-                    sq_to_panel( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
+                    magma_sq_to_panel( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
                 }
                 else {
                     magma_slarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, n-i-ib, ib,
                                       dA(i, i   ), ldda, dwork,    lddwork,
                                       dA(i, i+ib), ldda, dwork+ib, lddwork);
-                    sq_to_panel( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
+                    magma_sq_to_panel( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
                     magma_ssetmatrix_async( ib, ib,
                                             work_ref(i), ldwork,
                                             dA(i,i),     ldda, stream[1] );

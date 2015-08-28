@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zpotf2_gpu.cpp normal z -> d, Fri Jan 30 19:00:24 2015
+       @generated from testing_zpotf2_gpu.cpp normal z -> d, Tue Aug 25 16:35:25 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -37,20 +37,20 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    printf("    N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
-    printf("========================================================\n");
+    printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
+    printf("%%   N   CPU GFlop/s (ms)    GPU GFlop/s (ms)    ||R_magma - R_lapack||_F / ||R_lapack||_F\n");
+    printf("%%=======================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N   = opts.nsize[itest];
             lda = N;
             n2  = lda*N;
-            ldda = ((N+31)/32)*32;
+            ldda = magma_roundup( N, opts.align );  // multiple of 32 by default
             gflops = FLOPS_DPOTRF( N ) / 1e9;
             
             if ( N > 512 ) {

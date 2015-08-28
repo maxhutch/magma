@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Stan Tomov
 
@@ -68,11 +68,11 @@ zgemv_conjv_kernel(
             On entry, ALPHA specifies the scalar alpha.
 
     @param[in]
-    dA      COMPLEX_16 array of dimension ( LDA, n ) on the GPU.
+    dA      COMPLEX_16 array of dimension ( LDDA, n ) on the GPU.
 
     @param[in]
-    lda     INTEGER
-            LDA specifies the leading dimension of A.
+    ldda    INTEGER
+            LDDA specifies the leading dimension of A.
 
     @param[in]
     dx      COMPLEX_16 array of dimension n
@@ -120,13 +120,12 @@ magmablas_zgemv_conjv(
         return;  //info;
     }
     
-    magma_int_t blocks = (m - 1)/num_threads + 1;
+    magma_int_t blocks = magma_ceildiv( m, num_threads );
     dim3 grid(blocks, 1, 1);
     dim3 threads(num_threads, 1, 1);
 
     zgemv_conjv_kernel<<< grid, threads, 0, magma_stream >>>
             (m, n, alpha, dA, ldda, dx, incx, beta, dy, incy);
-
 }
 
 #undef num_threads

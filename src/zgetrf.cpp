@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -112,8 +112,8 @@ magma_zgetrf(
         magma_int_t maxm, maxn, ldda, maxdim;
         magma_int_t i, j, rows, cols, s = min(m, n)/nb;
         
-        maxm = ((m + 31)/32)*32;
-        maxn = ((n + 31)/32)*32;
+        maxm = magma_roundup( m, 32 );
+        maxn = magma_roundup( n, 32 );
         maxdim = max(maxm, maxn);
 
         /* set number of GPUs */

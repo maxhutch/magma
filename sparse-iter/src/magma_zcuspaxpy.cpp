@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -93,8 +93,8 @@ magma_zcuspaxpy(
         && ( A.storage_type == Magma_CSR ||
              A.storage_type == Magma_CSRCOO )
         && ( B.storage_type == Magma_CSR ||
-             B.storage_type == Magma_CSRCOO ) ) {
-
+             B.storage_type == Magma_CSRCOO ) )
+    {
         // CUSPARSE context //
 
         CHECK_CUSPARSE( cusparseCreate( &handle ));
@@ -156,8 +156,3 @@ cleanup:
     magma_zmfree( &C, queue );
     return info;
 }
-
-
-
-
-

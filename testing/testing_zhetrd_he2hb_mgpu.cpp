@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -21,22 +21,9 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-
-#if defined(USEMKL)
-#include <mkl_service.h>
-#endif
-#if defined(USEACML)
-#include <omp.h>
-#endif
+// TODO include checkdiag.h if needed.
 
 #define PRECISION_z
-
-#if defined(PRECISION_z) || defined(PRECISION_d)
-extern "C" void cmp_vals(int n, double *wr1, double *wr2, double *nrmI, double *nrm1, double *nrm2);
-extern "C" void zcheck_eig_(char *JOBZ, int  *MATYPE, int  *N, int  *NB,
-                       magmaDoubleComplex* A, int  *LDA, double *AD, double *AE, double *D1, double *EIG,
-                    magmaDoubleComplex *Z, int  *LDZ, magmaDoubleComplex *WORK, double *RWORK, double *RESU);
-#endif
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zhetrd_he2hb
@@ -59,7 +46,7 @@ int main( int argc, char** argv)
     magma_int_t distblk = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     magma_int_t WANTZ = (opts.jobz == MagmaVec);
     double tol = opts.tolerance * lapackf77_dlamch("E");
@@ -74,7 +61,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex_ptr da[MagmaMaxGPUs], dT1[MagmaMaxGPUs];
     if ((distblk == 0) || (distblk < opts.nb))
         distblk = max(256, opts.nb);
-    printf("voici ngpu %d distblk %d NB %d nstream %d\n ",
+    printf("%% ngpu %d, distblk %d, NB %d, nstream %d\n",
            (int) opts.ngpu, (int) distblk, (int) opts.nb, (int) nstream);
 
     for( magma_int_t dev = 0; dev < opts.ngpu; ++dev ) {
@@ -90,7 +77,7 @@ int main( int argc, char** argv)
             N     = opts.nsize[itest];
             lda   = N;
             ldt   = N;
-            ldda  = ((N+31)/32)*32;
+            ldda  = magma_roundup( N, opts.align );  // multiple of 32 by default
             n2    = N*lda;
             /* We suppose the magma NB is bigger than lapack NB */
             lwork = N*opts.nb;
@@ -201,12 +188,7 @@ int main( int argc, char** argv)
                 cpu_time = magma_wtime();
                 int nt = min(12, opts.nthread);
 
-                #if defined(USEMKL)
-                mkl_set_num_threads(nt);
-                #endif
-                #if defined(USEACML)
-                omp_set_num_threads(nt);
-                #endif
+                magma_set_lapack_numthreads(nt);
 
                 #if defined(PRECISION_z) || defined (PRECISION_c)
                 lapackf77_zheev( "N", "L", &N, h_A, &lda, D2, work2, &lwork2, rwork2, &info );
@@ -241,12 +223,7 @@ int main( int argc, char** argv)
                              h_R, &lda, WORKAJETER, RWORKAJETER, RESU );
                 cpu_time = magma_wtime() - cpu_time;
                 printf("  Finish CHECK - results timing= %f\n", cpu_time);
-                #if defined(USEMKL)
-                mkl_set_num_threads(1);
-                #endif
-                #if defined(USEACML)
-                omp_set_num_threads(1);
-                #endif
+                magma_set_lapack_numthreads(1);
 
                 printf("\n");
                 printf(" ================================================================================================================\n");
@@ -270,7 +247,7 @@ int main( int argc, char** argv)
 #endif  // CHECKEIG
 
             printf("  Total N %5d  flops %6.2f        timing %6.2f seconds\n", (int) N, 0.0, gpu_time );
-            printf("============================================================================\n\n\n");
+            printf("%%===========================================================================\n\n\n");
 
             TESTING_FREE_CPU( tau    );
 

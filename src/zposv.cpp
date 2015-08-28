@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -109,7 +109,7 @@ magma_zposv(
     if ( ngpu > 1 ) {
         goto CPU_INTERFACE;
     }
-    ldda = ((n+31)/32)*32;
+    ldda = magma_roundup( n, 32 );
     lddb = ldda;
     if ( MAGMA_SUCCESS != magma_zmalloc( &dA, ldda*n )) {
         goto CPU_INTERFACE;

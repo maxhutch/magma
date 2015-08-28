@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 */
@@ -27,7 +27,6 @@ extern "C" {
 
 void findVTpos(magma_int_t N, magma_int_t NB, magma_int_t Vblksiz, magma_int_t sweep, magma_int_t st, magma_int_t *Vpos, magma_int_t *TAUpos, magma_int_t *Tpos, magma_int_t *myblkid);
 void findVTsiz(magma_int_t N, magma_int_t NB, magma_int_t Vblksiz, magma_int_t *blkcnt, magma_int_t *LDV);
-magma_int_t plasma_ceildiv(magma_int_t a, magma_int_t b);
 
 
 /*
@@ -42,18 +41,18 @@ extern volatile magma_int_t *ss_prog;
 /*
 #define ssched_init(nbtiles) \
 { \
-        volatile int   prog_ol[2*nbtiles+10];\
+        volatile int   prog_ol[2*nbtiles+10]; \
                  int   iamdone[MAX_THREADS_BLG]; \
-                 int   thread_num[MAX_THREADS_BLG];\
-        pthread_t      thread_id[MAX_THREADS_BLG];\
-        pthread_attr_t thread_attr;\
+                 int   thread_num[MAX_THREADS_BLG]; \
+        pthread_t      thread_id[MAX_THREADS_BLG]; \
+        pthread_attr_t thread_attr; \
 }
 */
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
- struct gbstrct_blg {
+struct gbstrct_blg {
     magmaDoubleComplex *dQ1;
     magmaDoubleComplex *dT1;
     magmaDoubleComplex *dT2;
@@ -85,7 +84,7 @@ extern volatile magma_int_t *ss_prog;
     real_Double_t *timeblg;
     real_Double_t *timeaplQ;
     volatile int *ss_prog;
-} ;
+};
 
 // declare globals here; defined in zhetrd_bhe2trc.cpp
 extern struct gbstrct_blg core_in_all;

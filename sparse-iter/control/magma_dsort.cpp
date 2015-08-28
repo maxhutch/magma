@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zsort.cpp normal z -> d, Sun May  3 11:23:01 2015
+       @generated from magma_zsort.cpp normal z -> d, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 
@@ -77,10 +77,7 @@ magma_dindexsort(
         x[j]=temp;
         CHECK( magma_dindexsort( x, first, j-1, queue ));
         CHECK( magma_dindexsort( x, j+1, last, queue ));
-
     }
 cleanup:
     return info;
-
 }
-

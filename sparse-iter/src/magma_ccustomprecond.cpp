@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zcustomprecond.cpp normal z -> c, Sun May  3 11:22:59 2015
+       @generated from magma_zcustomprecond.cpp normal z -> c, Tue Aug 25 16:35:32 2015
        @author Hartwig Anzt
 
 */
@@ -101,8 +101,3 @@ magma_capplycustomprecond_r(
     
     return info;
 }
-
-
-
-
-

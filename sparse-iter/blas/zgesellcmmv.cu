@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -34,10 +34,9 @@ zgesellptmv2d_kernel_4_ldg(
     magmaDoubleComplex beta, 
     magmaDoubleComplex * dy)
 {
-
 #if defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -45,7 +44,7 @@ zgesellptmv2d_kernel_4_ldg(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -55,9 +54,9 @@ zgesellptmv2d_kernel_4_ldg(
 
         int kk, i1, i2;
         magmaDoubleComplex x1, x2, v1, v2;
-        dcolind += offset + ldx ;
+        dcolind += offset + ldx;
         dval += offset + ldx;
-        for ( kk = 0; kk < max_-1 ; kk+=2 ){
+        for ( kk = 0; kk < max_-1; kk+=2 ) {
             i1 = dcolind[ block*kk];
             i2 = dcolind[ block*kk + block];
 
@@ -71,7 +70,7 @@ zgesellptmv2d_kernel_4_ldg(
             dot += v2 * x2;
         }
   
-        if (kk<max_){
+        if (kk<max_) {
            x1 = __ldg( dx + dcolind[ block*kk]  );            
            v1 = dval[ block*kk ];
 
@@ -81,16 +80,14 @@ zgesellptmv2d_kernel_4_ldg(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 2 ){
+        if( idx < 2 ) {
             shared[ldx]+=shared[ldx+blocksize*2];              
             __syncthreads();
             if( idx == 0 ) {
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 #endif
 }
@@ -116,17 +113,16 @@ zgesellptmv2d_kernel_1(
     magmaDoubleComplex beta, 
     magmaDoubleComplex * dy)
 {
-
     // threads assigned to rows
-    int Idx = blockDim.x * blockIdx.x + threadIdx.x ;
+    int Idx = blockDim.x * blockIdx.x + threadIdx.x;
     int offset = drowptr[ blockIdx.x ];
     int border = (drowptr[ blockIdx.x+1 ]-offset)/blocksize;
-    if(Idx < num_rows ){
+    if(Idx < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
-        for ( int n = 0; n < border; n++){ 
+        for ( int n = 0; n < border; n++) { 
             int col = dcolind [offset+ blocksize * n + threadIdx.x ];
             magmaDoubleComplex val = dval[offset+ blocksize * n + threadIdx.x];
-            if( val != 0){
+            if( val != 0) {
                   dot=dot+val*dx[col];
             }
         }
@@ -156,7 +152,7 @@ zgesellptmv2d_kernel_4(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -164,7 +160,7 @@ zgesellptmv2d_kernel_4(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -174,9 +170,9 @@ zgesellptmv2d_kernel_4(
 
         int kk, i1, i2;
         magmaDoubleComplex x1, x2, v1, v2;
-        dcolind += offset + ldx ;
+        dcolind += offset + ldx;
         dval += offset + ldx;
-        for ( kk = 0; kk < max_-1 ; kk+=2 ){
+        for ( kk = 0; kk < max_-1; kk+=2 ) {
             i1 = dcolind[ block*kk];
             i2 = dcolind[ block*kk + block];
 
@@ -190,7 +186,7 @@ zgesellptmv2d_kernel_4(
             dot += v2 * x2;
         }
   
-        if (kk<max_){
+        if (kk<max_) {
            x1 = dx[ dcolind[ block*kk] ];            
            v1 = dval[ block*kk ];
 
@@ -200,16 +196,14 @@ zgesellptmv2d_kernel_4(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 2 ){
+        if( idx < 2 ) {
             shared[ldx]+=shared[ldx+blocksize*2];              
             __syncthreads();
             if( idx == 0 ) {
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -234,7 +228,7 @@ zgesellptmv2d_kernel_8(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -242,7 +236,7 @@ zgesellptmv2d_kernel_8(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -252,9 +246,9 @@ zgesellptmv2d_kernel_8(
 
         int kk, i1, i2;
         magmaDoubleComplex x1, x2, v1, v2;
-        dcolind += offset + ldx ;
+        dcolind += offset + ldx;
         dval += offset + ldx;
-        for ( kk = 0; kk < max_-1 ; kk+=2 ){
+        for ( kk = 0; kk < max_-1; kk+=2 ) {
             i1 = dcolind[ block*kk];
             i2 = dcolind[ block*kk + block];
 
@@ -268,7 +262,7 @@ zgesellptmv2d_kernel_8(
             dot += v2 * x2;
         }
   
-        if (kk<max_){
+        if (kk<max_) {
            x1 = dx[ dcolind[ block*kk] ];            
            v1 = dval[ block*kk ];
 
@@ -278,7 +272,7 @@ zgesellptmv2d_kernel_8(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 4 ){
+        if( idx < 4 ) {
             shared[ldx]+=shared[ldx+blocksize*4];              
             __syncthreads();
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
@@ -287,9 +281,7 @@ zgesellptmv2d_kernel_8(
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -314,7 +306,7 @@ zgesellptmv2d_kernel_16(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -322,7 +314,7 @@ zgesellptmv2d_kernel_16(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -330,7 +322,7 @@ zgesellptmv2d_kernel_16(
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaDoubleComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -341,7 +333,7 @@ zgesellptmv2d_kernel_16(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 8 ){
+        if( idx < 8 ) {
             shared[ldx]+=shared[ldx+blocksize*8];              
             __syncthreads();
             if( idx < 4 ) shared[ldx]+=shared[ldx+blocksize*4];   
@@ -352,9 +344,7 @@ zgesellptmv2d_kernel_16(
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -379,7 +369,7 @@ zgesellptmv2d_kernel_32(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -387,14 +377,14 @@ zgesellptmv2d_kernel_32(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaDoubleComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -405,7 +395,7 @@ zgesellptmv2d_kernel_32(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 16 ){
+        if( idx < 16 ) {
             shared[ldx]+=shared[ldx+blocksize*16];              
             __syncthreads();
             if( idx < 8 ) shared[ldx]+=shared[ldx+blocksize*8];  
@@ -418,9 +408,7 @@ zgesellptmv2d_kernel_32(
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -431,7 +419,7 @@ zgesellptmv2d_kernel_32(
 #if defined(PRECISION_d) && defined(TEXTURE)
 
 __inline__ __device__ double 
-read_from_tex( cudaTextureObject_t texdx, const int& i){
+read_from_tex( cudaTextureObject_t texdx, const int& i) {
   int2 temp = tex1Dfetch<int2>( texdx, i ); 
   return __hiloint2double(temp.y,temp.x);
 }
@@ -456,7 +444,7 @@ zgesellptmv2d_kernel_4_tex(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -464,7 +452,7 @@ zgesellptmv2d_kernel_4_tex(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -474,9 +462,9 @@ zgesellptmv2d_kernel_4_tex(
 
         int kk, i1, i2;
         magmaDoubleComplex x1, x2, v1, v2;
-        dcolind += offset + ldx ;
+        dcolind += offset + ldx;
         dval += offset + ldx;
-        for ( kk = 0; kk < max_-1 ; kk+=2 ){
+        for ( kk = 0; kk < max_-1; kk+=2 ) {
             i1 = dcolind[ block*kk];
             i2 = dcolind[ block*kk + block];
 
@@ -490,7 +478,7 @@ zgesellptmv2d_kernel_4_tex(
             dot += v2 * x2;
         }
   
-        if (kk<max_){
+        if (kk<max_) {
            x1 = read_from_tex( texdx, dcolind[ block*kk] );
            v1 = dval[ block*kk ];
 
@@ -500,16 +488,14 @@ zgesellptmv2d_kernel_4_tex(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 2 ){
+        if( idx < 2 ) {
             shared[ldx]+=shared[ldx+blocksize*2];              
             __syncthreads();
             if( idx == 0 ) {
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -534,7 +520,7 @@ zgesellptmv2d_kernel_8_tex(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -542,7 +528,7 @@ zgesellptmv2d_kernel_8_tex(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -552,9 +538,9 @@ zgesellptmv2d_kernel_8_tex(
 
         int kk, i1, i2;
         magmaDoubleComplex x1, x2, v1, v2;
-        dcolind += offset + ldx ;
+        dcolind += offset + ldx;
         dval += offset + ldx;
-        for ( kk = 0; kk < max_-1 ; kk+=2 ){
+        for ( kk = 0; kk < max_-1; kk+=2 ) {
             i1 = dcolind[ block*kk];
             i2 = dcolind[ block*kk + block];
 
@@ -568,7 +554,7 @@ zgesellptmv2d_kernel_8_tex(
             dot += v2 * x2;
         }
   
-        if (kk<max_){
+        if (kk<max_) {
            x1 = read_from_tex( texdx, dcolind[ block*kk] );
            v1 = dval[ block*kk ];
 
@@ -578,7 +564,7 @@ zgesellptmv2d_kernel_8_tex(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 4 ){
+        if( idx < 4 ) {
             shared[ldx]+=shared[ldx+blocksize*4];              
             __syncthreads();
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
@@ -587,9 +573,7 @@ zgesellptmv2d_kernel_8_tex(
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -614,7 +598,7 @@ zgesellptmv2d_kernel_16_tex(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -622,7 +606,7 @@ zgesellptmv2d_kernel_16_tex(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -630,7 +614,7 @@ zgesellptmv2d_kernel_16_tex(
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaDoubleComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -641,7 +625,7 @@ zgesellptmv2d_kernel_16_tex(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 8 ){
+        if( idx < 8 ) {
             shared[ldx]+=shared[ldx+blocksize*8];              
             __syncthreads();
             if( idx < 4 ) shared[ldx]+=shared[ldx+blocksize*4];   
@@ -652,9 +636,7 @@ zgesellptmv2d_kernel_16_tex(
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -679,7 +661,7 @@ zgesellptmv2d_kernel_32_tex(
     magmaDoubleComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -687,14 +669,14 @@ zgesellptmv2d_kernel_32_tex(
 
     extern __shared__ magmaDoubleComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaDoubleComplex dot = MAGMA_Z_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaDoubleComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -705,7 +687,7 @@ zgesellptmv2d_kernel_32_tex(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 16 ){
+        if( idx < 16 ) {
             shared[ldx]+=shared[ldx+blocksize*16];              
             __syncthreads();
             if( idx < 8 ) shared[ldx]+=shared[ldx+blocksize*8];  
@@ -718,9 +700,7 @@ zgesellptmv2d_kernel_32_tex(
                 dy[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
             }
-
         }
-
     }
 }
 
@@ -822,7 +802,7 @@ magma_zgesellpmv(
 
     dim3 block( blocksize, alignment, 1);
 
-    int dimgrid1 = (int) sqrt( (double)slices );
+    int dimgrid1 = int( sqrt( double( slices )));
     int dimgrid2 = magma_ceildiv( slices, dimgrid1 );
 
     dim3 grid( dimgrid1, dimgrid2, 1);
@@ -910,11 +890,10 @@ magma_zgesellpmv(
                 dval, dcolind, drowptr, dx, beta, dy );
 
         else {
-            printf("error: alignment %d not supported.\n", alignment);
+            printf("error: alignment %d not supported.\n", int(alignment) );
             return MAGMA_ERR_NOT_SUPPORTED;
         }
     #endif
 
    return MAGMA_SUCCESS;
 }
-

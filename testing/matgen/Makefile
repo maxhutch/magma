@@ -36,25 +36,25 @@ include $(MAGMA_DIR)/Makefile.internal
 
 TMGLIB = tmglib.a
  
-SCATGEN = slatm1.o slaran.o slarnd.o
+SCATGEN = slatm1.$(o_ext) slaran.$(o_ext) slarnd.$(o_ext)
 
-SMATGEN = slatms.o slatme.o slatmr.o slatmt.o \
-   slagge.o slagsy.o slakf2.o slarge.o slaror.o slarot.o slatm2.o \
-   slatm3.o slatm5.o slatm6.o slatm7.o slahilb.o
+SMATGEN = slatms.$(o_ext) slatme.$(o_ext) slatmr.$(o_ext) slatmt.$(o_ext) \
+   slagge.$(o_ext) slagsy.$(o_ext) slakf2.$(o_ext) slarge.$(o_ext) slaror.$(o_ext) slarot.$(o_ext) slatm2.$(o_ext) \
+   slatm3.$(o_ext) slatm5.$(o_ext) slatm6.$(o_ext) slatm7.$(o_ext) slahilb.$(o_ext)
 
-CMATGEN = clatms.o clatme.o clatmr.o clatmt.o \
-   clagge.o claghe.o clagsy.o clakf2.o clarge.o claror.o clarot.o \
-   clatm1.o clarnd.o clatm2.o clatm3.o clatm5.o clatm6.o clahilb.o
+CMATGEN = clatms.$(o_ext) clatme.$(o_ext) clatmr.$(o_ext) clatmt.$(o_ext) \
+   clagge.$(o_ext) claghe.$(o_ext) clagsy.$(o_ext) clakf2.$(o_ext) clarge.$(o_ext) claror.$(o_ext) clarot.$(o_ext) \
+   clatm1.$(o_ext) clarnd.$(o_ext) clatm2.$(o_ext) clatm3.$(o_ext) clatm5.$(o_ext) clatm6.$(o_ext) clahilb.$(o_ext)
 
-DZATGEN = dlatm1.o dlaran.o dlarnd.o
+DZATGEN = dlatm1.$(o_ext) dlaran.$(o_ext) dlarnd.$(o_ext)
 
-DMATGEN = dlatms.o dlatme.o dlatmr.o dlatmt.o \
-   dlagge.o dlagsy.o dlakf2.o dlarge.o dlaror.o dlarot.o dlatm2.o \
-   dlatm3.o dlatm5.o dlatm6.o dlatm7.o dlahilb.o
+DMATGEN = dlatms.$(o_ext) dlatme.$(o_ext) dlatmr.$(o_ext) dlatmt.$(o_ext) \
+   dlagge.$(o_ext) dlagsy.$(o_ext) dlakf2.$(o_ext) dlarge.$(o_ext) dlaror.$(o_ext) dlarot.$(o_ext) dlatm2.$(o_ext) \
+   dlatm3.$(o_ext) dlatm5.$(o_ext) dlatm6.$(o_ext) dlatm7.$(o_ext) dlahilb.$(o_ext)
 
-ZMATGEN = zlatms.o zlatme.o zlatmr.o zlatmt.o \
-   zlagge.o zlaghe.o zlagsy.o zlakf2.o zlarge.o zlaror.o zlarot.o \
-   zlatm1.o zlarnd.o zlatm2.o zlatm3.o zlatm5.o zlatm6.o zlahilb.o
+ZMATGEN = zlatms.$(o_ext) zlatme.$(o_ext) zlatmr.$(o_ext) zlatmt.$(o_ext) \
+   zlagge.$(o_ext) zlaghe.$(o_ext) zlagsy.$(o_ext) zlakf2.$(o_ext) zlarge.$(o_ext) zlaror.$(o_ext) zlarot.$(o_ext) \
+   zlatm1.$(o_ext) zlarnd.$(o_ext) zlatm2.$(o_ext) zlatm3.$(o_ext) zlatm5.$(o_ext) zlatm6.$(o_ext) zlahilb.$(o_ext)
 
 all:	$(TMGLIB)
 
@@ -93,10 +93,10 @@ FRC:
 	@FRC=$(FRC)
 
 clean:
-	rm -f *.o $(TMGLIB)
+	rm -f *.$(o_ext) $(TMGLIB)
 
-#slaran.o: slaran.f
+#slaran.$(o_ext): slaran.f
 #	$(FORT) $(NOOPT) -c $<
 #
-#dlaran.o: dlaran.f
+#dlaran.$(o_ext): dlaran.f
 #	$(FORT) $(NOOPT) -c $<

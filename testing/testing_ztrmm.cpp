@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -34,29 +34,29 @@ int main( int argc, char** argv)
     magma_int_t M, N;
     magma_int_t Ak;
     magma_int_t sizeA, sizeB;
-    magma_int_t lda, ldb, ldda, lddb;
+    magma_int_t lda, ldb, ldda, lddb, lddc;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     
     magmaDoubleComplex *h_A, *h_B, *h_Bcublas;
-    magmaDoubleComplex_ptr d_A, d_B;
+    magmaDoubleComplex_ptr d_A, d_B, d_C;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex alpha = MAGMA_Z_MAKE(  0.29, -0.86 );
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("If running lapack (option --lapack), CUBLAS error is computed\n"
-           "relative to CPU BLAS result.\n\n");
-    printf("side = %s, uplo = %s, transA = %s, diag = %s \n",
+    printf("%% If running lapack (option --lapack), CUBLAS error is computed\n"
+           "%% relative to CPU BLAS result.\n\n");
+    printf("%% side = %s, uplo = %s, transA = %s, diag = %s \n",
            lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
            lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
-    printf("    M     N   CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  CUBLAS error\n");
-    printf("==================================================================\n");
+    printf("%%   M     N   CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)  CUBLAS error\n");
+    printf("%%=================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -73,8 +73,9 @@ int main( int argc, char** argv)
             
             ldb = M;
             
-            ldda = ((lda+31)/32)*32;
-            lddb = ((ldb+31)/32)*32;
+            ldda = magma_roundup( lda, opts.align );  // multiple of 32 by default
+            lddb = magma_roundup( ldb, opts.align );  // multiple of 32 by default
+            lddc = lddb;
             
             sizeA = lda*Ak;
             sizeB = ldb*N;
@@ -85,6 +86,7 @@ int main( int argc, char** argv)
             
             TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*Ak );
             TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*N  );
+            TESTING_MALLOC_DEV( d_C, magmaDoubleComplex, lddc*N  );
             
             /* Initialize the matrices */
             lapackf77_zlarnv( &ione, ISEED, &sizeA, h_A );
@@ -94,21 +96,33 @@ int main( int argc, char** argv)
                Performs operation using CUBLAS
                =================================================================== */
             magma_zsetmatrix( Ak, Ak, h_A, lda, d_A, ldda );
-            magma_zsetmatrix( M, N, h_B, ldb, d_B, lddb );
+            magma_zsetmatrix( M,  N,  h_B, ldb, d_B, lddb );
             
             // note cublas does trmm out-of-place (i.e., adds output matrix C),
             // but allows C=B to do in-place.
-            cublas_time = magma_sync_wtime( NULL );
-            cublasZtrmm( opts.handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
-                         cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
-                         M, N, 
-                         &alpha, d_A, ldda,
-                                 d_B, lddb,
-                                 d_B, lddb );
-            cublas_time = magma_sync_wtime( NULL ) - cublas_time;
+            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
+            cublas_time = magma_sync_wtime( opts.queue );
+            #ifdef HAVE_CUBLAS
+                cublasZtrmm( opts.handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
+                             cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
+                             M, N,
+                             &alpha, d_A, ldda,
+                                     d_B, lddb,
+                                     d_C, lddc );  // output C; differs from BLAS standard
+            #else
+                magma_ztrmm( opts.side, opts.uplo, opts.transA, opts.diag,
+                             M, N,
+                             alpha, d_A, 0, ldda,
+                                    d_B, 0, lddb, opts.queue );
+            #endif
+            cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
-            magma_zgetmatrix( M, N, d_B, lddb, h_Bcublas, ldb );
+            #ifdef HAVE_CUBLAS
+                magma_zgetmatrix( M, N, d_C,    lddc, h_Bcublas, ldb );
+            #else
+                magma_zgetmatrix( M, N, d_B, 0, lddb, h_Bcublas, ldb, opts.queue );
+            #endif
             
             /* =====================================================================
                Performs operation using CPU BLAS
@@ -116,7 +130,7 @@ int main( int argc, char** argv)
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
                 blasf77_ztrmm( lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                                &M, &N,
                                &alpha, h_A, &lda,
                                        h_B, &ldb );

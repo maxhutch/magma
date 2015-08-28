@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Raffaele Solca
        
@@ -162,8 +162,8 @@ magma_dlaex0(
 
     // Solve each submatrix eigenproblem at the bottom of the divide and
     // conquer tree.
-    magma_timer_t time=0;
-    timer_start( time );
+    //magma_timer_t time=0;
+    //timer_start( time );
 
     for (i = 0; i < subpbs; ++i) {
         if (i == 0) {
@@ -188,14 +188,14 @@ magma_dlaex0(
         }
     }
 
-    timer_stop( time );
-    timer_printf( "  for: dsteqr = %6.2f\n", time );
+    //timer_stop( time );
+    //timer_printf( "  for: dsteqr = %6.2f\n", time );
     
     // Successively merge eigensystems of adjacent submatrices
     // into eigensystem for the corresponding larger matrix.
     curlvl = 1;
     while (subpbs > 1) {
-        timer_start( time );
+        //timer_start( time );
         
         for (i=0; i < subpbs-1; i += 2) {
             if (i == 0) {
@@ -232,8 +232,8 @@ magma_dlaex0(
         subpbs /= 2;
         ++curlvl;
         
-        timer_stop( time );
-        timer_printf("%d: time: %6.2f\n", (int) curlvl, time );
+        //timer_stop( time );
+        //timer_printf("%d: time: %6.2f\n", (int) curlvl, time );
     }
 
     // Re-merge the eigenvalues/vectors which were deflated at the final

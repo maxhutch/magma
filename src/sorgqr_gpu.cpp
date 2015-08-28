@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zungqr_gpu.cpp normal z -> s, Fri Jan 30 19:00:15 2015
+       @generated from zungqr_gpu.cpp normal z -> s, Tue Aug 25 16:35:16 2015
 
        @author Stan Tomov
        @author Mark Gates
@@ -57,7 +57,7 @@
 
     @param[in]
     dT      (workspace) REAL work space array on the GPU,
-            dimension (2*MIN(M, N) + (N+31)/32*32 )*NB.
+            dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB.
             This must be the 6th argument of magma_sgeqrf_gpu
             [ note that if N here is bigger than N in magma_sgeqrf_gpu,
               the workspace requirement DT in magma_sgeqrf_gpu must be
@@ -150,7 +150,7 @@ magma_sorgqr_gpu(
     
     // dT workspace has:
     // 2*min(m,n)*nb      for T and R^{-1} matrices from geqrf
-    // ((n+31)/32*32 )*nb for dW larfb workspace.
+    // roundup(n,32) * nb for dW larfb workspace.
     lddwork = min(m,n);
     dW = dT + 2*lddwork*nb;
 

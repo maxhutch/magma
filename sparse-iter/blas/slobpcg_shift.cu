@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zlobpcg_shift.cu normal z -> s, Sun May  3 11:22:58 2015
+       @generated from zlobpcg_shift.cu normal z -> s, Tue Aug 25 16:35:30 2015
 
 */
 
@@ -18,20 +18,18 @@ magma_slobpcg_shift_kernel(
     magma_int_t shift, 
     float * x )
 {
-
-    int idx = threadIdx.x ;     // thread in row
+    int idx = threadIdx.x;      // thread in row
     int row = blockIdx.y * gridDim.x + blockIdx.x; // global block index
 
-    if( row<num_rows){
+    if ( row<num_rows) {
         float tmp = x[idx];
         __syncthreads();
 
-        if( idx > shift-1 ){
+        if ( idx > shift-1 ) {
             idx-=shift;
             x[idx] = tmp;
             __syncthreads();
         }
-
     }
 }
 
@@ -67,7 +65,7 @@ magma_slobpcg_shift_kernel(
     shift       magma_int_t
                 shift number
 
-    @param[in/out]
+    @param[in,out]
     x           magmaFloat_ptr 
                 input/output vector x
 
@@ -97,7 +95,7 @@ magma_slobpcg_shift(
 
     dim3 block( num_threads, 1, 1 );
 
-    int dimgrid1 = (int) sqrt( (float) num_rows);
+    int dimgrid1 = int( sqrt( float( num_rows )));
     int dimgrid2 = magma_ceildiv( num_rows, dimgrid1 );
 
     dim3 grid( dimgrid1, dimgrid2, 1);
@@ -108,6 +106,3 @@ magma_slobpcg_shift(
 
     return MAGMA_SUCCESS;
 }
-
-
-

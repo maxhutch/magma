@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 
@@ -231,7 +231,7 @@ magma_zcgesv_gpu(
             *iter = -3;
             goto FALLBACK;
         }
-        swp2pswp( trans, n, ipiv, newipiv );
+        magma_swp2pswp( trans, n, ipiv, newipiv );
         magma_setvector( n, sizeof(magma_int_t), newipiv, 1, dipiv, 1 );
         magma_free_cpu( newipiv );
     }

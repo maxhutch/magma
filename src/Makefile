@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = src
@@ -53,6 +53,7 @@ ZSRC += \
 	zcgesv_gpu.cpp		\
 	zcgetrs_gpu.cpp		\
 	\
+	zgerfs_nopiv_gpu.cpp	\
 	zgesv_gpu.cpp		\
 	zgesv_nopiv_gpu.cpp	\
 	zgetrf_gpu.cpp		\
@@ -114,8 +115,8 @@ ZSRC += \
 # QR, CPU interface
 ZSRC += \
 	zgelqf.cpp		\
+	zgels.cpp		\
 	zgeqlf.cpp		\
-	zgeqrf-v4.cpp		\
 	zgeqrf.cpp		\
 	zgeqrf_ooc.cpp		\
 	zungqr.cpp		\
@@ -127,6 +128,7 @@ ZSRC += \
 	zgeqp3.cpp		\
 	zlaqps.cpp		\
 	\
+	zgeqrf_m.cpp		\
 	zungqr_m.cpp		\
 	zunmqr_m.cpp		\
 
@@ -135,11 +137,16 @@ ZSRC += \
 ZSRC += \
 	zhesv.cpp		\
 	zhetrf.cpp		\
+	zhetrf_aasen.cpp	\
 	zhetrf_nopiv.cpp	\
 	zhetrf_nopiv_cpu.cpp	\
+	zsytrf_nopiv_cpu.cpp	\
 	zhetrf_nopiv_gpu.cpp	\
+	zsytrf_nopiv_gpu.cpp	\
 	zhetrs_nopiv_gpu.cpp	\
+	zsytrs_nopiv_gpu.cpp	\
 	zhesv_nopiv_gpu.cpp	\
+	zsysv_nopiv_gpu.cpp	\
 	zlahef_gpu.cpp		\
 
 # ----------
@@ -204,10 +211,9 @@ ZSRC += \
 	zbulge_back.cpp		\
 	zungqr_2stage_gpu.cpp	\
 	zunmqr_gpu_2stage.cpp	\
-	dsyevdx_2stage.cpp	\
 	dsygvdx_2stage.cpp	\
-	zheevdx_2stage.cpp	\
 	zhegvdx_2stage.cpp	\
+	zheevdx_2stage.cpp	\
 	\
 	zbulge_back_m.cpp	\
 	zbulge_applyQ_v2_m.cpp	\
@@ -217,6 +223,10 @@ ZSRC += \
 	zhegvdx_2stage_m.cpp	\
 	zhetrd_he2hb_mgpu.cpp	\
 	zhetrd_he2hb_mgpu_spec.cpp	\
+	core_zlarfy.cpp		\
+	core_zhbtype1cb.cpp	\
+	core_zhbtype2cb.cpp	\
+	core_zhbtype3cb.cpp	\
 
 # generalized symmetric eigenvalues
 ZSRC += \
@@ -291,30 +301,32 @@ ZSRC += \
 	zgetrs_nopiv_batched.cpp		\
 	zgesv_batched.cpp				\
 	zgesv_nopiv_batched.cpp			\
-	zgerbt_batched.cpp          	\
+	zgerbt_batched.cpp				\
 	zgesv_rbt_batched.cpp			\
 	\
-	zgetri_outofplace_batched.cpp				\
+	zgetri_outofplace_batched.cpp	\
 	\
 	zpotf2_batched.cpp				\
 	zpotrf_batched.cpp				\
 	zpotrf_panel_batched.cpp		\
 	zpotrs_batched.cpp				\
 	zposv_batched.cpp				\
-    \
+	\
 	zlarft_batched.cpp				\
-	zlarfb_gemm_batched.cpp         \
+	zlarfb_gemm_batched.cpp			\
 	zgeqrf_panel_batched.cpp		\
 	zgeqrf_batched.cpp				\
-	
+	zgeqrf_expert_batched.cpp		\
+
+
 # ------------------------------------------------------------
 -include Makefile.local
 -include Makefile.src
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
 
-ALLOBJ := $(ALLSRC:.cpp=.o)
-ALLOBJ := $(ALLOBJ:.f=.o)
+ALLOBJ := $(ALLSRC:.cpp=.$(o_ext))
+ALLOBJ := $(ALLOBJ:.f=.$(o_ext))
 
 .PHONY: all clean cleanall
 
@@ -330,8 +342,23 @@ stamp: $(ALLHDR) $(ALLOBJ)
 	touch $@
 
 clean:
-	rm -f *.o *~ *.linkinfo stamp
+	rm -f *.$(o_ext) *~ *.linkinfo stamp
 
 cleanall: clean
-	
 	rm -f $(LIBMAGMA)
+
+# additional dependencies
+spotrf_batched.$(o_ext): ../control/batched_kernel_param.h
+dpotrf_batched.$(o_ext): ../control/batched_kernel_param.h
+cpotrf_batched.$(o_ext): ../control/batched_kernel_param.h
+zpotrf_batched.$(o_ext): ../control/batched_kernel_param.h
+#
+sgetrf_batched.$(o_ext): ../control/batched_kernel_param.h
+dgetrf_batched.$(o_ext): ../control/batched_kernel_param.h
+cgetrf_batched.$(o_ext): ../control/batched_kernel_param.h
+zgetrf_batched.$(o_ext): ../control/batched_kernel_param.h
+#
+sgeqrf_batched.$(o_ext): ../control/batched_kernel_param.h
+dgeqrf_batched.$(o_ext): ../control/batched_kernel_param.h
+cgeqrf_batched.$(o_ext): ../control/batched_kernel_param.h
+zgeqrf_batched.$(o_ext): ../control/batched_kernel_param.h

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlarfg-v2.cu normal z -> d, Fri Jan 30 19:00:09 2015
+       @generated from zlarfg-v2.cu normal z -> d, Tue Aug 25 16:35:08 2015
 
 */
 #include "common_magma.h"
@@ -28,9 +28,9 @@ void magma_dlarfg_gpu_kernel( int n, double* dx0, double* dx,
     double dxi;
 
 #if (defined(PRECISION_s) || defined(PRECISION_d))
-    if( n <= 1 ) {
+    if ( n <= 1 ) {
 #else
-    if( n <= 0 ) {
+    if ( n <= 0 ) {
 #endif
         *dtau = MAGMA_D_ZERO;
         *dAkk = *dx0;
@@ -76,8 +76,8 @@ void magma_dlarfg_gpu_kernel( int n, double* dx0, double* dx,
         __syncthreads();
         if ( xnorm != 0 && j < n-1)
             dx[j] = MAGMA_D_MUL(dxi, scale);
-
-    } else {
+    }
+    else {
         *dtau = MAGMA_D_ZERO;
         *dAkk = *dx0; 
     }
@@ -105,7 +105,7 @@ magma_dlarfg_gpu(
     magmaDouble_ptr        dxnorm,
     magmaDouble_ptr dAkk)
 {
-    dim3 blocks((n+BLOCK_SIZE-1) / BLOCK_SIZE);
+    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
     dim3 threads( BLOCK_SIZE );
 
     /* recomputing the norm */

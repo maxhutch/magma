@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgerbt_kernels.cu normal z -> d, Fri Jan 30 19:00:08 2015
+       @generated from zgerbt_kernels.cu normal z -> d, Tue Aug 25 16:35:08 2015
 
 
        @author Adrien REMY
@@ -17,6 +17,8 @@
 #define block_width  4
 #define block_length 256
 #define NB 64
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static __device__ void 
 magmablas_delementary_multiplication_devfunc(
@@ -30,8 +32,7 @@ magmablas_delementary_multiplication_devfunc(
     idx = blockIdx.x * blockDim.x + threadIdx.x;
     idy = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if ((idx < n/2)&&(idy < n/2)){
-
+    if ((idx < n/2) && (idy < n/2)) {
         dA += idx + idy * ldda;
 
         double a00, a10, a01, a11, b1, b2, b3, b4;
@@ -63,6 +64,8 @@ magmablas_delementary_multiplication_devfunc(
         dA[ldda*n/2+n/2] = u2[threadIdx.x] * v2[threadIdx.y] *(b3 - b4);
     }
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void 
 magmablas_delementary_multiplication_kernel(
@@ -73,6 +76,8 @@ magmablas_delementary_multiplication_kernel(
 {    
     magmablas_delementary_multiplication_devfunc( n, dA+offsetA, ldda, du+offsetu, dv+offsetv);
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void 
 magmablas_delementary_multiplication_kernel_batched(
@@ -84,6 +89,8 @@ magmablas_delementary_multiplication_kernel_batched(
     int batchid = blockIdx.z;
     magmablas_delementary_multiplication_devfunc( n, dA_array[batchid]+offsetA, ldda, du+offsetu, dv+offsetv);
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static __device__ void 
 magmablas_dapply_vector_devfunc(
@@ -94,8 +101,7 @@ magmablas_dapply_vector_devfunc(
 
     idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx < n/2){
-
+    if (idx < n/2) {
         du += idx;
         db += idx;
 
@@ -108,6 +114,8 @@ magmablas_dapply_vector_devfunc(
         db[n/2] = a1 -a2;
     }
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void 
 magmablas_dapply_vector_kernel(
@@ -116,18 +124,20 @@ magmablas_dapply_vector_kernel(
 {
     magmablas_dapply_vector_devfunc(n, du+offsetu, db+offsetb);
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void 
 magmablas_dapply_vector_kernel_batched(
     magma_int_t n,
     double *du, magma_int_t offsetu, double **db_array, magma_int_t offsetb )
 {
-
     int batchid = blockIdx.y;
     magmablas_dapply_vector_devfunc(n, du+offsetu, db_array[batchid]+offsetb);
 }
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static __device__ void 
 magmablas_dapply_transpose_vector_devfunc(
     magma_int_t n,
@@ -137,8 +147,7 @@ magmablas_dapply_transpose_vector_devfunc(
 
     idx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx < n/2){
-
+    if (idx < n/2) {
         du += idx;
         db += idx;
 
@@ -151,6 +160,8 @@ magmablas_dapply_transpose_vector_devfunc(
         db[n/2] = du[n/2]*a2;
     }
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void 
 magmablas_dapply_transpose_vector_kernel(
@@ -159,16 +170,15 @@ magmablas_dapply_transpose_vector_kernel(
 {
     magmablas_dapply_transpose_vector_devfunc(n, du+offsetu, db+offsetb);
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void 
 magmablas_dapply_transpose_vector_kernel_batched(
     magma_int_t n,
     double *du, magma_int_t offsetu, double **db_array, magma_int_t offsetb )
 {
-
     int batchid = blockIdx.y;
     magmablas_dapply_transpose_vector_devfunc(n, du+offsetu, db_array[batchid]+offsetb);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-

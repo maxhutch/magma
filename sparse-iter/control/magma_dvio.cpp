@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zvio.cpp normal z -> d, Sun May  3 11:23:01 2015
+       @generated from magma_zvio.cpp normal z -> d, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -92,8 +92,6 @@ magma_dprint_vector(
         CHECK( magma_dmtransfer( x, &y, Magma_DEV, Magma_CPU, queue ));
         for( magma_int_t i=offset; i<offset +  visulen; i++ )
             magma_dprintval(y.val[i]);
-
-
     }
 
 cleanup:
@@ -238,5 +236,3 @@ cleanup:
     magma_dmfree( &B, queue );
     return info;
 }
-
-

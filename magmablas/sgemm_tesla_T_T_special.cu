@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from dgemm_tesla_T_T_special.cu normal d -> s, Fri Jan 30 19:00:10 2015
+       @generated from dgemm_tesla_T_T_special.cu normal d -> s, Tue Aug 25 16:35:09 2015
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -117,7 +117,7 @@ sgemm_kernel_T_T_64_16_16_16_4_special(
     } while (B < Bend);
 
     #pragma unroll 16
-    for(int i = 0; i < 16; i++) {
+    for (int i = 0; i < 16; i++) {
         C[i] = alpha * Cb[i] + beta * C[i];
     }
 }

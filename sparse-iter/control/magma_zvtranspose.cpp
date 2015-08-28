@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -67,7 +67,6 @@ magma_zvtranspose(
             magmablas_ztranspose( n, m, x.val, n, y->val, m );
         }
     } else {
-
         CHECK( magma_zmtransfer( x, &x_d, Magma_CPU, Magma_DEV, queue ));
         CHECK( magma_zvtranspose( x_d, &y_d, queue ));
         CHECK( magma_zmtransfer( y_d, y, Magma_DEV, Magma_CPU, queue ));
@@ -82,9 +81,3 @@ cleanup:
     magmablasSetKernelStream( orig_queue );
     return info;
 }
-
-
-
-   
-
-

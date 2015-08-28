@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
   
-       @generated from testing_znan_inf.cpp normal z -> s, Fri Jan 30 19:00:24 2015
+       @generated from testing_znan_inf.cpp normal z -> s, Tue Aug 25 16:35:25 2015
        @author Mark Gates
 */
 // includes, system
@@ -29,7 +29,8 @@ int main( int argc, char** argv)
 
     #define hA(i,j) (hA + (i) + (j)*lda)
     
-    float *hA, *dA;
+    float *hA;
+    magmaFloat_ptr dA;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t M, N, lda, ldda, size;
@@ -38,19 +39,19 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     magma_uplo_t uplo[] = { MagmaLower, MagmaUpper, MagmaFull };
     
-    printf("uplo     M     N      CPU nan + inf             GPU nan + inf          actual nan + inf        \n");
-    printf("===============================================================================================\n");
+    printf("%% uplo    M     N      CPU nan + inf             GPU nan + inf          actual nan + inf        \n");
+    printf("%%==============================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int iuplo = 0; iuplo < 3; ++iuplo ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M     = opts.msize[itest];
             N     = opts.nsize[itest];
             lda   = M;
-            ldda  = ((M + 31)/32)*32;
+            ldda  = magma_roundup( M, opts.align );  // multiple of 32 by default
             size  = lda*N;
 
             /* Allocate memory for the matrix */
@@ -111,7 +112,7 @@ int main( int argc, char** argv)
             //magma_sprint( M, N, hA, lda );
             
             magma_ssetmatrix( M, N, hA, lda, dA, ldda );
-                        
+            
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
@@ -127,23 +128,23 @@ int main( int argc, char** argv)
             /* =====================================================================
                Check the result
                =================================================================== */
-            bool ok = ( c_cpu == c_gpu )
-                   && ( c_cpu == c_cpu2 )
-                   && ( c_gpu == c_gpu2 )
-                   && ( c_cpu == c_cpu_nan + c_cpu_inf )
-                   && ( c_gpu == c_gpu_nan + c_gpu_inf )
-                   && ( c_cpu_nan == cnt_nan )
-                   && ( c_cpu_inf == cnt_inf )
-                   && ( c_gpu_nan == cnt_nan )
-                   && ( c_gpu_inf == cnt_inf );
+            bool okay = ( c_cpu == c_gpu )
+                     && ( c_cpu == c_cpu2 )
+                     && ( c_gpu == c_gpu2 )
+                     && ( c_cpu == c_cpu_nan + c_cpu_inf )
+                     && ( c_gpu == c_gpu_nan + c_gpu_inf )
+                     && ( c_cpu_nan == cnt_nan )
+                     && ( c_cpu_inf == cnt_inf )
+                     && ( c_gpu_nan == cnt_nan )
+                     && ( c_gpu_inf == cnt_inf );
             
             printf( "%4c %5d %5d   %10d + %-10d   %10d + %-10d   %10d + %-10d  %s\n",
                     lapacke_uplo_const( uplo[iuplo] ), (int) M, (int) N,
                     (int) c_cpu_nan, (int) c_cpu_inf,
                     (int) c_gpu_nan, (int) c_gpu_inf,
                     (int) cnt_nan,   (int) cnt_inf,
-                    (ok ? "ok" : "failed"));
-            status += ! ok;
+                    (okay ? "ok" : "failed"));
+            status += ! okay;
             
             TESTING_FREE_CPU( hA );
             TESTING_FREE_DEV( dA );

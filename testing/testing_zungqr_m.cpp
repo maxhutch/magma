@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -44,13 +44,13 @@ int main( int argc, char** argv )
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("    m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
-    printf("=========================================================================\n");
+    printf("%%   m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
+    printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             m = opts.msize[itest];
@@ -62,7 +62,7 @@ int main( int argc, char** argv )
             }
             
             lda  = m;
-            ldda = ((m + 31)/32)*32;
+            ldda = magma_roundup( m, opts.align );  // multiple of 32 by default
             n2 = lda*n;
             min_mn = min(m, n);
             nb = magma_get_zgeqrf_nb( m );
@@ -75,15 +75,15 @@ int main( int argc, char** argv )
             TESTING_MALLOC_CPU( hR,     magmaDoubleComplex, lda*n     );
             TESTING_MALLOC_CPU( hT,     magmaDoubleComplex, min_mn*nb );
             TESTING_MALLOC_CPU( tau,    magmaDoubleComplex, min_mn    );
-                                        
+            
             TESTING_MALLOC_DEV( dA,     magmaDoubleComplex, ldda*n    );
-            TESTING_MALLOC_DEV( dT,     magmaDoubleComplex, ( 2*min_mn + ((n + 31)/32)*32 )*nb );
+            TESTING_MALLOC_DEV( dT,     magmaDoubleComplex, ( 2*min_mn + magma_roundup( n, 32 ) )*nb );
             
             lapackf77_zlarnv( &ione, ISEED, &n2, hA );
             lapackf77_zlacpy( MagmaUpperLowerStr, &m, &n, hA, &lda, hR, &lda );
             
             Anorm = lapackf77_zlange("f", &m, &n, hA, &lda, work );
-                
+            
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zsymmetrize_tiles.cpp normal z -> c, Fri Jan 30 19:00:24 2015
+       @generated from testing_zsymmetrize_tiles.cpp normal z -> c, Tue Aug 25 16:35:25 2015
 
 */
 
@@ -38,21 +38,21 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     nb = (opts.nb == 0 ? 64 : opts.nb);
     mstride = 2*nb;
     nstride = 3*nb;
     
-    printf("uplo = %s, nb = %d, mstride = %d, nstride = %d\n",
+    printf("%% uplo = %s, nb = %d, mstride = %d, nstride = %d\n",
             lapack_uplo_const(opts.uplo), (int) nb, (int) mstride, (int) nstride );
-    printf("    N ntile   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
-    printf("===========================================================\n");
+    printf("%%   N ntile   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
+    printf("%%==========================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda    = N;
-            ldda   = ((N+31)/32)*32;
+            ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
             size   = lda*N;
             
             if ( N < nb ) {
@@ -81,9 +81,10 @@ int main( int argc, char** argv)
                =================================================================== */
             magma_csetmatrix( N, N, h_A, lda, d_A, ldda );
             
-            gpu_time = magma_sync_wtime( 0 );
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             magmablas_csymmetrize_tiles( opts.uplo, nb, d_A, ldda, ntile, mstride, nstride );
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
             /* =====================================================================

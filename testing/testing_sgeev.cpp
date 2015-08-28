@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_dgeev.cpp normal d -> s, Fri Jan 30 19:00:26 2015
+       @generated from testing_dgeev.cpp normal d -> s, Tue Aug 25 16:35:28 2015
 
 */
 
@@ -74,7 +74,7 @@ int main( int argc, char** argv)
     magmaFloatComplex *w1copy, *w2copy;
     magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
     float tnrm, result[9];
-    magma_int_t N, n2, lda, nb, lwork, info;
+    magma_int_t N, n2, lda, nb, lwork, lwork2, info;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     float ulp, ulpinv, error;
@@ -84,7 +84,7 @@ int main( int argc, char** argv)
     ulpinv = 1./ulp;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     // need slightly looser bound (60*eps instead of 30*eps) for some tests
     opts.tolerance = max( 60., opts.tolerance );
@@ -99,17 +99,17 @@ int main( int argc, char** argv)
         opts.lapack = true;
     }
     
-    printf("    N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
-    printf("===========================================================================\n");
+    printf("%%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
+    printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda   = N;
             n2    = lda*N;
             nb    = magma_get_sgehrd_nb(N);
-            lwork = N*(2 + nb);
+            lwork = N*(2 + 2*nb);
             // generous workspace - required by sget22
-            lwork = max( lwork, N*(5 + 2*N) );
+            lwork2 = max( lwork, N*(5 + 2*N) );
             
             TESTING_MALLOC_CPU( w1copy, magmaFloatComplex, N );
             TESTING_MALLOC_CPU( w2copy, magmaFloatComplex, N );
@@ -122,7 +122,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_R, float, n2 );
             TESTING_MALLOC_PIN( VL,  float, n2 );
             TESTING_MALLOC_PIN( VR,  float, n2 );
-            TESTING_MALLOC_PIN( h_work, float, lwork );
+            TESTING_MALLOC_PIN( h_work, float, lwork2 );
             
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
@@ -224,7 +224,7 @@ int main( int argc, char** argv)
                                 if (vtst > vmx)
                                     vmx = vtst;
                                 
-                                if ( (VR[jj + (j+1)*lda])==0. &&
+                                if ( (VR[jj + (j+1)*lda]) == 0. &&
                                      MAGMA_S_ABS( VR[jj+j*lda] ) > vrmx)
                                 {
                                     vrmx = MAGMA_S_ABS( VR[jj+j*lda] );
@@ -264,7 +264,7 @@ int main( int argc, char** argv)
                                 if (vtst > vmx)
                                     vmx = vtst;
                                 
-                                if ( (VL[jj + (j+1)*lda])==0. &&
+                                if ( (VL[jj + (j+1)*lda]) == 0. &&
                                      MAGMA_S_ABS( VL[jj+j*lda]) > vrmx)
                                 {
                                     vrmx = MAGMA_S_ABS( VL[jj+j*lda] );
@@ -279,7 +279,7 @@ int main( int argc, char** argv)
             }
             if ( opts.check == 2 ) {
                 // more extensive tests
-                // this is really slow because it calls magma_zgeev multiple times
+                // this is really slow because it calls magma_sgeev multiple times
                 float *LRE, DUM;
                 TESTING_MALLOC_PIN( LRE, float, n2 );
                 
@@ -293,7 +293,7 @@ int main( int argc, char** argv)
                              VL, lda, VR, lda,
                              h_work, lwork, &info );
                 if (info != 0)
-                    printf("magma_zgeev (case V, V) returned error %d: %s.\n",
+                    printf("magma_sgeev (case V, V) returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
                 
                 // ----------

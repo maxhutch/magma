@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from testing_zsort.cpp normal z -> s, Sun May  3 11:23:02 2015
+       @generated from testing_zsort.cpp normal z -> s, Tue Aug 25 16:35:35 2015
        @author Hartwig Anzt
 */
 
@@ -38,7 +38,7 @@ int main(  int argc, char** argv )
     magma_queue_create( &queue );
     magmablasSetKernelStream( queue );
 
-    magma_int_t i=1, n=100;
+    magma_int_t i, n=100;
     magma_index_t *x=NULL;
     
     magma_s_matrix A={Magma_CSR};
@@ -46,7 +46,7 @@ int main(  int argc, char** argv )
     CHECK( magma_index_malloc_cpu( &x, n ));
     printf("unsorted:\n");
     srand(time(NULL));
-    for(magma_int_t i = 0; i<n; i++ ){
+    for(i = 0; i < n; i++ ){
         int r = rand()%100;
         x[i] = r;
         printf("%d  ", x[i]);
@@ -58,15 +58,15 @@ int main(  int argc, char** argv )
     printf("done.\n\n");
     
     printf("sorted:\n");
-    for(magma_int_t i = 0; i<n; i++ ){
+    for(i = 0; i < n; i++ ){
         printf("%d  ", x[i]);
     }
     printf("\n\n");
 
     magma_free_cpu( x );
     
-    while(  i < argc ) {
-
+    i=1;
+    while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
@@ -91,7 +91,6 @@ int main(  int argc, char** argv )
         magma_smfree(&A, queue);
         
         i++;
-        
     }
 
 cleanup:

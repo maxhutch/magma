@@ -1,17 +1,19 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgetri_outofplace_batched.cpp normal z -> d, Fri Jan 30 19:00:19 2015
+       @generated from zgetri_outofplace_batched.cpp normal z -> d, Tue Aug 25 16:35:20 2015
 */
+
 #include "common_magma.h"
 #include "batched_kernel_param.h"
+#include "cublas_v2.h"
 
 /**
     Purpose
@@ -32,7 +34,8 @@
             The order of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+    dA_array Array of pointers, dimension (batchCount).
+            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
             On entry, the factors L and U from the factorization
             A = P*L*U as computed by DGETRF_GPU.
             On exit, if INFO = 0, the inverse of the original matrix A.
@@ -42,28 +45,38 @@
             The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[in]
-    ipiv    INTEGER array, dimension (N)
-            The pivot indices from DGETRF; for 1 <= i <= N, row i of the
+    dipiv_array Array of pointers, dimension (batchCount), for corresponding matrices.
+            Each is an INTEGER array, dimension (N)
+            The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
 
     @param[out]
-    dwork   (workspace) DOUBLE_PRECISION array on the GPU, dimension (MAX(1,LWORK))
+    dinvA_array Array of pointers, dimension (batchCount).
+            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDIA,N)
+            It contains the inverse of the matrix
   
     @param[in]
-    lwork   INTEGER
-            The dimension of the array DWORK.  LWORK >= N*NB, where NB is
-            the optimal blocksize returned by magma_get_dgetri_nb(n).
-    \n
-            Unlike LAPACK, this version does not currently support a
-            workspace query, because the workspace is on the GPU.
+    lddia   INTEGER
+            The leading dimension of the array invA_array.  LDDIA >= max(1,N).
 
     @param[out]
-    info    INTEGER
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
-      -     > 0:  if INFO = i, U(i,i) is exactly zero; the matrix is
-                  singular and its cannot be computed.
+                  or another error occured, such as memory allocation failed.
+      -     > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+                  has been completed, but the factor U is exactly
+                  singular, and division by zero will occur if it is used
+                  to solve a system of equations.
 
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+                  
     @ingroup magma_dgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
@@ -73,7 +86,6 @@ magma_dgetri_outofplace_batched( magma_int_t n,
                   double **dinvA_array, magma_int_t lddia,
                   magma_int_t *info_array,
                   magma_int_t batchCount, magma_queue_t queue)
-       
 {
     /* Local variables */
   
@@ -94,13 +106,12 @@ magma_dgetri_outofplace_batched( magma_int_t n,
     if ( n == 0 )
         return info;
 
-
-
-
     magma_int_t ib, j;
-    magma_int_t nb = 256;//256;// BATRF_NB;
+    magma_int_t nb = 256; //256; // BATRF_NB;
 
-
+    cublasHandle_t myhandle;
+    cublasCreate_v2(&myhandle);
+    cublasSetStream(myhandle, queue);
 
     double **dA_displ   = NULL;
     double **dW0_displ  = NULL;
@@ -122,9 +133,8 @@ magma_dgetri_outofplace_batched( magma_int_t n,
     magma_malloc((void**)&dW5_displ,  batchCount * sizeof(*dW5_displ));
 
     double* dinvdiagA;
-    double* dwork;// dinvdiagA and dwork are workspace in dtrsm
-    //magma_int_t invdiagA_msize =  BATRI_NB*((nb/BATRI_NB)+(nb % BATRI_NB != 0))* BATRI_NB ;
-    magma_int_t invdiagA_msize = ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB;
+    double* dwork; // dinvdiagA and dwork are workspace in dtrsm
+    magma_int_t invdiagA_msize = magma_roundup( n, BATRI_NB )*BATRI_NB;
     magma_int_t dwork_msize = n*nb;
     magma_dmalloc( &dinvdiagA, invdiagA_msize * batchCount);
     magma_dmalloc( &dwork, dwork_msize * batchCount );
@@ -143,7 +153,6 @@ magma_dgetri_outofplace_batched( magma_int_t n,
         magma_free(dinvdiagA);
         magma_free( dwork );
         info = MAGMA_ERR_DEVICE_ALLOC;
-        magma_xerbla( __func__, -(info) );
         return info;
     }
 
@@ -152,9 +161,6 @@ magma_dgetri_outofplace_batched( magma_int_t n,
     dset_pointer(dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue);
     dset_pointer(dinvdiagA_array, dinvdiagA, TRI_NB, 0, 0, invdiagA_msize, batchCount, queue);
 
-    magma_queue_t cstream;
-    magmablasGetKernelStream(&cstream);
-
     //printf(" I am after malloc getri\n");
 
 
@@ -162,7 +168,7 @@ magma_dgetri_outofplace_batched( magma_int_t n,
     // set dinvdiagA to identity
     magmablas_dlaset_batched(MagmaUpperLower, n, n, MAGMA_D_ZERO, MAGMA_D_ONE, dinvA_array, lddia, batchCount, queue);
 
-    for(j = 0; j < n; j+=nb) {
+    for (j = 0; j < n; j += nb) {
         ib = min(nb, n-j);
         // dinvdiagA * Piv' = I * U^-1 * L^-1 = U^-1 * L^-1 * I
         // Azzam : optimization can be done:
@@ -177,7 +183,7 @@ magma_dgetri_outofplace_batched( magma_int_t n,
         magma_ddisplace_pointers(dW0_displ, dinvA_array, lddia, j, j, batchCount, queue);
         magma_ddisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount, queue);
         
-        magmablas_dtrsm_outofplace_batched(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
+        magmablas_dtrsm_outofplace_batched( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
                 n-j, ib,
                 MAGMA_D_ONE,
                 dA_displ,       ldda, // dA
@@ -186,7 +192,7 @@ magma_dgetri_outofplace_batched( magma_int_t n,
                 dinvdiagA_array,  invdiagA_msize, 
                 dW1_displ,   dW2_displ, 
                 dW3_displ,   dW4_displ,
-                1, batchCount, queue);
+                1, batchCount, queue, myhandle);
         
         //magma_queue_sync(NULL);
         //printf(" @ step %d calling solve 2 \n",j);
@@ -194,7 +200,7 @@ magma_dgetri_outofplace_batched( magma_int_t n,
         magma_ddisplace_pointers(dW5_displ, dwork_array, n, 0, 0, batchCount, queue);
         magma_ddisplace_pointers(dW0_displ, dinvA_array, lddia, 0, j, batchCount, queue);
         magma_ddisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
-        magmablas_dtrsm_outofplace_batched(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, 1,
+        magmablas_dtrsm_outofplace_batched( MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, 1,
                 n, ib,
                 MAGMA_D_ONE,
                 dA_displ,       ldda, // dA
@@ -203,13 +209,15 @@ magma_dgetri_outofplace_batched( magma_int_t n,
                 dinvdiagA_array,  invdiagA_msize, 
                 dW1_displ,   dW2_displ, 
                 dW3_displ,   dW4_displ,
-                1, batchCount, queue);
+                1, batchCount, queue, myhandle);
     }
 
     // Apply column interchanges
     magma_dlaswp_columnserial_batched( n, dinvA_array, lddia, max(1,n-1), 1, dipiv_array, batchCount, queue);
 
-    magma_queue_sync(cstream);
+    magmablasSetKernelStream(queue);
+    magma_queue_sync(queue);
+    cublasDestroy_v2(myhandle);
 
     magma_free(dA_displ);
     magma_free(dW1_displ);
@@ -221,7 +229,6 @@ magma_dgetri_outofplace_batched( magma_int_t n,
     magma_free(dwork_array);
     magma_free(dinvdiagA);
     magma_free( dwork );
-
     
     return info;
 }

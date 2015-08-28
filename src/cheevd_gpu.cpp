@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from zheevd_gpu.cpp normal z -> c, Fri Jan 30 19:00:17 2015
+       @generated from zheevd_gpu.cpp normal z -> c, Tue Aug 25 16:35:17 2015
 
 */
 #include "common_magma.h"
@@ -278,7 +278,7 @@ magma_cheevd_gpu(
     // chetrd2_gpu requires ldda*ceildiv(n,64) + 2*ldda*nb, in float-complex.
     // cunmtr_gpu  requires lddc*n,                         in float-complex.
     // clanhe      requires n, in float.
-    magma_int_t ldwork = max( ldda*ceildiv(n,64) + 2*ldda*nb, lddc*n );
+    magma_int_t ldwork = max( ldda*magma_ceildiv(n,64) + 2*ldda*nb, lddc*n );
     magma_int_t ldwork_real = max( ldwork*2, n );
     if ( wantz ) {
         // cstedx requrise 3n^2/2, in float

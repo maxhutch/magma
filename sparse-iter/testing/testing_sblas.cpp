@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from testing_zblas.cpp normal z -> s, Sun May  3 11:23:02 2015
+       @generated from testing_zblas.cpp normal z -> s, Tue Aug 25 16:35:35 2015
        @author Hartwig Anzt
 */
 
@@ -37,6 +37,7 @@ int main(  int argc, char** argv )
     magmablasSetKernelStream( queue );
 
     magma_int_t j, n=1000000, FLOPS;
+    magma_int_t count = 100;
     
     float one = MAGMA_S_MAKE( 1.0, 0.0 );
     float two = MAGMA_S_MAKE( 2.0, 0.0 );
@@ -52,48 +53,56 @@ int main(  int argc, char** argv )
     
     FLOPS = 2*n;
     start = magma_sync_wtime( queue );
-    for (j=0; j<100; j++)
+    for (j=0; j < count; j++) {
         res = magma_snrm2(n, ad.dval, 1);
+    }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA nrm2: %.2e seconds %.2e GFLOP/s\n",
-                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+                                    (end-start)/count, FLOPS*count/1e9/(end-start) );
     FLOPS = n;
     start = magma_sync_wtime( queue );
-    for (j=0; j<100; j++)
+    for (j=0; j < count; j++) {
         magma_sscal( n, two, ad.dval, 1 );
+    }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA scal: %.2e seconds %.2e GFLOP/s\n",
-                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+                                    (end-start)/count, FLOPS*count/1e9/(end-start) );
     FLOPS = 2*n;
     start = magma_sync_wtime( queue );
-    for (j=0; j<100; j++)
+    for (j=0; j < count; j++) {
         magma_saxpy( n, one, ad.dval, 1, bd.dval, 1 );
+    }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA axpy: %.2e seconds %.2e GFLOP/s\n",
-                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+                                    (end-start)/count, FLOPS*count/1e9/(end-start) );
     FLOPS = n;
     start = magma_sync_wtime( queue );
-    for (j=0; j<100; j++)
+    for (j=0; j < count; j++) {
         magma_scopy( n, bd.dval, 1, ad.dval, 1 );
+    }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA copy: %.2e seconds %.2e GFLOP/s\n",
-                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+                                    (end-start)/count, FLOPS*count/1e9/(end-start) );
     FLOPS = 2*n;
     start = magma_sync_wtime( queue );
-    for (j=0; j<100; j++)
+    for (j=0; j < count; j++) {
         res = MAGMA_S_REAL( magma_sdot(n, ad.dval, 1, bd.dval, 1) );
+    }
     end = magma_sync_wtime( queue );
     printf( " > MAGMA dotc: %.2e seconds %.2e GFLOP/s\n",
-                                    (end-start)/100, FLOPS*100/1e9/(end-start) );
+                                    (end-start)/count, FLOPS*count/1e9/(end-start) );
 
-    printf("# tester BLAS:  ok\n");
-
+    printf("%% tester BLAS:  ok\n");
+    
+    // use res to silence compiler warnings
+    if ( isnan( real( res ))) {
+        info = -1;
+    }
 
     magma_smfree( &a, queue);
     magma_smfree(&ad, queue);
     magma_smfree(&bd, queue);
     magma_smfree(&cd, queue);
-
     
 cleanup:
     magma_smfree( &a, queue);

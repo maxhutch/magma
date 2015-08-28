@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        
@@ -50,7 +50,7 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
@@ -58,16 +58,16 @@ int main( int argc, char** argv)
     nb      = (opts.nb      > 0 ? opts.nb      : 64);
     nstream = (opts.nstream > 0 ? opts.nstream :  2);
     
-    printf( "version 1: magmablas_zher2k_mgpu2     %s\n", (opts.version==1 ? "(enabled)" : ""));
-    printf( "version 2: magmablas_zher2k_mgpu_spec %s\n", (opts.version==2 ? "(enabled)" : ""));
+    printf( "%% version 1: magmablas_zher2k_mgpu2     %s\n", (opts.version == 1 ? "(enabled)" : ""));
+    printf( "%% version 2: magmablas_zher2k_mgpu_spec %s\n", (opts.version == 2 ? "(enabled)" : ""));
 #ifdef ICHI
-    printf( "version 3: magma_zher2k_mgpu (Ichi)   %s\n", (opts.version==3 ? "(enabled)" : ""));
+    printf( "%% version 3: magma_zher2k_mgpu (Ichi)   %s\n", (opts.version == 3 ? "(enabled)" : ""));
 #endif
     printf( "\n" );
     
-    printf( "nb %d, ngpu %d, nstream %d\n", (int) nb, (int) ngpu, (int) nstream );
-    printf("    n     k    nb offset  CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R|/(|V|*|W|+|A|)\n");
-    printf("===================================================================================\n");
+    printf("%% nb %d, ngpu %d, nstream %d\n", (int) nb, (int) ngpu, (int) nstream );
+    printf("%%   n     k    nb offset  CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R|/(|V|*|W|+|A|)\n");
+    printf("%%==================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         n = opts.nsize[itest];
         k = opts.ksize[itest];
@@ -75,7 +75,7 @@ int main( int argc, char** argv)
         for( int offset = 0; offset < n; offset += min(k,nb) ) {
             for( int iter = 0; iter < opts.niter; ++iter ) {
                 lda    = n;
-                ldda   = ((n + 31)/32)*32;
+                ldda   = magma_roundup( n, opts.align );  // multiple of 32 by default
                 gflops = FLOPS_ZHER2K( k, n-offset ) / 1e9;
                 
                 TESTING_MALLOC_CPU( hA,  magmaDoubleComplex, lda*n   );

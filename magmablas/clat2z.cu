@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
        @author Mark Gates
 */
 #include "common_magma.h"
-
-#define PRECISION_z
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -173,13 +171,15 @@ magmablas_clat2z_q(
         return;
     }
     
-    dim3 threads( BLK_X );
-    dim3 grid( (n+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    dim3 threads( BLK_X, 1 );
+    dim3 grid( magma_ceildiv( n, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     
-    if (uplo == MagmaLower)
+    if (uplo == MagmaLower) {
         clat2z_lower<<< grid, threads, 0, queue >>> (n, SA, ldsa, A, lda);
-    else if (uplo == MagmaUpper)                                         
+    }
+    else if (uplo == MagmaUpper) {
         clat2z_upper<<< grid, threads, 0, queue >>> (n, SA, ldsa, A, lda);
+    }
 }
 
 

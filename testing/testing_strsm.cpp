@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_ztrsm.cpp normal z -> s, Fri Jan 30 19:00:24 2015
+       @generated from testing_ztrsm.cpp normal z -> s, Tue Aug 25 16:35:25 2015
        @author Chongxiao Cao
 */
 // includes, system
@@ -19,6 +19,7 @@
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"  // for MAGMA_S_DIV
 
 #define h_A(i,j) (h_A + (i) + (j)*lda)
 
@@ -29,8 +30,8 @@ int main( int argc, char** argv)
 {
     TESTING_INIT();
 
-    real_Double_t   gflops, magma_perf, magma_time=0, cublas_perf, cublas_time, cpu_perf=0, cpu_time=0;
-    float          magma_error, cublas_error, lapack_error, work[1];
+    real_Double_t   gflops, magma_perf=0, magma_time=0, cublas_perf, cublas_time, cpu_perf=0, cpu_time=0;
+    float          magma_error=0, cublas_error, lapack_error, work[1];
     magma_int_t M, N, info;
     magma_int_t Ak;
     magma_int_t sizeA, sizeB;
@@ -38,7 +39,7 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t *ipiv;
-
+    
     float *h_A, *h_B, *h_Bcublas, *h_Bmagma, *h_Blapack, *h_X;
     magmaFloat_ptr d_A, d_B;
     float c_neg_one = MAGMA_S_NEG_ONE;
@@ -47,15 +48,15 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
 
-    printf("side = %s, uplo = %s, transA = %s, diag = %s \n",
+    printf("%% side = %s, uplo = %s, transA = %s, diag = %s \n",
            lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
            lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
-    printf("    M     N  MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)      MAGMA     CUBLAS   LAPACK error\n");
-    printf("============================================================================================================\n");
+    printf("%%   M     N  MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)      MAGMA     CUBLAS   LAPACK error\n");
+    printf("%%===========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -72,8 +73,8 @@ int main( int argc, char** argv)
             
             ldb = M;
             
-            ldda = ((lda+31)/32)*32;
-            lddb = ((ldb+31)/32)*32;
+            ldda = magma_roundup( lda, opts.align );  // multiple of 32 by default
+            lddb = magma_roundup( ldb, opts.align );  // multiple of 32 by default
             
             sizeA = lda*Ak;
             sizeB = ldb*N;
@@ -103,35 +104,50 @@ int main( int argc, char** argv)
             
             lapackf77_slarnv( &ione, ISEED, &sizeB, h_B );
             memcpy( h_Blapack, h_B, sizeB*sizeof(float) );
+            magma_ssetmatrix( Ak, Ak, h_A, lda, d_A, ldda );
             
             /* =====================================================================
                Performs operation using MAGMABLAS
                =================================================================== */
-            magma_ssetmatrix( Ak, Ak, h_A, lda, d_A, ldda );
-            magma_ssetmatrix( M, N, h_B, ldb, d_B, lddb );
-            
-            magma_time = magma_sync_wtime( NULL );
-            magmablas_strsm( opts.side, opts.uplo, opts.transA, opts.diag, 
-                             M, N,
-                             alpha, d_A, ldda,
-                                    d_B, lddb );
-            magma_time = magma_sync_wtime( NULL ) - magma_time;
-            magma_perf = gflops / magma_time;
-            
-            magma_sgetmatrix( M, N, d_B, lddb, h_Bmagma, ldb );
+            #if defined(HAVE_CUBLAS)
+                magma_ssetmatrix( M, N, h_B, ldb, d_B, lddb );
+                
+                magmablasSetKernelStream( opts.queue );
+                magma_time = magma_sync_wtime( opts.queue );
+                magmablas_strsm( opts.side, opts.uplo, opts.transA, opts.diag,
+                                 M, N,
+                                 alpha, d_A, ldda,
+                                        d_B, lddb );
+                magma_time = magma_sync_wtime( opts.queue ) - magma_time;
+                magma_perf = gflops / magma_time;
+                
+                magma_sgetmatrix( M, N, d_B, lddb, h_Bmagma, ldb );
+            #endif
             
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
             magma_ssetmatrix( M, N, h_B, ldb, d_B, lddb );
             
-            cublas_time = magma_sync_wtime( NULL );
-            cublasStrsm( opts.handle, cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
-                         cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
-                         M, N, 
-                         &alpha, d_A, ldda,
-                                 d_B, lddb );
-            cublas_time = magma_sync_wtime( NULL ) - cublas_time;
+            cublas_time = magma_sync_wtime( opts.queue );
+            #if defined(HAVE_CUBLAS)
+                // opts.handle also uses opts.queue 
+                cublasStrsm( opts.handle,
+                             cublas_side_const(opts.side), cublas_uplo_const(opts.uplo),
+                             cublas_trans_const(opts.transA), cublas_diag_const(opts.diag),
+                             M, N,
+                             &alpha, d_A, ldda,
+                                     d_B, lddb );
+            #elif defined(HAVE_clBLAS)
+                clblasStrsm( clblasColumnMajor,
+                             clblas_side_const(opts.side), clblas_uplo_const(opts.uplo),
+                             clblas_trans_const(opts.transA), clblas_diag_const(opts.diag),
+                             M, N,
+                             alpha, d_A, 0, ldda,
+                                    d_B, 0, lddb,
+                             1, &opts.queue, 0, NULL, NULL );
+            #endif
+            cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
             
             magma_sgetmatrix( M, N, d_B, lddb, h_Bcublas, ldb );
@@ -142,7 +158,7 @@ int main( int argc, char** argv)
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
                 blasf77_strsm( lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                                &M, &N,
                                &alpha, h_A, &lda,
                                        h_Blapack, &ldb );
@@ -154,34 +170,36 @@ int main( int argc, char** argv)
                Check the result
                =================================================================== */
             // ||b - 1/alpha*A*x|| / (||A||*||x||)
-            float alpha2 = MAGMA_S_DIV( c_one, alpha );
+            float inv_alpha = MAGMA_S_DIV( c_one, alpha );
             float normR, normX, normA;
             normA = lapackf77_slange( "M", &Ak, &Ak, h_A, &lda, work );
             
-            // check magma
-            memcpy( h_X, h_Bmagma, sizeB*sizeof(float) );
-            blasf77_strmm( lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                           lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
-                           &M, &N,
-                           &alpha2, h_A, &lda,
-                                    h_X, &ldb );
-
-            blasf77_saxpy( &sizeB, &c_neg_one, h_B, &ione, h_X, &ione );
-            normR = lapackf77_slange( "M", &M, &N, h_X,      &ldb, work );
-            normX = lapackf77_slange( "M", &M, &N, h_Bmagma, &ldb, work );
-            magma_error = normR/(normX*normA);
+            #if defined(HAVE_CUBLAS)
+                // check magma
+                memcpy( h_X, h_Bmagma, sizeB*sizeof(float) );
+                blasf77_strmm( lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
+                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
+                               &M, &N,
+                               &inv_alpha, h_A, &lda,
+                                           h_X, &ldb );
+                
+                blasf77_saxpy( &sizeB, &c_neg_one, h_B, &ione, h_X, &ione );
+                normR = lapackf77_slange( "M", &M, &N, h_X,      &ldb, work );
+                normX = lapackf77_slange( "M", &M, &N, h_Bmagma, &ldb, work );
+                magma_error = normR/(normX*normA);
+            #endif
 
             // check cublas
             memcpy( h_X, h_Bcublas, sizeB*sizeof(float) );
             blasf77_strmm( lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                           lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                           lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                            &M, &N,
-                           &alpha2, h_A, &lda,
-                                    h_X, &ldb );
+                           &inv_alpha, h_A, &lda,
+                                       h_X, &ldb );
 
             blasf77_saxpy( &sizeB, &c_neg_one, h_B, &ione, h_X, &ione );
             normR = lapackf77_slange( "M", &M, &N, h_X,       &ldb, work );
-            normX = lapackf77_slange( "M", &M, &N, h_Bcublas, &ldb, work );            
+            normX = lapackf77_slange( "M", &M, &N, h_Bcublas, &ldb, work );
             cublas_error = normR/(normX*normA);
 
             if ( opts.lapack ) {
@@ -189,10 +207,10 @@ int main( int argc, char** argv)
                 // this verifies that the matrix wasn't so bad that it couldn't be solved accurately.
                 memcpy( h_X, h_Blapack, sizeB*sizeof(float) );
                 blasf77_strmm( lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), 
+                               lapack_trans_const(opts.transA), lapack_diag_const(opts.diag),
                                &M, &N,
-                               &alpha2, h_A, &lda,
-                                        h_X, &ldb );
+                               &inv_alpha, h_A, &lda,
+                                           h_X, &ldb );
     
                 blasf77_saxpy( &sizeB, &c_neg_one, h_B, &ione, h_X, &ione );
                 normR = lapackf77_slange( "M", &M, &N, h_X,       &ldb, work );

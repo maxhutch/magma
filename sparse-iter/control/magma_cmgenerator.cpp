@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmgenerator.cpp normal z -> c, Sun May  3 11:23:01 2015
+       @generated from magma_zmgenerator.cpp normal z -> c, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -76,7 +76,7 @@ magma_cmgenerator(
     
     B.num_rows = n;
     B.num_cols = n;
-    B.fill_mode = Magma_FULL;
+    B.fill_mode = MagmaFull;
     B.memory_location = Magma_CPU;
     B.storage_type = Magma_ELLPACKT;
     B.max_nnz_row = (2*offdiags+1);
@@ -109,7 +109,6 @@ magma_cmgenerator(
                 B.val[ i*B.max_nnz_row + j ] = MAGMA_C_MAKE( 0.0, 0.0 );
             }
         }
-
     }
 
     B.nnz = 0;
@@ -119,7 +118,6 @@ magma_cmgenerator(
             if ( MAGMA_C_REAL( B.val[i*B.max_nnz_row + j]) != 0.0 )
                 B.nnz++;
         }
-
     }
 
     // converting it to CSR will remove the invalit entries completely
@@ -210,39 +208,36 @@ magma_cm_27stencil(
     diag_vals[13] = MAGMA_C_MAKE( -1.0, 0.0 );
     CHECK( magma_cmgenerator( nn, offdiags, diag_offset, diag_vals, &hA, queue ));
 
-
     // now set some entries to zero (boundary...)
-    for( i=0; i<n*n; i++ ) {
-    for( j=0; j<n; j++ ) {
-        magma_index_t row = i*n+j;
-        for( k=hA.row[row]; k<hA.row[row+1]; k++) {
-
-            if ((hA.col[k] == row-1 ||
-                hA.col[k] == row-n-1 ||
-                hA.col[k] == row+n-1 ||
-                hA.col[k] == row-n*n+n-1 ||
-                hA.col[k] == row+n*n-n-1 ||
-                hA.col[k] == row-n*n-1 ||
-                hA.col[k] == row+n*n-1 ||
-                hA.col[k] == row-n*n-n-1 ||
-                hA.col[k] == row+n*n+n-1 ) && (row+1)%n == 1 )
-                    
-                    hA.val[k] = MAGMA_C_MAKE( 0.0, 0.0 );
-
-            if ((hA.col[k] == row+1 ||
-                hA.col[k] == row-n+1 ||
-                hA.col[k] == row+n+1 ||
-                hA.col[k] == row-n*n+n+1 ||
-                hA.col[k] == row+n*n-n+1 ||
-                hA.col[k] == row-n*n+1 ||
-                hA.col[k] == row+n*n+1 ||
-                hA.col[k] == row-n*n-n+1 ||
-                hA.col[k] == row+n*n+n+1 ) && (row)%n ==n-1 )
-                    
-                    hA.val[k] = MAGMA_C_MAKE( 0.0, 0.0 );
+    for( i=0; i < n*n; i++ ) {
+        for( j=0; j < n; j++ ) {
+            magma_index_t row = i*n+j;
+            for( k=hA.row[row]; k<hA.row[row+1]; k++) {
+                if ((hA.col[k] == row-1 ||
+                    hA.col[k] == row-n-1 ||
+                    hA.col[k] == row+n-1 ||
+                    hA.col[k] == row-n*n+n-1 ||
+                    hA.col[k] == row+n*n-n-1 ||
+                    hA.col[k] == row-n*n-1 ||
+                    hA.col[k] == row+n*n-1 ||
+                    hA.col[k] == row-n*n-n-1 ||
+                    hA.col[k] == row+n*n+n-1 ) && (row+1)%n == 1 )
+                        
+                        hA.val[k] = MAGMA_C_MAKE( 0.0, 0.0 );
+    
+                if ((hA.col[k] == row+1 ||
+                    hA.col[k] == row-n+1 ||
+                    hA.col[k] == row+n+1 ||
+                    hA.col[k] == row-n*n+n+1 ||
+                    hA.col[k] == row+n*n-n+1 ||
+                    hA.col[k] == row-n*n+1 ||
+                    hA.col[k] == row+n*n+1 ||
+                    hA.col[k] == row-n*n-n+1 ||
+                    hA.col[k] == row+n*n+n+1 ) && (row)%n ==n-1 )
+                        
+                        hA.val[k] = MAGMA_C_MAKE( 0.0, 0.0 );
+            }
         }
-        
-    }
     }
     CHECK( magma_cmconvert( hA, A, Magma_CSR, Magma_CSR, queue ));
 
@@ -320,20 +315,16 @@ magma_cm_5stencil(
 
     // now set some entries to zero (boundary...)
     for( i=0; i<n; i++ ) {
-    for( j=0; j<n; j++ ) {
-        magma_index_t row = i*n+j;
-        for( k=hA.row[row]; k<hA.row[row+1]; k++) {
-
-            if ((hA.col[k] == row-1 ) && (row+1)%n == 1 )
-                    
+        for( j=0; j<n; j++ ) {
+            magma_index_t row = i*n+j;
+            for( k=hA.row[row]; k<hA.row[row+1]; k++) {
+                if ((hA.col[k] == row-1 ) && (row+1)%n == 1 )
                     hA.val[k] = MAGMA_C_MAKE( 0.0, 0.0 );
-
-            if ((hA.col[k] == row+1 ) && (row)%n ==n-1 )
-                    
+    
+                if ((hA.col[k] == row+1 ) && (row)%n ==n-1 )
                     hA.val[k] = MAGMA_C_MAKE( 0.0, 0.0 );
+            }
         }
-        
-    }
     }
 
     CHECK( magma_cmconvert( hA, A, Magma_CSR, Magma_CSR, queue ));

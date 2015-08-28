@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmcsrcompressor.cpp normal z -> c, Sun May  3 11:23:01 2015
+       @generated from magma_zmcsrcompressor.cpp normal z -> c, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 
 */
@@ -42,8 +42,6 @@ magma_cmcsrcompressor(
     magma_c_matrix hA={Magma_CSR}, CSRA={Magma_CSR};
         
     if ( A->memory_location == Magma_CPU && A->storage_type == Magma_CSR ) {
-
-
         CHECK( magma_cmconvert( *A, &B, Magma_CSR, Magma_CSR, queue ));
 
         magma_free_cpu( A->row );
@@ -54,7 +52,6 @@ magma_cmcsrcompressor(
         A->nnz = A->row[A->num_rows];
     }
     else {
-
         magma_storage_t A_storage = A->storage_type;
         magma_location_t A_location = A->memory_location;
         CHECK( magma_cmtransfer( *A, &hA, A->memory_location, Magma_CPU, queue ));
@@ -76,5 +73,3 @@ cleanup:
     magma_cmfree( &B, queue );
     return info;
 }
-
-

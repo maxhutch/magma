@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgeqrf_gpu.cpp normal z -> d, Fri Jan 30 19:00:25 2015
+       @generated from testing_zgeqrf_gpu.cpp normal z -> d, Tue Aug 25 16:35:27 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -41,19 +41,19 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     magma_int_t status = 0;
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf( "version %d\n", (int) opts.version );
+    printf( "%% version %d\n", (int) opts.version );
     if ( opts.version == 2 ) {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
-        printf("===============================================================================\n");
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
+        printf("%%==============================================================================\n");
     }
     else {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)    |b - A*x|\n");
-        printf("================================================================\n");
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)    |b - A*x|\n");
+        printf("%%===============================================================\n");
     }
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -62,7 +62,7 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_DGEQRF( M, N ) / 1e9;
             
             // query for workspace size
@@ -93,7 +93,7 @@ int main( int argc, char** argv)
             }
             else {
                 nb = magma_get_dgeqrf_nb( M );
-                size = (2*min(M, N) + (N+31)/32*32 )*nb;
+                size = (2*min(M, N) + magma_roundup( N, 32 ) )*nb;
                 TESTING_MALLOC_DEV( dT, double, size );
                 if ( opts.version == 1 ) {
                     // stores dT, V blocks have zeros, R blocks inverted & stored in dT
@@ -107,7 +107,7 @@ int main( int argc, char** argv)
                 #endif
                 else {
                     printf( "Unknown version %d\n", (int) opts.version );
-                    exit(1);
+                    return -1;
                 }
             }
             gpu_time = magma_wtime() - gpu_time;
@@ -166,13 +166,9 @@ int main( int argc, char** argv)
                    Check the result by solving consistent linear system, A*x = b.
                    Only for versions 1 & 3 with M >= N.
                    =================================================================== */
-                magma_int_t lwork;
+                magma_int_t lwork2;
                 double *x, *b, *hwork;
                 magmaDouble_ptr d_B;
-                const double c_zero    = MAGMA_D_ZERO;
-                const double c_one     = MAGMA_D_ONE;
-                const double c_neg_one = MAGMA_D_NEG_ONE;
-                const magma_int_t ione = 1;
 
                 // initialize RHS, b = A*random
                 TESTING_MALLOC_CPU( x, double, N );
@@ -188,13 +184,13 @@ int main( int argc, char** argv)
                     magma_dgeqrs_gpu( M, N, 1,
                                       d_A, ldda, tau, dT,
                                       d_B, M, tmp, -1, &info );
-                    lwork = (magma_int_t)MAGMA_D_REAL( tmp[0] );
-                    TESTING_MALLOC_CPU( hwork, double, lwork );
+                    lwork2 = (magma_int_t)MAGMA_D_REAL( tmp[0] );
+                    TESTING_MALLOC_CPU( hwork, double, lwork2 );
 
                     // solve linear system
                     magma_dgeqrs_gpu( M, N, 1,
                                       d_A, ldda, tau, dT,
-                                      d_B, M, hwork, lwork, &info );
+                                      d_B, M, hwork, lwork2, &info );
                     if (info != 0)
                         printf("magma_dgeqrs returned error %d: %s.\n",
                                (int) info, magma_strerror( info ));
@@ -206,13 +202,13 @@ int main( int argc, char** argv)
                     magma_dgeqrs3_gpu( M, N, 1,
                                        d_A, ldda, tau, dT,
                                        d_B, M, tmp, -1, &info );
-                    lwork = (magma_int_t)MAGMA_D_REAL( tmp[0] );
-                    TESTING_MALLOC_CPU( hwork, double, lwork );
+                    lwork2 = (magma_int_t)MAGMA_D_REAL( tmp[0] );
+                    TESTING_MALLOC_CPU( hwork, double, lwork2 );
 
                     // solve linear system
                     magma_dgeqrs3_gpu( M, N, 1,
                                        d_A, ldda, tau, dT,
-                                       d_B, M, hwork, lwork, &info );
+                                       d_B, M, hwork, lwork2, &info );
                     if (info != 0)
                         printf("magma_dgeqrs3 returned error %d: %s.\n",
                                (int) info, magma_strerror( info ));
@@ -221,7 +217,7 @@ int main( int argc, char** argv)
                 #endif
                 else {
                     printf( "Unknown version %d\n", (int) opts.version );
-                    exit(1);
+                    return -1;
                 }
                 magma_dgetvector( N, d_B, 1, x, 1 );
 

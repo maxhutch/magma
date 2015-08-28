@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Azzam Haidar
        @author Mark Gates
@@ -173,11 +173,75 @@ void magma_set_lapack_numthreads(magma_int_t threads)
 #if defined(MAGMA_WITH_MKL)
     mkl_set_num_threads( threads );
 #elif defined(_OPENMP)
-    omp_set_num_threads( threads );
+    #pragma omp parallel
+    {
+        omp_set_num_threads( threads );
+    }
 #endif
 }
 
 
+/***************************************************************************//**
+    Purpose
+    -------
+    Returns the number of threads currently used for OMP sections.
+    Typically, the number of threads is initially set by the environment variables
+    OMP_NUM_THREADS.
+
+    @sa magma_get_parallel_numthreads
+    @sa magma_set_lapack_numthreads
+    @ingroup magma_util
+    ********************************************************************/
+extern "C"
+magma_int_t magma_get_omp_numthreads()
+{
+    magma_int_t threads = 1;
+
+#if defined(_OPENMP)
+    #pragma omp parallel
+    {
+        threads = omp_get_num_threads();
+    }
+#endif
+
+    return threads;
+}
+/***************************************************************************//**
+    Purpose
+    -------
+    Sets the number of threads to use for parallel section.
+    This is often used to set BLAS to be single-threaded during sections
+    where MAGMA uses explicit pthread parallelism. Example use:
+
+        nthread_save = magma_get_omp_numthreads();
+        magma_set_omp_numthreads( 1 );
+
+        ... launch pthreads, do work, terminate pthreads ...
+
+        magma_set_omp_numthreads( nthread_save );
+
+    Arguments
+    ---------
+    @param[in]
+    threads INTEGER
+            Number of threads to use. threads >= 1.
+            If threads < 1, this silently does nothing.
+
+    @sa magma_get_parallel_numthreads
+    @sa magma_get_lapack_numthreads
+    @ingroup magma_util
+    ********************************************************************/
+extern "C"
+void magma_set_omp_numthreads(magma_int_t threads)
+{
+    if ( threads < 1 ) {
+        return;
+    }
+
+#if defined(_OPENMP)
+    omp_set_num_threads( threads );
+#endif
+}
 
 
 
@@ -202,4 +266,3 @@ void magma_set_lapack_numthreads(magma_int_t threads)
     #endif
 
 */
-

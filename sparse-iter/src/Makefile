@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.2) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/src
@@ -27,7 +27,10 @@ ZSRC += \
 	zcg_merge.cpp		\
 	zbicgstab.cpp		\
 	zbicgstab_merge.cpp	\
-	zbicgstab_merge2.cpp\
+	zbicgstab_merge2.cpp	\
+	zidr.cpp	\
+	zidr_acc.cpp	\
+    zidr_strms.cpp	\
 	ziterref.cpp		\
 	zjacobi.cpp			\
 	zbaiter.cpp			\
@@ -35,7 +38,7 @@ ZSRC += \
 	zbpcg.cpp			\
 	zfgmres.cpp 		\
 	zpbicgstab.cpp		\
-
+	zpidr.cpp	\
 
 # Krylov space eigen-solvers
 ZSRC += \
@@ -63,8 +66,9 @@ ZSRC += \
 	ziterilu.cpp			\
 
 
-# orthogonalization schemes    
+# orthogonalization schemes and wrappers to dense MAGMA
 ZSRC += \
+	magma_zqr_wrapper.cpp	\
 #	zorthomgs.cpp		\
 
 # backward communication for SpMV and Preconditioner
@@ -87,6 +91,7 @@ ZSRC += \
 
 # research functions
 ZSRC += \
+	zjacobidomainoverlap.cpp			\
 
 # ------------------------------------------------------------
 -include Makefile.local

@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = ../../..
@@ -11,8 +11,8 @@ include $(MAGMA_DIR)/Makefile.internal
 
 LIBNAME = ../lib/libcheck.a
 lib: $(LIBNAME)
-ALLOBJ=dcheck_eig.o dscala.o dscalde.o dstt21.o dsbt21.o dsyt21.o dlarfy.o \
-    zcheck_eig.o zstt21.o zhbt21.o zhet21.o zlarfy.o checkdiag.o
+ALLOBJ=dcheck_eig.$(o_ext) dscala.$(o_ext) dscalde.$(o_ext) dstt21.$(o_ext) dsbt21.$(o_ext) dsyt21.$(o_ext) dlarfy.$(o_ext) \
+    zcheck_eig.$(o_ext) zstt21.$(o_ext) zhbt21.$(o_ext) zhet21.$(o_ext) zlarfy.$(o_ext) checkdiag.$(o_ext)
 
 $(LIBNAME): $(ALLOBJ)
 	$(ARCH) $(ARCHFLAGS) $@ $(ALLOBJ)
@@ -22,9 +22,8 @@ $(LIBNAME): $(ALLOBJ)
 #///////////////////////////////////////////////////////////////////////////////////////////////////
 
 clean:
-	rm -f *.o $(LIBNAME)
+	rm -f *.$(o_ext) $(LIBNAME)
 
 cleanall:
-	rm -f *.o 
+	rm -f *.$(o_ext) 
 #///////////////////////////////////////////////////////////////////////////////////////////////////
-

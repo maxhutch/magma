@@ -1,9 +1,12 @@
+#ifndef ZGEMM_FERMI_KERNELS_H
+#define ZGEMM_FERMI_KERNELS_H
+
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -185,3 +188,8 @@
 #define version trans_cn
 #include "gemm_stencil.cuh"
 #include "gemm_kernel.cuh"
+
+#undef COMPLEX
+#undef DOUBLE
+
+#endif        //  #ifndef ZGEMM_FERMI_KERNELS_H

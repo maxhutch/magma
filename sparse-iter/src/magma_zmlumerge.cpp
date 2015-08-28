@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -44,10 +44,9 @@
 extern "C" magma_int_t
 magma_zmlumerge(    magma_z_matrix L,
                     magma_z_matrix U,
-                    magma_z_matrix *A){
-
+                    magma_z_matrix *A)
+{
     if( L.memory_location == Magma_CPU && U.memory_location == Magma_CPU ){
-        
         CHECK( magma_zmtransfer( L, A, Magma_CPU, Magma_CPU ));
         magma_free_cpu( A->col );
         magma_free_cpu( A->val );
@@ -85,20 +84,13 @@ magma_zmlumerge(    magma_z_matrix L,
         }
         A->row[A->num_rows] = z;
         A->nnz = z;
-
     }
-    else{
-
+    else {
         info = MAGMA_ERR_NOT_SUPPORTED;
     }
     
 cleanup:
-        magma_free_cpu( A->col );
+    magma_free_cpu( A->col );
     magma_free_cpu( A->val );
     return info;
 }
-
-
-
-
-

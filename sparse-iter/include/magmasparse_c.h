@@ -1,11 +1,11 @@
 /*
- -- MAGMA (version 1.1) --
+ -- MAGMA (version 1.6.3-beta1) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date
+ @date August 2015
 
- @generated from magmasparse_z.h normal z -> c, Mon May  4 17:11:25 2015
+ @generated from magmasparse_z.h normal z -> c, Tue Aug 25 16:35:29 2015
  @author Hartwig Anzt
 */
 
@@ -237,7 +237,7 @@ magma_cindexsort(
 magma_int_t
 magma_cdomainoverlap(
     magma_index_t num_rows,
-    magma_index_t *num_indices,
+    magma_int_t *num_indices,
     magma_index_t *rowptr,
     magma_index_t *colidx,
     magma_index_t *x,
@@ -568,12 +568,6 @@ magma_ccg_merge(
     magma_c_matrix *x, magma_c_solver_par *solver_par,
     magma_queue_t queue );
 
-magma_int_t 
-magma_cgmres(
-    magma_c_matrix A, magma_c_matrix b, 
-    magma_c_matrix *x, magma_c_solver_par *solver_par,
-    magma_queue_t queue );
-
 magma_int_t
 magma_cbicgstab(
     magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, 
@@ -614,16 +608,34 @@ magma_cpbicgstab(
     magma_queue_t queue );
 
 magma_int_t
-magma_cpgmres(
+magma_cfgmres(
     magma_c_matrix A, magma_c_matrix b, 
     magma_c_matrix *x, magma_c_solver_par *solver_par, 
     magma_c_preconditioner *precond_par,
     magma_queue_t queue );
 
 magma_int_t
-magma_cfgmres(
+magma_cidr(
     magma_c_matrix A, magma_c_matrix b, 
-    magma_c_matrix *x, magma_c_solver_par *solver_par, 
+    magma_c_matrix *x, magma_c_solver_par *solver_par,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cidr_acc(
+    magma_c_matrix A, magma_c_matrix b, 
+    magma_c_matrix *x, magma_c_solver_par *solver_par,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cidr_strm(
+    magma_c_matrix A, magma_c_matrix b, 
+    magma_c_matrix *x, magma_c_solver_par *solver_par,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cpidr(
+    magma_c_matrix A, magma_c_matrix b,
+    magma_c_matrix *x, magma_c_solver_par *solver_par,
     magma_c_preconditioner *precond_par,
     magma_queue_t queue );
 
@@ -652,13 +664,6 @@ magma_citerref(
     magma_c_matrix A, magma_c_matrix b, 
     magma_c_matrix *x, magma_c_solver_par *solver_par, 
     magma_c_preconditioner *precond_par,
-    magma_queue_t queue );
-
-magma_int_t
-magma_cilu(
-    magma_c_matrix A, magma_c_matrix b, 
-    magma_c_matrix *x, magma_c_solver_par *solver_par, 
-    magma_int_t *ipiv,
     magma_queue_t queue );
 
 magma_int_t
@@ -789,20 +794,6 @@ magma_cjacobiiter_sys(
     magma_c_matrix *x,  
     magma_c_solver_par *solver_par,
     magma_queue_t queue );
-
-magma_int_t
-magma_cpastixsetup(
-    magma_c_matrix A, magma_c_matrix b,
-    magma_c_preconditioner *precond,
-    magma_queue_t queue );
-
-
-magma_int_t
-magma_capplypastix(
-    magma_c_matrix b, magma_c_matrix *x, 
-    magma_c_preconditioner *precond,
-    magma_queue_t queue );
-
 
 // custom preconditioner
 magma_int_t
@@ -1050,6 +1041,25 @@ magma_cmlumerge(
     magma_c_matrix L, 
     magma_c_matrix U,
     magma_c_matrix *A, 
+    magma_queue_t queue );
+
+magma_int_t
+magma_cdiagcheck(
+    magma_c_matrix dA,
+    magma_queue_t queue );
+
+
+/*/////////////////////////////////////////////////////////////////////////////
+ -- MAGMA_SPARSE wrappers to dense MAGMA
+*/
+magma_int_t
+magma_cqr(
+    magma_int_t m, 
+    magma_int_t n, 
+    magma_c_matrix A, 
+    magma_int_t lda, 
+    magma_c_matrix *Q, 
+    magma_c_matrix *R, 
     magma_queue_t queue );
 
 
@@ -1402,6 +1412,25 @@ magma_cbicgmerge4(
     int type, 
     magmaFloatComplex_ptr dskp,
     magma_queue_t queue );
+
+magma_int_t
+magma_cidr_smoothing_1(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaFloatComplex_ptr drs,
+    magmaFloatComplex_ptr dr, 
+    magmaFloatComplex_ptr dt, 
+    magma_queue_t queue );
+
+magma_int_t
+magma_cidr_smoothing_2(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaFloatComplex omega,
+    magmaFloatComplex_ptr dx,
+    magmaFloatComplex_ptr dxs, 
+    magma_queue_t queue );
+
 
 magma_int_t
 magma_ccgmerge_spmv1( 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zcuspmm.cpp normal z -> s, Sun May  3 11:22:59 2015
+       @generated from magma_zcuspmm.cpp normal z -> s, Tue Aug 25 16:35:33 2015
        @author Hartwig Anzt
 
 */
@@ -59,7 +59,7 @@ magma_scuspmm(
     C.num_cols = B.num_cols;
     C.storage_type = A.storage_type;
     C.memory_location = A.memory_location;
-    C.fill_mode = Magma_FULL;
+    C.fill_mode = MagmaFull;
     
     C.val = NULL;
     C.col = NULL;
@@ -85,8 +85,8 @@ magma_scuspmm(
         && ( A.storage_type == Magma_CSR ||
              A.storage_type == Magma_CSRCOO )
         && ( B.storage_type == Magma_CSR ||
-             B.storage_type == Magma_CSRCOO ) ) {
-            
+             B.storage_type == Magma_CSRCOO ) )
+    {
         // CUSPARSE context /
         CHECK_CUSPARSE( cusparseCreate( &handle ));
         CHECK_CUSPARSE( cusparseSetStream( handle, queue ));
@@ -147,8 +147,3 @@ cleanup:
     magma_smfree( &C, queue );
     return info;
 }
-
-
-
-
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -90,7 +90,7 @@ zcompactactive_kernel(
     n           INTEGER
                 The number of columns of the matrix dA.  N >= 0.
     
-    @param[in][in,out]
+    @param[in,out]
     dA          COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
                 The m by n matrix dA.
     
@@ -106,11 +106,11 @@ zcompactactive_kernel(
     tol         DOUBLE PRECISON
                 The tolerance value used in the criteria to compact or not.
 
-    @param[in][out]
+    @param[in,out]
     active      INTEGER array, dimension N
                 A mask of 1s and 0s showing if a vector remains or has been removed
             
-    @param[in][out]
+    @param[in,out]
     cBlock      magmaInt_ptr
                 The number of vectors that remain in dA (i.e., with norms > tol).
     @param[in]
@@ -177,7 +177,7 @@ magma_zcompact(
     n       INTEGER
             The number of columns of the matrix dA.  N >= 0.
 
-    @param[in][in,out]
+    @param[in,out]
     dA      COMPLEX DOUBLE PRECISION array, dimension (LDDA,N)
             The m by n matrix dA.
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeadd_batched.cu normal z -> s, Fri Jan 30 19:00:10 2015
+       @generated from zgeadd_batched.cu normal z -> s, Tue Aug 25 16:35:10 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -130,8 +130,8 @@ magmablas_sgeadd_batched_q(
         return;
     
     dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB, batchCount );
-        
+    dim3 grid( magma_ceildiv( m, NB ), batchCount );
+    
     sgeadd_batched_kernel<<< grid, threads, 0, queue >>>(
         m, n, alpha, dAarray, ldda, dBarray, lddb );
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -230,7 +230,7 @@ magma_zhegvdx(
     magmaDoubleComplex c_one = MAGMA_Z_ONE;
 
     magmaDoubleComplex *dA=NULL, *dB=NULL;
-    magma_int_t ldda = roundup( n, 32 );
+    magma_int_t ldda = magma_roundup( n, 32 );
     magma_int_t lddb = ldda;
 
     magma_int_t lower;

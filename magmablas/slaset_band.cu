@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from zlaset_band.cu normal z -> s, Fri Jan 30 19:00:09 2015
+       @generated from zlaset_band.cu normal z -> s, Tue Aug 25 16:35:09 2015
 
 */
 #include "common_magma.h"
@@ -163,7 +163,7 @@ void slaset_band_lower(
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
             On exit, A(i,j) = ALPHA, 1 <= i <= m, 1 <= j <= n where i != j, abs(i-j) < k;
-                     A(i,i) = BETA , 1 <= i <= min(m,n)
+            and      A(i,i) = BETA,  1 <= i <= min(m,n)
     
     @param[in]
     ldda    INTEGER
@@ -201,12 +201,12 @@ magmablas_slaset_band_q(
     
     if (uplo == MagmaUpper) {
         dim3 threads( min(k,n) );
-        dim3 grid( (min(m+k-1,n) - 1)/NB + 1 );
+        dim3 grid( magma_ceildiv( min(m+k-1,n), NB ) );
         slaset_band_upper<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
 }
     else if (uplo == MagmaLower) {
         dim3 threads( min(k,m) );
-        dim3 grid( (min(m,n) - 1)/NB + 1 );
+        dim3 grid( magma_ceildiv( min(m,n), NB ) );
         slaset_band_lower<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
     }
 }

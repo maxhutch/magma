@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
-       @generated from zlanhe.cu normal z -> s, Fri Jan 30 19:00:09 2015
+       @generated from zlanhe.cu normal z -> s, Tue Aug 25 16:35:08 2015
 
 */
 #include "common_magma.h"
+#include "magma_templates.h"
 
 #define inf_bs 32
 #define max_bs 64
@@ -25,7 +26,7 @@
  * Has ceil( n / inf_bs ) blocks of (inf_bs x 4) threads each (inf_bs=32).
  * z precision uses > 16 KB shared memory, so requires Fermi (arch >= 200). */
 __global__ void
-slansy_inf_kernel_generic_lower(
+slansy_inf_kernel_lower(
     int n, const float* A, int lda, float *dwork,
     int n_full_block, int n_mod_bs )
 {
@@ -48,10 +49,10 @@ slansy_inf_kernel_generic_lower(
         
         // ----------
         // loop over all blocks left of the diagonal block
-        for(int i=0; i < diag; i += inf_bs ) {
+        for (int i=0; i < diag; i += inf_bs ) {
             // 32x4 threads cooperatively load 32x32 block
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 la[tx][ty+j] = A[j*lda];
             }
             A += lda*inf_bs;
@@ -63,7 +64,7 @@ slansy_inf_kernel_generic_lower(
             // for ty=2:  res = sum( la[tx,16:23] )
             // for ty=3:  res = sum( la[tx,24:31] )
             #pragma unroll 8             
-            for(int j=ty*8; j < ty*8 + 8; j++) {
+            for (int j=ty*8; j < ty*8 + 8; j++) {
                 res += fabsf( la[tx][j] );
             }
             __syncthreads();
@@ -72,7 +73,7 @@ slansy_inf_kernel_generic_lower(
         // ----------
         // load diagonal block
         #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4) {
+        for (int j=0; j < inf_bs; j += 4) {
             la[tx][ty+j] = A[j*lda];
         }
         __syncthreads();
@@ -80,7 +81,7 @@ slansy_inf_kernel_generic_lower(
         // copy lower triangle to upper triangle, and
         // make diagonal real (zero imaginary part)
         #pragma unroll 8
-        for(int i=ty*8; i < ty*8 + 8; i++) {
+        for (int i=ty*8; i < ty*8 + 8; i++) {
             if ( i < tx ) {
                 la[i][tx] = la[tx][i];
             }
@@ -94,7 +95,7 @@ slansy_inf_kernel_generic_lower(
         
         // partial row sums
         #pragma unroll 8
-        for(int j=ty*8; j < ty*8 + 8; j++) {
+        for (int j=ty*8; j < ty*8 + 8; j++) {
             res += fabsf( la[tx][j] );
         }
         __syncthreads();
@@ -102,10 +103,10 @@ slansy_inf_kernel_generic_lower(
         // ----------
         // loop over all 32x32 blocks below diagonal block
         A += inf_bs;
-        for(int i=diag + inf_bs; i < n - n_mod_bs; i += inf_bs ) {
+        for (int i=diag + inf_bs; i < n - n_mod_bs; i += inf_bs ) {
             // load block (transposed)
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 la[ty+j][tx] = A[j*lda];
             }
             A += inf_bs;
@@ -113,7 +114,7 @@ slansy_inf_kernel_generic_lower(
             
             // partial row sums
             #pragma unroll 8
-            for(int j=ty*8; j < ty*8 + 8; j++) {
+            for (int j=ty*8; j < ty*8 + 8; j++) {
                 res += fabsf( la[tx][j] );
             }
             __syncthreads();
@@ -124,7 +125,7 @@ slansy_inf_kernel_generic_lower(
         if ( n_mod_bs > 0 ) {
             // load block (transposed), with zeros for rows outside matrix
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 if ( tx < n_mod_bs ) {
                     la[ty+j][tx] = A[j*lda];
                 }
@@ -136,7 +137,7 @@ slansy_inf_kernel_generic_lower(
             
             // partial row sums
             #pragma unroll 8
-            for(int j=ty*8; j < ty*8 + 8; j++) {
+            for (int j=ty*8; j < ty*8 + 8; j++) {
                 res += fabsf( la[tx][j] );
             }
             __syncthreads();
@@ -173,10 +174,10 @@ slansy_inf_kernel_generic_lower(
         // ----------
         // loop over all blocks left of the diagonal block
         // each is (n_mod_bs by inf_bs)
-        for(int i=0; i < diag; i += inf_bs ) {
+        for (int i=0; i < diag; i += inf_bs ) {
             // load block
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 la[tx][ty+j] = A[j*lda];
             }
             A += lda*inf_bs;
@@ -184,7 +185,7 @@ slansy_inf_kernel_generic_lower(
             
             // partial row sums
             #pragma unroll 8
-            for(int j=0; j < 8; j++) {
+            for (int j=0; j < 8; j++) {
                 res += fabsf( la[tx][j+ty*8] );
             }
             __syncthreads();
@@ -194,7 +195,7 @@ slansy_inf_kernel_generic_lower(
         // partial diagonal block
         if ( ty == 0 && tx < n_mod_bs ) {
             // sum rows left of diagonal
-            for(int j=0; j < tx; j++) {
+            for (int j=0; j < tx; j++) {
                 res += fabsf( *A );
                 A += lda;
             }
@@ -202,7 +203,7 @@ slansy_inf_kernel_generic_lower(
             res += MAGMA_D_ABS( MAGMA_S_REAL( *A ));
             A += 1;
             // sum column below diagonal
-            for(int j=tx+1; j < n_mod_bs; j++) {
+            for (int j=tx+1; j < n_mod_bs; j++) {
                 res += fabsf( *A );
                 A += 1;
             }
@@ -239,7 +240,7 @@ slansy_inf_kernel_generic_lower(
  * upper goes from top  down to diagonal, then over to right.
  * Differences are noted with # in comments. */
 __global__ void
-slansy_inf_kernel_generic_upper(
+slansy_inf_kernel_upper(
     int n, const float* A, int lda, float *dwork,
     int n_full_block, int n_mod_bs )
 {
@@ -262,10 +263,10 @@ slansy_inf_kernel_generic_upper(
         
         // ----------
         // loop over all blocks #above the diagonal block
-        for(int i=0; i < diag; i += inf_bs ) {
+        for (int i=0; i < diag; i += inf_bs ) {
             // 32x4 threads cooperatively load 32x32 block (#transposed)
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 la[ty+j][tx] = A[j*lda];               //#
             }
             A += inf_bs;                               //#
@@ -277,7 +278,7 @@ slansy_inf_kernel_generic_upper(
             // for ty=2:  res = sum( la[tx,16:23] )
             // for ty=3:  res = sum( la[tx,24:31] )
             #pragma unroll 8             
-            for(int j=ty*8; j < ty*8 + 8; j++) {
+            for (int j=ty*8; j < ty*8 + 8; j++) {
                 res += fabsf( la[tx][j] );
             }
             __syncthreads();
@@ -286,7 +287,7 @@ slansy_inf_kernel_generic_upper(
         // ----------
         // load diagonal block
         #pragma unroll 8
-        for(int j=0; j < inf_bs; j += 4) {
+        for (int j=0; j < inf_bs; j += 4) {
             la[tx][ty+j] = A[j*lda];
         }
         __syncthreads();
@@ -294,7 +295,7 @@ slansy_inf_kernel_generic_upper(
         // copy #upper triangle to #lower triangle, and
         // make diagonal real (zero imaginary part)
         #pragma unroll 8
-        for(int i=ty*8; i < ty*8 + 8; i++) {
+        for (int i=ty*8; i < ty*8 + 8; i++) {
             if ( i > tx ) {                            //#
                 la[i][tx] = la[tx][i];
             }
@@ -308,7 +309,7 @@ slansy_inf_kernel_generic_upper(
         
         // partial row sums
         #pragma unroll 8
-        for(int j=ty*8; j < ty*8 + 8; j++) {
+        for (int j=ty*8; j < ty*8 + 8; j++) {
             res += fabsf( la[tx][j] );
         }
         __syncthreads();
@@ -316,10 +317,10 @@ slansy_inf_kernel_generic_upper(
         // ----------
         // loop over all 32x32 blocks #right of diagonal block
         A += inf_bs*lda;                               //#
-        for(int i=diag + inf_bs; i < n - n_mod_bs; i += inf_bs ) {
+        for (int i=diag + inf_bs; i < n - n_mod_bs; i += inf_bs ) {
             // load block (#non-transposed)
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 la[tx][ty+j] = A[j*lda];               //#
             }
             A += inf_bs*lda;                           //#
@@ -327,7 +328,7 @@ slansy_inf_kernel_generic_upper(
             
             // partial row sums
             #pragma unroll 8
-            for(int j=ty*8; j < ty*8 + 8; j++) {
+            for (int j=ty*8; j < ty*8 + 8; j++) {
                 res += fabsf( la[tx][j] );
             }
             __syncthreads();
@@ -338,7 +339,7 @@ slansy_inf_kernel_generic_upper(
         if ( n_mod_bs > 0 ) {
             // load block (#non-transposed), with zeros for #cols outside matrix
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 if ( ty+j < n_mod_bs ) {               //#
                     la[tx][ty+j] = A[j*lda];           //#
                 }
@@ -350,7 +351,7 @@ slansy_inf_kernel_generic_upper(
             
             // partial row sums
             #pragma unroll 8
-            for(int j=ty*8; j < ty*8 + 8; j++) {
+            for (int j=ty*8; j < ty*8 + 8; j++) {
                 res += fabsf( la[tx][j] );
             }
             __syncthreads();
@@ -383,10 +384,10 @@ slansy_inf_kernel_generic_upper(
         // ----------
         // loop over all blocks #above the diagonal block
         // each is #(inf_bs by n_mod_bs)
-        for(int i=0; i < diag; i += inf_bs ) {
+        for (int i=0; i < diag; i += inf_bs ) {
             // load block (#transposed), #ignoring columns outside matrix
             #pragma unroll 8
-            for(int j=0; j < inf_bs; j += 4) {
+            for (int j=0; j < inf_bs; j += 4) {
                 if ( ty+j < n_mod_bs ) {
                     la[ty+j][tx] = A[j*lda];
                 }
@@ -396,7 +397,7 @@ slansy_inf_kernel_generic_upper(
             
             // partial row sums
             #pragma unroll 8
-            for(int j=0; j < 8; j++) {
+            for (int j=0; j < 8; j++) {
                 res += fabsf( la[tx][j+ty*8] );
             }
             __syncthreads();
@@ -410,7 +411,7 @@ slansy_inf_kernel_generic_upper(
             A = A - tx - ty*lda + tx*lda + ty;
             
             // sum #column above diagonal
-            for(int j=0; j < tx; j++) {
+            for (int j=0; j < tx; j++) {
                 res += fabsf( *A );
                 A += 1;                                //#
             }
@@ -418,7 +419,7 @@ slansy_inf_kernel_generic_upper(
             res += MAGMA_D_ABS( MAGMA_S_REAL( *A ));
             A += lda;                                  //#
             // sum #row right of diagonal
-            for(int j=tx+1; j < n_mod_bs; j++) {
+            for (int j=tx+1; j < n_mod_bs; j++) {
                 res += fabsf( *A );
                 A += lda;                              //#
             }
@@ -451,18 +452,18 @@ slansy_inf(
     magmaFloat_const_ptr A, int lda,
     magmaFloat_ptr dwork )
 {
-    int blocks = (n - 1)/inf_bs + 1;
+    int blocks = magma_ceildiv( n, inf_bs );
     dim3 grid(blocks, 1, 1);
     dim3 threads(inf_bs, 4, 1);
 
     int n_full_block = (n - n % inf_bs) /inf_bs;
     int n_mod_bs = n % inf_bs;
     if ( uplo == MagmaLower) {
-        slansy_inf_kernel_generic_lower<<< grid, threads, 0, magma_stream >>>
+        slansy_inf_kernel_lower<<< grid, threads, 0, magma_stream >>>
             ( n, A, lda, dwork, n_full_block, n_mod_bs );
     }
     else {
-        slansy_inf_kernel_generic_upper<<< grid, threads, 0, magma_stream >>>
+        slansy_inf_kernel_upper<<< grid, threads, 0, magma_stream >>>
             ( n, A, lda, dwork, n_full_block, n_mod_bs );
     }
 }
@@ -481,12 +482,12 @@ slansy_max_kernel_lower(
 
     if (ind < n) {
         A += ind;
-        for(int j=0; j < ind; ++j) {
-            res = fmax( res, fabsf( *A ));
+        for (int j=0; j < ind; ++j) {
+            res = max_nan( res, fabsf( *A ));
             A += lda;
         }
         // diagonal element (ignoring imaginary part)
-        res = fmax( res, MAGMA_D_ABS( MAGMA_S_REAL( *A )));
+        res = max_nan( res, MAGMA_D_ABS( MAGMA_S_REAL( *A )));
         dwork[ind] = res;
     }
 }
@@ -503,12 +504,12 @@ slansy_max_kernel_upper(
     if (ind < n) {
         A += ind;
         A += (n-1)*lda;
-        for(int j=n-1; j > ind; j--) {
-            res = fmax( res, fabsf( *A ));
+        for (int j=n-1; j > ind; j--) {
+            res = max_nan( res, fabsf( *A ));
             A -= lda;
         }
         // diagonal element (ignoring imaginary part)
-        res = fmax( res, MAGMA_D_ABS( MAGMA_S_REAL( *A )));
+        res = max_nan( res, MAGMA_D_ABS( MAGMA_S_REAL( *A )));
         dwork[ind] = res;
     }
 }
@@ -521,7 +522,7 @@ slansy_max(
     magmaFloat_const_ptr A, int lda,
     magmaFloat_ptr dwork )
 {
-    int blocks = (n - 1)/max_bs + 1;
+    int blocks = magma_ceildiv( n, max_bs );
     dim3 grid(blocks, 1, 1);
     dim3 threads(max_bs, 1, 1);
 
@@ -557,7 +558,7 @@ slansy_max(
     normF denotes the Frobenius norm of a matrix (square root of sum of squares).
     Note that max(abs(A(i,j))) is not a consistent matrix norm.
     
-    Returns SLANSY < 0: if SLANSY = -i, the i-th argument had an illegal value.
+    On error, returns SLANSY < 0: if SLANSY = -i, the i-th argument had an illegal value.
     
     Arguments:
     ----------
@@ -578,7 +579,7 @@ slansy_max(
             set to zero.
     
     @param[in]
-    A       REAL array on the GPU, dimension (LDA,N)
+    dA      REAL array on the GPU, dimension (LDDA,N)
             The symmetric matrix A. If UPLO = MagmaUpper, the leading n by n
             upper triangular part of A contains the upper triangular part
             of the matrix A, and the strictly lower triangular part of A
@@ -589,8 +590,8 @@ slansy_max(
             elements need not be set and are assumed to be zero.
     
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array A. LDA >= max(N,1).
+    ldda    INTEGER
+            The leading dimension of the array A. LDDA >= max(N,1).
     
     @param
     dwork   (workspace) REAL array on the GPU, dimension (MAX(1,LWORK)),
@@ -608,7 +609,7 @@ magmablas_slansy(
     magmaFloat_ptr dwork )
 {
     magma_int_t info = 0;
-    magma_int_t arch = magma_getdevice_arch();
+
     // 1-norm == inf-norm since A is symmetric
     bool inf_norm = (norm == MagmaInfNorm || norm == MagmaOneNorm);
     bool max_norm = (norm == MagmaMaxNorm);
@@ -645,8 +646,8 @@ magmablas_slansy(
     else {
         slansy_max( uplo, n, dA, ldda, dwork );
     }
-    int i = magma_isamax( n, dwork, 1 ) - 1;
-    cudaMemcpy( &res, &dwork[i], sizeof(float), cudaMemcpyDeviceToHost );
+    magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );
+    cudaMemcpy( &res, &dwork[0], sizeof(float), cudaMemcpyDeviceToHost );
     
     return res;
 }

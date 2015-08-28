@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
 
-       @generated from zunmbr.cpp normal z -> d, Fri Jan 30 19:00:19 2015
+       @generated from zunmbr.cpp normal z -> d, Tue Aug 25 16:35:19 2015
 
 */
 #include "common_magma.h"
@@ -21,6 +21,8 @@
 /**
     Purpose
     -------
+    DORMBR multiplies by Q or P as part of the SVD decomposition.
+    
     If VECT = MagmaQ, DORMBR overwrites the general real M-by-N matrix C with
                                  SIDE = MagmaLeft     SIDE = MagmaRight
     TRANS = MagmaNoTrans:        Q*C                  C*Q

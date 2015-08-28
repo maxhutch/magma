@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zlanhe.cpp normal z -> s, Fri Jan 30 19:00:24 2015
+       @generated from testing_zlanhe.cpp normal z -> s, Tue Aug 25 16:35:25 2015
        @author Mark Gates
 */
 // includes, system
@@ -14,9 +14,14 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef MAGMA_WITH_MKL
+#include <mkl_service.h>  // mkl_version
+#endif
+
 // includes, project
 #include "magma.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 #include "magma_threadsetting.h"  // to work around MKL bug
@@ -40,10 +45,12 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     float      error, norm_magma, norm_lapack;
     magma_int_t status = 0;
+    magma_int_t lapack_nan_fail = 0;
+    magma_int_t lapack_inf_fail = 0;
     bool mkl_warning = false;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
@@ -74,11 +81,19 @@ int main( int argc, char** argv)
 #endif
 
     #ifdef MAGMA_WITH_MKL
-    printf( "\nNote: using single thread to work around MKL slansy bug.\n\n" );
+    // MKL (11.1.2) has bug in multi-threaded slansy; use single thread to work around
+    // appears to be corrected in 11.2.3
+    MKLVersion mkl_version;
+    mkl_get_version( &mkl_version );
+    int threads = magma_get_lapack_numthreads();
+    bool mkl_single_thread = (mkl_version.MajorVersion <= 11 && mkl_version.MinorVersion < 2);
+    if ( mkl_single_thread ) {
+        printf( "\nNote: using single thread to work around MKL slansy bug.\n\n" );
+    }
     #endif
     
-    printf("    N   norm   uplo   CPU GByte/s (ms)    GPU GByte/s (ms)    error   \n");
-    printf("=======================================================================\n");
+    printf("%%   N   norm   uplo   CPU GByte/s (ms)    GPU GByte/s (ms)        error    error      nan      inf\n");
+    printf("%%=================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       for( int inorm = 0; inorm < 3; ++inorm ) {
       for( int iuplo = 0; iuplo < 2; ++iuplo ) {
@@ -86,7 +101,7 @@ int main( int argc, char** argv)
             N   = opts.nsize[itest];
             lda = N;
             n2  = lda*N;
-            ldda = roundup( N, opts.roundup );
+            ldda = magma_roundup( N, opts.align );
             // read upper or lower triangle
             gbytes = 0.5*(N+1)*N*sizeof(float) / 1e9;
             
@@ -121,9 +136,10 @@ int main( int argc, char** argv)
                Performs operation using LAPACK
                =================================================================== */
             #ifdef MAGMA_WITH_MKL
-            // MKL (11.1.2) has bug in multi-threaded slansy; use single thread to work around
-            int threads = magma_get_lapack_numthreads();
-            magma_set_lapack_numthreads( 1 );
+            if ( mkl_single_thread ) {
+                // use single thread to work around MKL bug
+                magma_set_lapack_numthreads( 1 );
+            }
             #endif
             
             cpu_time = magma_wtime();
@@ -138,8 +154,10 @@ int main( int argc, char** argv)
                        norm_lapack, magma_strerror( (int) norm_lapack ));
             
             #ifdef MAGMA_WITH_MKL
-            // end single thread to work around MKL bug
-            magma_set_lapack_numthreads( threads );
+            if ( mkl_single_thread ) {
+                // end single thread to work around MKL bug
+                magma_set_lapack_numthreads( threads );
+            }
             #endif
             
             /* =====================================================================
@@ -159,17 +177,60 @@ int main( int argc, char** argv)
             }
             
             bool okay = (error <= tol2);
-            printf("%5d   %4c   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %s\n",
+            status += ! okay;
+            mkl_warning |= ! okay;
+            
+            /* ====================================================================
+               Check for NAN and INF propagation
+               =================================================================== */
+            #define h_A(i_, j_) (h_A + (i_) + (j_)*lda)
+            #define d_A(i_, j_) (d_A + (i_) + (j_)*ldda)
+            
+            magma_int_t i = rand() % N;
+            magma_int_t j = rand() % N;
+            magma_int_t tmp;
+            if ( uplo[iuplo] == MagmaLower && i < j ) {
+                tmp = i;
+                i = j;
+                j = tmp;
+            }
+            else if ( uplo[iuplo] == MagmaUpper && i > j ) {
+                tmp = i;
+                i = j;
+                j = tmp;
+            }
+                
+            *h_A(i,j) = MAGMA_S_NAN;
+            magma_ssetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
+            norm_magma  = magmablas_slansy( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work );
+            norm_lapack = lapackf77_slansy( lapack_norm_const( norm[inorm] ),
+                                            lapack_uplo_const( uplo[iuplo] ),
+                                            &N, h_A, &lda, h_work );
+            bool nan_okay    = isnan(norm_magma);
+            bool la_nan_okay = isnan(norm_lapack);
+            lapack_nan_fail += ! la_nan_okay;
+            status          += !    nan_okay;
+            
+            *h_A(i,j) = MAGMA_S_INF;
+            magma_ssetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
+            norm_magma  = magmablas_slansy( norm[inorm], uplo[iuplo], N, d_A, ldda, d_work );
+            norm_lapack = lapackf77_slansy( lapack_norm_const( norm[inorm] ),
+                                            lapack_uplo_const( uplo[iuplo] ),
+                                            &N, h_A, &lda, h_work );
+            bool inf_okay    = isinf(norm_magma);
+            bool la_inf_okay = isinf(norm_lapack);
+            lapack_inf_fail += ! la_inf_okay;
+            status          += !    inf_okay;
+            
+            printf("%5d   %4c   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %6s   %6s%1s  %6s%1s\n",
                    (int) N,
                    lapacke_norm_const( norm[inorm] ),
                    lapacke_uplo_const( uplo[iuplo] ),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
-                   error, (okay ? "ok" : "failed") );
-            status += ! okay;
-            
-            if ( ! okay ) {
-                mkl_warning = true;
-            }
+                   error,
+                   (okay     ? "ok" : "failed"),
+                   (nan_okay ? "ok" : "failed"), (la_nan_okay ? " " : "*"),
+                   (inf_okay ? "ok" : "failed"), (la_inf_okay ? " " : "*"));
             
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_work );
@@ -177,16 +238,23 @@ int main( int argc, char** argv)
             TESTING_FREE_DEV( d_A    );
             TESTING_FREE_DEV( d_work );
             fflush( stdout );
-        }
+        } // end iter
         if ( opts.niter > 1 ) {
             printf( "\n" );
         }
-      }} // end iuplo, inorm, iter
+      }} // end iuplo, inorm
       printf( "\n" );
     }
     
+    // don't print "failed" here because then run_tests.py thinks MAGMA failed
+    if ( lapack_nan_fail ) {
+        printf( "* Warning: LAPACK did not pass NAN propagation test; upgrade to LAPACK version >= 3.4.2 (Sep. 2012)\n" );
+    }
+    if ( lapack_inf_fail ) {
+        printf( "* Warning: LAPACK did not pass INF propagation test\n" );
+    }
     if ( mkl_warning ) {
-        printf("* MKL (e.g., 11.1.0) has a bug in slansy with multiple threads.\n"
+        printf("* MKL (e.g., 11.1.0) has a bug in slansy with multiple threads; corrected in 11.2.x.\n"
                "  Try again with MKL_NUM_THREADS=1.\n" );
     }
     

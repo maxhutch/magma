@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -54,29 +54,29 @@ zbcsr_gemm_kernel32(
     double xxB[4];
     magmaDouble_ptr B;
 
-    int trackA = __mul24( ty2, lda) + tx2 ;
+    int trackA = ty2*lda + tx2;
     magmaDouble_ptr Aval = Avals[blockIdx.z];
 
     __shared__ double Abs[64][65];
     __shared__ double  Bb[16][65];
 
 
-    for(int j=ty2; j<64; j+=16){
-        for(int y=tx2; y<64; y+=16){
-           Abs[y][j] = fetch_x_A(trackA + y-tx2) ;
-            }
-        trackA += __mul24( 16, m);
+    for(int j=ty2; j < 64; j += 16) {
+        for(int y=tx2; y < 64; y += 16) {
+            Abs[y][j] = fetch_x_A(trackA + y-tx2);
+        }
+        trackA += 16*m;
     }
 
-    for(int k=0; k<kblocks; k++){
+    for(int k=0; k < kblocks; k++) {
         B = Bval[k];
-        int trackB = tx2+ __mul24( ty2 * 16, ldb );
+        int trackB = tx2 + ty2*16*ldb;
 
         // Prefetch part of B
-          #pragma unroll
-          for(int y=0; y<4; y++){
-                 Bb[tx2][ty2*4+y] = fetch_x_B( trackB + y * ldb) ;
-          }
+        #pragma unroll
+        for(int y=0; y < 4; y++) {
+            Bb[tx2][ty2*4+y] = fetch_x_B( trackB + y * ldb);
+        }
         __syncthreads();    // this is necessary!!!
 
         double Axs[4];
@@ -84,84 +84,83 @@ zbcsr_gemm_kernel32(
         double Cb[16] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
 
         int k1;
-        for(k1=0; k1<m-16; k1+=16)
+        for(k1=0; k1 < m-16; k1 += 16)
         {
-                trackB += 16;
+            trackB += 16;
 
+            #pragma unroll
+            for( int y=0; y < 4; y++)
+                xxB[y] = fetch_x_B( trackB + y*ldb);
+            
+            #pragma unroll
+            for( int j1=0; j1 < 16; j1++)
+            {
                 #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxB[y] = fetch_x_B( trackB + y*ldb);
-                #pragma unroll
-                for( int j1=0;j1<16;j1++)
-                {
-                        #pragma unroll
-                        for( int y=0; y<4; y++){
-                                Axs[y] =  Abs[tx2+y*16][j1+k1] ;
-                        }
-
-                        #pragma unroll
-                        for( int y=0; y<4; y++){
-                                Bxp[y]= Bb[j1][ty2+y*16];
-                        }
-
-                        #pragma unroll
-                        for( int x=0; x<4; x++)
-                        {
-                                #pragma unroll
-                                for( int y=0; y<4; y++)
-                                {
-                                        Cb[x*4+y]  += Axs[x]*Bxp[y];
-                                }
-                        }
-
+                for( int y=0; y < 4; y++) {
+                    Axs[y] = Abs[tx2+y*16][j1+k1];
                 }
-                #pragma unroll
-                for(int y=0; y<4; y++)
-                        Bb[tx2][ty2*4 + y] = xxB[y];
 
-                __syncthreads();     // this is necessary!!!
+                #pragma unroll
+                for( int y=0; y < 4; y++) {
+                    Bxp[y]= Bb[j1][ty2+y*16];
+                }
+
+                #pragma unroll
+                for( int x=0; x < 4; x++)
+                {
+                    #pragma unroll
+                    for( int y=0; y < 4; y++)
+                    {
+                        Cb[x*4+y] += Axs[x]*Bxp[y];
+                    }
+                }
+            }
+            #pragma unroll
+            for(int y=0; y < 4; y++)
+                Bb[tx2][ty2*4 + y] = xxB[y];
+
+            __syncthreads();     // this is necessary!!!
         }
         // Prepare where to write the result
         magmaDouble_ptr C = Cval[blockIdx.z * kblocks + k];
-        C += tx2 + __mul24 (ty2 ,ldc);
+        C += tx2 + ty2*ldc;
 
         #pragma unroll
-        for(int j1=0;j1<16;j1++)
+        for(int j1=0; j1 < 16; j1++)
         {
+            #pragma unroll
+            for( int y=0; y < 4; y++)
+                Axs[y] = Abs[tx2 + y*16][j1+k1];
 
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Axs[y] =  Abs[tx2 + y*16][j1+k1] ;
+            #pragma unroll
+            for( int y=0; y < 4; y++)
+                Bxp[y]= Bb[j1][ty2 + y*16];
 
+            #pragma unroll
+            for( int x=0; x < 4; x++)
+            {
                 #pragma unroll
-                for( int y=0; y<4; y++)
-                        Bxp[y]= Bb[j1][ty2 + y*16];
-
-                #pragma unroll
-                for( int x=0; x<4; x++)
+                for( int y=0; y < 4; y++)
                 {
-                        #pragma unroll
-                        for( int y=0;y<4; y++)
-                        {
-                                Cb[x*4 + y]  += Axs[x]*Bxp[y];
-                        }
+                    Cb[x*4 + y] += Axs[x]*Bxp[y];
                 }
+            }
         }   
         int gy = ty2;
         #pragma unroll
-        for( int y=0;y<4;y++, gy+=16)
+        for( int y=0; y < 4; y++, gy += 16)
         {
-                int gx = tx2;
-        #pragma unroll
-                for(int x=0;x<4;x++, gx+=16)
-                {
-                        if (gx < m && gy < n){
-                              C[x*16] -= Cb[y+x*4];
-                       }
+            int gx = tx2;
+            #pragma unroll
+            for(int x=0; x < 4; x++, gx += 16)
+            {
+                if (gx < m && gy < n) {
+                    C[x*16] -= Cb[y+x*4];
                 }
-                C += ldc*16;
+            }
+            C += ldc*16;
         }
-      }
+    }
 #endif
 
 #endif
@@ -192,31 +191,30 @@ zbcsr_gemm_kernel64(
 
     magmaDouble_ptr B;
 
-    int trackA = __mul24( ty2, lda) + tx2 ;
+    int trackA = ty2*lda + tx2;
     magmaDouble_ptr Aval = Avals[blockIdx.z];
 
     __shared__ double Abs[64][65];
     __shared__ double  Bb[16][65];
 
 
-    for(int j=ty2; j<64; j+=16){
-        for(int y=tx2; y<64; y+=16){
-           Abs[y][j] = fetch_x_A(trackA + y-tx2) ;
-            }
-        trackA += __mul24( 16, m);
+    for(int j=ty2; j < 64; j += 16) {
+        for(int y=tx2; y < 64; y += 16) {
+            Abs[y][j] = fetch_x_A(trackA + y-tx2);
+        }
+        trackA += 16*m;
     }
 
 
-    for(int k=0; k<kblocks; k++){
-
+    for(int k=0; k < kblocks; k++) {
         B = Bval[k];
-        int trackB = tx2+ __mul24( ty2 * 4, ldb );
+        int trackB = tx2 + ty2*4*ldb;
 
         // Prefetch part of B
-          #pragma unroll
-          for(int y=0; y<4; y++){
-                 Bb[tx2][ty2*4+y] = fetch_x_B( trackB + y * ldb) ;
-          }
+        #pragma unroll
+        for(int y=0; y < 4; y++) {
+            Bb[tx2][ty2*4+y] = fetch_x_B( trackB + y * ldb);
+        }
 
         __syncthreads();    // this is necessary!!!
 
@@ -226,94 +224,90 @@ zbcsr_gemm_kernel64(
         double Cb[16] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
 
         int k1;
-        for(k1=0; k1<m-16; k1+=16)
+        for(k1=0; k1 < m-16; k1 += 16)
         {
-                trackB += 16;
+            trackB += 16;
 
+            #pragma unroll
+            for( int y=0; y < 4; y++)
+                    xxB[y] = fetch_x_B( trackB + y*ldb);
+
+            #pragma unroll
+            for( int j1=0; j1 < 16; j1++)
+            {
                 #pragma unroll
-                for( int y=0; y<4; y++)
-                        xxB[y] = fetch_x_B( trackB + y*ldb);
-
-                #pragma unroll
-                for( int j1=0;j1<16;j1++)
-                {
-                        #pragma unroll
-                        for( int y=0; y<4; y++){
-                                Axs[y] =  Abs[tx2+y*16][j1+k1] ;
-                        }
-
-                        #pragma unroll
-                        for( int y=0; y<4; y++){
-                                Bxp[y]= Bb[j1][ty2+y*16];
-                        }
-
-                        #pragma unroll
-                        for( int x=0; x<4; x++)
-                        {
-                                #pragma unroll
-                                for( int y=0; y<4; y++)
-                                {
-                                        Cb[x*4+y]  += Axs[x]*Bxp[y];
-                                }
-                        }
-
+                for( int y=0; y < 4; y++) {
+                    Axs[y] = Abs[tx2+y*16][j1+k1];
                 }
 
-                __syncthreads();
                 #pragma unroll
-                for(int y=0; y<4; y++)
-                        Bb[tx2][ty2*4 + y] = xxB[y];
+                for( int y=0; y < 4; y++) {
+                    Bxp[y] = Bb[j1][ty2+y*16];
+                }
 
-                __syncthreads();     // this is necessary!!!
+                #pragma unroll
+                for( int x=0; x < 4; x++)
+                {
+                    #pragma unroll
+                    for( int y=0; y < 4; y++)
+                    {
+                        Cb[x*4+y] += Axs[x]*Bxp[y];
+                    }
+                }
+            }
 
+            __syncthreads();
+            #pragma unroll
+            for(int y=0; y < 4; y++)
+                    Bb[tx2][ty2*4 + y] = xxB[y];
+
+            __syncthreads();     // this is necessary!!!
         }
         // Prepare where to write the result
         magmaDouble_ptr C = Cval[blockIdx.z * kblocks + k];
-        C += tx2 + __mul24 (ty2 ,ldc);
+        C += tx2 + ty2*ldc;
 
         #pragma unroll
-        for(int j1=0;j1<16;j1++)
+        for(int j1=0; j1 < 16; j1++)
         {
+            #pragma unroll
+            for( int y=0; y < 4; y++)
+                Axs[y] = Abs[tx2 + y*16][j1+k1];
 
-                #pragma unroll
-                for( int y=0; y<4; y++)
-                        Axs[y] =  Abs[tx2 + y*16][j1+k1] ;
+            #pragma unroll
+            for( int y=0; y < 4; y++)
+                Bxp[y]= Bb[j1][ty2 + y*16];
 
+            #pragma unroll
+            for( int x=0; x < 4; x++)
+            {
                 #pragma unroll
-                for( int y=0; y<4; y++)
-                        Bxp[y]= Bb[j1][ty2 + y*16];
-
-                #pragma unroll
-                for( int x=0; x<4; x++)
+                for( int y=0; y < 4; y++)
                 {
-                        #pragma unroll
-                        for( int y=0;y<4; y++)
-                        {
-                                Cb[x*4 + y]  += Axs[x]*Bxp[y];
-                        }
+                    Cb[x*4 + y] += Axs[x]*Bxp[y];
                 }
+            }
         }   
 
         int gy = ty2;
         #pragma unroll
-        for( int y=0;y<4;y++, gy+=16)
+        for( int y=0; y < 4; y++, gy += 16)
         {
-                int gx = tx2;
-        #pragma unroll
-                for(int x=0;x<4;x++, gx+=16)
-                {
-                        if (gx < m && gy < n){
-                              C[x*16] -= Cb[y+x*4];
-                       }
+            int gx = tx2;
+            #pragma unroll
+            for(int x=0; x < 4; x++, gx += 16)
+            {
+                if (gx < m && gy < n) {
+                    C[x*16] -= Cb[y+x*4];
                 }
+            }
 
-                C += ldc*16;
+            C += ldc*16;
         }
+    }
+#endif  // PRECISION_d
 
-      }
-#endif
-
-#endif
+#endif  // __CUDA_ARCH__ >= 200
 }
 
 
@@ -370,24 +364,21 @@ magma_zbcsrluegemm(
     magmaDoubleComplex_ptr *dC,
     magma_queue_t queue )
 {
-    #if defined(PRECISION_d)
+#if defined(PRECISION_d)
 
     magma_int_t arch = magma_getdevice_arch();
 
-    if ( arch < 200  ) {
+    if ( arch < 200 ) {
         printf("error: magma_zbcsrluegemm needs a CUDA architecture"
                " with at least 48K shared memory (Fermi +).\n"
                "Please run zbcsrlu.cpp using CUBLAS batched.\n");
-    
     }
     else {
-
-    dim3 threads( 64, 4 );
-
-    dim3 grid(1, 1, num_brows);
-    zbcsr_gemm_kernel64<<< grid, threads, 0, queue >>>( 
-                  size_b, size_b, kblocks, dA, dB, dC );
-
+        dim3 threads( 64, 4 );
+    
+        dim3 grid(1, 1, num_brows);
+        zbcsr_gemm_kernel64<<< grid, threads, 0, queue >>>( 
+                      size_b, size_b, kblocks, dA, dB, dC );
     }
 
 #else
@@ -397,6 +388,3 @@ magma_zbcsrluegemm(
 
     return MAGMA_SUCCESS;
 }
-
-
-

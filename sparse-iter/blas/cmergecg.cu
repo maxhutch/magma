@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmergecg.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zmergecg.cu normal z -> c, Tue Aug 25 16:35:31 2015
        @author Hartwig Anzt
 
 */
@@ -29,7 +29,6 @@ magma_ccgreduce_kernel_spmv1(
     magmaFloatComplex * vtmp,
     magmaFloatComplex * vtmp2 )
 {
-
     extern __shared__ magmaFloatComplex temp[];    
     int Idx = threadIdx.x;
     int blockSize = 128;
@@ -43,22 +42,22 @@ magma_ccgreduce_kernel_spmv1(
         i += gridSize;
     }
     __syncthreads();
-    if ( Idx < 64 ){
+    if ( Idx < 64 ) {
         temp[ Idx ] += temp[ Idx + 64 ];
     }
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
-        if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+        if( Idx < 32 ) {
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -69,7 +68,7 @@ magma_ccgreduce_kernel_spmv1(
         }
     #endif
     #if defined(PRECISION_s)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -79,7 +78,7 @@ magma_ccgreduce_kernel_spmv1(
             temp2[ Idx ] += temp2[ Idx + 1 ];
         }
     #endif
-    if ( Idx == 0 ){
+    if ( Idx == 0 ) {
         vtmp2[ blockIdx.x ] = temp[ 0 ];
     }
 }
@@ -95,7 +94,6 @@ magma_ccgmerge_spmvcsr_kernel(
     magmaFloatComplex * z,
     magmaFloatComplex * vtmp )
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -103,7 +101,7 @@ magma_ccgmerge_spmvcsr_kernel(
 
     temp[ Idx ] = MAGMA_C_MAKE( 0.0, 0.0);
 
-    if( i<n ){
+    if( i<n ) {
         magmaFloatComplex dot = MAGMA_C_ZERO;
         int start = drowptr[ i ];
         int end = drowptr[ i+1 ];
@@ -114,26 +112,26 @@ magma_ccgmerge_spmvcsr_kernel(
     }
 
     __syncthreads();
-    if ( Idx < 128 ){
+    if ( Idx < 128 ) {
         temp[ Idx ] += temp[ Idx + 128 ];
     }
     __syncthreads();
-    if ( Idx < 64 ){
+    if ( Idx < 64 ) {
         temp[ Idx ] += temp[ Idx + 64 ];
     }
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
-        if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+        if( Idx < 32 ) {
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -144,7 +142,7 @@ magma_ccgmerge_spmvcsr_kernel(
         }
     #endif
     #if defined(PRECISION_s)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -155,7 +153,7 @@ magma_ccgmerge_spmvcsr_kernel(
         }
     #endif
 
-    if ( Idx == 0 ){
+    if ( Idx == 0 ) {
             vtmp[ blockIdx.x ] = temp[ 0 ];
     }
 }
@@ -171,16 +169,15 @@ magma_ccgmerge_spmvell_kernel(
     magmaFloatComplex * z,
     magmaFloatComplex * vtmp )
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
 
     temp[ Idx ] = MAGMA_C_MAKE( 0.0, 0.0);
 
-    if(i < n ){
+    if(i < n ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
-        for ( int k = 0; k < num_cols_per_row ; k ++){
+        for ( int k = 0; k < num_cols_per_row; k++ ) {
             int col = dcolind [ n * k + i ];
             magmaFloatComplex val = dval [ n * k + i ];
             if( val != 0)
@@ -191,26 +188,26 @@ magma_ccgmerge_spmvell_kernel(
     }
 
     __syncthreads();
-    if ( Idx < 128 ){
+    if ( Idx < 128 ) {
         temp[ Idx ] += temp[ Idx + 128 ];
     }
     __syncthreads();
-    if ( Idx < 64 ){
+    if ( Idx < 64 ) {
         temp[ Idx ] += temp[ Idx + 64 ];
     }
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
-        if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+        if( Idx < 32 ) {
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -221,7 +218,7 @@ magma_ccgmerge_spmvell_kernel(
         }
     #endif
     #if defined(PRECISION_s)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -232,7 +229,7 @@ magma_ccgmerge_spmvell_kernel(
         }
     #endif
 
-    if ( Idx == 0 ){
+    if ( Idx == 0 ) {
             vtmp[ blockIdx.x ] = temp[ 0 ];
     }
 }
@@ -248,16 +245,15 @@ magma_ccgmerge_spmvellpack_kernel(
     magmaFloatComplex * z,
     magmaFloatComplex * vtmp )
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
 
     temp[ Idx ] = MAGMA_C_MAKE( 0.0, 0.0);
 
-    if(i < n ){
+    if(i < n ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
-        for ( int k = 0; k < num_cols_per_row ; k ++){
+        for ( int k = 0; k < num_cols_per_row; k++ ) {
             int col = dcolind [ num_cols_per_row * i + k ];
             magmaFloatComplex val = dval [ num_cols_per_row * i + k ];
             if( val != 0)
@@ -268,26 +264,26 @@ magma_ccgmerge_spmvellpack_kernel(
     }
 
     __syncthreads();
-    if ( Idx < 128 ){
+    if ( Idx < 128 ) {
         temp[ Idx ] += temp[ Idx + 128 ];
     }
     __syncthreads();
-    if ( Idx < 64 ){
+    if ( Idx < 64 ) {
         temp[ Idx ] += temp[ Idx + 64 ];
     }
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
-        if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+        if( Idx < 32 ) {
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -298,7 +294,7 @@ magma_ccgmerge_spmvellpack_kernel(
         }
     #endif
     #if defined(PRECISION_s)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -309,7 +305,7 @@ magma_ccgmerge_spmvellpack_kernel(
         }
     #endif
 
-    if ( Idx == 0 ){
+    if ( Idx == 0 ) {
             vtmp[ blockIdx.x ] = temp[ 0 ];
     }
 }
@@ -327,22 +323,20 @@ magma_ccgmerge_spmvellpackrt_kernel_8(
     magma_int_t T, 
     magma_int_t alignment  )
 {
+    int idx = blockIdx.y * gridDim.x * blockDim.x + 
+              blockDim.x * blockIdx.x + threadIdx.x;  // global thread index
+    int idb = threadIdx.x;   // local thread index
+    int idp = idb%T;  // number of threads assigned to one row
+    int i = idx/T;  // row index
+    
+    extern __shared__ magmaFloatComplex shared[];
 
-int idx = blockIdx.y * gridDim.x * blockDim.x + 
-          blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
-int idb = threadIdx.x ;  // local thread index
-int idp = idb%T;  // number of threads assigned to one row
-int i = idx/T;  // row index
-
-extern __shared__ magmaFloatComplex shared[];
-
-    if(i < n ){
+    if(i < n ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
-
+        for ( int k = 0; k < max_; k++ ) {
             // original code in paper (not working for me)
             //magmaFloatComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
             //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
@@ -354,16 +348,14 @@ extern __shared__ magmaFloatComplex shared[];
             dot += val * d[ col ];
         }
         shared[idb]  = dot;
-        if( idp < 4 ){
+        if( idp < 4 ) {
             shared[idb]+=shared[idb+4];
             if( idp < 2 ) shared[idb]+=shared[idb+2];
             if( idp == 0 ) {
                 z[i] = (shared[idb]+shared[idb+1]);
             }
-
         }
     }
-
 }
 
 // computes the SpMV using ELLRT 8 threads per row
@@ -379,22 +371,20 @@ magma_ccgmerge_spmvellpackrt_kernel_16(
     magma_int_t T, 
     magma_int_t alignment  )
 {
+    int idx = blockIdx.y * gridDim.x * blockDim.x + 
+              blockDim.x * blockIdx.x + threadIdx.x;  // global thread index
+    int idb = threadIdx.x;   // local thread index
+    int idp = idb%T;  // number of threads assigned to one row
+    int i = idx/T;  // row index
+    
+    extern __shared__ magmaFloatComplex shared[];
 
-int idx = blockIdx.y * gridDim.x * blockDim.x + 
-          blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
-int idb = threadIdx.x ;  // local thread index
-int idp = idb%T;  // number of threads assigned to one row
-int i = idx/T;  // row index
-
-extern __shared__ magmaFloatComplex shared[];
-
-    if(i < n ){
+    if(i < n ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
-
+        for ( int k = 0; k < max_; k++ ) {
             // original code in paper (not working for me)
             //magmaFloatComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
             //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
@@ -406,17 +396,15 @@ extern __shared__ magmaFloatComplex shared[];
             dot += val * d[ col ];
         }
         shared[idb]  = dot;
-        if( idp < 8 ){
+        if( idp < 8 ) {
             shared[idb]+=shared[idb+8];
             if( idp < 4 ) shared[idb]+=shared[idb+4];
             if( idp < 2 ) shared[idb]+=shared[idb+2];
             if( idp == 0 ) {
                 z[i] = (shared[idb]+shared[idb+1]);
             }
-
         }
     }
-
 }
 
 // computes the SpMV using ELLRT 8 threads per row
@@ -432,22 +420,20 @@ magma_ccgmerge_spmvellpackrt_kernel_32(
     magma_int_t T, 
     magma_int_t alignment  )
 {
+    int idx = blockIdx.y * gridDim.x * blockDim.x + 
+              blockDim.x * blockIdx.x + threadIdx.x;  // global thread index
+    int idb = threadIdx.x;   // local thread index
+    int idp = idb%T;  // number of threads assigned to one row
+    int i = idx/T;  // row index
+    
+    extern __shared__ magmaFloatComplex shared[];
 
-int idx = blockIdx.y * gridDim.x * blockDim.x + 
-          blockDim.x * blockIdx.x + threadIdx.x ; // global thread index
-int idb = threadIdx.x ;  // local thread index
-int idp = idb%T;  // number of threads assigned to one row
-int i = idx/T;  // row index
-
-extern __shared__ magmaFloatComplex shared[];
-
-    if(i < n ){
+    if(i < n ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int max_ = magma_ceildiv( drowlength[i], T );  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
-
+        for ( int k = 0; k < max_; k++ ) {
             // original code in paper (not working for me)
             //magmaFloatComplex val = dval[ k*(T*alignment)+(i*T)+idp ];  
             //int col = dcolind [ k*(T*alignment)+(i*T)+idp ];    
@@ -459,7 +445,7 @@ extern __shared__ magmaFloatComplex shared[];
             dot += val * d[ col ];
         }
         shared[idb]  = dot;
-        if( idp < 16 ){
+        if( idp < 16 ) {
             shared[idb]+=shared[idb+16];
             if( idp < 8 ) shared[idb]+=shared[idb+8];
             if( idp < 4 ) shared[idb]+=shared[idb+4];
@@ -467,10 +453,8 @@ extern __shared__ magmaFloatComplex shared[];
             if( idp == 0 ) {
                 z[i] = (shared[idb]+shared[idb+1]);
             }
-
         }
     }
-
 }
 
 
@@ -485,7 +469,6 @@ magma_ccgmerge_spmvellpackrt_kernel2(
     magmaFloatComplex * d,
     magmaFloatComplex * vtmp2 )
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -493,26 +476,26 @@ magma_ccgmerge_spmvellpackrt_kernel2(
 
     temp[ Idx ] = ( i < n ) ? z[i]*d[i] : MAGMA_C_MAKE(0.0, 0.0);
     __syncthreads();
-    if ( Idx < 128 ){
+    if ( Idx < 128 ) {
         temp[ Idx ] += temp[ Idx + 128 ];
     }
     __syncthreads();
-    if ( Idx < 64 ){
+    if ( Idx < 64 ) {
         temp[ Idx ] += temp[ Idx + 64 ];
     }
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
-        if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+        if( Idx < 32 ) {
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -523,7 +506,7 @@ magma_ccgmerge_spmvellpackrt_kernel2(
         }
     #endif
     #if defined(PRECISION_s)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -534,7 +517,7 @@ magma_ccgmerge_spmvellpackrt_kernel2(
         }
     #endif
 
-    if ( Idx == 0 ){
+    if ( Idx == 0 ) {
             vtmp2[ blockIdx.x ] = temp[ 0 ];
     }
 }
@@ -553,22 +536,21 @@ magma_ccgmerge_spmvsellc_kernel(
     magmaFloatComplex * z,
     magmaFloatComplex * vtmp)
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
     int offset = drowptr[ blockIdx.x ];
     int border = (drowptr[ blockIdx.x+1 ]-offset)/blocksize;
 
- temp[ Idx ] = MAGMA_C_MAKE( 0.0, 0.0);
+    temp[ Idx ] = MAGMA_C_MAKE( 0.0, 0.0);
 
 
-    if(i < num_rows ){
+    if(i < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
-        for ( int n = 0; n < border; n ++){
+        for ( int n = 0; n < border; n ++) {
             int col = dcolind [offset+ blocksize * n + Idx ];
             magmaFloatComplex val = dval[offset+ blocksize * n + Idx];
-            if( val != 0){
+            if( val != 0) {
                   dot=dot+val*d[col];
             }
         }
@@ -576,26 +558,26 @@ magma_ccgmerge_spmvsellc_kernel(
         temp[ Idx ] = d[ i ] * dot;
     }
     __syncthreads();
-    if ( Idx < 128 ){
+    if ( Idx < 128 ) {
         temp[ Idx ] += temp[ Idx + 128 ];
     }
     __syncthreads();
-    if ( Idx < 64 ){
+    if ( Idx < 64 ) {
         temp[ Idx ] += temp[ Idx + 64 ];
     }
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
-        if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+        if( Idx < 32 ) {
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -606,7 +588,7 @@ magma_ccgmerge_spmvsellc_kernel(
         }
     #endif
     #if defined(PRECISION_s)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -617,7 +599,7 @@ magma_ccgmerge_spmvsellc_kernel(
         }
     #endif
 
-    if ( Idx == 0 ){
+    if ( Idx == 0 ) {
             vtmp[ blockIdx.x ] = temp[ 0 ];
     }
 }
@@ -640,7 +622,7 @@ magma_ccgmerge_spmvsellpt_kernel_8(
     magmaFloatComplex * z)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -648,14 +630,14 @@ magma_ccgmerge_spmvsellpt_kernel_8(
 
     extern __shared__ magmaFloatComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -665,7 +647,7 @@ magma_ccgmerge_spmvsellpt_kernel_8(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 4 ){
+        if( idx < 4 ) {
             shared[ldx]+=shared[ldx+blocksize*4];              
             __syncthreads();
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
@@ -674,9 +656,7 @@ magma_ccgmerge_spmvsellpt_kernel_8(
                 z[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1]);
             }
-
         }
-
     }
 }
 // SELLP SpMV kernel
@@ -696,7 +676,7 @@ magma_ccgmerge_spmvsellpt_kernel_16(
     magmaFloatComplex * z)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -704,14 +684,14 @@ magma_ccgmerge_spmvsellpt_kernel_16(
 
     extern __shared__ magmaFloatComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -721,7 +701,7 @@ magma_ccgmerge_spmvsellpt_kernel_16(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 8 ){
+        if( idx < 8 ) {
             shared[ldx]+=shared[ldx+blocksize*8];              
             __syncthreads();
             if( idx < 4 ) shared[ldx]+=shared[ldx+blocksize*4];   
@@ -732,9 +712,7 @@ magma_ccgmerge_spmvsellpt_kernel_16(
                 z[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1]);
             }
-
         }
-
     }
 }
 
@@ -756,7 +734,7 @@ magma_ccgmerge_spmvsellpt_kernel_32(
     magmaFloatComplex * z)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int ldx = idx * blocksize + idy;
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
@@ -764,14 +742,14 @@ magma_ccgmerge_spmvsellpt_kernel_32(
 
     extern __shared__ magmaFloatComplex shared[];
 
-    if(row < num_rows ){
+    if(row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -781,7 +759,7 @@ magma_ccgmerge_spmvsellpt_kernel_32(
         shared[ldx]  = dot;
 
         __syncthreads();
-        if( idx < 16 ){
+        if( idx < 16 ) {
             shared[ldx]+=shared[ldx+blocksize*16];              
             __syncthreads();
             if( idx < 8 ) shared[ldx]+=shared[ldx+blocksize*8];  
@@ -794,9 +772,7 @@ magma_ccgmerge_spmvsellpt_kernel_32(
                 z[row] = 
                 (shared[ldx]+shared[ldx+blocksize*1]);
             }
-
         }
-
     }
 }
 
@@ -804,10 +780,10 @@ magma_ccgmerge_spmvsellpt_kernel_32(
 // kernel to handle scalars
 __global__ void // rho = beta/tmp; gamma = beta;
 magma_ccg_rhokernel(  
-    magmaFloatComplex * skp ){
+    magmaFloatComplex * skp ) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if( i==0 ){
+    if( i==0 ) {
         magmaFloatComplex tmp = skp[1];
         skp[3] = tmp/skp[4];
         skp[2] = tmp;
@@ -893,7 +869,7 @@ magma_ccgmerge_spmv1(
                 printf("error: too much shared memory requested.\n");
 
             dim3 block( A.blocksize, A.alignment, 1);
-            int dimgrid1 = sqrt(A.numblocks);
+            int dimgrid1 = int( sqrt( float( A.numblocks )));
             int dimgrid2 = magma_ceildiv( A.numblocks, dimgrid1 );
 
             dim3 gridsellp( dimgrid1, dimgrid2, 1);
@@ -925,7 +901,6 @@ magma_ccgmerge_spmv1(
         // as the SpMV grid would result in low occupancy.
         magma_ccgmerge_spmvellpackrt_kernel2<<<Gs, Bs, Ms, queue >>>
                               ( A.num_rows, dz, dd, d1 );
-
     }
     else if ( A.storage_type == Magma_ELLRT ) {
         // in case of using ELLRT, we need a different grid, assigning
@@ -945,7 +920,7 @@ magma_ccgmerge_spmv1(
     if ( arch < 200 && num_threads > 256 )
         printf("error: too much shared memory requested.\n");
 
-    int dimgrid1 = sqrt(num_blocks);
+    int dimgrid1 = int( sqrt( float( num_blocks )));
     int dimgrid2 = magma_ceildiv( num_blocks, dimgrid1 );
     dim3 gridellrt( dimgrid1, dimgrid2, 1);
 
@@ -971,7 +946,7 @@ magma_ccgmerge_spmv1(
                                                  A.alignment, real_row_length );
     }
     else {
-        printf("error: alignment %d not supported.\n", A.alignment);
+        printf("error: alignment %d not supported.\n", int(A.alignment) );
         return MAGMA_ERR_NOT_SUPPORTED;
     }
         // in case of using ELLRT, we can't efficiently merge the 
@@ -983,7 +958,7 @@ magma_ccgmerge_spmv1(
     }
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_ccgreduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                                         ( Gs.x,  A.num_rows, aux1, aux2 );
@@ -1018,7 +993,6 @@ magma_ccgmerge_xrbeta_kernel(
     magmaFloatComplex * skp,
     magmaFloatComplex * vtmp )
 {
-
     extern __shared__ magmaFloatComplex temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -1028,32 +1002,32 @@ magma_ccgmerge_xrbeta_kernel(
 
     temp[ Idx ] = MAGMA_C_MAKE( 0.0, 0.0);
 
-    if( i<n ){
-        x[i] += rho * d[i] ;
-        r[i] += mrho  * z[i];
+    if( i<n ) {
+        x[i] += rho * d[i];
+        r[i] += mrho * z[i];
         temp[ Idx ] = r[i] * r[i];
     }
     __syncthreads();
-    if ( Idx < 128 ){
+    if ( Idx < 128 ) {
         temp[ Idx ] += temp[ Idx + 128 ];
     }
     __syncthreads();
-    if ( Idx < 64 ){
+    if ( Idx < 64 ) {
         temp[ Idx ] += temp[ Idx + 64 ];
     }
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
-        if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+        if( Idx < 32 ) {
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -1064,7 +1038,7 @@ magma_ccgmerge_xrbeta_kernel(
         }
     #endif
     #if defined(PRECISION_s)
-        if( Idx < 32 ){
+        if( Idx < 32 ) {
             volatile float *temp2 = temp;
             temp2[ Idx ] += temp2[ Idx + 32 ];
             temp2[ Idx ] += temp2[ Idx + 16 ];
@@ -1075,10 +1049,9 @@ magma_ccgmerge_xrbeta_kernel(
         }
     #endif
 
-    if ( Idx == 0 ){
+    if ( Idx == 0 ) {
             vtmp[ blockIdx.x ] = temp[ 0 ];
     }
-
 }
 
 // kernel to handle scalars
@@ -1088,7 +1061,7 @@ magma_ccg_alphabetakernel(
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if( i==0 ){
+    if( i==0 ) {
         magmaFloatComplex tmp1 = skp[1];
         skp[0] =  tmp1/skp[2];
         //printf("beta=%e\n", MAGMA_C_REAL(tmp1));
@@ -1103,15 +1076,13 @@ magma_ccg_d_kernel(
     magmaFloatComplex * r,
     magmaFloatComplex * d )
 {
-  
     int i   = blockIdx.x * blockDim.x + threadIdx.x;
 
     magmaFloatComplex alpha = skp[0];
 
-    if( i<n ){
+    if( i<n ) {
         d[i] = r[i] + alpha * d[i];
     }
-
 }
 
 
@@ -1138,11 +1109,11 @@ magma_ccg_d_kernel(
     d2          magmaFloatComplex_ptr 
                 temporary vector
 
-    @param[in/out]
+    @param[in,out]
     dx          magmaFloatComplex_ptr
                 input vector x
 
-    @param[in/out]
+    @param[in,out]
     dr          magmaFloatComplex_ptr 
                 input/output vector r
 
@@ -1193,7 +1164,7 @@ magma_ccgmerge_xrbeta(
 
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
         magma_ccgreduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
                                     ( Gs.x, n, aux1, aux2 );
@@ -1219,4 +1190,3 @@ magma_ccgmerge_xrbeta(
 }
 
 /* -------------------------------------------------------------------------- */
-

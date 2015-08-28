@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -13,11 +13,11 @@
 #include "common_magma.h"
 #include "zgerbt.h"
 
-
 #define block_height  32
 #define block_width  4
 #define block_length 256
 #define NB 64
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -53,13 +53,13 @@ magmablas_zprbt_mtv_q(
 
      */
     magma_int_t threads = block_length;
-    magma_int_t grid = n/(4*block_length) + ((n%(4*block_length))!=0);
+    magma_int_t grid = magma_ceildiv( n, 4*block_length );
 
     magmablas_zapply_transpose_vector_kernel<<< grid, threads, 0, queue >>>(n/2, du, n, db, 0);
     magmablas_zapply_transpose_vector_kernel<<< grid, threads, 0, queue >>>(n/2, du, n+n/2, db, n/2);
 
     threads = block_length;
-    grid = n/(2*block_length) + ((n%(2*block_length))!=0);
+    grid = magma_ceildiv( n, 2*block_length );
     magmablas_zapply_transpose_vector_kernel<<< grid, threads, 0, queue >>>(n, du, 0, db, 0);
 }
 
@@ -106,15 +106,13 @@ magmablas_zprbt_mv_q(
     magmaDoubleComplex *dv, magmaDoubleComplex *db,
     magma_queue_t queue)
 {
-
     magma_int_t threads = block_length;
-    magma_int_t grid = n/(2*block_length) + ((n%(2*block_length))!=0);
+    magma_int_t grid = magma_ceildiv( n, 2*block_length );
 
     magmablas_zapply_vector_kernel<<< grid, threads, 0, queue >>>(n, dv, 0, db, 0);
 
-
     threads = block_length;
-    grid = n/(4*block_length) + ((n%(4*block_length))!=0);
+    grid = magma_ceildiv( n, 4*block_length );
 
     magmablas_zapply_vector_kernel<<< grid, threads, 0, queue >>>(n/2, dv, n, db, 0);
     magmablas_zapply_vector_kernel<<< grid, threads, 0, queue >>>(n/2, dv, n+n/2, db, n/2);
@@ -175,8 +173,8 @@ magmablas_zprbt_q(
     dv += ldda;
 
     dim3 threads(block_height, block_width);
-    dim3 grid(n/(4*block_height) + ((n%(4*block_height))!=0), 
-            n/(4*block_width)  + ((n%(4*block_width))!=0));
+    dim3 grid( magma_ceildiv( n, 4*block_height ), 
+               magma_ceildiv( n, 4*block_width  ));
 
     magmablas_zelementary_multiplication_kernel<<< grid, threads, 0, queue >>>(n/2, dA,            0, ldda, du,   0, dv,   0);
     magmablas_zelementary_multiplication_kernel<<< grid, threads, 0, queue >>>(n/2, dA,     ldda*n/2, ldda, du,   0, dv, n/2);
@@ -184,8 +182,8 @@ magmablas_zprbt_q(
     magmablas_zelementary_multiplication_kernel<<< grid, threads, 0, queue >>>(n/2, dA, ldda*n/2+n/2, ldda, du, n/2, dv, n/2);
 
     dim3 threads2(block_height, block_width);
-    dim3 grid2(n/(2*block_height) + ((n%(2*block_height))!=0), 
-            n/(2*block_width)  + ((n%(2*block_width))!=0));
+    dim3 grid2( magma_ceildiv( n, 2*block_height ), 
+                magma_ceildiv( n, 2*block_width  ));
     magmablas_zelementary_multiplication_kernel<<< grid2, threads2, 0, queue >>>(n, dA, 0, ldda, du, -ldda, dv, -ldda);
 }
 
@@ -200,47 +198,4 @@ magmablas_zprbt(
     magmaDoubleComplex *du, magmaDoubleComplex *dv)
 {
     magmablas_zprbt_q(n, dA, ldda, du, dv, magma_stream);
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// adds   x += r  --and--
-// copies r = b
-// each thread does one index, x[i] and r[i]
-__global__ void
-zaxpycp2_kernel(
-    int m, magmaDoubleComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b)
-{
-    const int i = threadIdx.x + blockIdx.x*NB;
-    if ( i < m ) {
-        x[i] = MAGMA_Z_ADD( x[i], r[i] );
-        r[i] = b[i];
-    }
-}
-
-
-// ----------------------------------------------------------------------
-// adds   x += r  --and--
-// copies r = b
-extern "C" void
-magmablas_zaxpycp2_q(
-    magma_int_t m, magmaDoubleComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b,
-    magma_queue_t queue )
-{
-    dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB );
-    zaxpycp2_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b );
-}
-
-
-extern "C" void
-magmablas_zaxpycp2(
-    magma_int_t m, magmaDoubleComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b)
-{
-    magmablas_zaxpycp2_q( m, r, x, b, magma_stream );
 }

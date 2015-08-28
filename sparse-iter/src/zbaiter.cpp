@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
@@ -105,7 +105,7 @@ magma_zbaiter(
     if ( solver_par->init_res > solver_par->final_res ){
         info = MAGMA_SUCCESS;
     }
-    else{
+    else {
         info = MAGMA_DIVERGENCE;
     }
     
@@ -121,4 +121,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* magma_zbaiter */
-

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -40,12 +40,12 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("  M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||A*P - Q*R||_F\n");
-    printf("=====================================================================\n");
+    printf("%% M     N     CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||A*P - Q*R||_F\n");
+    printf("%%====================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
                 printf( "%5d %5d %5d   skipping because zgeqp3 requires M >= K, N >= K, K(the rank) >= 0\n",
                         (int) M, (int) N, (int) K );
                 continue;
-            }           
+            }
  
             min_mn = min(M, N);
             lda    = M;
@@ -93,8 +93,8 @@ int main( int argc, char** argv)
             /* Make h_A of rank K */
             magmaDoubleComplex alpha = MAGMA_Z_MAKE(  1., 0. );
             magmaDoubleComplex beta  = MAGMA_Z_MAKE(  0., 0. );
-            blasf77_zgemm("N", "N", &M, &N, &K, &alpha, h_R, &lda, h_R, &lda, 
-                          &beta, h_A, &lda); 
+            blasf77_zgemm("N", "N", &M, &N, &K, &alpha, h_R, &lda, h_R, &lda,
+                          &beta, h_A, &lda);
 
             lapackf77_zlacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
             

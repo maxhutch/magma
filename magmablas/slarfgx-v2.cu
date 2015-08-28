@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlarfgx-v2.cu normal z -> s, Fri Jan 30 19:00:09 2015
+       @generated from zlarfgx-v2.cu normal z -> s, Tue Aug 25 16:35:09 2015
 
 */
 #include "common_magma.h"
@@ -50,14 +50,13 @@ void magma_slarfgx_gpu_kernel( int n, float* dx0, float* dx,
             *dA   = *dx0;
         }
         else {
-
 #if (defined(PRECISION_s) || defined(PRECISION_d))
             // no need to compute the norm as it is passed as input
             float beta  = xnorm; // sqrt( alpha*alpha + xnorm*xnorm );
             beta  = -copysign( beta, alpha );
  
             // todo: deal with badly scaled vectors (see lapack's larfg)
-            if (j==0){
+            if (j == 0) {
                 *dtau = (beta - alpha) / beta;
                 //*dx0  = 1.; //cannot be done here because raise condition all threadblock need to read it for alpha
                 *dA   = beta;
@@ -70,7 +69,7 @@ void magma_slarfgx_gpu_kernel( int n, float* dx0, float* dx,
             beta  = -copysign( beta, alphar );
 
             // todo: deal with badly scaled vectors (see lapack's larfg)
-            if (j==0){
+            if (j == 0) {
                 *dtau = MAGMA_S_MAKE((beta - alphar)/beta, -alphai/beta);
                 //*dx0  = MAGMA_S_MAKE(  1., 0.); //cannot be done here because raise condition all threadblock need to read it for alpha
                 *dA   = MAGMA_S_MAKE(beta, 0.);
@@ -87,7 +86,7 @@ void magma_slarfgx_gpu_kernel( int n, float* dx0, float* dx,
     if ( xnorm != 0 && j < n-1)
         dx[j] = MAGMA_S_MUL(dxi, scale);
 
-    if (j<it){
+    if (j < it) {
         *( dA-it+j) = *(dx0-it+j);
         *(dx0-it+j) = MAGMA_S_MAKE(0., 0.);
     }
@@ -116,7 +115,7 @@ magma_slarfgx_gpu(
     magmaFloat_ptr        dxnorm,
     magmaFloat_ptr dA, magma_int_t iter)
 {
-    dim3 blocks((n+BLOCK_SIZE-1) / BLOCK_SIZE);
+    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
     dim3 threads( BLOCK_SIZE );
  
     magma_slarfgx_gpu_kernel<<< blocks, threads, 0, magma_stream >>>( n, dx0, dx, dtau, dxnorm, dA, iter);
@@ -151,7 +150,7 @@ magma_slarfgtx_gpu(
     /*  Generate the elementary reflector H(iter)  */
     magma_slarfgx_gpu(n, dx0, dx, dtau, dxnorm, dA, iter);
     
-    if (iter==0) {
+    if (iter == 0) {
         float tt = MAGMA_S_ONE;
         magmablas_slacpy(MagmaUpperLower, 1, 1, dtau, 1, T+iter+iter*ldt, 1);
         magma_ssetmatrix(1,1, &tt,1, dx0,1);

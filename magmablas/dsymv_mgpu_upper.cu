@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        dsymv_upper.cu is nearly identical to dsymv_upper.cu, just change names and drop .
        
        dsymv_kernel_U (upper) in dsymv_upper.cu is very similar to
        dsymv_kernel_L (lower) in dsymv.cu; diff the two files to compare.
        
-       @generated from zhemv_mgpu_upper.cu normal z -> d, Fri Jan 30 19:00:10 2015
+       @generated from zhemv_mgpu_upper.cu normal z -> d, Tue Aug 25 16:35:10 2015
        
        @author Mark Gates
 */
@@ -129,7 +129,7 @@ dsymv_kernel_U_mgpu(
                 A = A - tx2 + (partial - 1);  // A is A(blk_ind + partial-1, blk_ind + ty2), the bottom-most valid row
             }
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
@@ -140,7 +140,7 @@ dsymv_kernel_U_mgpu(
         }
         else {
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
         }
@@ -150,7 +150,7 @@ dsymv_kernel_U_mgpu(
         // as four 32x8 sections in parallel:
         // columns 0,4,8,12,16,20,24,28; then 1,5,...,29; then 2,6,...,30, then 3,7,...,31
         #pragma unroll
-        for(int j=ty2*4; j < ty2*4 + 4; j++) {
+        for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j > tx2 ) {
                 sA32(j, tx2) = ( sA32(tx2, j) );
             }
@@ -161,7 +161,7 @@ dsymv_kernel_U_mgpu(
         // each thread does partial row sA(tx2, ty2*4 : ty2*4 + 3)
         psum = MAGMA_D_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum += sA32(tx2, ty2*4 + j) * sx_blk[ty2*4 + j];
         }
         __syncthreads();
@@ -189,7 +189,7 @@ dsymv_kernel_U_mgpu(
                 A = A - (tx2 + half_NB_X) + (partial - 1);
             }
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j + half_NB_X < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
@@ -200,7 +200,7 @@ dsymv_kernel_U_mgpu(
         }
         else {
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
         }
@@ -208,7 +208,7 @@ dsymv_kernel_U_mgpu(
         
         // symmetrize 32x32 diag block, copying upper to lower triangle
         #pragma unroll
-        for(int j=ty2*4; j < ty2*4 + 4; j++) {
+        for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j > tx2 ) {
                 sA32(j, tx2) = ( sA32(tx2, j) );
             }
@@ -218,7 +218,7 @@ dsymv_kernel_U_mgpu(
         // multiply 32x32 diag block * x
         psum = MAGMA_D_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum += sA32(tx2, ty2*4 + j) * sx_blk[half_NB_X + ty2*4 + j];
         }
         __syncthreads();
@@ -248,7 +248,7 @@ dsymv_kernel_U_mgpu(
                 A = A - (tx2) + (partial - 1);
             }
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j + half_NB_X < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
@@ -259,7 +259,7 @@ dsymv_kernel_U_mgpu(
         }
         else {
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
         }
@@ -268,7 +268,7 @@ dsymv_kernel_U_mgpu(
         // multiply 32x32 block (below diag)
         psum = MAGMA_D_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum += ( sA32(ty2 + j*8, tx2) ) * sx_blk[j*8 + ty2];
         }
         //__syncthreads();  // no sync needed here
@@ -276,7 +276,7 @@ dsymv_kernel_U_mgpu(
         // multiply transposed 32x32 block (above diag)
         psum_t = MAGMA_D_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum_t += sA32(tx2, ty2*4 + j) * sx_blk[half_NB_X + ty2*4 + j];
         }
         __syncthreads();
@@ -333,7 +333,7 @@ dsymv_kernel_U_mgpu(
     const int ty4 = td / quarter_NB_X;
     
     // cycle over blocks jj right of diagonal, in block row blk
-    for(int jj=next; jj < gridDim.x; jj += ngpu) {
+    for (int jj=next; jj < gridDim.x; jj += ngpu) {
         partial = (jj == gridDim.x - 1 ? ((n + block_offset) % NB_X) : 0);
         
         // load 64x1 block x(jj_ind + 0:63) into sx_jj
@@ -348,13 +348,13 @@ dsymv_kernel_U_mgpu(
         }
         __syncthreads();
         
-        for( int k=0; k < 4; k++ ) {
+        for (int k=0; k < 4; k++) {
             // load 64x16 block of A into rA, 4 elements per thread,
             // as four 64x4 sections in parallel:
             // columns 0,4,8,12; then 1,5,9,13; then 2,6,10,14; then 3,7,11,15
             if ( partial ) {
                 #pragma unroll
-                for(int j=0; j < 4; j++) {
+                for (int j=0; j < 4; j++) {
                     if ( 4*ty + j + k*quarter_NB_X < partial ) {
                         rA[j] = A[j*lda];
                     }
@@ -365,7 +365,7 @@ dsymv_kernel_U_mgpu(
             }
             else {
                 #pragma unroll
-                for(int j=0; j < 4; j++) {
+                for (int j=0; j < 4; j++) {
                     rA[j] = A[j*lda];
                 }
             }
@@ -375,7 +375,7 @@ dsymv_kernel_U_mgpu(
             // 2) multiply 16x64 block A_{blk,jj} * x_blk,
             //    storing each product Aji*xi to sA(j,i)
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
                 sA16(ty*4 + j, tx) = ( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
@@ -387,7 +387,7 @@ dsymv_kernel_U_mgpu(
             // columns 0,4,8,...,60; then 1,5,...,61; then 2,6,...,62; then 3,7,...,63
             psum_t = MAGMA_D_ZERO;
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 psum_t += sA16(tx4, ty4*4 + j);
             }
             __syncthreads();
@@ -403,7 +403,7 @@ dsymv_kernel_U_mgpu(
     
         // store partial row sums of transposed result, y_jj
         #pragma unroll
-        for(int k=0; k < 4; k++) {
+        for (int k=0; k < 4; k++) {
             sA16(tx4, ty4 + quarter_NB_X*k) = psums_t[k];
         }
         __syncthreads();
@@ -515,7 +515,7 @@ dsymv_kernel_U_mgpu_sum(
         if ( blk % ngpu != my_gpu_id ) {
             first = blk;
         }
-        for(int j = first; j <= blk; ++j) {
+        for (int j = first; j <= blk; ++j) {
             Ax += work[j*lda];
         }
         y[ind * incy] = alpha*Ax;  // see magmablas_dsymv_sync for beta*y

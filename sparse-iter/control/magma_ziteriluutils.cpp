@@ -1,9 +1,9 @@
 /*
-    -- micMAGMA (version 1.6.2) --
+    -- micMAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -47,8 +47,8 @@ magma_zfrobenius(
     magma_z_matrix A,
     magma_z_matrix B,
     real_Double_t *res,
-    magma_queue_t queue ){
-
+    magma_queue_t queue )
+{
     real_Double_t tmp2;
     magma_int_t i,j,k;
     *res = 0.0;
@@ -235,7 +235,7 @@ magma_zilures(
 
     magmaDoubleComplex tmp;
     real_Double_t tmp2;
-    magma_int_t i,j,k;
+    magma_int_t i, j, k;
     
     magmaDoubleComplex one = MAGMA_Z_MAKE( 1.0, 0.0 );
 
@@ -246,7 +246,7 @@ magma_zilures(
         LL.diagorder_type = Magma_UNITY;
         CHECK( magma_zmconvert( L, &LL, Magma_CSR, Magma_CSRL, queue ));
     }
-    else if( L.row[1]==0 ){ // strictly lower triangular
+    else if ( L.row[1]==0 ){ // strictly lower triangular
         //printf("L strictly lower triangular.\n");
         CHECK( magma_zmtransfer( L, &LL, Magma_CPU, Magma_CPU, queue ));
         magma_free_cpu( LL.col );
@@ -255,9 +255,9 @@ magma_zilures(
         CHECK( magma_zmalloc_cpu( &LL.val, LL.nnz ));
         CHECK( magma_index_malloc_cpu( &LL.col, LL.nnz ));
         magma_int_t z=0;
-        for( magma_int_t i=0; i<L.num_rows; i++){
+        for (i=0; i < L.num_rows; i++) {
             LL.row[i] = z;
-            for( magma_int_t j=L.row[i]; j<L.row[i+1]; j++){
+            for (j=L.row[i]; j < L.row[i+1]; j++) {
                 LL.val[z] = L.val[j];
                 LL.col[z] = L.col[j];
                 z++;
@@ -269,7 +269,7 @@ magma_zilures(
         }
         LL.row[LL.num_rows] = z;
     }
-    else{
+    else {
         printf("error: L neither lower nor strictly lower triangular!\n");
     }
 
@@ -291,7 +291,6 @@ magma_zilures(
             magma_index_t lcol = A.col[j];
             for(k=LU->row[i]; k<LU->row[i+1]; k++){
                 if( LU->col[k] == lcol ){
-
                     tmp = MAGMA_Z_MAKE(
                         MAGMA_Z_REAL( LU->val[k] )- MAGMA_Z_REAL( A.val[j] )
                                                 , 0.0 );
@@ -300,7 +299,6 @@ magma_zilures(
                     tmp2 = (real_Double_t) fabs( MAGMA_Z_REAL(tmp) );
                     (*nonlinres) = (*nonlinres) + tmp2*tmp2;
                 }
-
             }
         }
     }
@@ -359,6 +357,10 @@ cleanup:
     res         real_Double_t*
                 IC residual
                 
+    @param[out]
+    nonlinres   real_Double_t*
+                nonlinear residual
+                
     @param[in]
     queue       magma_queue_t
                 Queue to execute in.
@@ -402,7 +404,6 @@ magma_zicres(
             magma_index_t lcol = A.col[j];
             for(k=LU->row[i]; k<LU->row[i+1]; k++){
                 if( LU->col[k] == lcol ){
-
                     tmp = MAGMA_Z_MAKE(
                         MAGMA_Z_REAL( LU->val[k] )- MAGMA_Z_REAL( A.val[j] )
                                                 , 0.0 );
@@ -592,11 +593,7 @@ cleanup:
                 sparse matrix in CSR
 
     @param[out]
-    L           magma_z_matrix*
-                sparse matrix in CSR
-
-    @param[out]
-    U           magma_z_matrix*
+    B           magma_z_matrix*
                 sparse matrix in CSR
                 
     @param[in]
@@ -611,8 +608,8 @@ magma_int_t
 magma_zinitrecursiveLU(
     magma_z_matrix A,
     magma_z_matrix *B,
-    magma_queue_t queue ){
-
+    magma_queue_t queue )
+{
     magma_int_t i,j,k;
 
     for(i=0; i<A.num_rows; i++){
@@ -668,7 +665,7 @@ magma_zmLdiagadd(
         LL.diagorder_type = Magma_UNITY;
         CHECK( magma_zmconvert( *L, &LL, Magma_CSR, Magma_CSRL, queue ));
     }
-    else if( L->row[1]==0 ){ // strictly lower triangular
+    else if ( L->row[1]==0 ){ // strictly lower triangular
         //printf("L strictly lower triangular.\n");
         CHECK( magma_zmtransfer( *L, &LL, Magma_CPU, Magma_CPU, queue ));
         magma_free_cpu( LL.col );
@@ -692,7 +689,7 @@ magma_zmLdiagadd(
         LL.row[LL.num_rows] = z;
         LL.nnz = z;
     }
-    else{
+    else {
         printf("error: L neither lower nor strictly lower triangular!\n");
     }
     magma_zmfree( L, queue );
@@ -705,5 +702,3 @@ cleanup:
     magma_zmfree( &LL, queue );
     return info;
 }
-
-

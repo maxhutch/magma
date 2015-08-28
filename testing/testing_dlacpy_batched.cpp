@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zlacpy_batched.cpp normal z -> d, Fri Jan 30 19:00:26 2015
+       @generated from testing_zlacpy_batched.cpp normal z -> d, Tue Aug 25 16:35:28 2015
        @author Mark Gates
 
 */
@@ -40,24 +40,23 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
     
-    magma_queue_t queue = magma_stream;
-    magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    magma_opts opts( MagmaOptsBatched );
+    opts.parse_opts( argc, argv );
 
     mb = (opts.nb == 0 ? 32 : opts.nb);
     nb = (opts.nb == 0 ? 64 : opts.nb);
     mstride = 2*mb;
     nstride = 3*nb;
     
-    printf("mb=%d, nb=%d, mstride=%d, nstride=%d\n", (int) mb, (int) nb, (int) mstride, (int) nstride );
-    printf("    M    N ntile   CPU GFlop/s (ms)    GPU GFlop/s (ms)    check\n");
-    printf("=================================================================\n");
+    printf("%% mb=%d, nb=%d, mstride=%d, nstride=%d\n", (int) mb, (int) nb, (int) mstride, (int) nstride );
+    printf("%%   M     N ntile    CPU GFlop/s (ms)    GPU GFlop/s (ms)   check\n");
+    printf("%%================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
             lda    = M;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             size   = lda*N;
             
             if ( N < nb || M < nb ) {
@@ -96,9 +95,9 @@ int main( int argc, char** argv)
             magma_setvector( ntile, sizeof(double*), hAarray, 1, dAarray, 1 );
             magma_setvector( ntile, sizeof(double*), hBarray, 1, dBarray, 1 );
             
-            gpu_time = magma_sync_wtime( 0 );
-            magmablas_dlacpy_batched( MagmaUpperLower, mb, nb, dAarray, ldda, dBarray, ldda, ntile, queue );
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue );
+            magmablas_dlacpy_batched( MagmaUpperLower, mb, nb, dAarray, ldda, dBarray, ldda, ntile, opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
             /* =====================================================================
@@ -121,12 +120,13 @@ int main( int argc, char** argv)
             
             blasf77_daxpy(&size, &c_neg_one, h_A, &ione, h_B, &ione);
             error = lapackf77_dlange("f", &M, &N, h_B, &lda, work);
+            bool okay = (error == 0);
+            status += ! okay;
 
             printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %s\n",
                    (int) M, (int) N, (int) ntile,
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
-                   (error == 0. ? "ok" : "failed") );
-            status += ! (error == 0.);
+                   (okay ? "ok" : "failed") );
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_B );

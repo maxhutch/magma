@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
-       @generated from zpotrf_gpu.cpp normal z -> c, Fri Jan 30 19:00:13 2015
+       @generated from zpotrf_gpu.cpp normal z -> c, Tue Aug 25 16:35:13 2015
 */
 #include "common_magma.h"
 
@@ -135,10 +135,8 @@ magma_cpotrf_gpu(
     else {
         /* Use blocked code. */
         if (upper) {
-            
             /* Compute the Cholesky factorization A = U'*U. */
             for (j=0; j < n; j += nb) {
-                
                 /* Update and factorize the current diagonal block and test
                    for non-positive-definiteness. Computing MIN */
                 jb = min(nb, (n-j));

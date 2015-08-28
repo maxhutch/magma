@@ -1,5 +1,5 @@
     /* ----- begin trace.css SVG header ----- */
-    /* MAGMA (version 1.6.1)   */
+    /* MAGMA (version 1.6.3-beta1)   */
     /* @author Mark Gates    */
     /* HTML uses background, CSS uses fill */
     rect           { stroke-width: 0; stroke: #666666; }
@@ -9,7 +9,7 @@
     .init          { background: #666666;  fill: #666666; /* gray       */ }
     .destroy       { background: #666666;  fill: #666666; /* gray       */ }
                                           
-    /* panels */                          
+    /* panels */
     .getrf         { background: #cc0000;  fill: #cc0000; /* red        */ }
     .geqrf         { background: #8B0000;  fill: #8B0000; /* red dk     */ }
     .potrf         { background: #CD5C5C;  fill: #CD5C5C; /* red lt     */ }
@@ -42,7 +42,7 @@
     .syr2k, .her2k { background: #809FFF;  fill: #809FFF; /* blue       */ }
     
     .trmm          { background: #3F3F00;  fill: #3F3F00; /* olive dk2  */ }
-    .trmm2         { background: #666600;  fill: #666600; /* olive dk   */ }    
+    .trmm2         { background: #666600;  fill: #666600; /* olive dk   */ }
     .trsm          { background: #7F7F00;  fill: #7F7F00; /* olive      */ }
     .trsm2         { background: #9EA000;  fill: #9EA000; /* olive lt   */ }
     

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing_zhegvd.cpp normal z -> s, Fri Jan 30 19:00:26 2015
+       @generated from testing_zhegvd.cpp normal z -> s, Tue Aug 25 16:35:28 2015
 
 */
 
@@ -55,7 +55,7 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     float tol    = opts.tolerance * lapackf77_slamch("E");
     float tolulp = opts.tolerance * lapackf77_slamch("P");
@@ -63,11 +63,11 @@ int main( int argc, char** argv)
     // checking NoVec requires LAPACK
     opts.lapack |= (opts.check && opts.jobz == MagmaNoVec);
     
-    printf("using: itype = %d, jobz = %s, uplo = %s\n",
+    printf("%% itype = %d, jobz = %s, uplo = %s\n",
            (int) opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo));
 
-    printf("    N   CPU Time (sec)   GPU Time(sec)\n");
-    printf("======================================\n");
+    printf("%%   N   CPU Time (sec)   GPU Time(sec)\n");
+    printf("%%=====================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -145,11 +145,11 @@ int main( int argc, char** argv)
                    Check the results following the LAPACK's [zc]hegvd routine.
                    A x = lambda B x is solved
                    and the following 3 tests computed:
-                   (1)    | A Z - B Z D | / ( |A||Z| N )   (itype = 1)
-                          | A B Z - Z D | / ( |A||Z| N )   (itype = 2)
-                          | B A Z - Z D | / ( |A||Z| N )   (itype = 3)
-                   (2)    | I - V V' B | / ( N )           (itype = 1,2)
-                          | B - V V' | / ( |B| N )         (itype = 3)
+                   (1)    | A Z - B Z D | / ( |A| |Z| N )   (itype = 1)
+                          | A B Z - Z D | / ( |A| |Z| N )   (itype = 2)
+                          | B A Z - Z D | / ( |A| |Z| N )   (itype = 3)
+                   (2)    | I - V V' B | / ( N )            (itype = 1,2)
+                          | B - V V' | / ( |B| N )          (itype = 3)
                    (3)    | D(with V) - D(w/o V) | / | D |
                    =================================================================== */
                 //float *tau;
@@ -177,21 +177,21 @@ int main( int argc, char** argv)
                 
                 if ( opts.itype == 1 ) {
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
-                    for(int i=0; i < N; ++i)
+                    for (int i=0; i < N; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_neg_one, h_B, &lda, h_R, &lda, &c_one, h_work, &N);
                     result[0] *= lapackf77_slange("1", &N, &N, h_work, &lda, rwork)/N;
                 }
                 else if ( opts.itype == 2 ) {
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_B, &lda, h_R, &lda, &c_zero, h_work, &N);
-                    for(int i=0; i < N; ++i)
+                    for (int i=0; i < N; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_work, &N, &c_neg_one, h_R, &lda);
                     result[0] *= lapackf77_slange("1", &N, &N, h_R, &lda, rwork)/N;
                 }
                 else if ( opts.itype == 3 ) {
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
-                    for(int i=0; i < N; ++i)
+                    for (int i=0; i < N; ++i)
                         blasf77_sscal(&N, &w1[i], &h_R[i*N], &ione);
                     blasf77_ssymm("L", lapack_uplo_const(opts.uplo), &N, &N, &c_one, h_B, &lda, h_work, &N, &c_neg_one, h_R, &lda);
                     result[0] *= lapackf77_slange("1", &N, &N, h_R, &lda, rwork)/N;
@@ -227,7 +227,7 @@ int main( int argc, char** argv)
                 //           (int) info, magma_strerror( info ));
                 //
                 //float maxw=0, diff=0;
-                //for(int j=0; j < N; j++) {
+                //for (int j=0; j < N; j++) {
                 //    maxw = max(maxw, fabs(w1[j]));
                 //    maxw = max(maxw, fabs(w2[j]));
                 //    diff = max(diff, fabs(w1[j] - w2[j]));
@@ -255,7 +255,7 @@ int main( int argc, char** argv)
                 
                 // compare eigenvalues
                 float maxw=0, diff=0;
-                for(int j=0; j < N; j++) {
+                for (int j=0; j < N; j++) {
                     maxw = max(maxw, fabs(w1[j]));
                     maxw = max(maxw, fabs(w2[j]));
                     diff = max(diff, fabs(w1[j] - w2[j]));

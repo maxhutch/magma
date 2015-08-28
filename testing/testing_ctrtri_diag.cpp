@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_ztrtri_diag.cpp normal z -> c, Fri Jan 30 19:00:23 2015
+       @generated from testing_ztrtri_diag.cpp normal z -> c, Tue Aug 25 16:35:25 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -64,7 +64,7 @@ int main( int argc, char** argv )
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
     float tol = opts.tolerance * lapackf77_slamch("E");
@@ -73,16 +73,16 @@ int main( int argc, char** argv )
     // this is the NB hard coded into ctrtri_diag.
     nb = 128;
     
-    printf("uplo = %s, diag = %s\n",
+    printf("%% uplo = %s, diag = %s\n",
            lapack_uplo_const(opts.uplo), lapack_diag_const(opts.diag) );
-    printf("    N  MAGMA Gflop/s (ms)   MAGMA error\n");
-    printf("=======================================\n");
+    printf("%%   N  MAGMA Gflop/s (ms)   MAGMA error\n");
+    printf("%%======================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda = N;
-            ldda = ((lda+31)/32)*32;
-            nblock = (N+nb-1)/nb;
+            ldda = magma_roundup( lda, opts.align );  // multiple of 32 by default
+            nblock = magma_ceildiv( N, nb );
             gflops = nblock * FLOPS_CTRTRI( nb ) / 1e9;
             
             TESTING_MALLOC_CPU( h_A,    magmaFloatComplex, lda*N );
@@ -97,7 +97,7 @@ int main( int argc, char** argv )
             /* Factor A into LU to get well-conditioned triangular matrix.
              * Copy L to U, since L seems okay when used with non-unit diagonal
              * (i.e., from U), while U fails when used with unit diagonal. */
-            sizeA = lda*N;            
+            sizeA = lda*N;
             lapackf77_clarnv( &ione, ISEED, &sizeA, h_A );
             lapackf77_cgetrf( &N, &N, h_A, &lda, ipiv, &info );
             for( int j = 0; j < N; ++j ) {
@@ -111,9 +111,10 @@ int main( int argc, char** argv )
                =================================================================== */
             magma_csetmatrix( N, N, h_A, lda, d_A, ldda );
             
-            magma_time = magma_sync_wtime( NULL );
+            magmablasSetKernelStream( opts.queue );
+            magma_time = magma_sync_wtime( opts.queue );
             magmablas_ctrtri_diag( opts.uplo, opts.diag, N, d_A, ldda, d_dinvA );
-            magma_time = magma_sync_wtime( NULL ) - magma_time;
+            magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
             
             magma_cgetvector( size_inv, d_dinvA, 1, h_dinvA, 1 );

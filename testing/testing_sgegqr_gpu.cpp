@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgegqr_gpu.cpp normal z -> s, Fri Jan 30 19:00:25 2015
+       @generated from testing_zgegqr_gpu.cpp normal z -> s, Tue Aug 25 16:35:26 2015
        @author Stan Tomov
 
 */
@@ -30,7 +30,7 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    float           e, e1, e2, e3, e4, e5, *work;
+    float           error, e1, e2, e3, e4, e5, *work;
     float c_neg_one = MAGMA_S_NEG_ONE;
     float c_one     = MAGMA_S_ONE;
     float c_zero    = MAGMA_S_ZERO;
@@ -43,7 +43,7 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
     // versions 1...4 are valid
@@ -54,10 +54,10 @@ int main( int argc, char** argv)
     
     float tol = 10. * opts.tolerance * lapackf77_slamch("E");
     
-    printf("version %d\n", (int) opts.version );
-    printf("  M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)      ||I-Q'Q||_F / M     ||I-Q'Q||_I / M    ||A-Q R||_I\n");
-    printf("                                                        MAGMA  /  LAPACK    MAGMA  /  LAPACK\n");
-    printf("==========================================================================================================\n");
+    printf("%% version %d\n", (int) opts.version );
+    printf("%% M     N     CPU GFlop/s (ms)    GPU GFlop/s (ms)      ||I-Q'Q||_F / M     ||I-Q'Q||_I / M    ||A-Q R||_I\n");
+    printf("%%                                                       MAGMA  /  LAPACK    MAGMA  /  LAPACK\n");
+    printf("%%=========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -77,7 +77,7 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_SGEQRF( M, N ) / 1e9 +  FLOPS_SORGQR( M, N, N ) / 1e9;
             
             // query for workspace size
@@ -118,9 +118,10 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            gpu_time = magma_sync_wtime( 0 );
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             magma_sgegqr_gpu( opts.version, M, N, d_A, ldda, dwork, h_rwork, &info );
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
                 printf("magma_sgegqr returned error %d: %s.\n",
@@ -158,29 +159,29 @@ int main( int argc, char** argv)
                    Check the result compared to LAPACK
                    =================================================================== */
                 blasf77_sgemm("c", "n", &N, &N, &M, &c_one, h_R, &M, h_R, &M, &c_zero, h_work, &N);
-                for(int ii = 0; ii < N*N; ii += N+1 ) {
+                for (int ii = 0; ii < N*N; ii += N+1 ) {
                     h_work[ii] = MAGMA_S_SUB(h_work[ii], c_one);
                 }
                 e1 = lapackf77_slange("f", &N, &N, h_work, &N, work) / N;
                 e3 = lapackf77_slange("i", &N, &N, h_work, &N, work) / N;
 
                 blasf77_sgemm("c", "n", &N, &N, &M, &c_one, h_A, &M, h_A, &M, &c_zero, h_work, &N);
-                for(int ii = 0; ii < N*N; ii += N+1 ) {
+                for (int ii = 0; ii < N*N; ii += N+1 ) {
                     h_work[ii] = MAGMA_S_SUB(h_work[ii], c_one);
                 }
                 e2 = lapackf77_slange("f", &N, &N, h_work, &N, work) / N;
                 e4 = lapackf77_slange("i", &N, &N, h_work, &N, work) / N;
 
                 if (opts.version != 4)
-                    e = e1;
-                else 
-                    e = e1 / (10.*max(M,N));
+                    error = e1;
+                else
+                    error = e1 / (10.*max(M,N));
 
                 printf("%5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e / %8.2e   %8.2e / %8.2e   %8.2e  %s\n",
                        (int) M, (int) N, cpu_perf, 1000.*cpu_time, gpu_perf, 1000.*gpu_time,
                        e1, e2, e3, e4, e5,
-                       (e < tol ? "ok" : "failed"));
-                status += ! (e < tol); 
+                       (error < tol ? "ok" : "failed"));
+                status += ! (error < tol);
             }
             else {
                 printf("%5d %5d     ---   (  ---  )   %7.2f (%7.2f)     ---  \n",

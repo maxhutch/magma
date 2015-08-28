@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from dgeev.cpp normal d -> s, Fri Jan 30 19:00:19 2015
+       @generated from dgeev.cpp normal d -> s, Tue Aug 25 16:35:20 2015
        @author Stan Tomov
        @author Mark Gates
 */
@@ -114,8 +114,8 @@
 
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= (2+nb)*N.
-            For optimal performance, LWORK >= (2+2*nb)*N.
+            The dimension of the array WORK.  LWORK >= (2 +   nb)*N.
+            For optimal performance,          LWORK >= (2 + 2*nb)*N.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns

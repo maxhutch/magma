@@ -1,21 +1,17 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
-       @generated from zpotf2.cu normal z -> s, Fri Jan 30 19:00:10 2015
+       @generated from zpotf2.cu normal z -> s, Tue Aug 25 16:35:10 2015
 */
 #include "common_magma.h"
 
 #define PRECISION_s
 
-//#if (GPUSHMEM < 200)
 #define sdot_max_bs 512  // 512 is max threads for 1.x cards
-//#else
-//#define sdot_max_bs 1024
-//#endif
 
 void spotf2_sscal(magma_int_t n, float *x, magma_int_t incx);
 void spotf2_sdot(magma_int_t n, float *x, magma_int_t incx);
@@ -112,7 +108,7 @@ magma_spotf2_gpu(
     float beta  = MAGMA_S_ONE;
 
     if (uplo == MagmaUpper) {
-        for(j = 0; j < n; j++) {
+        for (j = 0; j < n; j++) {
             spotf2_sdot(j, dA(0,j), 1); // including sdot product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
@@ -131,7 +127,7 @@ magma_spotf2_gpu(
         }
     }
     else {
-        for(j = 0; j < n; j++) {
+        for (j = 0; j < n; j++) {
             spotf2_sdot(j, dA(j,0), ldda); // including sdot product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
@@ -170,14 +166,14 @@ __global__ void kernel_sdot(int n, float *x, int incx, int threadSize)
     float res = MAGMA_S_ZERO;
 
     if (tx < n) {
-       res = x[tx*incx];
+        res = x[tx*incx];
     }
 
     sdata[tx] = MAGMA_S_REAL(res * MAGMA_S_CNJG(res));
 
     __syncthreads();
 
-    for(int s = blockDim.x/2; s > 32; s >>= 1 ) {
+    for (int s = blockDim.x/2; s > 32; s >>= 1 ) {
         if (tx < s) {
             sdata[tx] += sdata[tx+s];
         }
@@ -202,12 +198,12 @@ __global__ void kernel_sdot(int n, float *x, int incx, int threadSize)
 
 void spotf2_sdot(magma_int_t n, float *x, magma_int_t incx)
 {
-/*
+    /*
     Specialized Sdot
     1) performs sdot sum = x[0:n-1]*conj(x[0:n-1])
     2) updates x[n] = sqrt(x[n]-sum);
 
-*/
+    */
     if (n > sdot_max_bs) {
         fprintf( stderr, "n = %d > %d is not supported in spotf2_sdot\n", (int) n, (int) sdot_max_bs);
         return;
@@ -245,7 +241,7 @@ __global__ void kernel_sscal(int n, float *x, int incx)
 
     __syncthreads();
 
-    if ( id < n && id >0) {
+    if ( id < n && id > 0) {
         x[id*incx] = x[id*incx] * factor;
     }
 }
@@ -253,12 +249,11 @@ __global__ void kernel_sscal(int n, float *x, int incx)
 
 void spotf2_sscal(magma_int_t n, float *x, magma_int_t incx)
 {
-/*
+    /*
     Specialized Sscal perform x[1:n-1]/x[0]
-
-*/
+    */
     dim3 threads(sscal_bs, 1, 1);
-    int num_blocks = (n - 1)/sscal_bs + 1;
+    int num_blocks = magma_ceildiv( n, sscal_bs );
     dim3 grid(num_blocks,1);
     kernel_sscal<<< grid, threads, 0, magma_stream >>> (n, x, incx);
 }
@@ -304,7 +299,7 @@ __global__ void kernel_slacgv(int n, float *x, int incx)
 void slacgv(magma_int_t n, float *x, magma_int_t incx)
 {
     dim3 threads(slacgv_bs, 1, 1);
-    int num_blocks = (n - 1)/slacgv_bs + 1;
+    int num_blocks = magma_ceildiv( n, slacgv_bs );
     dim3 grid(num_blocks,1);
     kernel_slacgv<<< grid, threads, 0, magma_stream >>> (n, x, incx);
 }

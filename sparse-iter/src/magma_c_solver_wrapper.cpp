@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_z_solver_wrapper.cpp normal z -> c, Sun May  3 11:22:59 2015
+       @generated from magma_z_solver_wrapper.cpp normal z -> c, Tue Aug 25 16:35:33 2015
        @author Hartwig Anzt
 
 */
@@ -84,6 +84,11 @@ magma_c_solver(
                     CHECK( magma_cfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_PGMRES:
                     CHECK( magma_cfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_IDR:
+                    //CHECK( magma_cidr_strm( A, b, x, &zopts->solver_par, queue )); break;
+                    CHECK( magma_cidr( A, b, x, &zopts->solver_par, queue )); break;
+            case  Magma_PIDR:
+                    CHECK( magma_cpidr( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_LOBPCG:
                     CHECK( magma_clobpcg( A, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_ITERREF:
@@ -91,12 +96,13 @@ magma_c_solver(
             case  Magma_JACOBI:
                     CHECK( magma_cjacobi( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_BAITER:
+                    //CHECK( magma_cjacobidomainoverlap( A, b, x, &zopts->solver_par, queue )); break;
                     CHECK( magma_cbaiter( A, b, x, &zopts->solver_par, queue ) ); break;
             default:
                     printf("error: solver class not supported.\n"); break;
         }
     }
-    else{
+    else {
   // preconditioner
         if ( zopts->solver_par.solver != Magma_ITERREF ) {
             int stat = magma_c_precondsetup( A, b, &zopts->precond_par, queue );
@@ -119,5 +125,3 @@ magma_c_solver(
 cleanup:
     return info; 
 }
-
-

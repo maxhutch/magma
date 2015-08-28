@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zheevdx_2stage_m.cpp normal z -> c, Fri Jan 30 19:00:18 2015
+       @generated from zheevdx_2stage_m.cpp normal z -> c, Tue Aug 25 16:35:19 2015
 
 */
 #include "common_magma.h"
@@ -23,7 +23,7 @@
 /**
     Purpose
     -------
-    CHEEVD_2STAGE computes all eigenvalues and, optionally, eigenvectors of a
+    CHEEVDX_2STAGE computes all eigenvalues and, optionally, eigenvectors of a
     complex Hermitian matrix A. It uses a two-stage algorithm for the tridiagonalization.
     If eigenvectors are desired, it uses a divide and conquer algorithm.
 
@@ -262,13 +262,12 @@ magma_cheevdx_2stage_m(
         }
     }
 
-    magma_int_t nb = magma_get_cbulge_nb(n, parallel_threads);
+    magma_int_t nb      = magma_cbulge_get_nb(n, parallel_threads);
     magma_int_t Vblksiz = magma_cbulge_get_Vblksiz(n, nb, parallel_threads);
-
-    magma_int_t ldt = Vblksiz;
-    magma_int_t ldv = nb + Vblksiz;
-    magma_int_t blkcnt = magma_bulge_get_blkcnt(n, nb, Vblksiz);
-    magma_int_t lq2 = magma_cbulge_get_lq2(n, parallel_threads);
+    magma_int_t blkcnt  = magma_bulge_get_blkcnt(n, nb, Vblksiz);
+    magma_int_t lq2     = magma_cbulge_get_lq2(n, parallel_threads, wantz);
+    magma_int_t ldt     = Vblksiz;
+    magma_int_t ldv     = nb + Vblksiz;
 
     if (wantz) {
         lwmin  = lq2 + 2*n + n*n;
@@ -394,7 +393,7 @@ magma_cheevdx_2stage_m(
     magma_int_t nstream = max(3,ngpu+2);
     magma_queue_t streams[MagmaMaxGPUs][20];
     magmaFloatComplex *da[MagmaMaxGPUs], *dT1[MagmaMaxGPUs];
-    magma_int_t ldda = ((n+31)/32)*32;
+    magma_int_t ldda = magma_roundup( n, 32 );
 
     magma_int_t ver = 0;
     magma_int_t distblk = max(256, 4*nb);

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -120,7 +120,7 @@ magma_zpotrf_mgpu(
         magma_free_pinned( work );
     }
     else {
-        lddp = nb*((n+nb-1)/nb);
+        lddp = magma_roundup( n, nb );
         for( d=0; d < ngpu; d++ ) {
             magma_setdevice(d);
             if (MAGMA_SUCCESS != magma_zmalloc( &dwork[d], ngpu*nb*lddp )) {
@@ -137,7 +137,7 @@ magma_zpotrf_mgpu(
                 magma_event_create( &event[d][j]  );
         }
         magma_setdevice(0);
-        h = 1; //ngpu; //(n+nb-1)/nb;
+        h = 1; //ngpu; //magma_ceildiv( n, nb );
         if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, n*nb*h )) {
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;

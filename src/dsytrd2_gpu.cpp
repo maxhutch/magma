@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zhetrd2_gpu.cpp normal z -> d, Fri Jan 30 19:00:17 2015
+       @generated from zhetrd2_gpu.cpp normal z -> d, Tue Aug 25 16:35:17 2015
 
 */
 #include "common_magma.h"
@@ -195,7 +195,7 @@ magma_dsytrd2_gpu(
         *info = -9;
     } else if (lwork < nb*n && ! lquery) {
         *info = -11;
-    } else if (ldwork < ldda*ceildiv(n,64) + 2*ldda*nb) {
+    } else if (ldwork < ldda*magma_ceildiv(n,64) + 2*ldda*nb) {
         *info = -13;
     }
 
@@ -220,12 +220,13 @@ magma_dsytrd2_gpu(
         return *info;
     }
 
-    //if (n < 2048)
-    //    nx = n;
-    //else
-    //    nx = 512;
-    nx = min( 128, n );  // nx <= n is required
-    
+    // nx <= n is required
+    // use LAPACK for n < 3000, otherwise switch at 512
+    if (n < 3000)
+        nx = n;
+    else
+        nx = 512;
+
     // clear out dwork in case it has NANs (used as y in dsymv)
     // rest of dwork (used as work in magmablas_dsymv) doesn't need to be cleared
     magmablas_dlaset( MagmaFull, n, nb, c_zero, c_zero, dwork, lddw );
@@ -233,7 +234,7 @@ magma_dsytrd2_gpu(
     if (upper) {
         /* Reduce the upper triangle of A.
            Columns 1:kk are handled by the unblocked method. */
-        kk = n - (n - nx + nb - 1) / nb * nb;
+        kk = n - magma_roundup( n - nx, nb );
         
         for (i = n - nb; i >= kk; i -= nb) {
             /* Reduce columns i:i+nb-1 to tridiagonal form and form the

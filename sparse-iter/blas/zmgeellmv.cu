@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -26,14 +26,14 @@ zmgeellmv_kernel(
     magmaDoubleComplex beta, 
     magmaDoubleComplex * dy)
 {
-int row = blockDim.x * blockIdx.x + threadIdx.x ;
+int row = blockDim.x * blockIdx.x + threadIdx.x;
 
     extern __shared__ magmaDoubleComplex dot[];
 
     if(row < num_rows ){
         for( int i=0; i<num_vecs; i++)
                 dot[ threadIdx.x + i*blockDim.x ] = MAGMA_Z_MAKE(0.0, 0.0);
-        for ( int n = 0; n < num_cols_per_row ; n ++){
+        for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_cols_per_row * row + n ];
             magmaDoubleComplex val = dval [ num_cols_per_row * row + n ];
             if( val != 0){
@@ -137,6 +137,3 @@ magma_zmgeellmv(
 
    return MAGMA_SUCCESS;
 }
-
-
-

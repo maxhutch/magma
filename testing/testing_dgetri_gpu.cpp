@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgetri_gpu.cpp normal z -> d, Fri Jan 30 19:00:24 2015
+       @generated from testing_zgetri_gpu.cpp normal z -> d, Tue Aug 25 16:35:27 2015
        @author Mark Gates
 */
 // includes, system
@@ -21,16 +21,20 @@
 #include "testings.h"
 
 /* ////////////////////////////////////////////////////////////////////////////
-   -- Testing dgetrf
+   -- Testing dgetri
 */
 int main( int argc, char** argv )
 {
     TESTING_INIT();
 
+    // constants
+    const double c_zero    = MAGMA_D_ZERO;
+    const double c_one     = MAGMA_D_ONE;
+    const double c_neg_one = MAGMA_D_NEG_ONE;
+    
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double *h_A, *h_R, *work;
+    double *h_A, *h_Ainv, *h_R, *work;
     magmaDouble_ptr d_A, dwork;
-    double c_neg_one = MAGMA_D_NEG_ONE;
     magma_int_t N, n2, lda, ldda, info, lwork, ldwork;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
@@ -40,22 +44,18 @@ int main( int argc, char** argv )
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
-    opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
+    opts.parse_opts( argc, argv );
     
-    // need looser bound (3000*eps instead of 30*eps) for tests
-    // TODO: should compute ||I - A*A^{-1}|| / (n*||A||*||A^{-1}||)
-    opts.tolerance = max( 3000., opts.tolerance );
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("    N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R||_F / (N*||A||_F)\n");
-    printf("=================================================================\n");
+    printf("%%   N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||I - A*A^{-1}||_1 / (N*cond(A))\n");
+    printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda    = N;
             n2     = lda*N;
-            ldda   = ((N+31)/32)*32;
+            ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
             ldwork = N * magma_get_dgetri_nb( N );
             gflops = FLOPS_DGETRI( N ) / 1e9;
             
@@ -65,32 +65,31 @@ int main( int argc, char** argv )
             if (info != 0)
                 printf("lapackf77_dgetri returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
-            lwork = int( MAGMA_D_REAL( tmp ));
+            lwork = magma_int_t( MAGMA_D_REAL( tmp ));
             
-            TESTING_MALLOC_CPU( ipiv,  magma_int_t,        N      );
-            TESTING_MALLOC_CPU( work,  double, lwork  );
-            TESTING_MALLOC_CPU( h_A,   double, n2     );
+            TESTING_MALLOC_CPU( ipiv,   magma_int_t,        N      );
+            TESTING_MALLOC_CPU( work,   double, lwork  );
+            TESTING_MALLOC_CPU( h_A,    double, n2     );
+            TESTING_MALLOC_CPU( h_Ainv, double, n2     );
+            TESTING_MALLOC_CPU( h_R,    double, n2     );
             
-            TESTING_MALLOC_PIN( h_R,   double, n2     );
-            
-            TESTING_MALLOC_DEV( d_A,   double, ldda*N );
-            TESTING_MALLOC_DEV( dwork, double, ldwork );
+            TESTING_MALLOC_DEV( d_A,    double, ldda*N );
+            TESTING_MALLOC_DEV( dwork,  double, ldwork );
             
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
-            error = lapackf77_dlange( "f", &N, &N, h_A, &lda, rwork );  // norm(A)
             
             /* Factor the matrix. Both MAGMA and LAPACK will use this factor. */
             magma_dsetmatrix( N, N, h_A, lda, d_A, ldda );
             magma_dgetrf_gpu( N, N, d_A, ldda, ipiv, &info );
-            magma_dgetmatrix( N, N, d_A, ldda, h_A, lda );
+            magma_dgetmatrix( N, N, d_A, ldda, h_Ainv, lda );
             if ( info != 0 )
                 printf("magma_dgetrf_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
             // check for exact singularity
-            //h_A[ 10 + 10*lda ] = MAGMA_D_MAKE( 0.0, 0.0 );
-            //magma_dsetmatrix( N, N, h_A, lda, d_A, ldda );
+            //h_Ainv[ 10 + 10*lda ] = MAGMA_D_MAKE( 0.0, 0.0 );
+            //magma_dsetmatrix( N, N, h_Ainv, lda, d_A, ldda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -103,44 +102,70 @@ int main( int argc, char** argv )
                 printf("magma_dgetri_gpu returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
-            magma_dgetmatrix( N, N, d_A, ldda, h_R, lda );
-            
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_dgetri( &N, h_A, &lda, ipiv, work, &lwork, &info );
+                lapackf77_dgetri( &N, h_Ainv, &lda, ipiv, work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
                     printf("lapackf77_dgetri returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                
-                /* =====================================================================
-                   Check the result compared to LAPACK
-                   =================================================================== */
-                blasf77_daxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
-                error = lapackf77_dlange( "f", &N, &N, h_R, &lda, rwork ) / (N*error);
-                
-                printf( "%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
-                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                        error, (error < tol ? "ok" : "failed"));
-                status += ! (error < tol);
+                printf( "%5d   %7.2f (%7.2f)   %7.2f (%7.2f)",
+                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time );
             }
             else {
-                printf( "%5d     ---   (  ---  )   %7.2f (%7.2f)     ---\n",
+                printf( "%5d     ---   (  ---  )   %7.2f (%7.2f)",
                         (int) N, gpu_perf, gpu_time );
             }
             
-            TESTING_FREE_CPU( ipiv  );
-            TESTING_FREE_CPU( work  );
-            TESTING_FREE_CPU( h_A   );
+            /* =====================================================================
+               Check the result
+               =================================================================== */
+            if ( opts.check ) {
+                magma_dgetmatrix( N, N, d_A, ldda, h_Ainv, lda );
+                
+                // compute 1-norm condition number estimate, following LAPACK's zget03
+                double normA, normAinv, rcond;
+                normA    = lapackf77_dlange( "1", &N, &N, h_A,    &lda, rwork );
+                normAinv = lapackf77_dlange( "1", &N, &N, h_Ainv, &lda, rwork );
+                if ( normA <= 0 || normAinv <= 0 ) {
+                    rcond = 0;
+                    error = 1 / (tol/opts.tolerance);  // == 1/eps
+                }
+                else {
+                    rcond = (1 / normA) / normAinv;
+                    // R = I
+                    // R -= A*A^{-1}
+                    // err = ||I - A*A^{-1}|| / ( N ||A||*||A^{-1}|| ) = ||R|| * rcond / N, using 1-norm
+                    lapackf77_dlaset( "full", &N, &N, &c_zero, &c_one, h_R, &lda );
+                    blasf77_dgemm( "no", "no", &N, &N, &N, &c_neg_one,
+                                   h_A,    &lda,
+                                   h_Ainv, &lda, &c_one,
+                                   h_R,    &lda );
+                    error = lapackf77_dlange( "1", &N, &N, h_R, &lda, rwork );
+                    error = error * rcond / N;
+                }
+                
+                bool okay = (error < tol);
+                status += ! okay;
+                printf( "   %8.2e   %s\n",
+                        error, (okay ? "ok" : "failed"));
+            }
+            else {
+                printf( "\n" );
+            }
             
-            TESTING_FREE_PIN( h_R   );
+            TESTING_FREE_CPU( ipiv   );
+            TESTING_FREE_CPU( work   );
+            TESTING_FREE_CPU( h_A    );
+            TESTING_FREE_CPU( h_Ainv );
+            TESTING_FREE_CPU( h_R    );
             
-            TESTING_FREE_DEV( d_A   );
-            TESTING_FREE_DEV( dwork );
+            TESTING_FREE_DEV( d_A    );
+            TESTING_FREE_DEV( dwork  );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dsygvdx_2stage.cpp normal d -> s, Fri Jan 30 19:00:18 2015
+       @generated from dsygvdx_2stage.cpp normal d -> s, Tue Aug 25 16:35:19 2015
 
 */
 #include "common_magma.h"
@@ -270,8 +270,8 @@ magma_ssygvdx_2stage(
         }
     }
 
-    magma_int_t nb = magma_get_sbulge_nb(n, parallel_threads);
-    magma_int_t lq2 = magma_sbulge_get_lq2(n, parallel_threads);
+    magma_int_t nb = magma_sbulge_get_nb(n, parallel_threads);
+    magma_int_t lq2 = magma_sbulge_get_lq2(n, parallel_threads, wantz);
 
     if (wantz) {
         lwmin  = lq2 + 1 + 6*n + 2*n*n;

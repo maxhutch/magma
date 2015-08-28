@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlarfg.cu normal z -> s, Fri Jan 30 19:00:08 2015
+       @generated from zlarfg.cu normal z -> s, Tue Aug 25 16:35:08 2015
        
        @author Mark Gates
 */

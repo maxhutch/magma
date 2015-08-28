@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
     
        @author Stan Tomov
        @author Mark Gates
@@ -1002,7 +1002,7 @@ magma_dgesvd(
                         lwork2 = lwork - iwork + 1;
                         lapackf77_dgeqrf(&m, &n, A, &lda, &work[itau],
                                          &work[iwork], &lwork2, &ierr);
-                                                
+                        
                         // Copy R to WORK(IU), zeroing out below it
                         lapackf77_dlacpy("U", &n, &n,
                                          A, &lda,

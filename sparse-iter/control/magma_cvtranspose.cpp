@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zvtranspose.cpp normal z -> c, Sun May  3 11:23:01 2015
+       @generated from magma_zvtranspose.cpp normal z -> c, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -67,7 +67,6 @@ magma_cvtranspose(
             magmablas_ctranspose( n, m, x.val, n, y->val, m );
         }
     } else {
-
         CHECK( magma_cmtransfer( x, &x_d, Magma_CPU, Magma_DEV, queue ));
         CHECK( magma_cvtranspose( x_d, &y_d, queue ));
         CHECK( magma_cmtransfer( y_d, y, Magma_DEV, Magma_CPU, queue ));
@@ -82,9 +81,3 @@ cleanup:
     magmablasSetKernelStream( orig_queue );
     return info;
 }
-
-
-
-   
-
-

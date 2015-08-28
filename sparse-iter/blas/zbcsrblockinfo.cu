@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
 
@@ -95,18 +95,18 @@ magma_zbcsrblockinfo5(
 {
     dim3 dimBlock( BLOCK_SIZE, 1, 1 );
 
-        int dimgrid = magma_ceildiv( num_blocks, BLOCK_SIZE );
-        dim3 dimGrid( dimgrid, 1, 1 );
+    int dimgrid = magma_ceildiv( num_blocks, BLOCK_SIZE );
+    dim3 dimGrid( dimgrid, 1, 1 );
 
 
-        printf("dim grid: %d x %d", dimgrid, BLOCK_SIZE);
-        magmaDoubleComplex **hAII;
-        magma_malloc((void **)&hAII, num_blocks*sizeof(magmaDoubleComplex*));
+    printf("dim grid: %d x %d", dimgrid, BLOCK_SIZE);
+    magmaDoubleComplex **hAII;
+    magma_malloc((void **)&hAII, num_blocks*sizeof(magmaDoubleComplex*));
 
-        for(int i=0; i<num_blocks; i++) {
-           hAII[i] = val(lustep,lustep);
-        }
-        magma_setvector( num_blocks, sizeof(magmaDoubleComplex*), 
+    for(int i=0; i < num_blocks; i++) {
+       hAII[i] = val(lustep,lustep);
+    }
+    magma_setvector( num_blocks, sizeof(magmaDoubleComplex*), 
                                                             hAII, 1, AII, 1 );
 /*
     magma_setvector( 1, sizeof(magmaDoubleComplex*), address, 1, daddress, 1 );
@@ -114,8 +114,5 @@ magma_zbcsrblockinfo5(
                         ( num_blocks, daddress, AII );
 
 */
-        return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-
-
-

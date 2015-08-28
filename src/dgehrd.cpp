@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgehrd.cpp normal z -> d, Fri Jan 30 19:00:18 2015
+       @generated from zgehrd.cpp normal z -> d, Tue Aug 25 16:35:19 2015
        
        @author Stan Tomov
        @author Mark Gates
@@ -62,9 +62,8 @@
 
     @param[in]
     lwork   INTEGER
-            The length of the array WORK.  LWORK >= max(1,N).
-            For optimum performance LWORK >= N*NB, where NB is the
-            optimal blocksize.
+            The length of the array WORK.  LWORK >= N*NB,
+            where NB is the optimal blocksize.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -142,7 +141,7 @@ magma_dgehrd(
     double c_zero = MAGMA_D_ZERO;
 
     magma_int_t nb = magma_get_dgehrd_nb(n);
-    magma_int_t ldda = ((n+31)/32)*32;
+    magma_int_t ldda = magma_roundup( n, 32 );
 
     magma_int_t i, nh, iws;
     magma_int_t iinfo;
@@ -161,7 +160,7 @@ magma_dgehrd(
         *info = -3;
     } else if (lda < max(1,n)) {
         *info = -5;
-    } else if (lwork < max(1,n) && ! lquery) {
+    } else if (lwork < iws && ! lquery) {
         *info = -8;
     }
     if (*info != 0) {
@@ -181,10 +180,11 @@ magma_dgehrd(
         return *info;
     }
 
+    // Now requires lwork >= iws; else dT won't be computed in unblocked code.
     // If not enough workspace, use unblocked code
-    if ( lwork < iws ) {
-        nb = 1;
-    }
+    //if ( lwork < iws ) {
+    //    nb = 1;
+    //}
 
     if (nb == 1 || nb > nh) {
         // Use unblocked code below

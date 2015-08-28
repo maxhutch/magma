@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date
+       @date August 2015
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from zlaset.cu normal z -> s, Fri Mar 13 15:22:19 2015
+       @generated from zlaset.cu normal z -> s, Tue Aug 25 16:35:08 2015
 
 */
 #include "common_magma.h"
@@ -251,7 +251,7 @@ void slaset_upper_kernel_batched(
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
             On exit, A(i,j) = OFFDIAG, 1 <= i <= m, 1 <= j <= n, i != j;
-                     A(i,i) = DIAG,    1 <= i <= min(m,n)
+            and      A(i,i) = DIAG,    1 <= i <= min(m,n)
     
     @param[in]
     ldda    INTEGER
@@ -300,10 +300,10 @@ void magmablas_slaset_q(
     
     magma_int_t mm, nn;
     if (uplo == MagmaLower) {
-        for( int i=0; i < super_grid.x; ++i ) {
+        for( unsigned int i=0; i < super_grid.x; ++i ) {
             mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
             grid.x = magma_ceildiv( mm, BLK_X );
-            for( int j=0; j < super_grid.y && j <= i; ++j ) {  // from left to diagonal
+            for( unsigned int j=0; j < super_grid.y && j <= i; ++j ) {  // from left to diagonal
                 nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                 grid.y = magma_ceildiv( nn, BLK_Y );
                 if ( i == j ) {  // diagonal super block
@@ -318,10 +318,10 @@ void magmablas_slaset_q(
         }
     }
     else if (uplo == MagmaUpper) {
-        for( int i=0; i < super_grid.x; ++i ) {
+        for( unsigned int i=0; i < super_grid.x; ++i ) {
             mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
             grid.x = magma_ceildiv( mm, BLK_X );
-            for( int j=i; j < super_grid.y; ++j ) {  // from diagonal to right
+            for( unsigned int j=i; j < super_grid.y; ++j ) {  // from diagonal to right
                 nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                 grid.y = magma_ceildiv( nn, BLK_Y );
                 if ( i == j ) {  // diagonal super block
@@ -347,10 +347,10 @@ void magmablas_slaset_q(
             assert( err == cudaSuccess );
         }
         else {
-            for( int i=0; i < super_grid.x; ++i ) {
+            for( unsigned int i=0; i < super_grid.x; ++i ) {
                 mm = (i == super_grid.x-1 ? m % super_NB : super_NB);
                 grid.x = magma_ceildiv( mm, BLK_X );
-                for( int j=0; j < super_grid.y; ++j ) {  // full row
+                for( unsigned int j=0; j < super_grid.y; ++j ) {  // full row
                     nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                     grid.y = magma_ceildiv( nn, BLK_Y );
                     if ( i == j ) {  // diagonal super block

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -95,7 +95,7 @@
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_zgeqrf_comp
+    @ingroup magma_zgeqrf_aux
     ********************************************************************/
 extern "C" magma_int_t
 magma_zgeqr2x4_gpu(
@@ -140,7 +140,6 @@ magma_zgeqr2x4_gpu(
 
     for (magma_int_t b=0; b < k; b += BS) {
         for (i = b; i < min(k, b+BS); ++i) {
-
             /*   Apply H**H to A(:,i) from the left */
             if (i-b > 0) {
                 /* Compute the (i-1)th column of T */
@@ -161,7 +160,7 @@ magma_zgeqr2x4_gpu(
 
                 /* c = c - V work */
                 if ( m-b > 0 ) {
-                    dim3  blocks3( (m-b + BLOCK_SIZE-1) / BLOCK_SIZE );
+                    dim3  blocks3( magma_ceildiv( m-b, BLOCK_SIZE ) );
                     dim3 threads3( BLOCK_SIZE );
                     magma_zgemv_kernel2<<< blocks3, threads3, 0, magma_stream >>>
                         (m-b, i-b, dA(b,b), ldda,  work+i-b, dA(b, i));

@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        @author Adrien REMY
 
-       @generated from zhesv_nopiv_gpu.cpp normal z -> d, Fri Jan 30 19:00:16 2015
+       @generated from zhesv_nopiv_gpu.cpp normal z -> d, Tue Aug 25 16:35:17 2015
 
 */
 #include "common_magma.h"
@@ -14,14 +14,14 @@
 /**
     Purpose
     -------
-    Solves a system of linear equations
+    DSYSV solves a system of linear equations
        A * X = B
     where A is an n-by-n symmetric matrix and X and B are n-by-nrhs matrices.
     The LU decomposition with no pivoting is
     used to factor A as
-    The factorization has the form   
-       A = U^H * D * U , if UPLO = 'U', or   
-       A = L  * D * L^H, if UPLO = 'L',   
+    The factorization has the form
+       A = U^H * D * U,  if UPLO = 'U', or
+       A = L  * D * L^H, if UPLO = 'L',
     where U is an upper triangular matrix, L is lower triangular, and
     D is a diagonal matrix.
     The factored form of A is then
@@ -74,9 +74,9 @@
 
 
 extern "C" magma_int_t
-magma_dsysv_nopiv_gpu(magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs, 
+magma_dsysv_nopiv_gpu(magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs,
                  magmaDouble_ptr dA, magma_int_t ldda,
-                 magmaDouble_ptr dB, magma_int_t lddb, 
+                 magmaDouble_ptr dB, magma_int_t lddb,
                  magma_int_t *info)
 {
     magma_int_t ret;
@@ -84,8 +84,8 @@ magma_dsysv_nopiv_gpu(magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs,
     *info = 0;
     int   upper = (uplo == MagmaUpper);
     if (! upper && uplo != MagmaLower) {
-      *info = -1;
-    }else if (n < 0) {
+        *info = -1;
+    } else if (n < 0) {
         *info = -2;
     } else if (nrhs < 0) {
         *info = -3;

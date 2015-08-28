@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
 
-       @generated from ztrsm_m.cpp normal z -> s, Fri Jan 30 19:00:19 2015
+       @generated from ztrsm_m.cpp normal z -> s, Tue Aug 25 16:35:20 2015
 */
 #include "common_magma.h"
 
@@ -194,12 +194,12 @@ magma_strsm_m(
         return info;
     }
 
-    magma_int_t nbl = (n-1)/nb+1; // number of blocks in a row
-    magma_int_t mbl = (m-1)/nb+1; // number of blocks in a column
+    magma_int_t nbl = magma_ceildiv( n, nb ); // number of blocks in a row
+    magma_int_t mbl = magma_ceildiv( m, nb ); // number of blocks in a column
 
     if (lside) {
         lddb = m;
-        dimb = ((nbl-1)/ngpu+1)*nb;
+        dimb = magma_ceildiv( nbl, ngpu )*nb;
         if ( notransp ) {
             ldda = m;
             dima = 2 * nb;
@@ -208,7 +208,7 @@ magma_strsm_m(
             dima = m;
         }
     } else {
-        lddb = ((mbl-1)/ngpu+1)*nb;
+        lddb = magma_ceildiv( mbl, ngpu )*nb;
         dimb = n;
         if ( !notransp ) {
             ldda = n;

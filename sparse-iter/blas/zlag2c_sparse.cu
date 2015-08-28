@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 
@@ -24,15 +24,12 @@ magmaint_zlag2c_sparse(
     const magmaDoubleComplex_ptr A,
     magmaFloatComplex_ptr SA )
 {
-
-    int thread_id = blockDim.x * blockIdx.x + threadIdx.x ;
+    int thread_id = blockDim.x * blockIdx.x + threadIdx.x;
                                     // global thread index
 
     if( thread_id < M ){
         for( int i=0; i<N; i++ ){
-
             SA[i*M+thread_id] = cuComplexDoubleToFloat( A[i*M+thread_id] );
-
         }
     }
 }
@@ -66,7 +63,7 @@ magmaint_zlag2c_sparse(
     lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,M).
     
-    @param[in][out]
+    @param[in,out]
     SA      COMPLEX array, dimension (LDSA,N)
             On exit, if INFO=0, the M-by-N coefficient matrix SA; if
             INFO>0, the content of SA is unspecified.
@@ -75,7 +72,7 @@ magmaint_zlag2c_sparse(
     ldsa    INTEGER
             The leading dimension of the array SA.  LDSA >= max(1,M).
     
-    @param[in][out]
+    @param[in,out]
     info    INTEGER
       -     = 0:  successful exit.
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
@@ -132,7 +129,7 @@ magmablas_zlag2c_sparse(
 
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     magmaint_zlag2c_sparse<<< grid, BLOCKSIZE, 0, queue >>>
-                                        ( M, N, A, SA ) ;
+                                        ( M, N, A, SA );
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }
 
@@ -147,7 +144,6 @@ magma_zlag2c_CSR_DENSE_kernel(
     magmaIndex_ptr Acol,
     magmaFloatComplex *Bval )
 {
-
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
@@ -167,7 +163,6 @@ magma_zlag2c_CSR_DENSE_kernel_1(
     int num_cols,
     magmaFloatComplex_ptr Bval )
 {
-
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
@@ -185,7 +180,6 @@ magma_zlag2c_CSR_DENSE_kernel_2(
     magmaIndex_ptr Acol,
     magmaFloatComplex_ptr Bval )
 {
-
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
@@ -215,8 +209,10 @@ magma_zlag2c_CSR_DENSE(
         B->num_cols = A.num_cols;
         B->nnz = A.nnz;
         stat = magma_cmalloc( &B->val, A.num_rows* A.num_cols );
-        if ( stat != 0 )
-        {printf("Memory Allocation Error converting matrix\n"); return -1;}
+        if ( stat != 0 ) {
+            printf("Memory Allocation Error converting matrix\n");
+            return stat;
+        }
         
         dim3 Bs( BLOCKSIZE );
         dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );
@@ -243,8 +239,10 @@ magma_zlag2c_CSR_DENSE_alloc(
         B->num_cols = A.num_cols;
         B->nnz = A.nnz;
         stat = magma_cmalloc( &B->val, A.num_rows* A.num_cols );
-        if ( stat != 0 )
-        {printf("Memory Allocation Error converting matrix\n"); return -1;}
+        if ( stat != 0 ) {
+            printf("Memory Allocation Error converting matrix\n");
+            return stat;
+        }
         
         dim3 Bs( BLOCKSIZE );
         dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );

@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Raffaele Solca
        
-       @generated from dlaex3.cpp normal d -> s, Fri Jan 30 19:00:18 2015
+       @generated from dlaex3.cpp normal d -> s, Tue Aug 25 16:35:18 2015
 */
 
 #ifdef _OPENMP
@@ -17,7 +17,9 @@
 #include "common_magma.h"
 #include "magma_timer.h"
 
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 int magma_get_slaed3_k() { return 512; }
 
@@ -62,7 +64,10 @@ void magma_sirange(
     return;
 }
 
+#ifdef __cplusplus
 }  // end extern "C"
+#endif
+
 
 /**
     Purpose
@@ -311,10 +316,10 @@ magma_slaex3(
     /////////////////////////////////////////////////////////////////////////////////
     //openmp implementation
     /////////////////////////////////////////////////////////////////////////////////
-    magma_timer_t time=0;
-    timer_start( time );
+    //magma_timer_t time=0;
+    //timer_start( time );
 
-#pragma omp parallel private(i, j, tmp, temp)
+    #pragma omp parallel private(i, j, tmp, temp)
     {
         magma_int_t id = omp_get_thread_num();
         magma_int_t tot = omp_get_num_threads();
@@ -332,16 +337,16 @@ magma_slaex3(
             lapackf77_slaed4(&k, &tmpp, dlamda, w, Q(0,j), &rho, &d[j], &iinfo);
             // If the zero finder fails, the computation is terminated.
             if (iinfo != 0) {
-#pragma omp critical (info)
+                #pragma omp critical (info)
                 *info=iinfo;
                 break;
             }
         }
 
-#pragma omp barrier
+        #pragma omp barrier
 
         if (*info == 0) {
-#pragma omp single
+            #pragma omp single
             {
                 //Prepare the INDXQ sorting permutation.
                 magma_int_t nk = n - k;
@@ -360,7 +365,7 @@ magma_slaex3(
             }
 
             if (k == 2) {
-#pragma omp single
+                #pragma omp single
                 {
                     for (j = 0; j < k; ++j) {
                         w[0] = *Q(0,j);
@@ -393,7 +398,7 @@ magma_slaex3(
                 for (i = ib; i < ie; ++i)
                     w[i] = copysign( sqrt( -w[i] ), s[i]);
 
-#pragma omp barrier
+                #pragma omp barrier
 
                 //reduce the number of used threads to have enough S workspace
                 tot = min(n1, omp_get_num_threads());
@@ -421,19 +426,19 @@ magma_slaex3(
                 }
             }
         }
-    }
+    }  // end omp parallel
     if (*info != 0)
         return *info;
 
-    timer_stop( time );
-    timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
+    //timer_stop( time );
+    //timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
 
 #else
     /////////////////////////////////////////////////////////////////////////////////
     // Non openmp implementation
     /////////////////////////////////////////////////////////////////////////////////
-    magma_timer_t time=0;
-    timer_start( time );
+   // magma_timer_t time=0;
+   // timer_start( time );
 
     for (i = 0; i < k; ++i)
         dlamda[i]=lapackf77_slamc3(&dlamda[i], &dlamda[i]) - dlamda[i];
@@ -505,13 +510,13 @@ magma_slaex3(
         }
     }
 
-    timer_stop( time );
-    timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
+    //timer_stop( time );
+    //timer_printf( "eigenvalues/vector D+zzT = %6.2f\n", time );
 
 #endif //_OPENMP
     // Compute the updated eigenvectors.
 
-    timer_start( time );
+    //timer_start( time );
     magma_queue_sync( NULL );
 
     if (rk != 0) {
@@ -547,8 +552,8 @@ magma_slaex3(
         } else
             lapackf77_slaset("A", &n1, &rk, &d_zero, &d_zero, Q(0,iil-1), &ldq);
     }
-    timer_stop( time );
-    timer_printf( "gemms = %6.2f\n", time );
+    //timer_stop( time );
+    //timer_printf( "gemms = %6.2f\n", time );
 
     return *info;
 } /* magma_slaex3 */

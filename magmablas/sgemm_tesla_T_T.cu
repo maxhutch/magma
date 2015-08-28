@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from dgemm_tesla_T_T.cu normal d -> s, Fri Jan 30 19:00:10 2015
+       @generated from dgemm_tesla_T_T.cu normal d -> s, Tue Aug 25 16:35:10 2015
 */
 #include "common_magma.h"
 #include "commonblas_s.h"
@@ -188,7 +188,7 @@ sgemm_kernel_T_T_64_16_16_16_4(
         Bb[tx][ty+12] = B[s4];
         __syncthreads();
 
-        for(int i=0; i < k; i++) {
+        for (int i=0; i < k; i++) {
             saxpy( A[0], &Bb[i+0][0], Cb );
             A += lda;
         }
@@ -391,7 +391,7 @@ magmablas_sgemm_T_T_64_16_16_16_4(
     float alpha, float beta )
 {
     dim3 threads( 16, 4 );
-    dim3 grid( (m - 1)/64 + 1, (n - 1)/16 + 1 );
+    dim3 grid( magma_ceildiv( m, 64 ), magma_ceildiv( n, 16 ) );
     sgemm_kernel_T_T_64_16_16_16_4<<< grid, threads, 0, magma_stream >>>
         ( C, A, B, m, n, k, lda, ldb, ldc, alpha, beta );
 }

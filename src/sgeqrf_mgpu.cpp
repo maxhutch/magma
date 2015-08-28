@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeqrf_mgpu.cpp normal z -> s, Fri Jan 30 19:00:16 2015
+       @generated from zgeqrf_mgpu.cpp normal z -> s, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    SGEQRF2_MGPU computes a QR factorization of a real M-by-N matrix A:
+    SGEQRF computes a QR factorization of a real M-by-N matrix A:
     A = Q * R. This is a GPU interface of the routine.
 
     Arguments
@@ -193,7 +193,7 @@ magma_sgeqrf2_mgpu(
                               &rows, &ib,
                               hpanel(i), &ldhpanel, tau+i, hwork, &ib );
 
-            spanel_to_q( MagmaUpper, ib, hpanel(i), ldhpanel, hwork + ib*ib );
+            magma_spanel_to_q( MagmaUpper, ib, hpanel(i), ldhpanel, hwork + ib*ib );
             // Send the current panel back to the GPUs
             for( dev=0; dev < ngpu; dev++ ) {
                 magma_setdevice( dev );
@@ -210,12 +210,12 @@ magma_sgeqrf2_mgpu(
                 magma_queue_sync( stream[dev][0] );
             }
 
-            // TODO: if spanel_to_q copied whole block, wouldn't need to restore
+            // TODO: if magma_spanel_to_q copied whole block, wouldn't need to restore
             // -- just send the copy to the GPUs.
             // TODO: also, could zero out the lower triangle and use Azzam's larfb w/ gemm.
             
             /* Restore the panel */
-            sq_to_panel( MagmaUpper, ib, hpanel(i), ldhpanel, hwork + ib*ib );
+            magma_sq_to_panel( MagmaUpper, ib, hpanel(i), ldhpanel, hwork + ib*ib );
 
             if (i + ib < n) {
                 /* Send the T matrix to the GPU. */

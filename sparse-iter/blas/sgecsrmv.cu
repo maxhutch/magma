@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zgecsrmv.cu normal z -> s, Sun May  3 11:22:58 2015
+       @generated from zgecsrmv.cu normal z -> s, Tue Aug 25 16:35:30 2015
 
 */
 #include "common_magma.h"
@@ -26,7 +26,6 @@ sgecsrmv_kernel(
     float beta, 
     float * dy)
 {
-
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
@@ -57,7 +56,6 @@ sgecsrmv_kernel_shift(
     magma_index_t * addrows,
     float * dy)
 {
-
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
 
@@ -254,6 +252,3 @@ magma_sgecsrmv_shift(
 
     return MAGMA_SUCCESS;
 }
-
-
-

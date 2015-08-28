@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = .
@@ -33,9 +33,12 @@ endif
 .PHONY: all lib libmagma test clean cleanall install shared static
 
 .DEFAULT_GOAL := all
-all: lib test
+all: lib test sparse
 
 static: libmagma
+
+sparse: lib
+	( cd sparse-iter && $(MAKE) )
 
 libmagma:
 	@echo ======================================== magmablas
@@ -69,6 +72,7 @@ clean:
 	( cd src            && $(MAKE) clean )
 	( cd control        && $(MAKE) clean )
 	( cd interface_cuda && $(MAKE) clean )
+	( cd blas_fix       && $(MAKE) clean )
 	( cd testing        && $(MAKE) clean )
 	( cd testing/lin    && $(MAKE) clean )
 	( cd sparse-iter    && $(MAKE) clean )
@@ -81,6 +85,7 @@ cleanall:
 	( cd src            && $(MAKE) cleanall )
 	( cd control        && $(MAKE) cleanall )
 	( cd interface_cuda && $(MAKE) cleanall )
+	( cd blas_fix       && $(MAKE) cleanall )
 	( cd testing        && $(MAKE) cleanall )
 	( cd testing/lin    && $(MAKE) cleanall )
 	( cd sparse-iter    && $(MAKE) cleanall )
@@ -157,9 +162,9 @@ ifneq ($(INSTALL_NAME),)
     LDFLAGS += $(INSTALL_NAME)$(notdir $(LIBMAGMA_SO))
 endif
 
-$(LIBMAGMA_SO): src/*.o control/*.o interface_cuda/*.o magmablas/*.o
+$(LIBMAGMA_SO): src/*.$(o_ext) control/*.$(o_ext) interface_cuda/*.$(o_ext) magmablas/*.$(o_ext)
 	@echo ======================================== $(LIBMAGMA_SO)
-	$(CC) $(LDFLAGS) -shared -o $(LIBMAGMA_SO) $^ \
+	$(CXX) $(LDFLAGS) -shared -o $(LIBMAGMA_SO) $^ \
 	$(LIBDIR) \
 	$(LIB)
 	@echo

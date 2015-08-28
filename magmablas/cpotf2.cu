@@ -1,21 +1,17 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
-       @generated from zpotf2.cu normal z -> c, Fri Jan 30 19:00:10 2015
+       @generated from zpotf2.cu normal z -> c, Tue Aug 25 16:35:10 2015
 */
 #include "common_magma.h"
 
 #define PRECISION_c
 
-//#if (GPUSHMEM < 200)
 #define cdotc_max_bs 512  // 512 is max threads for 1.x cards
-//#else
-//#define cdotc_max_bs 1024
-//#endif
 
 void cpotf2_csscal(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
 void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
@@ -112,7 +108,7 @@ magma_cpotf2_gpu(
     magmaFloatComplex beta  = MAGMA_C_ONE;
 
     if (uplo == MagmaUpper) {
-        for(j = 0; j < n; j++) {
+        for (j = 0; j < n; j++) {
             cpotf2_cdotc(j, dA(0,j), 1); // including cdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
@@ -131,7 +127,7 @@ magma_cpotf2_gpu(
         }
     }
     else {
-        for(j = 0; j < n; j++) {
+        for (j = 0; j < n; j++) {
             cpotf2_cdotc(j, dA(j,0), ldda); // including cdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
@@ -170,14 +166,14 @@ __global__ void kernel_cdotc(int n, magmaFloatComplex *x, int incx, int threadSi
     magmaFloatComplex res = MAGMA_C_ZERO;
 
     if (tx < n) {
-       res = x[tx*incx];
+        res = x[tx*incx];
     }
 
     sdata[tx] = MAGMA_C_REAL(res * MAGMA_C_CNJG(res));
 
     __syncthreads();
 
-    for(int s = blockDim.x/2; s > 32; s >>= 1 ) {
+    for (int s = blockDim.x/2; s > 32; s >>= 1 ) {
         if (tx < s) {
             sdata[tx] += sdata[tx+s];
         }
@@ -202,12 +198,12 @@ __global__ void kernel_cdotc(int n, magmaFloatComplex *x, int incx, int threadSi
 
 void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
 {
-/*
+    /*
     Specialized Cdotc
     1) performs cdotc sum = x[0:n-1]*conj(x[0:n-1])
     2) updates x[n] = sqrt(x[n]-sum);
 
-*/
+    */
     if (n > cdotc_max_bs) {
         fprintf( stderr, "n = %d > %d is not supported in cpotf2_cdotc\n", (int) n, (int) cdotc_max_bs);
         return;
@@ -245,7 +241,7 @@ __global__ void kernel_csscal(int n, magmaFloatComplex *x, int incx)
 
     __syncthreads();
 
-    if ( id < n && id >0) {
+    if ( id < n && id > 0) {
         x[id*incx] = x[id*incx] * factor;
     }
 }
@@ -253,12 +249,11 @@ __global__ void kernel_csscal(int n, magmaFloatComplex *x, int incx)
 
 void cpotf2_csscal(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
 {
-/*
+    /*
     Specialized Csscal perform x[1:n-1]/x[0]
-
-*/
+    */
     dim3 threads(csscal_bs, 1, 1);
-    int num_blocks = (n - 1)/csscal_bs + 1;
+    int num_blocks = magma_ceildiv( n, csscal_bs );
     dim3 grid(num_blocks,1);
     kernel_csscal<<< grid, threads, 0, magma_stream >>> (n, x, incx);
 }
@@ -304,7 +299,7 @@ __global__ void kernel_clacgv(int n, magmaFloatComplex *x, int incx)
 void clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
 {
     dim3 threads(clacgv_bs, 1, 1);
-    int num_blocks = (n - 1)/clacgv_bs + 1;
+    int num_blocks = magma_ceildiv( n, clacgv_bs );
     dim3 grid(num_blocks,1);
     kernel_clacgv<<< grid, threads, 0, magma_stream >>> (n, x, incx);
 }

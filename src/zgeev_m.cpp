@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c
        @author Stan Tomov
@@ -109,7 +109,8 @@
 
     @param[in]
     lwork   INTEGER
-            The dimension of the array WORK.  LWORK >= (1+nb)*N.
+            The dimension of the array WORK.  LWORK >= (1 +   nb + nb*ngpu)*N.
+            For optimal performance,          LWORK >= (1 + 2*nb + nb*ngpu)*N.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -160,9 +161,10 @@ magma_zgeev_m(
     double anrm, cscale, bignum, smlnum;
     magma_int_t i, k, ilo, ihi;
     magma_int_t ibal, ierr, itau, iwrk, nout, liwrk, nb;
-    magma_int_t scalea, minwrk, irwork, lquery, wantvl, wantvr, select[1];
+    magma_int_t scalea, minwrk, optwrk, irwork, lquery, wantvl, wantvr, select[1];
 
     magma_side_t side = MagmaRight;
+    magma_int_t ngpu = magma_num_gpus();
 
     irwork = 0;
     *info = 0;
@@ -186,8 +188,9 @@ magma_zgeev_m(
     /* Compute workspace */
     nb = magma_get_zgehrd_nb( n );
     if (*info == 0) {
-        minwrk = (1+nb)*n;
-        work[0] = MAGMA_Z_MAKE( minwrk, 0 );
+        minwrk = (1 +   nb + nb*ngpu)*n;
+        optwrk = (1 + 2*nb + nb*ngpu)*n;
+        work[0] = MAGMA_Z_MAKE( optwrk, 0 );
 
         if (lwork < minwrk && ! lquery) {
             *info = -12;
@@ -253,8 +256,9 @@ magma_zgeev_m(
     lapackf77_zgebal( "B", &n, A, &lda, &ilo, &ihi, &rwork[ibal], &ierr );
 
     /* Reduce to upper Hessenberg form
-     * (CWorkspace: need 2*N, prefer N + N*NB)
+     * (CWorkspace: need 2*N, prefer N + N*NB + NB*NGPU)
      * (RWorkspace: N)
+     *  - added NB*NGPU needed for multi-GPU magma_zgehrd_m
      *  - including N reserved for gebal/gebak, unused by zgehrd */
     itau = 0;
     iwrk = itau + n;

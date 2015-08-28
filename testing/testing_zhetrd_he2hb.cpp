@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Azzam Haidar
 
@@ -25,23 +25,10 @@
 #include "testings.h"
 #include "magma_threadsetting.h"
 
-#if defined(USEMKL)
-#include <mkl_service.h>
-#endif
-
-#if defined(USEACML)
-#include <omp.h>
-#endif
+// TODO include checkdiag.h if needed.
 
 #define PRECISION_z
 
-
-#if defined(PRECISION_z) || defined(PRECISION_d)
-extern "C" void cmp_vals(int n, double *wr1, double *wr2, double *nrmI, double *nrm1, double *nrm2);
-extern "C" void zcheck_eig_(char *JOBZ, int  *MATYPE, int  *N, int  *NB,
-                       magmaDoubleComplex* A, int  *LDA, double *AD, double *AE, double *D1, double *EIG,
-                    magmaDoubleComplex *Z, int  *LDZ, magmaDoubleComplex *WORK, double *RWORK, double *RESU);
-#endif
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zhetrd_he2hb
@@ -74,7 +61,7 @@ int main( int argc, char** argv)
     magma_int_t ngpu = 1;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     NB = opts.nb;
     if (NB < 1)
@@ -84,8 +71,8 @@ int main( int argc, char** argv)
     if (NE < 1)
         NE  = 64; //N;  //magma_get_zhetrd_he2hb_nb(N);  // N not yet initialized
 
-    printf("  N    GPU GFlop/s   \n");
-    printf("=====================\n");
+    printf("%% N    GPU GFlop/s   \n");
+    printf("%%====================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -106,7 +93,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( D, double, N );
             TESTING_MALLOC_PIN( E, double, N );
             
-            //TESTING_MALLOC_DEV( dT1, magmaDoubleComplex, (2*min(N,N)+(N+31)/32*32)*NB );
+            //TESTING_MALLOC_DEV( dT1, magmaDoubleComplex, (2*min(N,N) + roundup( N, 32 ))*NB );
             TESTING_MALLOC_DEV( dT1, magmaDoubleComplex, (N*NB) );
         
             // if (WANTZ) gflops = 2.0*gflops;
@@ -118,7 +105,6 @@ int main( int argc, char** argv)
             magma_zmake_hermitian( N, h_A, lda );
             
             lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
-    
     
             /* ====================================================================
                Performs operation using MAGMA
@@ -159,19 +145,24 @@ int main( int argc, char** argv)
             magma_int_t *iwork;
             magma_int_t /*nb,*/ /*lwork,*/ liwork;
             magma_int_t threads = magma_get_parallel_numthreads();
+
             #if defined(PRECISION_z) || defined(PRECISION_c)
-                double *rwork;
-                magma_int_t lrwork;
-                lwork  = magma_zbulge_get_lq2(N, threads) + 2*N + N*N;
-                lrwork = 1 + 5*N +2*N*N;
-                TESTING_MALLOC_PIN( rwork, double, lrwork );
-            #else
-                lwork  = magma_zbulge_get_lq2(N, threads) + 1 + 6*N + 2*N*N;
+            double *rwork;
+            magma_int_t lrwork;
             #endif
-            liwork = 3 + 5*N;
-            //nb = magma_get_zhetrd_nb(N);
+
+            magma_zheevdx_getworksize(N, threads, (opts.jobz == MagmaVec), 
+                                     &lwork, 
+                                     #if defined(PRECISION_z) || defined(PRECISION_c)
+                                     &lrwork, 
+                                     #endif
+                                     &liwork);
+
             TESTING_MALLOC_PIN( hh_work, magmaDoubleComplex, lwork  );
             TESTING_MALLOC_CPU( iwork,   magma_int_t,        liwork );
+            #if defined(PRECISION_z) || defined(PRECISION_c)
+            TESTING_MALLOC_PIN( rwork, double, lrwork );
+            #endif
     
             if (ngpu == 1) {
                 printf("calling zheevdx_2stage 1 GPU\n");
@@ -185,7 +176,6 @@ int main( int argc, char** argv)
                                 #endif
                                 iwork, liwork,
                                 &info);
-    
             } else {
                 printf("calling zheevdx_2stage_m %d GPU\n", (int) ngpu);
                 magma_zheevdx_2stage_m(ngpu, opts.jobz, range, opts.uplo, N,
@@ -200,7 +190,6 @@ int main( int argc, char** argv)
                                 &info);
             }
     
-    
             magma_setdevice( cdev );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
@@ -210,11 +199,14 @@ int main( int argc, char** argv)
                =================================================================== */
             /*
             if ( opts.check ) {
-                FILE        *fp ;
+                FILE *fp;
     
                 printf("Writing input matrix in matlab_i_mat.txt ...\n");
-                fp = fopen ("matlab_i_mat.txt", "w") ;
-                if ( fp == NULL ) { printf("Couldn't open output file\n"); exit(1); }
+                fp = fopen ("matlab_i_mat.txt", "w");
+                if ( fp == NULL ) {
+                    printf("Couldn't open output file\n");
+                    return -1;
+                }
     
                 for (j=0; j < N; j++) {
                     for (k=0; k < N; k++) {
@@ -226,11 +218,14 @@ int main( int argc, char** argv)
                         #endif
                     }
                 }
-                fclose( fp ) ;
+                fclose( fp );
     
                 printf("Writing output matrix in matlab_o_mat.txt ...\n");
-                fp = fopen ("matlab_o_mat.txt", "w") ;
-                if ( fp == NULL ) { printf("Couldn't open output file\n"); exit(1); }
+                fp = fopen ("matlab_o_mat.txt", "w");
+                if ( fp == NULL ) {
+                    printf("Couldn't open output file\n");
+                    return -1;
+                }
     
                 for (j=0; j < N; j++) {
                     for (k=0; k < N; k++) {
@@ -242,11 +237,9 @@ int main( int argc, char** argv)
                         #endif
                     }
                 }
-                fclose( fp ) ;
+                fclose( fp );
             }
             */
-    
-    
     
             /* =====================================================================
                Print performance and error.
@@ -273,13 +266,8 @@ int main( int argc, char** argv)
                 /* compute the eigenvalues using lapack routine to be able to compare to it and used as ref */
                 cpu_time = magma_wtime();
                 i= min(12, THREADS);
-    
-                #if defined(USEMKL)
-                mkl_set_num_threads( i );
-                #endif
-                #if defined(USEACML)
-                omp_set_num_threads(i);
-                #endif
+                
+                magma_set_lapack_numthreads( i );
     
                 lapackf77_zheev( "N", "L", &N, h_A, &lda, D2, work2, &lwork2,
                     #if defined(PRECISION_z) || defined (PRECISION_c)
@@ -304,10 +292,8 @@ int main( int argc, char** argv)
                 // magma_zmalloc_cpu( &Z, N*lda );
                 // dgemm_("N", "N", &N, &N, &N, &mydo, h_R, &lda, h_A, &lda, &mydz, Z, &lda);
     
-    
                 /* compare result */
                 cmp_vals(N, D2, D, &nrmI, &nrm1, &nrm2);
-    
     
                 magmaDoubleComplex *WORKAJETER;
                 double *RWORKAJETER, *RESU;
@@ -318,7 +304,6 @@ int main( int argc, char** argv)
                 int MATYPE;
                 memset(RESU, 0, 10*sizeof(double));
     
-     
                 MATYPE=3;
                 double NOTHING=0.0;
                 cpu_time = magma_wtime();
@@ -326,12 +311,7 @@ int main( int argc, char** argv)
                 zcheck_eig_(&JOBZ, &MATYPE, &N, &NB, AINIT, &lda, &NOTHING, &NOTHING, D2, D, h_R, &lda, WORKAJETER, RWORKAJETER, RESU );
                 cpu_time = magma_wtime() - cpu_time;
                 printf("  Finish CHECK - results timing= %f\n", cpu_time);
-                #if defined(USEMKL)
-                mkl_set_num_threads( 1 );
-                #endif
-                #if defined(USEACML)
-                omp_set_num_threads(1);
-                #endif
+                magma_set_lapack_numthreads( 1 );
     
                 printf("\n");
                 printf(" ================================================================================================================\n");
@@ -355,7 +335,7 @@ int main( int argc, char** argv)
 #endif
             
             printf("  Total N %5d  gflops %6.2f        timing %6.2f seconds\n", (int) N, gpu_perf, gpu_time );
-            printf("============================================================================\n\n\n");
+            printf("%%===========================================================================\n\n\n");
             
             /* Memory clean up */
             TESTING_FREE_CPU( h_A );

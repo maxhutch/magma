@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgels3_gpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
+       @generated from zgels3_gpu.cpp normal z -> c, Tue Aug 25 16:35:15 2015
 
 */
 #include "common_magma.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    Solves the overdetermined, least squares problem
+    CGELS solves the overdetermined, least squares problem
            min || A*X - C ||
     using the QR factorization A.
     The underdetermined problem (m < n) is not currently handled.
@@ -129,9 +129,9 @@ magma_cgels3_gpu(
     /*
      * Allocate temporary buffers
      */
-    int ldtwork = ( 2*k + ((n+31)/32)*32 )*nb;
+    int ldtwork = ( 2*k + magma_roundup( n, 32 ) )*nb;
     if (nb < nrhs)
-        ldtwork = ( 2*k + ((n+31)/32)*32 )*nrhs;
+        ldtwork = ( 2*k + magma_roundup( n, 32 ) )*nrhs;
     if (MAGMA_SUCCESS != magma_cmalloc( &dT, ldtwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;

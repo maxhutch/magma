@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgemv.cpp normal z -> c, Fri Jan 30 19:00:24 2015
+       @generated from testing_zgemv.cpp normal z -> c, Tue Aug 25 16:35:25 2015
 */
 // includes, system
 #include <stdlib.h>
@@ -29,7 +29,7 @@ int main(int argc, char **argv)
     float          magma_error, dev_error, work[1];
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t M, N, Xm, Ym, lda, sizeA, sizeX, sizeY;
+    magma_int_t M, N, Xm, Ym, lda, ldda, sizeA, sizeX, sizeY;
     magma_int_t incx = 1;
     magma_int_t incy = 1;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
@@ -40,24 +40,25 @@ int main(int argc, char **argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
 
-    printf("trans = %s\n", lapack_trans_const(opts.transA) );
+    printf("%% trans = %s\n", lapack_trans_const(opts.transA) );
     #ifdef HAVE_CUBLAS
-        printf("    M     N   MAGMA Gflop/s (ms)  %s Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  %s error\n",
+        printf("%%   M     N   MAGMA Gflop/s (ms)  %s Gflop/s (ms)   CPU Gflop/s (ms)  MAGMA error  %s error\n",
                 g_platform_str, g_platform_str );
     #else
-        printf("    M     N   %s Gflop/s (ms)   CPU Gflop/s (ms)  %s error\n",
+        printf("%%   M     N   %s Gflop/s (ms)   CPU Gflop/s (ms)  %s error\n",
                 g_platform_str, g_platform_str );
     #endif
-    printf("===================================================================================================\n");
+    printf("%%==================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
-            lda    = ((M+31)/32)*32;
+            lda    = M;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_CGEMV( M, N ) / 1e9;
 
             if ( opts.transA == MagmaNoTrans ) {
@@ -78,7 +79,7 @@ int main(int argc, char **argv)
             TESTING_MALLOC_CPU( Ydev,    magmaFloatComplex, sizeY );
             TESTING_MALLOC_CPU( Ymagma,  magmaFloatComplex, sizeY );
             
-            TESTING_MALLOC_DEV( dA, magmaFloatComplex, sizeA );
+            TESTING_MALLOC_DEV( dA, magmaFloatComplex, ldda*N );
             TESTING_MALLOC_DEV( dX, magmaFloatComplex, sizeX );
             TESTING_MALLOC_DEV( dY, magmaFloatComplex, sizeY );
             
@@ -90,23 +91,22 @@ int main(int argc, char **argv)
             /* =====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-            magma_csetmatrix( M, N, A, lda, dA, lda );
+            magma_csetmatrix( M, N, A, lda, dA, ldda );
             magma_csetvector( Xm, X, incx, dX, incx );
             magma_csetvector( Ym, Y, incy, dY, incy );
             
+            magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
+            dev_time = magma_sync_wtime( opts.queue );
             #ifdef HAVE_CUBLAS
-                dev_time = magma_sync_wtime( 0 );
                 cublasCgemv( opts.handle, cublas_trans_const(opts.transA),
-                             M, N, &alpha, dA, lda, dX, incx, &beta, dY, incy );
-                dev_time = magma_sync_wtime( 0 ) - dev_time;
+                             M, N, &alpha, dA, ldda, dX, incx, &beta, dY, incy );
             #else
-                dev_time = magma_sync_wtime( opts.queue );
                 magma_cgemv( opts.transA, M, N,
-                             &alpha, dA, lda,
-                                     dX, incx,
-                             &beta,  dY, incy );
-                dev_time = magma_sync_wtime( opts.queue ) - dev_time;
+                             alpha, dA, ldda,
+                                    dX, incx,
+                             beta,  dY, incy );
             #endif
+            dev_time = magma_sync_wtime( opts.queue ) - dev_time;
             dev_perf = gflops / dev_time;
             
             magma_cgetvector( Ym, dY, incy, Ydev, incy );
@@ -117,9 +117,9 @@ int main(int argc, char **argv)
             #ifdef HAVE_CUBLAS
                 magma_csetvector( Ym, Y, incy, dY, incy );
                 
-                magma_time = magma_sync_wtime( 0 );
-                magmablas_cgemv( opts.transA, M, N, alpha, dA, lda, dX, incx, beta, dY, incy );
-                magma_time = magma_sync_wtime( 0 ) - magma_time;
+                magma_time = magma_sync_wtime( opts.queue );
+                magmablas_cgemv( opts.transA, M, N, alpha, dA, ldda, dX, incx, beta, dY, incy );
+                magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
                 magma_cgetvector( Ym, dY, incy, Ymagma, incy );

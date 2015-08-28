@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 
@@ -24,14 +24,13 @@ magmaint_clag2z_sparse(  int M, int N,
 {
     int inner_bsize = blockDim.x;
     int outer_bsize = inner_bsize * 512;
-    int thread_id = blockDim.x * blockIdx.x + threadIdx.x ;
+    int thread_id = blockDim.x * blockIdx.x + threadIdx.x;
             // global thread index
 
     if( thread_id < M ){
-        for( int i= outer_bsize * blockIdx.x  + threadIdx.x ;
+        for( int i= outer_bsize * blockIdx.x  + threadIdx.x;
             i<min( M, outer_bsize * ( blockIdx.x + 1));  i+=inner_bsize){
             A[i] = cuComplexFloatToDouble( SA[i] );
-
         }
     }
 }
@@ -125,16 +124,17 @@ magmablas_clag2z_sparse(
     double RMAX = (double)lapackf77_slamch("O");
 
     int block;
-    dim3 dimBlock(blksize);// Number of Threads per Block
+    dim3 dimBlock(blksize); // Number of Threads per Block
     block = (M/blksize)/blksize;
-    if (block*blksize*blksize<(M))block++;
-    dim3 dimGrid(block);// Number of Blocks
+    if (block*blksize*blksize < M)
+        block++;
+    dim3 dimGrid(block); // Number of Blocks
    
 
     dim3 threads( blksize );
     dim3 grid( magma_ceildiv( M, blksize ) );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     magmaint_clag2z_sparse<<< dimGrid , dimBlock, 0, queue >>>
-                                        ( M, N, SA, lda, A, ldsa, RMAX ) ;
+                                        ( M, N, SA, lda, A, ldsa, RMAX );
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

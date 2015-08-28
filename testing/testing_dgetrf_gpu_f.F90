@@ -1,11 +1,11 @@
 !
-!   -- MAGMA (version 1.6.1) --
+!   -- MAGMA (version 1.6.3-beta1) --
 !      Univ. of Tennessee, Knoxville
 !      Univ. of California, Berkeley
 !      Univ. of Colorado, Denver
-!      @date January 2015
+!      @date August 2015
 !
-!  @generated from testing_zgetrf_gpu_f.F90 normal z -> d, Fri Jan 30 19:00:26 2015
+!  @generated from testing_zgetrf_gpu_f.F90 normal z -> d, Tue Aug 25 16:35:28 2015
 !
       program testing_dgetrf_gpu_f
 
@@ -18,7 +18,7 @@
       double precision dlange, dlamch
       integer cublas_alloc
 
-      double precision              :: rnumber(2), Anorm, Bnorm, Rnorm, Xnorm 
+      double precision              :: rnumber(2), Anorm, Bnorm, Rnorm, Xnorm
       double precision, allocatable :: work(:)
       double precision, allocatable       :: h_A(:), h_B(:), h_X(:)
       magma_devptr_t                :: devptrA, devptrB
@@ -77,9 +77,9 @@
       call cublas_set_matrix(n, nrhs, size_of_elt, h_B, lda, devptrB, ldda)
 
 !---- Call magma LU ----------------
-      call magma_wtime_f(tstart)
+      call magmaf_wtime(tstart)
       call magmaf_dgetrf_gpu(n, n, devptrA, ldda, ipiv, info)
-      call magma_wtime_f(tend)
+      call magmaf_wtime(tend)
 
       if ( info .ne. 0 )  then
          write(*,*) "Info : ", info
@@ -120,7 +120,7 @@
       if ( Rnorm > 60. ) then
          write(*,105) '  Solution is suspicious, ', Rnorm
       else
-         write(*,105) '  Solution is CORRECT' 
+         write(*,105) '  Solution is CORRECT'
       end if
 
 !---- Free CPU memory

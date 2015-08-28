@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Mark Gates
 */
@@ -17,19 +17,19 @@ __device__ void
 magma_getidmax( /*int n,*/ int i, T* x, ID* ind )
 {
     __syncthreads();
-    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { if( x[i] < x[i+1024] ) { ind[i] = ind[i+1024]; x[i] = x[i+1024]; } }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { if( x[i] < x[i+ 512] ) { ind[i] = ind[i+ 512]; x[i] = x[i+ 512]; } }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { if( x[i] < x[i+ 256] ) { ind[i] = ind[i+ 256]; x[i] = x[i+ 256]; } }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { if( x[i] < x[i+ 128] ) { ind[i] = ind[i+ 128]; x[i] = x[i+ 128]; } }  __syncthreads(); }
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { if( x[i] < x[i+  64] ) { ind[i] = ind[i+  64]; x[i] = x[i+  64]; } }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { if( x[i] < x[i+  32] ) { ind[i] = ind[i+  32]; x[i] = x[i+  32]; } }  __syncthreads(); }
+    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { if ( x[i] < x[i+1024] ) { ind[i] = ind[i+1024]; x[i] = x[i+1024]; } }  __syncthreads(); }
+    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { if ( x[i] < x[i+ 512] ) { ind[i] = ind[i+ 512]; x[i] = x[i+ 512]; } }  __syncthreads(); }
+    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { if ( x[i] < x[i+ 256] ) { ind[i] = ind[i+ 256]; x[i] = x[i+ 256]; } }  __syncthreads(); }
+    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { if ( x[i] < x[i+ 128] ) { ind[i] = ind[i+ 128]; x[i] = x[i+ 128]; } }  __syncthreads(); }
+    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { if ( x[i] < x[i+  64] ) { ind[i] = ind[i+  64]; x[i] = x[i+  64]; } }  __syncthreads(); }
+    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { if ( x[i] < x[i+  32] ) { ind[i] = ind[i+  32]; x[i] = x[i+  32]; } }  __syncthreads(); }
     // probably don't need __syncthreads for < 16 threads                                              
     // because of implicit warp level synchronization.                                                 
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { if( x[i] < x[i+  16] ) { ind[i] = ind[i+  16]; x[i] = x[i+  16]; } }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { if( x[i] < x[i+   8] ) { ind[i] = ind[i+   8]; x[i] = x[i+   8]; } }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { if( x[i] < x[i+   4] ) { ind[i] = ind[i+   4]; x[i] = x[i+   4]; } }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { if( x[i] < x[i+   2] ) { ind[i] = ind[i+   2]; x[i] = x[i+   2]; } }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { if( x[i] < x[i+   1] ) { ind[i] = ind[i+   1]; x[i] = x[i+   1]; } }  __syncthreads(); }
+    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { if ( x[i] < x[i+  16] ) { ind[i] = ind[i+  16]; x[i] = x[i+  16]; } }  __syncthreads(); }
+    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { if ( x[i] < x[i+   8] ) { ind[i] = ind[i+   8]; x[i] = x[i+   8]; } }  __syncthreads(); }
+    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { if ( x[i] < x[i+   4] ) { ind[i] = ind[i+   4]; x[i] = x[i+   4]; } }  __syncthreads(); }
+    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { if ( x[i] < x[i+   2] ) { ind[i] = ind[i+   2]; x[i] = x[i+   2]; } }  __syncthreads(); }
+    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { if ( x[i] < x[i+   1] ) { ind[i] = ind[i+   1]; x[i] = x[i+   1]; } }  __syncthreads(); }
 }
 // end magma_getidmax2
 
@@ -39,20 +39,20 @@ magma_getidmax_n( int n, int i, T* x, ID* ind )
 {
     __syncthreads();
     
-    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { if( x[i] < x[i+1024] ) { ind[i] = ind[i+1024]; x[i] = x[i+1024]; } }  __syncthreads(); }
-    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { if( x[i] < x[i+ 512] ) { ind[i] = ind[i+ 512]; x[i] = x[i+ 512]; } }  __syncthreads(); }
-    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { if( x[i] < x[i+ 256] ) { ind[i] = ind[i+ 256]; x[i] = x[i+ 256]; } }  __syncthreads(); }
-    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { if( x[i] < x[i+ 128] ) { ind[i] = ind[i+ 128]; x[i] = x[i+ 128]; } }  __syncthreads(); } 
-    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { if( x[i] < x[i+  64] ) { ind[i] = ind[i+  64]; x[i] = x[i+  64]; } }  __syncthreads(); }
-    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { if( x[i] < x[i+  32] ) { ind[i] = ind[i+  32]; x[i] = x[i+  32]; } }  __syncthreads(); }
+    if ( n > 1024 ) { if ( i < 1024 && i + 1024 < n ) { if ( x[i] < x[i+1024] ) { ind[i] = ind[i+1024]; x[i] = x[i+1024]; } }  __syncthreads(); }
+    if ( n >  512 ) { if ( i <  512 && i +  512 < n ) { if ( x[i] < x[i+ 512] ) { ind[i] = ind[i+ 512]; x[i] = x[i+ 512]; } }  __syncthreads(); }
+    if ( n >  256 ) { if ( i <  256 && i +  256 < n ) { if ( x[i] < x[i+ 256] ) { ind[i] = ind[i+ 256]; x[i] = x[i+ 256]; } }  __syncthreads(); }
+    if ( n >  128 ) { if ( i <  128 && i +  128 < n ) { if ( x[i] < x[i+ 128] ) { ind[i] = ind[i+ 128]; x[i] = x[i+ 128]; } }  __syncthreads(); } 
+    if ( n >   64 ) { if ( i <   64 && i +   64 < n ) { if ( x[i] < x[i+  64] ) { ind[i] = ind[i+  64]; x[i] = x[i+  64]; } }  __syncthreads(); }
+    if ( n >   32 ) { if ( i <   32 && i +   32 < n ) { if ( x[i] < x[i+  32] ) { ind[i] = ind[i+  32]; x[i] = x[i+  32]; } }  __syncthreads(); }
     
     // probably don't need __syncthreads for < 16 threads                                              
     // because of implicit warp level synchronization.                                                 
-    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { if( x[i] < x[i+  16] ) { ind[i] = ind[i+  16]; x[i] = x[i+  16]; } }  __syncthreads(); }
-    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { if( x[i] < x[i+   8] ) { ind[i] = ind[i+   8]; x[i] = x[i+   8]; } }  __syncthreads(); }
-    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { if( x[i] < x[i+   4] ) { ind[i] = ind[i+   4]; x[i] = x[i+   4]; } }  __syncthreads(); }
-    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { if( x[i] < x[i+   2] ) { ind[i] = ind[i+   2]; x[i] = x[i+   2]; } }  __syncthreads(); }
-    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { if( x[i] < x[i+   1] ) { ind[i] = ind[i+   1]; x[i] = x[i+   1]; } }  __syncthreads(); }
+    if ( n >   16 ) { if ( i <   16 && i +   16 < n ) { if ( x[i] < x[i+  16] ) { ind[i] = ind[i+  16]; x[i] = x[i+  16]; } }  __syncthreads(); }
+    if ( n >    8 ) { if ( i <    8 && i +    8 < n ) { if ( x[i] < x[i+   8] ) { ind[i] = ind[i+   8]; x[i] = x[i+   8]; } }  __syncthreads(); }
+    if ( n >    4 ) { if ( i <    4 && i +    4 < n ) { if ( x[i] < x[i+   4] ) { ind[i] = ind[i+   4]; x[i] = x[i+   4]; } }  __syncthreads(); }
+    if ( n >    2 ) { if ( i <    2 && i +    2 < n ) { if ( x[i] < x[i+   2] ) { ind[i] = ind[i+   2]; x[i] = x[i+   2]; } }  __syncthreads(); }
+    if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { if ( x[i] < x[i+   1] ) { ind[i] = ind[i+   1]; x[i] = x[i+   1]; } }  __syncthreads(); }
 }
 // end magma_getidmax2
 
@@ -185,6 +185,27 @@ magma_max_nan_reduce_n( int n, int i, T* x )
     if ( n >    1 ) { if ( i <    1 && i +    1 < n ) { x[i] = max_nan( x[i], x[i+   1] ); }  __syncthreads(); }
 }
 // end max_nan_reduce
+
+
+// ----------------------------------------
+/// max reduction, for arbitrary size vector. Leaves max(x) in x[0].
+/// Uses only one thread block of 512 threads, so is not efficient for really large vectors.
+template< typename T >
+__global__ void
+magma_max_nan_kernel( int n, T* x )
+{
+    __shared__ T smax[ 512 ];
+    int tx = threadIdx.x;
+    
+    smax[tx] = 0;
+    for( int i=tx; i < n; i += 512 ) {
+        smax[tx] = max_nan( smax[tx], x[i] );
+    }
+    magma_max_nan_reduce< 512 >( tx, smax );
+    if ( tx == 0 ) {
+        x[0] = smax[0];
+    }
+}
 
 
 // ----------------------------------------

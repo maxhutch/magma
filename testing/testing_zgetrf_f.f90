@@ -1,9 +1,9 @@
 !
-!   -- MAGMA (version 1.6.1) --
+!   -- MAGMA (version 1.6.3-beta1) --
 !      Univ. of Tennessee, Knoxville
 !      Univ. of California, Berkeley
 !      Univ. of Colorado, Denver
-!      @date January 2015
+!      @date August 2015
 !
 !  @precisions normal z -> c d s
 !
@@ -15,7 +15,7 @@
 
       double precision zlange, dlamch
 
-      double precision              :: rnumber(2), Anorm, Bnorm, Xnorm, Rnorm 
+      double precision              :: rnumber(2), Anorm, Bnorm, Xnorm, Rnorm
       double precision, allocatable :: work(:)
       complex*16, allocatable       :: A(:), B(:), X(:)
       complex*16, allocatable       :: A2(:)
@@ -55,9 +55,9 @@
       X(:) = B(:)
 
 !---- Call magma LU ----------------
-      call magma_wtime_f(tstart)
+      call magmaf_wtime(tstart)
       call magmaf_zgetrf(n, n, A, lda, ipiv, info)
-      call magma_wtime_f(tend)
+      call magmaf_wtime(tend)
 
       if ( info .ne. 0 )  then
          write(*,*) "Info : ", info
@@ -96,7 +96,7 @@
       if ( Rnorm > 60. ) then
          write(*,105) '  Solution is suspicious, ', Rnorm
       else
-         write(*,105) '  Solution is CORRECT' 
+         write(*,105) '  Solution is CORRECT'
       end if
 
 !---- Free CPU memory

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 
@@ -45,21 +45,21 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
 
-    printf("Epsilon(double): %8.6e\n"
-           "Epsilon(single): %8.6e\n\n",
+    printf("%% Epsilon(double): %8.6e\n"
+           "%% Epsilon(single): %8.6e\n\n",
            lapackf77_dlamch("Epsilon"), lapackf77_slamch("Epsilon") );
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     nrhs = opts.nrhs;
     
-    printf("                    CPU Gflop/s   GPU  Gflop/s                         |b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
-    printf("    M     N  NRHS    double        double    single     mixed   Iter   CPU        GPU                        \n");
-    printf("=============================================================================================================\n");
+    printf("%%                   CPU Gflop/s   GPU  Gflop/s                         |b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
+    printf("%%   M     N  NRHS    double        double    single     mixed   Iter   CPU        GPU                        \n");
+    printf("%%============================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -72,9 +72,9 @@ int main( int argc, char** argv)
             max_mn = max(M, N);
             lda    = M;
             ldb    = max_mn;
-            ldda   = ((M+31)/32) * 32;
-            lddb   = ((max_mn+31)/32)*32;
-            lddx   = ((N+31)/32) * 32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
+            lddb   = magma_roundup( max_mn, opts.align );  // multiple of 32 by default
+            lddx   = magma_roundup( N, opts.align );  // multiple of 32 by default
             nb     = max( magma_get_zgeqrf_nb( M ), magma_get_cgeqrf_nb( M ) );
             gflops = (FLOPS_ZGEQRF( M, N ) + FLOPS_ZGEQRS( M, N, nrhs )) / 1e9;
             
@@ -99,7 +99,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_DEV( d_A, magmaDoubleComplex, ldda*N      );
             TESTING_MALLOC_DEV( d_B, magmaDoubleComplex, lddb*nrhs   );
             TESTING_MALLOC_DEV( d_X, magmaDoubleComplex, lddx*nrhs   );
-            TESTING_MALLOC_DEV( d_T, magmaDoubleComplex, ( 2*min_mn + (N+31)/32*32 )*nb );
+            TESTING_MALLOC_DEV( d_T, magmaDoubleComplex, ( 2*min_mn + magma_roundup( N, 32 ) )*nb );
             
             /* Initialize the matrices */
             size = lda*N;

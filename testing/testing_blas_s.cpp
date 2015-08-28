@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_blas_z.cpp normal z -> s, Fri Jan 30 19:00:24 2015
+       @generated from testing_blas_z.cpp normal z -> s, Tue Aug 25 16:35:25 2015
        @author Mark Gates
        
        These tests ensure that the MAGMA wrappers around CUBLAS calls are
@@ -59,7 +59,8 @@ int main( int argc, char** argv )
     magma_int_t err;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
+    magmablasSetKernelStream( opts.queue );  // opts.handle also uses opts.queue
     
     printf( "Compares magma wrapper function to cublas function; all diffs should be exactly 0.\n\n" );
     
@@ -68,7 +69,7 @@ int main( int argc, char** argv )
         m = opts.msize[itest];
         n = opts.nsize[itest];
         k = opts.ksize[itest];
-        printf("=========================================================================\n");
+        printf("%%========================================================================\n");
         printf( "m=%d, n=%d, k=%d\n", (int) m, (int) n, (int) k );
         
         // allocate matrices
@@ -93,7 +94,7 @@ int main( int argc, char** argv )
         lapackf77_slarnv( &ione, ISEED, &size, B  );
         lapackf77_slarnv( &ione, ISEED, &size, C  );
         
-        printf( "========== Level 1 BLAS ==========\n" );
+        printf( "%%========= Level 1 BLAS ==========\n" );
         
         // ----- test SSWAP
         // swap columns 2 and 3 of dA, then copy to C2 and compare with A
@@ -131,7 +132,7 @@ int main( int argc, char** argv )
         printf( "isamax            diff %.2g\n", error );
         printf( "\n" );
         
-        printf( "========== Level 2 BLAS ==========\n" );
+        printf( "%%========= Level 2 BLAS ==========\n" );
         
         // ----- test SGEMV
         // c = alpha*A*b + beta*c,  with A m*n; b,c m or n-vectors
@@ -142,14 +143,14 @@ int main( int argc, char** argv )
             magma_ssetvector( maxn, C, 1, dC1, 1 );
             magma_ssetvector( maxn, C, 1, dC2, 1 );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_sgemv( trans[ia], m, n, alpha, dA, ld, dB, 1, beta, dC1, 1 );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasSgemv( opts.handle, cublas_trans_const(trans[ia]),
                          m, n, &alpha, dA, ld, dB, 1, &beta, dC2, 1 );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             size = (trans[ia] == MagmaNoTrans ? m : n);
@@ -172,14 +173,14 @@ int main( int argc, char** argv )
             magma_ssetvector( m, C, 1, dC1, 1 );
             magma_ssetvector( m, C, 1, dC2, 1 );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_ssymv( uplo[iu], m, alpha, dA, ld, dB, 1, beta, dC1, 1 );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasSsymv( opts.handle, cublas_uplo_const(uplo[iu]),
                          m, &alpha, dA, ld, dB, 1, &beta, dC2, 1 );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, m, &c_neg_one, dC1, 1, dC2, 1 );
@@ -213,14 +214,14 @@ int main( int argc, char** argv )
             magma_ssetvector( m, C, 1, dC1, 1 );
             magma_ssetvector( m, C, 1, dC2, 1 );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_strsv( uplo[iu], trans[it], diag[id], m, dA, ld, dC1, 1 );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasStrsv( opts.handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
                          cublas_diag_const(diag[id]), m, dA, ld, dC2, 1 );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, m, &c_neg_one, dC1, 1, dC2, 1 );
@@ -234,7 +235,7 @@ int main( int argc, char** argv )
         }}}
         printf( "\n" );
         
-        printf( "========== Level 3 BLAS ==========\n" );
+        printf( "%%========= Level 3 BLAS ==========\n" );
         
         // ----- test SGEMM
         // C = alpha*A*B + beta*C,  with A m*k or k*m; B k*n or n*k; C m*n
@@ -248,14 +249,14 @@ int main( int argc, char** argv )
             magma_ssetmatrix( m, n, C, ld, dC1, ld );
             magma_ssetmatrix( m, n, C, ld, dC2, ld );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_sgemm( trans[ia], trans[ib], m, n, k, alpha, dA, ld, dB, ld, beta, dC1, ld );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasSgemm( opts.handle, cublas_trans_const(trans[ia]), cublas_trans_const(trans[ib]),
                          m, n, k, &alpha, dA, ld, dB, ld, &beta, dC2, ld );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
@@ -280,14 +281,14 @@ int main( int argc, char** argv )
             magma_ssetmatrix( m, n, C, ld, dC1, ld );
             magma_ssetmatrix( m, n, C, ld, dC2, ld );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_ssymm( side[is], uplo[iu], m, n, alpha, dA, ld, dB, ld, beta, dC1, ld );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasSsymm( opts.handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
                          m, n, &alpha, dA, ld, dB, ld, &beta, dC2, ld );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
@@ -311,14 +312,14 @@ int main( int argc, char** argv )
             magma_ssetmatrix( n, n, C, ld, dC1, ld );
             magma_ssetmatrix( n, n, C, ld, dC2, ld );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_ssyrk( uplo[iu], trans[it], n, k, dalpha, dA, ld, dbeta, dC1, ld );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasSsyrk( opts.handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
                          n, k, &dalpha, dA, ld, &dbeta, dC2, ld );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
@@ -343,14 +344,14 @@ int main( int argc, char** argv )
             magma_ssetmatrix( n, n, C, ld, dC1, ld );
             magma_ssetmatrix( n, n, C, ld, dC2, ld );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_ssyr2k( uplo[iu], trans[it], n, k, alpha, dA, ld, dB, ld, dbeta, dC1, ld );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasSsyr2k( opts.handle, cublas_uplo_const(uplo[iu]), cublas_trans_const(trans[it]),
                           n, k, &alpha, dA, ld, dB, ld, &dbeta, dC2, ld );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
@@ -377,17 +378,17 @@ int main( int argc, char** argv )
             magma_ssetmatrix( m, n, C, ld, dC1, ld );
             magma_ssetmatrix( m, n, C, ld, dC2, ld );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_strmm( side[is], uplo[iu], trans[it], diag[id], m, n, alpha, dA, ld, dC1, ld );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
             // note cublas does trmm out-of-place (i.e., adds output matrix C),
             // but allows C=B to do in-place.
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasStrmm( opts.handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
                          cublas_trans_const(trans[it]), cublas_diag_const(diag[id]),
                          m, n, &alpha, dA, ld, dC2, ld, dC2, ld );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );
@@ -414,15 +415,15 @@ int main( int argc, char** argv )
             magma_ssetmatrix( m, n, C, ld, dC1, ld );
             magma_ssetmatrix( m, n, C, ld, dC2, ld );
             
-            t1 = magma_sync_wtime( 0 );
+            t1 = magma_sync_wtime( opts.queue );
             magma_strsm( side[is], uplo[iu], trans[it], diag[id], m, n, alpha, dA, ld, dC1, ld );
-            t1 = magma_sync_wtime( 0 ) - t1;
+            t1 = magma_sync_wtime( opts.queue ) - t1;
             
-            t2 = magma_sync_wtime( 0 );
+            t2 = magma_sync_wtime( opts.queue );
             cublasStrsm( opts.handle, cublas_side_const(side[is]), cublas_uplo_const(uplo[iu]),
                          cublas_trans_const(trans[it]), cublas_diag_const(diag[id]),
                          m, n, &alpha, dA, ld, dC2, ld );
-            t2 = magma_sync_wtime( 0 ) - t2;
+            t2 = magma_sync_wtime( opts.queue ) - t2;
             
             // check results, storing diff between magma and cuda call in C2
             cublasSaxpy( opts.handle, ld*n, &c_neg_one, dC1, 1, dC2, 1 );

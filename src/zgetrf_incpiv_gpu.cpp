@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
@@ -186,7 +186,7 @@ magma_zgetrf_incpiv_gpu(
     }
     else {
         /* Use hybrid blocked code. */
-        maxm = ((m + 31)/32)*32;
+        maxm = magma_roundup( m, 32 );
 
         if ( order == MagmaColMajor ) {
             magmablas_zgetmo_in( dA, dAT, ldda, m, n );

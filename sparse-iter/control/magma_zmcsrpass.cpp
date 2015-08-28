@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -73,7 +73,7 @@ magma_zcsrset(
     A->val = val;
     A->col = col;
     A->row = row;
-    A->fill_mode = Magma_FULL;
+    A->fill_mode = MagmaFull;
 
     return MAGMA_SUCCESS;
 }
@@ -151,5 +151,3 @@ cleanup:
     magma_zmfree( &A_CPU, queue );
     return info;
 }
-
-

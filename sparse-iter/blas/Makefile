@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.2) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date May 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/blas
@@ -29,6 +29,7 @@ ZSRC := \
 	zmdot.cu				\
 	zmergebicgstab.cu		\
 	zmergebicgstab2.cu		\
+    zmergeidr.cu            \
 	zmergecg.cu				\
 	zmgecsrmv.cu			\
 	zmgeellmv.cu			\
@@ -39,7 +40,7 @@ ZSRC := \
 
 # Iterative factorizations
 ZSRC += \
-	ziterilu.cu	\
+	ziterilu_kernels.cu	\
 	ziteric.cu	\
 
 
@@ -47,7 +48,10 @@ ZSRC += \
 ZSRC += \
 	zcompact.cu				\
 	magma_zmcsrcompressor_gpu.cu	\
-
+	magma_zdiagcheck.cu		\
+	
+# Tester routines
+ZSRC += \
 
 # ------------------------------------------------------------
 -include Makefile.local

@@ -185,4 +185,3 @@ C     $   " | zi*zj' |                         ", MAXDOT
  300  CONTINUE
       RETURN
       END
-

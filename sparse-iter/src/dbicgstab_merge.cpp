@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zbicgstab_merge.cpp normal z -> d, Sun May  3 11:22:59 2015
+       @generated from zbicgstab_merge.cpp normal z -> d, Tue Aug 25 16:35:33 2015
        @author Hartwig Anzt
 
 */
@@ -71,7 +71,8 @@ magma_dbicgstab_merge(
     
     // solver variables
     double alpha, beta, omega, rho_old, rho_new, *skp_h={0};
-    double nom, nom0, betanom, r0, den;
+    double nom, nom0, betanom;
+    //double den;
 
     // some useful variables
     double c_zero = MAGMA_D_ZERO, c_one = MAGMA_D_ONE;
@@ -99,12 +100,12 @@ magma_dbicgstab_merge(
     CHECK( magma_dvinit( &q, Magma_DEV, dofs*6, 1, c_zero, queue ));
 
     // q = rr|r|p|v|s|t
-    rr.memory_location = Magma_DEV; rr.dval = NULL; rr.num_rows = rr.nnz = dofs; rr.num_cols = 1;rr.storage_type = Magma_DENSE;
-    r.memory_location = Magma_DEV; r.dval = NULL; r.num_rows = r.nnz = dofs; r.num_cols = 1;r.storage_type = Magma_DENSE;
-    p.memory_location = Magma_DEV; p.dval = NULL; p.num_rows = p.nnz = dofs; p.num_cols = 1;p.storage_type = Magma_DENSE;
-    v.memory_location = Magma_DEV; v.dval = NULL; v.num_rows = v.nnz = dofs; v.num_cols = 1;v.storage_type = Magma_DENSE;
-    s.memory_location = Magma_DEV; s.dval = NULL; s.num_rows = s.nnz = dofs; s.num_cols = 1;s.storage_type = Magma_DENSE;
-    t.memory_location = Magma_DEV; t.dval = NULL; t.num_rows = t.nnz = dofs; t.num_cols = 1;t.storage_type = Magma_DENSE;
+    rr.memory_location = Magma_DEV; rr.dval = NULL; rr.num_rows = rr.nnz = dofs; rr.num_cols = 1; rr.storage_type = Magma_DENSE;
+    r.memory_location = Magma_DEV; r.dval = NULL; r.num_rows = r.nnz = dofs; r.num_cols = 1; r.storage_type = Magma_DENSE;
+    p.memory_location = Magma_DEV; p.dval = NULL; p.num_rows = p.nnz = dofs; p.num_cols = 1; p.storage_type = Magma_DENSE;
+    v.memory_location = Magma_DEV; v.dval = NULL; v.num_rows = v.nnz = dofs; v.num_cols = 1; v.storage_type = Magma_DENSE;
+    s.memory_location = Magma_DEV; s.dval = NULL; s.num_rows = s.nnz = dofs; s.num_cols = 1; s.storage_type = Magma_DENSE;
+    t.memory_location = Magma_DEV; t.dval = NULL; t.num_rows = t.nnz = dofs; t.num_cols = 1; t.storage_type = Magma_DENSE;
 
     rr.dval = q(0);
     r.dval = q(1);
@@ -134,10 +135,10 @@ magma_dbicgstab_merge(
     skp_h[5]=MAGMA_D_MAKE(nom, 0.0);
     magma_dsetvector( 8, skp_h, 1, skp, 1 );
     CHECK( magma_d_spmv( c_one, A, r, c_zero, v, queue ));             // z = A r
-    den = MAGMA_D_REAL( magma_ddot(dofs, v.dval, 1, r.dval, 1) );// den = z dot r
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE )
-        r0 = ATOLERANCE;
-    if ( nom < r0 ) {
+    //den = MAGMA_D_REAL( magma_ddot(dofs, v.dval, 1, r.dval, 1) ); // den = z dot r
+    
+    if( nom0 < solver_par->atol ||
+        nom0/solver_par->init_res < solver_par->rtol ){
         solver_par->final_res = solver_par->init_res;
         solver_par->iter_res = solver_par->init_res;
         goto cleanup;
@@ -191,7 +192,8 @@ magma_dbicgstab_merge(
             }
         }
         
-        if (  betanom  < r0 ) {
+        if (  betanom  < solver_par->atol || 
+              betanom/solver_par->init_res < solver_par->rtol ) {
             break;
         }
     }
@@ -200,7 +202,7 @@ magma_dbicgstab_merge(
     tempo2 = magma_sync_wtime( queue );
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     double residual;
-    CHECK(  magma_dresidualvec( A, b, *x, &r, &residual, queue));
+    CHECK(  magma_dresidualvec( A, b, *x, &r, &residual, NULL));
     solver_par->iter_res = betanom;
     solver_par->final_res = residual;
 
@@ -216,7 +218,8 @@ magma_dbicgstab_merge(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->atol ||
+            solver_par->iter_res/solver_par->init_res < solver_par->rtol ){
             info = MAGMA_SUCCESS;
         }
     }
@@ -243,5 +246,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* dbicgstab_merge */
-
-

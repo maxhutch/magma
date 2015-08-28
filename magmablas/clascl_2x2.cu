@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlascl_2x2.cu normal z -> c, Fri Jan 30 19:00:09 2015
+       @generated from zlascl_2x2.cu normal z -> c, Tue Aug 25 16:35:08 2015
 
        @author Ichitaro Yamazaki
 */
@@ -64,35 +64,35 @@ clascl_2x2_upper(int m, const magmaFloatComplex *W, int ldw, magmaFloatComplex* 
 
     Arguments
     ---------
-    \param[in]
+    @param[in]
     type    magma_type_t
             TYPE indices the storage type of the input matrix A.
             = MagmaLower:  lower triangular matrix.
             = MagmaUpper:  upper triangular matrix.
             Other formats that LAPACK supports, MAGMA does not currently support.
 
-    \param[in]
+    @param[in]
     m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
-    \param[in]
+    @param[in]
     dW      REAL vector, dimension (2*lddw)
             The matrix containing the 2-by-2 pivot.
 
-    \param[in]
+    @param[in]
     lddw    INTEGER
             The leading dimension of the array W.  LDDA >= max(1,M).
 
-    \param[in,out]
+    @param[in,out]
     dA      COMPLEX array, dimension (LDDA,N)
             The matrix to be scaled by dW.  See TYPE for the
             storage type.
 
-    \param[in]
+    @param[in]
     ldda    INTEGER
             The leading dimension of the array A.  LDDA >= max(1,M).
 
-    \param[out]
+    @param[out]
     info    INTEGER
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value.
@@ -119,7 +119,7 @@ magmablas_clascl_2x2_q(
         return;  //info;
     }
     
-    dim3 grid( (m + NB - 1)/NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
     dim3 threads( NB );
     
     if (type == MagmaLower) {

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgelqf.cpp normal z -> d, Fri Jan 30 19:00:15 2015
+       @generated from zgelqf.cpp normal z -> d, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -138,8 +138,8 @@ magma_dgelqf(
         return *info;
     }
 
-    maxm = ((m + 31)/32)*32;
-    maxn = ((n + 31)/32)*32;
+    maxm = magma_roundup( m, 32 );
+    maxn = magma_roundup( n, 32 );
     maxdim = max(maxm, maxn);
 
     // copy to GPU and transpose

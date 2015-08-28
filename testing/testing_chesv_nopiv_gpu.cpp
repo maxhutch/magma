@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zhesv_nopiv_gpu.cpp normal z -> c, Fri Jan 30 19:00:24 2015
+       @generated from testing_zhesv_nopiv_gpu.cpp normal z -> c, Tue Aug 25 16:35:26 2015
        
        @author Mark Gates
        @author Adrien Remy
@@ -42,22 +42,22 @@ int main(int argc, char **argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
     nrhs = opts.nrhs;
     
-    printf("    N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
-    printf("================================================================================\n");
+    printf("%%   N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%%===============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda    = N;
             ldb    = lda;
-            ldda   = ((N+31)/32)*32;
+            ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
             lddb   = ldda;
-            gflops = ( FLOPS_CGETRF( N, N ) + FLOPS_CGETRS( N, nrhs ) ) / 1e9;
+            gflops = ( FLOPS_CPOTRF( N ) + FLOPS_CPOTRS( N, nrhs ) ) / 1e9;
             
             TESTING_MALLOC_CPU( h_A, magmaFloatComplex, lda*N    );
             TESTING_MALLOC_CPU( h_B, magmaFloatComplex, ldb*nrhs );
@@ -88,10 +88,10 @@ int main(int argc, char **argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            gpu_time = magma_wtime();
-
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             magma_chesv_nopiv_gpu( opts.uplo, N, nrhs, d_A, ldda, d_B, lddb, &info );
-            gpu_time = magma_wtime() - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
                 printf("magma_cgesv_gpu returned error %d: %s.\n",

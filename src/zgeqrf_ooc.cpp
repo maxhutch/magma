@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -149,8 +149,8 @@ magma_zgeqrf_ooc(
         return *info;
     }
 
-    lddwork = ((NB+31)/32)*32+nb;
-    ldda    = ((m+31)/32)*32;
+    lddwork = magma_roundup( NB, 32 ) + nb;
+    ldda    = magma_roundup( m, 32 );
 
     if (MAGMA_SUCCESS != magma_zmalloc( &dA, (NB + nb)*ldda + nb*lddwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -195,7 +195,7 @@ magma_zgeqrf_ooc(
                                     work,  ib,
                                     dwork, lddwork, stream[1] );
 
-            zpanel_to_q(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
+            magma_zpanel_to_q(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
             magma_zsetmatrix_async( rows, ib,
                                     A(j,j), lda,
                                     ptr,        rows, stream[1] );
@@ -206,7 +206,7 @@ magma_zgeqrf_ooc(
                               ptr, rows, dwork,    lddwork,
                               dA(j, 0), ldda, dwork+ib, lddwork);
 
-            zq_to_panel(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
+            magma_zq_to_panel(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
         }
 
         /* 3. Do a QR on the current part */

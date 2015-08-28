@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
-       @generated from zgegqr_gpu.cpp normal z -> c, Fri Jan 30 19:00:15 2015
+       @generated from zgegqr_gpu.cpp normal z -> c, Tue Aug 25 16:35:15 2015
 
 */
 #include "common_magma.h"
@@ -217,13 +217,14 @@ magma_cgegqr_gpu(
     }
     else if (ikind == 3) {
         // ================== MGS               ===================================================
-        for (magma_int_t j = 0; j < n; j++) {
-            for (magma_int_t i = 0; i < j; i++) {
+        for (j = 0; j < n; j++) {
+            for (i = 0; i < j; i++) {
                 *work(i, j) = magma_cdotc(m, dA(0,i), 1, dA(0,j), 1);
                 magma_caxpy(m, -(*work(i,j)),  dA(0,i), 1, dA(0,j), 1);
             }
-            for (magma_int_t i = j; i < n; i++)
+            for (i = j; i < n; i++) {
                 *work(i, j) = MAGMA_C_ZERO;
+            }
             //*work(j,j) = MAGMA_C_MAKE( magma_scnrm2(m, dA(0,j), 1), 0. );
             *work(j,j) = magma_cdotc(m, dA(0,j), 1, dA(0,j), 1);
             *work(j,j) = MAGMA_C_MAKE( sqrt(MAGMA_C_REAL( *work(j,j) )), 0.);

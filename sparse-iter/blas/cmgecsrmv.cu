@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmgecsrmv.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zmgecsrmv.cu normal z -> c, Tue Aug 25 16:35:31 2015
 
 */
 #include "common_magma.h"
@@ -26,7 +26,6 @@ cmgecsrmv_kernel(
     magmaFloatComplex beta, 
     magmaFloatComplex * dy)
 {
-
     int row = blockIdx.x*blockDim.x+threadIdx.x;
     int j;
     extern __shared__ magmaFloatComplex dot[];
@@ -34,7 +33,7 @@ cmgecsrmv_kernel(
     if( row<num_rows ){
         for( int i=0; i<num_vecs; i++ )
                 dot[ threadIdx.x+ i*blockDim.x ] = MAGMA_C_MAKE(0.0, 0.0);
-        int start = drowptr[ row ] ;
+        int start = drowptr[ row ];
         int end = drowptr[ row+1 ];
         for( j=start; j<end; j++ ){
             int col = dcolind [ j ];
@@ -134,6 +133,3 @@ magma_cmgecsrmv(
 
    return MAGMA_SUCCESS;
 }
-
-
-

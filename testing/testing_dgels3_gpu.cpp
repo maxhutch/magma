@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgels3_gpu.cpp normal z -> d, Fri Jan 30 19:00:26 2015
+       @generated from testing_zgels3_gpu.cpp normal z -> d, Tue Aug 25 16:35:26 2015
 
 */
 
@@ -42,16 +42,16 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
  
     magma_int_t status = 0;
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
     nrhs = opts.nrhs;
     
-    printf("                                                            ||b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
-    printf("    M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU                         \n");
-    printf("===================================================================================================\n");
+    printf("%%                                                           ||b-Ax|| / (N||A||)   ||dx-x||/(N||A||)\n");
+    printf("%%   M     N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   CPU        GPU                         \n");
+    printf("%%==================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -65,8 +65,8 @@ int main( int argc, char** argv)
             lda    = M;
             ldb    = max_mn;
             size   = lda*N;
-            ldda   = ((M+31)/32)*32;
-            lddb   = ((max_mn+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
+            lddb   = magma_roundup( max_mn, opts.align );  // multiple of 32 by default
             nb     = magma_get_dgeqrf_nb(M);
             gflops = (FLOPS_DGEQRF( M, N ) + FLOPS_DGEQRS( M, N, nrhs )) / 1e9;
             
@@ -168,7 +168,7 @@ int main( int argc, char** argv)
             printf("%5d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %8.2e   %8.2e",
                    (int) M, (int) N, (int) nrhs,
                    cpu_perf, cpu_time, gpu_perf, gpu_time, cpu_error, gpu_error, error );
-                        
+            
             if ( M == N ) {
                 printf( "   %s\n", (gpu_error < tol && error < tol ? "ok" : "failed"));
                 status += ! (gpu_error < tol && error < tol);

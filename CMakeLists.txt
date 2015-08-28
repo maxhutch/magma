@@ -69,16 +69,42 @@ if ( CUDA_FOUND )
 	
 	message( "   GPU_TARGET ${GPU_TARGET}" )
 	if ( ${GPU_TARGET} MATCHES Tesla )
+	    set( GPU_TARGET "${GPU_TARGET} sm13" )
+	endif()
+	
+	if ( ${GPU_TARGET} MATCHES Fermi )
+	    set( GPU_TARGET "${GPU_TARGET} sm20" )
+	endif()
+	
+	if ( ${GPU_TARGET} MATCHES Kepler )
+	    set( GPU_TARGET "${GPU_TARGET} sm30 sm35" )
+	endif()
+	
+	if ( ${GPU_TARGET} MATCHES Maxwell )
+	    set( GPU_TARGET "${GPU_TARGET} sm50" )
+	endif()
+	
+	message( "   GPU_TARGET_NEW ${GPU_TARGET}" )
+	
+	if ( ${GPU_TARGET} MATCHES sm10 )
+		if ( NOT MIN_ARCH )
+			set( MIN_ARCH 100 )
+		endif()
+		set( NV_SM "${NV_SM} -gencode arch=compute_10,code=sm_10" )
+		set( NV_COMP        "-gencode arch=compute_10,code=compute_10" )
+		message( "   compile for CUDA arch 1.0 (Tesla)" )
+	endif()
+	
+	if ( ${GPU_TARGET} MATCHES sm13 )
 		if ( NOT MIN_ARCH )
 			set( MIN_ARCH 130 )
 		endif()
-		# -gencode arch=compute_10,code=compute_10
 		set( NV_SM "${NV_SM} -gencode arch=compute_13,code=sm_13" )
 		set( NV_COMP        "-gencode arch=compute_13,code=compute_13" )
 		message( "   compile for CUDA arch 1.3 (Tesla)" )
 	endif()
 	
-	if ( ${GPU_TARGET} MATCHES Fermi )
+	if ( ${GPU_TARGET} MATCHES sm20 )
 		if ( NOT MIN_ARCH )
 			set( MIN_ARCH 200 )
 		endif()
@@ -87,17 +113,35 @@ if ( CUDA_FOUND )
 		message( "   compile for CUDA arch 2.x (Fermi)" )
 	endif()
 	
-	if ( ${GPU_TARGET} MATCHES Kepler )
+	if ( ${GPU_TARGET} MATCHES sm30 )
 		if ( NOT MIN_ARCH )
 			set( MIN_ARCH 300 )
 		endif()
-		set( NV_SM "${NV_SM} -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35" )
+		set( NV_SM "${NV_SM} -gencode arch=compute_30,code=sm_30" )
+		set( NV_COMP        "-gencode arch=compute_30,code=compute_30" )
+		message( "   compile for CUDA arch 3.0 (Kepler)" )
+	endif()
+	
+	if ( ${GPU_TARGET} MATCHES sm35 )
+		if ( NOT MIN_ARCH )
+			set( MIN_ARCH 300 )
+		endif()
+		set( NV_SM "${NV_SM} -gencode arch=compute_35,code=sm_35" )
 		set( NV_COMP        "-gencode arch=compute_35,code=compute_35" )
-		message( "   compile for CUDA arch 3.x (Kepler)" )
+		message( "   compile for CUDA arch 3.5 (Kepler)" )
+	endif()
+	
+	if ( ${GPU_TARGET} MATCHES sm50 )
+		if ( NOT MIN_ARCH )
+			set( MIN_ARCH 500 )
+		endif()
+		set( NV_SM "${NV_SM} -gencode arch=compute_50,code=sm_50" )
+		set( NV_COMP        "-gencode arch=compute_50,code=compute_50" )
+		message( "   compile for CUDA arch 5.0 (Maxwell)" )
 	endif()
 	
 	if ( NOT MIN_ARCH )
-		message( FATAL_ERROR "GPU_TARGET must contain one or more of Tesla, Fermi, Kepler." )
+		message( FATAL_ERROR "GPU_TARGET must contain one or more of Tesla, Fermi, Kepler, Maxwell, or sm{10,13,20,30,35,50}." )
 	endif()
 	
 	set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -DHAVE_CUBLAS ${NV_SM} ${NV_COMP}" )
@@ -122,6 +166,9 @@ message( "   LAPACK_LIBRARIES:    ${LAPACK_LIBRARIES}"    )
 set( MKLROOT $ENV{MKLROOT} CACHE STRING "MKL installation directory" )
 if ( NOT "${MKLROOT}" STREQUAL "" )
 	message( "-- MKLROOT set to ${MKLROOT}. To change, edit MKLROOT using ccmake." )
+	if ( NOT EXISTS "${MKLROOT}" )
+		message( FATAL_ERROR "MKLROOT ${MKLROOT} directory does not exist." )
+	endif()
 	include_directories( ${MKLROOT}/include )
 	add_definitions( -DMAGMA_WITH_MKL )
 else()
@@ -130,30 +177,51 @@ endif()
 
 
 # ----------------------------------------
+# where to put libmagma
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY lib )
+
+
+# ----------------------------------------
 # common flags
-# On Windows:
-#     Strip out /W3; we will use -W4
-#     -Wall is way too verbose; use -W4
-#     -MP enables parallel builds
-#     -std=c99 is not implemented, so skip that
+
+set( LIBS testing lapacktest magma )
+
 if ( WIN32 )
+	# On Windows:
+	#     Strip out /W3; we will use -W4
+	#     -Wall is way too verbose; use -W4
+	#     -MP enables parallel builds
+	#     -std=c99 is not implemented, so skip that
 	string( REGEX REPLACE " */W3" "" CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}"   )
 	string( REGEX REPLACE " */W3" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
-	set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -W4 -MP" )
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W4 -MP" )
+	set( CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -W4 -MP -DMAGMA_NOAFFINITY" )
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W4 -MP -DMAGMA_NOAFFINITY" )
 else()
-	set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -std=c99" )
-	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
+	# Primarily for gcc / nvcc:
+	# Ignore unused static functions in headers.
+	set( CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -Wall -Wno-unused-function -std=c99" )
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function" )
 endif()
 
 if ( CMAKE_HOST_APPLE )
-	# 64-bit veclib has issues, so compile 32-bit.
-	# (I think an issue with prototypes return float instead of double)
-	message( "-- MacOS X: setting to 32-bit, to avoid issues with 64-bit veclib" )
-	set( CMAKE_C_FLAGS       "${CMAKE_C_FLAGS} -m32" )
-	set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -m32" )
-	set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -m32" )
-	set( CUDA_64_BIT_DEVICE_CODE OFF )
+	# 64-bit veclib has issues; substitute correct functions from LAPACK.
+	# (The issue is single precision functions that return doubles;
+	# if a consistent prototype is used, the problem goes away in C,
+	# but this is not feasible in Fortran.)
+	message( "-- MacOS X: adding blas_fix library" )
+	include( ${CMAKE_SOURCE_DIR}/blas_fix/CMake )
+	add_library( blas_fix ${blas_fix_ALLSRC} )
+	list( APPEND LIBS blas_fix )
+	
+	set( CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -DMAGMA_NOAFFINITY" )
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAGMA_NOAFFINITY" )
+	
+	# previously, just compile as 32-bit, but CUDA 6.5 no longer has 32-bit FAT libraries
+	## set( CMAKE_C_FLAGS       "${CMAKE_C_FLAGS} -m32" )
+	## set( CMAKE_CXX_FLAGS     "${CMAKE_CXX_FLAGS} -m32" )
+	## set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -m32" )
+	## set( CUDA_64_BIT_DEVICE_CODE OFF )
 endif()
 
 include_directories( include )
@@ -165,21 +233,9 @@ include( CheckTypeSize )
 CHECK_TYPE_SIZE( void* SIZEOF_VOID_PTR )
 set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Dmagma_devptr_t=\"integer\(kind=${SIZEOF_VOID_PTR}\)\"" )
 
-message( "-- Flags" )
-message( "   CFLAGS   ${CMAKE_C_FLAGS}" )
-message( "   CXXFLAGS ${CMAKE_CXX_FLAGS}" )
-message( "   NFLAGS   ${CUDA_NVCC_FLAGS}" )
-message( "   FFLAGS   ${CMAKE_Fortran_FLAGS}" )
-
 
 # ----------------------------------------
-# where to put libmagma
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib )
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY lib )
-
-
-# ----------------------------------------
-# compile library
+# compile MAGMA library
 include( ${CMAKE_SOURCE_DIR}/src/CMake )
 include( ${CMAKE_SOURCE_DIR}/control/CMake )
 include( ${CMAKE_SOURCE_DIR}/magmablas/CMake )
@@ -212,15 +268,17 @@ if ( WIN32 )
 	)
 	
 	# no Fortran files at the moment (how to test ALLSRC_f is not empty?),
-	# but keep this around for future.
-	# ...so make a separate library out of Fortran files. Ugh.
-	#add_library( magmaf ${ALLSRC_f} )
-	#target_link_libraries( magmaf
-	#	${LAPACK_LIBRARIES}
-	#	${CUDA_CUDART_LIBRARY}
-	#	${CUDA_CUBLAS_LIBRARIES}
-	#)
-	set( LIBS testing lapacktest magma )  #magmaf )
+	# but keep this around for future reference.
+	#
+	##  ...so make a separate library out of Fortran files. Ugh.
+	## add_library( magmaf ${ALLSRC_f} )
+	## target_link_libraries( magmaf
+	##     ${LAPACK_LIBRARIES}
+	##     ${CUDA_CUDART_LIBRARY}
+	##     ${CUDA_CUBLAS_LIBRARIES}
+	## )
+	
+	set( LIBS testing lapacktest magma )  ##magmaf )
 else()
 	# Unix doesn't seem to have a problem with mixing C, CUDA, and Fortran files
 	cuda_add_library( magma ${ALLSRC} )
@@ -229,7 +287,6 @@ else()
 		${CUDA_CUDART_LIBRARY}
 		${CUDA_CUBLAS_LIBRARIES}
 	)
-	set( LIBS testing lapacktest magma )
 endif()
 
 
@@ -247,8 +304,11 @@ add_library( testing ${TEST_SRC} )
 
 # ----------------------------------------
 # compile lapacktest library
+# Here, we only want _SRC files, not _ALLSRC files:
+# _ALLSRC includes [SDCZ]SRC, which has magma_[sdcz]_no_fortran.cpp,
+# while _SRC has all the Fortran files from LAPACK.
 include( ${CMAKE_SOURCE_DIR}/testing/lin/CMake )
-add_library( lapacktest ${testing_lin_ALLSRC} )
+add_library( lapacktest ${testing_lin_SRC} )
 
 
 # ----------------------------------------
@@ -263,3 +323,49 @@ foreach( TEST ${testing_ALLSRC} )
 	add_executable( ${EXE} ${TEST} )
 	target_link_libraries( ${EXE} ${LIBS} )
 endforeach()
+
+
+# ----------------------------------------
+# compile MAGMA sparse library
+include( ${CMAKE_SOURCE_DIR}/sparse-iter/src/CMake )
+include( ${CMAKE_SOURCE_DIR}/sparse-iter/control/CMake )
+include( ${CMAKE_SOURCE_DIR}/sparse-iter/blas/CMake )
+
+list( APPEND sparse_ALLSRC ${sparse-iter_src_ALLSRC} ${sparse-iter_control_ALLSRC} ${sparse-iter_blas_ALLSRC} )
+
+# sparse doesn't have Fortran at the moment, so no need for above shenanigans
+include_directories( sparse-iter/include )
+include_directories( sparse-iter/control )
+include_directories( testing )
+cuda_add_library( magma_sparse ${sparse_ALLSRC} )
+target_link_libraries( magma_sparse
+	magma
+	${LAPACK_LIBRARIES}
+	${CUDA_CUDART_LIBRARY}
+	${CUDA_CUBLAS_LIBRARIES}
+	${CUDA_cusparse_LIBRARY}
+)
+set( LIBS_SPARSE ${LIBS} magma_sparse )
+
+
+# ----------------------------------------
+# compile each sparse tester
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY sparse-iter/testing )
+include( ${CMAKE_SOURCE_DIR}/sparse-iter/testing/CMake )
+foreach( TEST ${sparse-iter_testing_ALLSRC} )
+	string( REGEX REPLACE "\\.(cpp|f90|F90)" "" EXE ${TEST} )
+	string( REGEX REPLACE "sparse-iter/testing/" "" EXE ${EXE} )
+	#message( "${TEST} --> ${EXE}" )
+	add_executable( ${EXE} ${TEST} )
+	target_link_libraries( ${EXE} ${LIBS_SPARSE} )
+endforeach()
+
+
+# ----------------------------------------
+message( "-- Flags" )
+message( "   CFLAGS       ${CMAKE_C_FLAGS}" )
+message( "   CXXFLAGS     ${CMAKE_CXX_FLAGS}" )
+message( "   NFLAGS       ${CUDA_NVCC_FLAGS}" )
+message( "   FFLAGS       ${CMAKE_Fortran_FLAGS}" )
+message( "   LIBS         ${LIBS}" )
+message( "   LIBS_SPARSE  ${LIBS_SPARSE}" )

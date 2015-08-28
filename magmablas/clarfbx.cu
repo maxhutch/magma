@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlarfbx.cu normal z -> c, Fri Jan 30 19:00:08 2015
+       @generated from zlarfbx.cu normal z -> c, Tue Aug 25 16:35:08 2015
 
 */
 #include "common_magma.h"
@@ -33,14 +33,14 @@ magma_cgemv_kernel1(int m, const magmaFloatComplex * __restrict__ V, int ldv,
 
     /*  lsum := v**H * C  */
     lsum = MAGMA_C_ZERO;
-    for( int j = i; j < m; j += BLOCK_SIZE )
+    for (int j = i; j < m; j += BLOCK_SIZE)
        lsum += MAGMA_C_MUL( MAGMA_C_CNJG( dV[j] ), c[j] );
     
     sum[i] = lsum;
     magma_sum_reduce< BLOCK_SIZE >( i, sum );
 
     __syncthreads();
-    if (i==0)
+    if (i == 0)
        dwork [blockIdx.x] = sum[0];
 }
 
@@ -65,19 +65,19 @@ magma_cgemv_kernel3(int m, const magmaFloatComplex * __restrict__ V, int ldv, ma
     __shared__ magmaFloatComplex sum[ BLOCK_SIZE ];
     magmaFloatComplex lsum;
 
-    if (i==0)
+    if (i == 0)
        c[0] = MAGMA_C_ONE;           
 
     /*  lsum := v**H * C  */
     lsum = MAGMA_C_ZERO;
-    for( int j = i; j < m; j += BLOCK_SIZE )
+    for (int j = i; j < m; j += BLOCK_SIZE)
        lsum += MAGMA_C_MUL( MAGMA_C_CNJG( dV[j] ), c[j] );
 
     sum[i] = lsum;
     magma_sum_reduce< BLOCK_SIZE >( i, sum );
 
     __syncthreads();
-    if (i==0)
+    if (i == 0)
        dwork [blockIdx.x] = -tau[0]*sum[0];
 }
 
@@ -94,11 +94,11 @@ magma_cgemv_kernel2(int m, int n, const magmaFloatComplex * __restrict__ V, int 
     V += j;
 
     lsum = MAGMA_C_ZERO;
-    if (j < m){
-       for(int k=0; k<n; k++)
-          lsum += MAGMA_C_MUL( V[k*ldv], x[k]);
-       
-       c[j] -= lsum;
+    if (j < m) {
+        for (int k=0; k < n; k++)
+            lsum += MAGMA_C_MUL( V[k*ldv], x[k]);
+        
+        c[j] -= lsum;
     }
 }
 
@@ -127,7 +127,7 @@ magma_clarfbx_gpu(
     magma_ctrmv_tkernel<<< k, k, 0, magma_stream >>>( dT, ldt, dwork, dwork+k);
  
     /* c = c - V dwork    */
-    dim3  blocks3( (m + BLOCK_SIZE-1) / BLOCK_SIZE );
+    dim3  blocks3( magma_ceildiv( m, BLOCK_SIZE ) );
     dim3 threads3( BLOCK_SIZE );     
     magma_cgemv_kernel2<<< blocks3, threads3, 0, magma_stream >>>( m, k, V, ldv, dwork+k, c);
 }

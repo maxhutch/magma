@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from zgetrf_panel_nopiv_batched.cpp normal z -> s, Fri Jan 30 19:00:19 2015
+   @generated from zgetrf_panel_nopiv_batched.cpp normal z -> s, Tue Aug 25 16:35:20 2015
 */
 #include "common_magma.h"
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -24,11 +24,11 @@ magma_sgetrf_panel_nopiv_batched(
     magma_int_t *info_array, magma_int_t gbstep,  
     magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue )
 {
-     magma_int_t arginfo = 0;
+    magma_int_t arginfo = 0;
     //===============================================
     //  panel factorization
     //===============================================
-    if(m < nb){
+    if (m < nb) {
         printf("magma_sgetrf_panel_nopiv_batched_q m < nb %d < %d \n",(int) m, (int) nb);
         return -101;
     }
@@ -47,9 +47,9 @@ magma_sgetrf_panel_nopiv_batched(
                        dW1_displ, dW2_displ, dW3_displ,
                        info_array, gbstep, batchCount, myhandle, queue);
     if (arginfo != 0) return arginfo;
-    if((m-nb) > 0){
+    if ((m-nb) > 0) {
         magma_sdisplace_pointers(dW0_displ, dA_array, ldda, nb, 0, batchCount, queue);
-        magmablas_strsm_work_batched(MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
+        magmablas_strsm_work_batched( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                               1, m-nb, nb, 
                               MAGMA_S_ONE,
                               dA_array,    ldda, 
@@ -58,7 +58,7 @@ magma_sgetrf_panel_nopiv_batched(
                               dinvA_array, dinvA_length, 
                               dW1_displ,   dW2_displ, 
                               dW3_displ,   dW4_displ,
-                              1, batchCount, queue);
+                              1, batchCount, queue, myhandle);
     }
 #endif
     return 0;
@@ -93,8 +93,8 @@ magma_sgetrf_recpanel_nopiv_batched(
     magma_malloc((void**)&dA_displ,   batchCount * sizeof(*dA_displ));
     
     magma_int_t panel_nb = n;
-    if(panel_nb <= min_recpnb){
-        // if(DEBUG>0)printf("calling bottom panel recursive with m=%d nb=%d\n",m,n);
+    if (panel_nb <= min_recpnb) {
+        // if (DEBUG > 0)printf("calling bottom panel recursive with m=%d nb=%d\n",m,n);
         //  panel factorization
         //magma_sdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount);
         arginfo = magma_sgetrf_panel_nopiv_batched(
@@ -107,7 +107,7 @@ magma_sgetrf_recpanel_nopiv_batched(
                            info_array, gbstep, batchCount, myhandle, queue);
         if (arginfo != 0) return arginfo;
     }
-    else{
+    else {
         // split A over two [A A2]
         // panel on A1, update on A2 then panel on A1    
         magma_int_t n1 = n/2;
@@ -133,7 +133,7 @@ magma_sgetrf_recpanel_nopiv_batched(
         //printf("calling update A2 with             m=%d n=%d k=%d\n",m2,n2,n1);
         
         magma_sdisplace_pointers(dW5_displ, dA_array, ldda, p1, p2, batchCount, queue); 
-        magmablas_strsm_work_batched(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
+        magmablas_strsm_work_batched( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
                               n1, n2,
                               MAGMA_S_ONE,
                               dA_displ,    ldda, // dA
@@ -142,15 +142,15 @@ magma_sgetrf_recpanel_nopiv_batched(
                               dinvA_array, dinvA_length,
                               dW1_displ,   dW2_displ, 
                               dW3_displ,   dW4_displ,
-                              1, batchCount, queue);
+                              1, batchCount, queue, myhandle);
 
         magma_sdisplace_pointers(dW1_displ, dA_array, ldda, p2, 0, batchCount, queue); 
         magma_sdisplace_pointers(dA_displ, dA_array, ldda, p2, p2, batchCount, queue); 
-        magmablas_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m2, n2, n1, 
-                              MAGMA_S_NEG_ONE, dW1_displ, ldda, 
-                              dW5_displ, ldda, 
-                              MAGMA_S_ONE,  dA_displ, ldda, 
-                              batchCount, queue);
+        magma_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m2, n2, n1, 
+                             MAGMA_S_NEG_ONE, dW1_displ, ldda, 
+                             dW5_displ, ldda, 
+                             MAGMA_S_ONE,  dA_displ, ldda, 
+                             batchCount, queue, myhandle);
         // panel on A2
         //printf("calling recursive panel on A2 with m=%d nb=%d min_recpnb %d\n",m2,n2,min_recpnb);
         arginfo = magma_sgetrf_recpanel_nopiv_batched(
@@ -170,4 +170,3 @@ magma_sgetrf_recpanel_nopiv_batched(
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-

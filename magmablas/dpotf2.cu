@@ -1,21 +1,17 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
-       @generated from zpotf2.cu normal z -> d, Fri Jan 30 19:00:10 2015
+       @generated from zpotf2.cu normal z -> d, Tue Aug 25 16:35:10 2015
 */
 #include "common_magma.h"
 
 #define PRECISION_d
 
-//#if (GPUSHMEM < 200)
 #define ddot_max_bs 512  // 512 is max threads for 1.x cards
-//#else
-//#define ddot_max_bs 1024
-//#endif
 
 void dpotf2_dscal(magma_int_t n, double *x, magma_int_t incx);
 void dpotf2_ddot(magma_int_t n, double *x, magma_int_t incx);
@@ -112,7 +108,7 @@ magma_dpotf2_gpu(
     double beta  = MAGMA_D_ONE;
 
     if (uplo == MagmaUpper) {
-        for(j = 0; j < n; j++) {
+        for (j = 0; j < n; j++) {
             dpotf2_ddot(j, dA(0,j), 1); // including ddot product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
@@ -131,7 +127,7 @@ magma_dpotf2_gpu(
         }
     }
     else {
-        for(j = 0; j < n; j++) {
+        for (j = 0; j < n; j++) {
             dpotf2_ddot(j, dA(j,0), ldda); // including ddot product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
@@ -170,14 +166,14 @@ __global__ void kernel_ddot(int n, double *x, int incx, int threadSize)
     double res = MAGMA_D_ZERO;
 
     if (tx < n) {
-       res = x[tx*incx];
+        res = x[tx*incx];
     }
 
     sdata[tx] = MAGMA_D_REAL(res * MAGMA_D_CNJG(res));
 
     __syncthreads();
 
-    for(int s = blockDim.x/2; s > 32; s >>= 1 ) {
+    for (int s = blockDim.x/2; s > 32; s >>= 1 ) {
         if (tx < s) {
             sdata[tx] += sdata[tx+s];
         }
@@ -202,12 +198,12 @@ __global__ void kernel_ddot(int n, double *x, int incx, int threadSize)
 
 void dpotf2_ddot(magma_int_t n, double *x, magma_int_t incx)
 {
-/*
+    /*
     Specialized Ddot
     1) performs ddot sum = x[0:n-1]*conj(x[0:n-1])
     2) updates x[n] = sqrt(x[n]-sum);
 
-*/
+    */
     if (n > ddot_max_bs) {
         fprintf( stderr, "n = %d > %d is not supported in dpotf2_ddot\n", (int) n, (int) ddot_max_bs);
         return;
@@ -245,7 +241,7 @@ __global__ void kernel_dscal(int n, double *x, int incx)
 
     __syncthreads();
 
-    if ( id < n && id >0) {
+    if ( id < n && id > 0) {
         x[id*incx] = x[id*incx] * factor;
     }
 }
@@ -253,12 +249,11 @@ __global__ void kernel_dscal(int n, double *x, int incx)
 
 void dpotf2_dscal(magma_int_t n, double *x, magma_int_t incx)
 {
-/*
+    /*
     Specialized Dscal perform x[1:n-1]/x[0]
-
-*/
+    */
     dim3 threads(dscal_bs, 1, 1);
-    int num_blocks = (n - 1)/dscal_bs + 1;
+    int num_blocks = magma_ceildiv( n, dscal_bs );
     dim3 grid(num_blocks,1);
     kernel_dscal<<< grid, threads, 0, magma_stream >>> (n, x, incx);
 }
@@ -304,7 +299,7 @@ __global__ void kernel_dlacgv(int n, double *x, int incx)
 void dlacgv(magma_int_t n, double *x, magma_int_t incx)
 {
     dim3 threads(dlacgv_bs, 1, 1);
-    int num_blocks = (n - 1)/dlacgv_bs + 1;
+    int num_blocks = magma_ceildiv( n, dlacgv_bs );
     dim3 grid(num_blocks,1);
     kernel_dlacgv<<< grid, threads, 0, magma_stream >>> (n, x, incx);
 }

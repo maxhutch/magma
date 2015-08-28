@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -60,17 +60,18 @@
             if SIDE = MagmaRight, N >= K >= 0.
 
     @param[in]
-    dA      COMPLEX_16 array, dimension (LDA,K)
+    dA      COMPLEX_16 array on the GPU, dimension (LDDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
-            ZGEQRF in the first k columns of its array argument A.
+            ZGEQRF in the first k columns of its array argument dA.
             The diagonal and the upper part
             are destroyed, the reflectors are not modified.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array DA.
-            LDDA >= max(1,M) if SIDE = MagmaLeft; LDDA >= max(1,N) if SIDE = MagmaRight.
+            The leading dimension of the array dA.
+            If SIDE = MagmaLeft,  LDDA >= max(1,M);
+            if SIDE = MagmaRight, LDDA >= max(1,N).
 
     @param[in]
     tau     COMPLEX_16 array, dimension (K)
@@ -78,13 +79,13 @@
             reflector H(i), as returned by ZGEQRF.
 
     @param[in,out]
-    dC      COMPLEX_16 array, dimension (LDDC,N)
+    dC      COMPLEX_16 array on the GPU, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
             On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).
 
     @param[in]
     lddc    INTEGER
-            The leading dimension of the array C. LDDC >= max(1,M).
+            The leading dimension of the array dC. LDDC >= max(1,M).
 
     @param[in]
     wA      (workspace) COMPLEX_16 array, dimension
@@ -120,7 +121,7 @@ magma_zunmqr2_gpu(
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
     /* Allocate work space on the GPU */
-    magmaDoubleComplex_ptr dwork;
+    magmaDoubleComplex_ptr dwork = NULL;
 
     magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
     magmaDoubleComplex c_one  = MAGMA_Z_ONE;
@@ -142,11 +143,9 @@ magma_zunmqr2_gpu(
     if (left) {
         nq = m;
         //nw = n;
-        magma_zmalloc( &dwork, (n + 64)*64 );  // TODO after checking args, else memory leak!
     } else {
         nq = n;
         //nw = m;
-        magma_zmalloc( &dwork, (m + 64)*64 );  // TODO after checking args, else memory leak!
     }
     if (! left && side != MagmaRight) {
         *info = -1;
@@ -188,6 +187,17 @@ magma_zunmqr2_gpu(
         i1 = ((k - 1)/nb)*nb + 1;
         i2 = 1;
         step = -nb;
+    }
+    
+    if ( left ) {
+        magma_zmalloc( &dwork, (n + 64)*64 );
+    }
+    else {
+        magma_zmalloc( &dwork, (m + 64)*64 );
+    }
+    if ( dwork == NULL ) {
+        *info = MAGMA_ERR_DEVICE_ALLOC;
+        goto cleanup;
     }
 
     // silence "uninitialized" warnings
@@ -242,6 +252,7 @@ magma_zunmqr2_gpu(
                           dwork + ib*ib, lddwork);
     }
 
+cleanup:
     magma_free( dwork );
 
     return *info;

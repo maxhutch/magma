@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgetf2.cu normal z -> s, Fri Jan 30 19:00:10 2015
+       @generated from zgetf2.cu normal z -> s, Tue Aug 25 16:35:10 2015
 */
 #include "common_magma.h"
 
@@ -13,11 +13,7 @@
 
 #define sswap_bs 64
 
-//#if (GPUSHMEM < 200)
 #define sger_bs 512  // 512 is max threads for 1.x cards
-//#else
-//#define sger_bs 1024
-//#endif
 
 void magma_sgetf2_swap(
     magma_int_t n, float *x, magma_int_t i, magma_int_t j, magma_int_t incx);
@@ -51,14 +47,14 @@ void magma_sscal_sger(
             On CUDA architecture 1.x cards, N <= 512.
 
     @param[in,out]
-    A       REAL array, dimension (LDA,N)
+    dA      REAL array, dimension (LDDA,N)
             On entry, the m by n matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
-    lda     INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
+    ldda    INTEGER
+            The leading dimension of the array A.  LDDA >= max(1,M).
 
     @param[out]
     ipiv    INTEGER array, dimension (min(M,N))
@@ -107,7 +103,7 @@ magma_sgetf2_gpu(
     magma_int_t min_mn = min(m, n);
     magma_int_t j, jp;
     
-    for( j=0; j < min_mn; j++ ) {
+    for (j=0; j < min_mn; j++) {
         cudaDeviceSetCacheConfig( cudaFuncCachePreferShared );
 
         // Find pivot and test for singularity.
@@ -151,11 +147,11 @@ void kernel_sswap(int n, float *x, int i, int j, int incx)
 
 void magma_sgetf2_swap(magma_int_t n, float *x, magma_int_t i, magma_int_t j, magma_int_t incx)
 {
-/*
+    /*
     sswap two row vectors: ith and jth
-*/
+    */
     dim3 threads(sswap_bs, 1, 1);
-    int num_blocks = (n - 1)/sswap_bs + 1;
+    int num_blocks = magma_ceildiv( n, sswap_bs );
     dim3 grid(num_blocks,1);
     kernel_sswap<<< grid, threads, 0, magma_stream >>>(n, x, i, j, incx);
 }
@@ -188,7 +184,7 @@ void kernel_sscal_sger(int m, int n, float *A, int lda)
         A[tid] = reg;
 
         #pragma unroll
-        for(int i=1; i < n; i++) {
+        for (int i=1; i < n; i++) {
             A[tid + i*lda] += (MAGMA_S_NEG_ONE) * shared_y[i] * reg;
         }
     }
@@ -197,16 +193,14 @@ void kernel_sscal_sger(int m, int n, float *A, int lda)
 
 void magma_sscal_sger(magma_int_t m, magma_int_t n, float *A, magma_int_t lda)
 {
-/*
-
+    /*
     Specialized kernel which merged sscal and sger the two kernels
     1) sscale the first column vector A(1:M-1,0) with 1/A(0,0);
     2) Performe a sger Operation for trailing matrix of A(1:M-1,1:N-1) += alpha*x*y**T, where 
        alpha := -1.0; x := A(1:M-1,0) and y:= A(0,1:N-1);
-
-*/
+    */
     dim3 threads(sger_bs, 1, 1);
-    int num_blocks = (m - 1)/sger_bs + 1;
+    int num_blocks = magma_ceildiv( m, sger_bs );
     dim3 grid(num_blocks,1);
     size_t shared_size = sizeof(float)*(n);
     kernel_sscal_sger<<< grid, threads, shared_size, magma_stream>>>(m, n, A, lda);

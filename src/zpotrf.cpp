@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -121,7 +121,7 @@ magma_zpotrf(
         return magma_zpotrf_m(ngpu, uplo, n, A, lda, info);
     }
 
-    ldda = ((n+31)/32)*32;
+    ldda = magma_roundup( n, 32 );
     
     if (MAGMA_SUCCESS != magma_zmalloc( &dA, (n)*ldda )) {
         /* alloc failed so call the non-GPU-resident version */

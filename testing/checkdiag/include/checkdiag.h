@@ -24,17 +24,17 @@
     extern "C" {
 #endif
 
-
-
 /* Source: dcheck_eig.f */
 #define dcheck_eig FORTRAN_WRAPPER(dcheck_eig)
-void dcheck_eig(char *JOBZ, int  *MATYPE, int  *N, int  *NB,
-                       double* A, int  *LDA, double *AD, double *AE, double *D1, double *EIG,
-                double *Z, int  *LDZ, double *WORK, double *RWORK, double *RESU);
+void dcheck_eig(
+    char *JOBZ, magma_int_t  *MATYPE, magma_int_t  *N, magma_int_t  *NB,
+    double* A, magma_int_t  *LDA,
+    double *AD, double *AE, double *D1, double *EIG,
+    double *Z, magma_int_t  *LDZ,
+    double *WORK, double *RWORK, double *RESU);
 
 #ifdef __cplusplus
     }   /* extern "C" */
 #endif
 
 #endif /* CHECKDIAG_H */
-

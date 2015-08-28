@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -39,16 +39,16 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
-    printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    printf("    N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
-    printf("=====================================================\n");
+    printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
+    printf("%%   N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
+    printf("%%====================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda    = N;
-            ldda   = ((N+31)/32)*32;
+            ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
             size   = lda*N;
             // load strictly lower triangle, save strictly upper triangle
             gbytes = sizeof(magmaDoubleComplex) * 1.*N*(N-1) / 1e9;
@@ -70,10 +70,11 @@ int main( int argc, char** argv)
                =================================================================== */
             magma_zsetmatrix( N, N, h_A, lda, d_A, ldda );
             
-            gpu_time = magma_sync_wtime( 0 );
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             //magmablas_zsymmetrize( opts.uplo, N-2, d_A+1+ldda, ldda );  // inset by 1 row & col
             magmablas_zsymmetrize( opts.uplo, N, d_A, ldda );
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
             /* =====================================================================

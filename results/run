@@ -1,0 +1,41 @@
+#!/bin/tcsh
+#
+# Prints date and command to log and stdout; runs command.
+# Useful to save information about each run with the run's output.
+# Ex:
+#
+#     ./run ./testing_dgetrf --range 100:300:100 > out.txt
+#
+# saves into log.txt:
+#     
+#     Tue May  5 00:24:00 EDT 2015
+#     ../testing/testing_sgetrf --range 100:300:100
+#     Tue May  5 00:24:01 EDT 2015
+#     
+# and saves into out.txt:
+#
+#     Tue May  5 00:24:00 EDT 2015
+#     ../testing/testing_sgetrf --range 100:300:100
+#     MAGMA 1.6.1 svn compiled for CUDA capability >= 3.0
+#     CUDA runtime 5050, driver 6050. OpenMP threads 4. 
+#     ndevices 1
+#     device 0: GeForce GT 750M, 925.5 MHz clock, 2047.6 MB memory, capability 3.0
+#     Usage: ../testing/testing_sgetrf [options] [-h|--help]
+#     
+#     ngpu 1
+#         M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |PA-LU|/(N*|A|)
+#     =========================================================================
+#       100   100     ---   (  ---  )      0.48 (   0.00)     ---   
+#       200   200     ---   (  ---  )      9.63 (   0.00)     ---   
+#       300   300     ---   (  ---  )      3.07 (   0.01)     ---   
+#     Tue May  5 00:24:01 EDT 2015
+#     
+# @author Mark Gates
+
+(echo && date && echo $*) >>&! log.txt
+
+(echo && date && echo $*)
+$*
+date
+
+date >>&! log.txt

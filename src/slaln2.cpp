@@ -3,7 +3,7 @@
     Later cleaned up by hand, particularly to be thread-safe (no static variables).
     
     @author Mark Gates
-    @generated from dlaln2.cpp normal d -> s, Fri Jan 30 19:00:19 2015
+    @generated from dlaln2.cpp normal d -> s, Tue Aug 25 16:35:20 2015
 */
 #include "common_magma.h"
 
@@ -363,11 +363,11 @@ magma_int_t magma_slaln2(
             icmax = 0;
         
             for (j = 1; j <= 4; ++j) {
-            if (   fabsf( crv[j - 1] ) + fabsf( civ[j - 1] ) > cmax) {
-                cmax = fabsf( crv[j - 1] ) + fabsf( civ[j - 1] );
-                icmax = j;
-            }
-            /* L20: */
+                if (fabsf( crv[j - 1] ) + fabsf( civ[j - 1] ) > cmax) {
+                    cmax = fabsf( crv[j - 1] ) + fabsf( civ[j - 1] );
+                    icmax = j;
+                }
+                /* L20: */
             }
         
             /* If norm(C) < SMINI, use SMINI*identity. */

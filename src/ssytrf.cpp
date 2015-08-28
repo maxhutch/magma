@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zhetrf.cpp normal z -> s, Fri Jan 30 19:00:16 2015
+       @generated from zhetrf.cpp normal z -> s, Tue Aug 25 16:35:17 2015
 */
 
 #include "common_magma.h"
@@ -31,12 +31,12 @@
     Arguments
     ---------
     @param[in]
-    UPLO    CHARACTER*1
+    uplo    CHARACTER*1
       -     = 'U':  Upper triangle of A is stored;
       -     = 'L':  Lower triangle of A is stored.
  
     @param[in]
-    N       INTEGER
+    n       INTEGER
             The order of the matrix A.  N >= 0.
   
     @param[in,out]
@@ -53,11 +53,11 @@
             to obtain the factor U or L (see below for further details).
  
     @param[in]
-    LDA     INTEGER
+    lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
  
     @param[out]
-    IPIV    INTEGER array, dimension (N)
+    ipiv    INTEGER array, dimension (N)
             Details of the interchanges and the block structure of D.
             If IPIV(k) > 0, then rows and columns k and IPIV(k) were
             interchanged and D(k,k) is a 1-by-1 diagonal block.
@@ -68,7 +68,7 @@
             interchanged and D(k:k+1,k:k+1) is a 2-by-2 diagonal block.
 
     @param[out]
-    INFO    INTEGER
+    info    INTEGER
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
       -     > 0:  if INFO = i, D(i,i) is exactly zero.  The factorization
@@ -112,7 +112,7 @@
     If s = 2, the lower triangle of D(k) overwrites A(k,k), A(k+1,k),
     and A(k+1,k+1), and v overwrites A(k+2:n,k:k+1).
  
-    @ingroup magma_ssytrf_comp
+    @ingroup magma_ssysv_comp
     ********************************************************************/
 extern "C" magma_int_t
 magma_ssytrf(
@@ -144,7 +144,7 @@ magma_ssytrf(
         return *info;
     }
 
-    magma_int_t ldda = 32*((n+31)/32);
+    magma_int_t ldda = magma_roundup( n, 32 );
     float *dA, *dW;
     if ((MAGMA_SUCCESS != magma_smalloc( &dA, n*ldda  )) ||
         (MAGMA_SUCCESS != magma_smalloc( &dW, (1+nb)*ldda ))) {
@@ -163,20 +163,19 @@ magma_ssytrf(
     trace_gpu_start( 0, 0, "set", "setA" );
     //magma_ssetmatrix_async( n, n, A(0,0), lda, dA(0,0), ldda, stream[0] );
     if ( upper ) {
-       for (int k = 0; k < n; k+=nb ) {
-           kb = min(nb, n-k);
-           magma_ssetmatrix_async( k+kb, kb, A(0,k), lda, dA(0,k), ldda, stream[0] );
-       }
+        for (int k = 0; k < n; k += nb ) {
+            kb = min(nb, n-k);
+            magma_ssetmatrix_async( k+kb, kb, A(0,k), lda, dA(0,k), ldda, stream[0] );
+        }
     } else {
-       for (int k = 0; k < n; k+=nb ) {
-           kb = min(nb, n-k);
-           magma_ssetmatrix_async( n-k, kb, A(k,k), lda, dA(k,k), ldda, stream[0] );
-       }
+        for (int k = 0; k < n; k += nb ) {
+            kb = min(nb, n-k);
+            magma_ssetmatrix_async( n-k, kb, A(k,k), lda, dA(k,k), ldda, stream[0] );
+        }
     }
     trace_gpu_end( 0, 0 );
 
     if ( upper ) {
-
         /* Factorize A as U*D*U' using the upper triangle of A
 
            K is the main loop index, decreasing from N to 1 in steps of
@@ -184,19 +183,17 @@ magma_ssytrf(
            KB is either NB or NB-1, or K for the last block */
 
         kb = min(n,nb);
-        for (int k = n-1; k >= 0; k-=kb ) {
+        for (int k = n-1; k >= 0; k -= kb ) {
             nk = k+1;
             kb = min(nb, nk);
 
             if ( k+1 > nb ) {
-
                 /* Factorize columns k-kb+1:k of A and use blocked code to
                    update columns 1:k-kb */
 
-                magma_slasyf_gpu( MagmaUpper, nk, kb, &kb, A( 0, 0 ), lda, dA( 0, 0 ), ldda, 
+                magma_slasyf_gpu( MagmaUpper, nk, kb, &kb, A( 0, 0 ), lda, dA( 0, 0 ), ldda,
                                   &ipiv[0], dW, ldda, stream, event, &iinfo );
             } else {
-
                 /* Use unblocked code to factorize columns 1:k of A */
 
                 magma_queue_sync( stream[0] );
@@ -210,7 +207,6 @@ magma_ssytrf(
             if ( *info == 0 && iinfo > 0 ) *info = iinfo;
         }
     } else {
-
         /* Factorize A as L*D*L' using the lower triangle of A
 
            K is the main loop index, increasing from 1 to N in steps of
@@ -225,8 +221,8 @@ magma_ssytrf(
                    update columns k+kb:n */
                 magma_slasyf_gpu( MagmaLower, nk, nb, &kb, A( k, k ), lda, dA( k, k ), ldda,
                                   &ipiv[k], dW, ldda, stream, event, &iinfo );
-
-            } else {
+            }
+            else {
                 /* Use unblocked code to factorize columns k:n of A */
                 magma_queue_sync( stream[0] );
                 magma_sgetmatrix( nk,nk, dA(k,k),ldda, A(k,k),lda );

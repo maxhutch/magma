@@ -15,6 +15,9 @@ CSRC = \
 	cbicgstab.cpp \
 	cbicgstab_merge.cpp \
 	cbicgstab_merge2.cpp \
+	cidr.cpp \
+	cidr_acc.cpp \
+	cidr_strms.cpp \
 	citerref.cpp \
 	cjacobi.cpp \
 	cbaiter.cpp \
@@ -22,8 +25,10 @@ CSRC = \
 	cbpcg.cpp \
 	cfgmres.cpp \
 	cpbicgstab.cpp \
+	cpidr.cpp \
 	clobpcg.cpp \
 	citerilu.cpp \
+	magma_cqr_wrapper.cpp \
 	magma_ccustomspmv.cpp \
 	magma_ccustomprecond.cpp \
 	ccumilu.cpp \
@@ -32,7 +37,8 @@ CSRC = \
 	magma_c_precond_wrapper.cpp \
 	magma_c_solver_wrapper.cpp \
 	cresidual.cpp \
-	cresidualvec.cpp
+	cresidualvec.cpp \
+	cjacobidomainoverlap.cpp
 
 DSRC = \
 	dcg.cpp \
@@ -41,6 +47,9 @@ DSRC = \
 	dbicgstab.cpp \
 	dbicgstab_merge.cpp \
 	dbicgstab_merge2.cpp \
+	didr.cpp \
+	didr_acc.cpp \
+	didr_strms.cpp \
 	diterref.cpp \
 	djacobi.cpp \
 	dbaiter.cpp \
@@ -48,8 +57,10 @@ DSRC = \
 	dbpcg.cpp \
 	dfgmres.cpp \
 	dpbicgstab.cpp \
+	dpidr.cpp \
 	dlobpcg.cpp \
 	diterilu.cpp \
+	magma_dqr_wrapper.cpp \
 	magma_dcustomspmv.cpp \
 	magma_dcustomprecond.cpp \
 	dcumilu.cpp \
@@ -58,7 +69,8 @@ DSRC = \
 	magma_d_precond_wrapper.cpp \
 	magma_d_solver_wrapper.cpp \
 	dresidual.cpp \
-	dresidualvec.cpp
+	dresidualvec.cpp \
+	djacobidomainoverlap.cpp
 
 SSRC = \
 	scg.cpp \
@@ -67,6 +79,9 @@ SSRC = \
 	sbicgstab.cpp \
 	sbicgstab_merge.cpp \
 	sbicgstab_merge2.cpp \
+	sidr.cpp \
+	sidr_acc.cpp \
+	sidr_strms.cpp \
 	siterref.cpp \
 	sjacobi.cpp \
 	sbaiter.cpp \
@@ -74,8 +89,10 @@ SSRC = \
 	sbpcg.cpp \
 	sfgmres.cpp \
 	spbicgstab.cpp \
+	spidr.cpp \
 	slobpcg.cpp \
 	siterilu.cpp \
+	magma_sqr_wrapper.cpp \
 	magma_scustomspmv.cpp \
 	magma_scustomprecond.cpp \
 	scumilu.cpp \
@@ -84,4 +101,5 @@ SSRC = \
 	magma_s_precond_wrapper.cpp \
 	magma_s_solver_wrapper.cpp \
 	sresidual.cpp \
-	sresidualvec.cpp
+	sresidualvec.cpp \
+	sjacobidomainoverlap.cpp

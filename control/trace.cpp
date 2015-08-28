@@ -76,24 +76,22 @@ void trace_init( int ncore, int ngpu, int nqueue, magma_queue_t* queues )
             glog.gpu_id[t] = 0;
             glog.queues[t] = queues[t];
         }
-        #ifdef HAVE_CUBLAS
-        cudaSetDevice( dev );
-        cudaDeviceSynchronize();
-        #endif
+        magma_setdevice( dev );
+        magma_device_sync();
     }
     // now that all GPUs are sync'd, record start time
     for( int dev = 0; dev < ngpu; ++dev ) {
-        cudaSetDevice( dev );
+        magma_setdevice( dev );
         for( int s = 0; s < nqueue; ++s ) {
             int t = dev*glog.nqueue + s;
-            cudaEventCreate( &glog.gpu_first[t] );
-            cudaEventRecord(  glog.gpu_first[t], glog.queues[t] );
+            magma_event_create( &glog.gpu_first[t] );
+            magma_event_record(  glog.gpu_first[t], glog.queues[t] );
         }
     }
     // sync again
     for( int dev = 0; dev < ngpu; ++dev ) {
-        cudaSetDevice( dev );
-        cudaDeviceSynchronize();
+        magma_setdevice( dev );
+        magma_device_sync();
     }
     glog.cpu_first = magma_wtime();
 }
@@ -131,10 +129,8 @@ void trace_gpu_start( int dev, int s, const char* tag, const char* lbl )
 #if TRACE_METHOD == 2
     glog.gpu_start[t][id] = magma_wtime();
 #else
-    #ifdef HAVE_CUBLAS
-    cudaEventCreate( &glog.gpu_start[t][id] );
-    cudaEventRecord(  glog.gpu_start[t][id], glog.queues[t] );
-    #endif
+    magma_event_create( &glog.gpu_start[t][id] );
+    magma_event_record(  glog.gpu_start[t][id], glog.queues[t] );
 #endif
     magma_strlcpy( glog.gpu_tag  [t][id], tag, MAX_LABEL_LEN );
     magma_strlcpy( glog.gpu_label[t][id], lbl, MAX_LABEL_LEN );
@@ -146,8 +142,8 @@ void trace_gpu_end( int dev, int s )
 {
     int t = dev*glog.nqueue + s;
     int id = glog.gpu_id[t];
-    cudaEventCreate( &glog.gpu_end[t][id] );
-    cudaEventRecord(  glog.gpu_end[t][id], glog.queues[t] );
+    magma_event_create( &glog.gpu_end[t][id] );
+    magma_event_record(  glog.gpu_end[t][id], glog.queues[t] );
     if ( id+1 < MAX_EVENTS ) {
         glog.gpu_id[t] = id+1;
     }
@@ -173,8 +169,8 @@ void trace_finalize( const char* filename, const char* cssfile )
     
     // sync devices
     for( int dev = 0; dev < glog.ngpu; ++dev ) {
-        cudaSetDevice( dev );
-        cudaDeviceSynchronize();
+        magma_setdevice( dev );
+        magma_device_sync();
     }
     double time = magma_wtime() - glog.cpu_first;
     
@@ -271,7 +267,7 @@ void trace_finalize( const char* filename, const char* cssfile )
                      margin + (dev*glog.nqueue + s + glog.ncore)*(height + space) + height - pad,
                      label, height,
                      dev, s );
-            cudaSetDevice( dev );
+            magma_setdevice( dev );
             float start, end;
             for( int i = 0; i < glog.gpu_id[t]; ++i ) {
                 #if TRACE_METHOD == 2
@@ -284,7 +280,7 @@ void trace_finalize( const char* filename, const char* cssfile )
                     cudaEventElapsedTime( &start, glog.gpu_first[t], glog.gpu_start[t][i] );
                     start *= 1e-3;  // ms to seconds
                 #endif
-                cudaEventElapsedTime( &end  , glog.gpu_first[t], glog.gpu_end  [t][i] );
+                cudaEventElapsedTime( &end, glog.gpu_first[t], glog.gpu_end  [t][i] );
                 end   *= 1e-3;  // ms to seconds
                 fprintf( trace_file, format,
                          left + start*xscale,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Adrien REMY
@@ -22,7 +22,7 @@ init_butterfly(
 {
     magma_int_t idx;
     double u1, v1;
-    for (idx=0; idx<n; idx++){
+    for (idx=0; idx < n; idx++) {
         u1 = exp((((rand() * 1.0)/RAND_MAX)-0.5)/10);
         v1 = exp((((rand() * 1.0)/RAND_MAX)-0.5)/10);
         u[idx] = MAGMA_Z_MAKE(u1,u1);
@@ -35,7 +35,7 @@ init_butterfly(
 /**
     Purpose
     -------
-    Solves a system of linear equations
+    ZGERBT solves a system of linear equations
        A * X = B
     where A is a general n-by-n matrix and X and B are n-by-nrhs matrices.
     Random Butterfly Tranformation is applied on A and B, then
@@ -54,7 +54,6 @@ init_butterfly(
      -         = MagmaTrue:     new matrices are generated for U and V
      -         = MagmaFalse:    matrices U and V given as parameter are used
 
-    
     @param[in]
     n       INTEGER
             The order of the matrix A.  n >= 0.
@@ -149,7 +148,7 @@ magma_zgerbt_batched(
     }
 
     /* Initialize Butterfly matrix on the CPU*/
-    if(gen == MagmaTrue)
+    if (gen == MagmaTrue)
         init_butterfly(2*n, U, V);
 
     /* Copy the butterfly to the GPU */
@@ -162,7 +161,7 @@ magma_zgerbt_batched(
     /* Compute U^T.b on the GPU*/
 
     // TODO fix for multiple RHS
-    for(int i= 0; i < nrhs; i++)
+    for (int i= 0; i < nrhs; i++)
         magmablas_zprbt_mtv_batched(n, du, dB_array, batchCount, queue);
 
     magma_free( du );

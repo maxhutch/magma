@@ -1,9 +1,9 @@
 /*
--- MAGMA (version 1.1) --
+-- MAGMA (version 1.6.3-beta1) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date
+ @date August 2015
 
  @precisions mixed zc -> ds
  @author Hartwig Anzt
@@ -107,23 +107,6 @@ magma_zlag2c_CSR_DENSE_convert(
 /* ////////////////////////////////////////////////////////////////////////////
  -- MAGMA_SPARSE function definitions / Data on GPU
 */
-magma_int_t
-magma_zcpgmres(
-    magma_z_matrix A, 
-    magma_z_matrix b, 
-    magma_z_matrix *x,
-    magma_z_solver_par *solver_par,
-    magma_z_preconditioner *precond_par,
-    magma_queue_t queue );
-
-magma_int_t
-magma_zcpbicgstab(
-    magma_z_matrix A, 
-    magma_z_matrix b, 
-    magma_z_matrix *x,
-    magma_z_solver_par *solver_par,
-    magma_z_preconditioner *precond_par,
-    magma_queue_t queue );
 
 magma_int_t
 magma_zcir(
@@ -134,14 +117,6 @@ magma_zcir(
     magma_z_preconditioner *precond_par,
     magma_queue_t queue );
 
-magma_int_t
-magma_zcpir(
-    magma_z_matrix A, 
-    magma_z_matrix b, 
-    magma_z_matrix *x,
-    magma_z_solver_par *solver_par, 
-    magma_z_preconditioner *precond_par,
-    magma_queue_t queue );
 
 
 /* ////////////////////////////////////////////////////////////////////////////

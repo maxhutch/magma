@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -77,10 +77,7 @@ magma_zindexsort(
         x[j]=temp;
         CHECK( magma_zindexsort( x, first, j-1, queue ));
         CHECK( magma_zindexsort( x, j+1, last, queue ));
-
     }
 cleanup:
     return info;
-
 }
-

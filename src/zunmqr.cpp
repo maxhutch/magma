@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Mark Gates
@@ -201,7 +201,7 @@ magma_zunmqr(
          * nb*nb  for dT
          * lddc*n for dC.
          */
-        magma_int_t lddc = ((m+31)/32)*32;
+        magma_int_t lddc = magma_roundup( m, 32 );
         magmaDoubleComplex_ptr dwork, dV, dT, dC;
         magma_zmalloc( &dwork, (nw + nq + nb)*nb + lddc*n );
         if ( dwork == NULL ) {
@@ -260,9 +260,9 @@ magma_zunmqr(
             /* 1) set upper triangle of panel in A to identity,
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
-            zpanel_to_q( MagmaUpper, ib, A(i,i), lda, T2 );
+            magma_zpanel_to_q( MagmaUpper, ib, A(i,i), lda, T2 );
             magma_zsetmatrix( nq_i,  ib, A(i,i), lda, dV(0,0), nq_i );
-            zq_to_panel( MagmaUpper, ib, A(i,i), lda, T2 );
+            magma_zq_to_panel( MagmaUpper, ib, A(i,i), lda, T2 );
 
             if (left) {
                 /* H or H**H is applied to C(i:m,1:n) */

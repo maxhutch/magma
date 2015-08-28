@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        @author Adrien REMY
 
        @precisions normal z -> s d c
@@ -14,9 +14,9 @@
 /**
     Purpose
     -------
-    Solves a system of linear equations A*X = B with a complex
-    Hermitian matrix A using the factorization A = U*D*U**H or
-    A = L*D*L**H computed by ZHETRF_NOPIV_GPU.
+    ZHETRS solves a system of linear equations A*X = B with a complex
+    Hermitian matrix A using the factorization A = U * D * U**H or
+    A = L * D * L**H computed by ZHETRF_NOPIV_GPU.
     
     Arguments
     ---------
@@ -93,30 +93,31 @@ magma_zhetrs_nopiv_gpu(
     }
 
 
-
-  if (upper) {
-            magmablas_ztrsm( MagmaLeft, MagmaUpper, 
-                           MagmaConjTrans, MagmaUnit, 
-                           n, nrhs, c_one,
-                           dA, ldda, dB, lddb );
-            magmablas_zlascl_diag(MagmaUpper, 1, n, dA, ldda, dB,1, info);
-            magmablas_ztrsm( MagmaLeft, MagmaUpper, 
-                           MagmaNoTrans, MagmaUnit, 
-                           n, nrhs, c_one,
-                           dA, ldda, dB, lddb );
-        } else {
-
-            magma_ztrsm( MagmaLeft, MagmaLower, 
-                           MagmaNoTrans, MagmaUnit, 
-                           n, nrhs, c_one,
-                           dA, ldda, dB, lddb );
-            magmablas_zlascl_diag(MagmaLower, 1, n, dA, ldda, dB,1, info);
-            magmablas_ztrsm( MagmaLeft, MagmaLower, 
-                           MagmaConjTrans, MagmaUnit, 
-                           n, nrhs, c_one,
-                           dA, ldda, dB, lddb );
-        }
-
+    if (upper) {
+        magma_ztrsm( MagmaLeft, MagmaUpper,
+                     MagmaConjTrans, MagmaUnit,
+                     n, nrhs, c_one,
+                     dA, ldda, dB, lddb );
+        magmablas_zlascl_diag(MagmaUpper, n, nrhs, dA, ldda, dB,lddb, info);
+        //for (int i = 0; i < nrhs; i++)
+        //    magmablas_zlascl_diag(MagmaUpper, 1, n, dA, ldda, dB+(lddb*i),1, info);
+        magma_ztrsm( MagmaLeft, MagmaUpper,
+                     MagmaNoTrans, MagmaUnit,
+                     n, nrhs, c_one,
+                     dA, ldda, dB, lddb );
+    } else {
+        magma_ztrsm( MagmaLeft, MagmaLower,
+                     MagmaNoTrans, MagmaUnit,
+                     n, nrhs, c_one,
+                     dA, ldda, dB, lddb );
+        magmablas_zlascl_diag(MagmaUpper, n, nrhs, dA, ldda, dB,lddb, info);
+        //for (int i = 0; i < nrhs; i++)
+        //    magmablas_zlascl_diag(MagmaLower, 1, n, dA, ldda, dB+(lddb*i),1, info);
+        magma_ztrsm( MagmaLeft, MagmaLower,
+                     MagmaConjTrans, MagmaUnit,
+                     n, nrhs, c_one,
+                     dA, ldda, dB, lddb );
+    }
     
-     return *info;
+    return *info;
 }

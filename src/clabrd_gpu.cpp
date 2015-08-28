@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
-       @generated from zlabrd_gpu.cpp normal z -> c, Fri Jan 30 19:00:19 2015
+       @generated from zlabrd_gpu.cpp normal z -> c, Tue Aug 25 16:35:20 2015
 
 */
 #include "common_magma.h"
@@ -411,7 +411,6 @@ magma_clabrd_gpu(
     else {
         /* Reduce to lower bidiagonal form */
         for (i = 1; i <= nb; ++i) {
-        
             /* Update A(i,i:n) */
             i__2 = n - i + 1;
             i__3 = i - 1;

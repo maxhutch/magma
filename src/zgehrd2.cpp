@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        
@@ -131,7 +131,7 @@ magma_zgehrd2(
     magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
 
     magma_int_t nb = magma_get_zgehrd_nb(n);
-    magma_int_t ldda = ((n+31)/32)*32;
+    magma_int_t ldda = magma_roundup( n, 32 );
 
     magma_int_t i, nh, iws;
     magma_int_t iinfo;
@@ -197,7 +197,7 @@ magma_zgehrd2(
         magmaDoubleComplex *dA = dwork + nb*ldda*2;
         magmaDoubleComplex *dT = dwork + nb*ldda*2 + n*ldda;
         ldwork = ldda;
-            
+        
         magmaDoubleComplex *T;
         magma_zmalloc_cpu( &T, nb*nb );
         if ( T == NULL ) {

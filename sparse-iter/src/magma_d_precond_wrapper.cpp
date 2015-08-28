@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date
+       @date August 2015
 
-       @generated from magma_z_precond_wrapper.cpp normal z -> d, Mon May  4 11:57:23 2015
+       @generated from magma_z_precond_wrapper.cpp normal z -> d, Tue Aug 25 16:35:33 2015
        @author Hartwig Anzt
 
 */
@@ -60,7 +60,7 @@ magma_d_precond(
     
     // set up precond parameters as solver parameters
     magma_d_solver_par psolver_par;
-    psolver_par.epsilon = precond->epsilon;
+    psolver_par.rtol = precond->rtol;
     psolver_par.maxiter = precond->maxiter;
     psolver_par.restart = precond->restart;
     psolver_par.verbose = 0;
@@ -78,9 +78,10 @@ magma_d_precond(
                 CHECK( magma_djacobi( A, b, x, &psolver_par, queue )); break;
         case  Magma_BAITER:
                 CHECK( magma_dbaiter( A, b, x, &psolver_par, queue )); break;
+        case  Magma_IDR:
+                CHECK( magma_didr( A, b, x, &psolver_par, queue )); break;
         default:
                 CHECK( magma_dcg_res( A, b, x, &psolver_par, queue )); break;
-
     }
 cleanup:
     return info;
@@ -124,7 +125,6 @@ magma_d_precondsetup(
     magma_d_preconditioner *precond,
     magma_queue_t queue )
 {
-    
     // make sure RHS is a dense matrix
     if ( b.storage_type != Magma_DENSE ) {
         printf( "error: sparse RHS not yet supported.\n" );
@@ -301,8 +301,8 @@ magma_d_applyprecond_left(
         magma_dcopy( b.num_rows*b.num_cols, b.dval, b.num_cols, x->dval, b.num_cols );
         magma_d_solver_par solver_par;
         solver_par.maxiter = precond->maxiter;
-        //magma_djacobiiter_sys( precond->L, b, precond->d, precond->work1, x, &solver_par, queue );
-        CHECK( magma_djacobispmvupdate(precond->maxiter, precond->L, precond->work1, b, precond->d, x, queue ));
+        magma_djacobiiter_sys( precond->L, b, precond->d, precond->work1, x, &solver_par, queue );
+        //CHECK( magma_djacobispmvupdate(precond->maxiter, precond->L, precond->work1, b, precond->d, x, queue ));
     }
     else if ( ( precond->solver == Magma_ICC ||
                 precond->solver == Magma_AICC ) && precond->maxiter >= 50 )  {
@@ -313,8 +313,8 @@ magma_d_applyprecond_left(
         magma_dcopy( b.num_rows*b.num_cols, b.dval, b.num_cols, x->dval, b.num_cols );
         magma_d_solver_par solver_par;
         solver_par.maxiter = precond->maxiter;
-        //magma_djacobiiter_sys( precond->L, b, precond->d, precond->work1, x, &solver_par, queue );
-        CHECK( magma_djacobispmvupdate(precond->maxiter, precond->L, precond->work1, b, precond->d, x, queue ));
+        magma_djacobiiter_sys( precond->L, b, precond->d, precond->work1, x, &solver_par, queue );
+        //CHECK( magma_djacobispmvupdate(precond->maxiter, precond->L, precond->work1, b, precond->d, x, queue ));
     }
     else if ( precond->solver == Magma_NONE ) {
         magma_dcopy( b.num_rows*b.num_cols, b.dval, 1, x->dval, 1 );      //  x = b
@@ -394,8 +394,8 @@ magma_d_applyprecond_right(
         magma_dcopy( b.num_rows*b.num_cols, b.dval, b.num_cols, x->dval, b.num_cols );
         magma_d_solver_par solver_par;
         solver_par.maxiter = precond->maxiter;
-        //magma_djacobiiter_sys( precond->U, b, precond->d2, precond->work2, x, &solver_par, queue );
-        CHECK( magma_djacobispmvupdate(precond->maxiter, precond->U, precond->work2, b, precond->d2, x, queue ));
+        magma_djacobiiter_sys( precond->U, b, precond->d2, precond->work2, x, &solver_par, queue );
+        //CHECK( magma_djacobispmvupdate_bw(precond->maxiter, precond->U, precond->work2, b, precond->d2, x, queue ));
     }
 
     else if ( ( precond->solver == Magma_ICC ||
@@ -407,8 +407,8 @@ magma_d_applyprecond_right(
         magma_dcopy( b.num_rows*b.num_cols, b.dval, b.num_cols, x->dval, b.num_cols );
         magma_d_solver_par solver_par;
         solver_par.maxiter = precond->maxiter;
-        //magma_djacobiiter_sys( precond->U, b, precond->d2, precond->work2, x, &solver_par, queue );
-        CHECK( magma_djacobispmvupdate(precond->maxiter, precond->U, precond->work2, b, precond->d2, x, queue ));
+        magma_djacobiiter_sys( precond->U, b, precond->d2, precond->work2, x, &solver_par, queue );
+        //CHECK( magma_djacobispmvupdate_bw(precond->maxiter, precond->U, precond->work2, b, precond->d2, x, queue ));
     }
     else if ( precond->solver == Magma_NONE ) {
         magma_dcopy( b.num_rows*b.num_cols, b.dval, 1, x->dval, 1 );      //  x = b
@@ -425,5 +425,3 @@ cleanup:
     magmablasSetKernelStream( orig_queue );
     return info;
 }
-
-

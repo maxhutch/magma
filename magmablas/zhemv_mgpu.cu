@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -134,7 +134,7 @@ zhemv_kernel_L_mgpu(
                 A = A - tx2 + (partial - 1);  // A is A(blk_ind + partial-1, blk_ind + ty2), the bottom-most valid row
             }
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
@@ -145,7 +145,7 @@ zhemv_kernel_L_mgpu(
         }
         else {
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
         }
@@ -155,7 +155,7 @@ zhemv_kernel_L_mgpu(
         // as four 32x8 sections in parallel:
         // columns 0,4,8,12,16,20,24,28; then 1,5,...,29; then 2,6,...,30, then 3,7,...,31
         #pragma unroll
-        for(int j=ty2*4; j < ty2*4 + 4; j++) {
+        for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
                 sA32(j, tx2) = cuConj( sA32(tx2, j) );
             }
@@ -166,7 +166,7 @@ zhemv_kernel_L_mgpu(
         // each thread does partial row sA(tx2, ty2*4 : ty2*4 + 3)
         psum = MAGMA_Z_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum += sA32(tx2, ty2*4 + j) * sx_blk[ty2*4 + j];
         }
         __syncthreads();
@@ -194,7 +194,7 @@ zhemv_kernel_L_mgpu(
                 A = A - (tx2 + half_NB_X) + (partial - 1);
             }
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j + half_NB_X < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
@@ -205,7 +205,7 @@ zhemv_kernel_L_mgpu(
         }
         else {
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
         }
@@ -213,7 +213,7 @@ zhemv_kernel_L_mgpu(
 
         // symmetrize 32x32 diag block, copying lower to upper triangle
         #pragma unroll
-        for(int j=ty2*4; j < ty2*4 + 4; j++) {
+        for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
                 sA32(j, tx2) = cuConj( sA32(tx2, j) );
             }
@@ -223,7 +223,7 @@ zhemv_kernel_L_mgpu(
         // multiply 32x32 diag block * x
         psum = MAGMA_Z_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum += sA32(tx2, ty2*4 + j) * sx_blk[half_NB_X + ty2*4 + j];
         }
         __syncthreads();
@@ -253,7 +253,7 @@ zhemv_kernel_L_mgpu(
                 A = A - (tx2 + half_NB_X) + (partial - 1);
             }
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
@@ -264,7 +264,7 @@ zhemv_kernel_L_mgpu(
         }
         else {
             #pragma unroll
-            for(int j=0; j < half_NB_X; j += 8) {
+            for (int j=0; j < half_NB_X; j += 8) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
         }
@@ -273,7 +273,7 @@ zhemv_kernel_L_mgpu(
         // multiply 32x32 block (below diag)
         psum = MAGMA_Z_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum += sA32(tx2, ty2 + j*8) * sx_blk[j*8 + ty2];
         }
         //__syncthreads();  // no sync needed here
@@ -281,7 +281,7 @@ zhemv_kernel_L_mgpu(
         // multiply transposed 32x32 block (above diag)
         psum_t = MAGMA_Z_ZERO;
         #pragma unroll
-        for(int j=0; j < 4; j++) {
+        for (int j=0; j < 4; j++) {
             psum_t += cuConj( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
         }
         __syncthreads();
@@ -336,7 +336,7 @@ zhemv_kernel_L_mgpu(
     const int ty4 = td / quarter_NB_X;
 
     // cycle over blocks jj left of diagonal, in block row blk
-    for(int jj=my_gpu_id; jj < blk; jj += ngpu) {
+    for (int jj=my_gpu_id; jj < blk; jj += ngpu) {
         // load 64x1 block x(jj_ind + 0:63) into sx_jj
         // since this block is left of diagonal, x must have all NB rows
         // only the first block column (jj=0, on GPU 0) deals with offset
@@ -350,14 +350,14 @@ zhemv_kernel_L_mgpu(
         }
         __syncthreads();
 
-        for( int k=0; k < 4; k++ ) {
+        for (int k=0; k < 4; k++) {
             // load 64x16 block of A into rA, 4 elements per thread,
             // as four 64x4 sections in parallel:
             // columns 0,4,8,12; then 1,5,9,13; then 2,6,10,14; then 3,7,11,15
             // since this block is left of diagonal, it has all NB columns,
             // and block of x must have all NB rows.
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 rA[j] = A[j*lda];
             }
 
@@ -366,7 +366,7 @@ zhemv_kernel_L_mgpu(
             // 2) multiply transposed 16x64 block A_{blk,jj}^H * x_blk,
             //    storing each product Aji*xi to sA(j,i)
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
                 sA16(ty*4 + j, tx) = cuConj( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
@@ -378,7 +378,7 @@ zhemv_kernel_L_mgpu(
             // columns 0,4,8,...,60; then 1,5,...,61; then 2,6,...,62; then 3,7,...,63
             psum_t = MAGMA_Z_ZERO;
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 psum_t += sA16(tx4, ty4*4 + j);
             }
             __syncthreads();
@@ -394,7 +394,7 @@ zhemv_kernel_L_mgpu(
 
         // store partial row sums of transposed result, y_jj
         #pragma unroll
-        for(int k=0; k < 4; k++) {
+        for (int k=0; k < 4; k++) {
             sA16(tx4, ty4 + quarter_NB_X*k) = psums_t[k];
         }
         __syncthreads();
@@ -508,7 +508,7 @@ zhemv_kernel_L_mgpu_sum(
             if ( blk % ngpu != my_gpu_id ) {
                 last = blk;
             }
-            for(int j = blk; j <= last; ++j) {
+            for (int j = blk; j <= last; ++j) {
                 Ax += work[j*lda];
             }
         }
@@ -567,12 +567,19 @@ zhemv_kernel_L_mgpu_sum(
             upper triangular part of A is not referenced.
             Note that the imaginary parts of the diagonal elements need
             not be set and are assumed to be zero.
-
+            
+    @param[in]
+    offset  INTEGER.
+            Row & column offset to start of matrix A within the distributed d_lA
+            structure. Note that N is the size of this multiply, excluding the
+            offset, so the size of the original parent matrix is N+offset.
+            Also, x and y do not have an offset.
+    
     @param[in]
     ldda    INTEGER.
             On entry, LDDA specifies the first dimension of A as declared
             in the calling (sub) program. LDDA must be at least
-            max( 1, n ).
+            max( 1, n + offset ).
             It is recommended that ldda is multiple of 16. Otherwise
             performance would be deteriorated as the memory accesses
             would not be fully coalescent.
@@ -668,7 +675,7 @@ magmablas_zhemv_mgpu(
     magma_int_t offset_gpu_id   = offset_block_id % ngpu;
     magma_int_t block_offset    = offset % NB_X;
     
-    magma_int_t blocks = ceildiv( n + block_offset, NB_X );
+    magma_int_t blocks = magma_ceildiv( n + block_offset, NB_X );
     magma_int_t ldwmin = ldda*(blocks + 1);
     magma_int_t lhwmin = n*ngpu;
     
@@ -713,7 +720,7 @@ magmablas_zhemv_mgpu(
     magma_getdevice( &orig_dev );
     
     magma_int_t dev;
-    for(dev=0; dev < ngpu; dev++) {
+    for (dev=0; dev < ngpu; dev++) {
         magma_setdevice( dev );
         
         // blocks before the offset block
@@ -766,7 +773,7 @@ magmablas_zhemv_mgpu(
     }
     
     // 2nd loop in case hwork is not pinned, causing this to be sync instead of async.
-    for(dev=0; dev < ngpu; dev++) {
+    for (dev=0; dev < ngpu; dev++) {
         // copy w to CPU
         magma_setdevice( dev );
         magmaDoubleComplex       *dx_dev    = dwork[dev];
@@ -856,7 +863,7 @@ magmablas_zhemv_mgpu_sync(
     blasf77_zscal( &n, &beta, y, &incy );
     
     // sum reduce, y += sum( hwork )
-    for( dev=0; dev < ngpu; ++dev ) {
+    for (dev=0; dev < ngpu; ++dev) {
         magma_setdevice( dev );
         magma_queue_sync( queues[dev] );
         blasf77_zaxpy( &n, &c_one, &hwork[dev*n], &ione, y, &ione );

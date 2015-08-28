@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 */
@@ -25,13 +25,6 @@ magmablas_zcaxpycp(
     magmaDoubleComplex_ptr x,
     magmaDoubleComplex_const_ptr b,
     magmaDoubleComplex_ptr w );
-
-void
-magmablas_zaxpycp(
-    magma_int_t m,
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr x,
-    magmaDoubleComplex_const_ptr b );
 
 // TODO add ldsa
 void

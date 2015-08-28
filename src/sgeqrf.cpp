@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
-       @generated from zgeqrf.cpp normal z -> s, Fri Jan 30 19:00:16 2015
+       @generated from zgeqrf.cpp normal z -> s, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -139,13 +139,13 @@ magma_sgeqrf(
     }
 
     // largest N for larfb is n-nb (trailing matrix lacks 1st panel)
-    lddwork = ((n+31)/32)*32 - nb;
-    ldda    = ((m+31)/32)*32;
+    lddwork = magma_roundup( n, 32 ) - nb;
+    ldda    = magma_roundup( m, 32 );
 
     magma_int_t ngpu = magma_num_gpus();
     if ( ngpu > 1 ) {
         /* call multiple-GPU interface  */
-        return magma_sgeqrf4(ngpu, m, n, A, lda, tau, work, lwork, info);
+        return magma_sgeqrf_m(ngpu, m, n, A, lda, tau, work, lwork, info);
     }
 
     // allocate space for dA, dwork, and dT
@@ -210,7 +210,7 @@ magma_sgeqrf(
             lapackf77_slarft( MagmaForwardStr, MagmaColumnwiseStr,
                               &rows, &ib, A(i,i), &lda, tau+i, work, &ib);
 
-            spanel_to_q(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
+            magma_spanel_to_q(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
 
             /* download the i-th V matrix */
             magma_ssetmatrix_async( rows, ib, A(i,i), lda, dA(i,i), ldda, stream[0] );
@@ -227,7 +227,7 @@ magma_sgeqrf(
                                       rows, ib, ib,
                                       dA(i, i   ), ldda, dT,    nb,
                                       dA(i, i+ib), ldda, dwork, lddwork);
-                    sq_to_panel(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
+                    magma_sq_to_panel(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
                 }
                 else {
                     /* After last panel, update whole trailing matrix. */
@@ -236,7 +236,7 @@ magma_sgeqrf(
                                       rows, n-i-ib, ib,
                                       dA(i, i   ), ldda, dT,    nb,
                                       dA(i, i+ib), ldda, dwork, lddwork);
-                    sq_to_panel(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
+                    magma_sq_to_panel(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
                 }
 
                 old_i  = i;

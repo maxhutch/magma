@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgetrf.cpp normal z -> d, Fri Jan 30 19:00:25 2015
+       @generated from testing_zgetrf.cpp normal z -> d, Tue Aug 25 16:35:27 2015
        @author Mark Gates
 */
 // includes, system
@@ -122,7 +122,7 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     // copy LU to L and U, and set diagonal to 1
     lapackf77_dlacpy( MagmaLowerStr, &M, &min_mn, LU, &lda, L, &M      );
     lapackf77_dlacpy( MagmaUpperStr, &min_mn, &N, LU, &lda, U, &min_mn );
-    for(j=0; j<min_mn; j++)
+    for (j=0; j < min_mn; j++)
         L[j+j*M] = MAGMA_D_MAKE( 1., 0. );
     
     matnorm = lapackf77_dlange("f", &M, &N, A, &lda, work);
@@ -160,18 +160,18 @@ int main( int argc, char** argv)
     magma_int_t     status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
-    printf("ngpu %d\n", (int) opts.ngpu );
+    printf("%% ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 2 ) {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
     }
     else {
-        printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |PA-LU|/(N*|A|)\n");
+        printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |PA-LU|/(N*|A|)\n");
     }
-    printf("=========================================================================\n");
+    printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -191,7 +191,7 @@ int main( int argc, char** argv)
                 init_matrix( M, N, h_A, lda );
                 
                 cpu_time = magma_wtime();
-                lapackf77_dgetrf(&M, &N, h_A, &lda, ipiv, &info);
+                lapackf77_dgetrf( &M, &N, h_A, &lda, ipiv, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
@@ -205,7 +205,7 @@ int main( int argc, char** argv)
             init_matrix( M, N, h_A, lda );
             
             gpu_time = magma_wtime();
-            magma_dgetrf( M, N, h_A, lda, ipiv, &info);
+            magma_dgetrf( M, N, h_A, lda, ipiv, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)

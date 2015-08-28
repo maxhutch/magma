@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zcustomspmv.cpp normal z -> s, Sun May  3 11:22:59 2015
+       @generated from magma_zcustomspmv.cpp normal z -> s, Tue Aug 25 16:35:32 2015
        @author Hartwig Anzt
 
 */
@@ -57,12 +57,5 @@ magma_scustomspmv(
     // vector access via x.dval, y.dval
     // sizes are x.num_rows, x.num_cols
     
-
     return info;
-
 }
-
-
-
-
-

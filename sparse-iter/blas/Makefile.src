@@ -24,16 +24,18 @@ CSRC = \
 	cmdot.cu \
 	cmergebicgstab.cu \
 	cmergebicgstab2.cu \
+	cmergeidr.cu \
 	cmergecg.cu \
 	cmgecsrmv.cu \
 	cmgeellmv.cu \
 	cmgeelltmv.cu \
 	cmgesellcmmv.cu \
 	cpipelinedgmres.cu \
-	citerilu.cu \
+	citerilu_kernels.cu \
 	citeric.cu \
 	ccompact.cu \
-	magma_cmcsrcompressor_gpu.cu
+	magma_cmcsrcompressor_gpu.cu \
+	magma_cdiagcheck.cu
 
 DSRC = \
 	magma_d_blaswrapper.cpp \
@@ -51,16 +53,18 @@ DSRC = \
 	dmdot.cu \
 	dmergebicgstab.cu \
 	dmergebicgstab2.cu \
+	dmergeidr.cu \
 	dmergecg.cu \
 	dmgecsrmv.cu \
 	dmgeellmv.cu \
 	dmgeelltmv.cu \
 	dmgesellcmmv.cu \
 	dpipelinedgmres.cu \
-	diterilu.cu \
+	diterilu_kernels.cu \
 	diteric.cu \
 	dcompact.cu \
-	magma_dmcsrcompressor_gpu.cu
+	magma_dmcsrcompressor_gpu.cu \
+	magma_ddiagcheck.cu
 
 SSRC = \
 	magma_s_blaswrapper.cpp \
@@ -78,13 +82,15 @@ SSRC = \
 	smdot.cu \
 	smergebicgstab.cu \
 	smergebicgstab2.cu \
+	smergeidr.cu \
 	smergecg.cu \
 	smgecsrmv.cu \
 	smgeellmv.cu \
 	smgeelltmv.cu \
 	smgesellcmmv.cu \
 	spipelinedgmres.cu \
-	siterilu.cu \
+	siterilu_kernels.cu \
 	siteric.cu \
 	scompact.cu \
-	magma_smcsrcompressor_gpu.cu
+	magma_smcsrcompressor_gpu.cu \
+	magma_sdiagcheck.cu

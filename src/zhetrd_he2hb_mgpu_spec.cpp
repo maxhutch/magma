@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -241,8 +241,8 @@ magma_zhetrd_he2hb_mgpu_spec(
         dwork[dev]    = dw[dev]      + nb*lddw;
         dworkbis[dev] = dwork[dev]   + nb*ldda;
         magmablasSetKernelStream( queues[ dev ][ 0 ] );
-        for( magma_int_t i = 0; i < nbevents; ++i ) {
-            cudaEventCreateWithFlags(&redevents[dev][i],cudaEventDisableTiming);
+        for( i = 0; i < nbevents; ++i ) {
+            cudaEventCreateWithFlags( &redevents[dev][i], cudaEventDisableTiming );
         }
     }
     magma_zmalloc_pinned ( &workngpu[ngpu], worksiz);
@@ -269,13 +269,13 @@ magma_zhetrd_he2hb_mgpu_spec(
             
             /*   Get the current panel (no need for the 1st iteration) */
             if (i > 1 ) {
-                // zpanel_to_q copy the upper oof diagonal part of
+                // magma_zpanel_to_q copy the upper oof diagonal part of
                 // the matrix to work to be restored later. acctually
                 // the zero's and one's putted are not used this is only
                 // because we don't have a function that copy only the
                 // upper part of A to be restored after copying the
                 // lookahead panel that has been computted from GPU to CPU.
-                zpanel_to_q(MagmaUpper, pn-1, A(i, i+1), lda, work);
+                magma_zpanel_to_q(MagmaUpper, pn-1, A(i, i+1), lda, work);
 
                 // find the device who own the panel then send it to the CPU.
                 // below a -1 was added and then a -1 was done on di because of the fortran indexing
@@ -306,7 +306,7 @@ magma_zhetrd_he2hb_mgpu_spec(
                 magma_setdevice( idev );
                 magma_queue_sync( queues[idev][ nqueue-1 ] );
                 //magma_setdevice( 0 );
-                zq_to_panel(MagmaUpper, pn-1, A(i, i+1), lda, work);
+                magma_zq_to_panel(MagmaUpper, pn-1, A(i, i+1), lda, work);
             }
 
             /* ==========================================================
@@ -324,7 +324,7 @@ magma_zhetrd_he2hb_mgpu_spec(
 
             /* Prepare V - put 0s in the upper triangular part of the panel
                (and 1s on the diagonal), temporaly storing the original in work */
-            zpanel_to_q(MagmaUpper, pk, A(indi, indj), lda, work);
+            magma_zpanel_to_q(MagmaUpper, pk, A(indi, indj), lda, work);
 
 
 
@@ -425,7 +425,7 @@ magma_zhetrd_he2hb_mgpu_spec(
                             c_one,     dw[dev], pm);
             }
             /* restore the panel it is put here to overlap with the previous GEMM*/
-            zq_to_panel(MagmaUpper, pk, A(indi, indj), lda, work);
+            magma_zq_to_panel(MagmaUpper, pk, A(indi, indj), lda, work);
             // ===============================================
             //   SYNC TO BE SURE THAT BOTH V AND W ARE DONE
             // ===============================================
@@ -481,11 +481,11 @@ magma_zhetrd_he2hb_mgpu_spec(
 
 
                 /* Send the last block to the CPU */
-                zpanel_to_q(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
+                magma_zpanel_to_q(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
                 magma_zgetmatrix( pk, pk,
                                   dA(idev, indi, di+1), ldda,
                                   A(n-pk+1, n-pk+1),  lda );
-                zq_to_panel(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
+                magma_zq_to_panel(MagmaUpper, pk-1, A(n-pk+1, n-pk+2), lda, work);
             }
 
             indi_old = indi;

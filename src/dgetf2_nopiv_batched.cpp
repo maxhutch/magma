@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from zgetf2_nopiv_batched.cpp normal z -> d, Fri Jan 30 19:00:19 2015
+   @generated from zgetf2_nopiv_batched.cpp normal z -> d, Tue Aug 25 16:35:19 2015
 */
 
 #include "common_magma.h"
@@ -16,7 +16,7 @@
 #define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-/*  -- MAGMA (version 1.6.1) --
+/*  -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -78,7 +78,6 @@ magma_dgetf2_nopiv_batched(
     cublasHandle_t myhandle, magma_queue_t queue)
 
 {
-
     magma_int_t arginfo = 0;
     if (m < 0) {
         arginfo = -1;
@@ -100,38 +99,38 @@ magma_dgetf2_nopiv_batched(
 
     double neg_one = MAGMA_D_NEG_ONE;
     double one  = MAGMA_D_ONE;
-    magma_int_t nb = 32;//BATF2_NB;
+    magma_int_t nb = BATF2_NB;
 
     
     magma_int_t min_mn = min(m, n);
     magma_int_t gbj, panelj, step, ib;
 
-    for( panelj=0; panelj < min_mn; panelj+=nb) 
+    for( panelj=0; panelj < min_mn; panelj += nb) 
     {
         ib = min(nb, min_mn-panelj);
 
-        for(step=0; step < ib; step++){
+        for (step=0; step < ib; step++) {
             gbj = panelj+step;
 #if 0
             size_t required_shmem_size = ((m-panelj)*ib)*sizeof(double);
-            if( required_shmem_size >  (MAX_SHARED_ALLOWED*1024))
+            if ( required_shmem_size >  (MAX_SHARED_ALLOWED*1024))
 #else
-            if( (m-panelj) > 0)
+            if ( (m-panelj) > 0)
 #endif
             {
                 // Compute elements J+1:M of J-th column.
                 if (gbj < m) {
                     arginfo = magma_dscal_dger_batched(m-gbj, ib-step, gbj, dA_array, lda, info_array, gbstep, batchCount, queue);
-                    if(arginfo != 0 ) return arginfo;
+                    if (arginfo != 0 ) return arginfo;
                 }
             }
-            else{
+            else {
                 // TODO
             }
         }
 
 
-        if( (n-panelj-ib) > 0){
+        if ( (n-panelj-ib) > 0) {
             // continue the update of the selected ib row column panelj+ib:n(TRSM)
             magma_dgetf2trsm_batched(ib, n-panelj-ib, dA_array, panelj, lda, batchCount, queue);
             // do the blocked DGER = DGEMM for the remaining panelj+ib:n columns
@@ -139,28 +138,18 @@ magma_dgetf2_nopiv_batched(
             magma_ddisplace_pointers(dW1_displ, dA_array, lda, panelj, ib+panelj, batchCount, queue);            
             magma_ddisplace_pointers(dW2_displ, dA_array, lda, ib+panelj, ib+panelj, batchCount, queue);
 
-
-#if 1
-            magmablas_dgemm_batched( MagmaNoTrans, MagmaNoTrans, m-(panelj+ib), n-(panelj+ib), ib, 
-                                      neg_one, dW0_displ, lda, 
-                                      dW1_displ, lda, 
-                                      one,  dW2_displ, lda, 
-                                      batchCount, queue);
-#else
-            cublasDgemmBatched(myhandle, CUBLAS_OP_N, CUBLAS_OP_N, m-(panelj+ib), n-(panelj+ib), ib,
-                                     &neg_one, (const double**) dW0_displ, lda,
-                                               (const double**) dW1_displ, lda,
-                                     &one,  dW2_displ, lda, batchCount );
-#endif
+            magma_dgemm_batched( MagmaNoTrans, MagmaNoTrans, m-(panelj+ib), n-(panelj+ib), ib, 
+                                 neg_one, dW0_displ, lda, 
+                                 dW1_displ, lda, 
+                                 one,  dW2_displ, lda, 
+                                 batchCount, queue, myhandle);
         }
     }
 
-    //free(cpuAarray);
+    //magma_free_cpu(cpuAarray);
 
     return 0;
-
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-

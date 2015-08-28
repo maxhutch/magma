@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Azzam Haidar
        @author Ichi Yamazaki
@@ -20,7 +20,7 @@
     This zherk_mgpu is internal routine used by zpotrf_mgpu_right.
     it has specific assumption on the block diagonal.
     
-    @ingroup magma_zherk_comp
+    @ingroup magma_zblas3_internal
     ********************************************************************/
 
 extern "C" void
@@ -201,4 +201,3 @@ magma_zherk_mgpu2(
 #undef dB
 #undef dC
 #undef STREAM_ID
-

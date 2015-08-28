@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
  
        @author Mark Gates
-       @generated from cblas_z.cpp normal z -> c, Fri Jan 30 19:00:13 2015
+       @generated from cblas_z.cpp normal z -> c, Tue Aug 25 16:35:14 2015
 
     Wrappers around a few CBLAS functions.
     
@@ -25,8 +25,6 @@
     magma_cblas_cdotu  / ddot
 
 */
-#include <cblas.h>
-
 #include "common_magma.h"
 
 #define COMPLEX
@@ -37,6 +35,9 @@
 // --------------------
 /** Returns the sum of absolute values of vector x; i.e., one norm.
 
+    To avoid dependence on CBLAS and incompatability issues between BLAS
+    libraries, MAGMA uses its own implementation, following BLAS reference.
+    
     @param[in]
     n       Number of elements in vector x. n >= 0.
 
@@ -54,12 +55,31 @@ float magma_cblas_scasum(
     magma_int_t n,
     const magmaFloatComplex *x, magma_int_t incx )
 {
-    return cblas_scasum( n, x, incx );
+    if ( n <= 0 || incx <= 0 ) {
+        return 0;
+    }
+    float result = 0;
+    if ( incx == 1 ) {
+        for( int i=0; i < n; ++i ) {
+            result += MAGMA_C_ABS1( x[i] );
+        }
+    }
+    else {
+        int nincx = n*incx;
+        for( int i=0; i < nincx; i += incx ) {
+            result += MAGMA_C_ABS1( x[i] );
+        }
+    }
+    return result;
 }
+
 
 // --------------------
 /** Returns 2-norm of vector x. Avoids unnecesary over/underflow.
 
+    To avoid dependence on CBLAS and incompatability issues between BLAS
+    libraries, MAGMA uses its own implementation, following BLAS reference.
+    
     @param[in]
     n       Number of elements in vector x. n >= 0.
 
@@ -72,17 +92,57 @@ float magma_cblas_scasum(
 
     @ingroup magma_cblas1
 */
+static inline float sqr( float x ) { return x*x; }
+
 extern "C"
 float magma_cblas_scnrm2(
     magma_int_t n,
     const magmaFloatComplex *x, magma_int_t incx )
 {
-    return cblas_scnrm2( n, x, incx );
+    if (n <= 0 || incx <= 0) {
+        return 0;
+    }
+    else {
+        float scale = 0;
+        float ssq   = 1;
+        // the following loop is equivalent to this call to the lapack
+        // auxiliary routine:
+        // call zlassq( n, x, incx, scale, ssq )
+        for( int ix=0; ix < 1 + (n-1)*incx; ix += incx ) {
+            if ( real( x[ix] ) != 0 ) {
+                float temp = fabs( real( x[ix] ));
+                if (scale < temp) {
+                    ssq = 1 + ssq * sqr(scale/temp);
+                    scale = temp;
+                }
+                else {
+                    ssq += sqr(temp/scale);
+                }
+            }
+            #ifdef COMPLEX
+            if ( imag( x[ix] ) != 0 ) {
+                float temp = fabs( imag( x[ix] ));
+                if (scale < temp) {
+                    ssq = 1 + ssq * sqr(scale/temp);
+                    scale = temp;
+                }
+                else {
+                    ssq += sqr(temp/scale);
+                }
+            }
+            #endif
+        }
+        return scale*magma_ssqrt(ssq);
+    }
 }
+
 
 // --------------------
 /** Returns dot product of vectors x and y; \f$ x^H y \f$.
 
+    To avoid dependence on CBLAS and incompatability issues between BLAS
+    libraries, MAGMA uses its own implementation, following BLAS reference.
+    
     @param[in]
     n       Number of elements in vector x and y. n >= 0.
 
@@ -118,27 +178,24 @@ magmaFloatComplex magma_cblas_cdotc(
     }
     else {
         magma_int_t ix=0, iy=0;
-        if ( incx < 0 ) { ix = (-n + 1)*incx + 1; }
-        if ( incy < 0 ) { iy = (-n + 1)*incy + 1; }
-        for( magma_int_t i=0; i < n; ++i ) {
+        if ( incx < 0 ) { ix = (-n + 1)*incx; }
+        if ( incy < 0 ) { iy = (-n + 1)*incy; }
+        for( i=0; i < n; ++i ) {
             value += conj( x[ix] ) * y[iy];
             ix += incx;
             iy += incy;
         }
     }
     return value;
-    //#ifdef COMPLEX
-    //magmaFloatComplex value;
-    //cblas_cdotc_sub( n, x, incx, y, incy, &value );
-    //return value;
-    //#else
-    //return cblas_cdotc( n, x, incx, y, incy );
-    //#endif
 }
+
 
 #ifdef COMPLEX
 // --------------------
 /** Returns dot product (unconjugated) of vectors x and y; \f$ x^T y \f$.
+
+    To avoid dependence on CBLAS and incompatability issues between BLAS
+    libraries, MAGMA uses its own implementation, following BLAS reference.
 
     @param[in]
     n       Number of elements in vector x and y. n >= 0.
@@ -175,22 +232,15 @@ magmaFloatComplex magma_cblas_cdotu(
     }
     else {
         magma_int_t ix=0, iy=0;
-        if ( incx < 0 ) { ix = (-n + 1)*incx + 1; }
-        if ( incy < 0 ) { iy = (-n + 1)*incy + 1; }
-        for( magma_int_t i=0; i < n; ++i ) {
+        if ( incx < 0 ) { ix = (-n + 1)*incx; }
+        if ( incy < 0 ) { iy = (-n + 1)*incy; }
+        for( i=0; i < n; ++i ) {
             value += x[ix] * y[iy];
             ix += incx;
             iy += incy;
         }
     }
     return value;
-    //#ifdef COMPLEX
-    //magmaFloatComplex value;
-    //cblas_cdotu_sub( n, x, incx, y, incy, &value );
-    //return value;
-    //#else
-    //return cblas_cdotu( n, x, incx, y, incy );
-    //#endif
 }
 #endif
 

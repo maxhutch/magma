@@ -1,0 +1,191 @@
+numactl --interleave=all ./testing_dsyevd -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0087
+ 1000     ---               0.1778
+   10     ---               0.0000
+   20     ---               0.0001
+   30     ---               0.0001
+   40     ---               0.0002
+   50     ---               0.0002
+   60     ---               0.0003
+   70     ---               0.0004
+   80     ---               0.0006
+   90     ---               0.0008
+  100     ---               0.0011
+  200     ---               0.0128
+  300     ---               0.0231
+  400     ---               0.0393
+  500     ---               0.0544
+  600     ---               0.0755
+  700     ---               0.0954
+  800     ---               0.1220
+  900     ---               0.1502
+ 1000     ---               0.1776
+ 2000     ---               0.5980
+ 3000     ---               1.3180
+ 4000     ---               2.3626
+ 5000     ---               3.8870
+ 6000     ---               5.7710
+ 7000     ---               8.1626
+ 8000     ---              11.0315
+ 9000     ---              14.6957
+10000     ---              19.0375
+12000     ---              30.2727
+14000     ---              44.6141
+16000     ---              63.2342
+18000     ---              87.2691
+20000     ---             114.5946
+
+numactl --interleave=all ./testing_dsyevd -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0067
+ 1000     ---               0.1897
+   10     ---               0.0001
+   20     ---               0.0001
+   30     ---               0.0003
+   40     ---               0.0004
+   50     ---               0.0005
+   60     ---               0.0007
+   70     ---               0.0009
+   80     ---               0.0012
+   90     ---               0.0016
+  100     ---               0.0020
+  200     ---               0.0164
+  300     ---               0.0268
+  400     ---               0.0441
+  500     ---               0.0617
+  600     ---               0.0784
+  700     ---               0.1002
+  800     ---               0.1273
+  900     ---               0.1599
+ 1000     ---               0.1884
+ 2000     ---               0.6370
+ 3000     ---               1.4418
+ 4000     ---               2.5225
+ 5000     ---               4.0450
+ 6000     ---               6.1427
+ 7000     ---               8.8017
+ 8000     ---              12.1769
+ 9000     ---              16.1912
+10000     ---              21.2096
+12000     ---              34.1056
+14000     ---              49.1354
+16000     ---              70.6249
+18000     ---              98.2735
+20000     ---             130.3086
+
+numactl --interleave=all ./testing_dsyevd_gpu -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd_gpu [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0017
+ 1000       ---              0.1672
+   10       ---              0.0001
+   20       ---              0.0001
+   30       ---              0.0001
+   40       ---              0.0002
+   50       ---              0.0002
+   60       ---              0.0003
+   70       ---              0.0005
+   80       ---              0.0006
+   90       ---              0.0008
+  100       ---              0.0011
+  200       ---              0.0114
+  300       ---              0.0208
+  400       ---              0.0354
+  500       ---              0.0492
+  600       ---              0.0687
+  700       ---              0.0880
+  800       ---              0.1129
+  900       ---              0.1399
+ 1000       ---              0.1666
+ 2000       ---              0.5797
+ 3000       ---              1.3182
+ 4000       ---              2.3436
+ 5000       ---              3.8155
+ 6000       ---              5.6934
+ 7000       ---              8.1011
+ 8000       ---             11.0384
+ 9000       ---             14.7141
+10000       ---             18.9900
+12000       ---             30.3040
+14000       ---             44.5872
+16000       ---             63.3596
+18000       ---             87.1945
+20000       ---            114.6432
+
+numactl --interleave=all ./testing_dsyevd_gpu -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd_gpu [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0073
+ 1000       ---              0.1866
+   10       ---              0.0001
+   20       ---              0.0002
+   30       ---              0.0003
+   40       ---              0.0004
+   50       ---              0.0006
+   60       ---              0.0009
+   70       ---              0.0010
+   80       ---              0.0013
+   90       ---              0.0018
+  100       ---              0.0021
+  200       ---              0.0155
+  300       ---              0.0255
+  400       ---              0.0422
+  500       ---              0.0592
+  600       ---              0.0752
+  700       ---              0.0993
+  800       ---              0.1229
+  900       ---              0.1558
+ 1000       ---              0.1836
+ 2000       ---              0.6367
+ 3000       ---              1.3501
+ 4000       ---              2.4675
+ 5000       ---              3.9757
+ 6000       ---              6.1173
+ 7000       ---              8.8302
+ 8000       ---             12.3120
+ 9000       ---             16.4472
+10000       ---             22.3377
+12000       ---             35.1828
+14000       ---             52.9599
+16000       ---             76.0177
+18000       ---            105.7984
+20000       ---            142.2281

@@ -19,7 +19,7 @@
 
 typedef char MM_typecode[4];
 
-char *mm_typecode_to_str(MM_typecode matcode);
+void mm_snprintf_typecode( char *buffer, size_t buflen, MM_typecode matcode );
 
 int mm_read_banner(FILE *f, MM_typecode *matcode);
 int mm_read_mtx_crd_size(FILE *f, magma_index_t *M, magma_index_t *N, 
@@ -95,31 +95,36 @@ int mm_is_valid(MM_typecode matcode);    /* too complex for a macro */
 
    MM_matrix_typecode: 4-character sequence
 
-            ojbect     sparse/     data        storage 
-                  dense       type        scheme
+                     object     sparse/      data         storage 
+                                dense        type         scheme
 
-   string position:   [0]        [1]      [2]         [3]
+   string position:  [0]        [1]          [2]          [3]
 
-   Matrix typecode:  M(atrix)  C(oord)    R(eal)     G(eneral)
-                    A(array)  C(omplex)   H(ermitian)
-                      P(attern)   S(ymmetric)
-                        I(nteger)  K(kew)
+   Matrix typecode:  M(atrix)   C(oord)      R(eal)       G(eneral)
+                                A(array)     C(omplex)    H(ermitian)
+                                             P(attern)    S(ymmetric)
+                                             I(nteger)    K(skew)
 
  ***********************************************************************/
 
-#define MM_MTX_STR    "matrix"
-#define MM_ARRAY_STR  "array"
-#define MM_DENSE_STR  "array"
+#define MM_UNKNOWN        "unknown"
+
+#define MM_MTX_STR        "matrix"
+
+#define MM_ARRAY_STR      "array"
+#define MM_DENSE_STR      "array"
 #define MM_COORDINATE_STR "coordinate" 
-#define MM_SPARSE_STR  "coordinate"
-#define MM_COMPLEX_STR  "complex"
-#define MM_REAL_STR    "real"
-#define MM_INT_STR    "integer"
-#define MM_GENERAL_STR  "general"
-#define MM_SYMM_STR    "symmetric"
-#define MM_HERM_STR    "hermitian"
-#define MM_SKEW_STR    "skew-symmetric"
-#define MM_PATTERN_STR  "pattern"
+#define MM_SPARSE_STR     "coordinate"
+
+#define MM_COMPLEX_STR    "complex"
+#define MM_REAL_STR       "real"
+#define MM_INT_STR        "integer"
+#define MM_PATTERN_STR    "pattern"
+
+#define MM_GENERAL_STR    "general"
+#define MM_SYMM_STR       "symmetric"
+#define MM_HERM_STR       "hermitian"
+#define MM_SKEW_STR       "skew-symmetric"
 
 
 /*  high level routines */

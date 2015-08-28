@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
        @author Hartwig Anzt
@@ -61,7 +61,6 @@ magma_vector_zlag2c(
                        x.dval, &x.num_rows,
                        y->val, &x.num_rows, &info);
         return MAGMA_SUCCESS;
-
     }
     else
         return MAGMA_ERR_NOT_SUPPORTED;
@@ -140,4 +139,3 @@ magma_sparse_matrix_zlag2c(
 cleanup:
     return info;
 }
-

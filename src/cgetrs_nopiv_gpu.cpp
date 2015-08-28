@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        @author Adrien REMY
 
-       @generated from zgetrs_nopiv_gpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
+       @generated from zgetrs_nopiv_gpu.cpp normal z -> c, Tue Aug 25 16:35:14 2015
 
 */
 #include "common_magma.h"
@@ -14,7 +14,7 @@
 /**
     Purpose
     -------
-    Solves a system of linear equations
+    CGETRS solves a system of linear equations
       A * X = B,  A**T * X = B,  or  A**H * X = B
     with a general N-by-N matrix A using the LU factorization computed by CGETRF_NOPIV_GPU.
 

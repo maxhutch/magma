@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
 
-       @date May 2015
+       @date August 2015
             
        @author Stan Tomov
        @author Hartwig Anzt
 
-       @generated from zlobpcg.cpp normal z -> d, Sun May  3 11:22:59 2015
+       @generated from zlobpcg.cpp normal z -> d, Tue Aug 25 16:35:33 2015
 */
 #include "common_magmasparse.h"
 
@@ -81,8 +81,8 @@ magma_dlobpcg(
 
 #define magma_d_bspmv_tuned(m, n, alpha, A, X, beta, AX, queue)       {        \
             magma_d_matrix x={Magma_CSR}, ax={Magma_CSR};                                       \
-            x.memory_location = Magma_DEV;  x.num_rows = m; x.num_cols = n; x.major = MagmaColMajor;  x.nnz = m*n;  x.dval = X;     x.storage_type = Magma_DENSE;\
-            ax.memory_location= Magma_DEV; ax.num_rows = m; ax.num_cols = n; ax.major = MagmaColMajor;  ax.nnz = m*n; ax.dval = AX;     ax.storage_type = Magma_DENSE;    \
+            x.memory_location = Magma_DEV;  x.num_rows = m;  x.num_cols = n;  x.major = MagmaColMajor;   x.nnz = m*n;  x.dval = X;    x.storage_type = Magma_DENSE; \
+            ax.memory_location= Magma_DEV; ax.num_rows = m; ax.num_cols = n; ax.major = MagmaColMajor;  ax.nnz = m*n; ax.dval = AX;  ax.storage_type = Magma_DENSE; \
             CHECK( magma_d_spmv(alpha, A, x, beta, ax, queue ));                   \
 }
 
@@ -134,10 +134,10 @@ magma_dlobpcg(
     double *hW={0};
 
     // === Set solver parameters ===
-    double residualTolerance  = solver_par->epsilon;
+    double residualTolerance  = solver_par->rtol;
     magma_int_t maxIterations = solver_par->maxiter;
     double tmp;
-    double r0;
+    double r0=0;  // set in 1st iteration
 
     // === Set some constants & defaults ===
     double c_one = MAGMA_D_ONE, c_zero = MAGMA_D_ZERO;
@@ -258,11 +258,7 @@ magma_dlobpcg(
                magma_daxpy(m, MAGMA_D_MAKE(-evalues[i],0), blockX+i*m, 1, blockR+i*m, 1);
             }
   */
-            #if defined(PRECISION_z) || defined(PRECISION_d)
-                magma_dsetmatrix( 3*n, 1, evalues, 3*n, eval_gpu, 3*n );
-            #else
-                magma_ssetmatrix( 3*n, 1, evalues, 3*n, eval_gpu, 3*n );
-            #endif
+            magma_dsetmatrix( 3*n, 1, evalues, 3*n, eval_gpu, 3*n );
 
             CHECK( magma_dlobpcg_res( m, n, eval_gpu, blockX, blockR, eval_gpu, queue ));
 
@@ -509,7 +505,8 @@ magma_dlobpcg(
             magma_dgetmatrix(1, 1, residualNorms(0, iterationNumber), 1,  &tmp, 1);
             if ( iterationNumber == 1 ) {
                 solver_par->init_res = tmp;
-                if ( (r0 = tmp * solver_par->epsilon) < ATOLERANCE )
+                r0 = tmp * solver_par->rtol;
+                if ( r0 < ATOLERANCE )
                     r0 = ATOLERANCE;
             }
             solver_par->final_res = tmp;

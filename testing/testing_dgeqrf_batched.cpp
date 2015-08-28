@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date
+       @date August 2015
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from testing_zgeqrf_batched.cpp normal z -> d, Fri May  1 21:31:39 2015
+       @generated from testing_zgeqrf_batched.cpp normal z -> d, Tue Aug 25 16:35:28 2015
 
 */
 
@@ -27,6 +27,10 @@
 #include "testings.h"
 #include "batched_kernel_param.h"
 
+#if defined(_OPENMP)
+#include <omp.h>
+#include "magma_threadsetting.h"
+#endif
 
 void get_QR_error(magma_int_t M, magma_int_t N, magma_int_t min_mn,
                     double *h_R,  double *h_A, magma_int_t lda,
@@ -87,7 +91,7 @@ int main( int argc, char** argv)
     TESTING_INIT();
 
     real_Double_t    gflops, magma_perf, magma_time, cublas_perf=0, cublas_time=0, cpu_perf, cpu_time;
-    double           magma_error=0.0, cublas_error=0.0, magma_error2=0.0, cublas_error2=0.0, error, error2;
+    double           magma_error, cublas_error, magma_error2, cublas_error2;
 
     double *h_A, *h_R, *h_Amagma, *tau, *h_work, tmp[1];
     double *d_A, *dtau_magma, *dtau_cublas;
@@ -102,21 +106,17 @@ int main( int argc, char** argv)
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
 
-    magma_int_t batchCount = 1;
+    magma_int_t batchCount;
     magma_int_t column;
 
-    magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    magma_opts opts( MagmaOptsBatched );
+    opts.parse_opts( argc, argv );
     batchCount = opts.batchcount;
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
-    printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
-    printf("BatchCount     M    N     MAGMA GFlop/s (ms)   CUBLAS GFlop/s (ms)   CPU GFlop/s (ms)   |R - Q^H*A|_mag   |I - Q^H*Q|_mag   |R - Q^H*A|_cub   |I - Q^H*Q|_cub \n");
-    printf("============================================================================================================================================================= \n");
+    printf("%% BatchCount   M     N   MAGMA GFlop/s (ms)   CUBLAS GFlop/s (ms)    CPU GFlop/s (ms)   |R - Q^H*A|_mag   |I - Q^H*Q|_mag   |R - Q^H*A|_cub   |I - Q^H*Q|_cub\n");
+    printf("%%============================================================================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M     = opts.msize[itest];
@@ -125,7 +125,7 @@ int main( int argc, char** argv)
             lda    = M;
             n2     = lda*N * batchCount;
             ldda = M;
-            ldda   = magma_roundup( M, opts.roundup );  // multiple of 32 by default
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
 
             gflops = (FLOPS_DGEQRF( M, N ) + FLOPS_DGEQRT( M, N )) / 1e9 * batchCount;
 
@@ -157,12 +157,7 @@ int main( int argc, char** argv)
             column = N * batchCount;
             /* Initialize the matrix */
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
-            for(int i=0; i<batchCount; i++)
-			{
-				magma_dmake_hpd( N, h_A + i * lda * N, lda );// need modification
-			}
-			
-			lapackf77_dlacpy( MagmaUpperLowerStr, &M, &column, h_A, &lda, h_R, &lda );
+            lapackf77_dlacpy( MagmaUpperLowerStr, &M, &column, h_A, &lda, h_R, &lda );
        
             /* ====================================================================
                Performs operation using MAGMA
@@ -171,11 +166,11 @@ int main( int argc, char** argv)
             dset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue);
             dset_pointer(dtau_array, dtau_magma, 1, 0, 0, min_mn, batchCount, opts.queue);
     
-            magma_time = magma_sync_wtime(0);
+            magma_time = magma_sync_wtime( opts.queue );
     
             info = magma_dgeqrf_batched(M, N, dA_array, ldda, dtau_array, dinfo_magma, batchCount, opts.queue);
 
-            magma_time = magma_sync_wtime(0) - magma_time;
+            magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
 
             magma_dgetmatrix( M, column, d_A, ldda, h_Amagma, lda);
@@ -194,12 +189,12 @@ int main( int argc, char** argv)
             dset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue);
             dset_pointer(dtau_array, dtau_cublas, 1, 0, 0, min_mn, batchCount, opts.queue);
 
-            cublas_time = magma_sync_wtime(0);
+            cublas_time = magma_sync_wtime( opts.queue );
     
             int cublas_info;  // int, not magma_int_t
-            cublasDgeqrfBatched(opts.handle, M, N, dA_array, ldda, dtau_array, &cublas_info, batchCount);
+            cublasDgeqrfBatched( opts.handle, M, N, dA_array, ldda, dtau_array, &cublas_info, batchCount);
 
-            cublas_time = magma_sync_wtime(0) - cublas_time;
+            cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
 
             if (cublas_info != 0)
@@ -212,15 +207,26 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.check ) {
                 cpu_time = magma_wtime();
-
-                for (int i=0; i < batchCount; i++)
+                // #define BATCHED_DISABLE_PARCPU
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                magma_int_t nthreads = magma_get_lapack_numthreads();
+                magma_set_lapack_numthreads(1);
+                magma_set_omp_numthreads(nthreads);
+                #pragma omp parallel for schedule(dynamic)
+                #endif
+                for (magma_int_t s=0; s < batchCount; s++)
                 {
-                    lapackf77_dgeqrf(&M, &N, h_A + i*lda*N, &lda, tau + i*min_mn, h_work + i * lwork, &lwork, &info);
-                  
-                    /* lapackf77_dlarft( MagmaForwardStr, MagmaColumnwiseStr,
-                                     &M, &N, h_A + i*lda*N, &lda, tau + i*min_mn, h_work + i * lwork, &N); */
+                    magma_int_t locinfo;
+                    lapackf77_dgeqrf(&M, &N, h_A + s * lda * N, &lda, tau + s * min_mn, h_work + s * lwork, &lwork, &locinfo);
+                    if (locinfo != 0)
+                        printf("lapackf77_dgeqrf matrix %d returned error %d: %s.\n",
+                               (int) s, (int) locinfo, magma_strerror( locinfo ));
                 }
 
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                    magma_set_lapack_numthreads(nthreads);
+                #endif
+                
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
@@ -240,39 +246,45 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_CPU( work, double,             min_mn );
 
                 /* check magma result */
+                magma_error  = 0;
+                magma_error2 = 0;
                 magma_dgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1);
                 for (int i=0; i < batchCount; i++)
                 {
+                    double err, err2;
                     get_QR_error(M, N, min_mn,
                              h_Amagma + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn,
                              Q, ldq, R, ldr, h_work, lwork,
-                             work, &error, &error2);
+                             work, &err, &err2);
 
-                    if ( isnan(error) || isinf(error) ) {
-                        magma_error = error;
+                    if ( isnan(err) || isinf(err) ) {
+                        magma_error = err;
                         break;
                     }
-                    magma_error  = max( fabs(error),  magma_error  );
-                    magma_error2 = max( fabs(error2), magma_error2 );
+                    magma_error  = max( err,  magma_error  );
+                    magma_error2 = max( err2, magma_error2 );
                 }
 
                 /* check cublas result */
+                cublas_error  = 0;
+                cublas_error2 = 0;
                 #if CUDA_VERSION >= 6050
                 magma_dgetvector(min_mn*batchCount, dtau_magma, 1, tau, 1);
                 magma_dgetmatrix( M, column, d_A, ldda, h_A, lda);
                 for (int i=0; i < batchCount; i++)
                 {
+                    double err, err2;
                     get_QR_error(M, N, min_mn,
                              h_A + i*lda*N, h_R + i*lda*N, lda, tau + i*min_mn,
                              Q, ldq, R, ldr, h_work, lwork,
-                             work, &error, &error2);
+                             work, &err, &err2);
 
-                    if ( isnan(error) || isinf(error) ) {
-                        cublas_error = error;
+                    if ( isnan(err) || isinf(err) ) {
+                        cublas_error = err;
                         break;
                     }
-                    cublas_error  = max( fabs(error),  cublas_error  );
-                    cublas_error2 = max( fabs(error2), cublas_error2 );
+                    cublas_error  = max( err,  cublas_error  );
+                    cublas_error2 = max( err2, cublas_error2 );
                 }
                 #endif
 
@@ -284,7 +296,7 @@ int main( int argc, char** argv)
                 //bool okay_cublas = (cublas_error < tol && cublas_error2 < tol);
                 status += ! okay;
 
-                printf("%5d       %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %7.2f (%7.2f)   %15.2e   %15.2e   %15.2e   %15.2e   %s\n",
+                printf("%10d %5d %5d    %7.2f (%7.2f)     %7.2f (%7.2f)   %7.2f (%7.2f)   %15.2e   %15.2e   %15.2e   %15.2e   %s\n",
                        (int)batchCount, (int) M, (int) N,
                        magma_perf,  1000.*magma_time,
                        cublas_perf, 1000.*cublas_time,
@@ -294,7 +306,7 @@ int main( int argc, char** argv)
                        (okay ? "ok" : "failed") );
             }
             else {
-                printf("%5d       %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)      ---   (  ---  )   ---  \n",
+                printf("%10d %5d %5d    %7.2f (%7.2f)     %7.2f (%7.2f)     ---   (  ---  )   ---\n",
                        (int)batchCount, (int) M, (int) N,
                        magma_perf,  1000.*magma_time,
                        cublas_perf, 1000.*cublas_time );
@@ -323,9 +335,6 @@ int main( int argc, char** argv)
         }
     }
     
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
-
     TESTING_FINALIZE();
     return status;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @precisions normal z -> s d c
@@ -217,13 +217,14 @@ magma_zgegqr_gpu(
     }
     else if (ikind == 3) {
         // ================== MGS               ===================================================
-        for (magma_int_t j = 0; j < n; j++) {
-            for (magma_int_t i = 0; i < j; i++) {
+        for (j = 0; j < n; j++) {
+            for (i = 0; i < j; i++) {
                 *work(i, j) = magma_zdotc(m, dA(0,i), 1, dA(0,j), 1);
                 magma_zaxpy(m, -(*work(i,j)),  dA(0,i), 1, dA(0,j), 1);
             }
-            for (magma_int_t i = j; i < n; i++)
+            for (i = j; i < n; i++) {
                 *work(i, j) = MAGMA_Z_ZERO;
+            }
             //*work(j,j) = MAGMA_Z_MAKE( magma_dznrm2(m, dA(0,j), 1), 0. );
             *work(j,j) = magma_zdotc(m, dA(0,j), 1, dA(0,j), 1);
             *work(j,j) = MAGMA_Z_MAKE( sqrt(MAGMA_Z_REAL( *work(j,j) )), 0.);

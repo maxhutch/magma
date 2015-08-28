@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgetrf_mgpu.cpp normal z -> c, Fri Jan 30 19:00:14 2015
+       @generated from zgetrf_mgpu.cpp normal z -> c, Tue Aug 25 16:35:15 2015
 
 */
 #include "common_magma.h"
@@ -122,7 +122,7 @@ magma_cgetrf_mgpu(
         magma_queue_t orig_stream;
         magmablasGetKernelStream( &orig_stream );
         
-        maxm = ((m + 31)/32)*32;
+        maxm = magma_roundup( m, 32 );
         if ( ngpu > ceil((float)n/nb) ) {
             printf( " * too many GPUs for the matrix size, using %d GPUs\n", (int) ngpu );
             *info = -1;
@@ -130,11 +130,11 @@ magma_cgetrf_mgpu(
         }
 
         /* allocate workspace for each GPU */
-        lddat = ((((((n+nb-1)/nb)/ngpu)*nb)+31)/32)*32;
-        lddat = (n+nb-1)/nb;                 /* number of block columns         */
-        lddat = (lddat+ngpu-1)/ngpu;         /* number of block columns per GPU */
-        lddat = nb*lddat;                    /* number of columns per GPU       */
-        lddat = ((lddat+31)/32)*32;          /* make it a multiple of 32        */
+        lddat = magma_roundup( ((magma_ceildiv( n, nb )/ngpu)*nb), 32 );
+        lddat = magma_ceildiv( n, nb );        /* number of block columns         */
+        lddat = magma_ceildiv( lddat, ngpu );  /* number of block columns per GPU */
+        lddat = nb*lddat;                      /* number of columns per GPU       */
+        lddat = magma_roundup( lddat, 32 );    /* make it a multiple of 32        */
         for (i=0; i < ngpu; i++) {
             magma_setdevice(i);
             

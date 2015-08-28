@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
   
-       @generated from zgeqp3.cpp normal z -> d, Fri Jan 30 19:00:16 2015
+       @generated from zgeqp3.cpp normal z -> d, Tue Aug 25 16:35:16 2015
 
        @author Mitch Horton
 */
@@ -160,7 +160,7 @@ magma_dgeqp3(
     double *rwork = work + (n + 1)*nb;
     #endif
 
-    ldda = ((m+31)/32)*32;
+    ldda = magma_roundup( m, 32 );
     ldwork = n*ldda + (n+1)*nb;
     if (MAGMA_SUCCESS != magma_dmalloc( &dwork, ldwork )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;

@@ -1,15 +1,15 @@
 /*
-   -- MAGMA (version 1.6.1) --
+   -- MAGMA (version 1.6.3-beta1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date January 2015
+   @date August 2015
 
    @author Mark gates
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing_zposv_batched.cpp normal z -> d, Fri Jan 30 19:00:26 2015
+   @generated from testing_zposv_batched.cpp normal z -> d, Tue Aug 25 16:35:28 2015
  */
 // includes, system
 #include <stdio.h>
@@ -23,6 +23,11 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
+#if defined(_OPENMP)
+#include <omp.h>
+#include "magma_threadsetting.h"
+#endif
+
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dposv_batched
 */
@@ -31,40 +36,40 @@ int main(int argc, char **argv)
     TESTING_INIT();
 
     real_Double_t   gflops, cpu_perf, cpu_time, gpu_perf, gpu_time;
-    double          err = 0.0, Rnorm, Anorm, Xnorm, *work;
+    double          error, Rnorm, Anorm, Xnorm, *work;
     double c_one     = MAGMA_D_ONE;
     double c_neg_one = MAGMA_D_NEG_ONE;
     double *h_A, *h_B, *h_X;
     magmaDouble_ptr d_A, d_B;
+    magma_int_t *cpu_info;
     magma_int_t *dinfo_array;
     magma_int_t N, nrhs, lda, ldb, ldda, lddb, info, sizeA, sizeB;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
-    magma_int_t batchCount = 1;
+    magma_int_t batchCount;
 
     double **dA_array = NULL;
     double **dB_array = NULL;
 
-    magma_queue_t queue = magma_stream;
-
-    magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    magma_opts opts( MagmaOptsBatched );
+    opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
-    
-    nrhs = opts.nrhs;
-    batchCount = opts.batchcount ;
+    magma_queue_t queue = opts.queue; //NULL; // The batched routine prefer stream NULL
 
-    printf("uplo = %s\n", lapack_uplo_const(opts.uplo) );
-    printf("BatchCount    N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
-    printf("================================================================================\n");
+    nrhs = opts.nrhs;
+    batchCount = opts.batchcount;
+
+    printf("%% uplo = %s\n", lapack_uplo_const(opts.uplo) );
+    printf("%% BatchCount   N  NRHS   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||\n");
+    printf("%%==========================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda    = N;
             ldb    = lda;
-            ldda   = ((N+31)/32)*32;
+            ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
             lddb   = ldda;
             gflops = ( FLOPS_DPOTRF( N) + FLOPS_DPOTRS( N, nrhs ) ) / 1e9 * batchCount;
             
@@ -75,6 +80,7 @@ int main(int argc, char **argv)
             TESTING_MALLOC_CPU( h_B, double, sizeB );
             TESTING_MALLOC_CPU( h_X, double, sizeB );
             TESTING_MALLOC_CPU( work, double,      N);
+            TESTING_MALLOC_CPU( cpu_info, magma_int_t, batchCount);
 
             TESTING_MALLOC_DEV( d_A, double, ldda*N*batchCount    );
             TESTING_MALLOC_DEV( d_B, double, lddb*nrhs*batchCount );
@@ -83,14 +89,13 @@ int main(int argc, char **argv)
             magma_malloc((void**)&dA_array, batchCount * sizeof(*dA_array));
             magma_malloc((void**)&dB_array, batchCount * sizeof(*dB_array));
 
-
             /* Initialize the matrices */
             lapackf77_dlarnv( &ione, ISEED, &sizeA, h_A );
             lapackf77_dlarnv( &ione, ISEED, &sizeB, h_B );
 
-            for(int i=0; i<batchCount; i++)
+            for (int i=0; i < batchCount; i++)
             {
-               magma_dmake_hpd( N, h_A + i * lda * N, lda );// need modification
+               magma_dmake_hpd( N, h_A + i * lda * N, lda ); // need modification
             }
 
             magma_dsetmatrix( N, N*batchCount,    h_A, lda, d_A, ldda );
@@ -102,17 +107,16 @@ int main(int argc, char **argv)
             dset_pointer(dA_array, d_A, ldda, 0, 0, ldda*N, batchCount, queue);
             dset_pointer(dB_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, queue);
 
-            gpu_time = magma_wtime();
-            info = magma_dposv_batched(opts.uplo, N, nrhs, dA_array, ldda, dB_array, lddb, dinfo_array, batchCount, queue); 
-            gpu_time = magma_wtime() - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue );
+            info = magma_dposv_batched(opts.uplo, N, nrhs, dA_array, ldda, dB_array, lddb, dinfo_array, batchCount, queue);
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-            magma_int_t *cpu_info = (magma_int_t*) malloc(batchCount*sizeof(magma_int_t));
             magma_getvector( batchCount, sizeof(magma_int_t), dinfo_array, 1, cpu_info, 1);
-            for(int i=0; i<batchCount; i++)
+            for (int i=0; i < batchCount; i++)
             {
-                if(cpu_info[i] != 0 ){
-                    printf("magma_dposv_batched matrix %d returned internal error %d\n",i, (int)cpu_info[i] );
+                if (cpu_info[i] != 0 ) {
+                    printf("magma_dposv_batched matrix %d returned internal error %d\n", i, (int)cpu_info[i] );
                 }
             }
             if (info != 0)
@@ -123,7 +127,8 @@ int main(int argc, char **argv)
             //=====================================================================
             magma_dgetmatrix( N, nrhs*batchCount, d_B, lddb, h_X, ldb );
 
-            for(magma_int_t s=0; s<batchCount; s++)
+            error = 0;
+            for (magma_int_t s=0; s < batchCount; s++)
             {
                 Anorm = lapackf77_dlange("I", &N, &N,    h_A + s * lda * N, &lda, work);
                 Xnorm = lapackf77_dlange("I", &N, &nrhs, h_X + s * ldb * nrhs, &ldb, work);
@@ -134,45 +139,59 @@ int main(int argc, char **argv)
                            &c_neg_one, h_B + s * ldb * nrhs, &ldb);
             
                 Rnorm = lapackf77_dlange("I", &N, &nrhs, h_B + s * ldb * nrhs, &ldb, work);
-                double error = Rnorm/(N*Anorm*Xnorm);
+                double err = Rnorm/(N*Anorm*Xnorm);
                 
-                if ( isnan(error) || isinf(error) ) {
-                    err = error;
+                if ( isnan(err) || isinf(err) ) {
+                    error = err;
                     break;
                 }
-                err = max(err, error);            
+                error = max( err, error );
             }
-            status += ! (err < tol);
+            bool okay = (error < tol);
+            status += ! okay;
 
             /* ====================================================================
                Performs operation using LAPACK
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                for(magma_int_t s=0; s<batchCount; s++)
+                // #define BATCHED_DISABLE_PARCPU
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                magma_int_t nthreads = magma_get_lapack_numthreads();
+                magma_set_lapack_numthreads(1);
+                magma_set_omp_numthreads(nthreads);
+                #pragma omp parallel for schedule(dynamic)
+                #endif
+                for (magma_int_t s=0; s < batchCount; s++)
                 {
-                    lapackf77_dposv( lapack_uplo_const(opts.uplo), &N, &nrhs, h_A + s * lda * N, &lda, h_B + s * ldb * nrhs, &ldb, &info );
+                    magma_int_t locinfo;
+                    lapackf77_dposv( lapack_uplo_const(opts.uplo), &N, &nrhs, h_A + s * lda * N, &lda, h_B + s * ldb * nrhs, &ldb, &locinfo );
+                    if (locinfo != 0){
+                        printf("lapackf77_dposv matrix %d returned error %d: %s.\n", 
+                               int(s), int(locinfo), magma_strerror( locinfo ));
+                        }
                 }
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                    magma_set_lapack_numthreads(nthreads);
+                #endif
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
-                    printf("lapackf77_dposv returned err %d: %s.\n",
-                           (int) info, magma_strerror( info ));
                 
-                printf( "%10d    %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
+                printf( "%10d %5d %5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int)batchCount, (int) N, (int) nrhs, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                        err, (err < tol ? "ok" : "failed"));
+                        error, (okay ? "ok" : "failed"));
             }
             else {
-                printf( "%10d    %5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e   %s\n",
+                printf( "%10d %5d %5d     ---   (  ---  )   %7.2f (%7.2f)   %8.2e   %s\n",
                         (int)batchCount, (int) N, (int) nrhs, gpu_perf, gpu_time,
-                        err, (err < tol ? "ok" : "failed"));
+                        error, (okay ? "ok" : "failed"));
             }
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_B );
             TESTING_FREE_CPU( h_X );
             TESTING_FREE_CPU( work );
+            TESTING_FREE_CPU( cpu_info );
             
             TESTING_FREE_DEV( d_A );
             TESTING_FREE_DEV( d_B );
@@ -182,7 +201,6 @@ int main(int argc, char **argv)
             magma_free(dA_array);
             magma_free(dB_array);
 
-            free(cpu_info);
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {

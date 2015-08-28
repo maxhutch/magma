@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zgeelltmv.cu normal z -> s, Sun May  3 11:22:58 2015
+       @generated from zgeelltmv.cu normal z -> s, Tue Aug 25 16:35:31 2015
 
 */
 
@@ -28,13 +28,13 @@ sgeelltmv_kernel(
     float beta, 
     float * dy)
 {
-    int row = blockDim.x * blockIdx.x + threadIdx.x ;
-    if(row < num_rows ){
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
+    if (row < num_rows ) {
         float dot = MAGMA_S_MAKE(0.0, 0.0);
-        for ( int n = 0; n < num_cols_per_row ; n ++){
+        for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_rows * n + row ];
             float val = dval [ num_rows * n + row ];
-            if( val != 0)
+            if ( val != 0)
                 dot += val * dx[col ];
         }
         dy[ row ] = dot * alpha + beta * dy [ row ];
@@ -59,17 +59,16 @@ sgeelltmv_kernel_shift(
     magma_index_t * addrows,
     float * dy)
 {
-
-    int row = blockDim.x * blockIdx.x + threadIdx.x ;
-    if(row < num_rows ){
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
+    if (row < num_rows ) {
         float dot = MAGMA_S_MAKE(0.0, 0.0);
-        for ( int n = 0; n < num_cols_per_row ; n ++){
+        for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_rows * n + row ];
             float val = dval [ num_rows * n + row ];
-            if( val != 0)
+            if ( val != 0)
                 dot += val * dx[col ];
         }
-        if( row<blocksize )
+        if ( row < blocksize )
             dy[ row ] = dot * alpha - lambda 
                     * dx[ offset+row ] + beta * dy [ row ];
         else
@@ -263,6 +262,3 @@ magma_sgeelltmv_shift(
 
    return MAGMA_SUCCESS;
 }
-
-
-

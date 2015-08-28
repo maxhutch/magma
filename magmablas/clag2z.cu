@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
        @author Mark Gates
 */
 #include "common_magma.h"
-
-#define PRECISION_z
 
 #define BLK_X 64
 #define BLK_Y 32
@@ -83,7 +81,7 @@ void clag2z_kernel(
             The leading dimension of the array SA.  LDSA >= max(1,M).
 
     @param[out]
-    A       DOUBLE PRECISION array, dimension (LDA,N)
+    A       COMPLEX_16 array, dimension (LDA,N)
             On exit, the M-by-N coefficient matrix A.
 
     @param[in]
@@ -130,7 +128,7 @@ magmablas_clag2z_q(
     }
 
     dim3 threads( BLK_X, 1 );
-    dim3 grid( (m+BLK_X-1)/BLK_X, (n+BLK_Y-1)/BLK_Y );
+    dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     clag2z_kernel<<< grid, threads, 0, queue >>> ( m, n, SA, ldsa, A, lda );
 }
 

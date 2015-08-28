@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> c
 
@@ -74,7 +74,7 @@ int main( int argc, char** argv)
     magmaDoubleComplex  c_neg_one = MAGMA_Z_NEG_ONE;
     double *rwork;
     double tnrm, result[9];
-    magma_int_t N, n2, lda, nb, lwork, info;
+    magma_int_t N, n2, lda, nb, lwork, lwork2, info;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     double ulp, ulpinv, error;
@@ -84,7 +84,7 @@ int main( int argc, char** argv)
     ulpinv = 1./ulp;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     // need slightly looser bound (60*eps instead of 30*eps) for some tests
     opts.tolerance = max( 60., opts.tolerance );
@@ -99,17 +99,17 @@ int main( int argc, char** argv)
         opts.lapack = true;
     }
     
-    printf("    N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
-    printf("===========================================================================\n");
+    printf("%%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
+    printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda   = N;
             n2    = lda*N;
             nb    = magma_get_zgehrd_nb(N);
-            lwork = N*(1 + nb);
+            lwork = N*(1 + 2*nb);
             // generous workspace - required by zget22
-            lwork = max( lwork, N*(5 + 2*N) );
+            lwork2 = max( lwork, N*(5 + 2*N) );
             
             TESTING_MALLOC_CPU( w1copy, magmaDoubleComplex, N );
             TESTING_MALLOC_CPU( w2copy, magmaDoubleComplex, N );
@@ -121,11 +121,11 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, n2 );
             TESTING_MALLOC_PIN( VL,     magmaDoubleComplex, n2 );
             TESTING_MALLOC_PIN( VR,     magmaDoubleComplex, n2 );
-            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork );
+            TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork2 );
             
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -211,12 +211,12 @@ int main( int argc, char** argv)
                         result[1] = max( result[1], min( ulpinv, fabs(tnrm-1.)/ulp ));
                         
                         vmx = vrmx = 0.;
-                        for( int jj = 0; jj <N; ++jj ) {
+                        for( int jj = 0; jj < N; ++jj ) {
                             vtst = magma_dzlapy2(VR[jj + j*lda]);
                             if (vtst > vmx)
                                 vmx = vtst;
                             
-                            if (MAGMA_Z_IMAG(VR[jj + j*lda])==0. &&
+                            if (MAGMA_Z_IMAG(VR[jj + j*lda]) == 0. &&
                                 fabs( MAGMA_Z_REAL(VR[jj+j*lda]) ) > vrmx)
                             {
                                 vrmx = fabs( MAGMA_Z_REAL( VR[jj+j*lda] ) );
@@ -248,7 +248,7 @@ int main( int argc, char** argv)
                             if (vtst > vmx)
                                 vmx = vtst;
                             
-                            if (MAGMA_Z_IMAG(VL[jj + j*lda])==0. &&
+                            if (MAGMA_Z_IMAG(VL[jj + j*lda]) == 0. &&
                                 fabs( MAGMA_Z_REAL( VL[jj + j*lda] ) ) > vrmx)
                             {
                                 vrmx = fabs( MAGMA_Z_REAL( VL[jj+j*lda]) );
@@ -267,7 +267,7 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_PIN( LRE, magmaDoubleComplex, n2 );
                 
                 lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 
                 // ----------
                 // Compute eigenvalues, left and right eigenvectors
@@ -282,7 +282,7 @@ int main( int argc, char** argv)
                 // ----------
                 // Compute eigenvalues only
                 // These are not exactly equal, and not in the same order, so skip for now.
-                // lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                // lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 // magma_zgeev( MagmaNoVec, MagmaNoVec,
                 //              N, h_R, lda, w2,
                 //              &DUM, 1, &DUM, 1,
@@ -290,7 +290,7 @@ int main( int argc, char** argv)
                 // if (info != 0)
                 //     printf("magma_zgeev (case N, N) returned error %d: %s.\n",
                 //            (int) info, magma_strerror( info ));
-                // 
+                //
                 // // Do test 5: W(full) = W(partial, W only)
                 // result[4] = 1;
                 // for( int j = 0; j < N; ++j )
@@ -299,7 +299,7 @@ int main( int argc, char** argv)
                 
                 // ----------
                 // Compute eigenvalues and right eigenvectors
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 magma_zgeev( MagmaNoVec, MagmaVec,
                              N, h_R, lda, w2,
                              &DUM, 1, LRE, lda,
@@ -323,7 +323,7 @@ int main( int argc, char** argv)
                 
                 // ----------
                 // Compute eigenvalues and left eigenvectors
-                lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 magma_zgeev( MagmaVec, MagmaNoVec,
                              N, h_R, lda, w2,
                              LRE, lda, &DUM, 1,

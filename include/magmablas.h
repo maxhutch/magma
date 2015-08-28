@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 */
 
 #ifndef MAGMABLAS_H
@@ -29,8 +29,6 @@ extern "C" {
 
 // ========================================
 // Define magma streams
-extern magma_queue_t magma_stream;
-
 cublasStatus_t magmablasSetKernelStream( magma_queue_t stream );
 cublasStatus_t magmablasGetKernelStream( magma_queue_t *stream );
 

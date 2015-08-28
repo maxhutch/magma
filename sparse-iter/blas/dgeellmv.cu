@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zgeellmv.cu normal z -> d, Sun May  3 11:22:58 2015
+       @generated from zgeellmv.cu normal z -> d, Tue Aug 25 16:35:30 2015
 
 */
 
@@ -28,13 +28,13 @@ dgeellmv_kernel(
     double beta, 
     double * dy)
 {
-int row = blockDim.x * blockIdx.x + threadIdx.x ;
-    if(row < num_rows ){
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
+    if (row < num_rows) {
         double dot = MAGMA_D_MAKE(0.0, 0.0);
-        for ( int n = 0; n < num_cols_per_row ; n ++){
+        for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_cols_per_row * row + n ];
             double val = dval [ num_cols_per_row * row + n ];
-            if( val != 0)
+            if ( val != 0)
                 dot += val * dx[col ];
         }
         dy[ row ] = dot * alpha + beta * dy [ row ];
@@ -59,16 +59,16 @@ dgeellmv_kernel_shift(
     magma_index_t * addrows,
     double * dy)
 {
-int row = blockDim.x * blockIdx.x + threadIdx.x ;
-    if(row < num_rows ){
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
+    if (row < num_rows) {
         double dot = MAGMA_D_MAKE(0.0, 0.0);
-        for ( int n = 0; n < num_cols_per_row ; n ++){
+        for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_cols_per_row * row + n ];
             double val = dval [ num_cols_per_row * row + n ];
-            if( val != 0)
+            if ( val != 0)
                 dot += val * dx[col ];
         }
-        if( row<blocksize )
+        if ( row < blocksize )
             dy[ row ] = dot * alpha - lambda * dx[ offset+row ] + beta * dy [ row ];
         else
             dy[ row ] = dot * alpha - lambda * dx[ addrows[row-blocksize] ] + beta * dy [ row ];   
@@ -151,11 +151,11 @@ magma_dgeellmv(
 {
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
-   dgeellmv_kernel<<< grid, threads, 0, queue >>>
+    dgeellmv_kernel<<< grid, threads, 0, queue >>>
                   ( m, n, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
 
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
 
 
@@ -252,13 +252,10 @@ magma_dgeellmv_shift(
 {
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
-   dgeellmv_kernel_shift<<< grid, threads, 0, queue >>>
+    dgeellmv_kernel_shift<<< grid, threads, 0, queue >>>
                   ( m, n, nnz_per_row, alpha, lambda, dval, dcolind, dx, 
                                     beta, offset, blocksize, addrows, dy );
 
 
-   return MAGMA_SUCCESS;
+    return MAGMA_SUCCESS;
 }
-
-
-

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgeev.cpp normal z -> c, Fri Jan 30 19:00:26 2015
+       @generated from testing_zgeev.cpp normal z -> c, Tue Aug 25 16:35:27 2015
 
 */
 
@@ -36,7 +36,7 @@ bool lessthan( magmaFloatComplex a, magmaFloatComplex b )
 // DLAPY2 returns sqrt(x**2+y**2), taking care not to cause unnecessary overflow.
 // TODO: put into auxiliary file. It's useful elsewhere.
 extern "C"
-float magma_dlapy2(float x, float y)
+float magma_slapy2(float x, float y)
 {
     float ret_val, d;
     float w, z, xabs, yabs;
@@ -55,9 +55,9 @@ float magma_dlapy2(float x, float y)
 }
 
 extern "C"
-float magma_dzlapy2(magmaFloatComplex x)
+float magma_sclapy2(magmaFloatComplex x)
 {
-    return magma_dlapy2( MAGMA_C_REAL(x), MAGMA_C_IMAG(x) );
+    return magma_slapy2( MAGMA_C_REAL(x), MAGMA_C_IMAG(x) );
 }
 
 
@@ -74,7 +74,7 @@ int main( int argc, char** argv)
     magmaFloatComplex  c_neg_one = MAGMA_C_NEG_ONE;
     float *rwork;
     float tnrm, result[9];
-    magma_int_t N, n2, lda, nb, lwork, info;
+    magma_int_t N, n2, lda, nb, lwork, lwork2, info;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     float ulp, ulpinv, error;
@@ -84,7 +84,7 @@ int main( int argc, char** argv)
     ulpinv = 1./ulp;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     // need slightly looser bound (60*eps instead of 30*eps) for some tests
     opts.tolerance = max( 60., opts.tolerance );
@@ -99,17 +99,17 @@ int main( int argc, char** argv)
         opts.lapack = true;
     }
     
-    printf("    N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
-    printf("===========================================================================\n");
+    printf("%%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
+    printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda   = N;
             n2    = lda*N;
             nb    = magma_get_cgehrd_nb(N);
-            lwork = N*(1 + nb);
+            lwork = N*(1 + 2*nb);
             // generous workspace - required by cget22
-            lwork = max( lwork, N*(5 + 2*N) );
+            lwork2 = max( lwork, N*(5 + 2*N) );
             
             TESTING_MALLOC_CPU( w1copy, magmaFloatComplex, N );
             TESTING_MALLOC_CPU( w2copy, magmaFloatComplex, N );
@@ -121,11 +121,11 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_R,    magmaFloatComplex, n2 );
             TESTING_MALLOC_PIN( VL,     magmaFloatComplex, n2 );
             TESTING_MALLOC_PIN( VR,     magmaFloatComplex, n2 );
-            TESTING_MALLOC_PIN( h_work, magmaFloatComplex, lwork );
+            TESTING_MALLOC_PIN( h_work, magmaFloatComplex, lwork2 );
             
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -211,12 +211,12 @@ int main( int argc, char** argv)
                         result[1] = max( result[1], min( ulpinv, fabs(tnrm-1.)/ulp ));
                         
                         vmx = vrmx = 0.;
-                        for( int jj = 0; jj <N; ++jj ) {
-                            vtst = magma_dzlapy2(VR[jj + j*lda]);
+                        for( int jj = 0; jj < N; ++jj ) {
+                            vtst = magma_sclapy2(VR[jj + j*lda]);
                             if (vtst > vmx)
                                 vmx = vtst;
                             
-                            if (MAGMA_C_IMAG(VR[jj + j*lda])==0. &&
+                            if (MAGMA_C_IMAG(VR[jj + j*lda]) == 0. &&
                                 fabs( MAGMA_C_REAL(VR[jj+j*lda]) ) > vrmx)
                             {
                                 vrmx = fabs( MAGMA_C_REAL( VR[jj+j*lda] ) );
@@ -244,11 +244,11 @@ int main( int argc, char** argv)
                         
                         vmx = vrmx = 0.;
                         for( int jj = 0; jj < N; ++jj ) {
-                            vtst = magma_dzlapy2(VL[jj + j*lda]);
+                            vtst = magma_sclapy2(VL[jj + j*lda]);
                             if (vtst > vmx)
                                 vmx = vtst;
                             
-                            if (MAGMA_C_IMAG(VL[jj + j*lda])==0. &&
+                            if (MAGMA_C_IMAG(VL[jj + j*lda]) == 0. &&
                                 fabs( MAGMA_C_REAL( VL[jj + j*lda] ) ) > vrmx)
                             {
                                 vrmx = fabs( MAGMA_C_REAL( VL[jj+j*lda]) );
@@ -267,7 +267,7 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_PIN( LRE, magmaFloatComplex, n2 );
                 
                 lapackf77_clarnv( &ione, ISEED, &n2, h_A );
-                lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 
                 // ----------
                 // Compute eigenvalues, left and right eigenvectors
@@ -282,7 +282,7 @@ int main( int argc, char** argv)
                 // ----------
                 // Compute eigenvalues only
                 // These are not exactly equal, and not in the same order, so skip for now.
-                // lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                // lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 // magma_cgeev( MagmaNoVec, MagmaNoVec,
                 //              N, h_R, lda, w2,
                 //              &DUM, 1, &DUM, 1,
@@ -290,7 +290,7 @@ int main( int argc, char** argv)
                 // if (info != 0)
                 //     printf("magma_cgeev (case N, N) returned error %d: %s.\n",
                 //            (int) info, magma_strerror( info ));
-                // 
+                //
                 // // Do test 5: W(full) = W(partial, W only)
                 // result[4] = 1;
                 // for( int j = 0; j < N; ++j )
@@ -299,7 +299,7 @@ int main( int argc, char** argv)
                 
                 // ----------
                 // Compute eigenvalues and right eigenvectors
-                lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 magma_cgeev( MagmaNoVec, MagmaVec,
                              N, h_R, lda, w2,
                              &DUM, 1, LRE, lda,
@@ -323,7 +323,7 @@ int main( int argc, char** argv)
                 
                 // ----------
                 // Compute eigenvalues and left eigenvectors
-                lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
                 magma_cgeev( MagmaVec, MagmaNoVec,
                              N, h_R, lda, w2,
                              LRE, lda, &DUM, 1,
@@ -375,7 +375,7 @@ int main( int argc, char** argv)
                 for( int j=0; j < N; ++j ) {
                     for( int j2=j; j2 < N; ++j2 ) {
                         magmaFloatComplex diff = MAGMA_C_SUB( w1copy[j], w2copy[j2] );
-                        float diff2 = magma_dzlapy2( diff ) / max( magma_dzlapy2( w1copy[j] ), tol );
+                        float diff2 = magma_sclapy2( diff ) / max( magma_sclapy2( w1copy[j] ), tol );
                         if ( diff2 < 100*tol ) {
                             if ( j != j2 ) {
                                 std::swap( w2copy[j], w2copy[j2] );

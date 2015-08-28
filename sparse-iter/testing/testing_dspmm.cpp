@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from testing_zspmm.cpp normal z -> d, Sun May  3 11:23:02 2015
+       @generated from testing_zspmm.cpp normal z -> d, Tue Aug 25 16:35:35 2015
        @author Hartwig Anzt
 */
 
@@ -48,7 +48,7 @@ int main(  int argc, char** argv )
     magma_int_t info = 0;
     TESTING_INIT();
     magma_queue_t queue=NULL;
-    magma_queue_create( /*devices[ opts->device ],*/ &queue );
+    magma_queue_create( &queue );
     
     magma_d_matrix hA={Magma_CSR}, hA_SELLP={Magma_CSR}, hA_ELL={Magma_CSR}, 
     dA={Magma_CSR}, dA_SELLP={Magma_CSR}, dA_ELL={Magma_CSR};
@@ -77,12 +77,11 @@ int main(  int argc, char** argv )
         } else
             break;
     }
-    printf( "\n#    usage: ./run_dspmm"
-        " [ --blocksize %d --alignment %d (for SELLP) ]"
-        " matrices \n\n", (int) hA_SELLP.blocksize, (int) hA_SELLP.alignment );
+    printf("\n#    usage: ./run_dspmm"
+           " [ --blocksize %d --alignment %d (for SELLP) ]"
+           " matrices \n\n", (int) hA_SELLP.blocksize, (int) hA_SELLP.alignment );
 
-    while(  i < argc ) {
-
+    while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
             i++;
             magma_int_t laplace_size = atoi( argv[i] );
@@ -91,7 +90,7 @@ int main(  int argc, char** argv )
             CHECK( magma_d_csr_mtx( &hA,  argv[i], queue ));
         }
 
-        printf( "# matrix info: %d-by-%d with %d nonzeros\n",
+        printf("%% matrix info: %d-by-%d with %d nonzeros\n",
                             (int) hA.num_rows,(int) hA.num_cols,(int) hA.nnz );
 
         real_Double_t FLOPS = 2.0*hA.nnz/1e9;
@@ -116,11 +115,11 @@ int main(  int argc, char** argv )
 
         // calling MKL with CSR
         #ifdef MAGMA_WITH_MKL
-            magma_int_t *pntre=NULL;
-            CHECK( magma_index_malloc_cpu( &pntre, m + 1 ) );
+            CHECK( magma_imalloc_cpu( &pntre, m + 1 ) );
             pntre[0] = 0;
-            for (j=0; j<m; j++ ) pntre[j] = hA.row[j+1];
-
+            for (j=0; j < m; j++ ) {
+                pntre[j] = hA.row[j+1];
+            }
 
             MKL_INT num_rows = hA.num_rows;
             MKL_INT num_cols = hA.num_cols;
@@ -217,11 +216,11 @@ int main(  int argc, char** argv )
         res = 0.0;
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_D_REAL(hcheck.val[k]) - MAGMA_D_REAL(hrefvec.val[k]);
-        printf("# |x-y|_F = %8.2e\n", res);
+        printf("%% |x-y|_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester spmm SELL-P:  ok\n");
+            printf("%% tester spmm SELL-P:  ok\n");
         else
-            printf("# tester spmm SELL-P:  failed\n");
+            printf("%% tester spmm SELL-P:  failed\n");
         magma_dmfree( &hcheck, queue );
         magma_dmfree(&dA_SELLP, queue );
 
@@ -258,11 +257,11 @@ int main(  int argc, char** argv )
         res = 0.0;
         for(magma_int_t k=0; k<hA.num_rows; k++ )
             res=res + MAGMA_D_REAL(hcheck.val[k]) - MAGMA_D_REAL(hrefvec.val[k]);
-        printf("# |x-y|_F = %8.2e\n", res);
+        printf("%% |x-y|_F = %8.2e\n", res);
         if ( res < .000001 )
-            printf("# tester spmm cuSPARSE:  ok\n");
+            printf("%% tester spmm cuSPARSE:  ok\n");
         else
-            printf("# tester spmm cuSPARSE:  failed\n");
+            printf("%% tester spmm cuSPARSE:  failed\n");
         magma_dmfree( &hcheck, queue );
 
         cusparseDestroyMatDescr( descr ); 
@@ -285,7 +284,6 @@ int main(  int argc, char** argv )
         magma_dmfree(&dA, queue);
 
         i++;
-
     }
 
 cleanup:

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zmconverter.cpp normal z -> s, Sun May  3 11:23:01 2015
+       @generated from magma_zmconverter.cpp normal z -> s, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -101,7 +101,7 @@ magma_s_csr_compressor(
 
 
 cleanup:
-    if( info != 0 ){
+    if ( info != 0 ) {
         magma_free_cpu( valn );
         magma_free_cpu( coln );
         magma_free_cpu( rown );
@@ -158,7 +158,7 @@ magma_smconvert(
 {
     magma_int_t info = 0;
 
-    magma_int_t *length=NULL;
+    magma_index_t *length=NULL;
     
     magma_s_matrix hA={Magma_CSR}, hB={Magma_CSR};
     magma_s_matrix A_d={Magma_CSR}, B_d={Magma_CSR};
@@ -191,11 +191,11 @@ magma_smconvert(
     float zero = MAGMA_S_MAKE( 0.0, 0.0 );
 
     // check whether matrix on CPU
-    if ( A.memory_location == Magma_CPU ) {
-        
+    if ( A.memory_location == Magma_CPU )
+    {
         // CSR to anything
-        if( old_format == Magma_CSR ){
-            
+        if ( old_format == Magma_CSR )
+        {
             // CSR to CSR
             if ( new_format == Magma_CSR ) {
                 // fill in information for B
@@ -212,30 +212,29 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->row, A.num_rows+1 ));
                 CHECK( magma_index_malloc_cpu( &B->col, A.nnz ));
                 
-                for( magma_int_t i=0; i<A.nnz; i++) {
+                for( magma_int_t i=0; i < A.nnz; i++) {
                     B->val[i] = A.val[i];
                     B->col[i] = A.col[i];
                 }
-                for( magma_int_t i=0; i<A.num_rows+1; i++) {
+                for( magma_int_t i=0; i < A.num_rows+1; i++) {
                     B->row[i] = A.row[i];
                 }
             }
             
             // CSR to CSRL
             else if ( new_format == Magma_CSRL ) {
-
                 // fill in information for B
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
-                B->fill_mode = Magma_LOWER;
+                B->fill_mode = MagmaLower;
                 B->num_rows = A.num_rows;
                 B->num_cols = A.num_cols;
                 B->diameter = A.diameter;
     
                 magma_int_t numzeros=0;
-                for( magma_int_t i=0; i<A.num_rows; i++) {
-                    for( magma_int_t j=A.row[i]; j<A.row[i+1]; j++) {
-                        if ( A.col[j]<=i) {
+                for( magma_int_t i=0; i < A.num_rows; i++) {
+                    for( magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
+                        if ( A.col[j] <= i) {
                             numzeros++;
                         }
                     }
@@ -246,10 +245,10 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->col, numzeros ));
                 
                 numzeros=0;
-                for( magma_int_t i=0; i<A.num_rows; i++) {
+                for( magma_int_t i=0; i < A.num_rows; i++) {
                     B->row[i]=numzeros;
-                    for( magma_int_t j=A.row[i]; j<A.row[i+1]; j++) {
-                        if ( A.col[j]<i) {
+                    for( magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
+                        if ( A.col[j] < i) {
                             B->val[numzeros] = A.val[j];
                             B->col[numzeros] = A.col[j];
                             numzeros++;
@@ -274,11 +273,11 @@ magma_smconvert(
             else if (  new_format == Magma_CSRU ) {
                 // fill in information for B
                 *B = A;
-                B->fill_mode = Magma_UPPER;
+                B->fill_mode = MagmaUpper;
                 magma_int_t numzeros=0;
-                for( magma_int_t i=0; i<A.num_rows; i++) {
-                    for( magma_int_t j=A.row[i]; j<A.row[i+1]; j++) {
-                        if ( A.col[j]>=i) {
+                for( magma_int_t i=0; i < A.num_rows; i++) {
+                    for( magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
+                        if ( A.col[j] >= i) {
                             numzeros++;
                         }
                     }
@@ -289,10 +288,10 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->col, numzeros ));
                 
                 numzeros=0;
-                for( magma_int_t i=0; i<A.num_rows; i++) {
+                for( magma_int_t i=0; i < A.num_rows; i++) {
                     B->row[i]=numzeros;
-                    for( magma_int_t j=A.row[i]; j<A.row[i+1]; j++) {
-                        if ( A.col[j]>=i) {
+                    for( magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
+                        if ( A.col[j] >= i) {
                             B->val[numzeros] = A.val[j];
                             B->col[numzeros] = A.col[j];
                             numzeros++;
@@ -318,9 +317,9 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->row, A.num_rows+1 ));
                 CHECK( magma_index_malloc_cpu( &B->col, A.nnz ));
                 
-                for(magma_int_t i=0; i<A.num_rows; i++) {
+                for(magma_int_t i=0; i < A.num_rows; i++) {
                     magma_int_t count = 1;
-                    for(magma_int_t j=A.row[i]; j<A.row[i+1]; j++) {
+                    for(magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
                         if ( A.col[j] == i ) {
                             B->col[A.row[i]] = A.col[j];
                             B->val[A.row[i]] = A.val[j];
@@ -331,39 +330,36 @@ magma_smconvert(
                         }
                     }
                 }
-                for( magma_int_t i=0; i<A.num_rows+1; i++) {
+                for( magma_int_t i=0; i < A.num_rows+1; i++) {
                     B->row[i] = A.row[i];
                 }
             }
                         
             // CSR to COO
             else if ( new_format == Magma_COO ) {
-        
                 CHECK( magma_smconvert( A, B, Magma_CSR, Magma_CSR, queue ));
                 B->storage_type = Magma_COO;
         
                 magma_free_cpu( B->row );
                 CHECK( magma_index_malloc_cpu( &B->row, A.nnz ));
                 
-                for(magma_int_t i=0; i<A.num_rows; i++) {
-                    for(magma_int_t j=A.row[i]; j<A.row[i+1]; j++) {
-                            B->row[j] = i;
+                for(magma_int_t i=0; i < A.num_rows; i++) {
+                    for(magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
+                        B->row[j] = i;
                     }
                 }
-        
             }
                     
             // CSR to CSRCOO
             else if ( new_format == Magma_CSRCOO ) {
-    
                 CHECK( magma_smconvert( A, B, Magma_CSR, Magma_CSR, queue ));
                 B->storage_type = Magma_CSRCOO;
     
                 CHECK( magma_index_malloc_cpu( &B->rowidx, A.nnz ));
                 
-                for(magma_int_t i=0; i<A.num_rows; i++) {
-                    for(magma_int_t j=A.row[i]; j<A.row[i+1]; j++) {
-                            B->rowidx[j] = i;
+                for(magma_int_t i=0; i < A.num_rows; i++) {
+                    for(magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
+                        B->rowidx[j] = i;
                     }
                 }
             }
@@ -383,7 +379,7 @@ magma_smconvert(
                 magma_index_t i, j, maxrowlength=0;
                 CHECK( magma_index_malloc_cpu( &length, A.num_rows));
     
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     length[i] = A.row[i+1]-A.row[i];
                     if (length[i] > maxrowlength)
                         maxrowlength = length[i];
@@ -394,14 +390,13 @@ magma_smconvert(
                 CHECK( magma_smalloc_cpu( &B->val, maxrowlength*A.num_rows ));
                 CHECK( magma_index_malloc_cpu( &B->col, maxrowlength*A.num_rows ));
                 
-                
-                for( magma_int_t i=0; i<(maxrowlength*A.num_rows); i++) {
+                for( i=0; i < (maxrowlength*A.num_rows); i++) {
                     B->val[i] = MAGMA_S_MAKE(0., 0.);
                     B->col[i] =  -1;
                 }
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     magma_int_t offset = 0;
-                    for( j=A.row[i]; j<A.row[i+1]; j++ ) {
+                    for( j=A.row[i]; j < A.row[i+1]; j++ ) {
                         B->val[i*maxrowlength+offset] = A.val[j];
                         B->col[i*maxrowlength+offset] = A.col[j];
                         offset++;
@@ -426,7 +421,7 @@ magma_smconvert(
                 magma_index_t i, j, maxrowlength=0;
                 CHECK( magma_index_malloc_cpu( &length, A.num_rows));
 
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     length[i] = A.row[i+1]-A.row[i];
                     if (length[i] > maxrowlength)
                         maxrowlength = length[i];
@@ -437,14 +432,14 @@ magma_smconvert(
                 CHECK( magma_smalloc_cpu( &B->val, maxrowlength*A.num_rows ));
                 CHECK( magma_index_malloc_cpu( &B->col, maxrowlength*A.num_rows ));
                 
-                for( magma_int_t i=0; i<(maxrowlength*A.num_rows); i++) {
+                for( i=0; i < (maxrowlength*A.num_rows); i++) {
                     B->val[i] = MAGMA_S_MAKE(0., 0.);
-                    B->col[i] =  -1;
+                    B->col[i] = -1;
                 }
     
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     magma_int_t offset = 0;
-                    for( j=A.row[i]; j<A.row[i+1]; j++ ) {
+                    for( j=A.row[i]; j < A.row[i+1]; j++ ) {
                         B->val[offset*A.num_rows+i] = A.val[j];
                         B->col[offset*A.num_rows+i] = A.col[j];
                         offset++;
@@ -470,7 +465,7 @@ magma_smconvert(
                 magma_index_t i, j, maxrowlength=0;
                 CHECK( magma_index_malloc_cpu( &length, A.num_rows));
 
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     length[i] = A.row[i+1]-A.row[i];
                     if (length[i] > maxrowlength)
                         maxrowlength = length[i];
@@ -482,14 +477,14 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->col, maxrowlength*A.num_rows ));
                 
                 
-                for( magma_int_t i=0; i<(maxrowlength*A.num_rows); i++) {
+                for( i=0; i < (maxrowlength*A.num_rows); i++) {
                     B->val[i] = MAGMA_S_MAKE(0., 0.);
                     B->col[i] =  -1;
                 }
     
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     magma_int_t offset = 1;
-                    for( j=A.row[i]; j<A.row[i+1]; j++ ) {
+                    for( j=A.row[i]; j < A.row[i+1]; j++ ) {
                         if ( A.col[j] == i ) { // diagonal case
                             B->val[i*maxrowlength] = A.val[j];
                             B->col[i*maxrowlength] = A.col[j];
@@ -519,7 +514,7 @@ magma_smconvert(
                 magma_index_t i, j, maxrowlength=0;
                 CHECK( magma_index_malloc_cpu( &length, A.num_rows));
 
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     length[i] = A.row[i+1]-A.row[i];
                     if (length[i] > maxrowlength)
                         maxrowlength = length[i];
@@ -535,15 +530,14 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->col, rowlength*A.num_rows ));
                 CHECK( magma_index_malloc_cpu( &B->row, A.num_rows ));
                 
-                
-                for( magma_int_t i=0; i<rowlength*A.num_rows; i++) {
+                for( i=0; i < rowlength*A.num_rows; i++) {
                     B->val[i] = MAGMA_S_MAKE(0., 0.);
                     B->col[i] =  0;
                 }
     
-                for( i=0; i<A.num_rows; i++ ) {
+                for( i=0; i < A.num_rows; i++ ) {
                     magma_int_t offset = 0;
-                    for( j=A.row[i]; j<A.row[i+1]; j++ ) {
+                    for( j=A.row[i]; j < A.row[i+1]; j++ ) {
                         B->val[i*rowlength+offset] = A.val[j];
                         B->col[i*rowlength+offset] = A.col[j];
                         offset++;
@@ -585,10 +579,10 @@ magma_smconvert(
                 
                 
                 B->row[0] = 0;
-                for( i=0; i<slices; i++ ) {
+                for( i=0; i < slices; i++ ) {
                     maxrowlength = 0;
-                    for(j=0; j<C; j++) {
-                        if (i*C+j<A.num_rows) {
+                    for(j=0; j < C; j++) {
+                        if (i*C+j < A.num_rows) {
                             length[j] = A.row[i*C+j+1]-A.row[i*C+j];
                         }
                         else
@@ -611,17 +605,17 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->col, B->row[slices] ));
                 
                 // zero everything
-                for( i=0; i<B->row[slices]; i++ ) {
+                for( i=0; i < B->row[slices]; i++ ) {
                     B->val[ i ] = MAGMA_S_MAKE(0., 0.);
                     B->col[ i ] =  0;
                 }
                 // fill in values
-                for( i=0; i<slices; i++ ) {
-                    for(j=0; j<C; j++) {
+                for( i=0; i < slices; i++ ) {
+                    for(j=0; j < C; j++) {
                         magma_int_t line = i*C+j;
                         magma_int_t offset = 0;
                         if ( line < A.num_rows) {
-                            for( k=A.row[line]; k<A.row[line+1]; k++ ) {
+                            for( k=A.row[line]; k < A.row[line+1]; k++ ) {
                                 B->val[ B->row[i] + j +offset*C ] = A.val[k];
                                 B->col[ B->row[i] + j +offset*C ] = A.col[k];
                                 offset++;
@@ -652,8 +646,8 @@ magma_smconvert(
                     B->val[i] = MAGMA_S_MAKE(0., 0.);
                 }
     
-                for(magma_int_t i=0; i<A.num_rows; i++ ) {
-                    for(magma_int_t j=A.row[i]; j<A.row[i+1]; j++ )
+                for(magma_int_t i=0; i < A.num_rows; i++ ) {
+                    for(magma_int_t j=A.row[i]; j < A.row[i+1]; j++ )
                         B->val[i * (A.num_cols) + A.col[j] ] = A.val[ j ];
                 }
     
@@ -673,13 +667,10 @@ magma_smconvert(
             }
         }
         // anything to CSR
-        else if( new_format == Magma_CSR ){
-            
+        else if ( new_format == Magma_CSR ) {
             // CSRU/CSRCSCU to CSR
             if ( old_format == Magma_CSRU ) {
-    
                 CHECK( magma_smconvert( A, B, Magma_CSR, Magma_CSR, queue ));
-    
             }
                     
             // CSRD to CSR (diagonal elements first)
@@ -699,26 +690,26 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &B->row, A.num_rows+1 ));
                 CHECK( magma_index_malloc_cpu( &B->col, A.nnz ));
                 
-                for(magma_int_t i=0; i<A.num_rows; i++) {
+                for(magma_int_t i=0; i < A.num_rows; i++) {
                     float diagval = A.val[A.row[i]];
                     magma_index_t diagcol = A.col[A.row[i]];
                     magma_int_t smaller = 0;
-                    for( magma_int_t k=A.row[i]; k<A.row[i+1]; k++ ) {
+                    for( magma_int_t k=A.row[i]; k < A.row[i+1]; k++ ) {
                         if ( (A.col[k] < diagcol) )
                             smaller++;
                     }
-                    for( magma_int_t k=A.row[i]; k<A.row[i]+smaller; k++ ) {
+                    for( magma_int_t k=A.row[i]; k < A.row[i]+smaller; k++ ) {
                         B->col[k] = A.col[k+1];
                         B->val[k] = A.val[k+1];
                     }
                     B->col[A.row[i]+smaller] = diagcol;
                     B->val[A.row[i]+smaller] = diagval;
-                    for( magma_int_t k=A.row[i]+smaller+1;k<A.row[i+1];k++ ) {
+                    for( magma_int_t k=A.row[i]+smaller+1; k < A.row[i+1]; k++ ) {
                         B->col[k] = A.col[k];
                         B->val[k] = A.val[k];
                     }
                 }
-                for( magma_int_t i=0; i<A.num_rows+1; i++) {
+                for( magma_int_t i=0; i < A.num_rows+1; i++) {
                     B->row[i] = A.row[i];
                 }
             }
@@ -751,7 +742,7 @@ magma_smconvert(
 
                 CHECK( magma_index_malloc_cpu( &row_tmp, A.num_rows+1 ));
                 //fill the row-pointer
-                for( magma_int_t i=0; i<A.num_rows+1; i++ )
+                for( magma_int_t i=0; i < A.num_rows+1; i++ )
                     row_tmp[i] = i*A.max_nnz_row;
                 //now use AA_ELL, IA_ELL, row_tmp as CSR with some zeros.
                 //The CSR compressor removes these
@@ -780,11 +771,11 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &col_tmp, A.num_rows*A.max_nnz_row ));
 
                 //fill the row-pointer
-                for( magma_int_t i=0; i<A.num_rows+1; i++ )
+                for( magma_int_t i=0; i < A.num_rows+1; i++ )
                     row_tmp[i] = i*A.max_nnz_row;
                 //transform RowMajor to ColMajor
-                for( magma_int_t j=0;j<A.max_nnz_row;j++ ) {
-                    for( magma_int_t i=0;i<A.num_rows;i++ ) {
+                for( magma_int_t j=0; j < A.max_nnz_row; j++ ) {
+                    for( magma_int_t i=0; i < A.num_rows; i++ ) {
                         col_tmp[i*A.max_nnz_row+j] = A.col[j*A.num_rows+i];
                         val_tmp[i*A.max_nnz_row+j] = A.val[j*A.num_rows+i];
                     }
@@ -814,27 +805,27 @@ magma_smconvert(
                 // conversion
                 CHECK( magma_index_malloc_cpu( &row_tmp, A.num_rows+1 ));
                 //fill the row-pointer
-                for( magma_int_t i=0; i<A.num_rows+1; i++ )
+                for( magma_int_t i=0; i < A.num_rows+1; i++ )
                     row_tmp[i] = i*A.max_nnz_row;
                 // sort the diagonal element into the right place
                 CHECK( magma_smalloc_cpu( &val_tmp2, A.num_rows*A.max_nnz_row ));
                 CHECK( magma_index_malloc_cpu( &col_tmp2, A.num_rows*A.max_nnz_row ));
 
-                for( magma_int_t j=0;j<A.num_rows;j++ ) {
+                for( magma_int_t j=0; j < A.num_rows; j++ ) {
                     magma_index_t diagcol = A.col[j*A.max_nnz_row];
                     magma_int_t smaller = 0;
-                    for( magma_int_t i=1;i<A.max_nnz_row;i++ ) {
+                    for( magma_int_t i=1; i < A.max_nnz_row; i++ ) {
                         if ( (A.col[j*A.max_nnz_row+i] < diagcol)
                              && (A.val[j*A.max_nnz_row+i] !=  zero) )
                             smaller++;
                     }
-                    for( magma_int_t i=0;i<smaller;i++ ) {
+                    for( magma_int_t i=0; i < smaller; i++ ) {
                         col_tmp2[j*A.max_nnz_row+i] = A.col[j*A.max_nnz_row+i+1];
                         val_tmp2[j*A.max_nnz_row+i] = A.val[j*A.max_nnz_row+i+1];
                     }
                     col_tmp2[j*A.max_nnz_row+smaller] = A.col[j*A.max_nnz_row];
                     val_tmp2[j*A.max_nnz_row+smaller] = A.val[j*A.max_nnz_row];
-                    for( magma_int_t i=smaller+1;i<A.max_nnz_row;i++ ) {
+                    for( magma_int_t i=smaller+1; i < A.max_nnz_row; i++ ) {
                         col_tmp2[j*A.max_nnz_row+i] = A.col[j*A.max_nnz_row+i];
                         val_tmp2[j*A.max_nnz_row+i] = A.val[j*A.max_nnz_row+i];
                     }
@@ -864,10 +855,9 @@ magma_smconvert(
                 magma_int_t threads_per_row = A.alignment;
                 magma_int_t rowlength = magma_roundup( A.max_nnz_row, threads_per_row );
                 // conversion
-                magma_index_t *row_tmp;
                 CHECK( magma_index_malloc_cpu( &row_tmp, A.num_rows+1 ));
                 //fill the row-pointer
-                for( magma_int_t i=0; i<A.num_rows+1; i++ )
+                for( magma_int_t i=0; i < A.num_rows+1; i++ )
                     row_tmp[i] = i*rowlength;
                 //now use AA_ELL, IA_ELL, row_tmp as CSR with some zeros.
                 //The CSR compressor removes these
@@ -898,22 +888,21 @@ magma_smconvert(
                 CHECK( magma_index_malloc_cpu( &row_tmp, A.num_rows+C ));
                 CHECK( magma_index_malloc_cpu( &col_tmp, A.max_nnz_row*(A.num_rows+C) ));
                 // zero everything
-                for(magma_int_t i=0; i<A.max_nnz_row*(A.num_rows+C); i++ ) {
+                for(magma_int_t i=0; i < A.max_nnz_row*(A.num_rows+C); i++ ) {
                     val_tmp[ i ] = MAGMA_S_MAKE(0., 0.);
                     col_tmp[ i ] =  0;
                 }
     
                 //fill the row-pointer
-                for( magma_int_t i=0; i<A.num_rows+1; i++ ) {
+                for( magma_int_t i=0; i < A.num_rows+1; i++ ) {
                     row_tmp[i] = A.max_nnz_row*i;
-                    
                 }
     
                 //transform RowMajor to ColMajor
-                for( magma_int_t k=0; k<slices; k++) {
+                for( magma_int_t k=0; k < slices; k++) {
                     magma_int_t blockinfo = (A.row[k+1]-A.row[k])/A.blocksize;
-                    for( magma_int_t j=0;j<C;j++ ) {
-                        for( magma_int_t i=0;i<blockinfo;i++ ) {
+                    for( magma_int_t j=0; j < C; j++ ) {
+                        for( magma_int_t i=0; i < blockinfo; i++ ) {
                             col_tmp[ (k*C+j)*A.max_nnz_row+i ] =
                                                     A.col[A.row[k]+i*C+j];
                             val_tmp[ (k*C+j)*A.max_nnz_row+i ] =
@@ -948,7 +937,7 @@ magma_smconvert(
     
                 B->nnz=0;
                 for( magma_int_t i=0; i<(A.num_rows)*(A.num_cols); i++ ) {
-                    if ( MAGMA_S_REAL(A.val[i])!=0.0 )
+                    if ( MAGMA_S_REAL(A.val[i]) != 0.0 )
                         (B->nnz)++;
                 }
                 CHECK( magma_smalloc_cpu( &B->val, B->nnz));
@@ -961,18 +950,17 @@ magma_smconvert(
     
                 for(i=0; i<(A.num_rows)*(A.num_cols); i++)
                 {
-                    if ( i%(B->num_cols)==0 )
+                    if ( i%(B->num_cols) == 0 )
                     {
                         (B->row)[k] = j;
                         k++;
                     }
-                    if ( MAGMA_S_REAL(A.val[i])!=0 )
+                    if ( MAGMA_S_REAL(A.val[i]) != 0 )
                     {
                         (B->val)[j] = A.val[i];
                         (B->col)[j] = i%(B->num_cols);
                         j++;
                     }
-    
                 }
                 (B->row)[B->num_rows]=B->nnz;
     
@@ -981,7 +969,6 @@ magma_smconvert(
             
             // BCSR to CSR
             else if ( old_format == Magma_BCSR ) {
-                
                 CHECK( magma_smtransfer(A, &A_d, Magma_CPU, Magma_DEV, queue ) );
                 CHECK( magma_smconvert(A_d, &B_d, Magma_BCSR, Magma_CSR, queue ) );
                 CHECK( magma_smtransfer(B_d, B, Magma_DEV, Magma_CPU, queue ) );
@@ -992,17 +979,14 @@ magma_smconvert(
                 magmablasSetKernelStream( orig_queue );
                 info = MAGMA_ERR_NOT_SUPPORTED;
             }
-        
         }
         else {
             printf("error: conversion not supported.\n");
             magmablasSetKernelStream( orig_queue );
             info = MAGMA_ERR_NOT_SUPPORTED;
         }
-        
     } // end CPU case
     else if ( A.memory_location == Magma_DEV ) {
-
         // CSR to CSR
         if ( old_format == Magma_CSR && new_format == Magma_CSR ) {
             CHECK( magma_smtransfer( A, B, Magma_DEV, Magma_DEV, queue ));
@@ -1067,7 +1051,6 @@ magma_smconvert(
                                 descr,
                                 A.dval, A.num_rows, nnz_per_row,
                                 B->dval, B->drow, B->dcol );
-
         }
         // CSR to BCSR
         else if ( old_format == Magma_CSR && new_format == Magma_BCSR ) {
@@ -1119,7 +1102,6 @@ magma_smconvert(
                               A.dval, A.drow, A.dcol,
                               size_b, descr,
                               B->dval, B->drow, B->dcol);
-           
         }
         // BCSR to CSR
         else if ( old_format == Magma_BCSR && new_format == Magma_CSR ) {
@@ -1280,7 +1262,6 @@ magma_smconvert(
             CHECK( magma_smtransfer( A, &hA, A.memory_location, Magma_CPU, queue ));
             CHECK( magma_smconvert( hA, &hB, old_format, new_format, queue ));
             CHECK( magma_smtransfer( hB, B, Magma_CPU, A.memory_location, queue ));
-
         }
     }
     
@@ -1309,11 +1290,9 @@ cleanup:
     magma_smfree( &hB, queue );
     magma_smfree( &A_d, queue );
     magma_smfree( &B_d, queue );
-    if( info != 0 ){
+    if ( info != 0 ) {
         magma_smfree( B, queue );
     }
     magmablasSetKernelStream( orig_queue );
     return info;
 }
-
-

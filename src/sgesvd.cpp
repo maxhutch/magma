@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
     
        @author Stan Tomov
        @author Mark Gates
-       @generated from dgesvd.cpp normal d -> s, Fri Jan 30 19:00:19 2015
+       @generated from dgesvd.cpp normal d -> s, Tue Aug 25 16:35:20 2015
 
 */
 #include "common_magma.h"
@@ -1002,7 +1002,7 @@ magma_sgesvd(
                         lwork2 = lwork - iwork + 1;
                         lapackf77_sgeqrf(&m, &n, A, &lda, &work[itau],
                                          &work[iwork], &lwork2, &ierr);
-                                                
+                        
                         // Copy R to WORK(IU), zeroing out below it
                         lapackf77_slacpy("U", &n, &n,
                                          A, &lda,

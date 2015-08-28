@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 1.6.2) --
+# MAGMA (version 1.6.3-beta1) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date May 2015
+# @date August 2015
 
 ## @file run_tests.py
 #  @author Mark Gates
@@ -171,7 +171,9 @@ parser.add_option(      '--pgmres'           , action='store_true', dest='pgmres
 parser.add_option(      '--lobpcg'           , action='store_true', dest='lobpcg'         ,help='run lobpcg'        )
 parser.add_option(      '--iterref'          , action='store_true', dest='iterref'        ,help='run iterref'       )
 parser.add_option(      '--jacobi'           , action='store_true', dest='jacobi'         ,help='run jacobi'        )
-parser.add_option(      '--ba'               , action='store_true', dest='ba'             ,help='run ba-iter'       )    
+parser.add_option(      '--ba'               , action='store_true', dest='ba'             ,help='run ba-iter'       ) 
+parser.add_option(      '--idr'              , action='store_true', dest='idr'            ,help='run idr'           ) 
+parser.add_option(      '--pidr'             , action='store_true', dest='pidr'           ,help='run pidr'          ) 
 
 parser.add_option(      '--jacobi-prec'      , action='store_true', dest='jacobi_prec'    ,help='run Jacobi preconditioner'        )
 parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_prec'       ,help='run ILU preconditioner'       )  
@@ -220,7 +222,9 @@ if (     not opts.cg
      and not opts.lobpcg       
      and not opts.iterref      
      and not opts.jacobi       
-     and not opts.ba   ):
+     and not opts.ba
+     and not opts.idr
+     and not opts.pidr ):
     opts.cg             = True
     opts.cg_merge       = True
     opts.pcg            = True
@@ -233,6 +237,8 @@ if (     not opts.cg
     opts.iterref        = True
     opts.jacobi         = True
     opts.ba             = True
+    opts.idr            = True
+    opts.pidr           = True
 # end
 
 # default if no preconditioners given all
@@ -294,6 +300,10 @@ if ( opts.jacobi ):
 if ( opts.ba ):
     solvers += ['--solver 10']
 # end
+if ( opts.idr ):
+    solvers += ['--solver 11']
+# end
+
 
 # looping over precsolvers
 precsolvers = []
@@ -306,7 +316,9 @@ if ( opts.pbicgstab ):
 if ( opts.pgmres ):
     precsolvers += ['--solver 7']
 # end
-
+if ( opts.pidr ):
+    precsolvers += ['--solver 12']
+# end
 
 # looping over IR
 IR = []
@@ -338,8 +350,6 @@ if ( opts.iterref ):
     IRprecs += ['--precond 5']
     IRprecs += ['--precond 6']
     IRprecs += ['--precond 7']
-    IRprecs += ['--precond 9']
-    IRprecs += ['--precond 10']
 # end
 
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 */
 
 #include "common_magma.h"
@@ -21,14 +21,15 @@
 #endif
 
 #if defined(ADD_)
-#  define magma_wtime_f        magma_wtime_f_
+#  define magmaf_wtime        magmaf_wtime_
+#  define magma_wtime_f       magma_wtime_f_   /* deprecated name */
 #elif defined(NOCHANGE)
 #endif
 
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Emulate gettimeofday on Windows.
-*/ 
+*/
 #if defined( _WIN32 ) || defined( _WIN64 )
 #ifndef _TIMEZONE_DEFINED
 #define _TIMEZONE_DEFINED
@@ -93,6 +94,14 @@ double magma_sync_wtime( magma_queue_t queue )
 }
 
 // version callable from Fortran stores seconds in time.
+extern "C"
+void magmaf_wtime(double *time)
+{
+    *time = magma_wtime();
+}
+
+// version callable from Fortran stores seconds in time.
+// @deprecated name; @see magmaf_wtime
 extern "C"
 void magma_wtime_f(double *time)
 {

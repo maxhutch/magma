@@ -1,3 +1,6 @@
+#ifndef DOXYGEN_MODULES_H
+#define DOXYGEN_MODULES_H
+
 Functions should use @ingroup only with groups indented here to the 4th level.
 In some cases there are less than 4 nested levels, but the inner level is
 indented the same as a 4th level, such as magma_init. This helps the groups.sh
@@ -570,3 +573,5 @@ or groups.sh script.
             defgroup magmasparse_cgeev single-complex precision
             defgroup magmasparse_zgeev double-complex precision
         }
+
+#endif        //  #ifndef DOXYGEN_MODULES_H

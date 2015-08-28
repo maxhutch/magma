@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zhegst.cpp normal z -> c, Fri Jan 30 19:00:18 2015
+       @generated from zhegst.cpp normal z -> c, Tue Aug 25 16:35:19 2015
 */
 
 #include "common_magma.h"
@@ -319,7 +319,6 @@ magma_chegst(
                 
                 /* Update the lower triangle of A(1:k+kb-1,1:k+kb-1) */
                 if (k > 0) {
-                    
                     magma_ctrmm(MagmaRight, MagmaLower, MagmaNoTrans, MagmaNonUnit,
                                 kb, k,
                                 c_one, dB(0,0), lddb,

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        csymv.cu is nearly identical to chemv.cu, just change names and drop cuConjf.
        
        chemv_kernel_U (upper) in chemv_upper.cu is very similar to
        chemv_kernel_L (lower) in chemv.cu; diff the two files to compare.
        
-       @generated from zhemv.cu normal z -> c, Fri Jan 30 19:00:09 2015
+       @generated from zhemv.cu normal z -> c, Tue Aug 25 16:35:09 2015
        
        @author Mark Gates
 */
@@ -128,7 +128,7 @@ chemv_kernel_L(
             A = A - tx2 + (partial - 1);  // A is A(blk_ind + partial-1, blk_ind + ty2), the bottom-most valid row
         }
         #pragma unroll
-        for(int j=0; j < half_NB_X; j += 8) {
+        for (int j=0; j < half_NB_X; j += 8) {
             if ( ty2+j < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
@@ -139,7 +139,7 @@ chemv_kernel_L(
     }
     else {
         #pragma unroll
-        for(int j=0; j < half_NB_X; j += 8) {
+        for (int j=0; j < half_NB_X; j += 8) {
             sA32(tx2, ty2 + j) = A[j*lda];
         }
     }
@@ -149,7 +149,7 @@ chemv_kernel_L(
     // as four 32x8 sections in parallel:
     // columns 0,4,8,12,16,20,24,28; then 1,5,...,29; then 2,6,...,30, then 3,7,...,31
     #pragma unroll
-    for(int j=ty2*4; j < ty2*4 + 4; j++) {
+    for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j < tx2 ) {
             sA32(j, tx2) = cuConjf( sA32(tx2, j) );
         }
@@ -160,7 +160,7 @@ chemv_kernel_L(
     // each thread does partial row sA(tx2, ty2*4 : ty2*4 + 3)
     psum = MAGMA_C_ZERO;
     #pragma unroll
-    for(int j=0; j < 4; j++) {
+    for (int j=0; j < 4; j++) {
         psum += sA32(tx2, ty2*4 + j) * sx_blk[ty2*4 + j];
     }
     __syncthreads();
@@ -188,7 +188,7 @@ chemv_kernel_L(
             A = A - (tx2 + half_NB_X) + (partial - 1);
         }
         #pragma unroll
-        for(int j=0; j < half_NB_X; j += 8) {
+        for (int j=0; j < half_NB_X; j += 8) {
             if ( ty2+j + half_NB_X < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
@@ -199,7 +199,7 @@ chemv_kernel_L(
     }
     else {
         #pragma unroll
-        for(int j=0; j < half_NB_X; j += 8) {
+        for (int j=0; j < half_NB_X; j += 8) {
             sA32(tx2, ty2 + j) = A[j*lda];
         }
     }
@@ -207,7 +207,7 @@ chemv_kernel_L(
 
     // symmetrize 32x32 diag block, copying lower to upper triangle
     #pragma unroll
-    for(int j=ty2*4; j < ty2*4 + 4; j++) {
+    for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j < tx2 ) {
             sA32(j, tx2) = cuConjf( sA32(tx2, j) );
         }
@@ -217,7 +217,7 @@ chemv_kernel_L(
     // multiply 32x32 diag block * x
     psum = MAGMA_C_ZERO;
     #pragma unroll
-    for(int j=0; j < 4; j++) {
+    for (int j=0; j < 4; j++) {
         psum += sA32(tx2, ty2*4 + j) * sx_blk[half_NB_X + ty2*4 + j];
     }
     __syncthreads();
@@ -247,7 +247,7 @@ chemv_kernel_L(
             A = A - (tx2 + half_NB_X) + (partial - 1);
         }
         #pragma unroll
-        for(int j=0; j < half_NB_X; j += 8) {
+        for (int j=0; j < half_NB_X; j += 8) {
             if ( ty2+j < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
@@ -258,7 +258,7 @@ chemv_kernel_L(
     }
     else {
         #pragma unroll
-        for(int j=0; j < half_NB_X; j += 8) {
+        for (int j=0; j < half_NB_X; j += 8) {
             sA32(tx2, ty2 + j) = A[j*lda];
         }
     }
@@ -267,7 +267,7 @@ chemv_kernel_L(
     // multiply 32x32 block (below diag)
     psum = MAGMA_C_ZERO;
     #pragma unroll
-    for(int j=0; j < 4; j++) {
+    for (int j=0; j < 4; j++) {
         psum += sA32(tx2, ty2 + j*8) * sx_blk[j*8 + ty2];
     }
     //__syncthreads();  // no sync needed here
@@ -275,7 +275,7 @@ chemv_kernel_L(
     // multiply transposed 32x32 block (above diag)
     psum_t = MAGMA_C_ZERO;
     #pragma unroll
-    for(int j=0; j < 4; j++) {
+    for (int j=0; j < 4; j++) {
         psum_t += cuConjf( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
     }
     __syncthreads();
@@ -327,7 +327,7 @@ chemv_kernel_L(
     const int ty4 = td / quarter_NB_X;
 
     // cycle over blocks jj left of diagonal, in block row blk
-    for(int jj=0; jj < blk; ++jj) {
+    for (int jj=0; jj < blk; ++jj) {
         // load 64x1 block x(jj_ind + 0:63) into sx_jj
         // since this block is left of diagonal, x must have all NB rows
         if ( ty == 0 ) {
@@ -335,14 +335,14 @@ chemv_kernel_L(
         }
         __syncthreads();
 
-        for( int k=0; k < 4; k++ ) {
+        for (int k=0; k < 4; k++) {
             // load 64x16 block of A into rA, 4 elements per thread,
             // as four 64x4 sections in parallel:
             // columns 0,4,8,12; then 1,5,9,13; then 2,6,10,14; then 3,7,11,15
             // since this block is left of diagonal, it has all NB columns,
             // and block of x must have all NB rows.
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 rA[j] = A[j*lda];
             }
 
@@ -351,7 +351,7 @@ chemv_kernel_L(
             // 2) multiply transposed 16x64 block A_{blk,jj}^H * x_blk,
             //    storing each product Aji*xi to sA(j,i)
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
                 sA16(ty*4 + j, tx) = cuConjf( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
@@ -363,7 +363,7 @@ chemv_kernel_L(
             // columns 0,4,8,...,60; then 1,5,...,61; then 2,6,...,62; then 3,7,...,63
             psum_t = MAGMA_C_ZERO;
             #pragma unroll
-            for(int j=0; j < 4; j++) {
+            for (int j=0; j < 4; j++) {
                 psum_t += sA16(tx4, ty4*4 + j);
             }
             __syncthreads();
@@ -379,7 +379,7 @@ chemv_kernel_L(
 
         // store partial row sums of transposed result, y_jj
         #pragma unroll
-        for(int k=0; k < 4; k++) {
+        for (int k=0; k < 4; k++) {
             sA16(tx4, ty4 + quarter_NB_X*k) = psums_t[k];
         }
         __syncthreads();
@@ -452,7 +452,7 @@ chemv_kernel_L_sum(
     if ( ind < n ) {
         work += ind + blk*lda;
         magmaFloatComplex Ax = MAGMA_C_ZERO;
-        for(int j = blk; j < blocks; ++j) {
+        for (int j = blk; j < blocks; ++j) {
             Ax += work[0];
             work += lda;
         }
@@ -594,7 +594,7 @@ magmablas_chemv_work(
     // [sdc] precisions, or z precision with CUDA ARCH 2.x
     int upper = (uplo == MagmaUpper);
 
-    magma_int_t blocks = ceildiv( n, NB_X );
+    magma_int_t blocks = magma_ceildiv( n, NB_X );
     magma_int_t lwmin  = ldda*blocks;
 
     /*
@@ -780,7 +780,7 @@ magmablas_chemv(
         return info;
 
     magmaFloatComplex_ptr dwork;
-    magma_int_t blocks = ceildiv( n, NB_X );
+    magma_int_t blocks = magma_ceildiv( n, NB_X );
     magma_int_t lwork  = ldda*blocks;
 
     magma_cmalloc( &dwork, lwork );

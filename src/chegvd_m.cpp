@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zhegvd_m.cpp normal z -> c, Fri Jan 30 19:00:18 2015
+       @generated from zhegvd_m.cpp normal z -> c, Tue Aug 25 16:35:19 2015
 
 */
 #include "common_magma.h"
@@ -342,7 +342,7 @@ magma_chegvd_m(
             printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
             #endif
             magmaFloatComplex *dA=NULL, *dB=NULL;
-            magma_int_t ldda = roundup( n, 32 );
+            magma_int_t ldda = magma_roundup( n, 32 );
             magma_int_t lddb = ldda;
             
             if (MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda ) ||

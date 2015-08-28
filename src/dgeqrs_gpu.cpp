@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeqrs_gpu.cpp normal z -> d, Fri Jan 30 19:00:15 2015
+       @generated from zgeqrs_gpu.cpp normal z -> d, Tue Aug 25 16:35:15 2015
 
 */
 #include "common_magma.h"
@@ -13,7 +13,7 @@
 /**
     Purpose
     -------
-    Solves the least squares problem
+    DGEQRS solves the least squares problem
            min || A*X - C ||
     using the QR factorization A = Q*R computed by DGEQRF_GPU.
 
@@ -54,12 +54,12 @@
     @param[in]
     dT      DOUBLE_PRECISION array that is the output (the 6th argument)
             of magma_dgeqrf_gpu of size
-            2*MIN(M, N)*NB + ((N+31)/32*32 )* MAX(NB, NRHS).
+            2*MIN(M, N)*NB + ceil(N/32)*32 )* MAX(NB, NRHS).
             The array starts with a block of size MIN(M,N)*NB that stores
             the triangular T matrices used in the QR factorization,
             followed by MIN(M,N)*NB block storing the diagonal block
             inverses for the R matrix, followed by work space of size
-            ((N+31)/32*32 )* MAX(NB, NRHS).
+            (ceil(N/32)*32)* MAX(NB, NRHS).
 
     @param[in]
     lddb    INTEGER

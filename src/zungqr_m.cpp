@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -126,8 +126,8 @@ magma_zungqr_m(
     magmablasGetKernelStream( &orig_stream );
     
     // Allocate memory on GPUs for A and workspaces
-    magma_int_t ldda    = ((m + 31) / 32) * 32;
-    magma_int_t lddwork = ((n + 31) / 32) * 32;
+    magma_int_t ldda    = magma_roundup( m, 32 );
+    magma_int_t lddwork = magma_roundup( n, 32 );
     magma_int_t min_lblocks = (n / nb) / ngpu;  // min. blocks per gpu
     magma_int_t last_dev    = (n / nb) % ngpu;  // device with last block
     

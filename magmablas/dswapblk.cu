@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zswapblk.cu normal z -> d, Fri Jan 30 19:00:09 2015
+       @generated from zswapblk.cu normal z -> d, Tue Aug 25 16:35:09 2015
 
 */
 #include "common_magma.h"
@@ -26,7 +26,7 @@ typedef struct {
 __global__ void magmagpu_dswapblkrm( magmagpu_dswapblk_params_t params )
 {
     unsigned int y = threadIdx.x + blockDim.x*blockIdx.x;
-    if( y < params.n )
+    if ( y < params.n )
     {
         double *A = params.A + y - params.ldda;
         double *B = params.B + y;
@@ -49,7 +49,7 @@ __global__ void magmagpu_dswapblkcm( magmagpu_dswapblk_params_t params )
     unsigned int y = threadIdx.x + blockDim.x*blockIdx.x;
     unsigned int offset1 = y*params.ldda;
     unsigned int offset2 = y*params.lddb;
-    if( y < params.n )
+    if ( y < params.n )
     {
         double *A = params.A + offset1 - 1;
         double *B = params.B + offset2;
@@ -82,7 +82,7 @@ magmablas_dswapblk_q(
     magma_queue_t queue )
 {
     magma_int_t  blocksize = 64;
-    dim3 blocks( (n+blocksize-1) / blocksize, 1, 1);
+    dim3 blocks( magma_ceildiv( n, blocksize ) );
     magma_int_t  k, im;
     
     /* Quick return */
@@ -90,10 +90,10 @@ magmablas_dswapblk_q(
         return;
     
     if ( order == MagmaColMajor ) {
-        for( k=(i1-1); k<i2; k+=BLOCK_SIZE )
+        for( k=(i1-1); k < i2; k += BLOCK_SIZE )
         {
             magma_int_t sb = min(BLOCK_SIZE, i2-k);
-            magmagpu_dswapblk_params_t params = { dA+k, dB, n, ldda, lddb, sb };
+            magmagpu_dswapblk_params_t params = { dA+k, dB, int(n), int(ldda), int(lddb), int(sb) };
             for( magma_int_t j = 0; j < sb; j++ )
             {
                 im = ipiv[(k+j)*inci] - 1;
@@ -106,10 +106,10 @@ magmablas_dswapblk_q(
         }
     }
     else {
-        for( k=(i1-1); k<i2; k+=BLOCK_SIZE )
+        for( k=(i1-1); k < i2; k += BLOCK_SIZE )
         {
             magma_int_t sb = min(BLOCK_SIZE, i2-k);
-            magmagpu_dswapblk_params_t params = { dA+k*ldda, dB, n, ldda, lddb, sb };
+            magmagpu_dswapblk_params_t params = { dA+k*ldda, dB, int(n), int(ldda), int(lddb), int(sb) };
             for( magma_int_t j = 0; j < sb; j++ )
             {
                 im = ipiv[(k+j)*inci] - 1;

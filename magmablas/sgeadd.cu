@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeadd.cu normal z -> s, Fri Jan 30 19:00:08 2015
+       @generated from zgeadd.cu normal z -> s, Tue Aug 25 16:35:06 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -121,7 +121,7 @@ magmablas_sgeadd_q(
         return;
     
     dim3 threads( BLK_X );
-    dim3 grid( (m + BLK_X - 1)/BLK_X, (n + BLK_Y - 1)/BLK_Y );
+    dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     
     sgeadd_full<<< grid, threads, 0, queue >>>
         ( m, n, alpha, dA, ldda, dB, lddb );

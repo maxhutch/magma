@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/include
@@ -30,4 +30,3 @@ clean:
 	rm -f *~ *.mod
 
 cleanall: clean
-

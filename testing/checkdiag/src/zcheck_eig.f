@@ -139,4 +139,3 @@ C     $   " | D1 - EVEIGS | / (|D| ulp)        ", RESU(3)
  300  CONTINUE
       RETURN
       END
-

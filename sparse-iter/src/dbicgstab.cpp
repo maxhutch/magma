@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zbicgstab.cpp normal z -> d, Sun May  3 11:22:59 2015
+       @generated from zbicgstab.cpp normal z -> d, Tue Aug 25 16:35:33 2015
        @author Hartwig Anzt
 
 */
@@ -84,7 +84,8 @@ magma_dbicgstab(
     
     // solver variables
     double alpha, beta, omega, rho_old, rho_new;
-    double nom, betanom, nom0, r0, den, res;
+    double nom, betanom, nom0, r0, res;
+    //double den;
 
     // solver setup
     CHECK(  magma_dresidualvec( A, b, *x, &r, &nom0, queue));
@@ -96,9 +97,9 @@ magma_dbicgstab(
     solver_par->init_res = nom0;
 
     CHECK( magma_d_spmv( c_one, A, r, c_zero, v, queue ));              // z = A r
-    den = MAGMA_D_REAL( magma_ddot(dofs, v.dval, 1, r.dval, 1) ); // den = z' * r
+    //den = MAGMA_D_REAL( magma_ddot(dofs, v.dval, 1, r.dval, 1) ); // den = z' * r
 
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE )
+    if ( (r0 = nom * solver_par->rtol) < ATOLERANCE )
         r0 = ATOLERANCE;
     if ( nom < r0 ) {
         solver_par->final_res = solver_par->init_res;
@@ -156,7 +157,7 @@ magma_dbicgstab(
             }
         }
 
-        if ( res/nom0  < solver_par->epsilon ) {
+        if ( res/nom0 <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
     }
@@ -165,7 +166,7 @@ magma_dbicgstab(
     tempo2 = magma_sync_wtime( queue );
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     double residual;
-    CHECK(  magma_dresidualvec( A, b, *x, &r, &residual, queue));
+    CHECK(  magma_dresidualvec( A, b, *x, &r, &residual, NULL));
     solver_par->iter_res = res;
     solver_par->final_res = residual;
 
@@ -181,7 +182,8 @@ magma_dbicgstab(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->rtol*solver_par->init_res ||
+            solver_par->iter_res < solver_par->atol ) {
             info = MAGMA_SUCCESS;
         }
     }
@@ -209,5 +211,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* magma_dbicgstab */
-
-

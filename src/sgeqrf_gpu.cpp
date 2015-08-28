@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgeqrf_gpu.cpp normal z -> s, Fri Jan 30 19:00:15 2015
+       @generated from zgeqrf_gpu.cpp normal z -> s, Tue Aug 25 16:35:16 2015
 */
 #include "common_magma.h"
 
@@ -84,7 +84,7 @@ void ssplit_diag_block(magma_int_t ib, float *a, magma_int_t lda, float *work)
 
     @param[out]
     dT      (workspace) REAL array on the GPU,
-            dimension (2*MIN(M, N) + (N+31)/32*32 )*NB,
+            dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB,
             where NB can be obtained through magma_get_sgeqrf_nb(M).
             It starts with MIN(M,N)*NB block that store the triangular T
             matrices, followed by the MIN(M,N)*NB block of the diagonal

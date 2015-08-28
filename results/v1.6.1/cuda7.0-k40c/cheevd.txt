@@ -1,0 +1,191 @@
+numactl --interleave=all ./testing_cheevd -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0016
+ 1000     ---               0.1647
+   10     ---               0.0000
+   20     ---               0.0001
+   30     ---               0.0001
+   40     ---               0.0001
+   50     ---               0.0002
+   60     ---               0.0003
+   70     ---               0.0005
+   80     ---               0.0007
+   90     ---               0.0009
+  100     ---               0.0011
+  200     ---               0.0108
+  300     ---               0.0203
+  400     ---               0.0351
+  500     ---               0.0492
+  600     ---               0.0680
+  700     ---               0.0878
+  800     ---               0.1119
+  900     ---               0.1375
+ 1000     ---               0.1640
+ 2000     ---               0.5694
+ 3000     ---               1.2952
+ 4000     ---               2.3348
+ 5000     ---               3.7632
+ 6000     ---               5.6444
+ 7000     ---               8.1125
+ 8000     ---              11.0722
+ 9000     ---              14.8193
+10000     ---              19.3837
+12000     ---              31.0675
+14000     ---              45.9363
+16000     ---              65.4731
+18000     ---              90.3068
+20000     ---             119.1788
+
+numactl --interleave=all ./testing_cheevd -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0035
+ 1000     ---               0.2120
+   10     ---               0.0002
+   20     ---               0.0002
+   30     ---               0.0003
+   40     ---               0.0005
+   50     ---               0.0006
+   60     ---               0.0008
+   70     ---               0.0011
+   80     ---               0.0014
+   90     ---               0.0017
+  100     ---               0.0021
+  200     ---               0.0176
+  300     ---               0.0302
+  400     ---               0.0499
+  500     ---               0.0678
+  600     ---               0.0891
+  700     ---               0.1137
+  800     ---               0.1438
+  900     ---               0.1778
+ 1000     ---               0.2086
+ 2000     ---               0.7005
+ 3000     ---               1.4685
+ 4000     ---               2.6798
+ 5000     ---               4.3095
+ 6000     ---               6.5492
+ 7000     ---               9.4248
+ 8000     ---              12.9559
+ 9000     ---              17.4774
+10000     ---              22.7936
+12000     ---              36.9305
+14000     ---              54.6267
+16000     ---              78.2375
+18000     ---             109.1700
+20000     ---             144.4371
+
+numactl --interleave=all ./testing_cheevd_gpu -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd_gpu [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0020
+ 1000       ---              0.1778
+   10       ---              0.0001
+   20       ---              0.0001
+   30       ---              0.0001
+   40       ---              0.0002
+   50       ---              0.0003
+   60       ---              0.0004
+   70       ---              0.0007
+   80       ---              0.0009
+   90       ---              0.0012
+  100       ---              0.0014
+  200       ---              0.0124
+  300       ---              0.0235
+  400       ---              0.0395
+  500       ---              0.0542
+  600       ---              0.0755
+  700       ---              0.0957
+  800       ---              0.1225
+  900       ---              0.1491
+ 1000       ---              0.1775
+ 2000       ---              0.6002
+ 3000       ---              1.3481
+ 4000       ---              2.3962
+ 5000       ---              3.8576
+ 6000       ---              5.7451
+ 7000       ---              8.2436
+ 8000       ---             11.2046
+ 9000       ---             14.9632
+10000       ---             19.5209
+12000       ---             31.2815
+14000       ---             46.2188
+16000       ---             65.6012
+18000       ---             90.6014
+20000       ---            119.1913
+
+numactl --interleave=all ./testing_cheevd_gpu -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd_gpu [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0039
+ 1000       ---              0.2062
+   10       ---              0.0002
+   20       ---              0.0002
+   30       ---              0.0004
+   40       ---              0.0005
+   50       ---              0.0006
+   60       ---              0.0009
+   70       ---              0.0012
+   80       ---              0.0014
+   90       ---              0.0018
+  100       ---              0.0021
+  200       ---              0.0170
+  300       ---              0.0293
+  400       ---              0.0490
+  500       ---              0.0665
+  600       ---              0.0878
+  700       ---              0.1103
+  800       ---              0.1409
+  900       ---              0.1734
+ 1000       ---              0.2023
+ 2000       ---              0.6659
+ 3000       ---              1.5009
+ 4000       ---              2.7090
+ 5000       ---              4.4119
+ 6000       ---              6.5324
+ 7000       ---              9.3413
+ 8000       ---             13.0797
+ 9000       ---             17.3712
+10000       ---             22.8849
+12000       ---             36.9572
+14000       ---             55.3174
+16000       ---             79.6378
+18000       ---            110.6351
+20000       ---            148.1050

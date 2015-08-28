@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgelqf_gpu.cpp normal z -> s, Fri Jan 30 19:00:25 2015
+       @generated from testing_zgelqf_gpu.cpp normal z -> s, Tue Aug 25 16:35:27 2015
 
 */
 
@@ -46,19 +46,19 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("    M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |L - A*Q^H|   |I - Q*Q^H|\n");
-    printf("===============================================================================\n");
+    printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |L - A*Q^H|   |I - Q*Q^H|\n");
+    printf("%%==============================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
             min_mn = min(M, N);
             lda    = M;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             n2     = lda*N;
             nb     = magma_get_sgeqrf_nb(M);
             gflops = FLOPS_SGELQF( M, N ) / 1e9;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -34,24 +34,21 @@ int main( int argc, char** argv)
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};    magma_int_t status = 0;
 
-
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     // does larfg on nb columns, one after another
     nb = (opts.nb > 0 ? opts.nb : 64);
     
-    magma_queue_t queue = 0;
-
-    printf("    N    nb    CPU GFLop/s (ms)    GPU GFlop/s (ms)   error      tau error\n");
-    printf("==========================================================================\n");
+    printf("%%   N    nb    CPU GFLop/s (ms)    GPU GFlop/s (ms)   error      tau error\n");
+    printf("%%=========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda  = N;
-            ldda = ((N+31)/32)*32;
+            ldda = magma_roundup( N, opts.align );  // multiple of 32 by default
             gflops = FLOPS_ZLARFG( N ) / 1e9 * nb;
     
             TESTING_MALLOC_CPU( h_x,    magmaDoubleComplex, N*nb );
@@ -70,12 +67,13 @@ int main( int argc, char** argv)
                Performs operation using MAGMABLAS
                =================================================================== */
             magma_zsetmatrix( N, nb, h_x, N, d_x, ldda );
-    
-            gpu_time = magma_sync_wtime( queue );
+            
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             for( int j = 0; j < nb; ++j ) {
                 magmablas_zlarfg( N, &d_x[0+j*ldda], &d_x[1+j*ldda], ione, &d_tau[j] );
             }
-            gpu_time = magma_sync_wtime( queue ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             
             magma_zgetmatrix( N, nb, d_x, ldda, h_x2, N );

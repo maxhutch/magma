@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgehrd.cpp normal z -> s, Fri Jan 30 19:00:26 2015
+       @generated from testing_zgehrd.cpp normal z -> s, Tue Aug 25 16:35:27 2015
 
 */
 
@@ -45,12 +45,12 @@ int main( int argc, char** argv)
     eps   = lapackf77_slamch( "E" );
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
-    printf("    N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
-    printf("=========================================================================\n");
+    printf("%%   N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |A-QHQ'|/N|A|   |I-QQ'|/N\n");
+    printf("%%========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -71,7 +71,7 @@ int main( int argc, char** argv)
             
             /* Initialize the matrices */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_slacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
             /* ====================================================================
                Performs operation using MAGMA
@@ -95,16 +95,16 @@ int main( int argc, char** argv)
                 TESTING_MALLOC_CPU( rwork, float, N );
                 #endif
                 
-                lapackf77_slacpy(MagmaUpperLowerStr, &N, &N, h_R, &lda, h_Q, &lda);
+                lapackf77_slacpy( MagmaFullStr, &N, &N, h_R, &lda, h_Q, &lda );
                 for( int j = 0; j < N-1; ++j )
                     for( int i = j+2; i < N; ++i )
                         h_R[i+j*lda] = MAGMA_S_ZERO;
                 
-                magma_sorghr(N, ione, N, h_Q, lda, tau, dT, nb, &info);
+                magma_sorghr( N, ione, N, h_Q, lda, tau, dT, nb, &info );
                 if (info != 0) {
                     printf("magma_sorghr returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
-                    exit(1);
+                    return -1;
                 }
                 #if defined(PRECISION_z) || defined(PRECISION_c)
                 lapackf77_shst01(&N, &ione, &N,

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zhetrd.cpp normal z -> d, Fri Jan 30 19:00:17 2015
+       @generated from zhetrd.cpp normal z -> d, Tue Aug 25 16:35:17 2015
 
 */
 #include "common_magma.h"
@@ -149,7 +149,7 @@ magma_dsytrd(
 
     const char* uplo_ = lapack_uplo_const( uplo );
 
-    magma_int_t ldda = roundup( n, 32 );
+    magma_int_t ldda = magma_roundup( n, 32 );
     magma_int_t nb = magma_get_dsytrd_nb( n );
 
     const double c_zero    = MAGMA_D_ZERO;
@@ -199,7 +199,7 @@ magma_dsytrd(
 
     double *dA;
     #ifdef FAST_HEMV
-    magma_int_t ldwork2 = ldda*ceildiv(n,64);
+    magma_int_t ldwork2 = ldda*magma_ceildiv(n,64);
     #else
     magma_int_t ldwork2 = 0;
     #endif
@@ -213,11 +213,12 @@ magma_dsytrd(
     double *dwork2 = dwork + 2*lddw*nb;
     #endif
 
-    //if (n < 2048)
-    //    nx = n;
-    //else
-    //    nx = 512;
-    nx = min( 128, n );  // nx <= n is required
+    // nx <= n is required
+    // use LAPACK for n < 3000, otherwise switch at 512
+    if (n < 3000)
+        nx = n;
+    else
+        nx = 512;
 
     // clear out dwork in case it has NANs (used as y in dsymv)
     // rest of dwork (used as work in magmablas_dsymv) doesn't need to be cleared
@@ -229,7 +230,7 @@ magma_dsytrd(
 
         /* Reduce the upper triangle of A.
            Columns 1:kk are handled by the unblocked method. */
-        kk = n - (n - nx + nb - 1) / nb * nb;
+        kk = n - magma_roundup( n - nx, nb );
 
         for (i = n - nb; i >= kk; i -= nb) {
             /* Reduce columns i:i+nb-1 to tridiagonal form and form the

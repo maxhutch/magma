@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
  
        @author Mark Gates
 */
@@ -47,7 +47,7 @@ magma_free_internal( magma_ptr ptr,
 
 // --------------------
 // Allocate size bytes on CPU, returning pointer in ptrPtr.
-// The purpose of using this instead of malloc() is to properly align arrays
+// The purpose of using this instead of malloc is to properly align arrays
 // for vector (SSE) instructions. The default implementation uses
 // posix_memalign (on Linux, MacOS, etc.) or _aligned_malloc (on Windows)
 // to align memory to a 32 byte boundary.

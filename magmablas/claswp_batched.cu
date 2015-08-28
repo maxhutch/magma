@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlaswp_batched.cu normal z -> c, Fri Jan 30 19:00:10 2015
+       @generated from zlaswp_batched.cu normal z -> c, Tue Aug 25 16:35:10 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -27,7 +27,6 @@ void claswp_rowparallel_devfunc(
                               magmaFloatComplex *dout, int ldo,
                               magma_int_t* pivinfo)
 {
-
     //int height = k2- k1;
     //int height = blockDim.x;
     unsigned int tid = threadIdx.x;
@@ -35,31 +34,31 @@ void claswp_rowparallel_devfunc(
     dout += SWP_WIDTH * blockIdx.x * ldo;
     magmaFloatComplex *sdata = shared_data;
 
-    if(blockIdx.x == gridDim.x -1)
+    if (blockIdx.x == gridDim.x -1)
     {
-       width = n - blockIdx.x * SWP_WIDTH;
+        width = n - blockIdx.x * SWP_WIDTH;
     }
 
-    if(tid < height)
+    if (tid < height)
     {
         int mynewroworig = pivinfo[tid]-1; //-1 to get the index in C
-        int itsreplacement = pivinfo[mynewroworig] -1 ; //-1 to get the index in C
+        int itsreplacement = pivinfo[mynewroworig] -1; //-1 to get the index in C
         #pragma unroll
-        for(int i=0; i<width; i++)
+        for (int i=0; i < width; i++)
         {
-          sdata[ tid + i * height ]    = dA[ mynewroworig + i * lda ];
-          dA[ mynewroworig + i * lda ] = dA[ itsreplacement + i * lda ];
+            sdata[ tid + i * height ]    = dA[ mynewroworig + i * lda ];
+            dA[ mynewroworig + i * lda ] = dA[ itsreplacement + i * lda ];
         }
     }
     __syncthreads();
 
-    if(tid < height)
+    if (tid < height)
     {
         // copy back the upper swapped portion of A to dout 
         #pragma unroll
-        for(int i=0; i<width; i++)
+        for (int i=0; i < width; i++)
         {
-           dout[tid + i * ldo] = sdata[tid + i * height];
+            dout[tid + i * ldo] = sdata[tid + i * height];
         }
     }
 }
@@ -74,9 +73,7 @@ void claswp_rowparallel_kernel(
                                 magmaFloatComplex *doutput, int ldo,
                                 magma_int_t*  pivinfo)
 {
-
     claswp_rowparallel_devfunc(n, width, height, dinput, ldi, doutput, ldo, pivinfo);
-
 }
 //=================================================================================================
 
@@ -103,28 +100,25 @@ magma_claswp_rowparallel_batched( magma_int_t n,
                        magma_int_t **pivinfo_array, 
                        magma_int_t batchCount, magma_queue_t queue)
 {
-
-    if(n == 0 ) return ;
+    if (n == 0 ) return;
     int height = k2-k1;
-    if( height  > 1024) 
+    if ( height  > 1024) 
     {
-       printf(" n=%d > 1024, not supported \n", n);
-
+        printf(" n=%d > 1024, not supported \n", int(n) );
     }
 
-    int blocks =  (n-1)/ SWP_WIDTH + 1;
+    int blocks = magma_ceildiv( n, SWP_WIDTH );
     dim3  grid(blocks, 1, batchCount);
 
-    if( n < SWP_WIDTH)
+    if ( n < SWP_WIDTH)
     {
         claswp_rowparallel_kernel_batched<<<grid, height, sizeof(magmaFloatComplex) * height * n, queue >>>
                                            ( n, n, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
     }
     else
     {
-        claswp_rowparallel_kernel_batched<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH , queue >>>
-                                            (n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
- 
+        claswp_rowparallel_kernel_batched<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH, queue >>>
+                                            (n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array );
     }
 }
 
@@ -142,25 +136,24 @@ magma_claswp_rowparallel_q( magma_int_t n,
                        magma_int_t *pivinfo, 
                        magma_queue_t queue)
 {
-    if(n == 0 ) return ;
+    if (n == 0 ) return;
     int height = k2-k1;
-    if( height  > MAX_NTHREADS) 
+    if ( height  > MAX_NTHREADS) 
     {
-       printf(" height=%d > %d, magma_claswp_rowparallel_q not supported \n", n,MAX_NTHREADS);
-
+        printf(" height=%d > %d, magma_claswp_rowparallel_q not supported \n", int(n), int(MAX_NTHREADS) );
     }
 
-    int blocks =  (n-1)/ SWP_WIDTH + 1;
+    int blocks = magma_ceildiv( n, SWP_WIDTH );
     dim3  grid(blocks, 1, 1);
 
-    if( n < SWP_WIDTH)
+    if ( n < SWP_WIDTH)
     {
         claswp_rowparallel_kernel<<<grid, height, sizeof(magmaFloatComplex) * height * n, queue >>>
                                    ( n, n, height, input, ldi, output, ldo, pivinfo ); 
     }
     else
     {
-        claswp_rowparallel_kernel<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH , queue >>>
+        claswp_rowparallel_kernel<<< grid, height, sizeof(magmaFloatComplex) * height * SWP_WIDTH, queue >>>
                                     (n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
     }
 }
@@ -196,14 +189,13 @@ __global__ void claswp_rowserial_kernel_batched( int n, magmaFloatComplex **dA_a
     k1--;
     k2--;
 
-    if( tid < n) {
-
+    if (tid < n) {
         magmaFloatComplex A1;
 
-        for( int i1 = k1; i1 < k2; i1++ ) 
+        for (int i1 = k1; i1 < k2; i1++) 
         {
             int i2 = d_ipiv[i1] - 1;  // Fortran index, switch i1 and i2
-            if( i2 != i1)
+            if ( i2 != i1)
             {
                 A1 = dA[i1 + tid * lda];
                 dA[i1 + tid * lda] = dA[i2 + tid * lda];
@@ -223,15 +215,13 @@ magma_claswp_rowserial_batched(magma_int_t n, magmaFloatComplex** dA_array, magm
                    magma_int_t **ipiv_array, 
                    magma_int_t batchCount, magma_queue_t queue)
 {
+    if (n == 0) return;
 
-    if(n == 0 ) return ;
-
-    int blocks =  (n-1)/ BLK_SIZE + 1;
+    int blocks = magma_ceildiv( n, BLK_SIZE );
     dim3  grid(blocks, 1, batchCount);
 
     claswp_rowserial_kernel_batched<<< grid, max(BLK_SIZE, n), 0, queue >>>(
-        n, dA_array, lda, k1, k2, ipiv_array); 
-
+        n, dA_array, lda, k1, k2, ipiv_array);
 }
 
 
@@ -247,29 +237,29 @@ __global__ void claswp_columnserial_kernel_batched( int n, magmaFloatComplex **d
     unsigned int tid = threadIdx.x + blockDim.x*blockIdx.x;
     k1--;
     k2--;
-    if( k1 < 0 || k2 < 0 ) return;
+    if ( k1 < 0 || k2 < 0 ) return;
 
 
-    if( tid < n) {
+    if ( tid < n) {
         magmaFloatComplex A1;
-        if(k1 <= k2)
+        if (k1 <= k2)
         {
-            for( int i1 = k1; i1 <= k2; i1++ ) 
+            for (int i1 = k1; i1 <= k2; i1++) 
             {
                 int i2 = d_ipiv[i1] - 1;  // Fortran index, switch i1 and i2
-                if( i2 != i1)
+                if ( i2 != i1)
                 {
                     A1 = dA[i1 * lda + tid];
                     dA[i1 * lda + tid] = dA[i2 * lda + tid];
                     dA[i2 * lda + tid] = A1;
                 }
             }
-        }else
+        } else
         {
-            for( int i1 = k1; i1 >= k2; i1-- ) 
+            for (int i1 = k1; i1 >= k2; i1--) 
             {
                 int i2 = d_ipiv[i1] - 1;  // Fortran index, switch i1 and i2
-                if( i2 != i1)
+                if ( i2 != i1)
                 {
                     A1 = dA[i1 * lda + tid];
                     dA[i1 * lda + tid] = dA[i2 * lda + tid];
@@ -290,14 +280,11 @@ magma_claswp_columnserial_batched(magma_int_t n, magmaFloatComplex** dA_array, m
                    magma_int_t **ipiv_array, 
                    magma_int_t batchCount, magma_queue_t queue)
 {
+    if (n == 0 ) return;
 
-    if(n == 0 ) return ;
-
-    int blocks =  (n-1)/ BLK_SIZE + 1;
+    int blocks = magma_ceildiv( n, BLK_SIZE );
     dim3  grid(blocks, 1, batchCount);
 
     claswp_columnserial_kernel_batched<<< grid, min(BLK_SIZE, n), 0, queue >>>(
-        n, dA_array, lda, k1, k2, ipiv_array); 
-
+        n, dA_array, lda, k1, k2, ipiv_array);
 }
-

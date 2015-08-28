@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmgeellmv.cu normal z -> s, Sun May  3 11:22:58 2015
+       @generated from zmgeellmv.cu normal z -> s, Tue Aug 25 16:35:30 2015
 
 */
 #include "common_magma.h"
@@ -26,14 +26,14 @@ smgeellmv_kernel(
     float beta, 
     float * dy)
 {
-int row = blockDim.x * blockIdx.x + threadIdx.x ;
+int row = blockDim.x * blockIdx.x + threadIdx.x;
 
     extern __shared__ float dot[];
 
     if(row < num_rows ){
         for( int i=0; i<num_vecs; i++)
                 dot[ threadIdx.x + i*blockDim.x ] = MAGMA_S_MAKE(0.0, 0.0);
-        for ( int n = 0; n < num_cols_per_row ; n ++){
+        for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_cols_per_row * row + n ];
             float val = dval [ num_cols_per_row * row + n ];
             if( val != 0){
@@ -137,6 +137,3 @@ magma_smgeellmv(
 
    return MAGMA_SUCCESS;
 }
-
-
-

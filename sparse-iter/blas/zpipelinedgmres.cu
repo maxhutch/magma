@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -62,15 +62,15 @@ magma_zpipelined_correction(
     temp[ i ] = ( i < k ) ? skp[ i ] * skp[ i ] : MAGMA_Z_MAKE( 0.0, 0.0);
     __syncthreads();
      if (i < 64) { temp[ i ] += temp[ i + 64 ]; } __syncthreads(); 
-     if( i < 32 ){
-        temp[ i ] += temp[ i + 32 ];__syncthreads();    
-        temp[ i ] += temp[ i + 16 ];__syncthreads(); 
-        temp[ i ] += temp[ i +  8 ];__syncthreads(); 
-        temp[ i ] += temp[ i +  4 ];__syncthreads(); 
-        temp[ i ] += temp[ i +  2 ];__syncthreads(); 
-        temp[ i ] += temp[ i +  1 ];__syncthreads();      
+     if ( i < 32 ) {
+        temp[ i ] += temp[ i + 32 ]; __syncthreads();    
+        temp[ i ] += temp[ i + 16 ]; __syncthreads(); 
+        temp[ i ] += temp[ i +  8 ]; __syncthreads(); 
+        temp[ i ] += temp[ i +  4 ]; __syncthreads(); 
+        temp[ i ] += temp[ i +  2 ]; __syncthreads(); 
+        temp[ i ] += temp[ i +  1 ]; __syncthreads();      
     }
-    if( i == 0 ){
+    if ( i == 0 ) {
         tmp = MAGMA_Z_REAL( temp[ i ] );
         zz = MAGMA_Z_REAL( skp[(k)] );
         skp[k] = MAGMA_Z_MAKE( sqrt(zz-tmp),0.0 );
@@ -85,14 +85,12 @@ magma_zpipelined_copyscale(
     magmaDoubleComplex * r,
     magmaDoubleComplex * v )
 {
-
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     magmaDoubleComplex rr=skp[k];
 
-    if( i<n ){
+    if ( i < n ) {
         v[i] =  r[i] * 1.0 / rr;
-
     }
 }
 
@@ -138,10 +136,9 @@ magma_zpipelinedscale(
     magmaDoubleComplex * r, 
     magmaDoubleComplex * drnorm )
 {
-
     int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if( i<n ){
+    if ( i<n ) {
         r[i] =  r[i] * 1.0 / drnorm[0];
     }
 }
@@ -229,4 +226,3 @@ magma_dznrm2scale(
 
     return MAGMA_SUCCESS;
 }
-

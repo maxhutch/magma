@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Azzam Haidar 
@@ -35,8 +35,8 @@ void magmablas_zherk_gpu(
     }
 
     if (uplo == MagmaUpper) {
-            printf("Error not supported\n");
-            return;
+        printf("Error not supported\n");
+        return;
     }
 
     magma_int_t ib, ioff;

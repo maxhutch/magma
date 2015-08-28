@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date January 2015
+#      @date August 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = blas_fix
@@ -58,7 +58,7 @@ SRC += \
 	slapy3.f	\
 	slamch.f	\
 
-OBJ := $(addsuffix .o, $(basename $(SRC)))
+OBJ := $(addsuffix .$(o_ext), $(basename $(SRC)))
 
 .PHONY: all clean cleanall
 
@@ -71,6 +71,6 @@ $(BLAS_FIX): $(OBJ)
 	$(RANLIB) $@
 
 clean:
-	-rm -f *.o *.a *~ *.linkinfo stamp
+	-rm -f *.$(o_ext) *.a *~ *.linkinfo stamp $(BLAS_FIX)
 
 cleanall: clean

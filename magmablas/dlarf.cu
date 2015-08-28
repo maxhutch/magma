@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlarf.cu normal z -> d, Fri Jan 30 19:00:09 2015
+       @generated from zlarf.cu normal z -> d, Tue Aug 25 16:35:08 2015
        @author Azzam Haidar
 
 */
@@ -34,11 +34,11 @@ void magma_dlarf_kernel( int m, const double *dv, const double *dtau,
         double tmp;
 
         /* perform  w := v**H * C  */
-        if (tx==0)
+        if (tx == 0)
             tmp = dc[0]; //since V[0] should be one
         else
             tmp = MAGMA_D_ZERO;
-        for( int j = tx+1; j < m; j += BLOCK_SIZE ){
+        for( int j = tx+1; j < m; j += BLOCK_SIZE ) {
             tmp += MAGMA_D_MUL( MAGMA_D_CNJG( dv[j] ), dc[j] );
         }
         sum[tx] = tmp;
@@ -47,10 +47,10 @@ void magma_dlarf_kernel( int m, const double *dv, const double *dtau,
         /*  C := C - v * w  */
         __syncthreads();
         tmp = - MAGMA_D_CNJG(*dtau) * sum[0];
-        for( int j = m-tx-1; j>0 ; j -= BLOCK_SIZE )
+        for( int j = m-tx-1; j > 0; j -= BLOCK_SIZE )
              dc[j] += tmp * dv[j];
 
-        if(tx==0) dc[0] += tmp;
+        if (tx == 0) dc[0] += tmp;
     }
 }
 
@@ -72,8 +72,8 @@ void magma_dlarf_smkernel( int m, int n, double *dv, double *dtau,
     
             /*  w := v**H * C  */
             lsum = MAGMA_D_ZERO;
-            for( int j = i; j < m; j += BLOCK_SIZEx ){
-                if (j==0)
+            for( int j = i; j < m; j += BLOCK_SIZEx ) {
+                if (j == 0)
                    lsum += MAGMA_D_MUL( MAGMA_D_ONE, dc[j] );
                 else
                    lsum += MAGMA_D_MUL( MAGMA_D_CNJG( dv[j] ), dc[j] );
@@ -84,10 +84,10 @@ void magma_dlarf_smkernel( int m, int n, double *dv, double *dtau,
             /*  C := C - v * w  */
             __syncthreads();
             double z__1 = - MAGMA_D_CNJG(*dtau) * sum[0][col];
-            for( int j = m-i-1; j>=0 ; j -= BLOCK_SIZEx ) {
-                 if (j==0)
+            for( int j = m-i-1; j >= 0; j -= BLOCK_SIZEx ) {
+                if (j == 0)
                     dc[j] += z__1;
-                 else
+                else
                     dc[j] += z__1 * dv[j];
             }
         }

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zunmqr_gpu.cpp normal z -> s, Fri Jan 30 19:00:16 2015
+       @generated from zunmqr_gpu.cpp normal z -> s, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -63,12 +63,12 @@
     dA      REAL array on the GPU, dimension (LDDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
-            SGEQRF in the first k columns of its array argument DA.
-            DA is modified by the routine but restored on exit.
+            SGEQRF in the first k columns of its array argument dA.
+            dA is modified by the routine but restored on exit.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array DA.
+            The leading dimension of the array dA.
             If SIDE = MagmaLeft,  LDDA >= max(1,M);
             if SIDE = MagmaRight, LDDA >= max(1,N).
 
@@ -80,7 +80,7 @@
     @param[in,out]
     dC      REAL array on the GPU, dimension (LDDC,N)
             On entry, the M-by-N matrix C.
-            On exit, C is overwritten by Q*C or Q**H * C or C * Q**H or C*Q.
+            On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).
 
     @param[in]
     lddc    INTEGER

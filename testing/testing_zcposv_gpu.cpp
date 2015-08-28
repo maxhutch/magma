@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions mixed zc -> ds
 */
@@ -30,31 +30,31 @@ int main(int argc, char **argv)
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *h_A, *h_B, *h_X;
-    magmaDoubleComplex_ptr d_A, d_B, d_X, d_workd;
-    magmaFloatComplex  *d_As, *d_Bs, *d_works;
+    magmaDoubleComplex_ptr d_A,  d_B,  d_X, d_workd;
+    magmaFloatComplex_ptr  d_As, d_Bs,      d_works;
     double          *h_workd;
     magma_int_t lda, ldb, ldx;
     magma_int_t N, nrhs, posv_iter, info, size;
     magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     
-    printf("Epsilon(double): %8.6e\n"
-           "Epsilon(single): %8.6e\n\n",
+    printf("%% Epsilon(double): %8.6e\n"
+           "%% Epsilon(single): %8.6e\n\n",
            lapackf77_dlamch("Epsilon"), lapackf77_slamch("Epsilon") );
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
     nrhs = opts.nrhs;
     
-    printf("using: uplo = %s\n",
+    printf("%% uplo = %s\n",
            lapack_uplo_const(opts.uplo));
 
-    printf("    N NRHS   DP-Factor  DP-Solve  SP-Factor  SP-Solve  MP-Solve  Iter   |b-Ax|/|A|\n");
-    printf("=====================================================================================\n");
+    printf("%%   N NRHS   DP-Factor  DP-Solve  SP-Factor  SP-Solve  MP-Solve  Iter   |b-Ax|/|A|\n");
+    printf("%%====================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
@@ -74,11 +74,11 @@ int main(int argc, char **argv)
             TESTING_MALLOC_DEV( d_workd, magmaDoubleComplex, N*nrhs       );
             
             /* Initialize the matrix */
-            size = lda * N ;
+            size = lda * N;
             lapackf77_zlarnv( &ione, ISEED, &size, h_A );
             magma_zmake_hpd( N, h_A, lda );
             
-            size = ldb * nrhs ;
+            size = ldb * nrhs;
             lapackf77_zlarnv( &ione, ISEED, &size, h_B );
             
             magma_zsetmatrix( N, N,    h_A, lda, d_A, lda );
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
             //=====================================================================
             //                 Error Computation
             //=====================================================================
-            magma_zgetmatrix( N, nrhs, d_X, ldx, h_X, ldx ) ;
+            magma_zgetmatrix( N, nrhs, d_X, ldx, h_X, ldx );
             
             Anorm = lapackf77_zlanhe( "I", lapack_uplo_const(opts.uplo), &N, h_A, &N, h_workd);
             blasf77_zhemm( "L", lapack_uplo_const(opts.uplo), &N, &nrhs,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -57,7 +57,7 @@
 
     @param[in]
     dT      (workspace) COMPLEX_16 work space array on the GPU,
-            dimension (2*MIN(M, N) + (N+31)/32*32 )*NB.
+            dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB.
             This must be the 6th argument of magma_zgeqrf_gpu
             [ note that if N here is bigger than N in magma_zgeqrf_gpu,
               the workspace requirement DT in magma_zgeqrf_gpu must be
@@ -150,7 +150,7 @@ magma_zungqr_gpu(
     
     // dT workspace has:
     // 2*min(m,n)*nb      for T and R^{-1} matrices from geqrf
-    // ((n+31)/32*32 )*nb for dW larfb workspace.
+    // roundup(n,32) * nb for dW larfb workspace.
     lddwork = min(m,n);
     dW = dT + 2*lddwork*nb;
 

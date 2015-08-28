@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -13,11 +13,11 @@
 #include "common_magma.h"
 #include "zgerbt.h"
 
-
 #define block_height  32
 #define block_width  4
 #define block_length 256
 #define NB 64
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -49,17 +49,14 @@ magmablas_zprbt_mtv_batched(
     magmaDoubleComplex *du, magmaDoubleComplex **db_array,
     magma_int_t batchCount, magma_queue_t queue)
 {
-    /*
-
-     */
     magma_int_t threads = block_length;
-    dim3 grid ( n/(4*block_length) + ((n%(4*block_length))!=0), batchCount);
+    dim3 grid( magma_ceildiv( n, 4*block_length ), batchCount);
 
     magmablas_zapply_transpose_vector_kernel_batched<<< grid, threads, 0, queue >>>(n/2, du, n, db_array, 0);
     magmablas_zapply_transpose_vector_kernel_batched<<< grid, threads, 0, queue >>>(n/2, du, n+n/2, db_array, n/2);
 
     threads = block_length;
-    grid = n/(2*block_length) + ((n%(2*block_length))!=0);
+    grid = magma_ceildiv( n, 2*block_length );
     magmablas_zapply_transpose_vector_kernel_batched<<< grid, threads, 0, queue >>>(n, du, 0, db_array, 0);
 }
 
@@ -95,23 +92,17 @@ magmablas_zprbt_mv_batched(
     magmaDoubleComplex *dv, magmaDoubleComplex **db_array,
     magma_int_t batchCount, magma_queue_t queue)
 {
-
     magma_int_t threads = block_length;
-    dim3 grid ( n/(2*block_length) + ((n%(2*block_length))!=0), batchCount);
+    dim3 grid ( magma_ceildiv( n, 2*block_length ), batchCount);
 
     magmablas_zapply_vector_kernel_batched<<< grid, threads, 0, queue >>>(n, dv, 0, db_array, 0);
 
-
     threads = block_length;
-    grid = n/(4*block_length) + ((n%(4*block_length))!=0);
+    grid = magma_ceildiv( n, 4*block_length );
 
     magmablas_zapply_vector_kernel_batched<<< grid, threads, 0, queue >>>(n/2, dv, n, db_array, 0);
     magmablas_zapply_vector_kernel_batched<<< grid, threads, 0, queue >>>(n/2, dv, n+n/2, db_array, n/2);
-
-
 }
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,9 +150,9 @@ magmablas_zprbt_batched(
     dv += ldda;
 
     dim3 threads(block_height, block_width);
-    dim3 grid(n/(4*block_height) + ((n%(4*block_height))!=0), 
-            n/(4*block_width)  + ((n%(4*block_width))!=0),
-            batchCount);
+    dim3 grid( magma_ceildiv( n, 4*block_height ), 
+               magma_ceildiv( n, 4*block_width  ),
+               batchCount );
 
     magmablas_zelementary_multiplication_kernel_batched<<< grid, threads, 0, queue >>>(n/2, dA_array,            0, ldda, du,   0, dv,   0);
     magmablas_zelementary_multiplication_kernel_batched<<< grid, threads, 0, queue >>>(n/2, dA_array,     ldda*n/2, ldda, du,   0, dv, n/2);
@@ -169,16 +160,8 @@ magmablas_zprbt_batched(
     magmablas_zelementary_multiplication_kernel_batched<<< grid, threads, 0, queue >>>(n/2, dA_array, ldda*n/2+n/2, ldda, du, n/2, dv, n/2);
 
     dim3 threads2(block_height, block_width);
-    dim3 grid2(n/(2*block_height) + ((n%(2*block_height))!=0), 
-            n/(2*block_width)  + ((n%(2*block_width))!=0),
-            batchCount);
+    dim3 grid2( magma_ceildiv( n, 2*block_height ), 
+                magma_ceildiv( n, 2*block_width  ),
+                batchCount );
     magmablas_zelementary_multiplication_kernel_batched<<< grid2, threads2, 0, queue >>>(n, dA_array, 0, ldda, du, -ldda, dv, -ldda);
 }
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-

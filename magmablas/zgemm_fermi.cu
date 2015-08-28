@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -197,7 +197,7 @@ magmablas_zgemm(
         TransA = 1;
     else if ( transA == MagmaNoTrans )
         TransA = 0;
-                    
+    
     if      ( transB == MagmaTrans )
         TransB = 1;
     else if ( transB == MagmaNoTrans )
@@ -252,64 +252,64 @@ magmablas_zgemm(
     offsetB = offsetB/sizeof(dB[0]);
  
     if ( TransA == 0 && TransB == 0 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_nn + 1,
-                      (n - 1)/BLK_N_nn + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_nn ),
+                      magma_ceildiv( n, BLK_N_nn ) );
         zgemm_kernel_fermi_nn<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 0 && TransB == 1 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_nt + 1,
-                      (n - 1)/BLK_N_nt + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_nt ),
+                      magma_ceildiv( n, BLK_N_nt ) );
         zgemm_kernel_fermi_nt<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 0 && TransB == 2 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_nc + 1,
-                      (n - 1)/BLK_N_nc + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_nc ),
+                      magma_ceildiv( n, BLK_N_nc ) );
         zgemm_kernel_fermi_nc<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 1 && TransB == 0 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_tn + 1,
-                      (n - 1)/BLK_N_tn + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_tn ),
+                      magma_ceildiv( n, BLK_N_tn ) );
         zgemm_kernel_fermi_tn<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 1 && TransB == 1 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_tt + 1,
-                      (n - 1)/BLK_N_tt + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_tt ),
+                      magma_ceildiv( n, BLK_N_tt ) );
         zgemm_kernel_fermi_tt<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 1 && TransB == 2 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_tc + 1,
-                      (n - 1)/BLK_N_tc + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_tc ),
+                      magma_ceildiv( n, BLK_N_tc ) );
         zgemm_kernel_fermi_tc<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 2 && TransB == 0 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_cn + 1,
-                      (n - 1)/BLK_N_cn + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_cn ),
+                      magma_ceildiv( n, BLK_N_cn ) );
         zgemm_kernel_fermi_cn<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 2 && TransB == 1 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_ct + 1,
-                      (n - 1)/BLK_N_ct + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_ct ),
+                      magma_ceildiv( n, BLK_N_ct ) );
         zgemm_kernel_fermi_ct<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 2 && TransB == 2 ) {
-        dim3 dimGrid( (m - 1)/BLK_M_cc + 1,
-                      (n - 1)/BLK_N_cc + 1 );
+        dim3 dimGrid( magma_ceildiv( m, BLK_M_cc ),
+                      magma_ceildiv( n, BLK_N_cc ) );
         zgemm_kernel_fermi_cc<<< dimGrid, dimBlock, 0, magma_stream >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );

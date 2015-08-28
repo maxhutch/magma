@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.6.1) --
+   -- MAGMA (version 1.6.3-beta1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date January 2015
+   @date August 2015
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing_zgetrf_batched.cpp normal z -> c, Fri Jan 30 19:00:26 2015
+   @generated from testing_zgetrf_batched.cpp normal z -> c, Tue Aug 25 16:35:28 2015
  */
 // includes, system
 #include <stdlib.h>
@@ -22,11 +22,16 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
+#if defined(_OPENMP)
+#include <omp.h>
+#include "magma_threadsetting.h"
+#endif
+
 float get_LU_error(magma_int_t M, magma_int_t N,
                     magmaFloatComplex *A,  magma_int_t lda,
                     magmaFloatComplex *LU, magma_int_t *IPIV)
 {
-    magma_int_t min_mn = min(M,N);
+    magma_int_t min_mn = min(M, N);
     magma_int_t ione   = 1;
     magma_int_t i, j;
     magmaFloatComplex alpha = MAGMA_C_ONE;
@@ -43,7 +48,7 @@ float get_LU_error(magma_int_t M, magma_int_t N,
     lapackf77_clacpy( MagmaLowerStr, &M, &min_mn, LU, &lda, L, &M      );
     lapackf77_clacpy( MagmaUpperStr, &min_mn, &N, LU, &lda, U, &min_mn );
 
-    for(j=0; j<min_mn; j++)
+    for (j=0; j < min_mn; j++)
         L[j+j*M] = MAGMA_C_MAKE( 1., 0. );
     
     matnorm = lapackf77_clange("f", &M, &N, A, &lda, work);
@@ -71,49 +76,44 @@ int main( int argc, char** argv)
 {
     TESTING_INIT();
 
-    real_Double_t   gflops, magma_perf, magma_time, cublas_perf, cublas_time, cpu_perf=0, cpu_time=0;
-    float          error=0.0; 
-    magma_int_t cublas_enable = 0;
+    real_Double_t   gflops, magma_perf, magma_time, cublas_perf=0, cublas_time=0, cpu_perf=0, cpu_time=0;
+    float          error;
     magmaFloatComplex *h_A, *h_R, *h_Amagma;
     magmaFloatComplex *dA;
     magmaFloatComplex **dA_array = NULL;
 
     magma_int_t     **dipiv_array = NULL;
-    magma_int_t     *ipiv;
+    magma_int_t     *ipiv, *cpu_info;
     magma_int_t     *dipiv_magma, *dinfo_magma;
     int             *dipiv_cublas, *dinfo_cublas;
     
-
     magma_int_t M, N, n2, lda, ldda, min_mn, info;
-    magma_int_t ione     = 1; 
+    magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
-    magma_int_t batchCount = 1;
+    magma_int_t batchCount;
 
-    magma_queue_t queue = magma_stream;
-    magma_opts opts;
-    parse_opts( argc, argv, &opts );
-    //opts.lapack |= opts.check; 
+    magma_opts opts( MagmaOptsBatched );
+    opts.parse_opts( argc, argv );
+    //opts.lapack |= opts.check;
     magma_int_t     status = 0;
     float tol = opts.tolerance * lapackf77_slamch("E");
 
-    batchCount = opts.batchcount ;
+    batchCount = opts.batchcount;
     magma_int_t columns;
     
-    printf("BatchCount      M     N     CPU GFlop/s (ms)    MAGMA GFlop/s (ms)  CUBLAS GFlop/s (ms)  ||PA-LU||/(||A||*N)\n");
-    printf("=========================================================================\n");
-    for( int i = 0; i < opts.ntest; ++i ) {
-    
-      for( int iter = 0; iter < opts.niter; ++iter ) {
-            
-            M = opts.msize[i];
-            N = opts.nsize[i];
+    printf("%% BatchCount   M     N    CPU GFlop/s (ms)   MAGMA GFlop/s (ms)   CUBLAS GFlop/s (ms)   ||PA-LU||/(||A||*N)\n");
+    printf("%%==========================================================================================================\n");
+    for( int itest = 0; itest < opts.ntest; ++itest ) {
+        for( int iter = 0; iter < opts.niter; ++iter ) {
+            M = opts.msize[itest];
+            N = opts.nsize[itest];
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N * batchCount;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             gflops = FLOPS_CGETRF( M, N ) / 1e9 * batchCount;
             
-
+            TESTING_MALLOC_CPU( cpu_info, magma_int_t, batchCount);
             TESTING_MALLOC_CPU(    ipiv, magma_int_t,     min_mn * batchCount);
             TESTING_MALLOC_CPU(    h_A,  magmaFloatComplex, n2     );
             TESTING_MALLOC_CPU(    h_Amagma,  magmaFloatComplex, n2     );
@@ -136,115 +136,123 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-
             magma_csetmatrix( M, columns, h_R, lda, dA, ldda );
-            cset_pointer(dA_array, dA, ldda, 0, 0, ldda*N, batchCount, queue);
-            set_ipointer(dipiv_array, dipiv_magma, 1, 0, 0, min_mn, batchCount, queue);
+            cset_pointer(dA_array, dA, ldda, 0, 0, ldda*N, batchCount, opts.queue);
+            set_ipointer(dipiv_array, dipiv_magma, 1, 0, 0, min_mn, batchCount, opts.queue);
             
-            magma_time = magma_sync_wtime(0);
-            info = magma_cgetrf_batched( M, N, dA_array, ldda, dipiv_array,  dinfo_magma, batchCount, queue);
-            magma_time = magma_sync_wtime(0) - magma_time;
+            magma_time = magma_sync_wtime( opts.queue );
+            info = magma_cgetrf_batched( M, N, dA_array, ldda, dipiv_array,  dinfo_magma, batchCount, opts.queue);
+            magma_time = magma_sync_wtime( opts.queue ) - magma_time;
             magma_perf = gflops / magma_time;
             
             magma_cgetmatrix( M, N*batchCount, dA, ldda, h_Amagma, lda );
             
             // check correctness of results throught "dinfo_magma" and correctness of argument throught "info"
-            magma_int_t *cpu_info = (magma_int_t*) malloc(batchCount*sizeof(magma_int_t));
             magma_getvector( batchCount, sizeof(magma_int_t), dinfo_magma, 1, cpu_info, 1);
             
-            for(int i=0; i<batchCount; i++)
+            for (int i=0; i < batchCount; i++)
             {
-                if(cpu_info[i] != 0 ){
-                    printf("magma_cgetrf_batched matrix %d returned internal error %d\n",i, (int)cpu_info[i] );
+                if (cpu_info[i] != 0 ) {
+                    printf("magma_cgetrf_batched matrix %d returned internal error %d\n",
+                            i, int(cpu_info[i]) );
                 }
             }
             
-            if (info != 0)
-                printf("magma_cgetrf_batched returned argument error %d: %s.\n", (int) info, magma_strerror( info ));
-
+            if (info != 0) {
+                printf("magma_cgetrf_batched returned argument error %d: %s.\n",
+                        int(info), magma_strerror( info ));
+            }
+            
             /* ====================================================================
                Performs operation using CUBLAS
                =================================================================== */
-
             magma_csetmatrix( M, columns, h_R, lda, dA,  ldda );
-            cset_pointer(dA_array, dA, ldda, 0, 0, ldda * N, batchCount, queue);
+            cset_pointer(dA_array, dA, ldda, 0, 0, ldda * N, batchCount, opts.queue);
 
-            cublas_time = magma_sync_wtime(0);
-            if(M == N )
-            {
+            cublas_time = magma_sync_wtime( opts.queue );
+            if (M == N ) {
                 cublasCgetrfBatched( opts.handle, N, dA_array, ldda, dipiv_cublas,  dinfo_cublas, batchCount);
-                cublas_enable = 1;
             }
-            else
-            {
-                printf("M != N, CUBLAS required M == N ; CUBLAS is disabled\n");
+            else {
+                printf("M != N, CUBLAS required M == N; CUBLAS is disabled\n");
             }
-            cublas_time = magma_sync_wtime(0) - cublas_time;
+            cublas_time = magma_sync_wtime( opts.queue ) - cublas_time;
             cublas_perf = gflops / cublas_time;
-
-
+            
             /* =====================================================================
                Performs operation using LAPACK
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                //#pragma unroll
-                for(int i=0; i<batchCount; i++)
+                // #define BATCHED_DISABLE_PARCPU
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                magma_int_t nthreads = magma_get_lapack_numthreads();
+                magma_set_lapack_numthreads(1);
+                magma_set_omp_numthreads(nthreads);
+                #pragma omp parallel for schedule(dynamic)
+                #endif
+                for (magma_int_t s=0; s < batchCount; s++)
                 {
-                  lapackf77_cgetrf(&M, &N, h_A + i*lda*N, &lda, ipiv + i * min_mn, &info);
+                    magma_int_t locinfo;
+                    lapackf77_cgetrf(&M, &N, h_A + s * lda * N, &lda, ipiv + s * min_mn, &locinfo);
+                    if (locinfo != 0)
+                        printf("lapackf77_cgetrf matrix %d returned error %d: %s.\n", (int) s, (int) locinfo, magma_strerror( locinfo ));
                 }
+                #if !defined (BATCHED_DISABLE_PARCPU) && defined(_OPENMP)
+                    magma_set_lapack_numthreads(nthreads);
+                #endif
+                
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
-                if (info != 0)
-                    printf("lapackf77_cgetrf returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
             }
             
             /* =====================================================================
                Check the factorization
                =================================================================== */
             if ( opts.lapack ) {
-                printf("%10d   %5d  %5d     %7.2f (%7.2f)   %7.2f (%7.2f)    %7.2f (%7.2f)",
-                       (int) batchCount, (int) M, (int) N, cpu_perf, cpu_time*1000., magma_perf, magma_time*1000., cublas_perf*cublas_enable, cublas_time*1000.*cublas_enable  );
+                printf("%10d %5d %5d   %7.2f (%7.2f)    %7.2f (%7.2f)     %7.2f (%7.2f)",
+                       int(batchCount), int(M), int(N),
+                       cpu_perf, cpu_time*1000.,
+                       magma_perf, magma_time*1000.,
+                       cublas_perf, cublas_time*1000.  );
             }
             else {
-                printf("%10d   %5d  %5d     ---   (  ---  )   %7.2f (%7.2f)    %7.2f (%7.2f)",
-                       (int) batchCount, (int) M, (int) N, magma_perf, magma_time*1000., cublas_perf*cublas_enable, cublas_time*1000.*cublas_enable );
+                printf("%10d %5d %5d     ---   (  ---  )    %7.2f (%7.2f)     %7.2f (%7.2f)",
+                       int(batchCount), int(M), int(N),
+                       magma_perf, magma_time*1000.,
+                       cublas_perf, cublas_time*1000. );
             }
 
-            float err = 0.0;
             if ( opts.check ) {
                 magma_getvector( min_mn * batchCount, sizeof(magma_int_t), dipiv_magma, 1, ipiv, 1 );
-                int stop=0;
-                for(int i=0; i<batchCount; i++)
-                {
-                    
-                    for(int k=0;k<min_mn; k++){
-                        if(ipiv[i*min_mn+k] < 1 || ipiv[i*min_mn+k] > M )
-                        {
-                                printf("error for matrix %d ipiv @ %d = %d\n",i,k,(int)ipiv[i*min_mn+k]);
-                                stop=1;
+                error = 0;
+                for (int i=0; i < batchCount; i++) {
+                    for (int k=0; k < min_mn; k++) {
+                        if (ipiv[i*min_mn+k] < 1 || ipiv[i*min_mn+k] > M ) {
+                            printf("error for matrix %d ipiv @ %d = %d\n", i, k, int(ipiv[i*min_mn+k]));
+                            error = -1;
                         }
                     }
-                    if(stop==1){
-                        err=-1.0;
+                    if (error == -1) {
                         break;
                     }
                     
-                    error = get_LU_error( M, N, h_R + i * lda*N, lda, h_Amagma + i * lda*N, ipiv + i * min_mn);                 
-                    if ( isnan(error) || isinf(error) ) {
-                        err = error;
+                    float err = get_LU_error( M, N, h_R + i * lda*N, lda, h_Amagma + i * lda*N, ipiv + i * min_mn);
+                    if ( isnan(err) || isinf(err) ) {
+                        error = err;
                         break;
                     }
-                    err = max(fabs(error),err);
+                    error = max( err, error );
                 }
-                printf("   %8.2e   %s\n", err, (err < tol ? "ok" : "failed") );
-                status += ! (error < tol);
+                bool okay = (error < tol);
+                status += ! okay;
+                printf("   %8.2e   %s\n", error, (okay ? "ok" : "failed") );
             }
             else {
-                printf("     ---  \n");
+                printf("     ---\n");
             }
             
+            TESTING_FREE_CPU( cpu_info );
             TESTING_FREE_CPU( ipiv );
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_Amagma );
@@ -257,7 +265,7 @@ int main( int argc, char** argv)
             TESTING_FREE_DEV( dinfo_cublas );
             TESTING_FREE_DEV( dipiv_array );
             TESTING_FREE_DEV( dA_array );
-            free(cpu_info);
+            fflush( stdout );
         }
         if ( opts.niter > 1 ) {
             printf( "\n" );

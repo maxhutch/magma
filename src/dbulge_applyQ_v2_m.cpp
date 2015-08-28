@@ -8,7 +8,7 @@
  *     @author Stan Tomov
  *     @author Raffaele Solca
  *
- *     @generated from zbulge_applyQ_v2_m.cpp normal z -> d, Fri Jan 30 19:00:18 2015
+ *     @generated from zbulge_applyQ_v2_m.cpp normal z -> d, Tue Aug 25 16:35:19 2015
  *
  */
 
@@ -458,7 +458,7 @@ magma_dbulge_applyQ_v2_m(
     }
 
 
-    for( magma_int_t dev = 0; dev < ngpu; ++dev ) {
+    for( dev = 0; dev < ngpu; ++dev ) {
         magma_setdevice( dev );
         magmablasSetKernelStream(streams[dev][0]);
         magma_queue_wait_event( streams[dev][0], myevent[dev][0] );

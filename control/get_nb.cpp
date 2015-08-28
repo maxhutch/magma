@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
        
        @author Stan Tomov
        @author Mark Gates
@@ -424,45 +424,66 @@ magma_int_t magma_get_zhetrd_nb( magma_int_t /*m*/ )
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for sytrf based on m
 */
-magma_int_t magma_get_zhetrf_nb( magma_int_t m ) 
+magma_int_t magma_get_zhetrf_nb( magma_int_t m )
 {
     return 256;
 }
 
-magma_int_t magma_get_chetrf_nb( magma_int_t m ) 
+magma_int_t magma_get_chetrf_nb( magma_int_t m )
 {
     return 256;
 }
 
-magma_int_t magma_get_dsytrf_nb( magma_int_t m ) 
+magma_int_t magma_get_dsytrf_nb( magma_int_t m )
 {
-    return 96; 
+    return 96;
 }
 
-magma_int_t magma_get_ssytrf_nb( magma_int_t m ) 
+magma_int_t magma_get_ssytrf_nb( magma_int_t m )
 {
     return 256;
 }
 
 /* //////////////////////////////////////////////////////////////////////// */
-magma_int_t magma_get_zhetrf_nopiv_nb( magma_int_t m ) 
+magma_int_t magma_get_zhetrf_aasen_nb( magma_int_t m )
 {
-    return 320; 
+    return 256;
 }
 
-magma_int_t magma_get_chetrf_nopiv_nb( magma_int_t m ) 
+magma_int_t magma_get_chetrf_aasen_nb( magma_int_t m )
 {
-    return 96; 
+    return 256;
 }
 
-magma_int_t magma_get_dsytrf_nopiv_nb( magma_int_t m ) 
+magma_int_t magma_get_dsytrf_aasen_nb( magma_int_t m )
 {
-    return 320; 
+    return 256;
 }
 
-magma_int_t magma_get_ssytrf_nopiv_nb( magma_int_t m ) 
+magma_int_t magma_get_ssytrf_aasen_nb( magma_int_t m )
 {
-    return 96;  
+    return 256;
+}
+
+/* //////////////////////////////////////////////////////////////////////// */
+magma_int_t magma_get_zhetrf_nopiv_nb( magma_int_t m )
+{
+    return 320;
+}
+
+magma_int_t magma_get_chetrf_nopiv_nb( magma_int_t m )
+{
+    return 96;
+}
+
+magma_int_t magma_get_dsytrf_nopiv_nb( magma_int_t m )
+{
+    return 320;
+}
+
+magma_int_t magma_get_ssytrf_nopiv_nb( magma_int_t m )
+{
+    return 320;
 }
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -780,7 +801,7 @@ magma_int_t magma_get_smlsize_divideconquer()
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for  2 stage TRD
 */
-magma_int_t magma_get_sbulge_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
+magma_int_t magma_sbulge_get_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -794,7 +815,7 @@ magma_int_t magma_get_sbulge_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
     }
 }
 
-magma_int_t magma_get_dbulge_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
+magma_int_t magma_dbulge_get_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -808,7 +829,7 @@ magma_int_t magma_get_dbulge_nb( magma_int_t /*m*/, magma_int_t /*nbthreads*/  )
     }
 }
 
-magma_int_t magma_get_cbulge_nb( magma_int_t /*m*/, magma_int_t nbthreads  )
+magma_int_t magma_cbulge_get_nb( magma_int_t /*m*/, magma_int_t nbthreads  )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -825,7 +846,7 @@ magma_int_t magma_get_cbulge_nb( magma_int_t /*m*/, magma_int_t nbthreads  )
     }
 }
 
-magma_int_t magma_get_zbulge_nb( magma_int_t /*m*/, magma_int_t nbthreads )
+magma_int_t magma_zbulge_get_nb( magma_int_t /*m*/, magma_int_t nbthreads )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -864,7 +885,7 @@ magma_int_t magma_dbulge_get_Vblksiz( magma_int_t /*m*/, magma_int_t nb, magma_i
         return min(nb, 64);
     }
     else {                     // 2.x Fermi or 1.x
-        return min(nb, 64);
+        return min(nb, 48);
     }
 }
 
@@ -873,9 +894,9 @@ magma_int_t magma_cbulge_get_Vblksiz( magma_int_t /*m*/, magma_int_t nb, magma_i
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
         if ( nbthreads > 14 )
-            return min(nb, 64);
+            return min(nb, 48);
         else
-            return min(nb, 32);
+            return min(nb, 48);
     }
     else {                     // 2.x Fermi or 1.x
         return min(nb, 48);
@@ -900,7 +921,7 @@ magma_int_t magma_zbulge_get_Vblksiz( magma_int_t /*m*/, magma_int_t nb, magma_i
 /* ////////////////////////////////////////////////////////////////////////////
    -- Return nb for  2 stage TRD_MGPU
 */
-magma_int_t magma_get_sbulge_nb_mgpu( magma_int_t /*m*/ )
+magma_int_t magma_sbulge_get_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -914,7 +935,7 @@ magma_int_t magma_get_sbulge_nb_mgpu( magma_int_t /*m*/ )
     }
 }
 
-magma_int_t magma_get_dbulge_nb_mgpu( magma_int_t /*m*/ )
+magma_int_t magma_dbulge_get_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -928,7 +949,7 @@ magma_int_t magma_get_dbulge_nb_mgpu( magma_int_t /*m*/ )
     }
 }
 
-magma_int_t magma_get_cbulge_nb_mgpu( magma_int_t /*m*/ )
+magma_int_t magma_cbulge_get_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB
@@ -942,7 +963,7 @@ magma_int_t magma_get_cbulge_nb_mgpu( magma_int_t /*m*/ )
     }
 }
 
-magma_int_t magma_get_zbulge_nb_mgpu( magma_int_t /*m*/ )
+magma_int_t magma_zbulge_get_nb_mgpu( magma_int_t /*m*/ )
 {
     magma_int_t arch = magma_getdevice_arch();
     if ( arch >= 300 ) {       // 3.x Kepler + SB

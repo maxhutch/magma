@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 */
@@ -12,6 +12,7 @@
 #define MAGMA_ZBULGE_H
 
 #include "magma_types.h"
+#define COMPLEX
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,8 +21,8 @@ extern "C" {
 magma_int_t
 magma_zbulge_applyQ_v2(
     magma_side_t side, 
-    magma_int_t NE, magma_int_t N, 
-    magma_int_t NB, magma_int_t Vblksiz, 
+    magma_int_t NE, magma_int_t n, 
+    magma_int_t nb, magma_int_t Vblksiz, 
     magmaDoubleComplex_ptr dE, magma_int_t ldde, 
     magmaDoubleComplex *V, magma_int_t ldv, 
     magmaDoubleComplex *T, magma_int_t ldt, 
@@ -30,8 +31,8 @@ magma_zbulge_applyQ_v2(
 magma_int_t
 magma_zbulge_applyQ_v2_m(
     magma_int_t ngpu, magma_side_t side, 
-    magma_int_t NE, magma_int_t N, 
-    magma_int_t NB, magma_int_t Vblksiz, 
+    magma_int_t NE, magma_int_t n, 
+    magma_int_t nb, magma_int_t Vblksiz, 
     magmaDoubleComplex *E, magma_int_t lde, 
     magmaDoubleComplex *V, magma_int_t ldv, 
     magmaDoubleComplex *T, magma_int_t ldt, 
@@ -70,6 +71,7 @@ magma_ztrdtype1cbHLsym_withQ_v2(
     magma_int_t sweep, magma_int_t Vblksiz, 
     magmaDoubleComplex *work);
 
+
 void
 magma_ztrdtype2cbHLsym_withQ_v2(
     magma_int_t n, magma_int_t nb, 
@@ -79,6 +81,7 @@ magma_ztrdtype2cbHLsym_withQ_v2(
     magma_int_t st, magma_int_t ed, 
     magma_int_t sweep, magma_int_t Vblksiz, 
     magmaDoubleComplex *work);
+
 
 void
 magma_ztrdtype3cbHLsym_withQ_v2(
@@ -90,6 +93,43 @@ magma_ztrdtype3cbHLsym_withQ_v2(
     magma_int_t sweep, magma_int_t Vblksiz, 
     magmaDoubleComplex *work);
 
+
+
+
+void 
+magma_zlarfy(
+    magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda,
+    const magmaDoubleComplex *V, const magmaDoubleComplex *TAU,
+    magmaDoubleComplex *work);
+
+void
+magma_zhbtype1cb(magma_int_t n, magma_int_t nb,
+                magmaDoubleComplex *A, magma_int_t lda,
+                magmaDoubleComplex *V, magma_int_t LDV, 
+                magmaDoubleComplex *TAU,
+                magma_int_t st, magma_int_t ed, magma_int_t sweep, 
+                magma_int_t Vblksiz, magma_int_t wantz,
+                magmaDoubleComplex *work);
+
+void
+magma_zhbtype2cb(magma_int_t n, magma_int_t nb,
+                magmaDoubleComplex *A, magma_int_t lda,
+                magmaDoubleComplex *V, magma_int_t ldv,
+                magmaDoubleComplex *TAU,
+                magma_int_t st, magma_int_t ed, magma_int_t sweep,
+                magma_int_t Vblksiz, magma_int_t wantz,
+                magmaDoubleComplex *work);
+void
+magma_zhbtype3cb(magma_int_t n, magma_int_t nb,
+                magmaDoubleComplex *A, magma_int_t lda,
+                magmaDoubleComplex *V, magma_int_t ldv, 
+                magmaDoubleComplex *TAU,
+                magma_int_t st, magma_int_t ed, magma_int_t sweep, 
+                magma_int_t Vblksiz, magma_int_t wantz,
+                magmaDoubleComplex *work);
+
+
 magma_int_t
 magma_zunmqr_gpu_2stages(
     magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k,
@@ -97,6 +137,36 @@ magma_zunmqr_gpu_2stages(
     magmaDoubleComplex_ptr dC, magma_int_t lddc,
     magmaDoubleComplex_ptr dT, magma_int_t nb,
     magma_int_t *info);
+
+magma_int_t
+magma_zbulge_get_lq2( magma_int_t n, magma_int_t threads, magma_int_t wantz);
+
+magma_int_t 
+magma_zbulge_getstg2size(magma_int_t n, magma_int_t nb, magma_int_t wantz, 
+                         magma_int_t Vblksiz, magma_int_t ldv, magma_int_t ldt, 
+                         magma_int_t *blkcnt, magma_int_t *sizTAU2, 
+                         magma_int_t *sizT2, magma_int_t *sizV2);
+
+
+magma_int_t 
+magma_zbulge_getlwstg2(magma_int_t n, magma_int_t threads, magma_int_t wantz, 
+                       magma_int_t *Vblksiz, magma_int_t *ldv, magma_int_t *ldt, 
+                       magma_int_t *blkcnt, magma_int_t *sizTAU2, 
+                       magma_int_t *sizT2, magma_int_t *sizV2);
+
+
+void 
+magma_bulge_get_VTsiz(magma_int_t n, magma_int_t nb, magma_int_t threads, 
+        magma_int_t *Vblksiz, magma_int_t *ldv, magma_int_t *ldt);
+void 
+magma_zheevdx_getworksize(magma_int_t n, magma_int_t threads,
+        magma_int_t wantz, 
+        magma_int_t *lwmin, 
+        #ifdef COMPLEX
+        magma_int_t *lrwmin, 
+        #endif
+        magma_int_t *liwmin);
+
 
 // used only for old version and internal
 magma_int_t
@@ -116,12 +186,9 @@ magma_zungqr_2stage_gpu(
     magma_int_t nb,
     magma_int_t *info);
 
-magma_int_t
-magma_zbulge_get_lq2(
-    magma_int_t n, magma_int_t threads);
 
 #ifdef __cplusplus
 }
 #endif
-
+#undef COMPLEX
 #endif /* MAGMA_ZBULGE_H */

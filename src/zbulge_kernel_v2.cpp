@@ -12,7 +12,6 @@
  */
 
 #include "common_magma.h"
-#include "magma_bulge.h"
 
 #define PRECISION_z
 
@@ -31,9 +30,9 @@ magma_zlarfxsym_v2(
     magmaDoubleComplex *V, magmaDoubleComplex *TAU,
     magmaDoubleComplex *work)
 {
-/*
-    WORK (workspace) double complex array, dimension N
-*/
+    /*
+        WORK (workspace) double complex array, dimension N
+    */
 
     magma_int_t ione = 1;
     magmaDoubleComplex dtmp;
@@ -74,9 +73,9 @@ magma_ztrdtype1cbHLsym_withQ_v2(
     magma_int_t sweep, magma_int_t Vblksiz,
     magmaDoubleComplex *work)
 {
-/*
-    WORK (workspace) double complex array, dimension N
-*/
+    /*
+        WORK (workspace) double complex array, dimension N
+    */
 
     magma_int_t ione = 1;
     magma_int_t vpos, taupos, len, len2;
@@ -103,6 +102,7 @@ magma_ztrdtype1cbHLsym_withQ_v2(
 #undef A
 #undef V
 #undef TAU
+
 
 ///////////////////////////////////////////////////////////
 //                  TYPE 1-LPK Householder
@@ -198,4 +198,5 @@ magma_ztrdtype3cbHLsym_withQ_v2(
 #undef A
 #undef V
 #undef TAU
+
 ///////////////////////////////////////////////////////////

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
        @precisions normal z -> c d s
@@ -45,12 +45,12 @@ int main( int argc, char** argv )
     magma_storev_t storev[] = { MagmaColumnwise, MagmaRowwise  };
 
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
-    printf("    M     N     K   storev   side   direct   trans    ||R||_F / ||HC||_F\n");
-    printf("========================================================================\n");
+    printf("%%   M     N     K   storev   side   direct   trans    ||R||_F / ||HC||_F\n");
+    printf("%%=======================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       M = opts.msize[itest];
       N = opts.nsize[itest];
@@ -64,9 +64,9 @@ int main( int argc, char** argv )
       for( int iside = 0; iside < 2; ++iside ) {
       for( int idir  = 0; idir  < 2; ++idir  ) {
       for( int itran = 0; itran < 2; ++itran ) {
-        for( int iter = 0; iter < opts.niter; ++iter ) {            
-            ldc = ((M+31)/32)*32;
-            ldt = ((K+31)/32)*32;
+        for( int iter = 0; iter < opts.niter; ++iter ) {
+            ldc = magma_roundup( M, opts.align );  // multiple of 32 by default
+            ldt = magma_roundup( K, opts.align );  // multiple of 32 by default
             ldw = (side[iside] == MagmaLeft ? N : M);
             // (ldv, nv) get swapped later if rowwise
             ldv = (side[iside] == MagmaLeft ? M : N);

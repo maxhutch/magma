@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zgehrd_m.cpp normal z -> c, Fri Jan 30 19:00:19 2015
+       @generated from zgehrd_m.cpp normal z -> c, Tue Aug 25 16:35:19 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -62,9 +62,8 @@
 
     @param[in]
     lwork   INTEGER
-            The length of the array WORK.  LWORK >= max(1,N).
-            For optimum performance LWORK >= N*NB, where NB is the
-            optimal blocksize.
+            The length of the array WORK.  LWORK >= N*NB.
+            where NB is the optimal blocksize.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -164,7 +163,7 @@ magma_cgehrd_m(
         *info = -3;
     } else if (lda < max(1,n)) {
         *info = -5;
-    } else if (lwork < max(1,n) && ! lquery) {
+    } else if (lwork < iws && ! lquery) {
         *info = -8;
     }
     if (*info != 0) {
@@ -203,11 +202,12 @@ magma_cgehrd_m(
         data.streams[d] = NULL;
     }
     
+    // Now requires lwork >= iws; else dT won't be computed in unblocked code.
     // If not enough workspace, use unblocked code
-    if ( lwork < iws ) {
-        nb = 1;
-    }
-
+    //if ( lwork < iws ) {
+    //    nb = 1;
+    //}
+    
     if (nb == 1 || nb >= nh) {
         // Use unblocked code below
         i = ilo;
@@ -215,7 +215,7 @@ magma_cgehrd_m(
     else {
         // Use blocked code
         // allocate memory on GPUs for A and workspaces
-        ldda = ((n+31)/32)*32;
+        ldda = magma_roundup( n, 32 );
         min_lblocks = (n     / nb) / ngpu;
         max_lblocks = ((n-1) / nb) / ngpu + 1;
         last_dev    = (n     / nb) % ngpu;

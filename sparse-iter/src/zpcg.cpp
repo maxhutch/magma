@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
@@ -75,7 +75,7 @@ magma_zpcg(
     
     // solver variables
     magmaDoubleComplex alpha, beta;
-    double nom, nom0, r0, gammaold, gammanew, den, res;
+    double nom, nom0, r0, gammaold=1, gammanew, den, res;
 
     // local variables
     magmaDoubleComplex c_zero = MAGMA_Z_ZERO, c_one = MAGMA_Z_ONE;
@@ -101,10 +101,10 @@ magma_zpcg(
     magma_zcopy( dofs, h.dval, 1, p.dval, 1 );                    // p = h
     nom = MAGMA_Z_REAL( magma_zdotc(dofs, r.dval, 1, h.dval, 1) );
     CHECK( magma_z_spmv( c_one, A, p, c_zero, q, queue ));             // q = A p
-    den = MAGMA_Z_REAL( magma_zdotc(dofs, p.dval, 1, q.dval, 1) );// den = p dot q
+    den = MAGMA_Z_REAL( magma_zdotc(dofs, p.dval, 1, q.dval, 1) ); // den = p dot q
     solver_par->init_res = nom0;
     
-    if ( (r0 = nom * solver_par->epsilon) < ATOLERANCE )
+    if ( (r0 = nom * solver_par->rtol) < ATOLERANCE )
         r0 = ATOLERANCE;
     if ( nom < r0 ) {
         solver_par->final_res = solver_par->init_res;
@@ -139,7 +139,7 @@ magma_zpcg(
         gammanew = MAGMA_Z_REAL( magma_zdotc(dofs, r.dval, 1, h.dval, 1) );
                                                             // gn = < r,h>
 
-        if ( solver_par->numiter==1 ) {
+        if ( solver_par->numiter == 1 ) {
             magma_zcopy( dofs, h.dval, 1, p.dval, 1 );                    // p = h
         } else {
             beta = MAGMA_Z_MAKE(gammanew/gammaold, 0.);       // beta = gn/go
@@ -159,7 +159,7 @@ magma_zpcg(
         res = magma_dznrm2( dofs, r.dval, 1 );
         if ( solver_par->verbose > 0 ) {
             tempo2 = magma_sync_wtime( queue );
-            if ( (solver_par->numiter)%solver_par->verbose==0 ) {
+            if ( (solver_par->numiter)%solver_par->verbose == 0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
                         = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose]
@@ -167,8 +167,7 @@ magma_zpcg(
             }
         }
 
-
-        if (  res/nom0  < solver_par->epsilon ) {
+        if ( res/nom0 <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
     }
@@ -185,7 +184,7 @@ magma_zpcg(
         info = MAGMA_SUCCESS;
     } else if ( solver_par->init_res > solver_par->final_res ) {
         if ( solver_par->verbose > 0 ) {
-            if ( (solver_par->numiter)%solver_par->verbose==0 ) {
+            if ( (solver_par->numiter)%solver_par->verbose == 0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
                         = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose]
@@ -193,13 +192,14 @@ magma_zpcg(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->epsilon*solver_par->init_res ){
+        if( solver_par->iter_res < solver_par->rtol*solver_par->init_res ||
+            solver_par->iter_res < solver_par->atol ) {
             info = MAGMA_SUCCESS;
         }
     }
     else {
         if ( solver_par->verbose > 0 ) {
-            if ( (solver_par->numiter)%solver_par->verbose==0 ) {
+            if ( (solver_par->numiter)%solver_par->verbose == 0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
                         = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose]
@@ -220,5 +220,3 @@ cleanup:
     solver_par->info = info;
     return info;
 }   /* magma_zcg */
-
-

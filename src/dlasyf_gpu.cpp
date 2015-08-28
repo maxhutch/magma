@@ -1,15 +1,17 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zlahef_gpu.cpp normal z -> d, Fri Jan 30 19:00:17 2015
+       @generated from zlahef_gpu.cpp normal z -> d, Tue Aug 25 16:35:18 2015
 */
 
 #include "common_magma.h"
 #include "trace.h"
+
+#define REAL
 #define PRECISION_d
 
 
@@ -102,7 +104,7 @@
                  has been completed, but the block diagonal matrix D is
                  exactly singular.
   
-    @ingroup magma_dsytrf_comp
+    @ingroup magma_dsysv_aux
     ********************************************************************/
 extern "C" magma_int_t
 magma_dlasyf_gpu(
@@ -118,9 +120,6 @@ magma_dlasyf_gpu(
     double d_one   = 1.0;
     double d_eight = 8.0;
     double d_seven = 7.0;
-    #if defined(PRECISION_c)
-    float  f_zero  = 0.0;
-    #endif
     double c_one  =  MAGMA_D_ONE;
     double c_mone = -MAGMA_D_ONE;
     magma_int_t upper = (uplo == MagmaUpper);
@@ -142,7 +141,6 @@ magma_dlasyf_gpu(
     alpha = ( d_one+sqrt( d_seven ) ) / d_eight;
 
     if ( upper ) {
-
         /* Factorize the trailing columns of A using the upper triangle
            of A and working backwards, and compute the matrix W = U12*D
            for use in updating A11 (note that conjg(W) is actually stored)
@@ -153,7 +151,6 @@ magma_dlasyf_gpu(
 
         int k, kw = 0;
         for (k = n-1; k+1 > max(n-nb+1, nb); k -= kstep) {
-
             kw = nb - (n-k);
 
             /* Copy column K of A to column KW of W and update it */
@@ -161,10 +158,8 @@ magma_dlasyf_gpu(
             magmablasSetKernelStream( queues[0] );
             magma_dcopy( k+1, &dA( 0, k ), 1, &dW( 0, kw ), 1 );
             // set imaginary part of diagonal to be zero
-            #if defined(PRECISION_z) 
+            #if defined(COMPLEX)
             magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( k, kw ))+1,1, queues[0] );
-            #elif defined(PRECISION_c)
-            magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( k, kw ))+1,1, queues[0] );
             #endif
  
             if (k+1 < n) {
@@ -172,10 +167,8 @@ magma_dlasyf_gpu(
                              &dW( k, kw+1 ), lddw, c_one, &dW( 0, kw ), ione );
 
                 // set imaginary part of diagonal to be zero
-                #if defined(PRECISION_z) 
+                #if defined(COMPLEX)
                 magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( k, kw ))+1,1, queues[0] );
-                #elif defined(PRECISION_c)
-                magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( k, kw ))+1,1, queues[0] );
                 #endif
             }
 
@@ -191,7 +184,7 @@ magma_dlasyf_gpu(
             /* imax is the row-index of the largest off-diagonal element in
                column K, and colmax is its absolute value */
 
-            if( k > 0 ) {
+            if ( k > 0 ) {
                 magmablasSetKernelStream( queues[0] );
                 // magma is one-base
                 imax = magma_idamax( k, &dW( 0, kw ), 1 ) - 1;
@@ -201,51 +194,40 @@ magma_dlasyf_gpu(
                 colmax = d_zero;
             }
 
-            if( max( abs_akk, colmax ) == 0.0 ) {
-
+            if ( max( abs_akk, colmax ) == 0.0 ) {
                 /* Column K is zero: set INFO and continue */
-
                 if ( *info == 0 ) *info = k;
 
                 kp = k;
 
-                #if defined(PRECISION_z) 
+                #if defined(COMPLEX)
                 magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( k, k ))+1,1, queues[0] );
-                #elif defined(PRECISION_c)
-                magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dA( k, k ))+1,1, queues[0] );
                 #endif
             } else {
-                if( abs_akk >= alpha*colmax ) {
-
+                if ( abs_akk >= alpha*colmax ) {
                     /* no interchange, use 1-by-1 pivot block */
-
                     kp = k;
                 } else {
-
                     /* Copy column imax to column KW-1 of W and update it */
                     magmablasSetKernelStream( queues[0] );
                     magma_dcopy( imax+1, &dA( 0, imax ), 1, &dW( 0, kw-1 ), 1 );
-                    #if defined(PRECISION_z) 
+                    #if defined(COMPLEX)
                     magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( imax, kw-1 ))+1,1, queues[0] );
-                    #elif defined(PRECISION_c)
-                    magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( imax, kw-1 ))+1,1, queues[0] );
                     #endif
 
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    #if defined(COMPLEX)
                     magmablas_dlacpy_cnjg( k-imax, &dA( imax, imax+1 ), ldda, &dW( imax+1, kw-1 ), 1 );
                     #else
                     magma_dcopy( k-imax, &dA( imax, imax+1 ), ldda, &dW( imax+1, kw-1 ), 1 );
                     #endif
-                    if( k+1 < n ) {
+                    if ( k+1 < n ) {
                         magmablasSetKernelStream( queues[0] );
                         magma_dgemv( MagmaNoTrans, k+1, n-(k+1), c_mone,
                                      &dA( 0, k+1 ), ldda, &dW( imax, kw+1 ), lddw,
                                      c_one, &dW( 0, kw-1 ), ione );
 
-                        #if defined(PRECISION_z) 
+                        #if defined(COMPLEX)
                         magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( imax, kw-1 ))+1,1, queues[0] );
-                        #elif defined(PRECISION_c)
-                        magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( imax, kw-1 ))+1,1, queues[0] );
                         #endif
                     }
                     magma_dgetvector_async( 1, &dW( imax, kw-1 ), 1, &Zimax, 1, queues[0] );
@@ -263,26 +245,20 @@ magma_dlasyf_gpu(
                         rowmax = max( rowmax, MAGMA_D_ABS1( Z  ) );
                     }
 
-                    if( abs_akk >= alpha*colmax*( colmax / rowmax ) ) {
-
+                    if ( abs_akk >= alpha*colmax*( colmax / rowmax ) ) {
                         /* no interchange, use 1-by-1 pivot block */
-
                         kp = k;
                     } else if ( fabs( MAGMA_D_REAL( Zimax ) ) >= alpha*rowmax ) {
-
                         /* interchange rows and columns K and imax, use 1-by-1
                            pivot block */
-
                         kp = imax;
 
                         /* copy column KW-1 of W to column KW */
                         magmablasSetKernelStream( queues[0] );
                         magma_dcopy( k+1, &dW( 0, kw-1 ), 1, &dW( 0, kw ), 1 );
                     } else {
-
                         /* interchange rows and columns K-1 and imax, use 2-by-2
                            pivot block */
-
                         kp = imax;
                         kstep = 2;
                     }
@@ -292,8 +268,7 @@ magma_dlasyf_gpu(
 
                 /* Updated column kp is already stored in column kkW of W */
 
-                if( kp != kk ) {
-
+                if ( kp != kk ) {
                     /* Interchange rows kk and kp in last kk columns of A and W */
                     // note: row-swap A(:,kk)
                     magmablas_dswap( n-kk, &dA( kk, kk ),  ldda, &dA( kp, kk ),  ldda );
@@ -301,7 +276,7 @@ magma_dlasyf_gpu(
 
                     /* Copy non-updated column kk to column kp */
                     magmablasSetKernelStream( queues[0] );
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    #if defined(COMPLEX)
                     magmablas_dlacpy_cnjg( kk-kp-1, &dA( kp+1, kk ), 1, &dA( kp, kp+1 ), ldda );
                     #else
                     magma_dcopy( kk-kp-1, &dA( kp+1, kk ), 1, &dA( kp, kp+1 ), ldda );
@@ -309,23 +284,16 @@ magma_dlasyf_gpu(
 
                     // now A(kp,kk) should be A(kk,kk), and copy to A(kp,kp)
                     magma_dcopy( kp+1, &dA( 0, kk ), 1, &dA( 0, kp ), 1 );
-                    #if defined(PRECISION_z) 
+                    #if defined(COMPLEX)
                     magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( kp, kp ))+1,1, queues[0] );
-                    #elif defined(PRECISION_c)
-                    magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dA( kp, kp ))+1,1, queues[0] );
                     #endif
                 }
 
-                if( kstep == 1 ) {
-
+                if ( kstep == 1 ) {
                     /* 1-by-1 pivot block D(k): column KW of W now holds
-
                        W(k) = U(k)*D(k)
-
                        where U(k) is the k-th column of U
-
                        Store U(k) in column k of A */
-
                     magmablasSetKernelStream( queues[0] );
                     magma_dcopy( k+1, &dW( 0, kw ), 1, &dA( 0, k ), 1 );
                     if ( k > 0 ) {
@@ -336,45 +304,37 @@ magma_dlasyf_gpu(
 
                         /* Conjugate W(k) */
 
-                        #if defined(PRECISION_z) || defined(PRECISION_c)
+                        #if defined(COMPLEX)
                         magmablas_dlacpy_cnjg( k, &dW( 0, kw ),1, &dW( 0, kw ),1 );
                         #endif
                     }
                 } else {
-
                     /* 2-by-2 pivot block D(k): columns KW and KW-1 of W now
                        hold
-
                        ( W(k-1) W(k) ) = ( U(k-1) U(k) )*D(k)
-
                        where U(k) and U(k-1) are the k-th and (k-1)-th columns
                        of U */
-
                     magmablasSetKernelStream( queues[0] );
-                    if( k > 1 ) {
-
+                    if ( k > 1 ) {
                         /* Store U(k) and U(k-1) in columns k and k-1 of A */
-
                         magmablas_dlascl_2x2( MagmaUpper, k-1, &dW(0, kw-1), lddw, &dA(0,k-1), ldda, &iinfo );
- 
                     }
 
                     /* Copy D(k) to A */
-
                     magma_dcopymatrix( 2,2, &dW( k-1, kw-1 ), lddw, &dA( k-1, k-1 ), ldda );
 
                     /* Conjugate W(k) and W(k-1) */
 
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    #if defined(COMPLEX)
                     magmablas_dlacpy_cnjg( k,   &dW( 0, kw ),1, &dW( 0, kw ),1 );
                     magmablas_dlacpy_cnjg( k-1, &dW( 0, kw-1 ), 1, &dW( 0, kw-1 ), 1 );
                     #endif
-                } 
+                }
             }
 
             /* Store details of the interchanges in ipiv */
 
-            if( kstep == 1 ) {
+            if ( kstep == 1 ) {
                 ipiv[ k ] = 1+kp;
             } else {
                 ipiv[ k ] = -(1+kp);
@@ -394,72 +354,63 @@ magma_dlasyf_gpu(
             int jb = min( nb, k-j+1 );
 
             #ifdef SYMMETRIC_UPDATE
-            /* Update the upper triangle of the diagonal block */
-            for (int jj = j; jj < j + jb; jj++) {
-                #if defined(PRECISION_z) 
-                magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( jj, jj ))+1,1, queues[0] );
-                #elif defined(PRECISION_c)
-                magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dA( jj, jj ))+1,1, queues[0] );
-                #endif
-                magma_dgemv( MagmaNoTrans, jj-j+1, n-(k+1), c_mone,
-                             &dA( j, k+1 ), ldda, &dW( jj, kw+1 ), lddw, c_one,
-                             &dA( j, jj ), 1 );
-                #if defined(PRECISION_z) 
-                magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( jj, jj ))+1,1, queues[0] );
-                #elif defined(PRECISION_c)
-                magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dA( jj, jj ))+1,1, queues[0] );
-                #endif
-            }
-
-            /* Update the rectangular superdiagonal block */
-            magma_dgemm( MagmaNoTrans, MagmaTrans, j, jb, n-(k+1),
-                         c_mone, &dA( 0, k+1 ), ldda, &dW( j, kw+1 ), lddw,
-                         c_one, &dA( 0, j ), ldda );
+                /* Update the upper triangle of the diagonal block */
+                for (int jj = j; jj < j + jb; jj++) {
+                    #if defined(COMPLEX)
+                    magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( jj, jj ))+1,1, queues[0] );
+                    #endif
+                    magma_dgemv( MagmaNoTrans, jj-j+1, n-(k+1), c_mone,
+                                 &dA( j, k+1 ), ldda, &dW( jj, kw+1 ), lddw, c_one,
+                                 &dA( j, jj ), 1 );
+                    #if defined(COMPLEX)
+                    magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( jj, jj ))+1,1, queues[0] );
+                    #endif
+                }
+    
+                /* Update the rectangular superdiagonal block */
+                magma_dgemm( MagmaNoTrans, MagmaTrans, j, jb, n-(k+1),
+                             c_mone, &dA( 0, k+1 ), ldda, &dW( j, kw+1 ), lddw,
+                             c_one, &dA( 0, j ), ldda );
             #else
-            #if defined(PRECISION_z)
-            magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #elif defined(PRECISION_c)
-             magmablas_slaset(MagmaUpperLower, 1,jb, f_zero,f_zero, ((magmaFloat_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #endif
-            magma_dgemm( MagmaNoTrans, MagmaTrans, j+jb, jb, n-(k+1),
-                         c_mone, &dA( 0, k+1 ),  ldda,
-                                 &dW( j, kw+1 ), lddw,
-                         c_one,  &dA( 0, j ),    ldda );
-            #if defined(PRECISION_z)
-            magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #elif defined(PRECISION_c)
-            magmablas_slaset(MagmaUpperLower, 1,jb, f_zero,f_zero, ((magmaFloat_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #endif
+                #if defined(COMPLEX)
+                magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
+                #endif
+                magma_dgemm( MagmaNoTrans, MagmaTrans, j+jb, jb, n-(k+1),
+                             c_mone, &dA( 0, k+1 ),  ldda,
+                                     &dW( j, kw+1 ), lddw,
+                             c_one,  &dA( 0, j ),    ldda );
+                #if defined(COMPLEX)
+                magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
+                #endif
             #endif
         }
 
         /* Put U12 in standard form by partially undoing the interchanges
            in columns k+1:n */
 
-        for (int j = k+1; j < n;) {
+        for (int j = k+1; j < n; ) {
             int jj = j;
             int jp = ipiv[ j ];
-            if( jp < 0 ) {
+            if ( jp < 0 ) {
                 jp = -jp;
                 j = j + 1;
             }
             j = j + 1;
             jp = jp - 1;
-            if( jp != jj && j < n )
+            if ( jp != jj && j < n )
                 magmablas_dswap( n-j, &dA( jp, j ), ldda, &dA( jj, j ), ldda );
         }
 
         // copying the panel back to CPU
         magma_event_record( event[0], queues[0] );
-        magma_queue_wait_event( queues[1], event[0] ); 
+        magma_queue_wait_event( queues[1], event[0] );
         trace_gpu_start( 0, 1, "get", "get" );
         magma_dgetmatrix_async( n,n-(k+1), &dA(0,k+1),ldda, &A(0,k+1),lda, queues[1] );
 
         /* Set KB to the number of columns factorized */
         *kb = n - (k+1);
-
-    } else {
-
+    }
+    else {
         /* Factorize the leading columns of A using the lower triangle
            of A and working forwards, and compute the matrix W = L21*D
            for use in updating A22 (note that conjg(W) is actually stored)
@@ -468,7 +419,6 @@ magma_dlasyf_gpu(
 
         int k;
         for (k = 0; k < min(nb-1,n); k += kstep) {
-
             /* Copy column K of A to column K of W and update it */
 
             /* -------------------------------------------------------------- */
@@ -477,10 +427,8 @@ magma_dlasyf_gpu(
             magma_dcopy( n-k, &dA( k, k ), 1, &dW( k, k ), 1 );
 
             // set imaginary part of diagonal to be zero
-            #if defined(PRECISION_z)
+            #if defined(COMPLEX)
             magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( k, k ))+1,1, queues[0] );
-            #elif defined(PRECISION_c)
-            magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( k, k ))+1,1, queues[0] );
             #endif
             trace_gpu_end( 0, 0 );
             /* -------------------------------------------------------------- */
@@ -490,10 +438,8 @@ magma_dlasyf_gpu(
             magma_dgemv( MagmaNoTrans, n-k, k, c_mone, &dA( k, 0 ), ldda,
                          &dW( k, 0 ), lddw, c_one, &dW( k, k ), ione );
             // re-set imaginary part of diagonal to be zero
-            #if defined(PRECISION_z)
+            #if defined(COMPLEX)
             magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( k, k ))+1,1, queues[0] );
-            #elif defined(PRECISION_c)
-            magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( k, k ))+1,1, queues[0] );
             #endif
             trace_gpu_end( 0, 0 );
 
@@ -517,46 +463,38 @@ magma_dlasyf_gpu(
                 trace_gpu_end( 0, 0 );
                 magma_dgetvector( 1, &dW( imax, k ), 1, &Z, 1 );
                 colmax = MAGMA_D_ABS1( Z );
-
-            } else {
+            }
+            else {
                 colmax = d_zero;
             }
 
             if ( max( abs_akk, colmax ) == 0.0 ) {
-
                 /* Column K is zero: set INFO and continue */
 
                 if ( *info == 0 ) *info = k;
                 kp = k;
 
                 // make sure the imaginary part of diagonal is zero
-                #if defined(PRECISION_z)
+                #if defined(COMPLEX)
                 magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( k, k ))+1,1, queues[0] );
-                #elif defined(PRECISION_c)
-                magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dA( k, k ))+1,1, queues[0] );
                 #endif
             } else {
                 if ( abs_akk >= alpha*colmax ) {
-
                     /* no interchange, use 1-by-1 pivot block */
-
                     kp = k;
                 } else {
                     /* Copy column imax to column K+1 of W and update it */
-
                     magmablasSetKernelStream( queues[0] );
                     trace_gpu_start( 0, 0, "copy", "copy" );
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    #if defined(COMPLEX)
                     magmablas_dlacpy_cnjg( imax-k, &dA( imax, k ), ldda, &dW( k, k+1 ), 1 );
                     #else
                     magma_dcopy( imax-k, &dA( imax, k ), ldda, &dW( k, k+1 ), 1 );
                     #endif
 
                     magma_dcopy( n-imax, &dA( imax, imax ), 1, &dW( imax, k+1 ), 1 );
-                    #if defined(PRECISION_z)
+                    #if defined(COMPLEX)
                     magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( imax, k+1 ))+1,1, queues[0] );
-                    #elif defined(PRECISION_c)
-                    magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( imax, k+1 ))+1,1, queues[0] );
                     #endif
                     trace_gpu_end( 0, 0 );
 
@@ -564,10 +502,8 @@ magma_dlasyf_gpu(
                     trace_gpu_start( 0, 0, "gemv", "gemv" );
                     magma_dgemv( MagmaNoTrans, n-k, k, c_mone, &dA( k, 0 ), ldda,
                                  &dW( imax, 0 ), lddw, c_one, &dW( k, k+1 ), ione );
-                    #if defined(PRECISION_z)
+                    #if defined(COMPLEX)
                     magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dW( imax, k+1 ))+1,1, queues[0] );
-                    #elif defined(PRECISION_c)
-                    magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dW( imax, k+1 ))+1,1, queues[0] );
                     #endif
                     trace_gpu_end( 0, 0 );
 
@@ -594,11 +530,9 @@ magma_dlasyf_gpu(
                     }
 
                     if ( abs_akk >= alpha*colmax*( colmax / rowmax ) ) {
-
                         /* no interchange, use 1-by-1 pivot block */
                         kp = k;
                     } else if ( fabs( MAGMA_D_REAL( Zimax ) ) >= alpha*rowmax ) {
-
                         /* interchange rows and columns K and imax, use 1-by-1
                            pivot block */
                         kp = imax;
@@ -609,10 +543,8 @@ magma_dlasyf_gpu(
                         magma_dcopy( n-k, &dW( k, k+1 ), 1, &dW( k, k ), 1 );
                         trace_gpu_end( 0, 0 );
                     } else {
-
                         /* interchange rows and columns K+1 and imax, use 2-by-2
                            pivot block */
-
                         kp = imax;
                         kstep = 2;
                     }
@@ -623,22 +555,19 @@ magma_dlasyf_gpu(
                 /* Updated column kp is already stored in column kk of W */
 
                 if ( kp != kk ) {
-
                     /* Copy non-updated column kk to column kp */
 
                     /* ------------------------------------------------------------------ */
                     magmablasSetKernelStream( queues[0] );
                     trace_gpu_start( 0, 0, "copy", "copy" );
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    #if defined(COMPLEX)
                     magmablas_dlacpy_cnjg( kp-kk, &dA( kk, kk ), 1, &dA( kp, kk ), ldda );
                     #else
                     magma_dcopy( kp-kk, &dA( kk, kk ), 1, &dA( kp, kk ), ldda );
                     #endif
                     magma_dcopy( n-kp, &dA( kp, kk ), 1, &dA( kp, kp ), 1 );
-                    #if defined(PRECISION_z)
+                    #if defined(COMPLEX)
                     magma_dsetvector_async( 1, &d_zero,1, ((magmaDouble_ptr)&dA( kp, kp ))+1,1, queues[0] );
-                    #elif defined(PRECISION_c)
-                    magma_ssetvector_async( 1, &f_zero,1, ((magmaFloat_ptr)&dA( kp, kp ))+1,1, queues[0] );
                     #endif
                     trace_gpu_end( 0, 0 );
                     /* ------------------------------------------------------------------ */
@@ -652,13 +581,9 @@ magma_dlasyf_gpu(
                 }
 
                 if ( kstep == 1 ) {
-
                     /* 1-by-1 pivot block D(k): column k of W now holds
-
                        W(k) = L(k)*D(k)
-
                        where L(k) is the k-th column of L
-
                        Store L(k) in column k of A */
                     magmablasSetKernelStream( queues[0] );
                     trace_gpu_start( 0, 0, "copy", "copy" );
@@ -674,19 +599,15 @@ magma_dlasyf_gpu(
                         trace_gpu_end( 0, 0 );
 
                         /* Conjugate W(k) */
-                        #if defined(PRECISION_z) || defined(PRECISION_c)
+                        #if defined(COMPLEX)
                         magmablas_dlacpy_cnjg( (n-1)-k, &dW( k+1, k ),1, &dW( k+1, k ),1 );
                         #endif
                     }
                 } else {
-
                     /* 2-by-2 pivot block D(k): columns k and k+1 of W now hold
-
                      ( W(k) W(k+1) ) = ( L(k) L(k+1) )*D(k)
-
                     where L(k) and L(k+1) are the k-th and (k+1)-th columns
                     of L */
-
                     magmablasSetKernelStream( queues[0] );
                     trace_gpu_start( 0, 0, "scal", "scal-2" );
                     if (n > k+2)
@@ -696,7 +617,7 @@ magma_dlasyf_gpu(
                     magma_dcopymatrix( 2,2, &dW( k, k ), lddw, &dA( k, k ), ldda );
 
                     /* Conjugate W(k) and W(k+1) */
-                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    #if defined(COMPLEX)
                     magmablas_dlacpy_cnjg( (n-1)-k,   &dW( k+1, k ),1, &dW( k+1, k ),1 );
                     magmablas_dlacpy_cnjg( (n-1)-k-1, &dW( k+2, k+1 ), 1, &dW( k+2, k+1 ), 1 );
                     #endif
@@ -729,43 +650,38 @@ magma_dlasyf_gpu(
             trace_gpu_start( 0, 0, "gemm", "gemm" );
             magmablasSetKernelStream( queues[0] );
             #ifdef SYMMETRIC_UPDATE
-            for (int jj = j; jj < j + jb; jj++) {
-                int jnb = j + jb - jj;
+                for (int jj = j; jj < j + jb; jj++) {
+                    int jnb = j + jb - jj;
+    
+                    /* -------------------------------------------------------- */
+                    magma_dgemv( MagmaNoTrans, jnb, k, c_mone, &dA( jj, 0 ), ldda,
+                                 &dW( jj, 0 ), lddw, c_one, &dA( jj, jj ), ione );
+                    /* -------------------------------------------------------- */
+                }
 
-                /* -------------------------------------------------------- */
-                magma_dgemv( MagmaNoTrans, jnb, k, c_mone, &dA( jj, 0 ), ldda,
-                             &dW( jj, 0 ), lddw, c_one, &dA( jj, jj ), ione );
-                /* -------------------------------------------------------- */
-            }
-
-            /* Update the rectangular subdiagonal block */
-
-            if ( j+jb < n ) {
-                int nk = n - (j+jb);
-
-                /* -------------------------------------------- */
-                magmablasSetKernelStream( queues[0] );
-                magma_dgemm( MagmaNoTrans, MagmaTrans, nk, jb, k,
-                             c_mone, &dA( j+jb, 0 ), ldda,
-                                     &dW( j, 0 ),    lddw,
-                             c_one,  &dA( j+jb, j ), ldda );
-                /* ------------------------------------------- */
-            }
+                /* Update the rectangular subdiagonal block */
+                if ( j+jb < n ) {
+                    int nk = n - (j+jb);
+    
+                    /* -------------------------------------------- */
+                    magmablasSetKernelStream( queues[0] );
+                    magma_dgemm( MagmaNoTrans, MagmaTrans, nk, jb, k,
+                                 c_mone, &dA( j+jb, 0 ), ldda,
+                                         &dW( j, 0 ),    lddw,
+                                 c_one,  &dA( j+jb, j ), ldda );
+                    /* ------------------------------------------- */
+                }
             #else
-            #if defined(PRECISION_z)
-            magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #elif defined(PRECISION_c)
-            magmablas_slaset(MagmaUpperLower, 1,jb, f_zero,f_zero, ((magmaFloat_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #endif
-            magma_dgemm( MagmaNoTrans, MagmaTrans, n-j, jb, k,
-                         c_mone, &dA( j, 0 ), ldda,
-                                 &dW( j, 0 ), lddw,
-                         c_one,  &dA( j, j ), ldda );
-            #if defined(PRECISION_z)
-            magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #elif defined(PRECISION_c)
-            magmablas_slaset(MagmaUpperLower, 1,jb, f_zero,f_zero, ((magmaFloat_ptr)&dA( j, j ))+1, 2*(1+ldda) );
-            #endif
+                #if defined(COMPLEX)
+                magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
+                #endif
+                magma_dgemm( MagmaNoTrans, MagmaTrans, n-j, jb, k,
+                             c_mone, &dA( j, 0 ), ldda,
+                                     &dW( j, 0 ), lddw,
+                             c_one,  &dA( j, j ), ldda );
+                #if defined(COMPLEX)
+                magmablas_dlaset(MagmaUpperLower, 1,jb, d_zero,d_zero, ((magmaDouble_ptr)&dA( j, j ))+1, 2*(1+ldda) );
+                #endif
             #endif
             trace_gpu_end( 0, 0 );
         }

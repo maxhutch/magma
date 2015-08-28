@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Mark Gates
 
-       @generated from zunmlq.cpp normal z -> s, Fri Jan 30 19:00:16 2015
+       @generated from zunmlq.cpp normal z -> s, Tue Aug 25 16:35:16 2015
 
 */
 #include "common_magma.h"
@@ -201,7 +201,7 @@ magma_sormlq(
          * nb*nb  for dT
          * lddc*n for dC.
          */
-        magma_int_t lddc = ((m+31)/32)*32;
+        magma_int_t lddc = magma_roundup( m, 32 );
         magmaFloat_ptr dwork, dV, dT, dC;
         magma_smalloc( &dwork, (nw + nq + nb)*nb + lddc*n );
         if ( dwork == NULL ) {
@@ -266,9 +266,9 @@ magma_sormlq(
             /* 1) set upper triangle of panel in A to identity,
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
-            spanel_to_q( MagmaLower, ib, A(i,i), lda, T2 );
+            magma_spanel_to_q( MagmaLower, ib, A(i,i), lda, T2 );
             magma_ssetmatrix( ib, nq_i,  A(i,i), lda, dV(0,0), ib );
-            sq_to_panel( MagmaLower, ib, A(i,i), lda, T2 );
+            magma_sq_to_panel( MagmaLower, ib, A(i,i), lda, T2 );
             
             if (left) {
                 /* H or H**H is applied to C(i:m,1:n) */

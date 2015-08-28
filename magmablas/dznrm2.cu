@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
 
@@ -46,7 +46,7 @@ magmablas_dznrm2_kernel( int m, magmaDoubleComplex *dA, int ldda, double *dxnorm
     sum[tx] = lsum;
     magma_sum_reduce< BLOCK_SIZE >( tx, sum );
     
-    if (tx==0)
+    if (tx == 0)
         dxnorm[blockIdx.x] = sqrt(sum[0]);
 }
 
@@ -80,7 +80,7 @@ magmablas_dznrm2_check_kernel( int m, magmaDoubleComplex *dA, int ldda, double *
     sum[tx] = lsum;
     magma_sum_reduce< BLOCK_SIZE >( tx, sum );
     
-    if (tx==0)
+    if (tx == 0)
         dxnorm[blockIdx.x] = sqrt(sum[0]);
 }
 
@@ -225,7 +225,7 @@ magmablas_dznrm2_row_check_adjust(
     magmaDoubleComplex_ptr dC, magma_int_t lddc,
     magmaDouble_ptr dlsticc)
 {
-    int nblocks = (k+BS-1)/BS;
+    int nblocks = magma_ceildiv( k, BS );
     magma_dznrm2_row_check_adjust_kernel<<< nblocks, BS >>> (k, tol, dxnorm, dxnorm2, dC, lddc, dlsticc);
 }
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zgesvd.cpp normal z -> s, Fri Jan 30 19:00:26 2015
+       @generated from testing_zgesvd.cpp normal z -> s, Tue Aug 25 16:35:28 2015
        @author Mark Gates
 
 */
@@ -45,7 +45,7 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
     
@@ -55,11 +55,11 @@ int main( int argc, char** argv)
     magma_vec_t jobs[] = { MagmaNoVec, MagmaSomeVec, MagmaOverwriteVec, MagmaAllVec };
     
     if ( opts.check && ! opts.all && (jobu == MagmaNoVec || jobvt == MagmaNoVec)) {
-        printf( "NOTE: some checks require that singular vectors are computed;\n"
-                "      set both jobu (option -U[NASO]) and jobvt (option -V[NASO]) to be S, O, or A.\n\n" );
+        printf( "%% NOTE: some checks require that singular vectors are computed;\n"
+                "%%       set both jobu (option -U[NASO]) and jobvt (option -V[NASO]) to be S, O, or A.\n\n" );
     }
-    printf("jobu jobv     M     N  CPU time (sec)  GPU time (sec)  |S1-S2|/.  |A-USV'|/. |I-UU'|/M  |I-VV'|/N  S sorted\n");
-    printf("===========================================================================================================\n");
+    printf("%% jobu jobv   M     N  CPU time (sec)  GPU time (sec)  |S1-S2|/.  |A-USV'|/. |I-UU'|/M  |I-VV'|/N  S sorted\n");
+    printf("%%==========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int ijobu = 0; ijobu < 4; ++ijobu ) {
         for( int ijobv = 0; ijobv < 4; ++ijobv ) {
@@ -89,7 +89,7 @@ int main( int argc, char** argv)
             n2 = lda*N;
             nb = magma_get_sgesvd_nb(N);
             
-            // query or use formula for workspace size 
+            // query or use formula for workspace size
             switch( opts.svd_work ) {
                 case 0: {  // query for workspace size
                     lwork = -1;
@@ -118,7 +118,7 @@ int main( int argc, char** argv)
                 
                 default: {
                     fprintf( stderr, "Error: unknown option svd_work %d\n", (int) opts.svd_work );
-                    exit(1);
+                    return -1;
                     break;
                 }
             }
@@ -201,7 +201,7 @@ int main( int argc, char** argv)
                 
                 // sbdt01 and sort01 need max(M,N), depending
                 float *rwork_err;
-                TESTING_MALLOC_CPU( rwork_err, float, max(M,N) );                
+                TESTING_MALLOC_CPU( rwork_err, float, max(M,N) );
                 
                 if ( U2 != NULL && VT2 != NULL ) {
                     // since KD=0 (3rd arg), E is not referenced so pass NULL (9th arg)
@@ -229,7 +229,7 @@ int main( int argc, char** argv)
                 }
                 
                 result[3] = 0.;
-                for(int j=0; j < min_mn-1; j++){
+                for (int j=0; j < min_mn-1; j++) {
                     if ( S1[j] < S1[j+1] )
                         result[3] = 1.;
                     if ( S1[j] < 0. )
@@ -285,9 +285,9 @@ int main( int argc, char** argv)
                 if ( result[0] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[0]); }
                 if ( result[1] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[1]); }
                 if ( result[2] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[2]); }
-                int success = (result[0] < tol) && (result[1] < tol) && (result[2] < tol) && (result[3] == 0.) && (result[4] < tol);
-                printf("   %3s   %s\n", (result[3] == 0. ? "yes" : "no"), (success ? "ok" : "failed"));
-                status += ! success;
+                bool okay = (result[0] < tol) && (result[1] < tol) && (result[2] < tol) && (result[3] == 0.) && (result[4] < tol);
+                printf("   %3s   %s\n", (result[3] == 0. ? "yes" : "no"), (okay ? "ok" : "failed"));
+                status += ! okay;
             }
             else {
                 printf("\n");

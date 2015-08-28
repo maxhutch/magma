@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -116,7 +116,7 @@ magmablas_zsymmetrize_q(
     
     
     dim3 threads( NB );
-    dim3 grid( (m + NB - 1)/NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
     
     if ( uplo == MagmaUpper ) {
         zsymmetrize_upper<<< grid, threads, 0, queue >>>( m, dA, ldda );

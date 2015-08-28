@@ -7,12 +7,11 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel_v2.cpp normal z -> d, Fri Jan 30 19:00:17 2015
+ *     @generated from zbulge_kernel_v2.cpp normal z -> d, Tue Aug 25 16:35:18 2015
  *
  */
 
 #include "common_magma.h"
-#include "magma_bulge.h"
 
 #define PRECISION_d
 
@@ -31,9 +30,9 @@ magma_dlarfxsym_v2(
     double *V, double *TAU,
     double *work)
 {
-/*
-    WORK (workspace) double real array, dimension N
-*/
+    /*
+        WORK (workspace) double real array, dimension N
+    */
 
     magma_int_t ione = 1;
     double dtmp;
@@ -74,9 +73,9 @@ magma_dtrdtype1cbHLsym_withQ_v2(
     magma_int_t sweep, magma_int_t Vblksiz,
     double *work)
 {
-/*
-    WORK (workspace) double real array, dimension N
-*/
+    /*
+        WORK (workspace) double real array, dimension N
+    */
 
     magma_int_t ione = 1;
     magma_int_t vpos, taupos, len, len2;
@@ -103,6 +102,7 @@ magma_dtrdtype1cbHLsym_withQ_v2(
 #undef A
 #undef V
 #undef TAU
+
 
 ///////////////////////////////////////////////////////////
 //                  TYPE 1-LPK Householder
@@ -198,4 +198,5 @@ magma_dtrdtype3cbHLsym_withQ_v2(
 #undef A
 #undef V
 #undef TAU
+
 ///////////////////////////////////////////////////////////

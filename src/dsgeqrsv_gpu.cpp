@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zcgeqrsv_gpu.cpp mixed zc -> ds, Fri Jan 30 19:00:13 2015
+       @generated from zcgeqrsv_gpu.cpp mixed zc -> ds, Tue Aug 25 16:35:14 2015
 
 */
 #include "common_magma.h"
@@ -177,7 +177,7 @@ magma_dsgeqrsv_gpu(
      * Allocate temporary buffers
      */
     /* dworks(dSA + dSX + dST) */
-    size = lddsa*n + lddsx*nrhs + ( 2*minmn + ((n+31)/32)*32 )*nb;
+    size = lddsa*n + lddsx*nrhs + ( 2*minmn + magma_roundup( n, 32 ) )*nb;
     if (MAGMA_SUCCESS != magma_smalloc( &dworks, size )) {
         fprintf(stderr, "Allocation of dworks failed (%d)\n", (int) size);
         *info = MAGMA_ERR_DEVICE_ALLOC;
@@ -371,7 +371,7 @@ FALLBACK:
      */
     /* dworkd = dT for dgeqrf */
     nb   = magma_get_dgeqrf_nb( m );
-    size = (2*min(m, n) + (n+31)/32*32 )*nb;
+    size = (2*min(m, n) + magma_roundup( n, 32 ) )*nb;
     if ( size > ldworkd ) {
         magma_free( dworkd );
         if (MAGMA_SUCCESS != magma_dmalloc( &dworkd, size )) {

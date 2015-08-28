@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zjacobisetup.cu normal z -> s, Sun May  3 11:22:58 2015
+       @generated from zjacobisetup.cu normal z -> s, Tue Aug 25 16:35:30 2015
        @author Hartwig Anzt
 
 */
@@ -22,9 +22,9 @@ svjacobisetup_gpu(  int num_rows,
                     float *b, 
                     float *d, 
                     float *c,
-                    float *x){
-
-    int row = blockDim.x * blockIdx.x + threadIdx.x ;
+                    float *x)
+{
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
 
     if(row < num_rows ){
         for( int i=0; i<num_vecs; i++ ){
@@ -105,9 +105,9 @@ sjacobidiagscal_kernel(  int num_rows,
                          int num_vecs, 
                     float *b, 
                     float *d, 
-                    float *c){
-
-    int row = blockDim.x * blockIdx.x + threadIdx.x ;
+                    float *c)
+{
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
 
     if(row < num_rows ){
         for( int i=0; i<num_vecs; i++)
@@ -188,9 +188,9 @@ sjacobiupdate_kernel(  int num_rows,
                     float *t, 
                     float *b, 
                     float *d, 
-                    float *x){
-
-    int row = blockDim.x * blockIdx.x + threadIdx.x ;
+                    float *x)
+{
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
 
     if(row < num_rows ){
         for( int i=0; i<num_cols; i++)
@@ -210,14 +210,6 @@ sjacobiupdate_kernel(  int num_rows,
 
     Arguments
     ---------
-
-    @param[in]
-    num_rows    magma_int_t
-                number of rows
-                
-    @param[in]
-    num_cols    magma_int_t
-                number of cols
                 
     @param[in]
     t           magma_s_matrix
@@ -249,7 +241,6 @@ magma_sjacobiupdate(
     magma_s_matrix *x,
     magma_queue_t queue )
 {
-
     dim3 grid( magma_ceildiv( t.num_rows, BLOCK_SIZE ));
     magma_int_t threads = BLOCK_SIZE;
     sjacobiupdate_kernel<<< grid, threads, 0 >>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
@@ -276,11 +267,9 @@ sjacobispmvupdate_kernel(
     float *t, 
     float *b, 
     float *d, 
-    float *x ){
-
-
-
-    int row = blockDim.x * blockIdx.x + threadIdx.x ;
+    float *x )
+{
+    int row = blockDim.x * blockIdx.x + threadIdx.x;
     int j;
 
     if(row<num_rows){
@@ -352,9 +341,10 @@ magma_sjacobispmvupdate(
     magma_s_matrix *x,
     magma_queue_t queue )
 {
-
     // local variables
-    float c_zero = MAGMA_S_ZERO, c_one = MAGMA_S_ONE;
+    //float c_zero = MAGMA_S_ZERO;
+    //float c_one = MAGMA_S_ONE;
+
     dim3 grid( magma_ceildiv( t.num_rows, BLOCK_SIZE ));
     magma_int_t threads = BLOCK_SIZE;
 
@@ -365,7 +355,113 @@ magma_sjacobispmvupdate(
         // merged in one implies asynchronous update
         sjacobispmvupdate_kernel<<< grid, threads, 0 >>>
             ( t.num_rows, t.num_cols, A.dval, A.drow, A.dcol, t.dval, b.dval, d.dval, x->dval );
+    }
 
+    return MAGMA_SUCCESS;
+}
+
+
+
+
+__global__ void 
+sjacobispmvupdate_bw_kernel(  
+    int num_rows,
+    int num_cols, 
+    float * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    float *t, 
+    float *b, 
+    float *d, 
+    float *x )
+{
+    int row_tmp = blockDim.x * blockIdx.x + threadIdx.x;
+    int row = num_rows-1 - row_tmp;
+    int j;
+
+    if( row>-1 ){
+        float dot = MAGMA_S_ZERO;
+        int start = drowptr[ row ];
+        int end = drowptr[ row+1 ];
+        for( int i=0; i<num_cols; i++){
+            for( j=start; j<end; j++){
+                dot += dval[ j ] * x[ dcolind[j]+i*num_rows ];
+            }
+            x[row+i*num_rows] += (b[row+i*num_rows]-dot) * d[row];
+        }
+    }
+}
+
+
+
+
+
+/**
+    Purpose
+    -------
+
+    Updates the iteration vector x for the Jacobi iteration
+    according to
+        x=x+d.*(b-Ax)
+    This kernel processes the thread blocks in reversed order.
+
+    Arguments
+    ---------
+
+    @param[in]
+    maxiter     magma_int_t
+                number of Jacobi iterations   
+                
+    @param[in]
+    A           magma_s_matrix
+                system matrix
+                
+    @param[in]
+    t           magma_s_matrix
+                workspace
+                
+    @param[in]
+    b           magma_s_matrix
+                RHS b
+                
+    @param[in]
+    d           magma_s_matrix
+                vector with diagonal entries
+
+    @param[out]
+    x           magma_s_matrix*
+                iteration vector
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_s
+    ********************************************************************/
+
+extern "C" magma_int_t
+magma_sjacobispmvupdate_bw(
+    magma_int_t maxiter,
+    magma_s_matrix A,
+    magma_s_matrix t, 
+    magma_s_matrix b, 
+    magma_s_matrix d, 
+    magma_s_matrix *x,
+    magma_queue_t queue )
+{
+    // local variables
+    //float c_zero = MAGMA_S_ZERO;
+    //float c_one = MAGMA_S_ONE;
+
+    dim3 grid( magma_ceildiv( t.num_rows, BLOCK_SIZE ));
+    magma_int_t threads = BLOCK_SIZE;
+
+    for( magma_int_t i=0; i<maxiter; i++ ) {
+        // distinct routines imply synchronization
+        // magma_s_spmv( c_one, A, *x, c_zero, t, queue );                // t =  A * x
+        // sjacobiupdate_kernel<<< grid, threads, 0 >>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
+        // merged in one implies asynchronous update
+        sjacobispmvupdate_bw_kernel<<< grid, threads, 0 >>>
+            ( t.num_rows, t.num_cols, A.dval, A.drow, A.dcol, t.dval, b.dval, d.dval, x->dval );
     }
 
     return MAGMA_SUCCESS;
@@ -375,8 +471,137 @@ magma_sjacobispmvupdate(
 
 
 
+__global__ void 
+sjacobispmvupdateselect_kernel(  
+    int num_rows,
+    int num_cols, 
+    int num_updates, 
+    magma_index_t * indices, 
+    float * dval, 
+    magma_index_t * drowptr, 
+    magma_index_t * dcolind,
+    float *t, 
+    float *b, 
+    float *d, 
+    float *x,
+    float *y )
+{
+    int idx = blockDim.x * blockIdx.x + threadIdx.x;
+    int j;
+
+    if(  idx<num_updates){
+        int row = indices[ idx ];
+        printf(" ");    
+        //if( row < num_rows ){
+        float dot = MAGMA_S_ZERO;
+        int start = drowptr[ row ];
+        int end = drowptr[ row+1 ];
+        for( int i=0; i<num_cols; i++){
+            for( j=start; j<end; j++){
+                dot += dval[ j ] * x[ dcolind[j]+i*num_rows ];
+            }
+            x[row+i*num_rows] = x[row+i*num_rows] + (b[row+i*num_rows]-dot) * d[row];
+            
+            //float add = (b[row+i*num_rows]-dot) * d[row];
+            //#if defined(PRECISION_s) //|| defined(PRECISION_d)
+            //    atomicAdd( x + row + i*num_rows, add );  
+            //#endif
+            // ( unsigned int* address, unsigned int val);
+        //}
+        }
+    }
+}
 
 
+/**
+    Purpose
+    -------
+
+    Updates the iteration vector x for the Jacobi iteration
+    according to
+        x=x+d.*(b-Ax)
+        
+    This kernel allows for overlapping domains: the indices-array contains
+    the locations that are updated. Locations may be repeated to simulate
+    overlapping domains.
 
 
+    Arguments
+    ---------
 
+    @param[in]
+    maxiter     magma_int_t
+                number of Jacobi iterations
+                
+    @param[in]
+    num_updates magma_int_t
+                number of updates - length of the indices array
+                    
+    @param[in]
+    indices     magma_index_t*
+                indices, which entries of x to update
+                
+    @param[in]
+    A           magma_s_matrix
+                system matrix
+                
+    @param[in]
+    t           magma_s_matrix
+                workspace
+                
+    @param[in]
+    b           magma_s_matrix
+                RHS b
+                
+    @param[in]
+    d           magma_s_matrix
+                vector with diagonal entries
+   
+    @param[in]
+    tmp         magma_s_matrix
+                workspace
+
+    @param[out]
+    x           magma_s_matrix*
+                iteration vector
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_s
+    ********************************************************************/
+
+extern "C" magma_int_t
+magma_sjacobispmvupdateselect(
+    magma_int_t maxiter,
+    magma_int_t num_updates,
+    magma_index_t *indices,
+    magma_s_matrix A,
+    magma_s_matrix t, 
+    magma_s_matrix b, 
+    magma_s_matrix d, 
+    magma_s_matrix tmp, 
+    magma_s_matrix *x,
+    magma_queue_t queue )
+{
+    // local variables
+    //float c_zero = MAGMA_S_ZERO
+    //float c_one = MAGMA_S_ONE;
+    
+    //magma_s_matrix swp;
+
+    dim3 grid( magma_ceildiv( num_updates, BLOCK_SIZE ));
+    magma_int_t threads = BLOCK_SIZE;
+    printf("num updates:%d %d %d\n", int(num_updates), int(threads), int(grid.x) );
+
+    for( magma_int_t i=0; i<maxiter; i++ ) {
+        sjacobispmvupdateselect_kernel<<< grid, threads, 0 >>>
+            ( t.num_rows, t.num_cols, num_updates, indices, A.dval, A.drow, A.dcol, t.dval, b.dval, d.dval, x->dval, tmp.dval );
+        magma_device_sync();
+        //swp.dval = x->dval;
+        //x->dval = tmp.dval;
+        //tmp.dval = swp.dval;
+    }
+    
+    return MAGMA_SUCCESS;
+}

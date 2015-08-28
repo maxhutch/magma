@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zhemv_mgpu.cpp normal z -> s, Fri Jan 30 19:00:23 2015
+       @generated from testing_zhemv_mgpu.cpp normal z -> s, Tue Aug 25 16:35:25 2015
        
        @author Mark Gates
 */
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     magma_int_t     status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     float tol = opts.tolerance * lapackf77_slamch("E");
 
@@ -70,11 +70,11 @@ int main(int argc, char **argv)
     magma_int_t offsets[] = { 0, 1, 31, 32, 33, 63, 64, 65, 100, 200 };
     magma_int_t noffsets = sizeof(offsets) / sizeof(*offsets);
     
-    printf("uplo = %s, ngpu %d, block size = %d, offset %d\n",
+    printf("%% uplo = %s, ngpu %d, block size = %d, offset %d\n",
             lapack_uplo_const(opts.uplo), (int) opts.ngpu, (int) nb, (int) offset );
-    printf( "                  BLAS                CUBLAS              MAGMA 1 GPU         MAGMA MGPU       Error rel  Error rel\n"
-            "    N  offset     Gflop/s (msec)      Gflop/s (msec)      Gflop/s (msec)      Gflop/s (msec)   to CUBLAS  to LAPACK\n"
-            "===================================================================================================================\n" );
+    printf( "%%                 BLAS                CUBLAS              MAGMA 1 GPU         MAGMA MGPU       Error rel  Error rel\n"
+            "%%   N  offset     Gflop/s (msec)      Gflop/s (msec)      Gflop/s (msec)      Gflop/s (msec)   to CUBLAS  to LAPACK\n"
+            "%%==================================================================================================================\n" );
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       
       // comment out these two lines & end of loop to test a specific offset
@@ -85,12 +85,12 @@ int main(int argc, char **argv)
             N       = opts.nsize[itest];
             Noffset = N + offset;
             lda     = Noffset;
-            ldda    = ((Noffset+31)/32)*32;
+            ldda    = magma_roundup( Noffset, opts.align );  // multiple of 32 by default
             matsize = Noffset*ldda;
             vecsize = (Noffset-1)*incx + 1;
             gflops  = FLOPS_SSYMV( N ) / 1e9;
             
-            blocks = (N + (offset % nb) - 1)/nb + 1;
+            blocks = magma_ceildiv( N + (offset % nb), nb );
             lhwork = N*opts.ngpu;
             ldwork = ldda*(blocks + 1);
 
@@ -238,7 +238,7 @@ int main(int argc, char **argv)
             
             /* =====================================================================
                Compute the Difference Cublas vs. Magma
-               =================================================================== */            
+               =================================================================== */
             error = lapackf77_slange( "F", &Noffset, &ione, Ycublas, &Noffset, work );
             blasf77_saxpy( &Noffset, &c_neg_one, Ymagma, &incx, Ycublas, &incx );
             error = lapackf77_slange( "F", &Noffset, &ione, Ycublas, &Noffset, work ) / error;
@@ -293,7 +293,6 @@ int main(int argc, char **argv)
       // comment out these two lines line & top of loop test a specific offset
       }  // end for ioffset
       printf( "\n" );
-      
     }
     
     for( dev=0; dev < opts.ngpu; ++dev ) {

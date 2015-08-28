@@ -1,0 +1,106 @@
+numactl --interleave=all ./testing_zheevdx_2stage -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevdx_2stage [options] [-h|--help]
+
+using: itype = 1, jobz = No vectors, range = All, uplo = Lower, check = 0, fraction = 1.0000
+    N     M  GPU Time (sec)  ||I-Q'Q||/.  ||A-QDQ'||/.  ||D-D_magma||/.
+=======================================================================
+  100     0     0.0001      
+ 1000  1000     0.3705      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   10     0     0.0002      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   20     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   30     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   40     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   50     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   60     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   70     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   80     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+   90     0     0.0000      
+On entry to magma_zheevdx_2stage, parameter 14 had an illegal value (info = -14)
+  100     0     0.0000      
+  200   200     0.0068      
+  300   300     0.0415      
+  400   400     0.0791      
+  500   500     0.1287      
+  600   600     0.1797      
+  700   700     0.2359      
+  800   800     0.2890      
+  900   900     0.3333      
+ 1000  1000     0.3589      
+ 2000  2000     0.8954      
+ 3000  3000     1.7160      
+ 4000  4000     2.5617      
+ 5000  5000     3.6103      
+ 6000  6000     4.9139      
+ 7000  7000     6.5160      
+ 8000  8000     8.4061      
+ 9000  9000    10.5946      
+10000 10000    13.3940      
+12000 12000    20.1843      
+14000 14000    30.0964      
+16000 16000    41.2036      
+18000 18000    56.8361      
+20000 20000    73.6939      
+
+numactl --interleave=all ./testing_zheevdx_2stage -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_zheevdx_2stage [options] [-h|--help]
+
+using: itype = 1, jobz = Vectors needed, range = All, uplo = Lower, check = 0, fraction = 1.0000
+    N     M  GPU Time (sec)  ||I-Q'Q||/.  ||A-QDQ'||/.  ||D-D_magma||/.
+=======================================================================
+  100   100     0.0049      
+ 1000  1000     0.4904      
+   10    10     0.0002      
+   20    20     0.0002      
+   30    30     0.0003      
+   40    40     0.0005      
+   50    50     0.0007      
+   60    60     0.0010      
+   70    70     0.0014      
+   80    80     0.0018      
+   90    90     0.0022      
+  100   100     0.0027      
+  200   200     0.0107      
+  300   300     0.0485      
+  400   400     0.0860      
+  500   500     0.1354      
+  600   600     0.1774      
+  700   700     0.2385      
+  800   800     0.3178      
+  900   900     0.3811      
+ 1000  1000     0.4447      
+ 2000  2000     1.4069      
+ 3000  3000     2.6774      
+ 4000  4000     4.1303      
+ 5000  5000     6.3914      
+ 6000  6000    10.9810      
+ 7000  7000    15.2683      
+ 8000  8000    20.8768      
+ 9000  9000    27.3412      
+10000 10000    33.2341      
+12000 12000    54.8366      
+14000 14000    94.2965      
+16000 16000   129.5659      
+18000 18000   174.3231      
+20000 20000    75.8082      

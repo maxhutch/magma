@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zcgesv_gpu.cpp mixed zc -> ds, Fri Jan 30 19:00:13 2015
+       @generated from zcgesv_gpu.cpp mixed zc -> ds, Tue Aug 25 16:35:12 2015
 
 */
 #include "common_magma.h"
@@ -231,7 +231,7 @@ magma_dsgesv_gpu(
             *iter = -3;
             goto FALLBACK;
         }
-        swp2pswp( trans, n, ipiv, newipiv );
+        magma_swp2pswp( trans, n, ipiv, newipiv );
         magma_setvector( n, sizeof(magma_int_t), newipiv, 1, dipiv, 1 );
         magma_free_cpu( newipiv );
     }

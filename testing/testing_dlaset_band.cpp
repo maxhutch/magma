@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from testing_zlaset_band.cpp normal z -> d, Fri Jan 30 19:00:24 2015
+       @generated from testing_zlaset_band.cpp normal z -> d, Tue Aug 25 16:35:25 2015
        @author Mark Gates
 */
 
@@ -43,15 +43,15 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     nb = (opts.nb == 0 ? 32 : opts.nb);
 
     magma_uplo_t uplo[] = { MagmaLower, MagmaUpper, MagmaFull };
     
-    printf("K = nb = %d\n", (int) nb );
-    printf("uplo       M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
-    printf("==================================================================\n");
+    printf("%% K = nb = %d\n", (int) nb );
+    printf("%% uplo      M     N   CPU GByte/s (ms)    GPU GByte/s (ms)    check\n");
+    printf("%%=================================================================\n");
     for( int iuplo = 0; iuplo < 2; ++iuplo ) {
       for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
@@ -59,7 +59,7 @@ int main( int argc, char** argv)
             M = opts.msize[itest] + 2*inset;
             N = opts.nsize[itest] + 2*inset;
             lda    = M;
-            ldda   = ((M+31)/32)*32;
+            ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             size   = lda*N;
             
             TESTING_MALLOC_CPU( h_A, double, size   );
@@ -107,20 +107,21 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            gpu_time = magma_sync_wtime( 0 );
+            magmablasSetKernelStream( opts.queue );
+            gpu_time = magma_sync_wtime( opts.queue );
             
             int mm = M - 2*inset;
             int nn = N - 2*inset;
             magmablas_dlaset_band( uplo[iuplo], mm, nn, nb, offdiag, diag, d_A(inset,inset), ldda );
             
-            gpu_time = magma_sync_wtime( 0 ) - gpu_time;
+            gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gbytes / gpu_time;
             
             /* =====================================================================
                Check the result
                =================================================================== */
             magma_dgetmatrix( M, N, d_A, ldda, h_R, lda );
-                        
+            
             //printf( "h_R=" );  magma_dprint( M, N, h_R, lda );
             //printf( "h_A=" );  magma_dprint( M, N, h_A, lda );
 

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmdot.cu normal z -> s, Sun May  3 11:22:58 2015
+       @generated from zmdot.cu normal z -> s, Tue Aug 25 16:35:31 2015
        @author Hartwig Anzt
 
 */
@@ -23,7 +23,6 @@ magma_sgpumemzero(
     int n, 
     int k )
 {
-
    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
    if( i < n ){
@@ -41,7 +40,6 @@ magma_sdot_kernel(
     float * r,
     float * vtmp)
 {
-
     extern __shared__ float temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -58,12 +56,12 @@ magma_sdot_kernel(
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
         if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
@@ -103,7 +101,6 @@ magma_sblockdot_kernel(
     float * r,
     float * vtmp)
 {
-
     extern __shared__ float temp[]; 
     int Idx = threadIdx.x;   
     int i   = blockIdx.x * blockDim.x + Idx;
@@ -114,9 +111,9 @@ magma_sblockdot_kernel(
         for( j=0; j<k; j++)
             temp[Idx+j*blockDim.x] = v[i+j*n] * r[i];
     }
-    else{
+    else {
         for( j=0; j<k; j++)
-            temp[Idx+j*blockDim.x] =MAGMA_S_MAKE( 0.0, 0.0);
+            temp[Idx+j*blockDim.x] = MAGMA_S_MAKE( 0.0, 0.0);
     }
     __syncthreads();
     if ( Idx < 128 ){
@@ -195,7 +192,6 @@ magma_sblockreduce_kernel(
     float * vtmp,
     float * vtmp2 )
 {
-
     extern __shared__ float temp[];    
     int Idx = threadIdx.x;
     int i = blockIdx.x * blockDim.x + Idx;  
@@ -277,8 +273,8 @@ __global__ void
 magma_sreduce_kernel_fast( int Gs,
                            int n, 
                            float * vtmp,
-                           float * vtmp2 ){
-
+                           float * vtmp2 )
+{
     extern __shared__ float temp[];    
     int Idx = threadIdx.x;
     int blockSize = 128;
@@ -298,12 +294,12 @@ magma_sreduce_kernel_fast( int Gs,
     __syncthreads();
     #if defined(PRECISION_z) || defined(PRECISION_c)
         if( Idx < 32 ){
-            temp[ Idx ] += temp[ Idx + 32 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 16 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 8 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 4 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 2 ];__syncthreads();
-            temp[ Idx ] += temp[ Idx + 1 ];__syncthreads();
+            temp[ Idx ] += temp[ Idx + 32 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 16 ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 8  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 4  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 2  ]; __syncthreads();
+            temp[ Idx ] += temp[ Idx + 1  ]; __syncthreads();
         }
     #endif
     #if defined(PRECISION_d)
@@ -342,7 +338,6 @@ magma_sblockreduce_kernel_fast(
     float * vtmp,
     float * vtmp2 )
 {
-
     extern __shared__ float temp[];    
     int Idx = threadIdx.x;
     int blockSize = 128;
@@ -494,10 +489,10 @@ magma_smdotc(
     int b = 1;        
 
     if (k>1) {
-        magma_sblockdot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, k, v, r, d1 );
+        magma_sblockdot_kernel<<<Gs, Bs, Ms, queue>>>( Gs.x, n, k, v, r, d1 );
     }
     else {
-        magma_sdot_kernel<<<Gs, Bs, Ms>>>( Gs.x, n, v, r, d1 );
+        magma_sdot_kernel<<<Gs, Bs, Ms, queue>>>( Gs.x, n, v, r, d1 );
     }
 /*
     // not necessary to zero GPU mem
@@ -506,7 +501,7 @@ magma_smdotc(
     //magmablas_slaset( MagmaUpperLower, n, k, d1, n );
     //magmablas_slaset( MagmaUpperLower, n, k, d2, n );
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
         magma_sblockreduce_kernel<<< Gs_next.x, Bs.x, Ms >>> 
                                         ( Gs.x, n, k, aux1, aux2 );
         Gs.x = Gs_next.x;
@@ -521,9 +516,9 @@ magma_smdotc(
    
     if ( k>1) {
         while( Gs.x > 1 ) {
-            Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+            Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
             if ( Gs_next.x == 1 ) Gs_next.x = 2;
-            magma_sblockreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
+            magma_sblockreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2, queue >>> 
                         ( Gs.x, n, k, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
@@ -534,9 +529,9 @@ magma_smdotc(
     }
     else {
         while( Gs.x > 1 ) {
-            Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x ;
+            Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
             if ( Gs_next.x == 1 ) Gs_next.x = 2;
-            magma_sreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
+            magma_sreduce_kernel_fast<<< Gs_next.x/2, Bs.x/2, Ms/2, queue >>> 
                         ( Gs.x, n, aux1, aux2 );
             Gs_next.x = Gs_next.x /2;
             Gs.x = Gs_next.x;
@@ -548,7 +543,7 @@ magma_smdotc(
 
 
     for( int j=0; j<k; j++) {
-            magma_scopyvector( 1, aux1+j*n, 1, skp+j, 1 );
+            magma_scopyvector_async( 1, aux1+j*n, 1, skp+j, 1, queue );
     }
 
    magmablasSetKernelStream( orig_queue );
@@ -625,7 +620,6 @@ magma_sgemvmdot(
         magma_smdotc( n, chunk_size, v+offset*n, r, d1, d2, skp+offset, queue );
         offset = offset + chunk_size;
         rows_left = rows_left-chunk_size;
-
     }
     // process rest
     magma_smdotc( n, rows_left, v+offset*n, r, d1, d2, skp+offset, queue ); 
@@ -633,6 +627,3 @@ magma_sgemvmdot(
 
    return MAGMA_SUCCESS;
 }
-
-
-

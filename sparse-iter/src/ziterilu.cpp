@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
        @author Hartwig Anzt
 
@@ -26,8 +26,12 @@
     @param[in]
     A           magma_z_matrix
                 input matrix A
+                
+    @param[in]
+    b           magma_z_matrix
+                input RHS b
 
-    @param[in][out]
+    @param[in,out]
     precond     magma_z_preconditioner*
                 preconditioner parameters
                 
@@ -37,7 +41,7 @@
 
     @ingroup magmasparse_zgepr
     ********************************************************************/
-
+extern "C"
 magma_int_t
 magma_ziterilusetup(
     magma_z_matrix A,
@@ -125,7 +129,7 @@ magma_ziterilusetup(
 
     if( RL.nnz != 0 )
         CHECK( magma_zmtransfer( RL, &precond->L, Magma_CPU, Magma_DEV , queue ));
-    else{
+    else {
         precond->L.nnz = 0;
         precond->L.val = NULL;
         precond->L.col = NULL;
@@ -135,7 +139,7 @@ magma_ziterilusetup(
 
     if( RU.nnz != 0 )
         CHECK( magma_zmtransfer( RU, &precond->U, Magma_CPU, Magma_DEV , queue ));
-    else{
+    else {
         precond->U.nnz = 0;
         precond->L.val = NULL;
         precond->L.col = NULL;
@@ -212,7 +216,6 @@ cleanup:
     magma_zmfree( &RU, queue );
 
     return info;
-
 }
 
 
@@ -232,8 +235,12 @@ cleanup:
     @param[in]
     A           magma_z_matrix
                 input matrix A
+                
+    @param[in]
+    b           magma_z_matrix
+                input RHS b
 
-    @param[in][out]
+    @param[in,out]
     precond     magma_z_preconditioner*
                 preconditioner parameters
                 
@@ -243,7 +250,7 @@ cleanup:
 
     @ingroup magmasparse_zhepr
     ********************************************************************/
-
+extern "C"
 magma_int_t
 magma_zitericsetup(
     magma_z_matrix A,
@@ -372,7 +379,6 @@ magma_zitericsetup(
     magma_zmfree( &d_h, queue );
     
     return info;
-
 }
 
 
@@ -386,13 +392,18 @@ magma_zitericsetup(
 
     Arguments
     ---------
+    
+    @param[in]
+    A           magma_z_matrix
+                input matrix A, current target system
 
     @param[in]
-    precond         magma_z_preconditioner*
-                    preconditioner parameters
+    precond     magma_z_preconditioner*
+                preconditioner parameters
 
     @param[in]
-    magma_int_t     number of updates
+    updates     magma_int_t 
+                number of updates
     
     @param[in]
     queue       magma_queue_t
@@ -400,7 +411,7 @@ magma_zitericsetup(
                 
     @ingroup magmasparse_zhepr
     ********************************************************************/
-
+extern "C"
 magma_int_t
 magma_zitericupdate(
     magma_z_matrix A,
@@ -438,7 +449,6 @@ cleanup:
     magma_zmfree(&hALt, queue );
     
     return info;
-
 }
 
 
@@ -469,7 +479,7 @@ cleanup:
 
     @ingroup magmasparse_zgepr
     ********************************************************************/
-
+extern "C"
 magma_int_t
 magma_zapplyiteric_l(
     magma_z_matrix b,
@@ -491,7 +501,6 @@ magma_zapplyiteric_l(
 
 cleanup:
     return info;
-
 }
 
 
@@ -522,7 +531,7 @@ cleanup:
 
     @ingroup magmasparse_zgepr
     ********************************************************************/
-
+extern "C"
 magma_int_t
 magma_zapplyiteric_r(
     magma_z_matrix b,
@@ -545,5 +554,4 @@ magma_zapplyiteric_r(
     
 cleanup:
     return info;
-
 }

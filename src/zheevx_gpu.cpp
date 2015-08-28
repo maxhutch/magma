@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -411,7 +411,6 @@ magma_zheevx_gpu(
                          &nsplit, &w[1], &iwork[indibl], &iwork[indisp], &rwork[indrwk], &iwork[indiwk], info);
         
         if (wantz) {
-            
             lapackf77_zstein(&n, &rwork[indd], &rwork[inde], m, &w[1], &iwork[indibl], &iwork[indisp],
                              wZ, &ldwz, &rwork[indrwk], &iwork[indiwk], &ifail[1], info);
             
@@ -467,5 +466,4 @@ magma_zheevx_gpu(
     work[1] = MAGMA_Z_MAKE( lopt, 0 );
     
     return *info;
-    
 } /* magma_zheevx_gpu */

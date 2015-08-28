@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.6.1) --
+   -- MAGMA (version 1.6.3-beta1) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date January 2015
+   @date August 2015
 
    @author Azzam Haidar
    @author Tingxing Dong
@@ -12,6 +12,8 @@
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
+
+#include "cublas_v2.h"
 ///////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -26,37 +28,39 @@
     triangular (upper trapezoidal if m < n).
 
     This is the right-looking Level 3 BLAS version of the algorithm.
-    
-    If the current stream is NULL, this version replaces it with a new
-    stream to overlap computation with communication.
+
+    This is a batched version that factors batchCount M-by-N matrices in parallel.
+    dA, ipiv, and info become arrays with one entry per matrix.
 
     Arguments
     ---------
     @param[in]
     m       INTEGER
-            The number of rows of the matrix A.  M >= 0.
+            The number of rows of each matrix A.  M >= 0.
 
     @param[in]
     n       INTEGER
-            The number of columns of the matrix A.  N >= 0.
+            The number of columns of each matrix A.  N >= 0.
 
     @param[in,out]
-    dA      COMPLEX_16 array on the GPU, dimension (LDDA,N).
-            On entry, the M-by-N matrix to be factored.
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX_16 array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
-    ldda     INTEGER
-            The leading dimension of the array A.  LDDA >= max(1,M).
+    ldda    INTEGER
+            The leading dimension of each array A.  LDDA >= max(1,M).
 
     @param[out]
-    ipiv    INTEGER array, dimension (min(M,N))
+    ipiv_array  Array of pointers, dimension (batchCount), for corresponding matrices.
+            Each is an INTEGER array, dimension (min(M,N))
             The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
 
     @param[out]
-    info    INTEGER
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
@@ -64,6 +68,14 @@
                   has been completed, but the factor U is exactly
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zgesv_comp
     ********************************************************************/
@@ -97,12 +109,14 @@ magma_zgetrf_batched(
 
     /* Quick return if possible */
     if (m == 0 || n == 0)
-        if(min_mn == 0 ) return arginfo;
+        if (min_mn == 0 ) return arginfo;
 
-    if( m >  2048 || n > 2048 ){
+    if ( m >  2048 || n > 2048 ) {
+        #ifndef MAGMA_NOWARNING
         printf("=========================================================================================\n");
         printf("   WARNING batched routines are designed for small sizes it might be better to use the\n   Native/Hybrid classical routines if you want performance\n");
         printf("=========================================================================================\n");
+        #endif
     }
 
 
@@ -110,23 +124,20 @@ magma_zgetrf_batched(
 
 #if defined(ENABLE_TIMER3)
     real_Double_t   tall=0.0, tloop=0., talloc=0., tdalloc=0.;
-    tall   = magma_sync_wtime(0);
-    talloc = magma_sync_wtime(0);
+    tall   = magma_sync_wtime(queue);
+    talloc = magma_sync_wtime(queue);
 #endif
 
     magmaDoubleComplex neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex one  = MAGMA_Z_ONE;
-    magma_int_t ib, i, k, pm;
-    magma_int_t nb = BATRF_NB;
-    magma_int_t gemm_crossover = nb > 32 ? 127 : 160;
-    // magma_int_t gemm_crossover = n;// use only stream gemm
+    magma_int_t nb, recnb, ib, i, k, pm, use_stream;
+    magma_get_zgetrf_batched_nbparam(n, &nb, &recnb);
 
-#if defined(USE_CUOPT)    
+
     cublasHandle_t myhandle;
     cublasCreate_v2(&myhandle);
-#else
-    cublasHandle_t myhandle=NULL;
-#endif
+    cublasSetStream(myhandle, queue);
+
 
     magma_int_t     **dipiv_displ   = NULL;
     magmaDoubleComplex **dA_displ   = NULL;
@@ -150,12 +161,12 @@ magma_zgetrf_batched(
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
 
 
-    magma_int_t invA_msize = ((n+TRI_NB-1)/TRI_NB)*TRI_NB*TRI_NB;
+    magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
     magma_int_t dwork_msize = n*nb;
     magma_int_t **pivinfo_array    = NULL;
     magma_int_t *pivinfo           = NULL; 
     magmaDoubleComplex* dinvA      = NULL;
-    magmaDoubleComplex* dwork      = NULL;// dinvA and dwork are workspace in ztrsm
+    magmaDoubleComplex* dwork      = NULL; // dinvA and dwork are workspace in ztrsm
     magmaDoubleComplex **cpuAarray = NULL;
     magma_zmalloc( &dinvA, invA_msize * batchCount);
     magma_zmalloc( &dwork, dwork_msize * batchCount );
@@ -178,7 +189,7 @@ magma_zgetrf_batched(
         magma_free(dwork_array);
         magma_free( dinvA );
         magma_free( dwork );
-        free(cpuAarray);
+        magma_free_cpu(cpuAarray);
         magma_free(dipiv_displ);
         magma_free(pivinfo_array);
         magma_free(pivinfo);
@@ -196,12 +207,10 @@ magma_zgetrf_batched(
 
 
     // printf(" I am in zgetrfbatched\n");
-    magma_queue_t cstream;
-    magmablasGetKernelStream(&cstream);
     magma_int_t streamid;
-    const magma_int_t nbstreams=32;
+    const magma_int_t nbstreams=10;
     magma_queue_t stream[nbstreams];
-    for(i=0; i<nbstreams; i++){
+    for (i=0; i < nbstreams; i++) {
         magma_queue_create( &stream[i] );
     }
     magma_getvector( batchCount, sizeof(magmaDoubleComplex*), dA_array, 1, cpuAarray, 1);
@@ -210,15 +219,13 @@ magma_zgetrf_batched(
 
 #if defined(ENABLE_TIMER3)
     printf(" I am after malloc\n");
-    talloc = magma_sync_wtime(0) - talloc;
-    tloop  = magma_sync_wtime(0);
+    talloc = magma_sync_wtime(queue) - talloc;
+    tloop  = magma_sync_wtime(queue);
 #endif
 
 
-    for(i = 0; i < min_mn; i+=nb) 
+    for (i = 0; i < min_mn; i += nb) 
     {
-        magmablasSetKernelStream(NULL);
-
         ib = min(nb, min_mn-i);
         pm = m-i;
         magma_idisplace_pointers(dipiv_displ, ipiv_array, ldda, i, 0, batchCount, queue);
@@ -226,26 +233,28 @@ magma_zgetrf_batched(
         //===============================================
         //  panel factorization
         //===============================================
-#if 0
-        arginfo = magma_zgetf2_batched(
-                pm, ib,
-                dA_displ, ldda,
-                dW1_displ, dW2_displ, dW3_displ,
-                dipiv_displ, 
-                info_array, i, batchCount, myhandle);   
-#else
-        arginfo = magma_zgetrf_recpanel_batched(
-                pm, ib, 16,
-                dA_displ, ldda,
-                dipiv_displ, pivinfo_array,
-                dwork_array, nb, 
-                dinvA_array, invA_msize, 
-                dW0_displ, dW1_displ, dW2_displ, 
-                dW3_displ, dW4_displ,
-                info_array, i, 
-                batchCount, myhandle, queue);   
-#endif
-        if(arginfo != 0 ) goto fin;
+        if (recnb == nb)
+        {
+            arginfo = magma_zgetf2_batched(
+                    pm, ib,
+                    dA_displ, ldda,
+                    dW1_displ, dW2_displ, dW3_displ,
+                    dipiv_displ, 
+                    info_array, i, batchCount, myhandle, queue);   
+        }
+        else {
+            arginfo = magma_zgetrf_recpanel_batched(
+                    pm, ib, recnb,
+                    dA_displ, ldda,
+                    dipiv_displ, pivinfo_array,
+                    dwork_array, nb, 
+                    dinvA_array, invA_msize, 
+                    dW0_displ, dW1_displ, dW2_displ, 
+                    dW3_displ, dW4_displ,
+                    info_array, i, 
+                    batchCount, myhandle, queue);  
+        } 
+        if (arginfo != 0 ) goto fin;
         //===============================================
         // end of panel
         //===============================================
@@ -256,7 +265,7 @@ magma_zgetrf_batched(
         setup_pivinfo_batched(pivinfo_array, dipiv_displ, pm, ib, batchCount, queue);
         adjust_ipiv_batched(dipiv_displ, ib, i, batchCount, queue);
 
-        // stepinit_ipiv(pivinfo_array, pm, batchCount);// for debug and check swap, it create an ipiv
+        // stepinit_ipiv(pivinfo_array, pm, batchCount); // for debug and check swap, it create an ipiv
 
 
 #if 0
@@ -273,7 +282,7 @@ magma_zgetrf_batched(
 
 #endif
 
-        if( (i + ib) < n)
+        if ( (i + ib) < n)
         {
             // swap right side and trsm     
             magma_zdisplace_pointers(dA_displ, dA_array, ldda, i, i+ib, batchCount, queue);
@@ -286,7 +295,7 @@ magma_zgetrf_batched(
 
             magma_zdisplace_pointers(dA_displ, dA_array, ldda, i, i, batchCount, queue);
             magma_zdisplace_pointers(dW0_displ, dA_array, ldda, i, i+ib, batchCount, queue);
-            magmablas_ztrsm_outofplace_batched(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
+            magmablas_ztrsm_outofplace_batched( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
                     ib, n-i-ib,
                     MAGMA_Z_ONE,
                     dA_displ,    ldda, // dA
@@ -295,26 +304,25 @@ magma_zgetrf_batched(
                     dinvA_array,  invA_msize, 
                     dW1_displ,   dW2_displ, 
                     dW3_displ,   dW4_displ,
-                    0, batchCount, queue);
+                    0, batchCount, queue, myhandle);
 
 
-            if( (i + ib) < m)
+            if ( (i + ib) < m)
             {    
-                // if gemm size is >160 use a streamed classical cublas gemm since it is faster
-                // the batched is faster only when M=N<=160 for K40c
+                // if gemm size is > 160 use a streamed classical cublas gemm since it is faster
+                // the batched is faster only when M=N <= 160 for K40c
                 //-------------------------------------------
                 //          USE STREAM  GEMM
                 //-------------------------------------------
-                if( (m-i-ib) > gemm_crossover  && (n-i-ib) > gemm_crossover)   
+                use_stream = magma_zrecommend_cublas_gemm_stream(MagmaNoTrans, MagmaNoTrans, m-i-ib, n-i-ib, ib);
+                if (use_stream)
                 { 
-                    //printf("caling streamed dgemm %d %d %d \n", m-i-ib, n-i-ib, ib);
-
                     // since it use different stream I need to wait the TRSM and swap.
                     // But since the code use the NULL stream everywhere, 
                     // so I don't need it, because the NULL stream do the sync by itself
                     //magma_queue_sync(NULL); 
-                    //
-                    for(k=0; k<batchCount; k++)
+                    magma_queue_sync(queue); 
+                    for (k=0; k < batchCount; k++)
                     {
                         streamid = k%nbstreams;                                       
                         magmablasSetKernelStream(stream[streamid]);
@@ -328,7 +336,12 @@ magma_zgetrf_batched(
                     // finishing the update at least of the next panel
                     // BUT no need for it as soon as the other portion of the code 
                     // use the NULL stream which do the sync by itself 
-                    //magma_device_sync(); 
+                    //magma_device_sync();
+                     if ( queue != NULL ) {
+                         for (magma_int_t s=0; s < nbstreams; s++)
+                             magma_queue_sync(stream[s]);
+                     }
+                     magmablasSetKernelStream(queue);
                 }
                 //-------------------------------------------
                 //          USE BATCHED GEMM
@@ -339,35 +352,28 @@ magma_zgetrf_batched(
                     magma_zdisplace_pointers(dW1_displ, dA_array, ldda,    i, i+ib, batchCount, queue);
                     magma_zdisplace_pointers(dW2_displ, dA_array, ldda, i+ib, i+ib, batchCount, queue);
                     //printf("caling batched dgemm %d %d %d \n", m-i-ib, n-i-ib, ib);
-                    magmablas_zgemm_batched( MagmaNoTrans, MagmaNoTrans, m-i-ib, n-i-ib, ib, 
-                            neg_one, dA_displ, ldda, 
-                            dW1_displ, ldda, 
-                            one,  dW2_displ, ldda, 
-                            batchCount, queue);
+                    magma_zgemm_batched( MagmaNoTrans, MagmaNoTrans, m-i-ib, n-i-ib, ib, 
+                                         neg_one, dA_displ, ldda, 
+                                         dW1_displ, ldda, 
+                                         one,  dW2_displ, ldda, 
+                                         batchCount, queue, myhandle);
                 } // end of batched/stream gemm
-            } // end of  if( (i + ib) < m) 
-        } // end of if( (i + ib) < n)
+            } // end of  if ( (i + ib) < m) 
+        } // end of if ( (i + ib) < n)
 #endif
     }// end of for
 
 fin:
-    magma_queue_sync(NULL);
-
+    magmablasSetKernelStream(queue);
+    magma_queue_sync(queue);
 #if defined(ENABLE_TIMER3)
-    tloop   = magma_sync_wtime(0) - tloop;
-    tdalloc = magma_sync_wtime(0);
-
+    tloop   = magma_sync_wtime(queue) - tloop;
+    tdalloc = magma_sync_wtime(queue);
 #endif
-
-    for(i=0; i<nbstreams; i++){
-        magma_queue_destroy( stream[i] );
+    for (k=0; k < nbstreams; k++) {
+        magma_queue_destroy( stream[k] );
     }
-    magmablasSetKernelStream(cstream);
-
-
-#if defined(USE_CUOPT)    
     cublasDestroy_v2(myhandle);
-#endif
 
     magma_free(dA_displ);
     magma_free(dW0_displ);
@@ -379,22 +385,16 @@ fin:
     magma_free(dwork_array);
     magma_free( dinvA );
     magma_free( dwork );
-    free(cpuAarray);
+    magma_free_cpu(cpuAarray);
     magma_free(dipiv_displ);
     magma_free(pivinfo_array);
     magma_free(pivinfo);
 
 #if defined(ENABLE_TIMER3)
-    tdalloc = magma_sync_wtime(0) - tdalloc;
-    tall = magma_sync_wtime(0) - tall;
+    tdalloc = magma_sync_wtime(queue) - tdalloc;
+    tall = magma_sync_wtime(queue) - tall;
     printf("here is the timing from inside zgetrf_batched talloc: %10.5f  tloop: %10.5f tdalloc: %10.5f tall: %10.5f sum: %10.5f\n", talloc, tloop, tdalloc, tall, talloc+tloop+tdalloc );
 #endif
     
     return arginfo;
-
 }
-
-
-
-
-

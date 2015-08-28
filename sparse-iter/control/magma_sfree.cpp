@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from magma_zfree.cpp normal z -> s, Sun May  3 11:23:01 2015
+       @generated from magma_zfree.cpp normal z -> s, Tue Aug 25 16:35:34 2015
        @author Hartwig Anzt
 */
 #include "common_magmasparse.h"
@@ -121,12 +121,10 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->dcol ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
 
             A->num_rows = 0;
@@ -137,12 +135,10 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->dcol ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
 
             A->num_rows = 0;
@@ -153,17 +149,14 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->drow ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->dcol ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
 
             A->num_rows = 0;
@@ -174,17 +167,14 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->drow ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->dcol ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             A->num_rows = 0;
             A->num_cols = 0;
@@ -197,17 +187,14 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->drow ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->dcol ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
 
             A->num_rows = 0;
@@ -218,22 +205,18 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->drow ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->dcol ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->drowidx ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
 
             A->num_rows = 0;
@@ -244,17 +227,14 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->drow ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             if ( magma_free( A->dcol ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
             magma_free_cpu( A->blockinfo );
             A->blockinfo = NULL;
@@ -266,13 +246,11 @@ magma_smfree(
             if ( magma_free( A->dval ) != MAGMA_SUCCESS ) {
                 printf("Memory Free Error.\n");
                 return MAGMA_ERR_INVALID_PTR; 
-                
             }
 
             A->num_rows = 0;
             A->num_cols = 0;
             A->nnz = 0;
-                
         }
         A->val = NULL;
         A->col = NULL;
@@ -293,9 +271,3 @@ magma_smfree(
     }
     return MAGMA_SUCCESS;
 }
-
-
-
-   
-
-

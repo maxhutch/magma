@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from magmablas_zc.h mixed zc -> ds, Fri Jan 30 19:00:05 2015
+       @generated from magmablas_zc.h mixed zc -> ds, Tue Aug 25 16:35:05 2015
 */
 
 #ifndef MAGMABLAS_DS_H
@@ -25,13 +25,6 @@ magmablas_dsaxpycp(
     magmaDouble_ptr x,
     magmaDouble_const_ptr b,
     magmaDouble_ptr w );
-
-void
-magmablas_daxpycp(
-    magma_int_t m,
-    magmaDouble_ptr r,
-    magmaDouble_ptr x,
-    magmaDouble_const_ptr b );
 
 // TODO add ldsa
 void

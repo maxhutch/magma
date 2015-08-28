@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.2) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date May 2015
+       @date August 2015
 
-       @generated from zmgesellcmmv.cu normal z -> c, Sun May  3 11:22:58 2015
+       @generated from zmgesellcmmv.cu normal z -> c, Tue Aug 25 16:35:31 2015
 
 */
 #include "common_magmasparse.h"
@@ -42,24 +42,22 @@ zmgesellptmv_kernel_1_3D(
     int row = bdx * blocksize + idx;  // global row index
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int max_ = (drowptr[ bdx+1 ]-offset)/blocksize;  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + idx + blocksize*k ];
             int col = 
-                    dcolind[ offset + idx + blocksize*k ] ;
+                    dcolind[ offset + idx + blocksize*k ];
 
             dot += val * dx[ col*num_vecs+idy ];
         }
         dy[ row+idy*num_rows ] = dot*alpha + beta*dy [ row+idy*num_rows ];
-
     }
-
 }
 
 
@@ -84,7 +82,7 @@ zmgesellptmv_kernel_4_3D(
     magmaFloatComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -96,7 +94,7 @@ zmgesellptmv_kernel_4_3D(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -106,30 +104,27 @@ zmgesellptmv_kernel_4_3D(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    dcolind[ offset + ldx + block*k ] ;
+                    dcolind[ offset + ldx + block*k ];
 
             dot += val * dx[ col+vec ];
         }
         shared[ldz]  = dot;
 
         __syncthreads();
-        if( idx < 2 ){
+        if ( idx < 2 ) {
             shared[ldz]+=shared[ldz+blocksize*2];               
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+vec] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha 
                                             + beta*dy [row+vec];
             }
-
         }
-
     }
-
 }
 
 
@@ -154,7 +149,7 @@ zmgesellptmv_kernel_8_3D(
     magmaFloatComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -166,7 +161,7 @@ zmgesellptmv_kernel_8_3D(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
@@ -176,32 +171,29 @@ zmgesellptmv_kernel_8_3D(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    dcolind[ offset + ldx + block*k ] ;
+                    dcolind[ offset + ldx + block*k ];
 
             dot += val * dx[ col+vec ];
         }
         shared[ldz]  = dot;
 
         __syncthreads();
-        if( idx < 4 ){
+        if ( idx < 4 ) {
             shared[ldz]+=shared[ldz+blocksize*4];               
             __syncthreads();
-            if( idx < 2 ) shared[ldz]+=shared[ldz+blocksize*2];   
+            if ( idx < 2 ) shared[ldz]+=shared[ldz+blocksize*2];   
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+vec] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha 
                                             + beta*dy [row+vec];
             }
-
         }
-
     }
-
 }
 
 
@@ -226,7 +218,7 @@ zmgesellptmv_kernel_16_3D(
     magmaFloatComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -238,14 +230,14 @@ zmgesellptmv_kernel_16_3D(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -256,23 +248,20 @@ zmgesellptmv_kernel_16_3D(
         shared[ldz]  = dot;
 
         __syncthreads();
-        if( idx < 8 ){
+        if ( idx < 8 ) {
             shared[ldz]+=shared[ldz+blocksize*8];              
             __syncthreads();
-            if( idx < 4 ) shared[ldz]+=shared[ldz+blocksize*4];   
+            if ( idx < 4 ) shared[ldz]+=shared[ldz+blocksize*4];   
             __syncthreads();
-            if( idx < 2 ) shared[ldz]+=shared[ldz+blocksize*2];   
+            if ( idx < 2 ) shared[ldz]+=shared[ldz+blocksize*2];   
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+vec] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha 
                                             + beta*dy [row+vec];
             }
-
         }
-
     }
-
 }
 
 
@@ -297,7 +286,7 @@ zmgesellptmv_kernel_32_3D(
     magmaFloatComplex * dy)
 {
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -309,14 +298,14 @@ zmgesellptmv_kernel_32_3D(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int block = blocksize * T; // total number of threads
 
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
@@ -327,25 +316,22 @@ zmgesellptmv_kernel_32_3D(
         shared[ldz]  = dot;
 
         __syncthreads();
-        if( idx < 16 ){
+        if ( idx < 16 ) {
             shared[ldz]+=shared[ldz+blocksize*16];              
             __syncthreads();
-            if( idx < 8 ) shared[ldz]+=shared[ldz+blocksize*8];  
+            if ( idx < 8 ) shared[ldz]+=shared[ldz+blocksize*8];  
             __syncthreads();
-            if( idx < 4 ) shared[ldz]+=shared[ldz+blocksize*4];   
+            if ( idx < 4 ) shared[ldz]+=shared[ldz+blocksize*4];   
             __syncthreads();
-            if( idx < 2 ) shared[ldz]+=shared[ldz+blocksize*2];   
+            if ( idx < 2 ) shared[ldz]+=shared[ldz+blocksize*2];   
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+vec] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha 
                                             + beta*dy [row+vec];
             }
-
         }
-
     }
-
 }
 
 /************************* same but using texture mem *************************/
@@ -379,18 +365,18 @@ zmgesellptmv_kernel_1_3D_tex(
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
     int row = bdx * blocksize + idx;  // global row index
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
         int max_ = (drowptr[ bdx+1 ]-offset)/blocksize;  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + idx + blocksize*k ];
             int col = 
-                    num_vecs * dcolind[ offset + idx + blocksize*k ] ;
+                    num_vecs * dcolind[ offset + idx + blocksize*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idy );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -429,7 +415,7 @@ zmgesellptmv_kernel_4_3D_tex(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -441,7 +427,7 @@ zmgesellptmv_kernel_4_3D_tex(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -452,11 +438,11 @@ zmgesellptmv_kernel_4_3D_tex(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -466,11 +452,11 @@ zmgesellptmv_kernel_4_3D_tex(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 2 ){
+        if ( idx < 2 ) {
             shared[ldz]+=shared[ldz+blocksize*2];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*2];               
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2];
@@ -478,9 +464,7 @@ zmgesellptmv_kernel_4_3D_tex(
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2+1];
             }
-
         }
-
     }
 #endif
 }
@@ -508,7 +492,7 @@ zmgesellptmv_kernel_8_3D_tex(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -520,7 +504,7 @@ zmgesellptmv_kernel_8_3D_tex(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -531,11 +515,11 @@ zmgesellptmv_kernel_8_3D_tex(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -545,16 +529,16 @@ zmgesellptmv_kernel_8_3D_tex(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 4 ){
+        if ( idx < 4 ) {
             shared[ldz]+=shared[ldz+blocksize*4];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*4];               
             __syncthreads();
-            if( idx < 2 ){
+            if ( idx < 2 ) {
                 shared[ldz]+=shared[ldz+blocksize*2];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*2];   
             }
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2];
@@ -562,9 +546,7 @@ zmgesellptmv_kernel_8_3D_tex(
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2+1];
             }
-
         }
-
     }
 #endif
 }
@@ -592,7 +574,7 @@ zmgesellptmv_kernel_16_3D_tex(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -604,7 +586,7 @@ zmgesellptmv_kernel_16_3D_tex(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -615,11 +597,11 @@ zmgesellptmv_kernel_16_3D_tex(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -629,20 +611,20 @@ zmgesellptmv_kernel_16_3D_tex(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 8 ){
+        if ( idx < 8 ) {
             shared[ldz]+=shared[ldz+blocksize*8];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*8];               
             __syncthreads();
-            if( idx < 4 ){
+            if ( idx < 4 ) {
                 shared[ldz]+=shared[ldz+blocksize*4];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*4];   
             }
-            if( idx < 2 ){
+            if ( idx < 2 ) {
                 shared[ldz]+=shared[ldz+blocksize*2];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*2];   
             }
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2];
@@ -650,9 +632,7 @@ zmgesellptmv_kernel_16_3D_tex(
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2+1];
             }
-
         }
-
     }
 #endif
 }
@@ -680,7 +660,7 @@ zmgesellptmv_kernel_32_3D_tex(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -692,7 +672,7 @@ zmgesellptmv_kernel_32_3D_tex(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -703,11 +683,11 @@ zmgesellptmv_kernel_32_3D_tex(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -717,24 +697,24 @@ zmgesellptmv_kernel_32_3D_tex(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 16 ){
+        if ( idx < 16 ) {
             shared[ldz]+=shared[ldz+blocksize*16];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*16];               
             __syncthreads();
-            if( idx < 8 ){
+            if ( idx < 8 ) {
                 shared[ldz]+=shared[ldz+blocksize*8];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*8];   
             }
-            if( idx < 4 ){
+            if ( idx < 4 ) {
                 shared[ldz]+=shared[ldz+blocksize*4];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*4];   
             }
-            if( idx < 2 ){
+            if ( idx < 2 ) {
                 shared[ldz]+=shared[ldz+blocksize*2];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*2];   
             }
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2];
@@ -742,9 +722,7 @@ zmgesellptmv_kernel_32_3D_tex(
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha
                                             + beta*dy [row*num_vecs+idz*2+1];
             }
-
         }
-
     }
 #endif
 }
@@ -778,7 +756,7 @@ zmgesellptmv_kernel_1_3D_texb(
     int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
     int row = bdx * blocksize + idx;  // global row index
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -787,11 +765,11 @@ zmgesellptmv_kernel_1_3D_texb(
         int max_ = (drowptr[ bdx+1 ]-offset)/block;  
             // number of elements each thread handles
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + idx + blocksize*k ];
             int col = 
-                    num_vecs * dcolind[ offset + idx + blocksize*k ] ;
+                    num_vecs * dcolind[ offset + idx + blocksize*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idy );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -827,7 +805,7 @@ zmgesellptmv_kernel_4_3D_texb(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -839,7 +817,7 @@ zmgesellptmv_kernel_4_3D_texb(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -850,11 +828,11 @@ zmgesellptmv_kernel_4_3D_texb(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -864,19 +842,17 @@ zmgesellptmv_kernel_4_3D_texb(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 2 ){
+        if ( idx < 2 ) {
             shared[ldz]+=shared[ldz+blocksize*2];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*2];               
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha;
                 dy[row+num_rows*idz*2+num_rows] = 
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha;
             }
-
         }
-
     }
 #endif
 }
@@ -903,7 +879,7 @@ zmgesellptmv_kernel_8_3D_texb(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -915,7 +891,7 @@ zmgesellptmv_kernel_8_3D_texb(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -926,11 +902,11 @@ zmgesellptmv_kernel_8_3D_texb(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -940,25 +916,23 @@ zmgesellptmv_kernel_8_3D_texb(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 4 ){
+        if ( idx < 4 ) {
             shared[ldz]+=shared[ldz+blocksize*4];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*4];               
             __syncthreads();
-            if( idx < 2 ){
+            if ( idx < 2 ) {
                 shared[ldz]+=shared[ldz+blocksize*2];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*2];   
             }
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha;
 
                 dy[row+num_rows*idz*2+num_rows] = 
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha;
             }
-
         }
-
     }
 #endif
 }
@@ -985,7 +959,7 @@ zmgesellptmv_kernel_16_3D_texb(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -997,7 +971,7 @@ zmgesellptmv_kernel_16_3D_texb(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -1008,11 +982,11 @@ zmgesellptmv_kernel_16_3D_texb(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -1022,29 +996,27 @@ zmgesellptmv_kernel_16_3D_texb(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 8 ){
+        if ( idx < 8 ) {
             shared[ldz]+=shared[ldz+blocksize*8];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*8];               
             __syncthreads();
-            if( idx < 4 ){
+            if ( idx < 4 ) {
                 shared[ldz]+=shared[ldz+blocksize*4];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*4];   
             }
-            if( idx < 2 ){
+            if ( idx < 2 ) {
                 shared[ldz]+=shared[ldz+blocksize*2];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*2];   
             }
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha;
 
                 dy[row+num_rows*idz*2+num_rows] = 
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha;
             }
-
         }
-
     }
 #endif
 }
@@ -1071,7 +1043,7 @@ zmgesellptmv_kernel_32_3D_texb(
 {
 #if defined(PRECISION_d) && defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
    // T threads assigned to each row
-    int idx = threadIdx.y ;     // thread in row
+    int idx = threadIdx.y;      // thread in row
     int idy = threadIdx.x;      // local row
     int idz = threadIdx.z;      // vector
     int ldx = idx * blocksize + idy;
@@ -1083,7 +1055,7 @@ zmgesellptmv_kernel_32_3D_texb(
     extern __shared__ magmaFloatComplex shared[];
 
 
-    if(row < num_rows ){
+    if (row < num_rows ) {
         magmaFloatComplex dot1 = MAGMA_C_MAKE(0.0, 0.0);
         magmaFloatComplex dot2 = MAGMA_C_MAKE(0.0, 0.0);
         int offset = drowptr[ bdx ];
@@ -1094,11 +1066,11 @@ zmgesellptmv_kernel_32_3D_texb(
 
 
 
-        for ( int k = 0; k < max_ ; k++ ){
+        for ( int k = 0; k < max_; k++ ) {
             magmaFloatComplex val = 
                         dval[ offset + ldx + block*k ];
             int col = 
-                    num_vecs * dcolind[ offset + ldx + block*k ] ;
+                    num_vecs * dcolind[ offset + ldx + block*k ];
 
             int4 v = tex1Dfetch<int4>(texdx, col/2 + idz );
             dot1 += val * __hiloint2float(v.y, v.x);
@@ -1108,33 +1080,31 @@ zmgesellptmv_kernel_32_3D_texb(
         shared[ldz+sv]  = dot2;
 
         __syncthreads();
-        if( idx < 16 ){
+        if ( idx < 16 ) {
             shared[ldz]+=shared[ldz+blocksize*16];    
             shared[ldz+sv]+=shared[ldz+sv+blocksize*16];               
             __syncthreads();
-            if( idx < 8 ){
+            if ( idx < 8 ) {
                 shared[ldz]+=shared[ldz+blocksize*8];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*8];   
             }
-            if( idx < 4 ){
+            if ( idx < 4 ) {
                 shared[ldz]+=shared[ldz+blocksize*4];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*4];   
             }
-            if( idx < 2 ){
+            if ( idx < 2 ) {
                 shared[ldz]+=shared[ldz+blocksize*2];   
                 shared[ldz+sv]+=shared[ldz+sv+blocksize*2];   
             }
             __syncthreads();
-            if( idx == 0 ) {
+            if ( idx == 0 ) {
                 dy[row+num_rows*idz*2] = 
                 (shared[ldz]+shared[ldz+blocksize*1])*alpha;
 
                 dy[row+num_rows*idz*2+num_rows] = 
                 (shared[ldz+sv]+shared[ldz+sv+blocksize*1])*alpha;
             }
-
         }
-
     }
 #endif
 }
@@ -1252,7 +1222,6 @@ magma_cmgesellpmv(
     #endif
 
     if ( (texture==1) && (precision==1) && (kepler==1) ) {
-
         // Create channel.
         cudaChannelFormatDesc channel_desc;
         channel_desc = cudaCreateChannelDesc(32, 32, 32, 32, 
@@ -1294,7 +1263,7 @@ magma_cmgesellpmv(
 
         dim3 block( blocksize, alignment, num_vecs/2 );
 
-        int dimgrid1 = sqrt(slices);
+        int dimgrid1 = int( sqrt( float( slices )));
         int dimgrid2 = magma_ceildiv( slices, dimgrid1 );
 
         dim3 grid( dimgrid1, dimgrid2, 1);
@@ -1357,12 +1326,10 @@ magma_cmgesellpmv(
                 dval, dcolind, drowptr, texdx, beta, dy );
         }
         else {
-            printf("error: alignment %d not supported.\n", alignment);
+            printf("error: alignment %d not supported.\n", int(alignment) );
             return MAGMA_ERR_NOT_SUPPORTED;
         }
-
     } else {
-
         if ( num_vecs%2 ==1 ) { // only multiple of 2 can be processed
             printf("error: number of vectors has to be multiple of 2.\n");
             return MAGMA_ERR_NOT_SUPPORTED;
@@ -1377,7 +1344,7 @@ magma_cmgesellpmv(
         if (  num_threads > 1024 )
             printf("error: too many threads requested.\n");
 
-        int dimgrid1 = sqrt(slices);
+        int dimgrid1 = int( sqrt( float( slices )));
         int dimgrid2 = magma_ceildiv( slices, dimgrid1 );
 
         dim3 grid( dimgrid1, dimgrid2, 1);
@@ -1414,11 +1381,10 @@ magma_cmgesellpmv(
                 dval, dcolind, drowptr, dx, beta, dy );
         }
         else {
-            printf("error: alignment %d not supported.\n", alignment);
+            printf("error: alignment %d not supported.\n", int(alignment) );
             return MAGMA_ERR_NOT_SUPPORTED;
         }
     }
 
    return MAGMA_SUCCESS;
 }
-

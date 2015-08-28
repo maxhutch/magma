@@ -1,5 +1,5 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
@@ -8,7 +8,7 @@
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgeqr2_batched.cu normal z -> c, Fri Jan 30 19:00:10 2015
+       @generated from zgeqr2_batched.cu normal z -> c, Tue Aug 25 16:35:10 2015
 */
 
 #include "common_magma.h"
@@ -16,105 +16,12 @@
 #include "batched_kernel_param.h"
 
 #define BLOCK_SIZE 256
-#define PRECISION_c
+
 
 #define dA(a_1,a_2) (dA  + (a_1) + (a_2)*(local_lda))
 
-#define COMPLEX
 
-//==============================================================================
-static __device__ void
-clarfg_device(
-    int n,
-    magmaFloatComplex* dalpha, magmaFloatComplex* dx, int incx,
-    magmaFloatComplex* dtau,  float* swork, float* sscale, magmaFloatComplex* scale)
-{
-
-    const int tx = threadIdx.x;
-
-    magmaFloatComplex tmp;
-    
-    // find max of [dalpha, dx], to use as scaling to avoid unnecesary under- and overflow    
-
-    if ( tx == 0 ) {
-        tmp = *dalpha;
-        #ifdef COMPLEX
-        swork[tx] = max( fabs(real(tmp)), fabs(imag(tmp)) );
-        #else
-        swork[tx] = fabs(tmp);
-        #endif
-    }
-    else {
-        swork[tx] = 0;
-    }
-    if(tx<BLOCK_SIZE)
-    {
-        for( int j = tx; j < n-1; j += BLOCK_SIZE ) {
-            tmp = dx[j*incx];
-            #ifdef COMPLEX
-            swork[tx] = max( swork[tx], max( fabs(real(tmp)), fabs(imag(tmp)) ));
-            #else
-            swork[tx] = max( swork[tx], fabs(tmp) );
-            #endif
-         }
-    }
-
-    magma_max_reduce<BLOCK_SIZE>( tx, swork );
-
-    if ( tx == 0 )
-        *sscale = swork[0];
-    __syncthreads();
-    
-    // sum norm^2 of dx/sscale
-    // dx has length n-1
-    if(tx<BLOCK_SIZE) swork[tx] = 0;
-    if ( *sscale > 0 ) {
-        if(tx<BLOCK_SIZE)
-        {
-            for( int j = tx; j < n-1; j += BLOCK_SIZE ) {
-                tmp = dx[j*incx] / *sscale;
-                swork[tx] += real(tmp)*real(tmp) + imag(tmp)*imag(tmp);
-            }
-        }
-        magma_sum_reduce<BLOCK_SIZE>( tx, swork );
-
-    }
-    
-    if ( tx == 0 ) {
-        magmaFloatComplex alpha = *dalpha;
-
-        if ( swork[0] == 0 && imag(alpha) == 0 ) {
-            // H = I
-            *dtau = MAGMA_C_ZERO;
-        }
-        else {
-            // beta = norm( [dalpha, dx] )
-            float beta;
-            tmp  = alpha / *sscale;
-            beta = *sscale * sqrt( real(tmp)*real(tmp) + imag(tmp)*imag(tmp) + swork[0] );
-            beta = -copysign( beta, real(alpha) );
-            // todo: deal with badly scaled vectors (see lapack's larfg)
-            *dtau   = MAGMA_C_MAKE( (beta - real(alpha)) / beta, -imag(alpha) / beta );
-            *dalpha = MAGMA_C_MAKE( beta, 0 );
-            *scale = 1 / (alpha - beta);
-        }
-    }
-    
-    // scale x (if norm was not 0)
-    __syncthreads();
-    if ( swork[0] != 0 ) {
-        if(tx<BLOCK_SIZE)
-        {
-            for( int j = tx; j < n-1; j += BLOCK_SIZE ) {
-                dx[j*incx] *= *scale;
-            }
-        }
-    }
-
-}
-
-
-
+#include "clarfg_devicesfunc.cuh"
 
 //==============================================================================
 
@@ -122,25 +29,23 @@ static __device__
 void clarfx_device( int m, int n,  magmaFloatComplex *v, magmaFloatComplex *tau,
                          magmaFloatComplex *dc, magma_int_t ldc, magmaFloatComplex* sum)
 {
-
-
-    if(n <=0) return ;
+    if (n <= 0) return;
     if (MAGMA_C_EQUAL(*tau, MAGMA_C_ZERO) )  return; // check singularity
 
     const int tx = threadIdx.x;
 
     magmaFloatComplex lsum;
-       
-    for(int k=0;k<n;k++)
+    
+    for (int k=0; k < n; k++)
     {
         /* perform  w := v' * C  */
-        if(tx<BLOCK_SIZE)
+        if (tx < BLOCK_SIZE)
         {
-            if (tx==0)
+            if (tx == 0)
                 lsum = dc[0+ldc*k]; //since V[0] should be one
             else
                 lsum = MAGMA_C_ZERO;
-            for( int j = tx+1; j < m; j += BLOCK_SIZE ){
+            for (int j = tx+1; j < m; j += BLOCK_SIZE) {
                 lsum += MAGMA_C_MUL( MAGMA_C_CNJG( v[j] ), dc[j+ldc*k] );
             }
 
@@ -152,17 +57,39 @@ void clarfx_device( int m, int n,  magmaFloatComplex *v, magmaFloatComplex *tau,
 
         magmaFloatComplex z__1 = - MAGMA_C_CNJG(*tau) * sum[0];
         /*  C := C - v * w  */
-        if(tx<BLOCK_SIZE)
-        {    
-           for( int j = tx+1; j<m ; j += BLOCK_SIZE )
-                 dc[j+ldc*k] += z__1 * v[j];
+        if (tx < BLOCK_SIZE)
+        {
+            for (int j = tx+1; j < m; j += BLOCK_SIZE)
+                dc[j+ldc*k] += z__1 * v[j];
         }
-        if(tx==0) dc[0+ldc*k] += z__1;
+        if (tx == 0) dc[0+ldc*k] += z__1;
 
         __syncthreads();
+    }
+}
 
 
-    } 
+//==============================================================================
+
+static __device__
+void cgeqr2_device( magma_int_t m, magma_int_t n,
+                               magmaFloatComplex* dA, magma_int_t lda,
+                               magmaFloatComplex *dtau,
+                               magmaFloatComplex *dv,
+                               magmaFloatComplex *sum,
+                               float *swork,
+                               magmaFloatComplex *scale,
+                               float *sscale)
+{
+    //lapack clarfg, compute the norm, scale and generate the householder vector
+    clarfg_device(m, dv, &(dv[1]), 1, dtau, swork, sscale, scale);
+    
+    __syncthreads();
+    
+    //update the trailing matix with the householder
+    clarfx_device(m, n, dv, dtau, dA, lda, sum);
+    
+    __syncthreads();
 }
 
 //==============================================================================
@@ -174,7 +101,6 @@ __global__
 void cgeqr2_sm_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_int_t lda,
                                magmaFloatComplex **dtau_array)
 {
-
     magmaFloatComplex* dA = dA_array[blockIdx.z];
     magmaFloatComplex* dtau = dtau_array[blockIdx.z];
 
@@ -189,101 +115,50 @@ void cgeqr2_sm_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma
     __shared__ float sscale;
     
     //load data from global to shared memory
-    for(int s=0;s<n;s++)
+    for (int s=0; s < n; s++)
     {
-        for( int j = tx; j < m; j += BLOCK_SIZE )
+        for (int j = tx; j < m; j += BLOCK_SIZE)
         {
-            sdata[j + s * m] = dA[j + s * lda] ;
+            sdata[j + s * m] = dA[j + s * lda];
         }
     }
 
 
     __syncthreads();
  
-    for(int s=0; s<min(m,n); s++)
+    for (int s=0; s < min(m,n); s++)
     {
-
-       //lapack clarfg, compute the norm, scale and generate the householder vector   
-
-       clarfg_device(m-s, &(sdata[s+s*m]), &(sdata[s+1+s*m]), 1, dtau+s, swork, &sscale, &scale); 
-       __syncthreads();
-
-       
-       //update the trailing matix with the householder
-       clarfx_device(m-s, n-(s+1), &(sdata[s+s*m]), dtau+s,&(sdata[s+(s+1)*m]), m, sum);
-
-    }// end of s
+        cgeqr2_device( m-s, n-(s+1),
+                       &(sdata[s+(s+1)*m]), m,
+                       dtau+s,
+                       &(sdata[s+s*m]),
+                       sum,
+                       swork,
+                       &scale,
+                       &sscale);
+    } // end of s
 
     //copy back to global memory
-    for(int s=0;s<n;s++)
+    for (int s=0; s < n; s++)
     {
-        for( int j = tx; j < m; j += BLOCK_SIZE )
+        for (int j = tx; j < m; j += BLOCK_SIZE)
         {
             dA[j + s * lda] = sdata[j + s * m];
         }
     }
-
 }
 
 
 
-
-//==============================================================================
-
-
-
-static __device__
-void cgeqr2_device( magma_int_t m, magma_int_t n, magmaFloatComplex* dA, magma_int_t lda,
-                               magmaFloatComplex *dtau, 
-                               magmaFloatComplex *sdata,
-                               magmaFloatComplex *sum,
-                               float *swork,
-                               magmaFloatComplex *scale,
-                               float *sscale)
-{
-
-    const int tx = threadIdx.x;
-
-
-    for(int s=0; s<min(m,n); s++)
-    {
-       //load one vector in shared memory: sdata
-       for( int j = tx; j < m-s; j += BLOCK_SIZE )
-       {
-           sdata[j] = dA[s + j + s * lda] ;
-       }
-
-       __syncthreads();
-
-       //if(tx== 0) printf("m-s=%d",m-s);
-       //lapack clarfg, compute the norm, scale and generate the householder vector   
-       clarfg_device(m-s, sdata, &(sdata[1]), 1, dtau+s, swork, sscale, scale); 
-
-       __syncthreads();
-
-       //update the trailing matix with the householder
-       clarfx_device(m-s, n-(s+1), sdata, dtau+s, &(dA[s+(s+1)*lda]), lda, sum);
-
-       for( int j = tx; j < m-s; j += BLOCK_SIZE )
-       {
-           dA[s + j + s * lda] = sdata[j];
-       }
-
-       __syncthreads();
-
-    }// end of s
-
-}
 
 
 
 //==============================================================================
 
 __global__
-void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_int_t lda,
+void cgeqr2_column_sm_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_int_t lda,
                                magmaFloatComplex **dtau_array)
 {
-
     magmaFloatComplex* dA = dA_array[blockIdx.z];
     magmaFloatComplex* dtau = dtau_array[blockIdx.z];
 
@@ -296,11 +171,65 @@ void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_in
     __shared__ float swork[ BLOCK_SIZE ];
     __shared__ float sscale;
 
-    cgeqr2_device(m, n, dA, lda, dtau, sdata, sum, swork, &scale, &sscale); 
- 
+    const int tx = threadIdx.x;
+
+    for (int s=0; s < min(m,n); s++)
+    {
+        //load one vector in shared memory: sdata
+        for (int j = tx; j < m-s; j += BLOCK_SIZE)
+        {
+            sdata[j] = dA[s + j + s * lda];
+        }
+        
+        __syncthreads();
+        
+        //sdata is written
+        cgeqr2_device(m-s, n-(s+1),
+                                &(dA[s+(s+1)*lda]), lda,
+                                dtau+s,
+                                sdata,
+                                sum,
+                                swork,
+                                &scale,
+                                &sscale);
+        
+        for (int j = tx; j < m-s; j += BLOCK_SIZE)
+        {
+            dA[s + j + s * lda] = sdata[j];
+        }
+        
+        __syncthreads();
+    }  
 }
 
 
+__global__
+void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_int_t lda,
+                               magmaFloatComplex **dtau_array)
+{
+    magmaFloatComplex* dA = dA_array[blockIdx.z];
+    magmaFloatComplex* dtau = dtau_array[blockIdx.z];
+
+    __shared__ magmaFloatComplex scale;
+    __shared__ magmaFloatComplex sum[ BLOCK_SIZE ];
+
+    __shared__ float swork[ BLOCK_SIZE ];
+    __shared__ float sscale;
+
+
+
+    for (int s=0; s < min(m,n); s++)
+    {
+        cgeqr2_device( m-s, n-(s+1),
+                       &(dA[s+(s+1)*lda]), lda,
+                       dtau+s,
+                       &(dA[s+s*lda]),
+                       sum,
+                       swork,
+                       &scale,
+                       &sscale );
+    }
+}
 
 
 //==============================================================================
@@ -361,7 +290,7 @@ void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_in
 
 
     @param
-    dwork   (workspace) COMPLEX array, dimension (N) * ( sizeof(float) + sizeof(magmaFloatComplex)) 
+    dwork   (workspace) COMPLEX array, dimension (N) * ( sizeof(float) + sizeof(magmaFloatComplex))
 
     @param[out]
     info    INTEGER
@@ -382,14 +311,13 @@ void cgeqr2_kernel_batched( int m, int n, magmaFloatComplex** dA_array, magma_in
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
     and tau in TAU(i).
 
-    @ingroup magma_cgeqrf_comp
+    @ingroup magma_cgeqrf_aux
     ********************************************************************/
 extern "C" magma_int_t
 magma_cgeqr2_batched(magma_int_t m, magma_int_t n, magmaFloatComplex **dA_array,
                   magma_int_t lda, magmaFloatComplex **dtau_array,
                   magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)
 {
-    
     magma_int_t k;
 
     /* Check arguments */
@@ -406,14 +334,13 @@ magma_cgeqr2_batched(magma_int_t m, magma_int_t n, magmaFloatComplex **dA_array,
         return arginfo;
     }
 
-
     k = min(m,n);
 
     dim3 blocks(1, 1, batchCount);
     dim3 threads(BLOCK_SIZE);
 
-    if(sizeof(magmaFloatComplex)*(m*k) <= 128 /*sizeof(magmaFloatComplex) * 128 * k*/) // there are some static shared memory besides of dynamic ones 
-    {   
+    if (sizeof(magmaFloatComplex)*(m*k) <= 42000 /*sizeof(magmaFloatComplex) * 128 * k*/) // there are some static shared memory besides of dynamic ones
+    {
         //load panel in shared memory and factorize it and copy back to gloabl memory
         //intend for small panel to avoid overfill of shared memory.
         //this kernel is composed of device routine and thus clean
@@ -422,22 +349,20 @@ magma_cgeqr2_batched(magma_int_t m, magma_int_t n, magmaFloatComplex **dA_array,
     }
     else
     {
-        //load one column vector in shared memory and householder it and used it to update trailing matrix which is global memory 
-        // one vector is normally smaller than  48K shared memory   
-        if(sizeof(magmaFloatComplex)*(m) < 42000)
-            cgeqr2_kernel_batched<<< blocks, threads, sizeof(magmaFloatComplex)*(m), queue >>>
+        //load one column vector in shared memory and householder it and used it to update trailing matrix which is global memory
+        // one vector is normally smaller than  48K shared memory
+        if (sizeof(magmaFloatComplex)*(m) < 42000)
+            cgeqr2_column_sm_kernel_batched<<< blocks, threads, sizeof(magmaFloatComplex)*(m), queue >>>
                                       (m, k, dA_array, lda, dtau_array);
         else
-            printf("m is too big, kernel launching failed, shared memory is overflowed");
+            //not use dynamic shared memory at all
+            cgeqr2_kernel_batched<<< blocks, threads, 0, queue >>>
+                                      (m, k, dA_array, lda, dtau_array);
     }
 
-
     return arginfo;
-
-} 
+}
 
 
 
 //==============================================================================
-
-

@@ -1,5 +1,5 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.1) --
+#   -- MAGMA (version 1.6.3-beta1) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
@@ -13,7 +13,7 @@ include $(MAGMA_DIR)/Makefile.internal
 include make.exp.inc
 
 ALLSRC := $(ZSRC) $(CSRC) $(DSRC) $(SSRC)
-ALLOBJ := $(ALLSRC:.cpp=.o)
+ALLOBJ := $(ALLSRC:.cpp=.$(o_ext))
 
 .PHONY: all clean cleanall
 
@@ -50,7 +50,7 @@ clean:
 	( cd schedule && $(MAKE) clean )
 	( cd src      && $(MAKE) clean )
 	( cd test     && $(MAKE) clean )
-	rm -f *.o *~ *.linkinfo
+	rm -f *.$(o_ext) *~ *.linkinfo
 
 cleanall: clean
 	rm -f $(LIBMAGMA)

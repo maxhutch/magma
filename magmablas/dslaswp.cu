@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
-       @generated from zclaswp.cu mixed zc -> ds, Fri Jan 30 19:00:08 2015
+       @generated from zclaswp.cu mixed zc -> ds, Tue Aug 25 16:35:07 2015
 
 */
 #include "common_magma.h"
@@ -27,7 +27,7 @@ dslaswp_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_t *i
         
         newind = ipiv[0];
         
-        for(int i=0; i < n; i++) {
+        for (int i=0; i < n; i++) {
             res = MAGMA_S_MAKE( (float)(A[newind+i*lda]),
                                 (float)(A[newind+i*lda]) );
             SA[i*lda] = res; 
@@ -48,7 +48,7 @@ dslaswp_inv_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_
 
         newind = ipiv[0];
 
-        for(int i=0; i < n; i++) {
+        for (int i=0; i < n; i++) {
             res = MAGMA_D_MAKE( (double)(SA[newind+i*lda]),
                                 (double)(SA[newind+i*lda]) );
             A[i*lda] = res;
@@ -109,9 +109,9 @@ magmablas_dslaswp_q(
     const magma_int_t *ipiv, magma_int_t incx,
     magma_queue_t queue )
 {
-    int blocks = (m - 1)/NB + 1;
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(NB, 1, 1);
+    int blocks = magma_ceildiv( m, NB );
+    dim3 grid( blocks );
+    dim3 threads( NB );
 
     if (incx >= 0)
         dslaswp_kernel<<< grid, threads, 0, queue >>>(n, A, lda, SA, m, ipiv);

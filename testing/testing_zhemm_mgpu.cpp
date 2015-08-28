@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @precisions normal z -> s d c
        
@@ -49,7 +49,7 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     
     magma_opts opts;
-    parse_opts( argc, argv, &opts );
+    opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
@@ -65,7 +65,7 @@ int main( int argc, char** argv)
     for (int i=0; i < nbcmplx; ++i) {
         int myngpu = gnode[i][MagmaMaxGPUs];
         printf("cmplx %d has %d gpu ", i, myngpu);
-        for(int j=0; j < myngpu; ++j)
+        for (int j=0; j < myngpu; ++j)
             printf("  %d", (int) gnode[i][j]);
         printf("\n");
     }
@@ -84,9 +84,9 @@ int main( int argc, char** argv)
         }
     }
 
-    printf( "nb %d, ngpu %d, nstream %d version %d\n", (int) nb, (int) opts.ngpu, (int) nstream, (int) opts.version );
-    printf("    M     N    nb offset  CPU GFlop/s (sec)   GPU GFlop/s (sec)   CUBLAS hemm (sec)   ||R|| / ||A||*||X||\n");
-    printf("=========================================================================================================\n");
+    printf("%% nb %d, ngpu %d, nstream %d version %d\n", (int) nb, (int) opts.ngpu, (int) nstream, (int) opts.version );
+    printf("%%   M     N    nb offset  CPU GFlop/s (sec)   GPU GFlop/s (sec)   CUBLAS hemm (sec)   ||R|| / ||A||*||X||\n");
+    printf("%%========================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
       M = opts.msize[itest];
       N = opts.nsize[itest];
@@ -94,7 +94,7 @@ int main( int argc, char** argv)
         for( int iter = 0; iter < opts.niter; ++iter ) {
             msize = M - offset;
             lda   = M;
-            ldda  = ((M + 31)/32)*32;
+            ldda  = magma_roundup( M, opts.align );  // multiple of 32 by default
             size  = lda*M;
             gflops = FLOPS_ZHEMM( MagmaLeft, (double)msize, (double)N ) / 1e9;
             
@@ -161,7 +161,7 @@ int main( int argc, char** argv)
            
             gpu_time = magma_sync_wtime(0) - gpu_time;
             gpu_perf = gflops / gpu_time;
-                
+            
             #ifdef TRACING
             char buf[80];
             snprintf( buf, sizeof(buf), "zhemm-m%d-n%d-nb%d-stream%d-ngpu%d-run%d.svg",
@@ -216,7 +216,7 @@ int main( int argc, char** argv)
                 fclose(trace_file);
                 */
                 magma_int_t firstprint=0;
-                for(magma_int_t dev=0; dev < opts.ngpu; ++dev) {
+                for (magma_int_t dev=0; dev < opts.ngpu; ++dev) {
                     magma_setdevice( dev );
                     magma_zgetmatrix( M, N, dB[dev], ldda, hR, lda );
     

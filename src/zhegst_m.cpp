@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.1) --
+    -- MAGMA (version 1.6.3-beta1) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date January 2015
+       @date August 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -145,17 +145,17 @@ magma_zhegst_m(
     magma_queue_t orig_stream;
     magmablasGetKernelStream( &orig_stream );
 
-    magma_int_t nbl = (n-1)/nb+1; // number of blocks
+    magma_int_t nbl = magma_ceildiv( n, nb ); // number of blocks
 
     magma_int_t ldda = 0;
     magma_int_t dima = 0;
 
     if ( (itype == 1 && upper) || (itype != 1 && !upper) ) {
-        ldda = ((nbl-1)/ngpu+1)*nb;
+        ldda = magma_ceildiv( nbl, ngpu )*nb;
         dima = n;
     } else {
         ldda = n;
-        dima = ((nbl-1)/ngpu+1)*nb;
+        dima = magma_ceildiv( nbl, ngpu )*nb;
     }
     magma_int_t lddbr = 2 * nb;
     magma_int_t lddbc = n;
