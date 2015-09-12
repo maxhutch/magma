@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -114,26 +114,26 @@ $(document).ready(function(){initNavTree('group__magma__zgeqrf__tile.html','');}
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga7ed9970612a5b114f8e6fe2fdb80c403"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgeqrf__tile.html#ga7ed9970612a5b114f8e6fe2fdb80c403">magma_ztsqrt_gpu</a> (magma_int_t *m, magma_int_t *n, magmaDoubleComplex *A1, magmaDoubleComplex *A2, magma_int_t *lda, magmaDoubleComplex *tau, magmaDoubleComplex *work, magma_int_t *lwork, magmaDoubleComplex_ptr dwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga7ed9970612a5b114f8e6fe2fdb80c403"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEQRF computes a QR factorization of a complex M-by-N matrix A: A = Q * R.  <a href="#ga7ed9970612a5b114f8e6fe2fdb80c403">More...</a><br /></td></tr>
-<tr class="separator:ga7ed9970612a5b114f8e6fe2fdb80c403"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8e42fc0cf91835331cdbc0cc948c4551"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgeqrf__tile.html#ga8e42fc0cf91835331cdbc0cc948c4551">magma_ztsqrt_gpu</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex *A1, magmaDoubleComplex *A2, magma_int_t lda, magmaDoubleComplex *tau, magmaDoubleComplex *work, magma_int_t lwork, magmaDoubleComplex_ptr dwork, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga8e42fc0cf91835331cdbc0cc948c4551"><td class="mdescLeft">&#160;</td><td class="mdescRight">ztsqrt computes a QR factorization of a rectangular matrix formed by coupling a complex N-by-N upper triangular tile A1 on top of a complex M-by-N tile A2:  <a href="#ga8e42fc0cf91835331cdbc0cc948c4551">More...</a><br /></td></tr>
+<tr class="separator:ga8e42fc0cf91835331cdbc0cc948c4551"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ga7ed9970612a5b114f8e6fe2fdb80c403"></a>
+<a class="anchor" id="ga8e42fc0cf91835331cdbc0cc948c4551"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_ztsqrt_gpu </td>
           <td>(</td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>m</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -151,7 +151,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>lda</em>, </td>
         </tr>
         <tr>
@@ -169,7 +169,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>lwork</em>, </td>
         </tr>
         <tr>
@@ -192,19 +192,19 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>ZGEQRF computes a QR factorization of a complex M-by-N matrix A: A = Q * R. </p>
+<p>ztsqrt computes a QR factorization of a rectangular matrix formed by coupling a complex N-by-N upper triangular tile A1 on top of a complex M-by-N tile A2: </p>
+<p>| A1 | = Q * R | A2 |</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array on the GPU, dimension (LDA,N) On entry, the M-by-N matrix A. On exit, the elements on and above the diagonal of the array contain the min(M,N)-by-N upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the orthogonal matrix Q as a product of min(m,n) elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>COMPLEX_16 array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX_16 array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
- Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= (M+N+NB)*NB, where NB can be obtained through magma_get_zgeqrf_nb(M). <br />
- If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dwork</td><td>(workspace) COMPLEX_16 array on the GPU, dimension 2*N*NB, where NB can be obtained through magma_get_zgeqrf_nb(M). It starts with NB*NB blocks that store the triangular T matrices, followed by the NB*NB blocks of the diagonal inverses for the R matrix.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of columns of the tile A2. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of rows of the tile A1. The number of columns of the tiles A1 and A2. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A1</td><td>COMPLEX_16 array on the GPU, dimension (LDA,N) On entry, the N-by-N tile A1. On exit, the elements on and above the diagonal of the array contain the N-by-N upper trapezoidal tile R; the elements below the diagonal are not referenced.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A2</td><td>COMPLEX_16 array on the GPU, dimension (LDA,N) On entry, the M-by-N tile A2. On exit, all the elements, with the array TAU, represent the unitary tile Q as a product of elementary reflectors (see Further Details).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the tile A1 and A2. LDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>INTEGER The scalar factors of the elementary reflectors (see Further Details).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>COMPLEX_16 array on the CPU host, dimension (LWORK).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. TODO: LWORK &gt;= ???.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dwork</td><td>COMPLEX_16 array on the GPU, dimension TODO.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
@@ -225,7 +225,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:52 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

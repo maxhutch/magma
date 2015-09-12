@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal d
        
@@ -12,7 +12,6 @@
 
 */
 #include "common_magma.h"
-#include "commonblas_d.h"
 #include "magma_templates.h"
 
 #define PRECISION_d
@@ -20,8 +19,8 @@
 #include "gemv_template_kernel_batched.cuh"
 #include "gemv_config/gemvn_param.h"
 #include "gemv_config/gemvt_param.h"
-#define version(s,v) s ## _V_ ## v
 
+#define version(s,v) s ## _V_ ## v
 
 
 /**
@@ -58,15 +57,18 @@
     alpha   DOUBLE_PRECISION
             On entry, ALPHA specifies the scalar alpha.
 
+
     @param[in]
-    dA      DOUBLE_PRECISION array of dimension ( LDDA, n ) on the GPU.
+    dA_array 	Array of pointers, dimension (batchCount).
+             Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, n ) on the GPU
    
     @param[in]
     ldda    INTEGER
             LDDA specifies the leading dimension of A.
 
     @param[in]
-    dx      DOUBLE_PRECISION array of dimension
+    dx_array 	Array of pointers, dimension (batchCount).
+            Each is a DOUBLE_PRECISION array of dimension
             n if trans == MagmaNoTrans
             m if trans == MagmaTrans or MagmaConjTrans
      
@@ -75,18 +77,27 @@
             INCX must not be zero.
   
     @param[in]
-    beta    DOUBLE REAL
-            On entry, BETA specifies the scalar beta. When BETA is
+    beta    DOUBLE_PRECISION
+            On entry, ALPHA specifies the scalar beta. When BETA is
             supplied as zero then Y need not be set on input.
 
     @param[out]
-    dy      DOUBLE PRECISION array of dimension
+    dy_array 	Array of pointers, dimension (batchCount).
+            Each is a DOUBLE_PRECISION array of dimension
             m if trans == MagmaNoTrans
             n if trans == MagmaTrans or MagmaConjTrans
 
     @param[in]
     incy    Specifies the increment for the elements of Y.
             INCY must not be zero.
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_dblas2
     ********************************************************************/

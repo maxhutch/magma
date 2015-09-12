@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop cuConj.
        
@@ -128,6 +128,9 @@ zhemv_kernel_U(
             if ( ty2+j < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
+            }
         }
         if ( tx2 >= partial ) {
             A = A + tx2 - (partial - 1);  // A is A(blk_ind + tx2, blk_ind + ty2)
@@ -188,6 +191,9 @@ zhemv_kernel_U(
             if ( ty2+j + half_NB_X < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
+            }
         }
         if ( tx2 + half_NB_X >= partial ) {
             A = A + (tx2 + half_NB_X) - (partial - 1);
@@ -246,6 +252,9 @@ zhemv_kernel_U(
         for (int j=0; j < half_NB_X; j += 8) {
             if ( ty2+j + half_NB_X < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
+            }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
             }
         }
         if ( tx2 >= partial ) {
@@ -388,7 +397,7 @@ zhemv_kernel_U(
         }
         // already at next 64x64 block
         // A is A(blk_ind + tx, (jj+1)*NB_x + 4*ty)
-    
+        
         // store partial row sums of transposed result, y_jj
         #pragma unroll
         for (int k=0; k < 4; k++) {

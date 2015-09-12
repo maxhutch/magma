@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zungqr.cpp normal z -> d, Tue Aug 25 16:35:16 2015
+       @generated from zungqr.cpp normal z -> d, Fri Sep 11 18:29:28 2015
 
        @author Stan Tomov
        @author Mark Gates
@@ -91,10 +91,10 @@ magma_dorgqr(
 
     magma_int_t  m_kk, n_kk, k_kk, mi;
     magma_int_t lwork, ldda;
-    magma_int_t i, ib, ki, kk;  //, iinfo;
+    magma_int_t i, ib, ki, kk;
     magma_int_t lddwork;
-    double *dA, *dV, *dW;
-    double *work;
+    double *dA=NULL, *dV=NULL, *dW=NULL;
+    double *work=NULL;
 
     *info = 0;
     if (m < 0) {
@@ -136,20 +136,24 @@ magma_dorgqr(
     lddwork = magma_roundup( n, 32 );
     if (MAGMA_SUCCESS != magma_dmalloc( &dA, ldda*n + ldda*nb + lddwork*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
+        goto cleanup;
     }
     dV = dA + ldda*n;
     dW = dA + ldda*n + ldda*nb;
 
     // Allocate CPU work space
-    lwork = (n+m+nb) * nb;
+    // n*nb  for larfb work
+    // m*nb  for V
+    // nb*nb for T
+    lwork = (n + m + nb) * nb;
     magma_dmalloc_cpu( &work, lwork );
     if (work == NULL) {
-        magma_free( dA );
         *info = MAGMA_ERR_HOST_ALLOC;
-        return *info;
+        goto cleanup;
     }
-    double *V = work + (n+nb)*nb;
+    double *work_T, *work_V;
+    work_T = work + n*nb;
+    work_V = work + n*nb + nb*nb;
 
     magma_queue_t stream;
     magma_queue_create( &stream );
@@ -159,22 +163,23 @@ magma_dorgqr(
         m_kk = m - kk;
         n_kk = n - kk;
         k_kk = k - kk;
-        /*
-            // Replacing this with the following 4 routines works but dorgqr is slow for
-            // k smaller than the dorgqr's blocking size (new version can be up to 60x faster)
-            lapackf77_dorgqr( &m_kk, &n_kk, &k_kk,
-                              A(kk, kk), &lda,
-                              &tau[kk], work, &lwork, &iinfo );
-        */
-        lapackf77_dlacpy( MagmaUpperLowerStr, &m_kk, &k_kk, A(kk,kk), &lda, V, &m_kk);
-        lapackf77_dlaset( MagmaUpperLowerStr, &m_kk, &n_kk, &c_zero, &c_one, A(kk, kk), &lda );
-
+        
+        // dorgqr requires less workspace (n*nb), but is slow if k < dorgqr's block size.
+        // replacing it with the 4 routines below is much faster (e.g., 60x).
+        //int iinfo;
+        //lapackf77_dorgqr( &m_kk, &n_kk, &k_kk,
+        //                  A(kk, kk), &lda,
+        //                  &tau[kk], work, &lwork, &iinfo );
+        
+        lapackf77_dlacpy( MagmaFullStr, &m_kk, &k_kk, A(kk,kk), &lda, work_V, &m_kk);
+        lapackf77_dlaset( MagmaFullStr, &m_kk, &n_kk, &c_zero, &c_one, A(kk, kk), &lda );
+        
         lapackf77_dlarft( MagmaForwardStr, MagmaColumnwiseStr,
                           &m_kk, &k_kk,
-                          V, &m_kk, &tau[kk], work, &k_kk);
+                          work_V, &m_kk, &tau[kk], work_T, &k_kk);
         lapackf77_dlarfb( MagmaLeftStr, MagmaNoTransStr, MagmaForwardStr, MagmaColumnwiseStr,
                           &m_kk, &n_kk, &k_kk,
-                          V, &m_kk, work, &k_kk, A(kk, kk), &lda, work+k_kk*k_kk, &n_kk );
+                          work_V, &m_kk, work_T, &k_kk, A(kk, kk), &lda, work, &n_kk );
         
         if (kk > 0) {
             magma_dsetmatrix( m_kk, n_kk,
@@ -195,7 +200,7 @@ magma_dorgqr(
         for (i = ki; i >= 0; i -= nb) {
             ib = min(nb, k - i);
 
-            // Send current panel to the GPU
+            // Send current panel to dV on the GPU
             mi = m - i;
             lapackf77_dlaset( "Upper", &ib, &ib, &c_zero, &c_one, A(i, i), &lda );
             magma_dsetmatrix_async( mi, ib,
@@ -220,6 +225,7 @@ magma_dorgqr(
                           dA(0, 0), ldda, A(0, 0), lda);
     }
 
+cleanup:
     magma_queue_destroy( stream );
     magma_free( dA );
     magma_free_cpu( work );

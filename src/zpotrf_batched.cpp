@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -41,31 +41,42 @@
             The order of the matrix dA.  N >= 0.
 
     @param[in,out]
-    dA      COMPLEX_16 array on the GPU, dimension (LDDA,N)
-            On entry, the Hermitian matrix dA.  If UPLO = MagmaUpper, the leading
-            N-by-N upper triangular part of dA contains the upper
-            triangular part of the matrix dA, and the strictly lower
-            triangular part of dA is not referenced.  If UPLO = MagmaLower, the
-            leading N-by-N lower triangular part of dA contains the lower
-            triangular part of the matrix dA, and the strictly upper
-            triangular part of dA is not referenced.
+    dA_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX_16 array on the GPU, dimension (LDDA,N)
+             On entry, each pointer is a Hermitian matrix dA.  
+             If UPLO = MagmaUpper, the leading
+             N-by-N upper triangular part of dA contains the upper
+             triangular part of the matrix dA, and the strictly lower
+             triangular part of dA is not referenced.  If UPLO = MagmaLower, the
+             leading N-by-N lower triangular part of dA contains the lower
+             triangular part of the matrix dA, and the strictly upper
+             triangular part of dA is not referenced.
     \n
-            On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization dA = U**H * U or dA = L * L**H.
+             On exit, if corresponding entry in info_array = 0, 
+             each pointer is the factor U or L from the Cholesky
+             factorization dA = U**H * U or dA = L * L**H.
 
     @param[in]
     ldda     INTEGER
-            The leading dimension of the array dA.  LDDA >= max(1,N).
+            The leading dimension of each array dA.  LDDA >= max(1,N).
             To benefit from coalescent memory accesses LDDA must be
             divisible by 16.
 
     @param[out]
-    info    INTEGER
+    info_array    Array of INTEGERs, dimension (batchCount), for corresponding matrices.
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
       -     > 0:  if INFO = i, the leading minor of order i is not
                   positive definite, and the factorization could not be
                   completed.
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zposv_comp
     ********************************************************************/

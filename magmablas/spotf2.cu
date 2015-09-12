@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
-       @generated from zpotf2.cu normal z -> s, Tue Aug 25 16:35:10 2015
+       @generated from zpotf2.cu normal z -> s, Fri Sep 11 18:29:22 2015
 */
 #include "common_magma.h"
 
@@ -17,7 +17,7 @@ void spotf2_sscal(magma_int_t n, float *x, magma_int_t incx);
 void spotf2_sdot(magma_int_t n, float *x, magma_int_t incx);
 
 #if defined(PRECISION_z) || defined(PRECISION_c)
-void slacgv(magma_int_t n, float *x, magma_int_t incx);
+void magmablas_slacgv(magma_int_t n, float *x, magma_int_t incx);
 #endif
 
 /**
@@ -112,7 +112,7 @@ magma_spotf2_gpu(
             spotf2_sdot(j, dA(0,j), 1); // including sdot product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                slacgv(j, dA(0, j), 1);
+                magmablas_slacgv(j, dA(0, j), 1);
                 #endif
                 magma_sgemv( MagmaTrans, j, n-j-1,
                              alpha, dA(0, j+1), ldda,
@@ -120,7 +120,7 @@ magma_spotf2_gpu(
                              beta,  dA(j, j+1), ldda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                slacgv(j, dA(0, j), 1);
+                magmablas_slacgv(j, dA(0, j), 1);
                 #endif
                 spotf2_sscal(n-j, dA(j,j), ldda);
             }
@@ -131,7 +131,7 @@ magma_spotf2_gpu(
             spotf2_sdot(j, dA(j,0), ldda); // including sdot product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                slacgv(j, dA(j, 0), ldda);
+                magmablas_slacgv(j, dA(j, 0), ldda);
                 #endif
                 magma_sgemv( MagmaNoTrans, n-j-1, j,
                              alpha, dA(j+1, 0), ldda,
@@ -139,7 +139,7 @@ magma_spotf2_gpu(
                              beta,  dA(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                slacgv(j, dA(j, 0), ldda);
+                magmablas_slacgv(j, dA(j, 0), ldda);
                 #endif
                 spotf2_sscal(n-j, dA(j,j), 1);
             }
@@ -294,9 +294,9 @@ __global__ void kernel_slacgv(int n, float *x, int incx)
     incx    INTEGER
             The spacing between successive elements of X.
 
-    @ingroup magma_sposv_aux
+    @ingroup magma_saux1
     ********************************************************************/
-void slacgv(magma_int_t n, float *x, magma_int_t incx)
+void magmablas_slacgv(magma_int_t n, float *x, magma_int_t incx)
 {
     dim3 threads(slacgv_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, slacgv_bs );

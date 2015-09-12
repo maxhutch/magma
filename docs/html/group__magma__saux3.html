@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -298,6 +298,9 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldwork</td><td>INTEGER The leading dimension of the array WORK. If SIDE = MagmaLeft, LDWORK &gt;= max(1,N); if SIDE = MagmaRight, LDWORK &gt;= max(1,M);</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">dworkvt_array</td><td>(workspace) REAL array, dimension (LDWORKT,K)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldworkvt</td><td>INTEGER The leading dimension of the array WORKVT. LDWORKVT &gt;= max(1,min(M,N));</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Cublas handle might be used internally.</td></tr>
   </table>
   </dd>
 </dl>
@@ -726,7 +729,7 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:54 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

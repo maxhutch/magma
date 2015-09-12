@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zssssm_gpu.cpp normal z -> s, Tue Aug 25 16:35:14 2015
+       @generated from zssssm_gpu.cpp normal z -> s, Fri Sep 11 18:29:27 2015
 
 */
 #include "common_magma.h"
@@ -25,6 +25,11 @@
 
     Arguments
     ---------
+    @param[in]
+    order   magma_order_t
+      -     = MagmaRowMajor:  dA is in row-major order (more efficient).
+      -     = MagmaColMajor:  dA is in column-major order.
+
     @param[in]
     m1      INTEGER
             The number of rows of the matrix A1.  M1 >= 0.
@@ -87,6 +92,12 @@
     @param[in]
     ipiv    INTEGER array on the cpu.
             The pivot indices array of size K as returned by STSTRF
+
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation failed.
 
     @ingroup magma_sgesv_tile
     ********************************************************************/

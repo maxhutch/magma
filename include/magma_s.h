@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from magma_z.h normal z -> s, Tue Aug 25 16:35:05 2015
+       @generated from magma_z.h normal z -> s, Fri Sep 11 18:29:17 2015
 */
 
 #ifndef MAGMA_S_H
@@ -58,7 +58,7 @@ magma_int_t magma_get_sbulge_gcperf();
 void
 magma_smove_eig(
     magma_range_t range, magma_int_t n, float *w,
-    magma_int_t *il, magma_int_t *iu, float vl, float vu, magma_int_t *m);
+    magma_int_t *il, magma_int_t *iu, float vl, float vu, magma_int_t *mout);
 
 // defined in slaex3.cpp
 void
@@ -260,7 +260,7 @@ magma_ssyevdx(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     float *A, magma_int_t lda,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -274,7 +274,7 @@ magma_ssyevdx_2stage(
     magma_int_t n,
     float *A, magma_int_t lda,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -289,7 +289,7 @@ magma_ssyevr(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     float *A, magma_int_t lda,
     float vl, float vu,
-    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
+    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *mout,
     float *w,
     float *Z, magma_int_t ldz,
     magma_int_t *isuppz,
@@ -304,7 +304,7 @@ magma_ssyevx(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     float *A, magma_int_t lda,
     float vl, float vu,
-    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
+    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *mout,
     float *w,
     float *Z, magma_int_t ldz,
     float *work, magma_int_t lwork,
@@ -338,7 +338,7 @@ magma_ssygvdx(
     magma_int_t n, float *A, magma_int_t lda,
     float *B, magma_int_t ldb,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -352,7 +352,7 @@ magma_ssygvdx_2stage(
     float *A, magma_int_t lda,
     float *B, magma_int_t ldb,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -366,7 +366,7 @@ magma_ssygvr(
     float *A, magma_int_t lda,
     float *B, magma_int_t ldb,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    float abstol, magma_int_t *m, float *w,
+    float abstol, magma_int_t *mout, float *w,
     float *Z, magma_int_t ldz,
     magma_int_t *isuppz, float *work, magma_int_t lwork,
     float *rwork, magma_int_t lrwork,
@@ -379,7 +379,7 @@ magma_ssygvx(
     magma_int_t n, float *A, magma_int_t lda,
     float *B, magma_int_t ldb,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    float abstol, magma_int_t *m, float *w,
+    float abstol, magma_int_t *mout, float *w,
     float *Z, magma_int_t ldz,
     float *work, magma_int_t lwork, float *rwork,
     magma_int_t *iwork, magma_int_t *ifail,
@@ -818,7 +818,7 @@ magma_ssyevdx_2stage_m(
     magma_int_t n,
     float *A, magma_int_t lda,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -833,7 +833,7 @@ magma_ssyevdx_m(
     magma_int_t n,
     float *A, magma_int_t lda,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -872,7 +872,7 @@ magma_ssygvdx_2stage_m(
     float *A, magma_int_t lda,
     float *B, magma_int_t ldb,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -888,7 +888,7 @@ magma_ssygvdx_m(
     float *A, magma_int_t lda,
     float *B, magma_int_t ldb,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
     float *rwork, magma_int_t lrwork,
@@ -1282,7 +1282,7 @@ magma_ssyevdx_gpu(
     magmaFloat_ptr dA, magma_int_t ldda,
     float vl, float vu,
     magma_int_t il, magma_int_t iu,
-    magma_int_t *m, float *w,
+    magma_int_t *mout, float *w,
     float *wA,  magma_int_t ldwa,
     float *work, magma_int_t lwork,
     #ifdef COMPLEX
@@ -1298,7 +1298,7 @@ magma_ssyevr_gpu(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda,
     float vl, float vu,
-    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
+    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *mout,
     float *w,
     magmaFloat_ptr dZ, magma_int_t lddz,
     magma_int_t *isuppz,
@@ -1314,7 +1314,7 @@ magma_ssyevx_gpu(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     magmaFloat_ptr dA, magma_int_t ldda,
     float vl, float vu, magma_int_t il, magma_int_t iu,
-    float abstol, magma_int_t *m,
+    float abstol, magma_int_t *mout,
     float *w,
     magmaFloat_ptr dZ, magma_int_t lddz,
     float *wA, magma_int_t ldwa,
@@ -1570,10 +1570,10 @@ magma_strtri_gpu(
 
 magma_int_t
 magma_stsqrt_gpu(
-    magma_int_t *m, magma_int_t *n,
-    float *A1, float *A2, magma_int_t *lda,
+    magma_int_t m, magma_int_t n,
+    float *A1, float *A2, magma_int_t lda,
     float *tau,
-    float *work, magma_int_t *lwork,
+    float *work, magma_int_t lwork,
     magmaFloat_ptr dwork,
     magma_int_t *info);
 

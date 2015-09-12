@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
-       @generated from zpotf2.cu normal z -> c, Tue Aug 25 16:35:10 2015
+       @generated from zpotf2.cu normal z -> c, Fri Sep 11 18:29:22 2015
 */
 #include "common_magma.h"
 
@@ -17,7 +17,7 @@ void cpotf2_csscal(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
 void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
 
 #if defined(PRECISION_z) || defined(PRECISION_c)
-void clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
+void magmablas_clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx);
 #endif
 
 /**
@@ -112,7 +112,7 @@ magma_cpotf2_gpu(
             cpotf2_cdotc(j, dA(0,j), 1); // including cdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                clacgv(j, dA(0, j), 1);
+                magmablas_clacgv(j, dA(0, j), 1);
                 #endif
                 magma_cgemv( MagmaTrans, j, n-j-1,
                              alpha, dA(0, j+1), ldda,
@@ -120,7 +120,7 @@ magma_cpotf2_gpu(
                              beta,  dA(j, j+1), ldda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                clacgv(j, dA(0, j), 1);
+                magmablas_clacgv(j, dA(0, j), 1);
                 #endif
                 cpotf2_csscal(n-j, dA(j,j), ldda);
             }
@@ -131,7 +131,7 @@ magma_cpotf2_gpu(
             cpotf2_cdotc(j, dA(j,0), ldda); // including cdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                clacgv(j, dA(j, 0), ldda);
+                magmablas_clacgv(j, dA(j, 0), ldda);
                 #endif
                 magma_cgemv( MagmaNoTrans, n-j-1, j,
                              alpha, dA(j+1, 0), ldda,
@@ -139,7 +139,7 @@ magma_cpotf2_gpu(
                              beta,  dA(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                clacgv(j, dA(j, 0), ldda);
+                magmablas_clacgv(j, dA(j, 0), ldda);
                 #endif
                 cpotf2_csscal(n-j, dA(j,j), 1);
             }
@@ -294,9 +294,9 @@ __global__ void kernel_clacgv(int n, magmaFloatComplex *x, int incx)
     incx    INTEGER
             The spacing between successive elements of X.
 
-    @ingroup magma_cposv_aux
+    @ingroup magma_caux1
     ********************************************************************/
-void clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
+void magmablas_clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
 {
     dim3 threads(clacgv_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, clacgv_bs );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zlange.cu normal z -> s, Tue Aug 25 16:35:09 2015
+       @generated from zlange.cu normal z -> s, Fri Sep 11 18:29:20 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -275,7 +275,7 @@ magmablas_slange(
     else if ( norm == MagmaOneNorm ) {
         dim3 grid( n );
         slange_one_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );  // note N instead of M
         cudaMemcpy( &result, &dwork[0], sizeof(float), cudaMemcpyDeviceToHost );
     }
     

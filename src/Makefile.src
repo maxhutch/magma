@@ -303,6 +303,7 @@ DSRC = \
 	dsyevdx_2stage.cpp \
 	dbulge_back_m.cpp \
 	dbulge_applyQ_v2_m.cpp \
+	dsyevdx_2stage_m.cpp \
 	dsytrd_sy2sb_mgpu.cpp \
 	dsytrd_sy2sb_mgpu_spec.cpp \
 	core_dlarfy.cpp \
@@ -472,8 +473,8 @@ SSRC = \
 	ssyevdx_2stage.cpp \
 	sbulge_back_m.cpp \
 	sbulge_applyQ_v2_m.cpp \
-	ssyevdx_2stage_m.cpp \
 	ssygvdx_2stage_m.cpp \
+	ssyevdx_2stage_m.cpp \
 	ssytrd_sy2sb_mgpu.cpp \
 	ssytrd_sy2sb_mgpu_spec.cpp \
 	core_slarfy.cpp \

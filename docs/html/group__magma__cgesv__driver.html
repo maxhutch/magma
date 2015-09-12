@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -132,9 +132,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga957ef5579e5a686b96b37ff31724414d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cgesv__driver.html#ga957ef5579e5a686b96b37ff31724414d">magma_cgesv_rbt</a> (magma_bool_t ref, magma_int_t n, magma_int_t nrhs, magmaFloatComplex *A, magma_int_t lda, magmaFloatComplex *B, magma_int_t ldb, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga957ef5579e5a686b96b37ff31724414d"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGESV_RBT solves a system of linear equations A * X = B where A is a general N-by-N matrix and X and B are N-by-NRHS matrices.  <a href="#ga957ef5579e5a686b96b37ff31724414d">More...</a><br /></td></tr>
 <tr class="separator:ga957ef5579e5a686b96b37ff31724414d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6912765c9df56cef3cf6989508a725db"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cgesv__driver.html#ga6912765c9df56cef3cf6989508a725db">magma_cgesv_rbt_batched</a> (magma_int_t n, magma_int_t nrhs, magmaFloatComplex **dA_array, magma_int_t ldda, magmaFloatComplex **dB_array, magma_int_t lddb, magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga6912765c9df56cef3cf6989508a725db"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGESV solves a system of linear equations A * X = B, A**T * X = B, or A**H * X = B with a general N-by-N matrix A using the LU factorization computed by CGETRF_GPU.  <a href="#ga6912765c9df56cef3cf6989508a725db">More...</a><br /></td></tr>
-<tr class="separator:ga6912765c9df56cef3cf6989508a725db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga83e03bcc3dd84ff11b739e36469983d5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cgesv__driver.html#ga83e03bcc3dd84ff11b739e36469983d5">magma_cgesv_rbt_batched</a> (magma_int_t n, magma_int_t nrhs, magmaFloatComplex **dA_array, magma_int_t ldda, magmaFloatComplex **dB_array, magma_int_t lddb, magma_int_t *dinfo_array, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga83e03bcc3dd84ff11b739e36469983d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">CGESV solves a system of linear equations A * X = B, A**T * X = B, or A**H * X = B with a general N-by-N matrix A using the LU factorization computed by CGETRF_GPU.  <a href="#ga83e03bcc3dd84ff11b739e36469983d5">More...</a><br /></td></tr>
+<tr class="separator:ga83e03bcc3dd84ff11b739e36469983d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -294,20 +294,24 @@ Functions</h2></td></tr>
 
 <p>CGESV solves a system of linear equations A * X = B where A is a general N-by-N matrix and X and B are N-by-NRHS matrices. </p>
 <p>The LU decomposition with partial pivoting and row interchanges is used to factor A as A = P * L * U, where P is a permutation matrix, L is unit lower triangular, and U is upper triangular. The factored form of A is then used to solve the system of equations A * X = B.</p>
+<p>This is a batched version that solves batchCount N-by-N matrices in parallel. dA, dB, ipiv, and info become arrays with one entry per matrix.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array on the GPU, dimension (LDDA,N). On entry, the M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX array on the GPU, dimension (LDDA,N). On entry, each pointer is an M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dipiv_array</td><td>Array of pointers, dimension (batchCount), for corresponding matrices. Each is an INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX array on the GPU, dimension (LDDB,N). On entry, each pointer is an right hand side matrix B. On exit, each pointer is the solution matrix X.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dinfo_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -463,21 +467,24 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CGESV solves a system of linear equations A * X = B where A is a general N-by-N matrix and X and B are N-by-NRHS matrices. </p>
-<p>The LU decomposition with partial pivoting and row interchanges is used to factor A as A = P * L * U, where P is a permutation matrix, L is unit lower triangular, and U is upper triangular. The factored form of A is then used to solve the system of equations A * X = B.</p>
+<p>The LU decomposition without pivoting is used to factor A as A = L * U, where L is unit lower triangular, and U is upper triangular. The factored form of A is then used to solve the system of equations A * X = B.</p>
+<p>This is a batched version that solves batchCount N-by-N matrices in parallel. dA, dB, and info become arrays with one entry per matrix.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array on the GPU, dimension (LDDA,N). On entry, the M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX array on the GPU, dimension (LDDA,N). On entry, each pointer is an M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX array on the GPU, dimension (LDDB,N). On entry, each pointer is an right hand side matrix B. On exit, each pointer is the solution matrix X.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -645,7 +652,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga6912765c9df56cef3cf6989508a725db"></a>
+<a class="anchor" id="ga83e03bcc3dd84ff11b739e36469983d5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -689,7 +696,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>info_array</em>, </td>
+          <td class="paramname"><em>dinfo_array</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -712,26 +719,23 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CGESV solves a system of linear equations A * X = B, A**T * X = B, or A**H * X = B with a general N-by-N matrix A using the LU factorization computed by CGETRF_GPU. </p>
+<p>This is a batched version that solves batchCount N-by-N matrices in parallel. dA, dB, and info become arrays with one entry per matrix.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t Specifies the form of the system of equations:<ul>
-<li>= MagmaNoTrans: A * X = B (No transpose)</li>
-<li>= MagmaTrans: A**T * X = B (Transpose)</li>
-<li>= MagmaConjTrans: A**H * X = B (Conjugate transpose)</li>
-</ul>
-</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array on the GPU, dimension (LDA,N) The factors L and U from the factorization A = P*L*U as computed by CGETRF_GPU.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (N) The pivot indices from CGETRF; for 1 &lt;= i &lt;= N, row i of the matrix was interchanged with row IPIV(i).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX array on the GPU, dimension (LDDA,N). On entry, each pointer is an M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX array on the GPU, dimension (LDDB,N). On entry, each pointer is an right hand side matrix B. On exit, each pointer is the solution matrix X.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dinfo_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -743,7 +747,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:51 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:03 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

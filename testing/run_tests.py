@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 1.6.3-beta1) --
+# MAGMA (version 1.7.0) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date August 2015
+# @date September 2015
 
 ## @file run_tests.py
 #  @author Mark Gates
@@ -406,8 +406,8 @@ blas = (
 	('testing_ztrsv',       '-U -C -DN  -c',  n,    'cublas only'),
 	('testing_ztrsv',       '-U -C -DU  -c',  n,    'cublas only'),
 	
-	('testing_zhemm_mgpu',   ngpu + '-L -c',  n,    ''),
-	('testing_zhemm_mgpu',   ngpu + '-U -c',  n,    ''),
+	('#testing_zhemm_mgpu',  ngpu + '-L -c',  n,    'tester needs updating'),
+	('#testing_zhemm_mgpu',  ngpu + '-U -c',  n,    'tester needs updating'),
 	('testing_zhemv_mgpu',   ngpu + '-L -c',  n,    ''),
 	('testing_zhemv_mgpu',   ngpu + '-U -c',  n,    ''),
 	('testing_zher2k_mgpu',  ngpu + '-L -c',  n,    ''),
@@ -535,6 +535,7 @@ hesv = (
 	
 	# Aasen's
 	('testing_zhetrf', '-L --version 6 -c2',  n,    ''),
+	('#testing_zhetrf','-U --version 6 -c2',  n,    'upper not implemented'),
 )
 if ( opts.hesv ):
 	tests += hesv
@@ -715,7 +716,7 @@ sygv = (
 	('testing_zhegvdx_2stage',   '-L -JN --itype 1',  n,  '-c implies -JV'),
 	('testing_zhegvdx_2stage',   '-L -JN --itype 2',  n,  '-c implies -JV'),
 	('testing_zhegvdx_2stage',   '-L -JN --itype 3',  n,  '-c implies -JV'),
-	                              
+	
 	('#testing_zhegvdx_2stage',  '-U -JN --itype 1',  n,  '-c implies -JV, upper not implemented'),
 	('#testing_zhegvdx_2stage',  '-U -JN --itype 2',  n,  '-c implies -JV, upper not implemented'),
 	('#testing_zhegvdx_2stage',  '-U -JN --itype 3',  n,  '-c implies -JV, upper not implemented'),
@@ -745,7 +746,7 @@ sygv = (
 	('#testing_zhegvdx_2stage_m', ngpu + '-U -JV --itype 1 -c', n,  'upper not implemented'),
 	('#testing_zhegvdx_2stage_m', ngpu + '-U -JV --itype 2 -c', n,  'upper not implemented'),
 	('#testing_zhegvdx_2stage_m', ngpu + '-U -JV --itype 3 -c', n,  'upper not implemented'),
-)                                 
+)
 if ( opts.sygv ):
 	tests += sygv
 

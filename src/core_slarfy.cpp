@@ -6,7 +6,7 @@
  *
  *     @author Azzam Haidar
  *
- *     @generated from core_zlarfy.cpp normal z -> s, Tue Aug 25 16:35:19 2015
+ *     @generated from core_zlarfy.cpp normal z -> s, Fri Sep 11 18:29:30 2015
  *
  */
 #include "common_magma.h"

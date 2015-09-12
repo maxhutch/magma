@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -126,9 +126,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga8e4b2fcaa99be73fb9133c045a1484bb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__driver.html#ga8e4b2fcaa99be73fb9133c045a1484bb">magma_cheevdx</a> (magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, float vl, float vu, magma_int_t il, magma_int_t iu, magma_int_t *m, float *w, magmaFloatComplex *work, magma_int_t lwork, float *rwork, magma_int_t lrwork, magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga8e4b2fcaa99be73fb9133c045a1484bb"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHEEVDX computes selected eigenvalues and, optionally, eigenvectors of a complex Hermitian matrix A.  <a href="#ga8e4b2fcaa99be73fb9133c045a1484bb">More...</a><br /></td></tr>
 <tr class="separator:ga8e4b2fcaa99be73fb9133c045a1484bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2285e4aba42650ab7477aad59a3b391c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__driver.html#ga2285e4aba42650ab7477aad59a3b391c">magma_cheevdx_2stage_m</a> (magma_int_t ngpu, magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, float vl, float vu, magma_int_t il, magma_int_t iu, magma_int_t *m, float *w, magmaFloatComplex *work, magma_int_t lwork, float *rwork, magma_int_t lrwork, magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga2285e4aba42650ab7477aad59a3b391c"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHEEVDX_2STAGE computes all eigenvalues and, optionally, eigenvectors of a complex Hermitian matrix A.  <a href="#ga2285e4aba42650ab7477aad59a3b391c">More...</a><br /></td></tr>
-<tr class="separator:ga2285e4aba42650ab7477aad59a3b391c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga52195b8ae6aee59c7f28ab5250a4dc40"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__driver.html#ga52195b8ae6aee59c7f28ab5250a4dc40">magma_cheevdx_gpu</a> (magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n, magmaFloatComplex_ptr dA, magma_int_t ldda, float vl, float vu, magma_int_t il, magma_int_t iu, magma_int_t *mout, float *w, magmaFloatComplex *wA, magma_int_t ldwa, magmaFloatComplex *work, magma_int_t lwork, float *rwork, magma_int_t lrwork, magma_int_t *iwork, magma_int_t liwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga52195b8ae6aee59c7f28ab5250a4dc40"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHEEVDX_GPU computes selected eigenvalues and, optionally, eigenvectors of a complex Hermitian matrix A.  <a href="#ga52195b8ae6aee59c7f28ab5250a4dc40">More...</a><br /></td></tr>
 <tr class="separator:ga52195b8ae6aee59c7f28ab5250a4dc40"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -728,193 +725,6 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">w</td><td>REAL array, dimension (N) If INFO = 0, the required m eigenvalues in ascending order.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The length of the array WORK. If N &lt;= 1, LWORK &gt;= 1. If JOBZ = MagmaNoVec and N &gt; 1, LWORK &gt;= N + N*NB. If JOBZ = MagmaVec and N &gt; 1, LWORK &gt;= max( N + N*NB, 2*N + N**2 ). NB can be obtained through magma_get_chetrd_nb(N). <br />
- If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal sizes of the WORK, RWORK and IWORK arrays, returns these values as the first entries of the WORK, RWORK and IWORK arrays, and no error message related to LWORK or LRWORK or LIWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">rwork</td><td>(workspace) REAL array, dimension (LRWORK) On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lrwork</td><td>INTEGER The dimension of the array RWORK. If N &lt;= 1, LRWORK &gt;= 1. If JOBZ = MagmaNoVec and N &gt; 1, LRWORK &gt;= N. If JOBZ = MagmaVec and N &gt; 1, LRWORK &gt;= 1 + 5*N + 2*N**2. <br />
- If LRWORK = -1, then a workspace query is assumed; the routine only calculates the optimal sizes of the WORK, RWORK and IWORK arrays, returns these values as the first entries of the WORK, RWORK and IWORK arrays, and no error message related to LWORK or LRWORK or LIWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">iwork</td><td>(workspace) INTEGER array, dimension (MAX(1,LIWORK)) On exit, if INFO = 0, IWORK[0] returns the optimal LIWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">liwork</td><td>INTEGER The dimension of the array IWORK. If N &lt;= 1, LIWORK &gt;= 1. If JOBZ = MagmaNoVec and N &gt; 1, LIWORK &gt;= 1. If JOBZ = MagmaVec and N &gt; 1, LIWORK &gt;= 3 + 5*N. <br />
- If LIWORK = -1, then a workspace query is assumed; the routine only calculates the optimal sizes of the WORK, RWORK and IWORK arrays, returns these values as the first entries of the WORK, RWORK and IWORK arrays, and no error message related to LWORK or LRWORK or LIWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
-<li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
-<li>&gt; 0: if INFO = i and JOBZ = MagmaNoVec, then the algorithm failed to converge; i off-diagonal elements of an intermediate tridiagonal form did not converge to zero; if INFO = i and JOBZ = MagmaVec, then the algorithm failed to compute an eigenvalue while working on the submatrix lying in rows and columns INFO/(N+1) through mod(INFO,N+1).</li>
-</ul>
-</td></tr>
-  </table>
-  </dd>
-</dl>
-<h2>Further Details </h2>
-<p>Based on contributions by Jeff Rutter, Computer Science Division, University of California at Berkeley, USA</p>
-<p>Modified description of INFO. Sven, 16 Feb 05. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga2285e4aba42650ab7477aad59a3b391c"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_cheevdx_2stage_m </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ngpu</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_vec_t&#160;</td>
-          <td class="paramname"><em>jobz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_range_t&#160;</td>
-          <td class="paramname"><em>range</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_uplo_t&#160;</td>
-          <td class="paramname"><em>uplo</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloatComplex *&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lda</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>vl</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float&#160;</td>
-          <td class="paramname"><em>vu</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>il</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>iu</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>w</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloatComplex *&#160;</td>
-          <td class="paramname"><em>work</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lwork</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>rwork</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lrwork</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>iwork</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>liwork</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>info</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>CHEEVDX_2STAGE computes all eigenvalues and, optionally, eigenvectors of a complex Hermitian matrix A. </p>
-<p>It uses a two-stage algorithm for the tridiagonalization. If eigenvectors are desired, it uses a divide and conquer algorithm.</p>
-<p>The divide and conquer algorithm makes very mild assumptions about floating point arithmetic. It will work on machines with a guard digit in add/subtract, or on those binary machines without guard digits which subtract like the Cray X-MP, Cray Y-MP, Cray C-90, or Cray-2. It could conceivably fail on hexadecimal or decimal machines without guard digits, but we know of none.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER Number of GPUs to use. ngpu &gt; 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">jobz</td><td>magma_vec_t<ul>
-<li>= MagmaNoVec: Compute eigenvalues only;</li>
-<li>= MagmaVec: Compute eigenvalues and eigenvectors.</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">range</td><td>magma_range_t<ul>
-<li>= MagmaRangeAll: all eigenvalues will be found.</li>
-<li>= MagmaRangeV: all eigenvalues in the half-open interval (VL,VU] will be found.</li>
-<li>= MagmaRangeI: the IL-th through IU-th eigenvalues will be found.</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored;</li>
-<li>= MagmaLower: Lower triangle of A is stored.</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX array, dimension (LDA, N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A. On exit, if JOBZ = MagmaVec, then if INFO = 0, the first m columns of A contains the required orthonormal eigenvectors of the matrix A. If JOBZ = MagmaNoVec, then on exit the lower triangle (if UPLO=MagmaLower) or the upper triangle (if UPLO=MagmaUpper) of A, including the diagonal, is destroyed.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vl</td><td>REAL </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vu</td><td>REAL If RANGE=MagmaRangeV, the lower and upper bounds of the interval to be searched for eigenvalues. VL &lt; VU. Not referenced if RANGE = MagmaRangeAll or MagmaRangeI.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">il</td><td>INTEGER </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">iu</td><td>INTEGER If RANGE=MagmaRangeI, the indices (in ascending order) of the smallest and largest eigenvalues to be returned. 1 &lt;= IL &lt;= IU &lt;= N, if N &gt; 0; IL = 1 and IU = 0 if N = 0. Not referenced if RANGE = MagmaRangeAll or MagmaRangeV.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">m</td><td>INTEGER The total number of eigenvalues found. 0 &lt;= M &lt;= N. If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">w</td><td>REAL array, dimension (N) If INFO = 0, the required m eigenvalues in ascending order.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) COMPLEX array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The length of the array WORK. If N &lt;= 1, LWORK &gt;= 1. If JOBZ = MagmaNoVec and N &gt; 1, LWORK &gt;= LQ2 + N + N*NB. If JOBZ = MagmaVec and N &gt; 1, LWORK &gt;= LQ2 + 2*N + N**2. where LQ2 is the size needed to store the Q2 matrix and is returned by magma_bulge_get_lq2. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal sizes of the WORK, RWORK and IWORK arrays, returns these values as the first entries of the WORK, RWORK and IWORK arrays, and no error message related to LWORK or LRWORK or LIWORK is issued by XERBLA.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">rwork</td><td>(workspace) REAL array, dimension (LRWORK) On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lrwork</td><td>INTEGER The dimension of the array RWORK. If N &lt;= 1, LRWORK &gt;= 1. If JOBZ = MagmaNoVec and N &gt; 1, LRWORK &gt;= N. If JOBZ = MagmaVec and N &gt; 1, LRWORK &gt;= 1 + 5*N + 2*N**2. <br />
@@ -2209,7 +2019,7 @@ tridiagonal eigenvalue/eigenvector problem", by Inderjit Dhillon, Computer Scien
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:52 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

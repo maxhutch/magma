@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dsygvdx_2stage.cpp normal d -> s, Tue Aug 25 16:35:19 2015
+       @generated from dsygvdx_2stage.cpp normal d -> s, Fri Sep 11 18:29:31 2015
 
 */
 #include "common_magma.h"

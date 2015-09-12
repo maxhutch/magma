@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.6.3-beta1) --
+   -- MAGMA (version 1.7.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   November 2013
+   @date September 2015
 
    @author Azzam Haidar
    @author Ahmad Ahmad
 
-   @generated from zpotf2_kernels.cu normal z -> d, Tue Aug 25 16:35:10 2015
+   @generated from zpotf2_kernels.cu normal z -> d, Fri Sep 11 18:29:22 2015
  */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
@@ -61,6 +61,10 @@ __global__ void dpotf2_smlpout_anywidth_kernel_batched(int m, int n,
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_dpotrf_lpout_batched(
         magma_uplo_t uplo, magma_int_t n, 

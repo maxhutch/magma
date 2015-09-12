@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zpotrf3_mgpu.cpp normal z -> s, Tue Aug 25 16:35:15 2015
+       @generated from zpotrf3_mgpu.cpp normal z -> s, Fri Sep 11 18:29:27 2015
 
 */
 #include "common_magma.h"
@@ -38,32 +38,86 @@
     Arguments
     ---------
     @param[in]
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
+
+    @param[in]
     uplo    magma_uplo_t
       -     = MagmaUpper:  Upper triangle of dA is stored;
       -     = MagmaLower:  Lower triangle of dA is stored.
 
     @param[in]
+    m       INTEGER
+            The number of rows of the submatrix to be factorized.
+
+    @param[in]
     n       INTEGER
-            The order of the matrix dA.  N >= 0.
+            The number of columns of the submatrix to be factorized.
+
+    @param[in]
+    off_i   INTEGER
+            The first row index of the submatrix to be factorized.
+
+    @param[in]
+    off_j   INTEGER
+            The first column index of the submatrix to be factorized.
+
+    @param[in]
+    nb      INTEGER
+            The block size used for the factorization and distribution.
 
     @param[in,out]
-    dA      REAL array on the GPU, dimension (LDDA,N)
-            On entry, the symmetric matrix dA.  If UPLO = MagmaUpper, the leading
-            N-by-N upper triangular part of dA contains the upper
-            triangular part of the matrix dA, and the strictly lower
-            triangular part of dA is not referenced.  If UPLO = MagmaLower, the
-            leading N-by-N lower triangular part of dA contains the lower
-            triangular part of the matrix dA, and the strictly upper
-            triangular part of dA is not referenced.
+    d_lA    REAL array of pointers on the GPU, dimension (ngpu).
+            On entry, the symmetric matrix dA distributed over GPU.
+            (d_lAT[d] points to the local matrix on d-th GPU).
+            If UPLO = MagmaLower or MagmaUpper, it respectively uses 
+            a 1D block column or row cyclic format (with the block size 
+            nb), and each local matrix is stored by column.
+            If UPLO = MagmaUpper, the leading N-by-N upper triangular 
+            part of dA contains the upper triangular part of the matrix dA, 
+            and the strictly lower triangular part of dA is not referenced.  
+            If UPLO = MagmaLower, the leading N-by-N lower triangular part 
+            of dA contains the lower triangular part of the matrix dA, and 
+            the strictly upper triangular part of dA is not referenced.
     \n
             On exit, if INFO = 0, the factor U or L from the Cholesky
             factorization dA = U**H * U or dA = L * L**H.
 
+    @param[in,out]
+    d_lP    REAL array of pointers on the GPU, dimension (ngpu).
+            d_LAT[d] points to workspace of size h*lddp*nb on d-th GPU.
+
     @param[in]
-    ldda     INTEGER
+    lddp    INTEGER
+            The leading dimension of the array dP.  LDDA >= max(1,N).
+
+    @param[in]
+    ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,N).
             To benefit from coalescent memory accesses LDDA must be
             divisible by 16.
+
+    @param[in,out]
+    A       REAL array on the CPU, dimension (LDA,H*NB)
+            On exit, the panel is copied back to the CPU
+
+    @param[in]
+    lda     INTEGER
+            The leading dimension of the array A.  LDA >= max(1,N).
+
+    @param[in]
+    h       INTEGER
+            It specifies the size of the CPU workspace, A.
+
+    @param[in]
+    queues  magma_queue_t
+            queues is of dimension (ngpu,3) and contains the streams 
+            used for the partial factorization.
+
+    @param[in]
+    events  magma_event_t
+            events is of dimension(ngpu,5) and contains the events used 
+            for the partial factorization.
 
     @param[out]
     info    INTEGER

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> s d c
 
@@ -138,6 +138,9 @@ zhemv_kernel_L_mgpu(
                 if ( ty2+j < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
+                else {
+                    sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
+                }
             }
             if ( tx2 >= partial ) {
                 A = A + tx2 - (partial - 1);  // A is A(blk_ind + tx2, blk_ind + ty2)
@@ -198,6 +201,9 @@ zhemv_kernel_L_mgpu(
                 if ( ty2+j + half_NB_X < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
+                else {
+                    sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
+                }
             }
             if ( tx2 + half_NB_X >= partial ) {
                 A = A + (tx2 + half_NB_X) - (partial - 1);
@@ -256,6 +262,9 @@ zhemv_kernel_L_mgpu(
             for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
+                }
+                else {
+                    sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
                 }
             }
             if ( tx2 + half_NB_X >= partial ) {

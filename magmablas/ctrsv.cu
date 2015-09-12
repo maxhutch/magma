@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2015
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from ztrsv.cu normal z -> c, Tue Aug 25 16:35:09 2015
+       @generated from ztrsv.cu normal z -> c, Fri Sep 11 18:29:22 2015
 */
 
 #include "common_magma.h"
@@ -395,10 +395,8 @@ magmablas_ctrsv_recursive_outofplace(
 
     The vector x is overwritten on b.
 
-
     Arguments
     ----------
-
     @param[in]
     uplo    magma_uplo_t.
             On entry, uplo specifies whether the matrix A is an upper or
@@ -426,7 +424,7 @@ magmablas_ctrsv_recursive_outofplace(
             On entry, n N specifies the order of the matrix A. n >= 0.
 
     @param[in]
-    A       COMPLEX array of dimension ( lda, n )
+    dA      COMPLEX array of dimension ( lda, n )
             Before entry with uplo = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular matrix and the strictly lower triangular part of
@@ -439,12 +437,12 @@ magmablas_ctrsv_recursive_outofplace(
             A are not referenced either, but are assumed to be unity.
 
     @param[in]
-    lda     INTEGER.
+    ldda    INTEGER.
             On entry, lda specifies the first dimension of A.
             lda >= max( 1, n ).
 
     @param[in]
-    b       COMPLEX array of dimension  n
+    db      COMPLEX array of dimension  n
             On exit, b is overwritten with the solution vector X.
 
     @param[in]
@@ -453,32 +451,31 @@ magmablas_ctrsv_recursive_outofplace(
             b. incb must not be zero.
             Unchanged on exit.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas2
     ********************************************************************/
-
-
 extern "C" void
 magmablas_ctrsv(
     magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag,
     magma_int_t n,
-    const magmaFloatComplex * __restrict__ A, magma_int_t lda,
-    magmaFloatComplex *b, magma_int_t incb,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr db, magma_int_t incb,
     magma_queue_t queue)
 {
     magma_int_t size_x = n * incb;
 
-    magmaFloatComplex *x=NULL;
+    magmaFloatComplex_ptr dx=NULL;
 
-    magma_cmalloc( &x, size_x);
+    magma_cmalloc( &dx, size_x );
 
-    magmablas_claset(MagmaFull, n, 1, MAGMA_C_ZERO, MAGMA_C_ZERO, x, n);
+    magmablas_claset( MagmaFull, n, 1, MAGMA_C_ZERO, MAGMA_C_ZERO, dx, n );
 
-    magmablas_ctrsv_recursive_outofplace(uplo, trans, diag, n, A, lda, b, incb, x, queue);
+    magmablas_ctrsv_recursive_outofplace( uplo, trans, diag, n, dA, ldda, db, incb, dx, queue );
 
-    magmablas_clacpy( MagmaFull, n, 1, x, n, b, n);
+    magmablas_clacpy( MagmaFull, n, 1, dx, n, db, n );
 
-    magma_free(x);
+    magma_free( dx );
 }
-
-//==============================================================================

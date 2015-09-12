@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -26,6 +26,14 @@
 */
 int main( int argc, char** argv)
 {
+    #define h_A(i_, j_) (h_A + (i_) + (j_)*lda)
+    
+    #ifdef HAVE_clBLAS
+    #define d_A(i_, j_)  d_A, ((i_) + (j_)*ldda)
+    #else
+    #define d_A(i_, j_) (d_A + (i_) + (j_)*ldda)
+    #endif
+    
     TESTING_INIT();
     
     real_Double_t   gbytes, gpu_perf, gpu_time, cpu_perf, cpu_time;
@@ -120,9 +128,6 @@ int main( int argc, char** argv)
             /* ====================================================================
                Check for NAN and INF propagation
                =================================================================== */
-            #define h_A(i_, j_) (h_A + (i_) + (j_)*lda)
-            #define d_A(i_, j_) (d_A + (i_) + (j_)*ldda)
-            
             magma_int_t i = rand() % M;
             magma_int_t j = rand() % N;
             *h_A(i,j) = MAGMA_Z_NAN;
@@ -169,10 +174,10 @@ int main( int argc, char** argv)
     }
     
     if ( lapack_nan_fail ) {
-        printf( "* Warning: LAPACK failed NAN test; upgrade to LAPACK version >= 3.4.2 (Sep. 2012)\n" );
+        printf( "* Warning: LAPACK did not pass NAN propagation test; upgrade to LAPACK version >= 3.4.2 (Sep. 2012)\n" );
     }
     if ( lapack_inf_fail ) {
-        printf( "* Warning: LAPACK failed INF test\n" );
+        printf( "* Warning: LAPACK did not pass INF propagation test\n" );
     }
     
     TESTING_FINALIZE();

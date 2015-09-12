@@ -18,6 +18,6 @@ var group__magma__zblas2 =
     [ "magmablas_zswapblk_q", "group__magma__zblas2.html#gac268bc138500732b9ab04bb650d86463", null ],
     [ "magmablas_zsymv", "group__magma__zblas2.html#ga95914cef544e492c9f7e1cc88c509cdb", null ],
     [ "magmablas_zsymv_work", "group__magma__zblas2.html#ga7968ff578a9116ca1ba9bf54c99b7e2c", null ],
-    [ "magmablas_ztrsv", "group__magma__zblas2.html#gaf2736a48fa7f43f4c8f0d97ec710bff2", null ],
+    [ "magmablas_ztrsv", "group__magma__zblas2.html#ga341cc9f74173bc3d75814f7337cf3b96", null ],
     [ "magmablas_ztrsv_batched", "group__magma__zblas2.html#ga4fe33c7e86f589a5812d38cf8c2ea44d", null ]
 ];

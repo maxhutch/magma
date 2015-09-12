@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgeqrf_expert_batched.cpp normal z -> s, Tue Aug 25 16:35:20 2015
+       @generated from zgeqrf_expert_batched.cpp normal z -> s, Fri Sep 11 18:29:32 2015
 */
 #define PRECISION_s
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> s d c
 
@@ -76,13 +76,14 @@ zswapdblk_batched_kernel( int nb, int n_mod_nb,
             NB > 0 and NB <= maximum threads per CUDA block (512 or 1024).
 
     @param[in,out]
-    dA      COMPLEX_16 array, dimension (LDDA,N)
-            The matrix dA.
+    dA_array Array of pointers, dimension (batchCount). 
+             Each is a COMPLEX_16 array dA, dimension (ldda,n)
+             The matrix dA.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array dA.
-            LDDA >= (nblocks - 1)*nb*inca + nb.
+            The leading dimension of each array dA.
+            ldda >= (nblocks - 1)*nb*inca + nb.
 
     @param[in]
     inca    INTEGER
@@ -91,18 +92,23 @@ zswapdblk_batched_kernel( int nb, int n_mod_nb,
             inca = 0 means blocks are stored side-by-side    at dA(0,    i*nb).
 
     @param[in,out]
-    dB      COMPLEX_16 array, dimension (LDDB,N)
-            The matrix dB.
+    dB_array Array of pointers, dimension (batchCount).
+             Each is a COMPLEX_16 array dB, dimension (lddb,n)
+             The matrix dB.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array db.
-            LDDB >= (nblocks - 1)*nb*incb + nb.
+            The leading dimension of each array dB.
+            lddb >= (nblocks - 1)*nb*incb + nb.
 
     @param[in]
     incb    INTEGER
             The row increment between diagonal blocks of dB. incb >= 0. See inca.
     
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
     @param[in]
     queue   magma_queue_t
             Queue to execute in.

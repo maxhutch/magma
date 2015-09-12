@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        zsymv.cu is nearly identical to zhemv.cu, just change names and drop cuConj.
        
@@ -59,7 +59,7 @@ zsymv_kernel_L(
     int n,
     magmaDoubleComplex const * __restrict__ A, int lda,
     magmaDoubleComplex const * __restrict__ x, int incx,
-    magmaDoubleComplex * __restrict__ work)
+    magmaDoubleComplex       * __restrict__ work)
 {
 #if defined(PRECISION_s) || defined(PRECISION_d) || defined(PRECISION_c) || (__CUDA_ARCH__ >= 200)
 
@@ -116,7 +116,7 @@ zsymv_kernel_L(
     work += blk*lda;     // work is work(0, blk)
     
     A += blk_ind;        // A is A(blk_ind, 0)
-    A += ty2*lda + tx2;  // A is A(blk_ind + tx2,           ty2)
+    A += ty2*lda + tx2;  // A is A(blk_ind + tx2, ty2)
     
     // move to 32x32 diag block
     A += blk_ind*lda;    // A is A(blk_ind + tx2, blk_ind + ty2)
@@ -132,6 +132,9 @@ zsymv_kernel_L(
         for (int j=0; j < half_NB_X; j += 8) {
             if ( ty2+j < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
+            }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
             }
         }
         if ( tx2 >= partial ) {
@@ -193,6 +196,9 @@ zsymv_kernel_L(
             if ( ty2+j + half_NB_X < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
+            }
         }
         if ( tx2 + half_NB_X >= partial ) {
             A = A + (tx2 + half_NB_X) - (partial - 1);
@@ -252,6 +258,9 @@ zsymv_kernel_L(
             if ( ty2+j < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_Z_ZERO;
+            }
         }
         if ( tx2 + half_NB_X >= partial ) {
             A = A + (tx2 + half_NB_X) - (partial - 1);
@@ -277,7 +286,7 @@ zsymv_kernel_L(
     psum_t = MAGMA_Z_ZERO;
     #pragma unroll
     for (int j=0; j < 4; j++) {
-        psum_t += ( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
+        psum_t += sA32(ty2*4 + j, tx2) * sx_blk[half_NB_X + ty2*4 + j];
     }
     __syncthreads();
 
@@ -354,7 +363,7 @@ zsymv_kernel_L(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = ( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = rA[j] * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
 

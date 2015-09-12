@@ -13,6 +13,9 @@ MAGMA README FILE
     make.inc.mkl-*, make.inc.openblas showing how to link to ACML, ATLAS, MacOS
     veclib, MKL, and OpenBLAS, respectively.
 
+----------------------------------------------------------------------------
+* Library paths
+
     All the make.inc files assume $CUDADIR is set in your environment.
     For bash (sh), put in ~/.bashrc (with your system's path):
         export CUDADIR=/usr/loca/cuda
@@ -51,20 +54,58 @@ MAGMA README FILE
         export OPENBLASDIR=/opt/openblas
     For csh/tcsh, put in ~/.cshrc:
         setenv OPENBLASDIR /opt/openblas
-    
-    Several compiler defines, below, affect how MAGMA is compiled. These are set
-    using, e.g., -DMAGMA_WITH_MKL in make.inc files.
-    
+
+----------------------------------------------------------------------------
+* Linking to BLAS
+
+    Depending on the Fortran compiler used for your BLAS and LAPACK libraries,
+    the linking convention is one of:
+        * Add underscore, so gemm() in Fortran becomes gemm_() in C.
+        * Uppercase,      so gemm() in Fortran becomes GEMM()  in C.
+        * No change,      so gemm() in Fortran stays   gemm()  in C.
+    Set -DADD_, -DUPCASE, or -DNOCHANGE, respectively, in all FLAGS in your
+    make.inc file to select the appropriate one. Use nm to examine your BLAS
+    library:
+
+        acml-5.3.1/gfortran64_mp/lib> nm libacml_mp.a | grep -i 'T.*dgemm'
+        0000000000000000 T dgemm
+        00000000000004e0 T dgemm_
+
+    Which shows that either -DADD_ (dgemm_) or -DNOCHANGE (dgemm) should work.
+    The default in all make.inc files is -DADD_.
+
+----------------------------------------------------------------------------
+* Compile-time options
+
+    Several compiler defines, below, affect how MAGMA is compiled and
+    might have a large performance impact. These are set in make.inc files
+    using the -D compiler flag, e.g., -DMAGMA_WITH_MKL in CFLAGS.
+
     MAGMA_WITH_MKL
         If linked with MKL, allows MAGMA to get MKL's version and
         set MKL's number of threads.
-    
-    MAGMA_WITH_ACML 
+
+    MAGMA_WITH_ACML
         If linked with ACML 5 or later, allows MAGMA to get ACML's version.
-        ACML's threads are set via OpenMP.
-    
+        ACML's number of threads are set via OpenMP.
+
     MAGMA_NOAFFINITY
         Disables thread affinity, available in glibc 2.6 and later.
+
+    BATCH_DISABLE_CHECKING
+        For batched routines it disables the info_array that contains errors.
+        In other term, for example, for Cholesky factorization if you are sure
+        your matrix is SPD and want better performance you can compile with this flag.
+
+    BATCH_DISABLE_CLEANUP
+        For batched routines it disables the cleanup code.
+        For example the {sy|he}rk called with "lower" will write data on
+        the upper triangular portion of the matrix.
+
+    BATCHED_DISABLE_PARCPU
+        In the testing directory, it disable the parallel implementation of the
+        batched computation on CPU. Can be used to compare a naive versus a parallelized
+        CPU batched computation.
 
 ----------------------------------------------------------------------------
 * Building without Fortran

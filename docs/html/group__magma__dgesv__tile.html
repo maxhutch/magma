@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -216,9 +216,14 @@ Functions</h2></td></tr>
 <p>DGESSM applies the factors L computed by DGETRF_INCPIV to a real M-by-N tile A. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER The number of columns of the matrix L. K &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">order</td><td>magma_order_t<ul>
+<li>= MagmaRowMajor: dA is in row-major order (more efficient).</li>
+<li>= MagmaColMajor: dA is in column-major order.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the tile A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the tile A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER The number of columns of the tile L. K &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ib</td><td>INTEGER The inner-blocking size. IB &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array on the cpu. The pivot indices array of size K as returned by DGETRF_INCPIV.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dL1</td><td>DOUBLE_PRECISION array, dimension(LDDL1, N) The IB-by-K matrix in which is stored L^(-1) as returned by GETRF_INCPIV</td></tr>
@@ -226,7 +231,12 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dL</td><td>DOUBLE_PRECISION array, dimension(LDDL, N) The M-by-K lower triangular tile on the gpu.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddl</td><td>INTEGER The leading dimension of the array L. LDDL &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array, dimension (LDDA, N) On entry, the M-by-N tile A on the gpu. On exit, updated by the application of L on the gpu.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed. </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -351,6 +361,11 @@ Functions</h2></td></tr>
 <p>This is the right-looking Level 2.5 BLAS version of the algorithm.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">order</td><td>magma_order_t<ul>
+<li>= MagmaRowMajor: dA is in row-major order (more efficient).</li>
+<li>= MagmaColMajor: dA is in column-major order.</li>
+</ul>
+</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m1</td><td>INTEGER The number of rows of the matrix A1. M1 &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n1</td><td>INTEGER The number of columns of the matrix A1. N1 &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m2</td><td>INTEGER The number of rows of the matrix A2. M2 &gt;= 0.</td></tr>
@@ -365,7 +380,12 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddl1</td><td>INTEGER The leading dimension of the array L1. LDDL1 &gt;= max(1,2*IB).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dL2</td><td>DOUBLE_PRECISION array, dimension(LDDL2, K) The M2-by-K tile as returned by DTSTRF.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddl2</td><td>INTEGER The leading dimension of the array L2. LDDL2 &gt;= max(1,M2).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array on the cpu. The pivot indices array of size K as returned by DTSTRF </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array on the cpu. The pivot indices array of size K as returned by DTSTRF</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed. </li>
+</ul>
+</td></tr>
   </table>
   </dd>
 </dl>
@@ -377,7 +397,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:51 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

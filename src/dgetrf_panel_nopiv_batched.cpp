@@ -1,17 +1,27 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2013
-       
+   -- MAGMA (version 1.7.0) --
+   Univ. of Tennessee, Knoxville
+   Univ. of California, Berkeley
+   Univ. of Colorado, Denver
+   @date September 2015
+
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from zgetrf_panel_nopiv_batched.cpp normal z -> d, Tue Aug 25 16:35:20 2015
+   @generated from zgetrf_panel_nopiv_batched.cpp normal z -> d, Fri Sep 11 18:29:32 2015
 */
+
 #include "common_magma.h"
-////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+    Purpose
+    -------
+    this is an internal routine that might have many assumption.
+    No documentation is available today.
+
+    @ingroup magma_dgesv_comp
+    ********************************************************************/
+
 extern "C" magma_int_t
 magma_dgetrf_panel_nopiv_batched(
     magma_int_t m, magma_int_t nb,    

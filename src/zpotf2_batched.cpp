@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2013
+       @date September 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -15,6 +15,10 @@
 
 #define PRECISION_z
 /////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_zpotf2_ztrsm_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -80,6 +84,10 @@ magma_zpotf2_ztrsm_batched(
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_zpotf2_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,

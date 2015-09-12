@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -281,6 +281,7 @@ Functions</h2></td></tr>
 <li>= 'L': Lower triangle of A is stored.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cpu_panel</td><td>INTEGER If cpu_panel =0, panel factorization is done on GPU.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX*16 array, dimension (LDA,N) On entry, the Hermitian matrix A. If UPLO = 'U', the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = 'L', the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, the banded matrix D and the triangular factor U or L.</td></tr>
@@ -509,12 +510,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDA,N) The block diagonal matrix D and the multipliers used to obtain the factor U or L as computed by ZHETRF_NOPIV_GPU.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>param[in,out] dB COMPLEX_16 array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX_16 array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -532,7 +528,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:51 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

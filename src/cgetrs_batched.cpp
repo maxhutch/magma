@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Azzam Haidar
 
-       @generated from zgetrs_batched.cpp normal z -> c, Tue Aug 25 16:35:20 2015
+       @generated from zgetrs_batched.cpp normal z -> c, Fri Sep 11 18:29:32 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
@@ -18,7 +18,10 @@
     -------
     CGETRS solves a system of linear equations
         A * X = B,  A**T * X = B,  or  A**H * X = B
-    with a general N-by-N matrix A using the LU factorization computed by CGETRF_GPU.
+    with a general N-by-N matrix A using the LU factorization computed by CGETRF.
+
+    This is a batched version that solves batchCount N-by-N matrices in parallel.
+    dA, dB, and ipiv become arrays with one entry per matrix.
 
     Arguments
     ---------
@@ -29,6 +32,7 @@
       -     = MagmaTrans:      A**T * X = B  (Transpose)
       -     = MagmaConjTrans:  A**H * X = B  (Conjugate transpose)
 
+    ---------
     @param[in]
     n       INTEGER
             The order of the matrix A.  N >= 0.
@@ -38,33 +42,45 @@
             The number of right hand sides, i.e., the number of columns
             of the matrix B.  NRHS >= 0.
 
-    @param[in]
-    dA      COMPLEX array on the GPU, dimension (LDA,N)
-            The factors L and U from the factorization A = P*L*U as computed
-            by CGETRF_GPU.
+    @param[in,out]
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
+            On exit, the factors L and U from the factorization
+            A = P*L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of each array A.  LDDA >= max(1,M).
 
-    @param[in]
-    ipiv    INTEGER array, dimension (N)
-            The pivot indices from CGETRF; for 1 <= i <= N, row i of the
+
+    @param[out]
+    dipiv_array  Array of pointers, dimension (batchCount), for corresponding matrices.
+            Each is an INTEGER array, dimension (min(M,N))
+            The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
 
+
     @param[in,out]
-    dB      COMPLEX array on the GPU, dimension (LDB,NRHS)
-            On entry, the right hand side matrix B.
-            On exit, the solution matrix X.
+    dB_array   Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array on the GPU, dimension (LDDB,N).
+            On entry, each pointer is an right hand side matrix B.
+            On exit, each pointer is the solution matrix X.
+
 
     @param[in]
     lddb    INTEGER
             The leading dimension of the array B.  LDB >= max(1,N).
 
-    @param[out]
-    info    INTEGER
-      -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
 
     @ingroup magma_cgesv_comp
     ********************************************************************/

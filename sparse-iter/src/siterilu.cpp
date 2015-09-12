@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Hartwig Anzt
 
-       @generated from ziterilu.cpp normal z -> s, Tue Aug 25 16:35:33 2015
+       @generated from ziterilu.cpp normal z -> s, Fri Sep 11 18:29:45 2015
 */
 #include "common_magmasparse.h"
 
@@ -220,6 +220,116 @@ cleanup:
 
 
 
+/**
+    Purpose
+    -------
+
+    Updates an existing preconditioner via additional iterative ILU sweeps for
+    previous factorization initial guess (PFIG).
+    See  Anzt et al., Parallel Computing, 2015.
+
+    Arguments
+    ---------
+    
+    @param[in]
+    A           magma_s_matrix
+                input matrix A, current target system
+
+    @param[in]
+    precond     magma_s_preconditioner*
+                preconditioner parameters
+
+    @param[in]
+    updates     magma_int_t 
+                number of updates
+    
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+                
+    @ingroup magmasparse_shepr
+    ********************************************************************/
+extern "C"
+magma_int_t
+magma_siteriluupdate(
+    magma_s_matrix A,
+    magma_s_preconditioner *precond,
+    magma_int_t updates,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+
+    magma_s_matrix hALt={Magma_CSR};
+    magma_s_matrix d_h={Magma_CSR};
+    
+    magma_s_matrix hL={Magma_CSR}, hU={Magma_CSR},
+    hAcopy={Magma_CSR}, hAL={Magma_CSR}, hAU={Magma_CSR}, hAUt={Magma_CSR},
+    hUT={Magma_CSR}, hAtmp={Magma_CSR},
+    dL={Magma_CSR}, dU={Magma_CSR};
+
+        
+    if( updates > 0 ){
+        
+        CHECK( magma_smtransfer( precond->M, &hAcopy, Magma_DEV, Magma_CPU , queue ));
+        
+        // in case using fill-in
+        CHECK( magma_ssymbilu( &hAcopy, precond->levels, &hAL, &hAUt,  queue ));
+        // add a unit diagonal to L for the algorithm
+        CHECK( magma_smLdiagadd( &hAL , queue ));
+        // transpose U for the algorithm
+        CHECK( magma_s_cucsrtranspose(  hAUt, &hAU , queue ));
+        // transfer the factor L and U
+        CHECK( magma_smtransfer( hAL, &dL, Magma_CPU, Magma_DEV , queue ));
+        CHECK( magma_smtransfer( hAU, &dU, Magma_CPU, Magma_DEV , queue ));
+        magma_smfree(&hAL, queue );
+        magma_smfree(&hAU, queue );
+        magma_smfree(&hAUt, queue );
+        magma_smfree(&precond->M, queue );
+        magma_smfree(&hAcopy, queue );
+
+        
+        // copy original matrix as CSRCOO to device
+        for(int i=0; i<updates; i++){
+            CHECK( magma_siterilu_csr( A, dL, dU, queue ));
+        }
+        
+        CHECK( magma_smtransfer( dL, &hL, Magma_DEV, Magma_CPU , queue ));
+        CHECK( magma_smtransfer( dU, &hU, Magma_DEV, Magma_CPU , queue ));
+        CHECK( magma_s_cucsrtranspose(  hU, &hUT , queue ));
+        
+        magma_smfree(&dL, queue );
+        magma_smfree(&dU, queue );
+        magma_smfree(&hU, queue );
+        CHECK( magma_smlumerge( hL, hUT, &hAtmp, queue ));
+        
+        magma_smfree(&hL, queue );
+        magma_smfree(&hUT, queue );
+        hAL.diagorder_type = Magma_UNITY;
+        CHECK( magma_smconvert(hAtmp, &hAL, Magma_CSR, Magma_CSRL, queue ));
+        hAL.storage_type = Magma_CSR;
+        CHECK( magma_smconvert(hAtmp, &hAU, Magma_CSR, Magma_CSRU, queue ));
+        hAU.storage_type = Magma_CSR;
+        
+        magma_smfree(&hAtmp, queue );
+        CHECK( magma_smtransfer( hAL, &precond->L, Magma_CPU, Magma_DEV , queue ));
+        CHECK( magma_smtransfer( hAU, &precond->U, Magma_CPU, Magma_DEV , queue ));
+        magma_smfree(&hAL, queue );
+        magma_smfree(&hAU, queue );
+    
+        magma_smfree( &precond->d , queue );
+        magma_smfree( &precond->d2 , queue );
+        
+        CHECK( magma_sjacobisetup_diagscal( precond->L, &precond->d, queue ));
+        CHECK( magma_sjacobisetup_diagscal( precond->U, &precond->d2, queue ));
+    }
+
+cleanup:
+    magma_smfree(&d_h, queue );
+    magma_smfree(&hALt, queue );
+    
+    return info;
+}
+
 
 
 
@@ -423,27 +533,27 @@ magma_sitericupdate(
 
     magma_s_matrix hALt={Magma_CSR};
     magma_s_matrix d_h={Magma_CSR};
+        
+    if( updates > 0 ){
+        // copy original matrix as CSRCOO to device
+        for(int i=0; i<updates; i++){
+            CHECK( magma_siteric_csr( A, precond->M , queue ));
+        }
+        //magma_smtransfer( precond->M, &hALt, Magma_DEV, Magma_CPU , queue );
+        magma_smfree(&precond->L, queue );
+        magma_smfree(&precond->U, queue );
+        magma_smfree( &precond->d , queue );
+        magma_smfree( &precond->d2 , queue );
+        
+        // copy the matrix to precond->L and (transposed) to precond->U
+        CHECK( magma_smtransfer(precond->M, &(precond->L), Magma_DEV, Magma_DEV, queue ));
+        CHECK( magma_smtranspose( precond->L, &(precond->U), queue ));
 
-
-    // copy original matrix as CSRCOO to device
-
-    for(int i=0; i<updates; i++){
-        CHECK( magma_siteric_csr( A, precond->M , queue ));
+        CHECK( magma_sjacobisetup_diagscal( precond->L, &precond->d, queue ));
+        CHECK( magma_sjacobisetup_diagscal( precond->U, &precond->d2, queue ));
+    
     }
-    //magma_smtransfer( precond->M, &precond->M, Magma_DEV, Magma_DEV , queue );
-    magma_smfree(&precond->L, queue );
-    magma_smfree(&precond->U, queue );
-    magma_smfree( &precond->d , queue );
-
-
-    // Jacobi setup
-    CHECK( magma_sjacobisetup_matrix( precond->M, &precond->L, &precond->d , queue ));
-
-    // for Jacobi, we also need U
-    CHECK( magma_s_cucsrtranspose(   precond->M, &hALt , queue ));
-    CHECK( magma_sjacobisetup_matrix( hALt, &precond->U, &d_h , queue ));
-
-
+    
 cleanup:
     magma_smfree(&d_h, queue );
     magma_smfree(&hALt, queue );

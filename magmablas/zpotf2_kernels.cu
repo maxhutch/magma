@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.6.3-beta1) --
+   -- MAGMA (version 1.7.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   November 2013
+   @date September 2015
 
    @author Azzam Haidar
    @author Ahmad Ahmad
@@ -61,6 +61,10 @@ __global__ void zpotf2_smlpout_anywidth_kernel_batched(int m, int n,
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_zpotrf_lpout_batched(
         magma_uplo_t uplo, magma_int_t n, 

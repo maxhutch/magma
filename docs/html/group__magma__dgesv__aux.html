@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -114,15 +114,154 @@ $(document).ready(function(){initNavTree('group__magma__dgesv__aux.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:gab894b719659be16cbc40f0484da7297a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#gab894b719659be16cbc40f0484da7297a">magma_dgetf2_batched</a> (magma_int_t m, magma_int_t n, double **dA_array, magma_int_t ldda, double **dW0_displ, double **dW1_displ, double **dW2_displ, magma_int_t **ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab894b719659be16cbc40f0484da7297a"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETF2 computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#gab894b719659be16cbc40f0484da7297a">More...</a><br /></td></tr>
+<tr class="separator:gab894b719659be16cbc40f0484da7297a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga04c36e13a0823443c97641f9a9153cba"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#ga04c36e13a0823443c97641f9a9153cba">magma_dgetf2_nopiv</a> (magma_int_t m, magma_int_t n, double *A, magma_int_t lda, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga04c36e13a0823443c97641f9a9153cba"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETF2_NOPIV computes an LU factorization of a general m-by-n matrix A without pivoting.  <a href="#ga04c36e13a0823443c97641f9a9153cba">More...</a><br /></td></tr>
 <tr class="separator:ga04c36e13a0823443c97641f9a9153cba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga566a64f996f83f013fcfc5da39912899"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#ga566a64f996f83f013fcfc5da39912899">magma_dgetf2_nopiv_batched</a> (magma_int_t m, magma_int_t n, double **dA_array, magma_int_t ldda, double **dW0_displ, double **dW1_displ, double **dW2_displ, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga566a64f996f83f013fcfc5da39912899"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETF2 computes an LU factorization of a general M-by-N matrix A without pivoting.  <a href="#ga566a64f996f83f013fcfc5da39912899">More...</a><br /></td></tr>
+<tr class="separator:ga566a64f996f83f013fcfc5da39912899"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga80bfebbf45288f5f6c36408ffac5cda5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#ga80bfebbf45288f5f6c36408ffac5cda5">magma_dgetf2_gpu</a> (magma_int_t m, magma_int_t n, magmaDouble_ptr dA, magma_int_t ldda, magma_int_t *ipiv, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga80bfebbf45288f5f6c36408ffac5cda5"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETF2 computes an LU factorization of a general m-by-n matrix A using partial pivoting with row interchanges.  <a href="#ga80bfebbf45288f5f6c36408ffac5cda5">More...</a><br /></td></tr>
 <tr class="separator:ga80bfebbf45288f5f6c36408ffac5cda5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga402f2b5e6f7e7423a84b360c67fb61dc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#ga402f2b5e6f7e7423a84b360c67fb61dc">magma_idamax_batched</a> (magma_int_t length, double **x_array, magma_int_t incx, magma_int_t step, magma_int_t lda, magma_int_t **ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga402f2b5e6f7e7423a84b360c67fb61dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">IDAMAX find the index of max absolute value of elements in x and store the index in ipiv.  <a href="#ga402f2b5e6f7e7423a84b360c67fb61dc">More...</a><br /></td></tr>
+<tr class="separator:ga402f2b5e6f7e7423a84b360c67fb61dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa5b97e8b2fd8cb4fc2035b6829a5b393"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#gaa5b97e8b2fd8cb4fc2035b6829a5b393">magma_dswap_batched</a> (magma_int_t n, double **x_array, magma_int_t incx, magma_int_t step, magma_int_t **ipiv_array, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaa5b97e8b2fd8cb4fc2035b6829a5b393"><td class="mdescLeft">&#160;</td><td class="mdescRight">dswap two row in x.  <a href="#gaa5b97e8b2fd8cb4fc2035b6829a5b393">More...</a><br /></td></tr>
+<tr class="separator:gaa5b97e8b2fd8cb4fc2035b6829a5b393"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8538bff76340ac0504158b4e0514d146"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#ga8538bff76340ac0504158b4e0514d146">magma_dgetf2trsm_batched</a> (magma_int_t ib, magma_int_t n, double **dA_array, magma_int_t step, magma_int_t ldda, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga8538bff76340ac0504158b4e0514d146"><td class="mdescLeft">&#160;</td><td class="mdescRight">dgetf2trsm solves one of the matrix equations on gpu  <a href="#ga8538bff76340ac0504158b4e0514d146">More...</a><br /></td></tr>
+<tr class="separator:ga8538bff76340ac0504158b4e0514d146"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93d637198137541fd83c997e90a5c9ea"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__aux.html#ga93d637198137541fd83c997e90a5c9ea">magma_dgetf2_sm_batched</a> (magma_int_t m, magma_int_t ib, double **dA_array, magma_int_t ldda, magma_int_t **ipiv_array, magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga93d637198137541fd83c997e90a5c9ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETF2_SM computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges.  <a href="#ga93d637198137541fd83c997e90a5c9ea">More...</a><br /></td></tr>
+<tr class="separator:ga93d637198137541fd83c997e90a5c9ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="gab894b719659be16cbc40f0484da7297a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dgetf2_batched </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dA_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dW0_displ</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dW1_displ</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dW2_displ</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t **&#160;</td>
+          <td class="paramname"><em>ipiv_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>gbstep</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">cublasHandle_t&#160;</td>
+          <td class="paramname"><em>myhandle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DGETF2 computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
+<p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
+<p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>This is a batched version that factors batchCount M-by-N matrices in parallel. dA, ipiv, and info become arrays with one entry per matrix.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of each matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of each matrix A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N). On entry, each pointer is an M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dW0_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dW1_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dW2_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ipiv_array</td><td>Array of pointers, dimension (batchCount), for corresponding matrices. Each is an INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gbstep</td><td>INTEGER internal use.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Cublas handle might be used internally.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>this is an internal routine that might have many assumption. </p>
+
+</div>
+</div>
 <a class="anchor" id="ga80bfebbf45288f5f6c36408ffac5cda5"></a>
 <div class="memitem">
 <div class="memproto">
@@ -256,12 +395,453 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga566a64f996f83f013fcfc5da39912899"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dgetf2_nopiv_batched </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dA_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dW0_displ</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dW1_displ</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dW2_displ</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>gbstep</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">cublasHandle_t&#160;</td>
+          <td class="paramname"><em>myhandle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DGETF2 computes an LU factorization of a general M-by-N matrix A without pivoting. </p>
+<p>The factorization has the form A = L * U where L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
+<p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>This is a batched version that factors batchCount M-by-N matrices in parallel. dA, and info become arrays with one entry per matrix.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of each matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of each matrix A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N). On entry, each pointer is an M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dW0_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dW1_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dW2_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gbstep</td><td>INTEGER internal use.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Cublas handle might be used internally.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga93d637198137541fd83c997e90a5c9ea"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dgetf2_sm_batched </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ib</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dA_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t **&#160;</td>
+          <td class="paramname"><em>ipiv_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DGETF2_SM computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
+<p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
+<p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>This is a batched version that factors batchCount M-by-N matrices in parallel. dA, ipiv, and info become arrays with one entry per matrix.</p>
+<p>This version load entire matrix (m*ib) into shared memory and factorize it with pivoting and copy back to GPU device memory.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of each matrix A. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ib</td><td>INTEGER The number of columns of each matrix A. ib &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N). On entry, each pointer is an M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ipiv_array</td><td>Array of pointers, dimension (batchCount), for corresponding matrices. Each is an INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga8538bff76340ac0504158b4e0514d146"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_dgetf2trsm_batched </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ib</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dA_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>dgetf2trsm solves one of the matrix equations on gpu </p>
+<p>B = C^-1 * B</p>
+<p>where C, B are part of the matrix A in dA_array,</p>
+<p>This version load C, B into shared memory and solve it and copy back to GPU device memory. This is an internal routine that might have many assumption.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ib</td><td>INTEGER The number of rows/columns of each matrix C, and rows of B. ib &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of each matrix B. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N). On entry, each pointer is an M-by-N matrix to be factored. On exit, the factors L and U from the factorization A = P*L*U; the unit diagonal elements of L are not stored.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">step</td><td>INTEGER The starting address of matrix C in A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa5b97e8b2fd8cb4fc2035b6829a5b393"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dswap_batched </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>x_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t **&#160;</td>
+          <td class="paramname"><em>ipiv_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>dswap two row in x. </p>
+<p>index (ipiv[step]-1)-th and index step -th</p>
+<p>This is an internal routine that might have many assumption.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER On entry, n specifies the size of vector x. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array of dimension</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Specifies the increment for the elements of X. INCX must not be zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">step</td><td>INTEGER The starting address of matrix C in A. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ipiv_array</td><td>Array of pointers, dimension (batchCount), for corresponding matrices. Each is an INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga402f2b5e6f7e7423a84b360c67fb61dc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_idamax_batched </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>x_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>step</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t **&#160;</td>
+          <td class="paramname"><em>ipiv_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>gbstep</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>IDAMAX find the index of max absolute value of elements in x and store the index in ipiv. </p>
+<p>This is an internal routine that might have many assumption.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>INTEGER On entry, length specifies the size of vector x. length &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array of dimension</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Specifies the increment for the elements of X. INCX must not be zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">step</td><td>INTEGER the offset of ipiv</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of each array A, internal use to find the starting position of x.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ipiv_array</td><td>Array of pointers, dimension (batchCount), for corresponding matrices. Each is an INTEGER array, dimension (min(M,N)) The pivot indices; for 1 &lt;= i &lt;= min(M,N), row i of the matrix was interchanged with row IPIV(i).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
+<li>= 0: successful exit</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: if INFO = i, U(i,i) is exactly zero. The factorization has been completed, but the factor U is exactly singular, and division by zero will occur if it is used to solve a system of equations.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gbstep</td><td>INTEGER the offset of info, internal use</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:51 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

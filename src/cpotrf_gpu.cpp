@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Stan Tomov
-       @generated from zpotrf_gpu.cpp normal z -> c, Tue Aug 25 16:35:13 2015
+       @generated from zpotrf_gpu.cpp normal z -> c, Fri Sep 11 18:29:26 2015
 */
 #include "common_magma.h"
 

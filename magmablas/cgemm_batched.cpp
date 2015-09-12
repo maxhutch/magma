@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zgemm_batched.cpp normal z -> c, Tue Aug 25 16:35:10 2015
+       @generated from zgemm_batched.cpp normal z -> c, Fri Sep 11 18:29:22 2015
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -65,18 +65,18 @@
     @param[in]
     m       INTEGER.
             On entry,  M  specifies  the number  of rows  of the  matrix
-            op( dA )  and of the  matrix dC.  M  must  be at least  zero.
+            op( A )  and of the  matrix C.  M  must  be at least  zero.
     
     @param[in]
     n       INTEGER.
             On entry,  N  specifies the number  of columns of the matrix
-            op( dB ) and the number of columns of the matrix dC. N must be
+            op( B ) and the number of columns of the matrix C. N must be
             at least zero.
     
     @param[in]
     k       INTEGER.
             On entry,  K  specifies  the number of columns of the matrix
-            op( dA ) and the number of rows of the matrix op( dB ). K must
+            op( A ) and the number of rows of the matrix op( B ). K must
             be at least  zero.
     
     @param[in]
@@ -84,53 +84,68 @@
             On entry, ALPHA specifies the scalar alpha.
     
     @param[in]
-    dA      COMPLEX array of DIMENSION ( LDA, ka ), where ka is
-            k  when  transA = MagmaNoTrans,  and is  m  otherwise.
-            Before entry with  transA = MagmaNoTrans,  the leading  m by k
-            part of the array dA must contain the matrix dA, otherwise
-            the leading  k by m  part of the array dA must contain  the
-            matrix dA.
+    dA_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array A of DIMENSION ( ldda, ka ), where ka is
+             k  when  transA = MagmaNoTrans,  and is  m  otherwise.
+             Before entry with  transA = MagmaNoTrans,  the leading  m by k
+             part of the array A must contain the matrix A, otherwise
+             the leading  k by m  part of the array A must contain  the
+             matrix A.
     
     @param[in]
     ldda    INTEGER.
-            On entry, LDA specifies the first dimension of A as declared
+            On entry, ldda specifies the first dimension of each array A as declared
             in the calling (sub) program. When  transA = MagmaNoTrans then
-            LDA must be at least  max( 1, m ), otherwise  LDA must be at
+            ldda must be at least  max( 1, m ), otherwise  ldda must be at
             least  max( 1, k ).
     
     @param[in]
-    dB      COMPLEX array of DIMENSION ( LDB, kb ), where kb is
-            n  when  transB = MagmaNoTrans,  and is  k  otherwise.
-            Before entry with  transB = MagmaNoTrans,  the leading  k by n
-            part of the array dB must contain the matrix dB, otherwise
-            the leading  n by k  part of the array dB must contain  the
-            matrix dB.
+    dB_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array B of DIMENSION ( lddb, kb ), where kb is
+             n  when  transB = MagmaNoTrans,  and is  k  otherwise.
+             Before entry with  transB = MagmaNoTrans,  the leading  k by n
+             part of the array B must contain the matrix B, otherwise
+             the leading  n by k  part of the array B must contain  the
+             matrix B.
     
     @param[in]
     lddb    INTEGER.
-            On entry, LDB specifies the first dimension of dB as declared
+            On entry, lddb specifies the first dimension of each array B as declared
             in the calling (sub) program. When  transB = MagmaNoTrans then
-            LDB must be at least  max( 1, k ), otherwise  LDB must be at
+            lddb must be at least  max( 1, k ), otherwise  lddb must be at
             least  max( 1, n ).
     
     @param[in]
     beta    COMPLEX.
             On entry,  BETA  specifies the scalar  beta.  When  BETA  is
-            supplied as zero then dC need not be set on input.
+            supplied as zero then C need not be set on input.
     
     @param[in,out]
-    dC      COMPLEX array of DIMENSION ( LDC, n ).
-            Before entry, the leading  m by n  part of the array  dC must
-            contain the matrix  dC,  except when  beta  is zero, in which
-            case dC need not be set on entry.
-            On exit, the array  dC  is overwritten by the  m by n  matrix
-            ( alpha*op( dA )*op( dB ) + beta*dC ).
+    dC_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array C of DIMENSION ( lddc, n ).
+             Before entry, the leading  m by n  part of the array  C must
+             contain the matrix  C,  except when  beta  is zero, in which
+             case C need not be set on entry.
+             On exit, the array  C  is overwritten by the  m by n  matrix
+             ( alpha*op( A )*op( B ) + beta*C ).
     
     @param[in]
     lddc    INTEGER.
-            On entry, LDC specifies the first dimension of dC as declared
-            in  the  calling  (sub)  program.   LDC  must  be  at  least
+            On entry, lddc specifies the first dimension of each array C as declared
+            in  the  calling  (sub)  program.   lddc  must  be  at  least
             max( 1, m ).
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+    
+    @param[in]
+    myhandle    cublasHandle_t
+              Handlde to use cuBLAS routines
 
     @ingroup magma_cblas3
     ********************************************************************/

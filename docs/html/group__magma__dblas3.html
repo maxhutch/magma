@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -196,11 +196,13 @@ This routine computes C = alpha * A^T*B^T + beta * C  <a href="#gaa7167d17a75dfe
 <tr class="memdesc:gaeefc90261a2ced3a7752603ac75992ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar to magmablas_dtrsm_outofplace, but allocates dX and d_dinvA internally.  <a href="#gaeefc90261a2ced3a7752603ac75992ca">More...</a><br /></td></tr>
 <tr class="separator:gaeefc90261a2ced3a7752603ac75992ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga3af7f60d9068d1afbb2748de027a4e18"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas3.html#ga3af7f60d9068d1afbb2748de027a4e18">magmablas_dtrsm_outofplace_batched</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, magma_int_t flag, magma_int_t m, magma_int_t n, double alpha, double **dA_array, magma_int_t ldda, double **dB_array, magma_int_t lddb, double **dX_array, magma_int_t lddx, double **dinvA_array, magma_int_t dinvA_length, double **dA_displ, double **dB_displ, double **dX_displ, double **dinvA_displ, magma_int_t resetozero, magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle)</td></tr>
-<tr class="memdesc:ga3af7f60d9068d1afbb2748de027a4e18"><td class="mdescLeft">&#160;</td><td class="mdescRight">dtrsm_work solves one of the matrix equations on gpu  <a href="#ga3af7f60d9068d1afbb2748de027a4e18">More...</a><br /></td></tr>
+<tr class="memdesc:ga3af7f60d9068d1afbb2748de027a4e18"><td class="mdescLeft">&#160;</td><td class="mdescRight">dtrsm_outofplace solves one of the matrix equations on gpu  <a href="#ga3af7f60d9068d1afbb2748de027a4e18">More...</a><br /></td></tr>
 <tr class="separator:ga3af7f60d9068d1afbb2748de027a4e18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8f1c419806f3a33fd897151422ab7950"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas3.html#ga8f1c419806f3a33fd897151422ab7950">magmablas_dtrsm_work_batched</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, magma_int_t flag, magma_int_t m, magma_int_t n, double alpha, double **dA_array, magma_int_t ldda, double **dB_array, magma_int_t lddb, double **dX_array, magma_int_t lddx, double **dinvA_array, magma_int_t dinvA_length, double **dA_displ, double **dB_displ, double **dX_displ, double **dinvA_displ, magma_int_t resetozero, magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle)</td></tr>
+<tr class="memdesc:ga8f1c419806f3a33fd897151422ab7950"><td class="mdescLeft">&#160;</td><td class="mdescRight">dtrsm_work solves one of the matrix equations on gpu  <a href="#ga8f1c419806f3a33fd897151422ab7950">More...</a><br /></td></tr>
 <tr class="separator:ga8f1c419806f3a33fd897151422ab7950"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga27770df1219da248edb3088ec509c01b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas3.html#ga27770df1219da248edb3088ec509c01b">magmablas_dtrsm_batched</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag, magma_int_t m, magma_int_t n, double alpha, double **dA_array, magma_int_t ldda, double **dB_array, magma_int_t lddb, magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle)</td></tr>
+<tr class="memdesc:ga27770df1219da248edb3088ec509c01b"><td class="mdescLeft">&#160;</td><td class="mdescRight">dtrsm solves one of the matrix equations on gpu  <a href="#ga27770df1219da248edb3088ec509c01b">More...</a><br /></td></tr>
 <tr class="separator:ga27770df1219da248edb3088ec509c01b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae49e3bfdbaca2aa731d6511d1812b6ec"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas3.html#gae49e3bfdbaca2aa731d6511d1812b6ec">magmablas_dtrtri_diag_q</a> (magma_uplo_t uplo, magma_diag_t diag, magma_int_t n, magmaDouble_const_ptr dA, magma_int_t ldda, magmaDouble_ptr d_dinvA, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gae49e3bfdbaca2aa731d6511d1812b6ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inverts the NB x NB diagonal blocks of a triangular matrix.  <a href="#gae49e3bfdbaca2aa731d6511d1812b6ec">More...</a><br /></td></tr>
@@ -208,7 +210,7 @@ This routine computes C = alpha * A^T*B^T + beta * C  <a href="#gaa7167d17a75dfe
 <tr class="memitem:gae94bbd49960798c430b023470ea79527"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas3.html#gae94bbd49960798c430b023470ea79527">magmablas_dtrtri_diag</a> (magma_uplo_t uplo, magma_diag_t diag, magma_int_t n, magmaDouble_const_ptr dA, magma_int_t ldda, magmaDouble_ptr d_dinvA)</td></tr>
 <tr class="separator:gae94bbd49960798c430b023470ea79527"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4a012b8f1974c947e9cd5e632cea4f32"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas3.html#ga4a012b8f1974c947e9cd5e632cea4f32">magmablas_dtrtri_diag_batched</a> (magma_uplo_t uplo, magma_diag_t diag, magma_int_t n, double const *const *dA_array, magma_int_t ldda, double **dinvA_array, magma_int_t resetozero, magma_int_t batchCount, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga4a012b8f1974c947e9cd5e632cea4f32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inverts the NB x NB diagonal blocks of a triangular matrix.  <a href="#ga4a012b8f1974c947e9cd5e632cea4f32">More...</a><br /></td></tr>
+<tr class="memdesc:ga4a012b8f1974c947e9cd5e632cea4f32"><td class="mdescLeft">&#160;</td><td class="mdescRight">DTRTRI_DIAG inverts the NB x NB diagonal blocks of a triangular matrix.  <a href="#ga4a012b8f1974c947e9cd5e632cea4f32">More...</a><br /></td></tr>
 <tr class="separator:ga4a012b8f1974c947e9cd5e632cea4f32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -964,17 +966,20 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
 <li>= 'C': op( B ) = B**H.</li>
 </ul>
 </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER. On entry, M specifies the number of rows of the matrix op( dA ) and of the matrix dC. M must be at least zero.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, N specifies the number of columns of the matrix op( dB ) and the number of columns of the matrix dC. N must be at least zero.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER. On entry, K specifies the number of columns of the matrix op( dA ) and the number of rows of the matrix op( dB ). K must be at least zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER. On entry, M specifies the number of rows of the matrix op( A ) and of the matrix C. M must be at least zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, N specifies the number of columns of the matrix op( B ) and the number of columns of the matrix C. N must be at least zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER. On entry, K specifies the number of columns of the matrix op( A ) and the number of rows of the matrix op( B ). K must be at least zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>DOUBLE_PRECISION On entry, ALPHA specifies the scalar alpha.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array of DIMENSION ( LDA, ka ), where ka is k when transA = MagmaNoTrans, and is m otherwise. Before entry with transA = MagmaNoTrans, the leading m by k part of the array dA must contain the matrix dA, otherwise the leading k by m part of the array dA must contain the matrix dA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, LDA specifies the first dimension of A as declared in the calling (sub) program. When transA = MagmaNoTrans then LDA must be at least max( 1, m ), otherwise LDA must be at least max( 1, k ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array of DIMENSION ( LDB, kb ), where kb is n when transB = MagmaNoTrans, and is k otherwise. Before entry with transB = MagmaNoTrans, the leading k by n part of the array dB must contain the matrix dB, otherwise the leading n by k part of the array dB must contain the matrix dB.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, LDB specifies the first dimension of dB as declared in the calling (sub) program. When transB = MagmaNoTrans then LDB must be at least max( 1, k ), otherwise LDB must be at least max( 1, n ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE_PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then dC need not be set on input.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array of DIMENSION ( LDC, n ). Before entry, the leading m by n part of the array dC must contain the matrix dC, except when beta is zero, in which case dC need not be set on entry. On exit, the array dC is overwritten by the m by n matrix ( alpha*op( dA )*op( dB ) + beta*dC ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, LDC specifies the first dimension of dC as declared in the calling (sub) program. LDC must be at least max( 1, m ). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, ka ), where ka is k when transA = MagmaNoTrans, and is m otherwise. Before entry with transA = MagmaNoTrans, the leading m by k part of the array A must contain the matrix A, otherwise the leading k by m part of the array A must contain the matrix A.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of each array A as declared in the calling (sub) program. When transA = MagmaNoTrans then ldda must be at least max( 1, m ), otherwise ldda must be at least max( 1, k ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array B of DIMENSION ( lddb, kb ), where kb is n when transB = MagmaNoTrans, and is k otherwise. Before entry with transB = MagmaNoTrans, the leading k by n part of the array B must contain the matrix B, otherwise the leading n by k part of the array B must contain the matrix B.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, lddb specifies the first dimension of each array B as declared in the calling (sub) program. When transB = MagmaNoTrans then lddb must be at least max( 1, k ), otherwise lddb must be at least max( 1, n ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE_PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then C need not be set on input.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array C of DIMENSION ( lddc, n ). Before entry, the leading m by n part of the array C must contain the matrix C, except when beta is zero, in which case C need not be set on entry. On exit, the array C is overwritten by the m by n matrix ( alpha*op( A )*op( B ) + beta*C ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, lddc specifies the first dimension of each array C as declared in the calling (sub) program. lddc must be at least max( 1, m ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
   </table>
   </dd>
 </dl>
@@ -1406,11 +1411,13 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, specifies the order of the matrix C. N must be at least zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER. On entry with trans = 'N' or 'n', k specifies the number of columns of the matrix A, and on entry with trans = 'C' or 'c', k specifies the number of rows of the matrix A. K must be at least zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>DOUBLE PRECISION On entry, ALPHA specifies the scalar alpha.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array of DIMENSION ( ldda, ka ), where ka is k when trans = MagmaNoTrans, and is n otherwise. Before entry with trans = MagmaNoTrans, the leading m by k part of the array dA must contain the matrix dA, otherwise the leading k by m part of the array dA must contain the matrix dA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of A as declared in the calling (sub) program. When trans = MagmaNoTrans then ldda must be at least max( 1, n ), otherwise ldda must be at least max( 1, k ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then dC need not be set on input.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array of DIMENSION ( lddc, n ). Before entry with uplo = 'U' or 'u', the leading n by n upper triangular part of the array C must contain the upper triangular part of the symmetric matrix and the strictly lower triangular part of C is not referenced. On exit, the upper triangular part of the array C is overwritten by the upper triangular part of the updated matrix. Before entry with uplo = 'L' or 'l', the leading n by n lower triangular part of the array C must contain the lower triangular part of the symmetric matrix and the strictly upper triangular part of C is not referenced. On exit, the lower triangular part of the array C is overwritten by the lower triangular part of the updated matrix. Note that the imaginary parts of the diagonal elements need not be set, they are assumed to be zero, and on exit they are set to zero.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, lddc specifies the first dimension of dC as declared in the calling (sub) program. lddc must be at least max( 1, m ). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION A array of DIMENSION ( ldda, ka ), where ka is k when trans = MagmaNoTrans, and is n otherwise. Before entry with trans = MagmaNoTrans, the leading m by k part of the array A must contain the matrix A, otherwise the leading k by m part of the array A must contain the matrix A.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of each array A as declared in the calling (sub) program. When trans = MagmaNoTrans then ldda must be at least max( 1, n ), otherwise ldda must be at least max( 1, k ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then C need not be set on input.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array C of DIMENSION ( lddc, n ). Before entry with uplo = 'U' or 'u', the leading n by n upper triangular part of the array C must contain the upper triangular part of the symmetric matrix and the strictly lower triangular part of C is not referenced. On exit, the upper triangular part of the array C is overwritten by the upper triangular part of the updated matrix. Before entry with uplo = 'L' or 'l', the leading n by n lower triangular part of the array C must contain the lower triangular part of the symmetric matrix and the strictly upper triangular part of C is not referenced. On exit, the lower triangular part of the array C is overwritten by the lower triangular part of the updated matrix. Note that the imaginary parts of the diagonal elements need not be set, they are assumed to be zero, and on exit they are set to zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, lddc specifies the first dimension of each array C as declared in the calling (sub) program. lddc must be at least max( 1, m ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1992,17 +1999,19 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
 <li>= 'C': op( B ) = B**H.</li>
 </ul>
 </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER. On entry, M specifies the number of rows of the matrix op( dA ) and of the matrix dC. M must be at least zero.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, N specifies the number of columns of the matrix op( dB ) and the number of columns of the matrix dC. N must be at least zero.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER. On entry, K specifies the number of columns of the matrix op( dA ) and the number of rows of the matrix op( dB ). K must be at least zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER. On entry, M specifies the number of rows of the matrix op( A ) and of the matrix C. M must be at least zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, N specifies the number of columns of the matrix op( B ) and the number of columns of the matrix C. N must be at least zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER. On entry, K specifies the number of columns of the matrix op( A ) and the number of rows of the matrix op( B ). K must be at least zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>DOUBLE_PRECISION On entry, ALPHA specifies the scalar alpha.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array of DIMENSION ( LDA, ka ), where ka is k when transA = MagmaNoTrans, and is m otherwise. Before entry with transA = MagmaNoTrans, the leading m by k part of the array dA must contain the matrix dA, otherwise the leading k by m part of the array dA must contain the matrix dA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, LDA specifies the first dimension of A as declared in the calling (sub) program. When transA = MagmaNoTrans then LDA must be at least max( 1, m ), otherwise LDA must be at least max( 1, k ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array of DIMENSION ( LDB, kb ), where kb is n when transB = MagmaNoTrans, and is k otherwise. Before entry with transB = MagmaNoTrans, the leading k by n part of the array dB must contain the matrix dB, otherwise the leading n by k part of the array dB must contain the matrix dB.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, LDB specifies the first dimension of dB as declared in the calling (sub) program. When transB = MagmaNoTrans then LDB must be at least max( 1, k ), otherwise LDB must be at least max( 1, n ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE_PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then dC need not be set on input.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array of DIMENSION ( LDC, n ). Before entry, the leading m by n part of the array dC must contain the matrix dC, except when beta is zero, in which case dC need not be set on entry. On exit, the array dC is overwritten by the m by n matrix ( alpha*op( dA )*op( dB ) + beta*dC ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, LDC specifies the first dimension of dC as declared in the calling (sub) program. LDC must be at least max( 1, m ). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, ka ), where ka is k when transA = MagmaNoTrans, and is m otherwise. Before entry with transA = MagmaNoTrans, the leading m by k part of the array A must contain the matrix A, otherwise the leading k by m part of the array A must contain the matrix A.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of each array A as declared in the calling (sub) program. When transA = MagmaNoTrans then ldda must be at least max( 1, m ), otherwise ldda must be at least max( 1, k ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array B of DIMENSION ( LDB, kb ), where kb is n when transB = MagmaNoTrans, and is k otherwise. Before entry with transB = MagmaNoTrans, the leading k by n part of the array B must contain the matrix B, otherwise the leading n by k part of the array B must contain the matrix B.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, lddb specifies the first dimension of each array B as declared in the calling (sub) program. When transB = MagmaNoTrans then lddb must be at least max( 1, k ), otherwise lddb must be at least max( 1, n ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE_PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then C need not be set on input.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array C of DIMENSION ( lddc, n ). Before entry, the leading m by n part of the array C must contain the matrix C, except when beta is zero, in which case C need not be set on entry. On exit, each array C is overwritten by the m by n matrix ( alpha*op( A )*op( B ) + beta*C ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, lddc specifies the first dimension of each array C as declared in the calling (sub) program. lddc must be at least max( 1, m ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2708,11 +2717,13 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, specifies the order of the matrix C. N must be at least zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER. On entry with trans = 'N' or 'n', k specifies the number of columns of the matrix A, and on entry with trans = 'C' or 'c', k specifies the number of rows of the matrix A. K must be at least zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>DOUBLE PRECISION On entry, ALPHA specifies the scalar alpha.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array of DIMENSION ( ldda, ka ), where ka is k when trans = MagmaNoTrans, and is n otherwise. Before entry with trans = MagmaNoTrans, the leading m by k part of the array dA must contain the matrix dA, otherwise the leading k by m part of the array dA must contain the matrix dA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of A as declared in the calling (sub) program. When trans = MagmaNoTrans then ldda must be at least max( 1, n ), otherwise ldda must be at least max( 1, k ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then dC need not be set on input.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>DOUBLE_PRECISION array of DIMENSION ( lddc, n ). Before entry with uplo = 'U' or 'u', the leading n by n upper triangular part of the array C must contain the upper triangular part of the symmetric matrix and the strictly lower triangular part of C is not referenced. On exit, the upper triangular part of the array C is overwritten by the upper triangular part of the updated matrix. Before entry with uplo = 'L' or 'l', the leading n by n lower triangular part of the array C must contain the lower triangular part of the symmetric matrix and the strictly upper triangular part of C is not referenced. On exit, the lower triangular part of the array C is overwritten by the lower triangular part of the updated matrix. Note that the imaginary parts of the diagonal elements need not be set, they are assumed to be zero, and on exit they are set to zero.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, lddc specifies the first dimension of dC as declared in the calling (sub) program. lddc must be at least max( 1, m ). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, ka ), where ka is k when trans = MagmaNoTrans, and is n otherwise. Before entry with trans = MagmaNoTrans, the leading m by k part of the array A must contain the matrix A, otherwise the leading k by m part of the array A must contain the matrix A.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of each array A as declared in the calling (sub) program. When trans = MagmaNoTrans then ldda must be at least max( 1, n ), otherwise ldda must be at least max( 1, k ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>DOUBLE PRECISION. On entry, BETA specifies the scalar beta. When BETA is supplied as zero then C need not be set on input.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array C of DIMENSION ( lddc, n ). Before entry with uplo = 'U' or 'u', the leading n by n upper triangular part of the array C must contain the upper triangular part of the symmetric matrix and the strictly lower triangular part of C is not referenced. On exit, the upper triangular part of the array C is overwritten by the upper triangular part of the updated matrix. Before entry with uplo = 'L' or 'l', the leading n by n lower triangular part of the array C must contain the lower triangular part of the symmetric matrix and the strictly upper triangular part of C is not referenced. On exit, the lower triangular part of the array C is overwritten by the lower triangular part of the updated matrix. Note that the imaginary parts of the diagonal elements need not be set, they are assumed to be zero, and on exit they are set to zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER. On entry, lddc specifies the first dimension of each array C as declared in the calling (sub) program. lddc must be at least max( 1, m ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2898,7 +2909,49 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__dblas3.html#gab6f346c57eb943e11213175ce2a592c2" title="Similar to magmablas_dtrsm_outofplace, but copies result dX back to dB, as in classical dtrsm interfa...">magmablas_dtrsm_work</a> </dd></dl>
+
+<p>dtrsm solves one of the matrix equations on gpu </p>
+<p>op(A)*X = alpha*B, or X*op(A) = alpha*B,</p>
+<p>where alpha is a scalar, X and B are m by n matrices, A is a unit, or non-unit, upper or lower triangular matrix and op(A) is one of </p><pre class="fragment">op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
+</pre><p>The matrix X is overwritten on B.</p>
+<p>This is an asynchronous version of magmablas_dtrsm with flag, d_dinvA and dX workspaces as arguments.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t. On entry, side specifies whether op(A) appears on the left or right of X as follows:<ul>
+<li>= MagmaLeft: op(A)*X = alpha*B.</li>
+<li>= MagmaRight: X*op(A) = alpha*B.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t. On entry, uplo specifies whether the matrix A is an upper or lower triangular matrix as follows:<ul>
+<li>= MagmaUpper: A is an upper triangular matrix.</li>
+<li>= MagmaLower: A is a lower triangular matrix.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">transA</td><td>magma_trans_t. On entry, transA specifies the form of op(A) to be used in the matrix multiplication as follows:<ul>
+<li>= MagmaNoTrans: op(A) = A.</li>
+<li>= MagmaTrans: op(A) = A^T.</li>
+<li>= MagmaConjTrans: op(A) = A^H.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">diag</td><td>magma_diag_t. On entry, diag specifies whether or not A is unit triangular as follows:<ul>
+<li>= MagmaUnit: A is assumed to be unit triangular.</li>
+<li>= MagmaNonUnit: A is not assumed to be unit triangular.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER. On entry, m specifies the number of rows of B. m &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, n specifies the number of columns of B. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>DOUBLE_PRECISION. On entry, alpha specifies the scalar alpha. When alpha is zero then A is not referenced and B need not be set before entry.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array A of dimension ( ldda, k ), where k is m when side = MagmaLeft and is n when side = MagmaRight. Before entry with uplo = MagmaUpper, the leading k by k upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading k by k lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of each array A. When side = MagmaLeft, ldda &gt;= max( 1, m ), when side = MagmaRight, ldda &gt;= max( 1, n ).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array B of dimension ( lddb, n ). Before entry, the leading m by n part of the array B must contain the right-hand side matrix B. <br />
+ On exit, the solution matrix X</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, lddb specifies the first dimension of each array B. lddb &gt;= max( 1, m ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -3212,7 +3265,7 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
       </table>
 </div><div class="memdoc">
 
-<p>dtrsm_work solves one of the matrix equations on gpu </p>
+<p>dtrsm_outofplace solves one of the matrix equations on gpu </p>
 <p>op(A)*X = alpha*B, or X*op(A) = alpha*B,</p>
 <p>where alpha is a scalar, X and B are m by n matrices, A is a unit, or non-unit, upper or lower triangular matrix and op(A) is one of </p><pre class="fragment">op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
 </pre><p>The matrix X is overwritten on B.</p>
@@ -3240,16 +3293,26 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
 <li>= MagmaNonUnit: A is not assumed to be unit triangular.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flag</td><td>BOOLEAN. If flag is true, invert diagonal blocks. If flag is false, assume diagonal blocks (stored in d_dinvA) are already inverted.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER. On entry, m specifies the number of rows of B. m &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, n specifies the number of columns of B. n &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>DOUBLE_PRECISION. On entry, alpha specifies the scalar alpha. When alpha is zero then A is not referenced and B need not be set before entry.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array of dimension ( ldda, k ), where k is m when side = MagmaLeft and is n when side = MagmaRight. Before entry with uplo = MagmaUpper, the leading k by k upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading k by k lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of A. When side = MagmaLeft, ldda &gt;= max( 1, m ), when side = MagmaRight, ldda &gt;= max( 1, n ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array of dimension ( lddb, n ). Before entry, the leading m by n part of the array B must contain the right-hand side matrix B.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, lddb specifies the first dimension of B. lddb &gt;= max( 1, m ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">flag</td><td>BOOLEAN. If flag is true, invert diagonal blocks. If flag is false, assume diagonal blocks (stored in d_dinvA) are already inverted.</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">d_dinvA</td><td>(workspace) on device. If side == MagmaLeft, d_dinvA must be of size &gt;= ceil(m/TRI_NB)*TRI_NB*TRI_NB, If side == MagmaRight, d_dinvA must be of size &gt;= ceil(n/TRI_NB)*TRI_NB*TRI_NB, where TRI_NB = 128.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dX</td><td>DOUBLE_PRECISION array of dimension ( lddx, n ). On exit it contain the solution matrix X. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array A of dimension ( ldda, k ), where k is m when side = MagmaLeft and is n when side = MagmaRight. Before entry with uplo = MagmaUpper, the leading k by k upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading k by k lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of each array A. When side = MagmaLeft, ldda &gt;= max( 1, m ), when side = MagmaRight, ldda &gt;= max( 1, n ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array B of dimension ( lddb, n ). Before entry, the leading m by n part of the array B must contain the right-hand side matrix B.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, lddb specifies the first dimension of each array B. lddb &gt;= max( 1, m ).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dX_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array X of dimension ( lddx, n ). On entry, should be set to 0 On exit, the solution matrix X</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddx</td><td>INTEGER. On entry, lddx specifies the first dimension of each array X. lddx &gt;= max( 1, m ).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dinvA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array dinvA, a workspace on device. If side == MagmaLeft, dinvA must be of size &gt;= ceil(m/TRI_NB)*TRI_NB*TRI_NB, If side == MagmaRight, dinvA must be of size &gt;= ceil(n/TRI_NB)*TRI_NB*TRI_NB, where TRI_NB = 128.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dinvA_length</td><td>INTEGER The size of each workspace matrix dinvA</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dA_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dB_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dX_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dinvA_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">resetozero</td><td>INTEGER Used internally by DTRTRI_DIAG routine</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
   </table>
   </dd>
 </dl>
@@ -3524,7 +3587,59 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__dblas3.html#ga3af7f60d9068d1afbb2748de027a4e18" title="dtrsm_work solves one of the matrix equations on gpu ">magmablas_dtrsm_outofplace_batched</a> </dd></dl>
+
+<p>dtrsm_work solves one of the matrix equations on gpu </p>
+<p>op(A)*X = alpha*B, or X*op(A) = alpha*B,</p>
+<p>where alpha is a scalar, X and B are m by n matrices, A is a unit, or non-unit, upper or lower triangular matrix and op(A) is one of </p><pre class="fragment">op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
+</pre><p>The matrix X is overwritten on B.</p>
+<p>This is an asynchronous version of magmablas_dtrsm with flag, d_dinvA and dX workspaces as arguments.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t. On entry, side specifies whether op(A) appears on the left or right of X as follows:<ul>
+<li>= MagmaLeft: op(A)*X = alpha*B.</li>
+<li>= MagmaRight: X*op(A) = alpha*B.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t. On entry, uplo specifies whether the matrix A is an upper or lower triangular matrix as follows:<ul>
+<li>= MagmaUpper: A is an upper triangular matrix.</li>
+<li>= MagmaLower: A is a lower triangular matrix.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">transA</td><td>magma_trans_t. On entry, transA specifies the form of op(A) to be used in the matrix multiplication as follows:<ul>
+<li>= MagmaNoTrans: op(A) = A.</li>
+<li>= MagmaTrans: op(A) = A^T.</li>
+<li>= MagmaConjTrans: op(A) = A^H.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">diag</td><td>magma_diag_t. On entry, diag specifies whether or not A is unit triangular as follows:<ul>
+<li>= MagmaUnit: A is assumed to be unit triangular.</li>
+<li>= MagmaNonUnit: A is not assumed to be unit triangular.</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">flag</td><td>BOOLEAN. If flag is true, invert diagonal blocks. If flag is false, assume diagonal blocks (stored in d_dinvA) are already inverted.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER. On entry, m specifies the number of rows of B. m &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, n specifies the number of columns of B. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>DOUBLE_PRECISION. On entry, alpha specifies the scalar alpha. When alpha is zero then A is not referenced and B need not be set before entry.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array A of dimension ( ldda, k ), where k is m when side = MagmaLeft and is n when side = MagmaRight. Before entry with uplo = MagmaUpper, the leading k by k upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading k by k lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, ldda specifies the first dimension of each array A. When side = MagmaLeft, ldda &gt;= max( 1, m ), when side = MagmaRight, ldda &gt;= max( 1, n ).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array B of dimension ( lddb, n ). Before entry, the leading m by n part of the array B must contain the right-hand side matrix B. <br />
+ On exit, the solution matrix X</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER. On entry, lddb specifies the first dimension of each array B. lddb &gt;= max( 1, m ).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dX_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array X of dimension ( lddx, n ). On entry, should be set to 0 On exit, the solution matrix X</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddx</td><td>INTEGER. On entry, lddx specifies the first dimension of each array X. lddx &gt;= max( 1, m ).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dinvA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array dinvA, a workspace on device. If side == MagmaLeft, dinvA must be of size &gt;= ceil(m/TRI_NB)*TRI_NB*TRI_NB, If side == MagmaRight, dinvA must be of size &gt;= ceil(n/TRI_NB)*TRI_NB*TRI_NB, where TRI_NB = 128.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dinvA_length</td><td>INTEGER The size of each workspace matrix dinvA</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dA_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dB_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dX_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dinvA_displ</td><td>(workspace) Array of pointers, dimension (batchCount).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">resetozero</td><td>INTEGER Used internally by DTRTRI_DIAG routine</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Handlde to use cuBLAS routines </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -3645,10 +3760,8 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
       </table>
 </div><div class="memdoc">
 
-<p>Inverts the NB x NB diagonal blocks of a triangular matrix. </p>
+<p>DTRTRI_DIAG inverts the NB x NB diagonal blocks of a triangular matrix. </p>
 <p>This routine is used in dtrsm.</p>
-<p>Same as dtrtri_diag, but adds queue argument.</p>
-<p>dtrtri_diag inverts the NB x NB diagonal blocks of A.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t. On entry, uplo specifies whether the matrix A is an upper or lower triangular matrix as follows:<ul>
@@ -3662,12 +3775,14 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, n specifies the order of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>DOUBLE_PRECISION array of dimension ( ldda, n ) The triangular matrix A. <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array A of dimension ( ldda, n ) The triangular matrix A. <br />
  If UPLO = 'U', the leading N-by-N upper triangular part of A contains the upper triangular matrix, and the strictly lower triangular part of A is not referenced. <br />
  If UPLO = 'L', the leading N-by-N lower triangular part of A contains the lower triangular matrix, and the strictly upper triangular part of A is not referenced. <br />
  If DIAG = 'U', the diagonal elements of A are also not referenced and are assumed to be 1.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dinvA_array</td><td>DOUBLE_PRECISION array of dimension (NB, ceil(n/NB)*NB), where NB = 128. On exit, contains inverses of the NB-by-NB diagonal blocks of A.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. The leading dimension of each array A. LDDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dinvA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array dinvA of dimension (NB, ceil(n/NB)*NB), where NB = 128. On exit, contains inverses of the NB-by-NB diagonal blocks of A.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">resetozero</td><td>INTEGER If not zero, each array dinvA will be reset to all zeros</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -3764,7 +3879,7 @@ This routine computes C = alpha * A^T*B^T + beta * C </p>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:53 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

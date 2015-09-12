@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> s d c
 
@@ -91,10 +91,10 @@ magma_zungqr(
 
     magma_int_t  m_kk, n_kk, k_kk, mi;
     magma_int_t lwork, ldda;
-    magma_int_t i, ib, ki, kk;  //, iinfo;
+    magma_int_t i, ib, ki, kk;
     magma_int_t lddwork;
-    magmaDoubleComplex *dA, *dV, *dW;
-    magmaDoubleComplex *work;
+    magmaDoubleComplex *dA=NULL, *dV=NULL, *dW=NULL;
+    magmaDoubleComplex *work=NULL;
 
     *info = 0;
     if (m < 0) {
@@ -136,20 +136,24 @@ magma_zungqr(
     lddwork = magma_roundup( n, 32 );
     if (MAGMA_SUCCESS != magma_zmalloc( &dA, ldda*n + ldda*nb + lddwork*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
+        goto cleanup;
     }
     dV = dA + ldda*n;
     dW = dA + ldda*n + ldda*nb;
 
     // Allocate CPU work space
-    lwork = (n+m+nb) * nb;
+    // n*nb  for larfb work
+    // m*nb  for V
+    // nb*nb for T
+    lwork = (n + m + nb) * nb;
     magma_zmalloc_cpu( &work, lwork );
     if (work == NULL) {
-        magma_free( dA );
         *info = MAGMA_ERR_HOST_ALLOC;
-        return *info;
+        goto cleanup;
     }
-    magmaDoubleComplex *V = work + (n+nb)*nb;
+    magmaDoubleComplex *work_T, *work_V;
+    work_T = work + n*nb;
+    work_V = work + n*nb + nb*nb;
 
     magma_queue_t stream;
     magma_queue_create( &stream );
@@ -159,22 +163,23 @@ magma_zungqr(
         m_kk = m - kk;
         n_kk = n - kk;
         k_kk = k - kk;
-        /*
-            // Replacing this with the following 4 routines works but zungqr is slow for
-            // k smaller than the zungqr's blocking size (new version can be up to 60x faster)
-            lapackf77_zungqr( &m_kk, &n_kk, &k_kk,
-                              A(kk, kk), &lda,
-                              &tau[kk], work, &lwork, &iinfo );
-        */
-        lapackf77_zlacpy( MagmaUpperLowerStr, &m_kk, &k_kk, A(kk,kk), &lda, V, &m_kk);
-        lapackf77_zlaset( MagmaUpperLowerStr, &m_kk, &n_kk, &c_zero, &c_one, A(kk, kk), &lda );
-
+        
+        // zungqr requires less workspace (n*nb), but is slow if k < zungqr's block size.
+        // replacing it with the 4 routines below is much faster (e.g., 60x).
+        //int iinfo;
+        //lapackf77_zungqr( &m_kk, &n_kk, &k_kk,
+        //                  A(kk, kk), &lda,
+        //                  &tau[kk], work, &lwork, &iinfo );
+        
+        lapackf77_zlacpy( MagmaFullStr, &m_kk, &k_kk, A(kk,kk), &lda, work_V, &m_kk);
+        lapackf77_zlaset( MagmaFullStr, &m_kk, &n_kk, &c_zero, &c_one, A(kk, kk), &lda );
+        
         lapackf77_zlarft( MagmaForwardStr, MagmaColumnwiseStr,
                           &m_kk, &k_kk,
-                          V, &m_kk, &tau[kk], work, &k_kk);
+                          work_V, &m_kk, &tau[kk], work_T, &k_kk);
         lapackf77_zlarfb( MagmaLeftStr, MagmaNoTransStr, MagmaForwardStr, MagmaColumnwiseStr,
                           &m_kk, &n_kk, &k_kk,
-                          V, &m_kk, work, &k_kk, A(kk, kk), &lda, work+k_kk*k_kk, &n_kk );
+                          work_V, &m_kk, work_T, &k_kk, A(kk, kk), &lda, work, &n_kk );
         
         if (kk > 0) {
             magma_zsetmatrix( m_kk, n_kk,
@@ -195,7 +200,7 @@ magma_zungqr(
         for (i = ki; i >= 0; i -= nb) {
             ib = min(nb, k - i);
 
-            // Send current panel to the GPU
+            // Send current panel to dV on the GPU
             mi = m - i;
             lapackf77_zlaset( "Upper", &ib, &ib, &c_zero, &c_one, A(i, i), &lda );
             magma_zsetmatrix_async( mi, ib,
@@ -220,6 +225,7 @@ magma_zungqr(
                           dA(0, 0), ldda, A(0, 0), lda);
     }
 
+cleanup:
     magma_queue_destroy( stream );
     magma_free( dA );
     magma_free_cpu( work );

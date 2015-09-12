@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -132,12 +132,21 @@ Functions</h2></td></tr>
 <tr class="memitem:gadad5bf7f7d90e545626ea732a30ca333"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#gadad5bf7f7d90e545626ea732a30ca333">magma_z_spmm</a> (magmaDoubleComplex alpha, magma_z_matrix A, magma_z_matrix B, magma_z_matrix *C, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gadad5bf7f7d90e545626ea732a30ca333"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and B and scalar alpha, the wrapper determines the suitable SpMV computing C = alpha * A * B.  <a href="#gadad5bf7f7d90e545626ea732a30ca333">More...</a><br /></td></tr>
 <tr class="separator:gadad5bf7f7d90e545626ea732a30ca333"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga741b0bc4f8d37b82b5ad76eba93ff7a5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#ga741b0bc4f8d37b82b5ad76eba93ff7a5">magma_zgeaxpy</a> (magmaDoubleComplex alpha, magma_z_matrix X, magmaDoubleComplex beta, magma_z_matrix *Y, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga741b0bc4f8d37b82b5ad76eba93ff7a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes Y = alpha * X + beta * Y on the GPU.  <a href="#ga741b0bc4f8d37b82b5ad76eba93ff7a5">More...</a><br /></td></tr>
+<tr class="separator:ga741b0bc4f8d37b82b5ad76eba93ff7a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac14d734d6b2422aa932deddd827bd472"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#gac14d734d6b2422aa932deddd827bd472">magma_zgecsrmv</a> (magma_trans_t transA, magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_ptr dval, magmaIndex_ptr drowptr, magmaIndex_ptr dcolind, magmaDoubleComplex_ptr dx, magmaDoubleComplex beta, magmaDoubleComplex_ptr dy, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gac14d734d6b2422aa932deddd827bd472"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes y = alpha * A * x + beta * y on the GPU.  <a href="#gac14d734d6b2422aa932deddd827bd472">More...</a><br /></td></tr>
 <tr class="separator:gac14d734d6b2422aa932deddd827bd472"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga381a8aa757a1e3d112f051dc66c03966"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#ga381a8aa757a1e3d112f051dc66c03966">magma_zgecsrmv_shift</a> (magma_trans_t transA, magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex lambda, magmaDoubleComplex_ptr dval, magmaIndex_ptr drowptr, magmaIndex_ptr dcolind, magmaDoubleComplex_ptr dx, magmaDoubleComplex beta, int offset, int blocksize, magma_index_t *addrows, magmaDoubleComplex_ptr dy, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga381a8aa757a1e3d112f051dc66c03966"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes y = alpha * ( A -lambda I ) * x + beta * y on the GPU.  <a href="#ga381a8aa757a1e3d112f051dc66c03966">More...</a><br /></td></tr>
 <tr class="separator:ga381a8aa757a1e3d112f051dc66c03966"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa4baac7cbb4fd0dfa3865e3623e4bfc2"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#gaa4baac7cbb4fd0dfa3865e3623e4bfc2">magma_zgecsrreimsplit</a> (magma_z_matrix A, magma_z_matrix *ReA, magma_z_matrix *ImA, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaa4baac7cbb4fd0dfa3865e3623e4bfc2"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine takes an input matrix A in CSR format and located on the GPU and splits it into two matrixes ReA and ImA containing the real and the imaginary contributions of A.  <a href="#gaa4baac7cbb4fd0dfa3865e3623e4bfc2">More...</a><br /></td></tr>
+<tr class="separator:gaa4baac7cbb4fd0dfa3865e3623e4bfc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga949e133ba54376b8f625a34601ee7bfc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#ga949e133ba54376b8f625a34601ee7bfc">magma_zgedensereimsplit</a> (magma_z_matrix A, magma_z_matrix *ReA, magma_z_matrix *ImA, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga949e133ba54376b8f625a34601ee7bfc"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine takes an input matrix A in DENSE format and located on the GPU and splits it into two matrixes ReA and ImA containing the real and the imaginary contributions of A.  <a href="#ga949e133ba54376b8f625a34601ee7bfc">More...</a><br /></td></tr>
+<tr class="separator:ga949e133ba54376b8f625a34601ee7bfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5e0ec153fd915f2c7c8297046abe2673"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__zblas.html#ga5e0ec153fd915f2c7c8297046abe2673">magma_zgeellmv</a> (magma_trans_t transA, magma_int_t m, magma_int_t n, magma_int_t nnz_per_row, magmaDoubleComplex alpha, magmaDoubleComplex_ptr dval, magmaIndex_ptr dcolind, magmaDoubleComplex_ptr dx, magmaDoubleComplex beta, magmaDoubleComplex_ptr dy, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga5e0ec153fd915f2c7c8297046abe2673"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes y = alpha * A * x + beta * y on the GPU.  <a href="#ga5e0ec153fd915f2c7c8297046abe2673">More...</a><br /></td></tr>
 <tr class="separator:ga5e0ec153fd915f2c7c8297046abe2673"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -554,6 +563,63 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga741b0bc4f8d37b82b5ad76eba93ff7a5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zgeaxpy </td>
+          <td>(</td>
+          <td class="paramtype">magmaDoubleComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>X</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix *&#160;</td>
+          <td class="paramname"><em>Y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This routine computes Y = alpha * X + beta * Y on the GPU. </p>
+<p>The input format is a dense matrix (vector block) stored in magma_z_matrix format.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaDoubleComplex scalar multiplier.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">X</td><td>magma_z_matrix input/output matrix Y.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaDoubleComplex scalar multiplier.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Y</td><td>magma_z_matrix* input matrix X. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="gac14d734d6b2422aa932deddd827bd472"></a>
 <div class="memitem">
 <div class="memproto">
@@ -773,6 +839,106 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">blocksize</td><td>magma_int_t in case of processing multiple vectors</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">addrows</td><td>magmaIndex_ptr in case the matrixpowerskernel is used</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dy</td><td>magmaDoubleComplex_ptr output vector y </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaa4baac7cbb4fd0dfa3865e3623e4bfc2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zgecsrreimsplit </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix *&#160;</td>
+          <td class="paramname"><em>ReA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix *&#160;</td>
+          <td class="paramname"><em>ImA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This routine takes an input matrix A in CSR format and located on the GPU and splits it into two matrixes ReA and ImA containing the real and the imaginary contributions of A. </p>
+<p>The output matrices are allocated within the routine.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ReA</td><td>magma_z_matrix* output matrix contaning real contributions.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ImA</td><td>magma_z_matrix* output matrix contaning complex contributions.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga949e133ba54376b8f625a34601ee7bfc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_zgedensereimsplit </td>
+          <td>(</td>
+          <td class="paramtype">magma_z_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix *&#160;</td>
+          <td class="paramname"><em>ReA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_z_matrix *&#160;</td>
+          <td class="paramname"><em>ImA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This routine takes an input matrix A in DENSE format and located on the GPU and splits it into two matrixes ReA and ImA containing the real and the imaginary contributions of A. </p>
+<p>The output matrices are allocated within the routine.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_z_matrix input matrix A.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ReA</td><td>magma_z_matrix* output matrix contaning real contributions.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ImA</td><td>magma_z_matrix* output matrix contaning complex contributions.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -2029,7 +2195,7 @@ vector product with GPUs", (CIT 2010), and modified to provide correct values.</
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:54 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:07 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

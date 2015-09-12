@@ -11,6 +11,7 @@ SHDR = \
 CSRC = \
 	magma_c_blaswrapper.cpp \
 	cbajac_csr.cu \
+	cgeaxpy.cu \
 	cgecsrmv.cu \
 	cgeellmv.cu \
 	cgeelltmv.cu \
@@ -35,11 +36,14 @@ CSRC = \
 	citeric.cu \
 	ccompact.cu \
 	magma_cmcsrcompressor_gpu.cu \
-	magma_cdiagcheck.cu
+	magma_cdiagcheck.cu \
+	cgecsrreimsplit.cu \
+	cgedensereimsplit.cu
 
 DSRC = \
 	magma_d_blaswrapper.cpp \
 	dbajac_csr.cu \
+	dgeaxpy.cu \
 	dgecsrmv.cu \
 	dgeellmv.cu \
 	dgeelltmv.cu \
@@ -64,11 +68,14 @@ DSRC = \
 	diteric.cu \
 	dcompact.cu \
 	magma_dmcsrcompressor_gpu.cu \
-	magma_ddiagcheck.cu
+	magma_ddiagcheck.cu \
+	dgecsrreimsplit.cu \
+	dgedensereimsplit.cu
 
 SSRC = \
 	magma_s_blaswrapper.cpp \
 	sbajac_csr.cu \
+	sgeaxpy.cu \
 	sgecsrmv.cu \
 	sgeellmv.cu \
 	sgeelltmv.cu \
@@ -93,4 +100,6 @@ SSRC = \
 	siteric.cu \
 	scompact.cu \
 	magma_smcsrcompressor_gpu.cu \
-	magma_sdiagcheck.cu
+	magma_sdiagcheck.cu \
+	sgecsrreimsplit.cu \
+	sgedensereimsplit.cu

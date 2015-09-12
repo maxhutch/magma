@@ -1,74 +1,100 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
+   -- MAGMA (version 1.7.0) --
+   Univ. of Tennessee, Knoxville
+   Univ. of California, Berkeley
+   Univ. of Colorado, Denver
+   @date September 2015
 
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from zgetf2_nopiv_batched.cpp normal z -> s, Tue Aug 25 16:35:19 2015
+   @generated from zgetf2_nopiv_batched.cpp normal z -> s, Fri Sep 11 18:29:32 2015
 */
 
 #include "common_magma.h"
 #include "batched_kernel_param.h"
-#define A(i, j)  (A + (i) + (j)*lda)   // A(i, j) means at i row, j column
+#define A(i, j)  (A + (i) + (j)*ldda)   // A(i, j) means at i row, j column
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-/*  -- MAGMA (version 1.6.3-beta1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2011
-
-    SGETF2 computes an LU factorization of a general m-by-n matrix A
-    using partial pivoting with row interchanges.
+///////////////////////////////////////////////////////////////////////////////////////
+/**
+    Purpose
+    -------
+    SGETF2 computes an LU factorization of a general M-by-N matrix A without pivoting
 
     The factorization has the form
-        A = P * L * U
-    where P is a permutation matrix, L is lower triangular with unit
+        A = L * U
+    where L is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U is upper
     triangular (upper trapezoidal if m < n).
 
-    This is the right-looking Level 2 BLAS version of the algorithm.
+    This is the right-looking Level 3 BLAS version of the algorithm.
+
+    This is a batched version that factors batchCount M-by-N matrices in parallel.
+    dA, and info become arrays with one entry per matrix.
 
     Arguments
-    =========
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of rows of each matrix A.  M >= 0.
 
-    M       (input) INTEGER
-            The number of rows of the matrix A.  M >= 0.
+    @param[in]
+    n       INTEGER
+            The number of columns of each matrix A.  N >= 0.
 
-    N       (input) INTEGER
-            The number of columns of the matrix A.  N >= 0 and N <= 1024.
-            On CUDA architecture 1.x cards, N <= 512.
-
-    A       (input/output) REAL array, dimension (LDA,N)
-            On entry, the m by n matrix to be factored.
+    @param[in,out]
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a REAL array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
-    LDA     (input) INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of each array A.  LDDA >= max(1,M).
 
-    IPIV    (output) INTEGER array, dimension (min(M,N))
-            The pivot indices; for 1 <= i <= min(M,N), row i of the
-            matrix was interchanged with row IPIV(i).
+    @param
+    dW0_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param
+    dW1_displ (workspace) Array of pointers, dimension (batchCount).
 
-    INFO    (output) INTEGER
-            = 0: successful exit
-            < 0: if INFO = -k, the k-th argument had an illegal value
-            > 0: if INFO = k, U(k,k) is exactly zero. The factorization
-                 has been completed, but the factor U is exactly
-                 singular, and division by zero will occur if it is used
-                 to solve a system of equations.
+    @param
+    dW2_displ (workspace) Array of pointers, dimension (batchCount).
 
-    ===================================================================== */
+    @param[out]
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation failed.
+      -     > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+                  has been completed, but the factor U is exactly
+                  singular, and division by zero will occur if it is used
+                  to solve a system of equations.
+
+    @param[in]
+    gbstep  INTEGER
+            internal use.
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    myhandle   cublasHandle_t
+            Cublas handle might be used internally.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_sgesv_aux
+    ********************************************************************/
 
 extern "C" magma_int_t
 magma_sgetf2_nopiv_batched(
     magma_int_t m, magma_int_t n,
-    float **dA_array, magma_int_t lda,
+    float **dA_array, magma_int_t ldda,
     float **dW0_displ,
     float **dW1_displ,
     float **dW2_displ,
@@ -83,7 +109,7 @@ magma_sgetf2_nopiv_batched(
         arginfo = -1;
     } else if (n < 0 ) {
         arginfo = -2;
-    } else if (lda < max(1,m)) {
+    } else if (ldda < max(1,m)) {
         arginfo = -4;
     }
 
@@ -120,7 +146,7 @@ magma_sgetf2_nopiv_batched(
             {
                 // Compute elements J+1:M of J-th column.
                 if (gbj < m) {
-                    arginfo = magma_sscal_sger_batched(m-gbj, ib-step, gbj, dA_array, lda, info_array, gbstep, batchCount, queue);
+                    arginfo = magma_sscal_sger_batched(m-gbj, ib-step, gbj, dA_array, ldda, info_array, gbstep, batchCount, queue);
                     if (arginfo != 0 ) return arginfo;
                 }
             }
@@ -132,16 +158,16 @@ magma_sgetf2_nopiv_batched(
 
         if ( (n-panelj-ib) > 0) {
             // continue the update of the selected ib row column panelj+ib:n(TRSM)
-            magma_sgetf2trsm_batched(ib, n-panelj-ib, dA_array, panelj, lda, batchCount, queue);
+            magma_sgetf2trsm_batched(ib, n-panelj-ib, dA_array, panelj, ldda, batchCount, queue);
             // do the blocked DGER = DGEMM for the remaining panelj+ib:n columns
-            magma_sdisplace_pointers(dW0_displ, dA_array, lda, ib+panelj, panelj, batchCount, queue);
-            magma_sdisplace_pointers(dW1_displ, dA_array, lda, panelj, ib+panelj, batchCount, queue);            
-            magma_sdisplace_pointers(dW2_displ, dA_array, lda, ib+panelj, ib+panelj, batchCount, queue);
+            magma_sdisplace_pointers(dW0_displ, dA_array, ldda, ib+panelj, panelj, batchCount, queue);
+            magma_sdisplace_pointers(dW1_displ, dA_array, ldda, panelj, ib+panelj, batchCount, queue);            
+            magma_sdisplace_pointers(dW2_displ, dA_array, ldda, ib+panelj, ib+panelj, batchCount, queue);
 
             magma_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m-(panelj+ib), n-(panelj+ib), ib, 
-                                 neg_one, dW0_displ, lda, 
-                                 dW1_displ, lda, 
-                                 one,  dW2_displ, lda, 
+                                 neg_one, dW0_displ, ldda, 
+                                 dW1_displ, ldda, 
+                                 one,  dW2_displ, ldda, 
                                  batchCount, queue, myhandle);
         }
     }

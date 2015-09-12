@@ -1,18 +1,16 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zungqr_m.cpp normal z -> c, Tue Aug 25 16:35:17 2015
+       @generated from zungqr_m.cpp normal z -> c, Fri Sep 11 18:29:28 2015
 
        @author Mark Gates
 */
 #include "common_magma.h"
 #include "trace.h"
-
-#define PRECISION_c
 
 /**
     Purpose
@@ -93,8 +91,8 @@ magma_cungqr_m(
 
     magma_int_t m_kk, n_kk, k_kk, mi;
     magma_int_t lwork, ldwork;
-    magma_int_t i, ib, ki, kk, iinfo;
-    magmaFloatComplex *work;
+    magma_int_t d, i, ib, j, jb, ki, kk;
+    magmaFloatComplex *work=NULL;
 
     *info = 0;
     if (m < 0) {
@@ -138,7 +136,7 @@ magma_cungqr_m(
     magmaFloatComplex *dW[ MagmaMaxGPUs ] = { NULL };
     magma_queue_t stream[ MagmaMaxGPUs ] = { NULL };
     
-    for( int d = 0; d < ngpu; ++d ) {
+    for( d = 0; d < ngpu; ++d ) {
         // example with n = 75, nb = 10, ngpu = 3
         // min_lblocks = 2
         // last_dev    = 1
@@ -160,7 +158,7 @@ magma_cungqr_m(
                + nb*lddwork;     // dW
         if ( MAGMA_SUCCESS != magma_cmalloc( &dA[d], ldwork )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
-            goto CLEANUP;
+            goto cleanup;
         }
         dT[d] = dA[d] + nlocal[d]*ldda;
         dV[d] = dT[d] + nb*m;
@@ -182,13 +180,18 @@ magma_cungqr_m(
     }
 
     // Allocate CPU work space
-    // n*nb for cungqr workspace
-    lwork = n * nb;
+    // n*nb  for larfb work
+    // m*nb  for V
+    // nb*nb for T
+    lwork = (n + m + nb) * nb;
     magma_cmalloc_cpu( &work, lwork );
     if (work == NULL) {
         *info = MAGMA_ERR_HOST_ALLOC;
-        goto CLEANUP;
+        goto cleanup;
     }
+    magmaFloatComplex *work_T, *work_V;
+    work_T = work + n*nb;
+    work_V = work + n*nb + nb*nb;
 
     // Use unblocked code for the last or only block.
     if (kk < n) {
@@ -196,27 +199,45 @@ magma_cungqr_m(
         m_kk = m - kk;
         n_kk = n - kk;
         k_kk = k - kk;
-        dpanel =  (kk / nb) % ngpu;
-        di     = ((kk / nb) / ngpu) * nb;
-        magma_setdevice( dpanel );
         
-        lapackf77_cungqr( &m_kk, &n_kk, &k_kk,
-                          A(kk, kk), &lda,
-                          &tau[kk], work, &lwork, &iinfo );
-
-        magma_csetmatrix( m_kk, n_kk,
-                          A(kk, kk),  lda,
-                          dA(dpanel, kk, di), ldda );
+        // cungqr requires less workspace (n*nb), but is slow if k < cungqr's block size.
+        // replacing it with the 4 routines below is much faster (e.g., 60x).
+        //int iinfo;
+        //lapackf77_cungqr( &m_kk, &n_kk, &k_kk,
+        //                  A(kk, kk), &lda,
+        //                  &tau[kk], work, &lwork, &iinfo );
         
-        // Set A(1:kk,kk+1:n) to zero.
-        magmablas_claset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(dpanel, 0, di), ldda );
+        lapackf77_clacpy( MagmaFullStr, &m_kk, &k_kk, A(kk,kk), &lda, work_V, &m_kk);
+        lapackf77_claset( MagmaFullStr, &m_kk, &n_kk, &c_zero, &c_one, A(kk, kk), &lda );
+        
+        lapackf77_clarft( MagmaForwardStr, MagmaColumnwiseStr,
+                          &m_kk, &k_kk,
+                          work_V, &m_kk, &tau[kk], work_T, &k_kk);
+        lapackf77_clarfb( MagmaLeftStr, MagmaNoTransStr, MagmaForwardStr, MagmaColumnwiseStr,
+                          &m_kk, &n_kk, &k_kk,
+                          work_V, &m_kk, work_T, &k_kk, A(kk, kk), &lda, work, &n_kk );
+        
+        if (kk > 0) {
+            for( j=kk; j < n; j += nb ) {
+                jb = min( n-j, nb );
+                d  =  (j / nb) % ngpu;
+                di = ((j / nb) / ngpu) * nb;
+                magma_setdevice( d );
+                magma_csetmatrix( m_kk, jb,
+                                  A(kk, j),  lda,
+                                  dA(d, kk, di), ldda );
+                
+                // Set A(1:kk,kk+1:n) to zero.
+                magmablas_claset( MagmaFull, kk, jb, c_zero, c_zero, dA(d, 0, di), ldda );
+            }
+        }
         trace_cpu_end( 0 );
     }
 
     if (kk > 0) {
         // Use blocked code
         // send T to all GPUs
-        for( int d = 0; d < ngpu; ++d ) {
+        for( d = 0; d < ngpu; ++d ) {
             magma_setdevice( d );
             trace_gpu_start( d, 0, "set", "set T" );
             magma_csetmatrix_async( nb, min(m,n), T, nb, dT[d], nb, stream[d] );
@@ -231,9 +252,9 @@ magma_cungqr_m(
             dpanel =  (i / nb) % ngpu;
             di     = ((i / nb) / ngpu) * nb;
 
-            // Send current panel to the GPUs
+            // Send current panel to dV on the GPUs
             lapackf77_claset( "Upper", &ib, &ib, &c_zero, &c_one, A(i, i), &lda );
-            for( int d = 0; d < ngpu; ++d ) {
+            for( d = 0; d < ngpu; ++d ) {
                 magma_setdevice( d );
                 trace_gpu_start( d, 0, "set", "set V" );
                 magma_csetmatrix_async( mi, ib,
@@ -252,7 +273,7 @@ magma_cungqr_m(
             
             if (i < n) {
                 // Apply H to A(i:m,i:n) from the left
-                for( int d = 0; d < ngpu; ++d ) {
+                for( d = 0; d < ngpu; ++d ) {
                     magma_setdevice( d );
                     magmablasSetKernelStream( stream[d] );
                     magma_indices_1D_bcyclic( nb, ngpu, d, i, n, &di, &dn );
@@ -265,12 +286,12 @@ magma_cungqr_m(
                 }
             }
         }
+        
+        // copy result back to CPU
+        trace_cpu_start( 0, "get", "get A" );
+        magma_cgetmatrix_1D_col_bcyclic( m, n, dA, ldda, A, lda, ngpu, nb );
+        trace_cpu_end( 0 );
     }
-    
-    // copy result back to CPU
-    trace_cpu_start( 0, "get", "get A" );
-    magma_cgetmatrix_1D_col_bcyclic( m, n, dA, ldda, A, lda, ngpu, nb );
-    trace_cpu_end( 0 );
     
     #ifdef TRACING
     char name[80];
@@ -278,8 +299,8 @@ magma_cungqr_m(
     trace_finalize( name, "trace.css" );
     #endif
     
-CLEANUP:
-    for( int d = 0; d < ngpu; ++d ) {
+cleanup:
+    for( d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
         magma_free( dA[d] );
         magma_queue_destroy( stream[d] );

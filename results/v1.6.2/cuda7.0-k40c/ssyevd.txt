@@ -1,0 +1,246 @@
+numactl --interleave=all ./testing_ssyevd -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevd [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0008
+ 1000     ---               0.0568
+   10     ---               0.0000
+   20     ---               0.0000
+   30     ---               0.0001
+   40     ---               0.0001
+   50     ---               0.0001
+   60     ---               0.0002
+   70     ---               0.0003
+   80     ---               0.0003
+   90     ---               0.0004
+  100     ---               0.0005
+  200     ---               0.0032
+  300     ---               0.0063
+  400     ---               0.0107
+  500     ---               0.0168
+  600     ---               0.0215
+  700     ---               0.0279
+  800     ---               0.0357
+  900     ---               0.0447
+ 1000     ---               0.0546
+ 2000     ---               0.2282
+ 3000     ---               0.8892
+ 4000     ---               1.5411
+ 5000     ---               2.4856
+ 6000     ---               4.0524
+ 7000     ---               5.3686
+ 8000     ---               7.1975
+ 9000     ---               9.4643
+10000     ---              12.1726
+12000     ---              19.3079
+14000     ---              28.1323
+16000     ---              40.6615
+18000     ---              55.4339
+20000     ---              71.7824
+numactl --interleave=all ./testing_ssyevd -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevd [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0022
+ 1000     ---               0.0698
+   10     ---               0.0001
+   20     ---               0.0001
+   30     ---               0.0002
+   40     ---               0.0003
+   50     ---               0.0004
+   60     ---               0.0005
+   70     ---               0.0006
+   80     ---               0.0007
+   90     ---               0.0009
+  100     ---               0.0010
+  200     ---               0.0070
+  300     ---               0.0106
+  400     ---               0.0168
+  500     ---               0.0248
+  600     ---               0.0285
+  700     ---               0.0367
+  800     ---               0.0455
+  900     ---               0.0576
+ 1000     ---               0.0673
+ 2000     ---               0.2710
+ 3000     ---               0.9194
+numactl --interleave=all ./testing_ssyevd -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevd [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0008
+ 1000     ---               0.0620
+   10     ---               0.0000
+   20     ---               0.0000
+   30     ---               0.0001
+   40     ---               0.0001
+   50     ---               0.0002
+   60     ---               0.0002
+   70     ---               0.0003
+   80     ---               0.0004
+   90     ---               0.0005
+  100     ---               0.0006
+  200     ---               0.0036
+  300     ---               0.0069
+  400     ---               0.0113
+  500     ---               0.0174
+  600     ---               0.0231
+  700     ---               0.0309
+  800     ---               0.0396
+  900     ---               0.0533
+ 1000     ---               0.0606
+ 2000     ---               0.2523
+ 3000     ---               0.9090
+ 4000     ---               1.5965
+ 5000     ---               2.5789
+ 6000     ---               3.7544
+ 7000     ---               5.3782
+ 8000     ---               7.2381
+ 9000     ---               9.5919
+numactl --interleave=all ./testing_ssyevd -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevd [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0023
+ 1000     ---               0.0702
+   10     ---               0.0001
+   20     ---               0.0001
+   30     ---               0.0002
+   40     ---               0.0003
+   50     ---               0.0003
+   60     ---               0.0005
+   70     ---               0.0006
+   80     ---               0.0007
+   90     ---               0.0009
+  100     ---               0.0011
+  200     ---               0.0072
+  300     ---               0.0111
+  400     ---               0.0171
+  500     ---               0.0391
+  600     ---               0.0294
+  700     ---               0.0378
+  800     ---               0.0472
+  900     ---               0.0591
+ 1000     ---               0.0679
+ 2000     ---               0.2484
+ 3000     ---               0.9114
+ 4000     ---               1.5739
+ 5000     ---               2.5379
+ 6000     ---               3.8574
+ 7000     ---               5.5671
+ 8000     ---               7.3919
+ 9000     ---               9.7177
+numactl --interleave=all ./testing_ssyevd_gpu -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevd_gpu [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0009
+ 1000       ---              0.1342
+   10       ---              0.0001
+   20       ---              0.0001
+   30       ---              0.0001
+   40       ---              0.0001
+   50       ---              0.0002
+   60       ---              0.0002
+   70       ---              0.0003
+   80       ---              0.0004
+   90       ---              0.0005
+  100       ---              0.0006
+  200       ---              0.0090
+  300       ---              0.0164
+  400       ---              0.0281
+  500       ---              0.0389
+  600       ---              0.0532
+  700       ---              0.0670
+  800       ---              0.0850
+  900       ---              0.1069
+ 1000       ---              0.1240
+ 2000       ---              0.4499
+ 3000       ---              0.9240
+ 4000       ---              1.6000
+ 5000       ---              2.5353
+ 6000       ---              3.7759
+ 7000       ---              5.3275
+ 8000       ---              7.5790
+ 9000       ---              9.4562
+numactl --interleave=all ./testing_ssyevd_gpu -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_ssyevd_gpu [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0022
+ 1000       ---              0.1397
+   10       ---              0.0001
+   20       ---              0.0001
+   30       ---              0.0002
+   40       ---              0.0003
+   50       ---              0.0004
+   60       ---              0.0005
+   70       ---              0.0007
+   80       ---              0.0008
+   90       ---              0.0010
+  100       ---              0.0011
+  200       ---              0.0124
+  300       ---              0.0205
+  400       ---              0.0348
+  500       ---              0.0471
+  600       ---              0.0606
+  700       ---              0.0753
+  800       ---              0.0948
+  900       ---              0.1190
+ 1000       ---              0.1374
+ 2000       ---              0.4669
+ 3000       ---              0.9294
+ 4000       ---              1.5760
+ 5000       ---              2.5580
+ 6000       ---              3.9266
+ 7000       ---              5.5895
+ 8000       ---              7.6636
+ 9000       ---             10.2211

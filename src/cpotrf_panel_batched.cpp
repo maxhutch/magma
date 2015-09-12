@@ -1,18 +1,22 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2013
+       @date September 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zpotrf_panel_batched.cpp normal z -> c, Tue Aug 25 16:35:20 2015
+       @generated from zpotrf_panel_batched.cpp normal z -> c, Fri Sep 11 18:29:32 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
 ////////////////////////////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_panel_batched(
     magma_uplo_t uplo, magma_int_t n, magma_int_t nb,     
@@ -74,6 +78,10 @@ magma_cpotrf_panel_batched(
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_recpanel_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, 
@@ -180,6 +188,10 @@ magma_cpotrf_recpanel_batched(
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_cpotrf_rectile_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n, 

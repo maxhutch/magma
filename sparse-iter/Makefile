@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.3-beta1) --
+#   -- MAGMA (version 1.7.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date August 2015
+#      @date September 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = ..
@@ -57,11 +57,6 @@ cleanall:
 cleanall2:
 	@echo
 
-##install_dirs:
-##	mkdir -p $(prefix)/sparse-iter
-##	mkdir -p $(prefix)/sparse-iter/include
-
-##install_dirs
 install: lib
 	# MAGMA
 	cp $(MAGMA_DIR)/sparse-iter/include/*.h  $(prefix)/include
@@ -91,13 +86,14 @@ shared: libmagma_sparse
 	$(MAKE) $(LIBMAGMA_SPARSE_SO)
 
 # MacOS likes the library's path to be set; see make.inc.macos
+LIBMAGMA_SPARSE_SO_LDFLAGS := $(LDFLAGS)
 ifneq ($(INSTALL_NAME),)
-    LDFLAGS += $(INSTALL_NAME)$(notdir $(LIBMAGMA_SPARSE_SO))
+    LIBMAGMA_SPARSE_SO_LDFLAGS += $(INSTALL_NAME)$(notdir $(LIBMAGMA_SPARSE_SO))
 endif
 
 $(LIBMAGMA_SPARSE_SO): src/*.$(o_ext) control/*.$(o_ext) blas/*.$(o_ext)
-	@echo ======================================== libmagma_sparse.so
-	$(CC) $(LDFLAGS) -shared -o $(LIBMAGMA_SPARSE_SO) $^ \
+	@echo ======================================== $(LIBMAGMA_SPARSE_SO)
+	$(CC) $(LIBMAGMA_SPARSE_SO_LDFLAGS) -shared -o $(LIBMAGMA_SPARSE_SO) $^ \
 	-L$(MAGMA_DIR)/lib -lmagma \
 	$(LIBDIR) \
 	$(LIB)

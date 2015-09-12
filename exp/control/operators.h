@@ -2,11 +2,11 @@
  *
  *  @file operators.h
  *
- *  MAGMA (version 1.6.3-beta1) --
+ *  MAGMA (version 1.7.0) --
  *  Univ. of Tennessee, Knoxville
  *  Univ. of California, Berkeley
  *  Univ. of Colorado, Denver
- *  @date August 2015
+ *  @date September 2015
  *
  **/
 #ifndef _MAGMA_OPERATORS_H_

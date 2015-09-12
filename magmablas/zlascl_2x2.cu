@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> s d c
 
@@ -97,14 +97,18 @@ zlascl_2x2_upper(int m, const magmaDoubleComplex *W, int ldw, magmaDoubleComplex
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" void
 magmablas_zlascl_2x2_q(
     magma_type_t type, magma_int_t m, 
-    const magmaDoubleComplex *dW, magma_int_t lddw, 
-    magmaDoubleComplex *dA, magma_int_t ldda, 
-    magma_int_t *info, magma_queue_t queue )
+    magmaDoubleComplex_const_ptr dW, magma_int_t lddw, 
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda, 
+    magma_queue_t queue, magma_int_t *info )
 {
     *info = 0;
     if ( type != MagmaLower && type != MagmaUpper )
@@ -138,9 +142,9 @@ magmablas_zlascl_2x2_q(
 extern "C" void
 magmablas_zlascl_2x2(
     magma_type_t type, magma_int_t m, 
-    magmaDoubleComplex *dW, magma_int_t lddw, 
-    magmaDoubleComplex *dA, magma_int_t ldda, 
+    magmaDoubleComplex_const_ptr dW, magma_int_t lddw, 
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda, 
     magma_int_t *info )
 {
-    magmablas_zlascl_2x2_q( type, m, dW, lddw, dA, ldda, info, magma_stream );
+    magmablas_zlascl_2x2_q( type, m, dW, lddw, dA, ldda, magma_stream, info );
 }

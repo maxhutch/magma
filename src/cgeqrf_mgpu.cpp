@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zgeqrf_mgpu.cpp normal z -> c, Tue Aug 25 16:35:16 2015
+       @generated from zgeqrf_mgpu.cpp normal z -> c, Fri Sep 11 18:29:28 2015
 
 */
 #include "common_magma.h"
@@ -19,6 +19,10 @@
     Arguments
     ---------
     @param[in]
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
+
+    @param[in]
     m       INTEGER
             The number of rows of the matrix A.  M >= 0.
 
@@ -27,8 +31,11 @@
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      COMPLEX array on the GPU, dimension (LDDA,N)
-            On entry, the M-by-N matrix dA.
+    dlA     COMPLEX array of pointers on the GPU, dimension (ngpu).
+            On entry, the M-by-N matrix A distributed over GPUs
+            (d_lA[d] points to the local matrix on d-th GPU).
+            It uses 1D block column cyclic format with the block size of nb,
+            and each local matrix is stored by column.
             On exit, the elements on and above the diagonal of the array
             contain the min(M,N)-by-N upper trapezoidal matrix R (R is
             upper triangular if m >= n); the elements below the diagonal,

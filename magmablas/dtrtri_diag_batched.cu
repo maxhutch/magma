@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from ztrtri_diag_batched.cu normal z -> d, Tue Aug 25 16:35:10 2015
+       @generated from ztrtri_diag_batched.cu normal z -> d, Fri Sep 11 18:29:22 2015
 
        @author Peng Du
        @author Tingxing Dong
@@ -21,18 +21,11 @@
 
 
 /**
-    Inverts the NB x NB diagonal blocks of a triangular matrix.
-    This routine is used in dtrsm.
-    
-    Same as dtrtri_diag, but adds queue argument.
-    
-    @ingroup magma_dblas3
-    ********************************************************************/
-/**
     Purpose
     -------
-    dtrtri_diag inverts the NB x NB diagonal blocks of A.
-
+    DTRTRI_DIAG inverts the NB x NB diagonal blocks of a triangular matrix.
+    This routine is used in dtrsm.
+    
     Arguments
     ----------
     @param[in]
@@ -54,12 +47,13 @@
             On entry, n specifies the order of the matrix A. N >= 0.
 
     @param[in]
-    dA_array      DOUBLE_PRECISION array of dimension ( ldda, n )
-            The triangular matrix A.
+    dA_array      Array of pointers, dimension (batchCount). 
+             Each is a DOUBLE_PRECISION array A of dimension ( ldda, n )
+             The triangular matrix A.
     \n
-            If UPLO = 'U', the leading N-by-N upper triangular part of A
-            contains the upper triangular matrix, and the strictly lower
-            triangular part of A is not referenced.
+             If UPLO = 'U', the leading N-by-N upper triangular part of A
+             contains the upper triangular matrix, and the strictly lower
+             triangular part of A is not referenced.
     \n
             If UPLO = 'L', the leading N-by-N lower triangular part of A
             contains the lower triangular matrix, and the strictly upper
@@ -70,12 +64,21 @@
 
     @param[in]
     ldda    INTEGER.
-            The leading dimension of the array A.  LDDA >= max(1,N).
+            The leading dimension of each array A.  LDDA >= max(1,N).
 
     @param[out]
-    dinvA_array DOUBLE_PRECISION array of dimension (NB, ceil(n/NB)*NB),
-            where NB = 128.
-            On exit, contains inverses of the NB-by-NB diagonal blocks of A.
+    dinvA_array Array of pointers, dimension (batchCount). 
+                Each is a DOUBLE_PRECISION array dinvA of dimension (NB, ceil(n/NB)*NB),
+                where NB = 128.
+                On exit, contains inverses of the NB-by-NB diagonal blocks of A.
+
+    @param[in]
+    resetozero INTEGER
+               If not zero, each array dinvA will be reset to all zeros 
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
 
     @param[in]
     queue   magma_queue_t

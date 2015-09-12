@@ -1,22 +1,20 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Stan Tomov
-       @generated from zgegqr_gpu.cpp normal z -> d, Tue Aug 25 16:35:15 2015
+       @generated from zgegqr_gpu.cpp normal z -> d, Fri Sep 11 18:29:27 2015
 
 */
 #include "common_magma.h"
 
-#define PRECISION_d
+#define REAL
 
 // === Define what BLAS to use ============================================
-//#if defined(PRECISION_s) || defined(PRECISION_d)
     #define magma_dtrsm magmablas_dtrsm
-//#endif
 // === End defining what BLAS to use ======================================
 
 /**
@@ -24,7 +22,7 @@
     -------
     DGEGQR orthogonalizes the N vectors given by a real M-by-N matrix A:
            
-            A = Q * R.
+        A = Q * R.
 
     On exit, if successful, the orthogonal vectors Q overwrite A
     and R is given in work (on the CPU memory).
@@ -42,7 +40,7 @@
                 that makes the computation numerically accurate.
             2:  This version uses a standard LAPACK-based orthogonalization through
                 MAGMA's QR panel factorization (magma_dgeqr2x3_gpu) and magma_dorgqr
-            3:  MGS
+            3:  Modified Gram-Schmidt (MGS)
             4.  Cholesky QR [ Note: this method uses the normal equations which
                                     squares the condition number of A, therefore
                                     ||I - Q'Q|| < O(eps cond(A)^2)               ]
@@ -83,7 +81,9 @@
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
-
+      -     > 0:  for ikind = 4, the normal equations were not
+                  positive definite, so the factorization could not be
+                  completed, and the solution has not been computed.
 
     @ingroup magma_dgeqrf_comp
     ********************************************************************/
@@ -128,7 +128,7 @@ magma_dgegqr_gpu(
         G    = R    + n*n;       // Size n * n
         VT   = G    + n*n;       // Size n * n
         
-        magma_dmalloc_cpu( &hwork, 32 + 2*n*n + 2*n);
+        magma_dmalloc_cpu( &hwork, 32 + 2*n*n + 2*n );
         if ( hwork == NULL ) {
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
@@ -136,32 +136,32 @@ magma_dgegqr_gpu(
         
         magma_int_t lwork=n*n+32; // First part f hwork; used as workspace in svd
         
-        U    = hwork + n*n + 32;  // Size n*n
-        S    = (double *)(U+n*n); // Size n
-        tau  = U + n*n + n;       // Size n
+        U    = hwork + n*n + 32;   // Size n*n
+        S    = (double*)(U + n*n); // Size n
+        tau  = U + n*n + n;        // Size n
         
-#if defined(PRECISION_c) || defined(PRECISION_z)
+        #if defined(COMPLEX)
         double *rwork;
-        magma_dmalloc_cpu( &rwork, 5*n);
+        magma_dmalloc_cpu( &rwork, 5*n );
         if ( rwork == NULL ) {
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
         }
-#endif
+        #endif
         
         do {
             i++;
             
-            magma_dgemm(MagmaConjTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
-            magma_dgetmatrix(n, n, dwork, n, G, n);
+            magma_dgemm( MagmaConjTrans, MagmaNoTrans, n, n, m, c_one,
+                         dA, ldda, dA, ldda, c_zero, dwork, n );
+            magma_dgetmatrix( n, n, dwork, n, G, n );
             
-#if defined(PRECISION_s) || defined(PRECISION_d)
-            lapackf77_dgesvd("n", "a", &n, &n, G, &n, S, U, &n, VT, &n,
-                             hwork, &lwork, info);
-#else
-            lapackf77_dgesvd("n", "a", &n, &n, G, &n, S, U, &n, VT, &n,
-                             hwork, &lwork, rwork, info);
-#endif
+            lapackf77_dgesvd( "n", "a", &n, &n, G, &n, S, U, &n, VT, &n,
+                              hwork, &lwork,
+                              #if defined(COMPLEX)
+                              rwork,
+                              #endif
+                              info );
             
             mins = 100.f, maxs = 0.f;
             for (k=0; k < n; k++) {
@@ -176,25 +176,26 @@ magma_dgegqr_gpu(
                 for (j=0; j < n; j++)
                     vt[j] *= S[j];
             }
-            lapackf77_dgeqrf(&n, &n, VT, &n, tau, hwork, &lwork, info);
+            lapackf77_dgeqrf( &n, &n, VT, &n, tau, hwork, &lwork, info );
             
             if (i == 1)
-                blasf77_dcopy(&n2, VT, &ione, R, &ione);
+                blasf77_dcopy( &n2, VT, &ione, R, &ione );
             else
-                blasf77_dtrmm("l", "u", "n", "n", &n, &n, &c_one, VT, &n, R, &n);
+                blasf77_dtrmm( "l", "u", "n", "n", &n, &n, &c_one, VT, &n, R, &n );
             
-            magma_dsetmatrix(n, n, VT, n, dwork, n);
-            magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit, m, n, c_one, dwork, n, dA, ldda);
+            magma_dsetmatrix( n, n, VT, n, dwork, n );
+            magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
+                         m, n, c_one, dwork, n, dA, ldda );
             if (mins > 0.00001f)
                 cn = maxs/mins;
             
-            //fprintf(stderr, "Iteration %d, cond num = %f \n", i, cn);
+            //fprintf( stderr, "Iteration %d, cond num = %f \n", i, cn );
         } while (cn > 10.f);
         
         magma_free_cpu( hwork );
-#if defined(PRECISION_c) || defined(PRECISION_z)
+        #if defined(COMPLEX)
         magma_free_cpu( rwork );
-#endif
+        #endif
         // ================== end of ikind == 1 ===================================================
     }
     else if (ikind == 2) {
@@ -208,10 +209,10 @@ magma_dgegqr_gpu(
         double *tau  = work+n*n;
 
         magmablas_dlaset( MagmaFull, n, n, c_zero, c_zero, d_T, n );
-        magma_dgeqr2x3_gpu(m, n, dA, ldda, dtau, d_T, ddA,
-                           (double *)(dwork+min_mn+2*n*n), info);
-        magma_dgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn);
-        magma_dgetmatrix( n, n, ddA, n, work, n);
+        magma_dgeqr2x3_gpu( m, n, dA, ldda, dtau, d_T, ddA,
+                            (double*)(dwork+min_mn+2*n*n), info );
+        magma_dgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn );
+        magma_dgetmatrix( n, n, ddA, n, work, n );
         magma_dorgqr_gpu( m, n, n, dA, ldda, tau, d_T, nb, info );
         // ================== end of ikind == 2 ===================================================
     }
@@ -219,26 +220,28 @@ magma_dgegqr_gpu(
         // ================== MGS               ===================================================
         for (j = 0; j < n; j++) {
             for (i = 0; i < j; i++) {
-                *work(i, j) = magma_ddot(m, dA(0,i), 1, dA(0,j), 1);
-                magma_daxpy(m, -(*work(i,j)),  dA(0,i), 1, dA(0,j), 1);
+                *work(i, j) = magma_ddot( m, dA(0,i), 1, dA(0,j), 1 );
+                magma_daxpy( m, -(*work(i,j)),  dA(0,i), 1, dA(0,j), 1 );
             }
             for (i = j; i < n; i++) {
                 *work(i, j) = MAGMA_D_ZERO;
             }
-            //*work(j,j) = MAGMA_D_MAKE( magma_dnrm2(m, dA(0,j), 1), 0. );
-            *work(j,j) = magma_ddot(m, dA(0,j), 1, dA(0,j), 1);
-            *work(j,j) = MAGMA_D_MAKE( sqrt(MAGMA_D_REAL( *work(j,j) )), 0.);
-            magma_dscal(m, 1./ *work(j,j), dA(0,j), 1);
+            //*work(j,j) = MAGMA_D_MAKE( magma_dnrm2( m, dA(0,j), 1), 0. );
+            *work(j,j) = magma_ddot( m, dA(0,j), 1, dA(0,j), 1 );
+            *work(j,j) = MAGMA_D_MAKE( sqrt(MAGMA_D_REAL( *work(j,j) )), 0. );
+            magma_dscal( m, 1./ *work(j,j), dA(0,j), 1 );
         }
         // ================== end of ikind == 3 ===================================================
     }
     else if (ikind == 4) {
         // ================== Cholesky QR       ===================================================
-        magma_dgemm(MagmaConjTrans, MagmaNoTrans, n, n, m, c_one, dA, ldda, dA, ldda, c_zero, dwork, n );
-        magma_dgetmatrix(n, n, dwork, n, work, n);
-        lapackf77_dpotrf("u", &n, work, &n, info);
-        magma_dsetmatrix(n, n, work, n, dwork, n);
-        magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit, m, n, c_one, dwork, n, dA, ldda);
+        magma_dgemm( MagmaConjTrans, MagmaNoTrans, n, n, m, c_one,
+                     dA, ldda, dA, ldda, c_zero, dwork, n );
+        magma_dgetmatrix( n, n, dwork, n, work, n );
+        lapackf77_dpotrf( "u", &n, work, &n, info );
+        magma_dsetmatrix( n, n, work, n, dwork, n );
+        magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
+                     m, n, c_one, dwork, n, dA, ldda );
         // ================== end of ikind == 4 ===================================================
     }
              

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zmergebicgstab.cu normal z -> d, Tue Aug 25 16:35:31 2015
+       @generated from zmergebicgstab.cu normal z -> d, Fri Sep 11 18:29:42 2015
        @author Hartwig Anzt
 
 */
@@ -321,10 +321,6 @@ magma_dbicgmerge4_kernel_3(
     @param[in,out]
     skp         magmaDouble_ptr 
                 vector with parameters
-
-    @param[in]
-    queue       magma_queue_t
-                Queue to execute in.
 
     @ingroup magmasparse_dgegpuk
     ********************************************************************/

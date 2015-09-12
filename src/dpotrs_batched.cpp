@@ -1,14 +1,14 @@
 
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Azzam Haidar
 
-       @generated from zpotrs_batched.cpp normal z -> d, Tue Aug 25 16:35:20 2015
+       @generated from zpotrs_batched.cpp normal z -> d, Fri Sep 11 18:29:32 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
@@ -37,27 +37,33 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
-            The triangular factor U or L from the Cholesky factorization
-            A = U**H*U or A = L*L**H, as computed by DPOTRF.
+    dA_array    Array of pointers, dimension (batchCount).
+             Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
+             The triangular factor U or L from the Cholesky factorization
+             A = U**H*U or A = L*L**H, as computed by DPOTRF.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDDA >= max(1,N).
+            The leading dimension of each array A.  LDDA >= max(1,N).
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
-            On entry, the right hand side matrix B.
-            On exit, the solution matrix X.
+    dB_array      Array of pointers, dimension (batchCount).
+             Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
+             On entry, each pointer is a right hand side matrix B.
+             On exit, the corresponding solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDDB >= max(1,N).
+            The leading dimension of each array B.  LDDB >= max(1,N).
 
-    @param[out]
-    info    INTEGER
-      -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
 
     @ingroup magma_dposv_comp
     ********************************************************************/

@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.3-beta1) --
+#   -- MAGMA (version 1.7.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date August 2015
+#      @date September 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 MAGMA_DIR = .
@@ -101,13 +101,14 @@ cleanall2:
 
 # filter out MAGMA-specific options for pkg-config
 INSTALL_FLAGS := $(filter-out \
-	-DMAGMA_SETAFFINITY -DMAGMA_WITH_ACML -DMAGMA_WITH_MKL -DUSE_FLOCK \
+	-DMAGMA_NOAFFINITY -DMAGMA_SETAFFINITY -DMAGMA_WITH_ACML -DMAGMA_WITH_MKL -DUSE_FLOCK \
 	-DMIN_CUDA_ARCH=100 -DMIN_CUDA_ARCH=200 -DMIN_CUDA_ARCH=300 \
+	-DHAVE_CUBLAS \
 	-fno-strict-aliasing -fPIC -O0 -O1 -O2 -O3 -pedantic -stdc++98 \
-	-Wall -Wno-long-long, $(CFLAGS))
+	-Wall -Wshadow -Wno-long-long, $(CFLAGS))
 
 INSTALL_LDFLAGS := $(filter-out \
-	-fPIC -Wall -Xlinker -zmuldefs, $(LDFLAGS))
+	-fPIC -Wall, $(LDFLAGS))
 
 install_dirs:
 	mkdir -p $(prefix)
@@ -134,6 +135,7 @@ install: lib install_dirs
 	    sed -e s:@LIBS@:"$(INSTALL_LDFLAGS) $(LIBEXT)": | \
 	    sed -e s:@MAGMA_REQUIRED@::                      \
 	    > $(prefix)/lib/pkgconfig/magma.pc
+	( cd sparse-iter && $(MAKE) install )
 
 # ========================================
 # This is a crude manner of creating shared libraries.
@@ -158,13 +160,14 @@ shared: libmagma
 	$(MAKE) $(LIBMAGMA_SO)
 
 # MacOS likes the library's path to be set; see make.inc.macos
+LIBMAGMA_SO_LDFLAGS := $(LDFLAGS)
 ifneq ($(INSTALL_NAME),)
-    LDFLAGS += $(INSTALL_NAME)$(notdir $(LIBMAGMA_SO))
+    LIBMAGMA_SO_LDFLAGS += $(INSTALL_NAME)$(notdir $(LIBMAGMA_SO))
 endif
 
 $(LIBMAGMA_SO): src/*.$(o_ext) control/*.$(o_ext) interface_cuda/*.$(o_ext) magmablas/*.$(o_ext)
 	@echo ======================================== $(LIBMAGMA_SO)
-	$(CXX) $(LDFLAGS) -shared -o $(LIBMAGMA_SO) $^ \
+	$(CXX) $(LIBMAGMA_SO_LDFLAGS) -shared -o $(LIBMAGMA_SO) $^ \
 	$(LIBDIR) \
 	$(LIB)
 	@echo

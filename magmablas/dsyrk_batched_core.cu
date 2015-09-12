@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal d
 
@@ -79,16 +79,17 @@
             On entry, ALPHA specifies the scalar alpha.
     
     @param[in]
-    dA      DOUBLE_PRECISION array of DIMENSION ( ldda, ka ), where ka is
-            k  when  trans = MagmaNoTrans,  and is  n  otherwise.
-            Before entry with  trans = MagmaNoTrans,  the leading  m by k
-            part of the array dA must contain the matrix dA, otherwise
-            the leading  k by m  part of the array dA must contain  the
-            matrix dA.
+    dA_array      Array of pointers, dimension (batchCount).
+             Each is a DOUBLE_PRECISION array A of DIMENSION ( ldda, ka ), where ka is
+             k  when  trans = MagmaNoTrans,  and is  n  otherwise.
+             Before entry with  trans = MagmaNoTrans,  the leading  m by k
+             part of the array A must contain the matrix A, otherwise
+             the leading  k by m  part of the array A must contain  the
+             matrix A.
     
     @param[in]
     ldda    INTEGER.
-            On entry, ldda specifies the first dimension of A as declared
+            On entry, ldda specifies the first dimension of each array A as declared
             in the calling (sub) program. When  trans = MagmaNoTrans then
             ldda must be at least  max( 1, n ), otherwise  ldda must be at
             least  max( 1, k ).
@@ -96,31 +97,41 @@
     @param[in]
     beta    DOUBLE PRECISION.
             On entry,  BETA  specifies the scalar  beta.  When  BETA  is
-            supplied as zero then dC need not be set on input.
+            supplied as zero then C need not be set on input.
     
     @param[in,out]
-    dC      DOUBLE_PRECISION array of DIMENSION ( lddc, n ).
-            Before entry with uplo = 'U' or 'u', the leading n by n
-            upper triangular part of the array C must contain the upper
-            triangular part of the symmetric matrix and the strictly
-            lower triangular part of C is not referenced. On exit, the
-            upper triangular part of the array C is overwritten by the
-            upper triangular part of the updated matrix.
-            Before entry with uplo = 'L' or 'l', the leading n by n
-            lower triangular part of the array C must contain the lower
-            triangular part of the symmetric matrix and the strictly
-            upper triangular part of C is not referenced. On exit, the
-            lower triangular part of the array C is overwritten by the
-            lower triangular part of the updated matrix.
-            Note that the imaginary parts of the diagonal elements need
-            not be set, they are assumed to be zero, and on exit they
-            are set to zero.
+    dC_array      Array of pointers, dimension (batchCount).
+             Each is a DOUBLE_PRECISION array C of DIMENSION ( lddc, n ).
+             Before entry with uplo = 'U' or 'u', the leading n by n
+             upper triangular part of the array C must contain the upper
+             triangular part of the symmetric matrix and the strictly
+             lower triangular part of C is not referenced. On exit, the
+             upper triangular part of the array C is overwritten by the
+             upper triangular part of the updated matrix.
+             Before entry with uplo = 'L' or 'l', the leading n by n
+             lower triangular part of the array C must contain the lower
+             triangular part of the symmetric matrix and the strictly
+             upper triangular part of C is not referenced. On exit, the
+             lower triangular part of the array C is overwritten by the
+             lower triangular part of the updated matrix.
+             Note that the imaginary parts of the diagonal elements need
+             not be set, they are assumed to be zero, and on exit they
+             are set to zero.
 
     @param[in]
     lddc    INTEGER.
-            On entry, lddc specifies the first dimension of dC as declared
+            On entry, lddc specifies the first dimension of each array C as declared
             in  the  calling  (sub)  program.   lddc  must  be  at  least
             max( 1, m ).
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+    
     @ingroup magma_dblas3
     ********************************************************************/
 void

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> c d s
 
@@ -21,18 +21,11 @@
 
 
 /**
-    Inverts the NB x NB diagonal blocks of a triangular matrix.
-    This routine is used in ztrsm.
-    
-    Same as ztrtri_diag, but adds queue argument.
-    
-    @ingroup magma_zblas3
-    ********************************************************************/
-/**
     Purpose
     -------
-    ztrtri_diag inverts the NB x NB diagonal blocks of A.
-
+    ZTRTRI_DIAG inverts the NB x NB diagonal blocks of a triangular matrix.
+    This routine is used in ztrsm.
+    
     Arguments
     ----------
     @param[in]
@@ -54,12 +47,13 @@
             On entry, n specifies the order of the matrix A. N >= 0.
 
     @param[in]
-    dA_array      COMPLEX_16 array of dimension ( ldda, n )
-            The triangular matrix A.
+    dA_array      Array of pointers, dimension (batchCount). 
+             Each is a COMPLEX_16 array A of dimension ( ldda, n )
+             The triangular matrix A.
     \n
-            If UPLO = 'U', the leading N-by-N upper triangular part of A
-            contains the upper triangular matrix, and the strictly lower
-            triangular part of A is not referenced.
+             If UPLO = 'U', the leading N-by-N upper triangular part of A
+             contains the upper triangular matrix, and the strictly lower
+             triangular part of A is not referenced.
     \n
             If UPLO = 'L', the leading N-by-N lower triangular part of A
             contains the lower triangular matrix, and the strictly upper
@@ -70,12 +64,21 @@
 
     @param[in]
     ldda    INTEGER.
-            The leading dimension of the array A.  LDDA >= max(1,N).
+            The leading dimension of each array A.  LDDA >= max(1,N).
 
     @param[out]
-    dinvA_array COMPLEX_16 array of dimension (NB, ceil(n/NB)*NB),
-            where NB = 128.
-            On exit, contains inverses of the NB-by-NB diagonal blocks of A.
+    dinvA_array Array of pointers, dimension (batchCount). 
+                Each is a COMPLEX_16 array dinvA of dimension (NB, ceil(n/NB)*NB),
+                where NB = 128.
+                On exit, contains inverses of the NB-by-NB diagonal blocks of A.
+
+    @param[in]
+    resetozero INTEGER
+               If not zero, each array dinvA will be reset to all zeros 
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
 
     @param[in]
     queue   magma_queue_t

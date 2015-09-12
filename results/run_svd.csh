@@ -4,6 +4,8 @@
 #
 # @author Mark Gates
 
+set echo
+
 setenv NUMA  "./run numactl --interleave=all"
 
 # square
@@ -25,22 +27,26 @@ setenv SIZES "$SIZES -N 100000,1000 -N 200000,2000"
 setenv SIZES "$SIZES -N 100,10000 -N 200,20000 -N 300,30000 -N 400,40000 -N 500,50000 -N 600,60000 -N 700,70000 -N 800,80000 -N 900,90000"
 setenv SIZES "$SIZES -N 1000,100000 -N 2000,200000"
 
-$NUMA ./testing_sgesvd -UN -VN $SIZES >>&! sgesvd.txt
-$NUMA ./testing_sgesvd -US -VS $SIZES >>&! sgesvd.txt
-$NUMA ./testing_sgesdd -UN -VN $SIZES >>&! sgesvd.txt
-$NUMA ./testing_sgesdd -US -VS $SIZES >>&! sgesvd.txt
+# uncomment next line to get LAPACK results --- takes a VERY LONG time!
+#setenv SIZES "$SIZES --lapack"
 
-$NUMA ./testing_dgesvd -UN -VN $SIZES >>&! dgesvd.txt
-$NUMA ./testing_dgesvd -US -VS $SIZES >>&! dgesvd.txt
-$NUMA ./testing_dgesdd -UN -VN $SIZES >>&! dgesvd.txt
-$NUMA ./testing_dgesdd -US -VS $SIZES >>&! dgesvd.txt
 
-$NUMA ./testing_cgesvd -UN -VN $SIZES >>&! cgesvd.txt
-$NUMA ./testing_cgesvd -US -VS $SIZES >>&! cgesvd.txt
-$NUMA ./testing_cgesdd -UN -VN $SIZES >>&! cgesvd.txt
-$NUMA ./testing_cgesdd -US -VS $SIZES >>&! cgesvd.txt
+$NUMA ../testing/testing_sgesvd -UN -VN $SIZES >>&! sgesvd.txt
+$NUMA ../testing/testing_sgesvd -US -VS $SIZES >>&! sgesvd.txt
+$NUMA ../testing/testing_sgesdd -UN -VN $SIZES >>&! sgesvd.txt
+$NUMA ../testing/testing_sgesdd -US -VS $SIZES >>&! sgesvd.txt
 
-$NUMA ./testing_zgesvd -UN -VN $SIZES >>&! zgesvd.txt
-$NUMA ./testing_zgesvd -US -VS $SIZES >>&! zgesvd.txt
-$NUMA ./testing_zgesdd -UN -VN $SIZES >>&! zgesvd.txt
-$NUMA ./testing_zgesdd -US -VS $SIZES >>&! zgesvd.txt
+$NUMA ../testing/testing_dgesvd -UN -VN $SIZES >>&! dgesvd.txt
+$NUMA ../testing/testing_dgesvd -US -VS $SIZES >>&! dgesvd.txt
+$NUMA ../testing/testing_dgesdd -UN -VN $SIZES >>&! dgesvd.txt
+$NUMA ../testing/testing_dgesdd -US -VS $SIZES >>&! dgesvd.txt
+
+$NUMA ../testing/testing_cgesvd -UN -VN $SIZES >>&! cgesvd.txt
+$NUMA ../testing/testing_cgesvd -US -VS $SIZES >>&! cgesvd.txt
+$NUMA ../testing/testing_cgesdd -UN -VN $SIZES >>&! cgesvd.txt
+$NUMA ../testing/testing_cgesdd -US -VS $SIZES >>&! cgesvd.txt
+
+$NUMA ../testing/testing_zgesvd -UN -VN $SIZES >>&! zgesvd.txt
+$NUMA ../testing/testing_zgesvd -US -VS $SIZES >>&! zgesvd.txt
+$NUMA ../testing/testing_zgesdd -UN -VN $SIZES >>&! zgesvd.txt
+$NUMA ../testing/testing_zgesdd -US -VS $SIZES >>&! zgesvd.txt

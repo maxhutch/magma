@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgetrf_incpiv_gpu.cpp normal z -> c, Tue Aug 25 16:35:15 2015
+       @generated from zgetrf_incpiv_gpu.cpp normal z -> c, Fri Sep 11 18:29:27 2015
 
 */
 #ifdef MAGMA_WITH_PLASMA

@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -237,7 +237,7 @@ Functions</h2></td></tr>
 <p>This version uses normal equations and SVD in an iterative process that makes the computation numerically accurate.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ikind</td><td>INTEGER Several versions are implemented indiceted by the ikind value: 1: This version uses normal equations and SVD in an iterative process that makes the computation numerically accurate. 2: This version uses a standard LAPACK-based orthogonalization through MAGMA's QR panel factorization (magma_zgeqr2x3_gpu) and magma_zungqr 3: MGS<ol type="1">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ikind</td><td>INTEGER Several versions are implemented indiceted by the ikind value: 1: This version uses normal equations and SVD in an iterative process that makes the computation numerically accurate. 2: This version uses a standard LAPACK-based orthogonalization through MAGMA's QR panel factorization (magma_zgeqr2x3_gpu) and magma_zungqr 3: Modified Gram-Schmidt (MGS)<ol type="1">
 <li>Cholesky QR [ Note: this method uses the normal equations which squares the condition number of A, therefore ||I - Q'Q|| &lt; O(eps cond(A)^2) ]</li>
 </ol>
 </td></tr>
@@ -249,7 +249,8 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(CPU workspace) COMPLEX_16 array, dimension 3 n^2. On exit, work(1:n^2) holds the rectangular matrix R. Preferably, for higher performance, work should be in pinned memory.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed. </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
+<li>&gt; 0: for ikind = 4, the normal equations were not positive definite, so the factorization could not be completed, and the solution has not been computed. </li>
 </ul>
 </td></tr>
   </table>
@@ -480,9 +481,10 @@ Functions</h2></td></tr>
 <p>This is a GPU interface of the routine.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER Number of GPUs to use. ngpu &gt; 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix dA. On exit, the elements on and above the diagonal of the array contain the min(M,N)-by-N upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the orthogonal matrix Q as a product of min(m,n) elementary reflectors (see Further Details).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dlA</td><td>COMPLEX_16 array of pointers on the GPU, dimension (ngpu). On entry, the M-by-N matrix A distributed over GPUs (d_lA[d] points to the local matrix on d-th GPU). It uses 1D block column cyclic format with the block size of nb, and each local matrix is stored by column. On exit, the elements on and above the diagonal of the array contain the min(M,N)-by-N upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the orthogonal matrix Q as a product of min(m,n) elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>COMPLEX_16 array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
@@ -1953,7 +1955,7 @@ TRANS = Magma_ConjTrans:    Q**H * C            C * Q**H
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:52 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

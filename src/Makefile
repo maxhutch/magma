@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.3-beta1) --
+#   -- MAGMA (version 1.7.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date August 2015
+#      @date September 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = src
@@ -217,7 +217,6 @@ ZSRC += \
 	\
 	zbulge_back_m.cpp	\
 	zbulge_applyQ_v2_m.cpp	\
-	dsyevdx_2stage_m.cpp	\
 	dsygvdx_2stage_m.cpp	\
 	zheevdx_2stage_m.cpp	\
 	zhegvdx_2stage_m.cpp	\

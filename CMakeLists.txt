@@ -1,6 +1,15 @@
 cmake_minimum_required( VERSION 2.8.1 )
 
-project( MAGMA C CXX Fortran )
+# ----------------------------------------
+# to disable Fortran, set this to "off"
+# see also -DADD_ below
+set( USE_FORTRAN on CACHE BOOL "Fortran is required for some tester checks, but can be disabled with reduced functionality" )
+
+if ( USE_FORTRAN )
+	project( MAGMA C CXX Fortran )
+else()
+	project( MAGMA C CXX )
+endif()
 
 
 # ----------------------------------------
@@ -11,7 +20,7 @@ project( MAGMA C CXX Fortran )
 # ----------------------------------------
 # don't regenerate files during make.
 # (I think this means you have to manually re-run CMake if CMakeLists changes.
-#  Hopefully it fixes the huge problems with CMake interrupting Visual Studio.)
+# It fixes the huge problems with CMake interrupting Visual Studio.)
 set(CMAKE_SUPPRESS_REGENERATION on)
 
 
@@ -31,8 +40,17 @@ endif()
 
 # ----------------------------------------
 # check Fortran name mangling
-include( FortranCInterface )
-FortranCInterface_HEADER( ${CMAKE_SOURCE_DIR}/include/mangling.h MACRO_NAMESPACE MAGMA_ )
+if ( USE_FORTRAN )
+	include( FortranCInterface )
+	FortranCInterface_HEADER( ${CMAKE_SOURCE_DIR}/include/mangling.h MACRO_NAMESPACE MAGMA_ )
+else()
+	# set one of -DADD_, -DUPCASE, or -DNOCHANGE. See README.
+	message( "-- Building without Fortran compiler" )
+	set( FORTRAN_CONVENTION "-DADD_" CACHE STRING "Fortran calling convention, one of -DADD_, -DNOCHANGE, -DUPCASE" )
+	message( "   Using ${FORTRAN_CONVENTION} for Fortran calling convention" )
+	set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${FORTRAN_CONVENTION}" )
+	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FORTRAN_CONVENTION}" )
+endif()
 
 
 # ----------------------------------------
@@ -157,6 +175,12 @@ if ( "${LAPACK_LIBRARIES}" STREQUAL "" )
 	find_package( LAPACK )
 else()
 	message( "-- User set LAPACK_LIBRARIES. To change, edit LAPACK_LIBRARIES using ccmake (set to empty to enable search)." )
+	# Check existence -- but this may be okay, if the user entered, e.g., -llapack instead of /path/to/lapack.a
+	foreach( LIB ${LAPACK_LIBRARIES} )
+		if ( NOT EXISTS ${LIB} )
+			message( "\n      Warning: file ${LIB} does not exist.\n" )
+		endif()
+	endforeach()
 endif()
 message( "   BLAS_LIBRARIES:      ${BLAS_LIBRARIES}"      )
 message( "   LAPACK_LIBRARIES:    ${LAPACK_LIBRARIES}"    )
@@ -209,10 +233,14 @@ if ( CMAKE_HOST_APPLE )
 	# (The issue is single precision functions that return doubles;
 	# if a consistent prototype is used, the problem goes away in C,
 	# but this is not feasible in Fortran.)
-	message( "-- MacOS X: adding blas_fix library" )
-	include( ${CMAKE_SOURCE_DIR}/blas_fix/CMake )
-	add_library( blas_fix ${blas_fix_ALLSRC} )
-	list( APPEND LIBS blas_fix )
+	if ( USE_FORTRAN )
+		message( "-- MacOS X: adding blas_fix library" )
+		include( ${CMAKE_SOURCE_DIR}/blas_fix/CMake )
+		add_library( blas_fix ${blas_fix_ALLSRC} )
+		list( APPEND LIBS blas_fix )
+	else()
+		message( "\n      Warning: cannot compile blas_fix library for MacOS X without Fortran compiler.\n" )
+	endif()
 	
 	set( CMAKE_C_FLAGS     "${CMAKE_C_FLAGS} -DMAGMA_NOAFFINITY" )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMAGMA_NOAFFINITY" )
@@ -231,7 +259,9 @@ include_directories( control )
 # CMAKE_SIZEOF_VOID_P can be wrong.
 include( CheckTypeSize )
 CHECK_TYPE_SIZE( void* SIZEOF_VOID_PTR )
-set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Dmagma_devptr_t=\"integer\(kind=${SIZEOF_VOID_PTR}\)\"" )
+if ( USE_FORTRAN )
+	set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -Dmagma_devptr_t=\"integer\(kind=${SIZEOF_VOID_PTR}\)\"" )
+endif()
 
 
 # ----------------------------------------
@@ -308,7 +338,17 @@ add_library( testing ${TEST_SRC} )
 # _ALLSRC includes [SDCZ]SRC, which has magma_[sdcz]_no_fortran.cpp,
 # while _SRC has all the Fortran files from LAPACK.
 include( ${CMAKE_SOURCE_DIR}/testing/lin/CMake )
-add_library( lapacktest ${testing_lin_SRC} )
+if ( USE_FORTRAN )
+	add_library( lapacktest ${testing_lin_SRC} )
+else()
+	# alternatively, use only C/C++/CUDA files, including magma_[sdcz]_no_fortran.cpp
+	foreach( f ${testing_lin_ALLSRC} )
+		if ( ${f} MATCHES "\\.(c|cu|cpp)$" )
+			list( APPEND testing_lin_ALLSRC_cpp ${f} )
+		endif()
+	endforeach()
+	add_library( lapacktest ${testing_lin_ALLSRC_cpp} )
+endif()
 
 
 # ----------------------------------------

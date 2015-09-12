@@ -1,20 +1,32 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2015
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgetf2_kernels.cu normal z -> c, Tue Aug 25 16:35:10 2015
+       @generated from zgetf2_kernels.cu normal z -> c, Fri Sep 11 18:29:22 2015
 */
 
 #include "common_magma.h"
 #include "magmablas.h"
 #include "batched_kernel_param.h"
 #include "magma_templates.h"
+
+/*
+
+    Purpose
+    -------
+    These are internal routines that might have many assumption.
+    They are used in cgetf2_batched.cpp   
+    No documentation is available today.
+
+    @ingroup magma_cgesv_aux
+
+*/
 
 
 #define PRECISION_c
@@ -25,10 +37,6 @@
 extern __shared__ magmaFloatComplex shared_data[];
 extern __shared__ float sdata[];
 extern __shared__ int int_sdata[];
-
-/*
-    routines in this file are used by cgetf2_batched.cu
-*/
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -223,14 +231,15 @@ magma_int_t magma_icamax_lg_batched(magma_int_t length, magmaFloatComplex **x_ar
     {
         // first level tree reduction
         dim3 grid(num_blocks, 1, batchCount);
+        dim3 threads(zamax, 1, 1);
 
-        tree_icamax_kernel_batched<<<grid, zamax, 0, queue>>>(length, x_array, incx, step, lda, ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
+        tree_icamax_kernel_batched<<<grid, threads, 0, queue>>>(length, x_array, incx, step, lda, ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
 
         if ( num_blocks > 1)
         {
             // second level tree reduction
             dim3 grid2(1, 1, batchCount);
-            tree_icamax_kernel2_batched<<<grid2, zamax, 0, queue>>>(num_blocks, step,  ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
+            tree_icamax_kernel2_batched<<<grid2, threads, 0, queue>>>(num_blocks, step,  ipiv_array, info_array, gbstep, data_pool_array, id_pool_array);
         }
     }
 
@@ -246,26 +255,95 @@ magma_int_t magma_icamax_lg_batched(magma_int_t length, magmaFloatComplex **x_ar
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+    Purpose
+    -------
+
+    ICAMAX find the index of max absolute value of elements in x and store the index in ipiv 
+
+    This is an internal routine that might have many assumption.
+
+    Arguments
+    ---------
+
+    @param[in]
+    length       INTEGER
+            On entry, length specifies the size of vector x. length >= 0.
+
+
+    @param[in]
+    x_array     Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array of dimension
+
+
+    @param[in]
+    incx    Specifies the increment for the elements of X.
+            INCX must not be zero.
+
+    @param[in]
+    step    INTEGER
+            the offset of ipiv
+
+    @param[in]
+    lda    INTEGER
+            The leading dimension of each array A, internal use to find the starting position of x.
+
+    @param[out]
+    ipiv_array  Array of pointers, dimension (batchCount), for corresponding matrices.
+            Each is an INTEGER array, dimension (min(M,N))
+            The pivot indices; for 1 <= i <= min(M,N), row i of the
+            matrix was interchanged with row IPIV(i).
+
+    @param[out]
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation failed.
+      -     > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+                  has been completed, but the factor U is exactly
+                  singular, and division by zero will occur if it is used
+                  to solve a system of equations.
+
+    @param[in]
+    gbstep    INTEGER
+            the offset of info, internal use
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_cgesv_aux
+    ********************************************************************/
+
 extern "C"
 magma_int_t magma_icamax_batched(magma_int_t length, 
-        magmaFloatComplex **x_array, magma_int_t incx, magma_int_t step,  magma_int_t lda,
-        magma_int_t** ipiv_array, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
+                                 magmaFloatComplex **x_array, magma_int_t incx, 
+                                 magma_int_t step,  magma_int_t lda,
+                                 magma_int_t** ipiv_array, magma_int_t *info_array, 
+                                 magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)
 {
     if (length == 0 ) return 0;
 
-#if 1
     dim3 grid(1, 1, batchCount);
+    dim3 threads(zamax, 1, 1);
+
+#if 1
+
     int chunk = magma_ceildiv( length, zamax );
-    icamax_kernel_batched<<< grid, zamax, zamax * (sizeof(float) + sizeof(int)), queue >>>
+    icamax_kernel_batched<<< grid, threads, zamax * (sizeof(float) + sizeof(int)), queue >>>
         (length, chunk, x_array, incx, step, lda, ipiv_array, info_array, gbstep);
 
 #else
     // the magma_icamax_lg_batched is faster but when cuda launch it as 2 kernels the white space time between these 2 kernels and the next kernel is larger than using the icamax_kernel for that today we are using only icamax_kernel
     if ( length <= 10 * zamax )
     {  
-        dim3 grid(1, 1, batchCount);
         int chunk = magma_ceildiv( length, zamax );
-        icamax_kernel_batched<<< grid, zamax, zamax * (sizeof(float) + sizeof(magma_int_t)), queue >>>
+        icamax_kernel_batched<<< grid, threads, zamax * (sizeof(float) + sizeof(magma_int_t)), queue >>>
             (length, chunk, x_array, incx, step, lda, ipiv_array, info_array, gbstep);
     }
     else
@@ -307,12 +385,61 @@ void cswap_kernel_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+    Purpose
+    -------
+
+    cswap two row in x.  index (ipiv[step]-1)-th and index step -th
+
+    This is an internal routine that might have many assumption.
+
+    Arguments
+    ---------
+
+    @param[in]
+    n       INTEGER
+            On entry, n specifies the size of vector x. n >= 0.
+
+
+    @param[in]
+    x_array     Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array of dimension
+
+
+    @param[in]
+    incx    Specifies the increment for the elements of X.
+            INCX must not be zero.
+
+    @param[in]
+    step    INTEGER
+            The starting address of matrix C in A.  LDDA >= max(1,M).
+
+    @param[out]
+    ipiv_array  Array of pointers, dimension (batchCount), for corresponding matrices.
+            Each is an INTEGER array, dimension (min(M,N))
+            The pivot indices; for 1 <= i <= min(M,N), row i of the
+            matrix was interchanged with row IPIV(i).
+
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_cgesv_aux
+    ********************************************************************/
+
 extern "C"
-magma_int_t magma_cswap_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx, magma_int_t step, 
-                 magma_int_t** ipiv_array, magma_int_t batchCount, magma_queue_t queue)
+magma_int_t magma_cswap_batched(magma_int_t n, magmaFloatComplex **x_array, magma_int_t incx, 
+                                magma_int_t step, magma_int_t** ipiv_array, 
+                                magma_int_t batchCount, magma_queue_t queue)
 {
     /*
-    cswap two row: (ipiv[step]-1)th and jth
+    cswap two row: (ipiv[step]-1)th and step th
     */
     if ( n  > MAX_NTHREADS) 
     {
@@ -320,7 +447,9 @@ magma_int_t magma_cswap_batched(magma_int_t n, magmaFloatComplex **x_array, magm
         return -15;
     }
     dim3 grid(1,1, batchCount);
-    cswap_kernel_batched<<< grid, n, 0, queue >>>(n, x_array, incx, step, ipiv_array);
+    dim3 threads(zamax, 1, 1);
+
+    cswap_kernel_batched<<< grid, threads, 0, queue >>>(n, x_array, incx, step, ipiv_array);
     return 0;
 }
 
@@ -364,6 +493,7 @@ void cscal_cgeru_kernel_batched(int m, int n, int step, magmaFloatComplex **dA_a
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
 extern "C"
 magma_int_t magma_cscal_cgeru_batched(magma_int_t m, magma_int_t n, magma_int_t step,
                                       magmaFloatComplex **dA_array, magma_int_t lda,
@@ -385,9 +515,11 @@ magma_int_t magma_cscal_cgeru_batched(magma_int_t m, magma_int_t n, magma_int_t 
 
     int nchunk = magma_ceildiv( m, MAX_NTHREADS );
     size_t shared_size = sizeof(magmaFloatComplex)*(n);
-    dim3 grid(nchunk, 1, batchCount);
 
-    cscal_cgeru_kernel_batched<<< grid, min(m, MAX_NTHREADS), shared_size, queue>>>(m, n, step, dA_array, lda, info_array, gbstep);
+    dim3 grid(nchunk, 1, batchCount);
+    dim3 threads(min(m, MAX_NTHREADS), 1, 1);
+
+    cscal_cgeru_kernel_batched<<< grid, threads, shared_size, queue>>>(m, n, step, dA_array, lda, info_array, gbstep);
     return 0;
 }
 
@@ -443,9 +575,61 @@ void cgetf2trsm_kernel_batched(int ib, int n, magmaFloatComplex **dA_array, int 
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+    Purpose
+    -------
+
+    cgetf2trsm solves one of the matrix equations on gpu
+
+     B = C^-1 * B
+
+    where C, B are part of the matrix A in dA_array,
+  
+    This version load C, B into shared memory and solve it 
+    and copy back to GPU device memory.
+    This is an internal routine that might have many assumption.
+
+    Arguments
+    ---------
+    @param[in]
+    ib       INTEGER
+            The number of rows/columns of each matrix C, and rows of B.  ib >= 0.
+
+    @param[in]
+    n       INTEGER
+            The number of columns of each matrix B.  n >= 0.
+
+    @param[in,out]
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
+            On exit, the factors L and U from the factorization
+            A = P*L*U; the unit diagonal elements of L are not stored.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of each array A.  LDDA >= max(1,M).
+
+    @param[in]
+    step    INTEGER
+            The starting address of matrix C in A.  LDDA >= max(1,M).
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_cgesv_aux
+    ********************************************************************/
+
 extern "C" void
-magma_cgetf2trsm_batched(magma_int_t ib, magma_int_t n, magmaFloatComplex **dA_array,  magma_int_t step, magma_int_t lda,
-                       magma_int_t batchCount, magma_queue_t queue)
+magma_cgetf2trsm_batched(magma_int_t ib, magma_int_t n, magmaFloatComplex **dA_array, 
+                         magma_int_t step, magma_int_t ldda,
+                         magma_int_t batchCount, magma_queue_t queue)
 {
     /*
     
@@ -461,7 +645,9 @@ magma_cgetf2trsm_batched(magma_int_t ib, magma_int_t n, magmaFloatComplex **dA_a
     }
 
     dim3 grid(1, 1, batchCount);
-    cgetf2trsm_kernel_batched<<< grid, max(n,ib), shared_size, queue>>>(ib, n, dA_array, step, lda);
+    dim3 threads(max(n,ib), 1, 1);
+
+    cgetf2trsm_kernel_batched<<< grid, threads, shared_size, queue>>>(ib, n, dA_array, step, ldda);
 }
 
 
@@ -609,7 +795,9 @@ magma_int_t magma_ccomputecolumn_batched(magma_int_t m, magma_int_t paneloffset,
 
     size_t shared_size = sizeof(magmaFloatComplex)*m;
     dim3 grid(1, 1, batchCount);
-    zcomputecolumn_kernel_shared_batched<<< grid, min(m, MAX_NTHREADS), shared_size, queue>>>(m, paneloffset, step, dA_array, lda, ipiv_array, info_array, gbstep);
+    dim3 threads(min(m, MAX_NTHREADS), 1, 1);
+
+    zcomputecolumn_kernel_shared_batched<<< grid, threads, shared_size, queue>>>(m, paneloffset, step, dA_array, lda, ipiv_array, info_array, gbstep);
 
     return 0;
 }
@@ -622,7 +810,7 @@ kernel_cgetf2_sm_batched(
     magma_int_t m, magma_int_t ib,
     magmaFloatComplex **dA_array, magma_int_t lda,
     magma_int_t **ipiv_array,
-    magma_int_t *info)
+    magma_int_t *info_array)
 {
     magma_int_t *ipiv = ipiv_array[blockIdx.z];
 
@@ -745,12 +933,81 @@ kernel_cgetf2_sm_batched(
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+    Purpose
+    -------
+    CGETF2_SM computes an LU factorization of a general M-by-N matrix A
+    using partial pivoting with row interchanges.
+
+    The factorization has the form
+        A = P * L * U
+    where P is a permutation matrix, L is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and U is upper
+    triangular (upper trapezoidal if m < n).
+
+    This is the right-looking Level 3 BLAS version of the algorithm.
+
+    This is a batched version that factors batchCount M-by-N matrices in parallel.
+    dA, ipiv, and info become arrays with one entry per matrix.
+
+    This version load entire matrix (m*ib) into shared memory and factorize it 
+    with pivoting and copy back to GPU device memory.
+
+    Arguments
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of rows of each matrix A.  M >= 0.
+
+    @param[in]
+    ib       INTEGER
+            The number of columns of each matrix A.  ib >= 0.
+
+    @param[in,out]
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
+            On exit, the factors L and U from the factorization
+            A = P*L*U; the unit diagonal elements of L are not stored.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of each array A.  LDDA >= max(1,M).
+
+    @param[out]
+    ipiv_array  Array of pointers, dimension (batchCount), for corresponding matrices.
+            Each is an INTEGER array, dimension (min(M,N))
+            The pivot indices; for 1 <= i <= min(M,N), row i of the
+            matrix was interchanged with row IPIV(i).
+
+    @param[out]
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation failed.
+      -     > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+                  has been completed, but the factor U is exactly
+                  singular, and division by zero will occur if it is used
+                  to solve a system of equations.
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_cgesv_aux
+    ********************************************************************/
+
 extern "C"
 magma_int_t  magma_cgetf2_sm_batched(
     magma_int_t m, magma_int_t ib,
-    magmaFloatComplex **dA_array, magma_int_t lda,
+    magmaFloatComplex **dA_array, magma_int_t ldda,
     magma_int_t **ipiv_array,
-    magma_int_t *info, 
+    magma_int_t *info_array, 
     magma_int_t batchCount, magma_queue_t queue)
 {
     /*
@@ -765,9 +1022,10 @@ magma_int_t  magma_cgetf2_sm_batched(
     }
 
     dim3 grid(1,1, batchCount);
+    dim3 threads(max(max(zamax, m), ib), 1, 1);
 
-    kernel_cgetf2_sm_batched<<<grid, max(max(zamax, m), ib), shared_size, queue>>>
-                                                        ( m, ib, dA_array, lda, ipiv_array, info);
+    kernel_cgetf2_sm_batched<<<grid, threads, shared_size, queue>>>
+                                                        ( m, ib, dA_array, ldda, ipiv_array, info_array);
 
 
     return 0;

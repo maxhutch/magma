@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -168,9 +168,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <tr class="memitem:ga95914cef544e492c9f7e1cc88c509cdb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zblas2.html#ga95914cef544e492c9f7e1cc88c509cdb">magmablas_zsymv</a> (magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex_const_ptr dx, magma_int_t incx, magmaDoubleComplex beta, magmaDoubleComplex_ptr dy, magma_int_t incy)</td></tr>
 <tr class="memdesc:ga95914cef544e492c9f7e1cc88c509cdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">magmablas_zsymv performs the matrix-vector operation:  <a href="#ga95914cef544e492c9f7e1cc88c509cdb">More...</a><br /></td></tr>
 <tr class="separator:ga95914cef544e492c9f7e1cc88c509cdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf2736a48fa7f43f4c8f0d97ec710bff2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zblas2.html#gaf2736a48fa7f43f4c8f0d97ec710bff2">magmablas_ztrsv</a> (magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag, magma_int_t n, const magmaDoubleComplex *__restrict__ A, magma_int_t lda, magmaDoubleComplex *b, magma_int_t incb, magma_queue_t queue)</td></tr>
-<tr class="memdesc:gaf2736a48fa7f43f4c8f0d97ec710bff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">ztrsv solves one of the matrix equations on gpu  <a href="#gaf2736a48fa7f43f4c8f0d97ec710bff2">More...</a><br /></td></tr>
-<tr class="separator:gaf2736a48fa7f43f4c8f0d97ec710bff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga341cc9f74173bc3d75814f7337cf3b96"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zblas2.html#ga341cc9f74173bc3d75814f7337cf3b96">magmablas_ztrsv</a> (magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr db, magma_int_t incb, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga341cc9f74173bc3d75814f7337cf3b96"><td class="mdescLeft">&#160;</td><td class="mdescRight">ztrsv solves one of the matrix equations on gpu  <a href="#ga341cc9f74173bc3d75814f7337cf3b96">More...</a><br /></td></tr>
+<tr class="separator:ga341cc9f74173bc3d75814f7337cf3b96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4fe33c7e86f589a5812d38cf8c2ea44d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zblas2.html#ga4fe33c7e86f589a5812d38cf8c2ea44d">magmablas_ztrsv_batched</a> (magma_uplo_t uplo, magma_trans_t trans, magma_diag_t diag, magma_int_t n, magmaDoubleComplex **A_array, magma_int_t lda, magmaDoubleComplex **b_array, magma_int_t incb, magma_int_t batchCount, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga4fe33c7e86f589a5812d38cf8c2ea44d"><td class="mdescLeft">&#160;</td><td class="mdescRight">ztrsv solves one of the matrix equations on gpu  <a href="#ga4fe33c7e86f589a5812d38cf8c2ea44d">More...</a><br /></td></tr>
 <tr class="separator:ga4fe33c7e86f589a5812d38cf8c2ea44d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1050,7 +1050,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
     <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Specifies the increment for the elements of X. INCX must not be zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>COMPLEX_16 On entry, BETA specifies the scalar beta. When BETA is supplied as zero then Y need not be set on input.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dy</td><td>COMPLEX_16 array of dimension m if trans == MagmaNoTrans n if trans == MagmaTrans or MagmaConjTrans</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Specifies the increment for the elements of Y. INCY must not be zero. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Specifies the increment for the elements of Y. INCY must not be zero.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1855,7 +1856,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 
 </div>
 </div>
-<a class="anchor" id="gaf2736a48fa7f43f4c8f0d97ec710bff2"></a>
+<a class="anchor" id="ga341cc9f74173bc3d75814f7337cf3b96"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1886,20 +1887,20 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const magmaDoubleComplex *__restrict__&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
+          <td class="paramtype">magmaDoubleComplex_const_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lda</em>, </td>
+          <td class="paramname"><em>ldda</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>b</em>, </td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>db</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1944,10 +1945,11 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, n N specifies the order of the matrix A. n &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>COMPLEX_16 array of dimension ( lda, n ) Before entry with uplo = MagmaUpper, the leading n by n upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading n by n lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER. On entry, lda specifies the first dimension of A. lda &gt;= max( 1, n ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>COMPLEX_16 array of dimension n On exit, b is overwritten with the solution vector X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incb</td><td>INTEGER. On entry, incb specifies the increment for the elements of b. incb must not be zero. Unchanged on exit. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX_16 array of dimension ( lda, n ) Before entry with uplo = MagmaUpper, the leading n by n upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading n by n lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER. On entry, lda specifies the first dimension of A. lda &gt;= max( 1, n ).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">db</td><td>COMPLEX_16 array of dimension n On exit, b is overwritten with the solution vector X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incb</td><td>INTEGER. On entry, incb specifies the increment for the elements of b. incb must not be zero. Unchanged on exit.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2049,10 +2051,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, n N specifies the order of the matrix A. n &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>COMPLEX_16 array of dimension ( lda, n ) Before entry with uplo = MagmaUpper, the leading n by n upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading n by n lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX_16 array A of dimension ( lda, n ), Before entry with uplo = MagmaUpper, the leading n by n upper triangular part of the array A must contain the upper triangular matrix and the strictly lower triangular part of A is not referenced. Before entry with uplo = MagmaLower, the leading n by n lower triangular part of the array A must contain the lower triangular matrix and the strictly upper triangular part of A is not referenced. Note that when diag = MagmaUnit, the diagonal elements of A are not referenced either, but are assumed to be unity.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER. On entry, lda specifies the first dimension of A. lda &gt;= max( 1, n ).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>COMPLEX_16 array of dimension n On exit, b is overwritten with the solution vector X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incb</td><td>INTEGER. On entry, incb specifies the increment for the elements of b. incb must not be zero. Unchanged on exit. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX_16 array of dimension n On exit, b is overwritten with the solution vector X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incb</td><td>INTEGER. On entry, incb specifies the increment for the elements of b. incb must not be zero. Unchanged on exit.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2064,7 +2068,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:53 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

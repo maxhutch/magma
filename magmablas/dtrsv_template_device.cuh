@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2015
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from ztrsv_template_device.cuh normal z -> d, Tue Aug 25 16:35:10 2015
+       @generated from ztrsv_template_device.cuh normal z -> d, Fri Sep 11 18:29:22 2015
 */
 
 

@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.3-beta1) --
+#   -- MAGMA (version 1.7.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date August 2015
+#      @date September 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 DIR = sparse-iter/blas
@@ -16,6 +16,7 @@ ZHDR :=
 ZSRC := \
 	magma_z_blaswrapper.cpp	\
 	zbajac_csr.cu			\
+	zgeaxpy.cu              \
 	zgecsrmv.cu				\
 	zgeellmv.cu				\
 	zgeelltmv.cu			\
@@ -49,6 +50,8 @@ ZSRC += \
 	zcompact.cu				\
 	magma_zmcsrcompressor_gpu.cu	\
 	magma_zdiagcheck.cu		\
+	zgecsrreimsplit.cu        \
+    zgedensereimsplit.cu        \
 	
 # Tester routines
 ZSRC += \
@@ -77,7 +80,7 @@ stamp: $(ALLHDR) $(ALLOBJ)
 	touch $@
 
 clean:
-	rm -f *.$(o_ext) *~ *.linkinfo
+	rm -f *.$(o_ext) *~ *.linkinfo stamp
 
 cleanall: clean
 	rm -f $(LIBMAGMA_SPARSE)

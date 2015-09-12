@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Stan Tomov
-       @generated from zhetrf_aasen.cpp normal z -> d, Tue Aug 25 16:35:17 2015
+       @generated from zhetrf_aasen.cpp normal z -> d, Fri Sep 11 18:29:29 2015
 */
 #include "common_magma.h"
 #include "trace.h"
@@ -35,6 +35,10 @@
       -     = 'U':  Upper triangle of A is stored;
       -     = 'L':  Lower triangle of A is stored.
  
+    @param[in]
+    cpu_panel INTEGER
+              If cpu_panel =0, panel factorization is done on GPU.
+  
     @param[in]
     n       INTEGER
             The order of the matrix A.  N >= 0.
@@ -100,8 +104,10 @@ magma_dsytrf_aasen(magma_uplo_t uplo, magma_int_t cpu_panel, magma_int_t n,
     int upper = (uplo == MagmaUpper);
 
     *info = 0;
-    if (! upper && uplo != MagmaLower) {
-        *info = -1;
+    // if (! upper && uplo != MagmaLower) {
+    //     *info = -1;
+    if (uplo != MagmaLower) {
+        *info = MAGMA_ERR_NOT_IMPLEMENTED;
     } else if (n < 0) {
         *info = -2;
     } else if (lda < max(1,n)) {

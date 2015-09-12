@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from dmove_eig.cpp normal d -> s, Tue Aug 25 16:35:17 2015
+       @generated from dmove_eig.cpp normal d -> s, Fri Sep 11 18:29:30 2015
 
 */
 #include "common_magma.h"
@@ -16,7 +16,7 @@
 extern "C" void
 magma_smove_eig(
     magma_range_t range, magma_int_t n, float *w, magma_int_t *il,
-    magma_int_t *iu, float vl, float vu, magma_int_t *m)
+    magma_int_t *iu, float vl, float vu, magma_int_t *mout)
 {
     magma_int_t valeig, indeig, i;
 
@@ -24,9 +24,9 @@ magma_smove_eig(
     indeig = (range == MagmaRangeI);
 
     if (indeig) {
-        *m = *iu - *il + 1;
+        *mout = *iu - *il + 1;
         if (*il > 1)
-            for (i = 0; i < *m; ++i)
+            for (i = 0; i < *mout; ++i)
                 w[i] = w[*il - 1 + i];
     }
     else if (valeig) {
@@ -42,12 +42,12 @@ magma_smove_eig(
             else if (*il > 1)
                 w[i-*il+1]=w[i];
         }
-        *m = *iu - *il + 1;
+        *mout = *iu - *il + 1;
     }
     else {
         *il = 1;
         *iu = n;
-        *m = n;
+        *mout = n;
     }
 
     return;

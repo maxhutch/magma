@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -33,7 +33,11 @@
 
     @param[in]
     n       INTEGER
-            The order of the matrix A.  N >= 0.
+            The order of the matrix A.  n >= 0.
+
+    @param[in]
+    nb      INTEGER
+            The inner blocking.  nb >= 0.
 
     @param[in,out]
     A       COMPLEX_16 array, dimension (LDA,N)

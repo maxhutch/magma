@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -119,9 +119,54 @@ Functions</h2></td></tr>
 <tr class="separator:ga8863ef25e66f5d01e14eeb2e3c2576b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga88b37e2ee59216570f3a804cc89aece1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux1.html#ga88b37e2ee59216570f3a804cc89aece1">magmablas_zlarfg</a> (magma_int_t n, magmaDoubleComplex_ptr dalpha, magmaDoubleComplex_ptr dx, magma_int_t incx, magmaDoubleComplex_ptr dtau)</td></tr>
 <tr class="separator:ga88b37e2ee59216570f3a804cc89aece1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaad386d9c5403414846c79b30508fee2e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux1.html#gaad386d9c5403414846c79b30508fee2e">magmablas_zlacgv</a> (magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)</td></tr>
+<tr class="memdesc:gaad386d9c5403414846c79b30508fee2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLACGV conjugates a complex vector of length N.  <a href="#gaad386d9c5403414846c79b30508fee2e">More...</a><br /></td></tr>
+<tr class="separator:gaad386d9c5403414846c79b30508fee2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="gaad386d9c5403414846c79b30508fee2e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_zlacgv </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ZLACGV conjugates a complex vector of length N. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The length of the vector X. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>COMPLEX*16 array, dimension (1+(N-1)*abs(INCX)) On entry, the vector of length N to be conjugated. On exit, X is overwritten with conjg(X).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>INTEGER The spacing between successive elements of X. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga88b37e2ee59216570f3a804cc89aece1"></a>
 <div class="memitem">
 <div class="memproto">
@@ -241,7 +286,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:53 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

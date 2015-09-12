@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Mark Gates
        @author Azzam Haidar
@@ -197,8 +197,19 @@ void zlacpy_sym_in_upper_kernel(
     
     @param[in]
     n       INTEGER
-            The number of columns of the matrix dA.  N >= 0.
-    
+            The number of rows that are swapped.  N >= 0.
+ 
+    @param[in]
+    rows     INTEGER array, on GPU, dimension (2*n)
+             On entry, it stores the new pivots such that rows[i]-th and rows[n+i]-th
+             rows are swapped.
+
+    @param[in,out]
+    perm     INTEGER array, on GPU, dimension (m)
+             On entry, it stores the identity permutation array.
+             On exit, it is updated with the new pivots given by rows such that
+             i-th row will be the original perm[i]-th row after the pivots are applied. 
+
     @param[in]
     dA      COMPLEX_16 array, dimension (LDDA,N)
             The M-by-N matrix dA.
@@ -211,8 +222,7 @@ void zlacpy_sym_in_upper_kernel(
     
     @param[out]
     dB      COMPLEX_16 array, dimension (LDDB,N)
-            The M-by-N matrix dB.
-            On exit, dB = dA in the locations specified by UPLO.
+            On exit, dB = stores the columns after the pivots are applied.
     
     @param[in]
     lddb    INTEGER

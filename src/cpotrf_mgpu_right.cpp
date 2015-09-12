@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Azzam Haidar
        @author Ichi Yamazaki
 
-       @generated from zpotrf_mgpu_right.cpp normal z -> c, Tue Aug 25 16:35:14 2015
+       @generated from zpotrf_mgpu_right.cpp normal z -> c, Fri Sep 11 18:29:26 2015
 
 */
 #include "common_magma.h"
@@ -30,6 +30,10 @@
 
     Arguments
     ---------
+    @param[in]
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
+
     @param[in]
     uplo    magma_uplo_t
       -     = MagmaUpper:  Upper triangle of dA is stored;

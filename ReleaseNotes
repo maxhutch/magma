@@ -16,7 +16,7 @@ Included are routines for the following algorithms:
     * Mixed-precision iterative refinement solvers based on LU, QR, and Cholesky
     * MAGMA BLAS including gemm, gemv, symv, and trsm
     * Batched MAGMA BLAS including gemm, gemv, herk, and trsm
-    * Batched MAGMA LAPACK including LU, inverse(getri), QR, and Cholesky factorizations
+    * Batched MAGMA LAPACK including LU, inverse (getri), QR, and Cholesky factorizations
     * MAGMA Sparse including CG, GMRES, BiCGSTAB, LOBPCG, iterative refinement,
       preconditioners, sparse kernels (SpMV, SpMM), and support for CSR, ELL, and
       SELL-P data formats
@@ -25,16 +25,27 @@ Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
 
- 1.6.3 - July 2015
+ 1.7.0 - final:  Sep 11, 2015
+       - beta 1: Aug 25, 2015
     * Added results archive to compare historical performance.
     * Added Fortran code to example directory.
     * Added magmaf_wtime for consistency with other Fortran interfaces; deprecated magma_wtime_f.
+    * Added and template batched MAGMA BLAS routine gemm, gemv, herk, trsv, and trsm
+    * Tuned batched MAGMA BLAS routines, in particular gemm, gemv, herk, and trsm
+    * Tuned batched MAGMA LAPACK routines, in particular Cholesky factorizations
+    * Tuned two stage symmetric eigenvalue code, {sy|he}heevdx_2stage, to improve performance.
     * Tuned symmetric eigenvalue code, {sy|he}evd, to improve performance for N < 2000.
+    * Fixed NaN result with {sy|he}mv and {sy|he}mv_mgpu if GPU shared memory had NaN.
     * Fixed Fortran constants (MagmaTrans, MagmaUpper, etc.).
+    * Fixed workspace requirements for the two stage symmetric eigenvalue problem
+      {sy|he}heevdx_2stage and multi-GPU {sy|he}heevdx_2stage_m.
     * Fixed workspace requirements for Hessenberg (gehrd and gehrd_m) and multi-GPU geev_m.
     * Fixed trtri for unit diagonal, and added tester.
     * Fixed testing check for inverse (getri).
+    * Fixed multi-GPU {or|un}gqr_m for some k < n. (Currently only used in geev_m with m = n = k.)
+    * Fixed bug for batched routines
     * Rename lapack_const to lapack_const_str, to avoid name conflict with PLASMA.
+    * Allow CMake build without Fortran (already existed for make).
 
     MAGMA sparse
     * Added Induced Dimension Reduction Iterative solver (IDR).
@@ -85,7 +96,7 @@ single (s), double (d), single-complex (c), double-complex (z).
     * Fixed "nan" output for batched factorizations.
 
  1.6.0 - November 16, 2014
-    * Added MAGMA Batched linear algebra routines:
+    * Added MAGMA batched linear algebra routines:
         * Batched MAGMA BLAS including gemm, gemv, herk, and trsm
         * Batched LU, GETRI, and Cholesky factorizations
     * Added Bunch-Kaufman factorization and solver for symmetric

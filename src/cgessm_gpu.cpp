@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Hatem Ltaief
        @author Mathieu Faverge
 
-       @generated from zgessm_gpu.cpp normal z -> c, Tue Aug 25 16:35:15 2015
+       @generated from zgessm_gpu.cpp normal z -> c, Fri Sep 11 18:29:26 2015
 
 */
 #include "common_magma.h"
@@ -22,16 +22,21 @@
     Arguments
     ---------
     @param[in]
+    order   magma_order_t
+      -     = MagmaRowMajor:  dA is in row-major order (more efficient).
+      -     = MagmaColMajor:  dA is in column-major order.
+
+    @param[in]
     m       INTEGER
-            The number of rows of the matrix A.  M >= 0.
+            The number of rows of the tile A.  M >= 0.
 
     @param[in]
     n       INTEGER
-            The number of columns of the matrix A.  N >= 0.
+            The number of columns of the tile A.  N >= 0.
 
     @param[in]
     k       INTEGER
-            The number of columns of the matrix L.  K >= 0.
+            The number of columns of the tile L.  K >= 0.
 
     @param[in]
     ib      INTEGER
@@ -66,6 +71,12 @@
     @param[in]
     ldda    INTEGER
             The leading dimension of the array A.  LDDA >= max(1,M).
+
+    @param[out]
+    info    INTEGER
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation failed.
 
     @ingroup magma_cgesv_tile
     ********************************************************************/

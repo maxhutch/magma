@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zlaqps2_gpu.cu normal z -> d, Tue Aug 25 16:35:08 2015
+       @generated from zlaqps2_gpu.cu normal z -> d, Fri Sep 11 18:29:20 2015
 
 */
 
@@ -49,7 +49,7 @@
             previous steps.
 
     @param[in]
-    NB      INTEGER
+    nb      INTEGER
             The number of columns to factorize.
 
     @param[out]

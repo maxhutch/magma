@@ -1,9 +1,9 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.6.3-beta1) --
+#   -- MAGMA (version 1.7.0) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date August 2015
+#      @date September 2015
 #//////////////////////////////////////////////////////////////////////////////
 
 include $(MAGMA_DIR)/make.inc
@@ -176,9 +176,6 @@ PTROPT  = -Dmagma_devptr_t="integer(kind=$(PTRSIZE))"
 $(PTREXEC): $(PTROBJ)
 	$(CC) $(LDFLAGS) -o $@ $<
 
-# Add to F90 (F90FLAGS), not needed in F77 FFLAGS
-F90FLAGS += $(PTROPT)
-
 #
 # Rules to compile object files
 #
@@ -206,10 +203,10 @@ F90FLAGS += $(PTROPT)
 	$(NVCC) $(NVCCFLAGS) $(CPPFLAGS) -c $< -o $@
 
 %.$(o_ext): %.f90  $(PTREXEC)
-	$(FORT) $(F90FLAGS) $(CPPFLAGS) -c $< -o $@
+	$(FORT) $(F90FLAGS) $(PTROPT) $(CPPFLAGS) -c $< -o $@
 
 %.$(o_ext): %.F90  $(PTREXEC)
-	$(FORT) $(F90FLAGS) $(CPPFLAGS) -c $< -o $@
+	$(FORT) $(F90FLAGS) $(PTROPT) $(CPPFLAGS) -c $< -o $@
 
 %.$(o_ext): %.f
 	$(FORT) $(FFLAGS) $(CPPFLAGS) -c $< -o $@

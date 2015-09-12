@@ -1,20 +1,134 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
-       Univ. of Tennessee, Knoxville
-       Univ. of California, Berkeley
-       Univ. of Colorado, Denver
-       November 2013
-       
-       @author Azzam Haidar
-       @author Tingxing Dong
+   -- MAGMA (version 1.7.0) --
+   Univ. of Tennessee, Knoxville
+   Univ. of California, Berkeley
+   Univ. of Colorado, Denver
+   @date September 2015
 
-       @generated from zgetrf_panel_batched.cpp normal z -> c, Tue Aug 25 16:35:20 2015
+   @author Azzam Haidar
+   @author Tingxing Dong
+
+   @generated from zgetrf_panel_batched.cpp normal z -> c, Fri Sep 11 18:29:32 2015
 */
+
 #include "common_magma.h"
+/**
+    Purpose
+    -------
+    This is an internal routine that might have many assumption.
+    Documentation is not fully completed
 
+    CGETRF_PANEL computes an LU factorization of a general M-by-N matrix A
+    using partial pivoting with row interchanges.
 
+    The factorization has the form
+        A = P * L * U
+    where P is a permutation matrix, L is lower triangular with unit
+    diagonal elements (lower trapezoidal if m > n), and U is upper
+    triangular (upper trapezoidal if m < n).
 
-////////////////////////////////////////////////////////////////////////////////////////
+    This is the right-looking Level 3 BLAS version of the algorithm.
+
+    This is a batched version that factors batchCount M-by-N matrices in parallel.
+    dA, ipiv, and info become arrays with one entry per matrix.
+
+    Arguments
+    ---------
+    @param[in]
+    m       INTEGER
+            The number of rows of each matrix A.  M >= 0.
+
+    @param[in]
+    n       INTEGER
+            The number of columns of each matrix A.  N >= 0.
+
+    @param[in]
+    min_recpnb   INTEGER.
+                 Internal use. The recursive nb
+
+    @param[in,out]
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
+            On exit, the factors L and U from the factorization
+            A = P*L*U; the unit diagonal elements of L are not stored.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of each array A.  LDDA >= max(1,M).
+
+    @param[out]
+    dipiv_array  Array of pointers, dimension (batchCount), for corresponding matrices.
+            Each is an INTEGER array, dimension (min(M,N))
+            The pivot indices; for 1 <= i <= min(M,N), row i of the
+            matrix was interchanged with row IPIV(i).
+
+    @param[out]
+    dpivinfo_array  Array of pointers, dimension (batchCount), for internal use.
+
+    @param[in,out]
+    dX_array       Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array X of dimension ( lddx, n ).
+             On entry, should be set to 0
+             On exit, the solution matrix X
+
+    @param[in]
+    dX_length    INTEGER.
+                 The size of each workspace matrix dX
+
+    @param[in,out]
+    dinvA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array dinvA, a workspace on device.
+            If side == MagmaLeft,  dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
+            If side == MagmaRight, dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
+            where TRI_NB = 128.
+
+    @param[in]
+    dinvA_length    INTEGER
+                   The size of each workspace matrix dinvA
+    @param[in]
+    dW1_displ  Workspace array of pointers, for internal use.
+
+    @param[in]
+    dW2_displ  Workspace array of pointers, for internal use.
+
+    @param[in]
+    dW3_displ  Workspace array of pointers, for internal use.
+
+    @param[in]
+    dW4_displ  Workspace array of pointers, for internal use.
+
+    @param[in]
+    dW5_displ  Workspace array of pointers, for internal use.
+
+    @param[out]
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation failed.
+      -     > 0:  if INFO = i, U(i,i) is exactly zero. The factorization
+                  has been completed, but the factor U is exactly
+                  singular, and division by zero will occur if it is used
+                  to solve a system of equations.
+
+    @param[in]
+    gbstep  INTEGER
+            internal use.
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    myhandle   cublasHandle_t
+            Cublas handle might be used internally.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @ingroup magma_cgesv_comp
+    ********************************************************************/
 extern "C" magma_int_t
 magma_cgetrf_recpanel_batched(
     magma_int_t m, magma_int_t n, magma_int_t min_recpnb,    

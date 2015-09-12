@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 */
 
 #ifndef MAGMA_TYPES_H
@@ -264,11 +264,11 @@ typedef double real_Double_t;
 
 // ----------------------------------------
 #define MAGMA_VERSION_MAJOR 1
-#define MAGMA_VERSION_MINOR 6
-#define MAGMA_VERSION_MICRO 3
+#define MAGMA_VERSION_MINOR 7
+#define MAGMA_VERSION_MICRO 0
 
 // stage is "svn", "beta#", "rc#" (release candidate), or blank ("") for final release
-#define MAGMA_VERSION_STAGE "beta1"
+#define MAGMA_VERSION_STAGE ""
 
 #define MagmaMaxGPUs 8
 #define MagmaMaxDevices 8

@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -126,16 +126,98 @@ Functions</h2></td></tr>
 <tr class="memitem:gae56f3ad49c969b59f466af9377045ae5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__aux.html#gae56f3ad49c969b59f466af9377045ae5">magma_dgeqr2_gpu</a> (magma_int_t m, magma_int_t n, magmaDouble_ptr dA, magma_int_t ldda, magmaDouble_ptr dtau, magmaDouble_ptr dwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:gae56f3ad49c969b59f466af9377045ae5"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R using the non-blocking Householder QR.  <a href="#gae56f3ad49c969b59f466af9377045ae5">More...</a><br /></td></tr>
 <tr class="separator:gae56f3ad49c969b59f466af9377045ae5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga8b2de8769487f5adfd22085faefb369f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__aux.html#ga8b2de8769487f5adfd22085faefb369f">magma_dgeqr2_batched</a> (magma_int_t m, magma_int_t n, double **dA_array, magma_int_t lda, double **dtau_array, magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga8b2de8769487f5adfd22085faefb369f"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#ga8b2de8769487f5adfd22085faefb369f">More...</a><br /></td></tr>
-<tr class="separator:ga8b2de8769487f5adfd22085faefb369f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaba2a00942c70ea8fd8e3bf50260fdadc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__aux.html#gaba2a00942c70ea8fd8e3bf50260fdadc">magma_dgeqr2_batched</a> (magma_int_t m, magma_int_t n, double **dA_array, magma_int_t ldda, double **dtau_array, magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaba2a00942c70ea8fd8e3bf50260fdadc"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#gaba2a00942c70ea8fd8e3bf50260fdadc">More...</a><br /></td></tr>
+<tr class="separator:gaba2a00942c70ea8fd8e3bf50260fdadc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabd3f30c030375dc84028a61f9ed3b345"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__aux.html#gabd3f30c030375dc84028a61f9ed3b345">dgeqrf_copy_upper_batched</a> (magma_int_t n, magma_int_t nb, double **dV_array, magma_int_t lddv, double **dR_array, magma_int_t lddr, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gabd3f30c030375dc84028a61f9ed3b345"><td class="mdescLeft">&#160;</td><td class="mdescRight">These are internal routines that might have many assumption.  <a href="#gabd3f30c030375dc84028a61f9ed3b345">More...</a><br /></td></tr>
+<tr class="separator:gabd3f30c030375dc84028a61f9ed3b345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabff6c00940dbe69518f6cb05364af459"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgeqrf__aux.html#gabff6c00940dbe69518f6cb05364af459">magma_dgeqr2x4_gpu</a> (magma_int_t m, magma_int_t n, magmaDouble_ptr dA, magma_int_t ldda, magmaDouble_ptr dtau, magmaDouble_ptr dT, magmaDouble_ptr ddA, magmaDouble_ptr dwork, magma_queue_t queue, magma_int_t *info)</td></tr>
 <tr class="memdesc:gabff6c00940dbe69518f6cb05364af459"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R.  <a href="#gabff6c00940dbe69518f6cb05364af459">More...</a><br /></td></tr>
 <tr class="separator:gabff6c00940dbe69518f6cb05364af459"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ga8b2de8769487f5adfd22085faefb369f"></a>
+<a class="anchor" id="gabd3f30c030375dc84028a61f9ed3b345"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void dgeqrf_copy_upper_batched </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>nb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dV_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double **&#160;</td>
+          <td class="paramname"><em>dR_array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>batchCount</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>These are internal routines that might have many assumption. </p>
+<p>They are used in dgeqrf_batched.cpp</p>
+<p>Copy part of the data in dV to dR</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix . N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER Tile size in matrix. nb &lt;= N.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dV_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddv</td><td>INTEGER The leading dimension of each array V. LDDV &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dR_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDR,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddr</td><td>INTEGER The leading dimension of each array R. LDDR &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaba2a00942c70ea8fd8e3bf50260fdadc"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -161,7 +243,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lda</em>, </td>
+          <td class="paramname"><em>ldda</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -196,24 +278,21 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>DGEQR2 computes a QR factorization of a real m by n matrix A: A = Q * R. </p>
-<p>This expert routine requires two more arguments than the standard dgeqr2, namely, dT and ddA, explained below. The storage for A is also not as in the LAPACK's dgeqr2 routine (see below).</p>
-<p>The first is used to output the triangular n x n factor T of the block reflector used in the factorization. The second holds the diagonal nxn blocks of A, i.e., the diagonal submatrices of R.</p>
 <p>This version implements the right-looking QR with non-blocking.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array, dimension (LDA,N) On entry, the m by n matrix A. On exit, the unitary matrix Q as a product of elementary reflectors (see Further Details). <br />
- the elements on and above the diagonal of the array contain the min(m,n) by n upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the unitary matrix Q as a product of elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dtau</td><td>DOUBLE_PRECISION array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>DOUBLE_PRECISION array, dimension N x N. Stores the triangular N x N factor T of the block reflector used in the factorization. The lower triangular part is 0.</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE_PRECISION array, dimension (N) * ( sizeof(double) + sizeof(double))</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, the elements on and above the diagonal of the array contain the min(M,N)-by-N upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the orthogonal matrix Q as a product of min(m,n) elementary reflectors (see Further Details).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dtau_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
   </table>
   </dd>
 </dl>
@@ -593,6 +672,7 @@ Functions</h2></td></tr>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
   </table>
   </dd>
 </dl>
@@ -706,7 +786,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:52 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

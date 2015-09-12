@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2015
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgeqr2_batched.cu normal z -> s, Tue Aug 25 16:35:10 2015
+       @generated from zgeqr2_batched.cu normal z -> s, Fri Sep 11 18:29:22 2015
 */
 
 #include "common_magma.h"
@@ -241,15 +241,6 @@ void sgeqr2_kernel_batched( int m, int n, float** dA_array, magma_int_t lda,
     SGEQR2 computes a QR factorization of a real m by n matrix A:
     A = Q * R.
 
-    This expert routine requires two more arguments than the standard
-    sgeqr2, namely, dT and ddA, explained below. The storage for A is
-    also not as in the LAPACK's sgeqr2 routine (see below).
-
-    The first is used to output the triangular
-    n x n factor T of the block reflector used in the factorization.
-    The second holds the diagonal nxn blocks of A, i.e., the diagonal
-    submatrices of R.
-
     This version implements the right-looking QR with non-blocking.
 
     Arguments
@@ -263,39 +254,41 @@ void sgeqr2_kernel_batched( int m, int n, float** dA_array, magma_int_t lda,
             The number of columns of the matrix A.  N >= 0.
 
     @param[in,out]
-    dA      REAL array, dimension (LDA,N)
-            On entry, the m by n matrix A.
-            On exit, the unitary matrix Q as a
-            product of elementary reflectors (see Further Details).
-    \n
-            the elements on and above the diagonal of the array
-            contain the min(m,n) by n upper trapezoidal matrix R (R is
-            upper triangular if m >= n); the elements below the diagonal,
-            with the array TAU, represent the unitary matrix Q as a
-            product of elementary reflectors (see Further Details).
+    dA_array Array of pointers, dimension (batchCount).
+             Each is a REAL array on the GPU, dimension (LDDA,N)
+             On entry, the M-by-N matrix A.
+             On exit, the elements on and above the diagonal of the array
+             contain the min(M,N)-by-N upper trapezoidal matrix R (R is
+             upper triangular if m >= n); the elements below the diagonal,
+             with the array TAU, represent the orthogonal matrix Q as a
+             product of min(m,n) elementary reflectors (see Further
+             Details).
 
     @param[in]
-    lda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,M).
+    ldda     INTEGER
+             The leading dimension of the array dA.  LDDA >= max(1,M).
+             To benefit from coalescent memory accesses LDDA must be
+             divisible by 16.
 
     @param[out]
-    dtau    REAL array, dimension (min(M,N))
-            The scalar factors of the elementary reflectors (see Further
-            Details).
+    dtau_array Array of pointers, dimension (batchCount).
+             Each is a REAL array, dimension (min(M,N))
+             The scalar factors of the elementary reflectors (see Further
+             Details).
 
     @param[out]
-    dT      REAL array, dimension N x N.
-            Stores the triangular N x N factor T of the block reflector
-            used in the factorization. The lower triangular part is 0.
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
+      -     = 0:  successful exit
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
+                  or another error occured, such as memory allocation failed.
 
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
 
-    @param
-    dwork   (workspace) REAL array, dimension (N) * ( sizeof(float) + sizeof(float))
-
-    @param[out]
-    info    INTEGER
-      -     = 0: successful exit
-      -     < 0: if INFO = -i, the i-th argument had an illegal value
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     Further Details
     ---------------
@@ -313,10 +306,12 @@ void sgeqr2_kernel_batched( int m, int n, float** dA_array, magma_int_t lda,
 
     @ingroup magma_sgeqrf_aux
     ********************************************************************/
+
 extern "C" magma_int_t
-magma_sgeqr2_batched(magma_int_t m, magma_int_t n, float **dA_array,
-                  magma_int_t lda, float **dtau_array,
-                  magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)
+magma_sgeqr2_batched(magma_int_t m, magma_int_t n, 
+                     float **dA_array, magma_int_t ldda, 
+                     float **dtau_array,
+                     magma_int_t *info_array, magma_int_t batchCount, magma_queue_t queue)
 {
     magma_int_t k;
 
@@ -326,7 +321,7 @@ magma_sgeqr2_batched(magma_int_t m, magma_int_t n, float **dA_array,
         arginfo = -1;
     else if (n < 0)
         arginfo = -2;
-    else if (lda < max(1,m))
+    else if (ldda < max(1,m))
         arginfo = -4;
 
     if (arginfo != 0) {
@@ -345,7 +340,7 @@ magma_sgeqr2_batched(magma_int_t m, magma_int_t n, float **dA_array,
         //intend for small panel to avoid overfill of shared memory.
         //this kernel is composed of device routine and thus clean
         sgeqr2_sm_kernel_batched<<< blocks, threads, sizeof(float)*(m*k), queue >>>
-                                      (m, k, dA_array, lda, dtau_array);
+                                      (m, k, dA_array, ldda, dtau_array);
     }
     else
     {
@@ -353,11 +348,11 @@ magma_sgeqr2_batched(magma_int_t m, magma_int_t n, float **dA_array,
         // one vector is normally smaller than  48K shared memory
         if (sizeof(float)*(m) < 42000)
             sgeqr2_column_sm_kernel_batched<<< blocks, threads, sizeof(float)*(m), queue >>>
-                                      (m, k, dA_array, lda, dtau_array);
+                                      (m, k, dA_array, ldda, dtau_array);
         else
             //not use dynamic shared memory at all
             sgeqr2_kernel_batched<<< blocks, threads, 0, queue >>>
-                                      (m, k, dA_array, lda, dtau_array);
+                                      (m, k, dA_array, ldda, dtau_array);
     }
 
     return arginfo;

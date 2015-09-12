@@ -1,20 +1,24 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2013
+       @date September 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zpotf2_batched.cpp normal z -> d, Tue Aug 25 16:35:20 2015
+       @generated from zpotf2_batched.cpp normal z -> d, Fri Sep 11 18:29:32 2015
 */
 #include "common_magma.h"
 #include "batched_kernel_param.h"
 
 #define PRECISION_d
 /////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_dpotf2_dtrsm_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,
@@ -80,6 +84,10 @@ magma_dpotf2_dtrsm_batched(
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+    \n
+    This is an internal routine.
+    ********************************************************************/
 extern "C" magma_int_t
 magma_dpotf2_batched(
     magma_uplo_t uplo, magma_int_t m, magma_int_t n,

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -16,7 +16,7 @@
 extern "C" void
 magma_dmove_eig(
     magma_range_t range, magma_int_t n, double *w, magma_int_t *il,
-    magma_int_t *iu, double vl, double vu, magma_int_t *m)
+    magma_int_t *iu, double vl, double vu, magma_int_t *mout)
 {
     magma_int_t valeig, indeig, i;
 
@@ -24,9 +24,9 @@ magma_dmove_eig(
     indeig = (range == MagmaRangeI);
 
     if (indeig) {
-        *m = *iu - *il + 1;
+        *mout = *iu - *il + 1;
         if (*il > 1)
-            for (i = 0; i < *m; ++i)
+            for (i = 0; i < *mout; ++i)
                 w[i] = w[*il - 1 + i];
     }
     else if (valeig) {
@@ -42,12 +42,12 @@ magma_dmove_eig(
             else if (*il > 1)
                 w[i-*il+1]=w[i];
         }
-        *m = *iu - *il + 1;
+        *mout = *iu - *il + 1;
     }
     else {
         *il = 1;
         *iu = n;
-        *m = n;
+        *mout = n;
     }
 
     return;

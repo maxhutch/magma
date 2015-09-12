@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        ssymv_upper.cu is nearly identical to ssymv_upper.cu, just change names and drop .
        
        ssymv_kernel_U (upper) in ssymv_upper.cu is very similar to
        ssymv_kernel_L (lower) in ssymv.cu; diff the two files to compare.
        
-       @generated from zhemv_mgpu_upper.cu normal z -> s, Tue Aug 25 16:35:10 2015
+       @generated from zhemv_mgpu_upper.cu normal z -> s, Fri Sep 11 18:29:22 2015
        
        @author Mark Gates
 */
@@ -133,6 +133,9 @@ ssymv_kernel_U_mgpu(
                 if ( ty2+j < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
+                else {
+                    sA32(tx2, ty2 + j) = MAGMA_S_ZERO;
+                }
             }
             if ( tx2 >= partial ) {
                 A = A + tx2 - (partial - 1);  // A is A(blk_ind + tx2, blk_ind + ty2)
@@ -193,6 +196,9 @@ ssymv_kernel_U_mgpu(
                 if ( ty2+j + half_NB_X < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
                 }
+                else {
+                    sA32(tx2, ty2 + j) = MAGMA_S_ZERO;
+                }
             }
             if ( tx2 + half_NB_X >= partial ) {
                 A = A + (tx2 + half_NB_X) - (partial - 1);
@@ -251,6 +257,9 @@ ssymv_kernel_U_mgpu(
             for (int j=0; j < half_NB_X; j += 8) {
                 if ( ty2+j + half_NB_X < partial ) {
                     sA32(tx2, ty2 + j) = A[j*lda];
+                }
+                else {
+                    sA32(tx2, ty2 + j) = MAGMA_S_ZERO;
                 }
             }
             if ( tx2 >= partial ) {

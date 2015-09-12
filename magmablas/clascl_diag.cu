@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zlascl_diag.cu normal z -> c, Tue Aug 25 16:35:09 2015
+       @generated from zlascl_diag.cu normal z -> c, Fri Sep 11 18:29:20 2015
 */
 #include "common_magma.h"
 
@@ -90,6 +90,10 @@ clascl_diag_upper(int m, int n, magmaFloatComplex const* D, int ldd,
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value.
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_caux2
     ********************************************************************/
 extern "C" void
@@ -97,7 +101,8 @@ magmablas_clascl_diag_q(
     magma_type_t type, magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr dD, magma_int_t lddd, 
     magmaFloatComplex_ptr       dA, magma_int_t ldda, 
-    magma_int_t *info, magma_queue_t queue )
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     *info = 0;
     if ( type != MagmaLower && type != MagmaUpper && type != MagmaFull )
@@ -106,8 +111,8 @@ magmablas_clascl_diag_q(
         *info = -2;
     else if ( n < 0 )
         *info = -3;
-    else if ( ldda < max(1,m) )
-        *info = -5;
+    //else if ( ldda < max(1,m) )
+    //    *info = -5;
     
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
@@ -137,5 +142,5 @@ magmablas_clascl_diag(
     magmaFloatComplex_ptr       dA, magma_int_t ldda, 
     magma_int_t *info )
 {
-    magmablas_clascl_diag_q( type, m, n, dD, lddd, dA, ldda, info, magma_stream );
+    magmablas_clascl_diag_q( type, m, n, dD, lddd, dA, ldda, magma_stream, info );
 }

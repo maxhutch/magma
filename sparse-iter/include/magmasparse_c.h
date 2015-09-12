@@ -1,11 +1,11 @@
 /*
- -- MAGMA (version 1.6.3-beta1) --
+ -- MAGMA (version 1.7.0) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date August 2015
+ @date September 2015
 
- @generated from magmasparse_z.h normal z -> c, Tue Aug 25 16:35:29 2015
+ @generated from magmasparse_z.h normal z -> c, Fri Sep 11 18:29:41 2015
  @author Hartwig Anzt
 */
 
@@ -470,6 +470,13 @@ magma_citerilu_csr(
     magma_c_matrix A,
     magma_c_matrix L,
     magma_c_matrix U,
+    magma_queue_t queue );
+
+magma_int_t
+magma_citeriluupdate(
+    magma_c_matrix A,
+    magma_c_preconditioner *precond,
+    magma_int_t updates,
     magma_queue_t queue );
 
 magma_int_t
@@ -1066,6 +1073,29 @@ magma_cqr(
 /* ////////////////////////////////////////////////////////////////////////////
  -- MAGMA_SPARSE BLAS function definitions
 */
+
+magma_int_t
+magma_cgeaxpy(
+    magmaFloatComplex alpha,
+    magma_c_matrix X,
+    magmaFloatComplex beta,
+    magma_c_matrix *Y,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cgecsrreimsplit(
+    magma_c_matrix A,
+    magma_c_matrix *ReA,
+    magma_c_matrix *ImA,
+    magma_queue_t queue );
+
+magma_int_t
+magma_cgedensereimsplit(
+    magma_c_matrix A,
+    magma_c_matrix *ReA,
+    magma_c_matrix *ImA,
+    magma_queue_t queue );
+
 magma_int_t 
 magma_cgecsrmv(
     magma_trans_t transA,

@@ -1,0 +1,164 @@
+numactl --interleave=all ./testing_cheevd -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0015
+ 1000     ---               0.0913
+   10     ---               0.0000
+   20     ---               0.0001
+   30     ---               0.0001
+   40     ---               0.0001
+   50     ---               0.0002
+   60     ---               0.0003
+   70     ---               0.0005
+   80     ---               0.0007
+   90     ---               0.0009
+  100     ---               0.0011
+  200     ---               0.0046
+  300     ---               0.0091
+  400     ---               0.0152
+  500     ---               0.0232
+  600     ---               0.0321
+  700     ---               0.0445
+  800     ---               0.0568
+  900     ---               0.0724
+ 1000     ---               0.0906
+ 2000     ---               0.4281
+ 3000     ---               1.2820
+ 4000     ---               2.3214
+ 5000     ---               3.7832
+ 6000     ---               5.6411
+ 7000     ---               8.1428
+ 8000     ---              11.0746
+ 9000     ---              14.8746
+numactl --interleave=all ./testing_cheevd -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0032
+ 1000     ---               0.1216
+   10     ---               0.0001
+   20     ---               0.0002
+   30     ---               0.0002
+   40     ---               0.0004
+   50     ---               0.0005
+   60     ---               0.0007
+   70     ---               0.0010
+   80     ---               0.0012
+   90     ---               0.0015
+  100     ---               0.0018
+  200     ---               0.0088
+  300     ---               0.0141
+  400     ---               0.0231
+  500     ---               0.0335
+  600     ---               0.0433
+  700     ---               0.0581
+  800     ---               0.0745
+  900     ---               0.1033
+ 1000     ---               0.1187
+ 2000     ---               0.5184
+ 3000     ---               1.4990
+ 4000     ---               2.7271
+ 5000     ---               4.3927
+ 6000     ---               6.6419
+ 7000     ---               9.5703
+ 8000     ---              13.1326
+ 9000     ---              17.1391
+numactl --interleave=all ./testing_cheevd_gpu -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd_gpu [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0017
+ 1000       ---              0.1731
+   10       ---              0.0001
+   20       ---              0.0001
+   30       ---              0.0001
+   40       ---              0.0002
+   50       ---              0.0002
+   60       ---              0.0003
+   70       ---              0.0006
+   80       ---              0.0007
+   90       ---              0.0010
+  100       ---              0.0014
+  200       ---              0.0110
+  300       ---              0.0205
+  400       ---              0.0358
+  500       ---              0.0501
+  600       ---              0.0692
+  700       ---              0.0891
+  800       ---              0.1138
+  900       ---              0.1403
+ 1000       ---              0.1674
+ 2000       ---              0.5743
+ 3000       ---              1.2913
+ 4000       ---              2.3674
+ 5000       ---              3.8625
+ 6000       ---              5.6197
+ 7000       ---              8.0877
+ 8000       ---             11.0239
+ 9000       ---             14.7748
+numactl --interleave=all ./testing_cheevd_gpu -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_cheevd_gpu [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0036
+ 1000       ---              0.1896
+   10       ---              0.0002
+   20       ---              0.0002
+   30       ---              0.0003
+   40       ---              0.0004
+   50       ---              0.0005
+   60       ---              0.0007
+   70       ---              0.0010
+   80       ---              0.0013
+   90       ---              0.0016
+  100       ---              0.0020
+  200       ---              0.0148
+  300       ---              0.0254
+  400       ---              0.0426
+  500       ---              0.0588
+  600       ---              0.0785
+  700       ---              0.0998
+  800       ---              0.1296
+  900       ---              0.1571
+ 1000       ---              0.1865
+ 2000       ---              0.6367
+ 3000       ---              1.4485
+ 4000       ---              2.5915
+ 5000       ---              4.2487
+ 6000       ---              6.4947
+ 7000       ---              9.3415
+ 8000       ---             12.9641
+ 9000       ---             17.4105

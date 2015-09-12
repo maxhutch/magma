@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -104,8 +104,8 @@ magmablas_clag2z_q(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
     magmaDoubleComplex_ptr       A, magma_int_t lda,
-    magma_int_t *info,
-    magma_queue_t queue)
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     *info = 0;
     if ( m < 0 )
@@ -142,7 +142,7 @@ magmablas_clag2z(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
     magmaDoubleComplex_ptr       A, magma_int_t lda,
-    magma_int_t *info)
+    magma_int_t *info )
 {
-    magmablas_clag2z_q( m, n, SA, ldsa, A, lda, info, magma_stream );
+    magmablas_clag2z_q( m, n, SA, ldsa, A, lda, magma_stream, info );
 }

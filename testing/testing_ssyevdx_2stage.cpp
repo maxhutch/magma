@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing_zheevdx_2stage.cpp normal z -> s, Tue Aug 25 16:35:27 2015
+       @generated from testing_zheevdx_2stage.cpp normal z -> s, Fri Sep 11 18:29:39 2015
 
 */
 
@@ -214,21 +214,12 @@ int main( int argc, char** argv)
                                 iwork, &liwork, 
                                 &info);
                 info_solution = check_solution(N, w2, w1, eps);
-              
-                if ( (info_solution == 0) && (info_ortho == 0) && (info_reduction == 0) ) {
-                    printf("  ok\n");
-                    //printf("***************************************************\n");
-                    //printf(" ---- TESTING SSYEVD ...................... PASSED !\n");
-                    //printf("***************************************************\n");
-                }
-                else {
-                    printf("  failed\n");
-                    status += 1;
-                    //printf("************************************************\n");
-                    //printf(" - TESTING SSYEVD ... FAILED !\n");
-                    //printf("************************************************\n");
-                }
+                
+                bool okay = (info_solution == 0) && (info_ortho == 0) && (info_reduction == 0);
+                status += ! okay;
+                printf("  %s", (okay ? "ok" : "failed"));
             }
+            printf("\n");
 
             TESTING_FREE_CPU( h_A   );
             TESTING_FREE_CPU( w1    );

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from ztrsm_batched.cpp normal z -> c, Tue Aug 25 16:35:10 2015
+       @generated from ztrsm_batched.cpp normal z -> c, Fri Sep 11 18:29:22 2015
 
        @author Peng Du
        @author Tingxing Dong
@@ -17,7 +17,7 @@
 /**
     Purpose
     -------
-    ctrsm_work solves one of the matrix equations on gpu
+    ctrsm_outofplace solves one of the matrix equations on gpu
 
         op(A)*X = alpha*B,   or   X*op(A) = alpha*B,
 
@@ -63,6 +63,11 @@
       -     = MagmaNonUnit:  A is not assumed to be unit triangular.
 
     @param[in]
+    flag    BOOLEAN.
+            If flag is true, invert diagonal blocks.
+            If flag is false, assume diagonal blocks (stored in d_dinvA) are already inverted.
+
+    @param[in]
     m       INTEGER.
             On entry, m specifies the number of rows of B. m >= 0.
 
@@ -77,49 +82,86 @@
             entry.
 
     @param[in]
-    dA      COMPLEX array of dimension ( ldda, k ), where k is m
-            when side = MagmaLeft and is n when side = MagmaRight.
-            Before entry with uplo = MagmaUpper, the leading k by k
-            upper triangular part of the array A must contain the upper
-            triangular matrix and the strictly lower triangular part of
-            A is not referenced.
-            Before entry with uplo = MagmaLower, the leading k by k
-            lower triangular part of the array A must contain the lower
-            triangular matrix and the strictly upper triangular part of
-            A is not referenced.
-            Note that when diag = MagmaUnit, the diagonal elements of
-            A are not referenced either, but are assumed to be unity.
+    dA_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array A of dimension ( ldda, k ), where k is m
+             when side = MagmaLeft and is n when side = MagmaRight.
+             Before entry with uplo = MagmaUpper, the leading k by k
+             upper triangular part of the array A must contain the upper
+             triangular matrix and the strictly lower triangular part of
+             A is not referenced.
+             Before entry with uplo = MagmaLower, the leading k by k
+             lower triangular part of the array A must contain the lower
+             triangular matrix and the strictly upper triangular part of
+             A is not referenced.
+             Note that when diag = MagmaUnit, the diagonal elements of
+             A are not referenced either, but are assumed to be unity.
 
     @param[in]
     ldda    INTEGER.
-            On entry, ldda specifies the first dimension of A.
+            On entry, ldda specifies the first dimension of each array A.
             When side = MagmaLeft,  ldda >= max( 1, m ),
             when side = MagmaRight, ldda >= max( 1, n ).
 
     @param[in]
-    dB      COMPLEX array of dimension ( lddb, n ).
-            Before entry, the leading m by n part of the array B must
-            contain the right-hand side matrix B.
+    dB_array       Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array B of dimension ( lddb, n ).
+             Before entry, the leading m by n part of the array B must
+             contain the right-hand side matrix B.
 
     @param[in]
     lddb    INTEGER.
-            On entry, lddb specifies the first dimension of B.
+            On entry, lddb specifies the first dimension of each array B.
             lddb >= max( 1, m ).
 
+    @param[in,out]
+    dX_array       Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array X of dimension ( lddx, n ).
+             On entry, should be set to 0
+             On exit, the solution matrix X
+
     @param[in]
-    flag    BOOLEAN.
-            If flag is true, invert diagonal blocks.
-            If flag is false, assume diagonal blocks (stored in d_dinvA) are already inverted.
+    lddx    INTEGER.
+            On entry, lddx specifies the first dimension of each array X.
+            lddx >= max( 1, m ).
 
     @param
-    d_dinvA (workspace) on device.
-            If side == MagmaLeft,  d_dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
-            If side == MagmaRight, d_dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
+    dinvA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array dinvA, a workspace on device.
+            If side == MagmaLeft,  dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
+            If side == MagmaRight, dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
             where TRI_NB = 128.
 
-    @param[out]
-    dX      COMPLEX array of dimension ( lddx, n ).
-            On exit it contain the solution matrix X.
+    @param[in]
+    dinvA_length    INTEGER
+                   The size of each workspace matrix dinvA
+                   
+    @param
+    dA_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param
+    dB_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param
+    dX_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param
+    dinvA_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param[in]
+    resetozero INTEGER
+               Used internally by CTRTRI_DIAG routine
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+    
+    @param[in]
+    myhandle    cublasHandle_t
+              Handlde to use cuBLAS routines
 
     @ingroup magma_cblas3
     ********************************************************************/
@@ -440,7 +482,156 @@ void magmablas_ctrsm_outofplace_batched(
 }
 
 /**
-    @see magmablas_ctrsm_outofplace_batched
+    Purpose
+    -------
+    ctrsm_work solves one of the matrix equations on gpu
+
+        op(A)*X = alpha*B,   or   X*op(A) = alpha*B,
+
+    where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+    non-unit, upper or lower triangular matrix and op(A) is one of
+
+        op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
+
+    The matrix X is overwritten on B.
+
+    This is an asynchronous version of magmablas_ctrsm with flag,
+    d_dinvA and dX workspaces as arguments.
+
+    Arguments
+    ----------
+    @param[in]
+    side    magma_side_t.
+            On entry, side specifies whether op(A) appears on the left
+            or right of X as follows:
+      -     = MagmaLeft:       op(A)*X = alpha*B.
+      -     = MagmaRight:      X*op(A) = alpha*B.
+
+    @param[in]
+    uplo    magma_uplo_t.
+            On entry, uplo specifies whether the matrix A is an upper or
+            lower triangular matrix as follows:
+      -     = MagmaUpper:  A is an upper triangular matrix.
+      -     = MagmaLower:  A is a  lower triangular matrix.
+
+    @param[in]
+    transA  magma_trans_t.
+            On entry, transA specifies the form of op(A) to be used in
+            the matrix multiplication as follows:
+      -     = MagmaNoTrans:    op(A) = A.
+      -     = MagmaTrans:      op(A) = A^T.
+      -     = MagmaConjTrans:  op(A) = A^H.
+
+    @param[in]
+    diag    magma_diag_t.
+            On entry, diag specifies whether or not A is unit triangular
+            as follows:
+      -     = MagmaUnit:     A is assumed to be unit triangular.
+      -     = MagmaNonUnit:  A is not assumed to be unit triangular.
+
+    @param[in]
+    flag    BOOLEAN.
+            If flag is true, invert diagonal blocks.
+            If flag is false, assume diagonal blocks (stored in d_dinvA) are already inverted.
+
+    @param[in]
+    m       INTEGER.
+            On entry, m specifies the number of rows of B. m >= 0.
+
+    @param[in]
+    n       INTEGER.
+            On entry, n specifies the number of columns of B. n >= 0.
+
+    @param[in]
+    alpha   COMPLEX.
+            On entry, alpha specifies the scalar alpha. When alpha is
+            zero then A is not referenced and B need not be set before
+            entry.
+
+    @param[in]
+    dA_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array A of dimension ( ldda, k ), where k is m
+             when side = MagmaLeft and is n when side = MagmaRight.
+             Before entry with uplo = MagmaUpper, the leading k by k
+             upper triangular part of the array A must contain the upper
+             triangular matrix and the strictly lower triangular part of
+             A is not referenced.
+             Before entry with uplo = MagmaLower, the leading k by k
+             lower triangular part of the array A must contain the lower
+             triangular matrix and the strictly upper triangular part of
+             A is not referenced.
+             Note that when diag = MagmaUnit, the diagonal elements of
+             A are not referenced either, but are assumed to be unity.
+
+    @param[in]
+    ldda    INTEGER.
+            On entry, ldda specifies the first dimension of each array A.
+            When side = MagmaLeft,  ldda >= max( 1, m ),
+            when side = MagmaRight, ldda >= max( 1, n ).
+
+    @param[in,out]
+    dB_array       Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array B of dimension ( lddb, n ).
+             Before entry, the leading m by n part of the array B must
+             contain the right-hand side matrix B.
+             \n
+             On exit, the solution matrix X
+
+    @param[in]
+    lddb    INTEGER.
+            On entry, lddb specifies the first dimension of each array B.
+            lddb >= max( 1, m ).
+
+    @param[in,out]
+    dX_array       Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array X of dimension ( lddx, n ).
+             On entry, should be set to 0
+             On exit, the solution matrix X
+
+    @param[in]
+    lddx    INTEGER.
+            On entry, lddx specifies the first dimension of each array X.
+            lddx >= max( 1, m ).
+
+    @param
+    dinvA_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array dinvA, a workspace on device.
+            If side == MagmaLeft,  dinvA must be of size >= ceil(m/TRI_NB)*TRI_NB*TRI_NB,
+            If side == MagmaRight, dinvA must be of size >= ceil(n/TRI_NB)*TRI_NB*TRI_NB,
+            where TRI_NB = 128.
+
+    @param[in]
+    dinvA_length    INTEGER
+                   The size of each workspace matrix dinvA
+                   
+    @param
+    dA_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param
+    dB_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param
+    dX_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param
+    dinvA_displ (workspace) Array of pointers, dimension (batchCount).
+    
+    @param[in]
+    resetozero INTEGER
+               Used internally by CTRTRI_DIAG routine
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+    
+    @param[in]
+    myhandle    cublasHandle_t
+              Handlde to use cuBLAS routines
+
     @ingroup magma_cblas3
     ********************************************************************/
 extern "C"
@@ -502,7 +693,113 @@ void magmablas_ctrsm_work_batched(
 }
 
 /**
-    @see magmablas_ctrsm_work
+    Purpose
+    -------
+    ctrsm solves one of the matrix equations on gpu
+
+        op(A)*X = alpha*B,   or   X*op(A) = alpha*B,
+
+    where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+    non-unit, upper or lower triangular matrix and op(A) is one of
+
+        op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
+
+    The matrix X is overwritten on B.
+
+    This is an asynchronous version of magmablas_ctrsm with flag,
+    d_dinvA and dX workspaces as arguments.
+
+    Arguments
+    ----------
+    @param[in]
+    side    magma_side_t.
+            On entry, side specifies whether op(A) appears on the left
+            or right of X as follows:
+      -     = MagmaLeft:       op(A)*X = alpha*B.
+      -     = MagmaRight:      X*op(A) = alpha*B.
+
+    @param[in]
+    uplo    magma_uplo_t.
+            On entry, uplo specifies whether the matrix A is an upper or
+            lower triangular matrix as follows:
+      -     = MagmaUpper:  A is an upper triangular matrix.
+      -     = MagmaLower:  A is a  lower triangular matrix.
+
+    @param[in]
+    transA  magma_trans_t.
+            On entry, transA specifies the form of op(A) to be used in
+            the matrix multiplication as follows:
+      -     = MagmaNoTrans:    op(A) = A.
+      -     = MagmaTrans:      op(A) = A^T.
+      -     = MagmaConjTrans:  op(A) = A^H.
+
+    @param[in]
+    diag    magma_diag_t.
+            On entry, diag specifies whether or not A is unit triangular
+            as follows:
+      -     = MagmaUnit:     A is assumed to be unit triangular.
+      -     = MagmaNonUnit:  A is not assumed to be unit triangular.
+
+    @param[in]
+    m       INTEGER.
+            On entry, m specifies the number of rows of B. m >= 0.
+
+    @param[in]
+    n       INTEGER.
+            On entry, n specifies the number of columns of B. n >= 0.
+
+    @param[in]
+    alpha   COMPLEX.
+            On entry, alpha specifies the scalar alpha. When alpha is
+            zero then A is not referenced and B need not be set before
+            entry.
+
+    @param[in]
+    dA_array      Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array A of dimension ( ldda, k ), where k is m
+             when side = MagmaLeft and is n when side = MagmaRight.
+             Before entry with uplo = MagmaUpper, the leading k by k
+             upper triangular part of the array A must contain the upper
+             triangular matrix and the strictly lower triangular part of
+             A is not referenced.
+             Before entry with uplo = MagmaLower, the leading k by k
+             lower triangular part of the array A must contain the lower
+             triangular matrix and the strictly upper triangular part of
+             A is not referenced.
+             Note that when diag = MagmaUnit, the diagonal elements of
+             A are not referenced either, but are assumed to be unity.
+
+    @param[in]
+    ldda    INTEGER.
+            On entry, ldda specifies the first dimension of each array A.
+            When side = MagmaLeft,  ldda >= max( 1, m ),
+            when side = MagmaRight, ldda >= max( 1, n ).
+
+    @param[in,out]
+    dB_array       Array of pointers, dimension (batchCount).
+             Each is a COMPLEX array B of dimension ( lddb, n ).
+             Before entry, the leading m by n part of the array B must
+             contain the right-hand side matrix B.
+             \n
+             On exit, the solution matrix X
+
+    @param[in]
+    lddb    INTEGER.
+            On entry, lddb specifies the first dimension of each array B.
+            lddb >= max( 1, m ).
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+    
+    @param[in]
+    myhandle    cublasHandle_t
+              Handlde to use cuBLAS routines
+
     @ingroup magma_cblas3
     ********************************************************************/
 extern "C"

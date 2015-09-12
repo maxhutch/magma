@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -341,15 +341,27 @@ Functions</h2></td></tr>
 <p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER Number of GPUs to use. ngpu &gt; 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
 <li>= MagmaUpper: Upper triangle of dA is stored;</li>
 <li>= MagmaLower: Lower triangle of dA is stored.</li>
 </ul>
 </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix dA. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N) On entry, the Hermitian matrix dA. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the submatrix to be factorized.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the submatrix to be factorized.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">off_i</td><td>INTEGER The first row index of the submatrix to be factorized.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">off_j</td><td>INTEGER The first column index of the submatrix to be factorized.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The block size used for the factorization and distribution.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lA</td><td>COMPLEX_16 array of pointers on the GPU, dimension (ngpu). On entry, the Hermitian matrix dA distributed over GPU. (d_lAT[d] points to the local matrix on d-th GPU). If UPLO = MagmaLower or MagmaUpper, it respectively uses a 1D block column or row cyclic format (with the block size nb), and each local matrix is stored by column. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
  On exit, if INFO = 0, the factor U or L from the Cholesky factorization dA = U**H * U or dA = L * L**H.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d_lP</td><td>COMPLEX_16 array of pointers on the GPU, dimension (ngpu). d_LAT[d] points to workspace of size h*lddp*nb on d-th GPU.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddp</td><td>INTEGER The leading dimension of the array dP. LDDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,N). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array on the CPU, dimension (LDA,H*NB) On exit, the panel is copied back to the CPU</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">h</td><td>INTEGER It specifies the size of the CPU workspace, A.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>magma_queue_t queues is of dimension (ngpu,3) and contains the streams used for the partial factorization.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">events</td><td>magma_event_t events is of dimension(ngpu,5) and contains the events used for the partial factorization.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
@@ -495,15 +507,17 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix dA. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N) On entry, the Hermitian matrix dA. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
- On exit, if INFO = 0, the factor U or L from the Cholesky factorization dA = U**H * U or dA = L * L**H.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,N). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX_16 array on the GPU, dimension (LDDA,N) On entry, each pointer is a Hermitian matrix dA. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
+ On exit, if corresponding entry in info_array = 0, each pointer is the factor U or L from the Cholesky factorization dA = U**H * U or dA = L * L**H.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array dA. LDDA &gt;= max(1,N). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
-<li>&gt; 0: if INFO = i, the leading minor of order i is not positive definite, and the factorization could not be completed. </li>
+<li>&gt; 0: if INFO = i, the leading minor of order i is not positive definite, and the factorization could not be completed.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -715,6 +729,7 @@ Functions</h2></td></tr>
 <p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER Number of GPUs to use. ngpu &gt; 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
 <li>= MagmaUpper: Upper triangle of dA is stored;</li>
 <li>= MagmaLower: Lower triangle of dA is stored.</li>
@@ -942,15 +957,12 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N) The triangular factor U or L from the Cholesky factorization A = U**H*U or A = L*L**H, as computed by ZPOTRF.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX_16 array on the GPU, dimension (LDDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDDB &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
-<li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
-</ul>
-</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX_16 array on the GPU, dimension (LDDA,N) The triangular factor U or L from the Cholesky factorization A = U**H*U or A = L*L**H, as computed by ZPOTRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX_16 array on the GPU, dimension (LDDB,NRHS) On entry, each pointer is a right hand side matrix B. On exit, the corresponding solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of each array B. LDDB &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1047,7 +1059,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:51 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

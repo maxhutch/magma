@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> s d c
 */
@@ -58,7 +58,7 @@ magma_int_t magma_get_zbulge_gcperf();
 void
 magma_dmove_eig(
     magma_range_t range, magma_int_t n, double *w,
-    magma_int_t *il, magma_int_t *iu, double vl, double vu, magma_int_t *m);
+    magma_int_t *il, magma_int_t *iu, double vl, double vu, magma_int_t *mout);
 
 // defined in dlaex3.cpp
 void
@@ -260,7 +260,7 @@ magma_zheevdx(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -274,7 +274,7 @@ magma_zheevdx_2stage(
     magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -289,7 +289,7 @@ magma_zheevr(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     double vl, double vu,
-    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *m,
+    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *mout,
     double *w,
     magmaDoubleComplex *Z, magma_int_t ldz,
     magma_int_t *isuppz,
@@ -304,7 +304,7 @@ magma_zheevx(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     double vl, double vu,
-    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *m,
+    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *mout,
     double *w,
     magmaDoubleComplex *Z, magma_int_t ldz,
     magmaDoubleComplex *work, magma_int_t lwork,
@@ -338,7 +338,7 @@ magma_zhegvdx(
     magma_int_t n, magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex *B, magma_int_t ldb,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -352,7 +352,7 @@ magma_zhegvdx_2stage(
     magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex *B, magma_int_t ldb,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -366,7 +366,7 @@ magma_zhegvr(
     magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex *B, magma_int_t ldb,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    double abstol, magma_int_t *m, double *w,
+    double abstol, magma_int_t *mout, double *w,
     magmaDoubleComplex *Z, magma_int_t ldz,
     magma_int_t *isuppz, magmaDoubleComplex *work, magma_int_t lwork,
     double *rwork, magma_int_t lrwork,
@@ -379,7 +379,7 @@ magma_zhegvx(
     magma_int_t n, magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex *B, magma_int_t ldb,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    double abstol, magma_int_t *m, double *w,
+    double abstol, magma_int_t *mout, double *w,
     magmaDoubleComplex *Z, magma_int_t ldz,
     magmaDoubleComplex *work, magma_int_t lwork, double *rwork,
     magma_int_t *iwork, magma_int_t *ifail,
@@ -818,7 +818,7 @@ magma_zheevdx_2stage_m(
     magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -833,7 +833,7 @@ magma_zheevdx_m(
     magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -872,7 +872,7 @@ magma_zhegvdx_2stage_m(
     magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex *B, magma_int_t ldb,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -888,7 +888,7 @@ magma_zhegvdx_m(
     magmaDoubleComplex *A, magma_int_t lda,
     magmaDoubleComplex *B, magma_int_t ldb,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
     double *rwork, magma_int_t lrwork,
@@ -1282,7 +1282,7 @@ magma_zheevdx_gpu(
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     double vl, double vu,
     magma_int_t il, magma_int_t iu,
-    magma_int_t *m, double *w,
+    magma_int_t *mout, double *w,
     magmaDoubleComplex *wA,  magma_int_t ldwa,
     magmaDoubleComplex *work, magma_int_t lwork,
     #ifdef COMPLEX
@@ -1298,7 +1298,7 @@ magma_zheevr_gpu(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     double vl, double vu,
-    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *m,
+    magma_int_t il, magma_int_t iu, double abstol, magma_int_t *mout,
     double *w,
     magmaDoubleComplex_ptr dZ, magma_int_t lddz,
     magma_int_t *isuppz,
@@ -1314,7 +1314,7 @@ magma_zheevx_gpu(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     double vl, double vu, magma_int_t il, magma_int_t iu,
-    double abstol, magma_int_t *m,
+    double abstol, magma_int_t *mout,
     double *w,
     magmaDoubleComplex_ptr dZ, magma_int_t lddz,
     magmaDoubleComplex *wA, magma_int_t ldwa,
@@ -1570,10 +1570,10 @@ magma_ztrtri_gpu(
 
 magma_int_t
 magma_ztsqrt_gpu(
-    magma_int_t *m, magma_int_t *n,
-    magmaDoubleComplex *A1, magmaDoubleComplex *A2, magma_int_t *lda,
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex *A1, magmaDoubleComplex *A2, magma_int_t lda,
     magmaDoubleComplex *tau,
-    magmaDoubleComplex *work, magma_int_t *lwork,
+    magmaDoubleComplex *work, magma_int_t lwork,
     magmaDoubleComplex_ptr dwork,
     magma_int_t *info);
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Azzam Haidar
        @author Ichi Yamazaki
@@ -30,6 +30,10 @@
 
     Arguments
     ---------
+    @param[in]
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
+
     @param[in]
     uplo    magma_uplo_t
       -     = MagmaUpper:  Upper triangle of dA is stored;

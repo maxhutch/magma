@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zgerbt_batched.cpp normal z -> d, Tue Aug 25 16:35:19 2015
+       @generated from zgerbt_batched.cpp normal z -> d, Fri Sep 11 18:29:32 2015
        @author Adrien REMY
 */
 #include "common_magma.h"
@@ -46,6 +46,9 @@ init_butterfly(
     upper triangular.  The factored form of A is then used to solve the
     system of equations A * X = B.
 
+    This is a batched version that solves batchCount matrices in parallel.
+    dA, dB, and info become arrays with one entry per matrix.
+
     Arguments
     ---------
     
@@ -64,23 +67,27 @@ init_butterfly(
             of the matrix B.  nrhs >= 0.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDA,n).
-            On entry, the M-by-n matrix to be factored.
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
-            A = L*U; the unit diagonal elements of L are not stored.
+            A = P*L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,n).
+            The leading dimension of each array A.  LDDA >= max(1,M).
+
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array, dimension (LDB,nrhs)
-            On entry, the right hand side matrix B.
-            On exit, the solution matrix X.
+    dB_array   Array of pointers, dimension (batchCount).
+            Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDB,N).
+            On entry, each pointer is an right hand side matrix B.
+            On exit, each pointer is the solution matrix X.
+
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,n).
+            The leading dimension of the array B.  LDB >= max(1,N).
 
     @param[in,out]
     U       DOUBLE_PRECISION array, dimension (2,n)
@@ -99,6 +106,14 @@ init_butterfly(
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_dgesv_comp
     ********************************************************************/

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 1.6.3-beta1) --
+# MAGMA (version 1.7.0) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date August 2015
+# @date September 2015
 
 ## @file run_tests.py
 #  @author Mark Gates
@@ -160,24 +160,24 @@ parser.add_option(      '--csr',         action='store_true', dest='csr',       
 parser.add_option(      '--ell',         action='store_true', dest='ell',         help='run ELL matrix format')
 parser.add_option(      '--sellp',       action='store_true', dest='sellp',       help='run SELLP matrix format')
 
-parser.add_option(      '--cg'               , action='store_true', dest='cg'             ,help='run cg'            )
-parser.add_option(      '--cg_merge'         , action='store_true', dest='cg_merge'       ,help='run cg_merge'      )
-parser.add_option(      '--pcg'              , action='store_true', dest='pcg'            ,help='run pcg'           )
-parser.add_option(      '--bicgstab'         , action='store_true', dest='bicgstab'       ,help='run bicgstab'      )
-parser.add_option(      '--bicgstab_merge'   , action='store_true', dest='bicgstab_merge' ,help='run bicgstab_merge')
-parser.add_option(      '--pbicgstab'        , action='store_true', dest='pbicgstab'      ,help='run pbicgstab'     )
-parser.add_option(      '--gmres'            , action='store_true', dest='gmres'          ,help='run gmres'         )
-parser.add_option(      '--pgmres'           , action='store_true', dest='pgmres'         ,help='run pgmres'        )
-parser.add_option(      '--lobpcg'           , action='store_true', dest='lobpcg'         ,help='run lobpcg'        )
-parser.add_option(      '--iterref'          , action='store_true', dest='iterref'        ,help='run iterref'       )
-parser.add_option(      '--jacobi'           , action='store_true', dest='jacobi'         ,help='run jacobi'        )
-parser.add_option(      '--ba'               , action='store_true', dest='ba'             ,help='run ba-iter'       ) 
-parser.add_option(      '--idr'              , action='store_true', dest='idr'            ,help='run idr'           ) 
-parser.add_option(      '--pidr'             , action='store_true', dest='pidr'           ,help='run pidr'          ) 
-
-parser.add_option(      '--jacobi-prec'      , action='store_true', dest='jacobi_prec'    ,help='run Jacobi preconditioner'        )
-parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_prec'       ,help='run ILU preconditioner'       )  
-parser.add_option(      '--iter-ilu-prec'    , action='store_true', dest='iter_ilu_prec'       ,help='run iterative ILU preconditioner'       )    
+parser.add_option(      '--cg'               , action='store_true', dest='cg'            , help='run cg'            )
+parser.add_option(      '--cg_merge'         , action='store_true', dest='cg_merge'      , help='run cg_merge'      )
+parser.add_option(      '--pcg'              , action='store_true', dest='pcg'           , help='run pcg'           )
+parser.add_option(      '--bicgstab'         , action='store_true', dest='bicgstab'      , help='run bicgstab'      )
+parser.add_option(      '--bicgstab_merge'   , action='store_true', dest='bicgstab_merge', help='run bicgstab_merge')
+parser.add_option(      '--pbicgstab'        , action='store_true', dest='pbicgstab'     , help='run pbicgstab'     )
+parser.add_option(      '--gmres'            , action='store_true', dest='gmres'         , help='run gmres'         )
+parser.add_option(      '--pgmres'           , action='store_true', dest='pgmres'        , help='run pgmres'        )
+parser.add_option(      '--lobpcg'           , action='store_true', dest='lobpcg'        , help='run lobpcg'        )
+parser.add_option(      '--iterref'          , action='store_true', dest='iterref'       , help='run iterref'       )
+parser.add_option(      '--jacobi'           , action='store_true', dest='jacobi'        , help='run jacobi'        )
+parser.add_option(      '--ba'               , action='store_true', dest='ba'            , help='run ba-iter'       )
+parser.add_option(      '--idr'              , action='store_true', dest='idr'           , help='run idr'           )
+parser.add_option(      '--pidr'             , action='store_true', dest='pidr'          , help='run pidr'          )
+                                                                                           
+parser.add_option(      '--jacobi-prec'      , action='store_true', dest='jacobi_prec'   , help='run Jacobi preconditioner')
+parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_prec'      , help='run ILU preconditioner')
+parser.add_option(      '--iter-ilu-prec'    , action='store_true', dest='iter_ilu_prec' , help='run iterative ILU preconditioner')
 
 (opts, args) = parser.parse_args()
 
@@ -191,7 +191,7 @@ if ( not opts.small and not opts.med and not opts.large ):
 # default if no groups given is all groups
 if (     not opts.sparse_blas
      and not opts.solver
-     and not opts.control 
+     and not opts.control
      and not opts.csr
      and not opts.ell
      and not opts.sellp ):
@@ -211,17 +211,17 @@ if ( not opts.small and not opts.med and not opts.large ):
 # end
 
 # default if no solvers given is all solvers
-if (     not opts.cg           
-     and not opts.cg_merge     
-     and not opts.pcg           
-     and not opts.bicgstab     
+if (     not opts.cg
+     and not opts.cg_merge
+     and not opts.pcg
+     and not opts.bicgstab
      and not opts.bicgstab_merge
-     and not opts.pbicgstab    
-     and not opts.gmres        
-     and not opts.pgmres        
-     and not opts.lobpcg       
-     and not opts.iterref      
-     and not opts.jacobi       
+     and not opts.pbicgstab
+     and not opts.gmres
+     and not opts.pgmres
+     and not opts.lobpcg
+     and not opts.iterref
+     and not opts.jacobi
      and not opts.ba
      and not opts.idr
      and not opts.pidr ):
@@ -390,30 +390,30 @@ if opts.large:
 
 # ----------------------------------------------------------------------
 precisions = (
-	's', 'd', 'c', 'z'
+    's', 'd', 'c', 'z'
 )
 
 subs = (
-	('',              'dlag2s',      '',              'zlag2c'    ),
-	('ssy',           'dsy',         'che',           'zhe'       ),
-	('sor',           'dor',         'cun',           'zun'       ),
-	('sy2sb',         'sy2sb',       'he2hb',         'he2hb'     ),
-	('',              'testing_ds',  '',              'testing_zc'),
-	('testing_s',     'testing_d',   'testing_c',     'testing_z' ),
-	('lansy',         'lansy',       'lanhe',         'lanhe'     ),
-	('blas_s',        'blas_d',      'blas_c',        'blas_z'    ),
+    ('',              'dlag2s',      '',              'zlag2c'    ),
+    ('ssy',           'dsy',         'che',           'zhe'       ),
+    ('sor',           'dor',         'cun',           'zun'       ),
+    ('sy2sb',         'sy2sb',       'he2hb',         'he2hb'     ),
+    ('',              'testing_ds',  '',              'testing_zc'),
+    ('testing_s',     'testing_d',   'testing_c',     'testing_z' ),
+    ('lansy',         'lansy',       'lanhe',         'lanhe'     ),
+    ('blas_s',        'blas_d',      'blas_c',        'blas_z'    ),
 )
 
 # ----------
 # simple precision generation
 def substitute( txt, pfrom, pto ):
-	if ( pfrom != pto ):
-		ifrom = precisions.index( pfrom )
-		ito   = precisions.index( pto )
-		for sub in subs:
-			txt = re.sub( sub[ifrom], sub[ito], txt )
-	# end
-	return txt
+    if ( pfrom != pto ):
+        ifrom = precisions.index( pfrom )
+        ito   = precisions.index( pto )
+        for sub in subs:
+            txt = re.sub( sub[ifrom], sub[ito], txt )
+    # end
+    return txt
 # end
 
 
@@ -439,41 +439,41 @@ tests = []
 if ( opts.control):
     for precision in opts.precisions:
         for size in sizes:
-                # precision generation
-                cmd = substitute( 'testing_zio', 'z', precision )
-                tests.append( [cmd, '', size, ''] )
+            # precision generation
+            cmd = substitute( 'testing_zio', 'z', precision )
+            tests.append( [cmd, '', size, ''] )
 
 # ----------------------------------------------------------------------
 if ( opts.control):
     for precision in opts.precisions:
         for size in sizes:
-                # precision generation
-                cmd = substitute( 'testing_zmatrix', 'z', precision )
-                tests.append( [cmd, '', size, ''] )
+            # precision generation
+            cmd = substitute( 'testing_zmatrix', 'z', precision )
+            tests.append( [cmd, '', size, ''] )
 
 # ----------------------------------------------------------------------
 if ( opts.control):
     for precision in opts.precisions:
         for size in sizes:
-                # precision generation
-                cmd = substitute( 'testing_zmconverter', 'z', precision )
-                tests.append( [cmd, '', size, ''] )
+            # precision generation
+            cmd = substitute( 'testing_zmconverter', 'z', precision )
+            tests.append( [cmd, '', size, ''] )
 
 # ----------------------------------------------------------------------
 if ( opts.control):
     for precision in opts.precisions:
         for size in sizes:
-                # precision generation
-                cmd = substitute( 'testing_zmcompressor', 'z', precision )
-                tests.append( [cmd, '', size, ''] )
+            # precision generation
+            cmd = substitute( 'testing_zmcompressor', 'z', precision )
+            tests.append( [cmd, '', size, ''] )
 
 # ----------------------------------------------------------------------
 if ( opts.control):
     for precision in opts.precisions:
         for size in sizes:
-                # precision generation
-                cmd = substitute( 'testing_zmadd', 'z', precision )
-                tests.append( [cmd, '', size + ' ' + size, ''] )
+            # precision generation
+            cmd = substitute( 'testing_zmadd', 'z', precision )
+            tests.append( [cmd, '', size + ' ' + size, ''] )
 
 
 # ----------------------------------------------------------------------
@@ -482,10 +482,9 @@ if ( opts.sparse_blas):
         for size in sizes:
             for blocksize in blocksizes:
                 for alignment in alignments:
-                        # precision generation
-                        cmd = substitute( 'testing_zspmv', 'z', precision )
-                        tests.append( [cmd, alignment + ' ' + blocksize, size, ''] )
-
+                    # precision generation
+                    cmd = substitute( 'testing_zspmv', 'z', precision )
+                    tests.append( [cmd, alignment + ' ' + blocksize, size, ''] )
 
 
 # ----------------------------------------------------------------------
@@ -494,10 +493,9 @@ if ( opts.sparse_blas):
         for size in sizes:
             for blocksize in blocksizes:
                 for alignment in alignments:
-                        # precision generation
-                        cmd = substitute( 'testing_zspmm', 'z', precision )
-                        tests.append( [cmd, alignment + ' ' + blocksize, size, ''] )
-
+                    # precision generation
+                    cmd = substitute( 'testing_zspmm', 'z', precision )
+                    tests.append( [cmd, alignment + ' ' + blocksize, size, ''] )
 
 
 # ----------------------------------------------------------------------
@@ -541,7 +539,7 @@ for solver in IR:
 # ----------------------------------------------------------------------
 print 'tests'
 for t in tests:
-	print t
+    print t
 
 # ----------------------------------------------------------------------
 # runs command in a subprocess.

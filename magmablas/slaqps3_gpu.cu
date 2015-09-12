@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zlaqps3_gpu.cu normal z -> s, Tue Aug 25 16:35:09 2015
+       @generated from zlaqps3_gpu.cu normal z -> s, Fri Sep 11 18:29:21 2015
 
 */
 
@@ -295,7 +295,7 @@ magmablas_snrm2_check_kernel(
             previous steps.
 
     @param[in]
-    NB      INTEGER
+    nb      INTEGER
             The number of columns to factorize.
 
     @param[out]
@@ -303,7 +303,7 @@ magmablas_snrm2_check_kernel(
             The number of columns actually factorized.
 
     @param[in,out]
-    A       REAL array, dimension (LDDA,N)
+    dA      REAL array, dimension (LDDA,N) on the GPU
             On entry, the M-by-N matrix A.
             On exit, block A(OFFSET+1:M,1:KB) is the triangular
             factor obtained and block A(1:OFFSET,1:N) has been

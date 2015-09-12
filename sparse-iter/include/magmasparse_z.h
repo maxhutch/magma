@@ -1,9 +1,9 @@
 /*
- -- MAGMA (version 1.6.3-beta1) --
+ -- MAGMA (version 1.7.0) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date August 2015
+ @date September 2015
 
  @precisions normal z -> s d c
  @author Hartwig Anzt
@@ -470,6 +470,13 @@ magma_ziterilu_csr(
     magma_z_matrix A,
     magma_z_matrix L,
     magma_z_matrix U,
+    magma_queue_t queue );
+
+magma_int_t
+magma_ziteriluupdate(
+    magma_z_matrix A,
+    magma_z_preconditioner *precond,
+    magma_int_t updates,
     magma_queue_t queue );
 
 magma_int_t
@@ -1066,6 +1073,29 @@ magma_zqr(
 /* ////////////////////////////////////////////////////////////////////////////
  -- MAGMA_SPARSE BLAS function definitions
 */
+
+magma_int_t
+magma_zgeaxpy(
+    magmaDoubleComplex alpha,
+    magma_z_matrix X,
+    magmaDoubleComplex beta,
+    magma_z_matrix *Y,
+    magma_queue_t queue );
+
+magma_int_t
+magma_zgecsrreimsplit(
+    magma_z_matrix A,
+    magma_z_matrix *ReA,
+    magma_z_matrix *ImA,
+    magma_queue_t queue );
+
+magma_int_t
+magma_zgedensereimsplit(
+    magma_z_matrix A,
+    magma_z_matrix *ReA,
+    magma_z_matrix *ImA,
+    magma_queue_t queue );
+
 magma_int_t 
 magma_zgecsrmv(
     magma_trans_t transA,

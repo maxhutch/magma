@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2011
+       @date September 2015
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from ztrsv_batched.cu normal z -> c, Tue Aug 25 16:35:10 2015
+       @generated from ztrsv_batched.cu normal z -> c, Fri Sep 11 18:29:22 2015
 */
 
 #include "common_magma.h"
@@ -503,7 +503,8 @@ magmablas_ctrsv_work_batched(
             On entry, n N specifies the order of the matrix A. n >= 0.
 
     @param[in]
-    A       COMPLEX array of dimension ( lda, n )
+    A_array       Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array A of dimension ( lda, n ),
             Before entry with uplo = MagmaUpper, the leading n by n
             upper triangular part of the array A must contain the upper
             triangular matrix and the strictly lower triangular part of
@@ -521,7 +522,8 @@ magmablas_ctrsv_work_batched(
             lda >= max( 1, n ).
 
     @param[in]
-    b       COMPLEX array of dimension  n
+    b_array     Array of pointers, dimension (batchCount).
+            Each is a COMPLEX array of dimension  n
             On exit, b is overwritten with the solution vector X.
 
     @param[in]
@@ -530,6 +532,13 @@ magmablas_ctrsv_work_batched(
             b. incb must not be zero.
             Unchanged on exit.
 
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_cblas2
     ********************************************************************/

@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -548,7 +548,8 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
 <li>= MagmaLower: Lower triangle of A is stored.</li>
 </ul>
 </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The inner blocking. nb &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array, dimension (LDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements above the band diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors; if UPLO = MagmaLower, the the Lower band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements below the band-diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors. See Further Details.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
@@ -706,13 +707,21 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The inner blocking. nb &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array, dimension (LDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements above the band diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors; if UPLO = MagmaLower, the the Lower band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements below the band-diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors. See Further Details.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>DOUBLE_PRECISION array on the GPU, dimension N*NB, where NB is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dAmgpu</td><td>DOUBLE_PRECISION array of pointer, dimension (ngpu) Each point to a DOUBLE_PRECISION array, dimension (LDDA, nlocal) which hold the local matrix on each GPU.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dAmgpu. ldda &gt;= max(1,n).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dTmgpu</td><td>DOUBLE_PRECISION array of pointer, dimension (ngpu) Each point to a DOUBLE_PRECISION array on the GPU, dimension n*nb, where nb is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddt</td><td>INTEGER The leading dimension of each array dT. lddt &gt;= max(1,nb).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER The number of GPUs.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">distblk</td><td>INTEGER Internal parameter for performance tuning. The size of the distribution/computation.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>Array of magma_queue_t that point to the queues to be used in execution/communications. Dimension &gt;= max(3, ngpu+1) Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nqueue</td><td>INTEGER The number of queues should be &gt;= max(3, ngpu+1).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
@@ -862,13 +871,21 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The inner blocking. nb &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array, dimension (LDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements above the band diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors; if UPLO = MagmaLower, the the Lower band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements below the band-diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors. See Further Details.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>DOUBLE_PRECISION array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) DOUBLE_PRECISION array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>DOUBLE_PRECISION array on the GPU, dimension N*NB, where NB is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dAmgpu</td><td>DOUBLE_PRECISION array of pointer, dimension (ngpu) Each point to a DOUBLE_PRECISION array, dimension (LDDA, nlocal) which hold the local matrix on each GPU.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dAmgpu. ldda &gt;= max(1,n).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dTmgpu</td><td>DOUBLE_PRECISION array of pointer, dimension (ngpu) Each point to a DOUBLE_PRECISION array on the GPU, dimension n*nb, where nb is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddt</td><td>INTEGER The leading dimension of each array dT. lddt &gt;= max(1,nb).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER The number of GPUs.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">distblk</td><td>INTEGER Internal parameter for performance tuning. The size of the distribution/computation.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>Array of magma_queue_t that point to the queues to be used in execution/communications. Dimension &gt;= max(3, ngpu+1) Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nqueue</td><td>INTEGER The number of queues should be &gt;= max(3, ngpu+1).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
@@ -896,7 +913,7 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:53 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

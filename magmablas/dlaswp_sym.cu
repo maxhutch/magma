@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zlaswp_sym.cu normal z -> d, Tue Aug 25 16:35:09 2015
+       @generated from zlaswp_sym.cu normal z -> d, Fri Sep 11 18:29:21 2015
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -105,14 +105,8 @@ extern "C" void dlaswp_sym( dlaswp_sym_params_t &params, magma_queue_t queue )
              On exit, the permuted matrix.
     
     \param[in]
-    ldx      INTEGER
+    lda      INTEGER
              Stride between elements in same column.
-    
-    \param[in]
-    ldy      INTEGER
-             Stride between elements in same row.
-             For A stored row-wise,    set ldx=lda and ldy=1.
-             For A stored column-wise, set ldx=1   and ldy=lda.
     
     \param[in]
     k1       INTEGER

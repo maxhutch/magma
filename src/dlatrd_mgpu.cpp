@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Ichitaro Yamazaki
        @author Mark Gates
 
-       @generated from zlatrd_mgpu.cpp normal z -> d, Tue Aug 25 16:35:18 2015
+       @generated from zlatrd_mgpu.cpp normal z -> d, Fri Sep 11 18:29:30 2015
 
 */
 #include "common_magma.h"
@@ -37,6 +37,10 @@
     Arguments
     ---------
     @param[in]
+    ngpu    INTEGER
+            Number of GPUs to use. ngpu > 0.
+
+    @param[in]
     uplo    magma_uplo_t
             Specifies whether the upper or lower triangular part of the
             symmetric matrix A is stored:
@@ -50,6 +54,11 @@
     @param[in]
     nb      INTEGER
             The number of rows and columns to be reduced.
+
+    @param[in]
+    nb0     INTEGER
+            The block size used for the matrix distribution.
+            nb and nb0 can be different for the final step of dsytrd.
 
     @param[in,out]
     A       DOUBLE_PRECISION array, dimension (LDA,N)

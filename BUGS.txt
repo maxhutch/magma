@@ -1,0 +1,28 @@
+Known bugs & issues
+
+These show up when using testing run_tests.py --tol 100.
+
+
+Aug 2015
+[sdcz]trsm_batched                      --  accuracy failures
+These result from badly conditioned triangular matrices.
+The tester needs to be updated to take the conditioning into account in the check.
+
+
+Aug 2015
+[s c ]geqrf_batched                     --  transient NAN failures
+Occasionally gets NaN results, possibly due to race condition.
+Under investigation.
+
+
+Aug 2015
+[sdcz]sy/hemm_mgpu                      --  tester incompatability
+The tester needs to be updated to match the routine; currently disabled.
+
+
+Aug 2015
+[sd  ]gegqr_gpu --version 3             --  MGS accuracy failure, N=95
+[sd  ]gegqr_gpu --version 4             --  Cholesky QR fails (not SPD), N=95
+These occur for the same matrix, so are probably related to a deficiency, e.g.,
+poor conditioning, in that matrix.
+Under investigation.

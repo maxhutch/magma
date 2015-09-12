@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zhetrd_he2hb_mgpu_spec.cpp normal z -> d, Tue Aug 25 16:35:19 2015
+       @generated from zhetrd_he2hb_mgpu_spec.cpp normal z -> d, Fri Sep 11 18:29:31 2015
 
 */
 #include "common_magma.h"
@@ -34,6 +34,10 @@
     @param[in]
     n       INTEGER
             The order of the matrix A.  N >= 0.
+
+    @param[in]
+    nb      INTEGER
+            The inner blocking.  nb >= 0.
 
     @param[in,out]
     A       DOUBLE_PRECISION array, dimension (LDA,N)
@@ -79,13 +83,45 @@
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    @param[out]
-    dT      DOUBLE_PRECISION array on the GPU, dimension N*NB,
-            where NB is the optimal blocksize.
+    @param[in,out]
+    dAmgpu  DOUBLE_PRECISION array of pointer, dimension (ngpu)
+            Each point to a DOUBLE_PRECISION array, dimension (LDDA, nlocal)
+            which hold the local matrix on each GPU.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array dAmgpu.  ldda >= max(1,n).
+
+    @param[in,out]
+    dTmgpu  DOUBLE_PRECISION array of pointer, dimension (ngpu)
+            Each point to a DOUBLE_PRECISION array on the GPU, dimension n*nb,
+            where nb is the optimal blocksize.
             On exit dT holds the upper triangular matrices T from the
             accumulated Householder transformations (I - V T V') used
             in the factorization. The nb x nb matrices T are ordered
             consecutively in memory one after another.
+
+    @param[in]
+    lddt    INTEGER
+            The leading dimension of each array dT.  lddt >= max(1,nb).
+
+    @param[in]
+    ngpu    INTEGER
+            The number of GPUs.
+
+    @param[in]
+    distblk INTEGER
+            Internal parameter for performance tuning.
+            The size of the distribution/computation.
+
+    @param[in]
+    queues  Array of magma_queue_t that point to the queues to be used 
+            in execution/communications. Dimension >= max(3, ngpu+1)
+            Queue to execute in.
+
+    @param[in]
+    nqueue  INTEGER
+            The number of queues should be >= max(3, ngpu+1).
 
     @param[out]
     info    INTEGER

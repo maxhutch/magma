@@ -1,5 +1,7 @@
 all:
 	doxygen Doxyfile
+	@echo "================================================================================"
+	./summarize_errors.pl output_err
 
 # Doxyfile-fast explicitly lists files in the SVN,
 # excluding all the precision-generated files.
@@ -9,6 +11,8 @@ all:
 fast:
 	-mv output_err old_output_err
 	doxygen Doxyfile-fast
+	@echo "================================================================================"
+	./summarize_errors.pl output_err_fast
 
 # Doxyfile-test is for local testing of specific files.
 # Create Doxyfile-test as a local copy of Doxyfile-fast with INPUT as whatever
@@ -16,3 +20,5 @@ fast:
 test:
 	-mv output_err old_output_err
 	doxygen Doxyfile-test
+	@echo "================================================================================"
+	./summarize_errors.pl output_err_test

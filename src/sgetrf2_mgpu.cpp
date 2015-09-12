@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zgetrf2_mgpu.cpp normal z -> s, Tue Aug 25 16:35:15 2015
+       @generated from zgetrf2_mgpu.cpp normal z -> s, Fri Sep 11 18:29:27 2015
 
 */
 #include "common_magma.h"
@@ -42,6 +42,15 @@
     n       INTEGER
             The number of columns of the matrix A.  N >= 0.
 
+    @param[in]
+    nb      INTEGER
+            The block size used for the matrix distribution.
+
+    @param[in]
+    offset  INTEGER
+            The first row and column indices of the submatrix that
+            this routine will factorize.
+
     @param[in,out]
     d_lAT   REAL array of pointers on the GPU, dimension (ngpu).
             On entry, the M-by-N matrix A distributed over GPUs
@@ -60,13 +69,13 @@
             The pivot indices; for 1 <= i <= min(M,N), row i of the
             matrix was interchanged with row IPIV(i).
 
-    @param (workspace) on device
+    @param[in] 
     d_lAP   REAL array of pointers on the GPU, dimension (ngpu).
             d_lAP[d] is the workspace on d-th GPU. Each local workspace
             must be of size (3+ngpu)*nb*maxm, where maxm is m rounded
             up to a multiple of 32 and nb is the block size.
 
-    @param (workspace)
+    @param[in] 
     W       REAL array, dimension (ngpu*nb*maxm).
             It is used to store panel on CPU.
 

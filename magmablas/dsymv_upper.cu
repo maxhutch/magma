@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        dsymv_upper.cu is nearly identical to dsymv_upper.cu, just change names and drop .
        
        dsymv_kernel_U (upper) in dsymv_upper.cu is very similar to
        dsymv_kernel_L (lower) in dsymv.cu; diff the two files to compare.
        
-       @generated from zhemv_upper.cu normal z -> d, Tue Aug 25 16:35:08 2015
+       @generated from zhemv_upper.cu normal z -> d, Fri Sep 11 18:29:21 2015
        
        @author Mark Gates
 */
@@ -128,6 +128,9 @@ dsymv_kernel_U(
             if ( ty2+j < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_D_ZERO;
+            }
         }
         if ( tx2 >= partial ) {
             A = A + tx2 - (partial - 1);  // A is A(blk_ind + tx2, blk_ind + ty2)
@@ -188,6 +191,9 @@ dsymv_kernel_U(
             if ( ty2+j + half_NB_X < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
             }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_D_ZERO;
+            }
         }
         if ( tx2 + half_NB_X >= partial ) {
             A = A + (tx2 + half_NB_X) - (partial - 1);
@@ -246,6 +252,9 @@ dsymv_kernel_U(
         for (int j=0; j < half_NB_X; j += 8) {
             if ( ty2+j + half_NB_X < partial ) {
                 sA32(tx2, ty2 + j) = A[j*lda];
+            }
+            else {
+                sA32(tx2, ty2 + j) = MAGMA_D_ZERO;
             }
         }
         if ( tx2 >= partial ) {
@@ -388,7 +397,7 @@ dsymv_kernel_U(
         }
         // already at next 64x64 block
         // A is A(blk_ind + tx, (jj+1)*NB_x + 4*ty)
-    
+        
         // store partial row sums of transposed result, y_jj
         #pragma unroll
         for (int k=0; k < 4; k++) {

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zheevdx_2stage.cpp normal z -> s, Tue Aug 25 16:35:19 2015
+       @generated from zheevdx_2stage.cpp normal z -> s, Fri Sep 11 18:29:31 2015
 
 */
 #include "common_magma.h"
@@ -219,8 +219,6 @@ magma_ssyevdx_2stage(
     magma_int_t alleig, valeig, indeig;
     magma_int_t len;
 
-    float* dwedc;
-
     wantz  = (jobz == MagmaVec);
     lower  = (uplo == MagmaLower);
     alleig = (range == MagmaRangeAll);
@@ -425,10 +423,10 @@ magma_ssyevdx_2stage(
     float *Z     = Wstg1;
     #ifdef COMPLEX
     float *Wedc              = E + n; 
-    magma_int_t lwedc         = 1 + 4*n + 2*n*n; // lrwork - n;//used only for wantz>0
+    magma_int_t lwedc         = 1 + 4*n + 2*n*n; // lrwork - n; //used only for wantz>0
     #else
     float *Wedc              = Wstg1 + n*n;
-    magma_int_t lwedc         = 1 + 4*n + n*n; // lwork - indWEDC;//used only for wantz>0
+    magma_int_t lwedc         = 1 + 4*n + n*n; // lwork - indWEDC; //used only for wantz>0
     #endif
 
 
@@ -488,45 +486,48 @@ magma_ssyevdx_2stage(
     }
     else {
         timer_start( time_total );
-        timer_start( time );
         
+        float* dwedc;
         if (MAGMA_SUCCESS != magma_smalloc( &dwedc, 3*n*(n/2 + 1) )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
 
+        timer_start( time );
+
         magma_sstedx(range, n, vl, vu, il, iu, W, E,
                      Z, ldz, Wedc, lwedc,
                      iwork, liwork, dwedc, info);
 
-        magma_free( dwedc );
 
         timer_stop( time );
         timer_printf( "  N= %10d  nb= %5d time sstedx = %6.2f\n", (int)n, (int)nb, time );
-        timer_start( time );
-        
+        magma_free( dwedc );
+        magma_smove_eig(range, n, W, &il, &iu, vl, vu, m);
+
         float *dZ;
         magma_int_t lddz = n;
 
-        float *dA;
-        magma_int_t ldda = n;
-
-        magma_smove_eig(range, n, W, &il, &iu, vl, vu, m);
-
-        if (MAGMA_SUCCESS != magma_smalloc( &dZ, *m*lddz)) {
+        if (MAGMA_SUCCESS != magma_smalloc( &dZ, (*m)*lddz)) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
-        if (MAGMA_SUCCESS != magma_smalloc( &dA, n*ldda )) {
-            *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
-        }
+
+        timer_start( time );
 
         magma_sbulge_back(uplo, n, nb, *m, Vblksiz, Z +ldz*(il-1), ldz, dZ, lddz,
                           V2, ldv, TAU2, T2, ldt, info);
 
         timer_stop( time );
         timer_printf( "  N= %10d  nb= %5d time sbulge_back = %6.2f\n", (int)n, (int)nb, time );
+
+        float *dA;
+        magma_int_t ldda = n;
+        if (MAGMA_SUCCESS != magma_smalloc( &dA, n*ldda )) {
+            *info = MAGMA_ERR_DEVICE_ALLOC;
+            return *info;
+        }
+
         timer_start( time );
 
         magma_ssetmatrix( n, n, A, lda, dA, ldda );
@@ -535,13 +536,13 @@ magma_ssyevdx_2stage(
                                  dZ+nb, n, dT1, nb, info);
 
         magma_sgetmatrix( n, *m, dZ, lddz, A, lda );
+
+        timer_stop( time );
+        timer_printf( "  N= %10d  nb= %5d time sormqr + copy = %6.2f\n", (int)n, (int)nb, time );
         magma_free(dT1);
         magma_free(dZ);
         magma_free(dA);
-
-        timer_stop( time );
         timer_stop( time_total );
-        timer_printf( "  N= %10d  nb= %5d time sormqr + copy = %6.2f\n", (int)n, (int)nb, time );
         timer_printf( "  N= %10d  nb= %5d time eigenvectors backtransf. = %6.2f\n", (int)n, (int)nb, time_total );
     }
 

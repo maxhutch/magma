@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        @author Adrien REMY
 
-       @generated from zhetrs_nopiv_gpu.cpp normal z -> s, Tue Aug 25 16:35:17 2015
+       @generated from zhetrs_nopiv_gpu.cpp normal z -> s, Fri Sep 11 18:29:30 2015
 
 */
 #include "common_magma.h"
@@ -44,7 +44,7 @@
     ldda    INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
-    param[in,out]
+    @param[in,out]
     dB      REAL array on the GPU, dimension (LDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.

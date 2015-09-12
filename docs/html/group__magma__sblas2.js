@@ -7,6 +7,8 @@ var group__magma__sblas2 =
     [ "magma_ssyr2", "group__magma__sblas2.html#gaa9b00a3a5087f2029381a0420dbdd6d1", null ],
     [ "magma_strmv", "group__magma__sblas2.html#ga74a861d573ee77ce51adefa3da7ab08d", null ],
     [ "magma_strsv", "group__magma__sblas2.html#ga02e63112e2fabb15f7b3262bee2fb48c", null ],
+    [ "magmablas_cgemv_batched", "group__magma__sblas2.html#ga7b6f13725efc7c41afb200562d6a2c5b", null ],
+    [ "magmablas_sgemv_batched", "group__magma__sblas2.html#gad0ec599fe84afde6083f1fc413cba7f5", null ],
     [ "magmablas_sgemv_conjv", "group__magma__sblas2.html#ga985d2c1a38865feb672aa944cefe211e", null ],
     [ "magmablas_sgemv_q", "group__magma__sblas2.html#ga1c5ebf7d8af5be287bd1217d6e9e8b82", null ],
     [ "magmablas_sgemv_tesla", "group__magma__sblas2.html#ga30914087a8638511c308bc6082da1ef4", null ],
@@ -16,6 +18,6 @@ var group__magma__sblas2 =
     [ "magmablas_ssymv_mgpu", "group__magma__sblas2.html#ga440ed40b9791b8daeb74c3304602d4d1", null ],
     [ "magmablas_ssymv_mgpu_sync", "group__magma__sblas2.html#ga48128e4f72b4113c3d96a4fa41e57a4c", null ],
     [ "magmablas_ssymv_work", "group__magma__sblas2.html#ga9f369f4905834d478eee4bc8d33265e6", null ],
-    [ "magmablas_strsv", "group__magma__sblas2.html#ga6c6512aa57cc12a86621f918641446cb", null ],
+    [ "magmablas_strsv", "group__magma__sblas2.html#gaa8c18ea4d681ab7c5c1d26c86c6e9f1b", null ],
     [ "magmablas_strsv_batched", "group__magma__sblas2.html#ga8cc0ade31cdbdeb0bbb7cad1c799b8ce", null ]
 ];

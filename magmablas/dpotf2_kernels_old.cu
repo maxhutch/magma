@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       November 2013
+       @date September 2015
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zpotf2_kernels_old.cu normal z -> d, Tue Aug 25 16:35:10 2015
+       @generated from zpotf2_kernels_old.cu normal z -> d, Fri Sep 11 18:29:22 2015
 */
 
 #include "common_magma.h"
@@ -354,33 +354,51 @@ __global__ void dpotf2_kernel(int m, int n,
       -     = MagmaLower:  Lower triangular
 
     @param[in]
+    m       INTEGER
+            The number of rows of the matrix A.
+
+    @param[in]
     n       INTEGER
             The order of the matrix A.  N >= 0 and N <= 512.
 
     @param[in,out]
-    dA      DOUBLE_PRECISION array, dimension (LDDA,N)
-            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
-            n by n upper triangular part of A contains the upper
-            triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = MagmaLower, the
-            leading n by n lower triangular part of A contains the lower
-            triangular part of the matrix A, and the strictly upper
-            triangular part of A is not referenced.
+    dA_array Array of pointers, dimension (batchCount). 
+             Each is a DOUBLE_PRECISION array A, dimension (lda,n)
+             On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
+             n by n upper triangular part of A contains the upper
+             triangular part of the matrix A, and the strictly lower
+             triangular part of A is not referenced.  If UPLO = MagmaLower, the
+             leading n by n lower triangular part of A contains the lower
+             triangular part of the matrix A, and the strictly upper
+             triangular part of A is not referenced.
     \n
-            On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization A = U**H * U  or A = L * L**H.
+             On exit, if INFO = 0, the factor U or L from the Cholesky
+             factorization A = U**H * U  or A = L * L**H.
 
     @param[in]
-    ldda    INTEGER
+    lda    INTEGER
             The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[out]
-    info    INTEGER
+    info_array INTEGER array, dimension (batchCount).
+               Each is the info parameter for the corresponding matrix A
       -     = 0: successful exit
       -     < 0: if INFO = -k, the k-th argument had an illegal value
       -     > 0: if INFO = k, the leading minor of order k is not
                  positive definite, and the factorization could not be
                  completed.
+    
+    @param[in]
+    gbstep  INTEGER
+            Internal use, global step.
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_dposv_aux
     ********************************************************************/

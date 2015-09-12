@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> c d s
        
@@ -123,10 +123,11 @@ int main(int argc, char **argv)
                 cublasSetAtomicsMode( opts.handle, CUBLAS_ATOMICS_ALLOWED );
                 magma_zsetvector( N, Y, incy, dY, incy );
                 
-                atomics_time = magma_sync_wtime( opts.queue );
+                // sync on queue doesn't work -- need device sync or use NULL stream -- bug in CUBLAS?
+                atomics_time = magma_sync_wtime( NULL /*opts.queue*/ );
                 cublasZhemv( opts.handle, cublas_uplo_const(opts.uplo),
                              N, &alpha, dA, ldda, dX, incx, &beta, dY, incy );
-                atomics_time = magma_sync_wtime( opts.queue ) - atomics_time;
+                atomics_time = magma_sync_wtime( NULL /*opts.queue*/ ) - atomics_time;
                 atomics_perf = gflops / atomics_time;
                 
                 magma_zgetvector( N, dY, incy, Yatomics, incy );

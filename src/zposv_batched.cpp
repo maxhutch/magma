@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Azzam Haidar
 
@@ -41,35 +41,47 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in,out]
-    dA      COMPLEX_16 array on the GPU, dimension (LDDA,N)
-            On entry, the Hermitian matrix dA.  If UPLO = MagmaUpper, the leading
-            N-by-N upper triangular part of dA contains the upper
-            triangular part of the matrix dA, and the strictly lower
-            triangular part of dA is not referenced.  If UPLO = MagmaLower, the
-            leading N-by-N lower triangular part of dA contains the lower
-            triangular part of the matrix dA, and the strictly upper
-            triangular part of dA is not referenced.
+    dA_array    Array of pointers, dimension (batchCount).
+             Each is a COMPLEX_16 array on the GPU, dimension (LDDA,N)
+             On entry, each pointer is a Hermitian matrix A.  
+             If UPLO = MagmaUpper, the leading
+             N-by-N upper triangular part of A contains the upper
+             triangular part of the matrix A, and the strictly lower
+             triangular part of dA is not referenced.  If UPLO = MagmaLower, the
+             leading N-by-N lower triangular part of A contains the lower
+             triangular part of the matrix A, and the strictly upper
+             triangular part of A is not referenced.
     \n
-            On exit, if INFO = 0, the factor U or L from the Cholesky
-            factorization dA = U**H*U or dA = L*L**H.
+             On exit, if corresponding entry in dinfo_array = 0, 
+             each pointer is the factor U or L from the Cholesky
+             factorization A = U**H*U or A = L*L**H.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of each array A.  LDA >= max(1,N).
 
     @param[in,out]
-    dB      COMPLEX_16 array on the GPU, dimension (LDB,NRHS)
-            On entry, the right hand side matrix B.
-            On exit, the solution matrix X.
+    dB_array    Array of pointers, dimension (batchCount).
+            Each is a COMPLEX_16 array on the GPU, dimension (LDB,NRHS)
+            On entry, each pointer is a right hand side matrix B.
+            On exit, each pointer is the corresponding solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,N).
+            The leading dimension of each array B.  LDB >= max(1,N).
 
     @param[out]
-    info    INTEGER
+    dinfo_array    Array of INTEGERs, dimension (batchCount), for corresponding matrices.
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
+    
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+    
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zposv_driver
     ********************************************************************/

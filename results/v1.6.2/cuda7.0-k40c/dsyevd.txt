@@ -1,0 +1,164 @@
+numactl --interleave=all ./testing_dsyevd -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0013
+ 1000     ---               0.0925
+   10     ---               0.0000
+   20     ---               0.0000
+   30     ---               0.0001
+   40     ---               0.0001
+   50     ---               0.0002
+   60     ---               0.0003
+   70     ---               0.0004
+   80     ---               0.0005
+   90     ---               0.0007
+  100     ---               0.0009
+  200     ---               0.0046
+  300     ---               0.0093
+  400     ---               0.0157
+  500     ---               0.0239
+  600     ---               0.0331
+  700     ---               0.0444
+  800     ---               0.0578
+  900     ---               0.0732
+ 1000     ---               0.0910
+ 2000     ---               0.3946
+ 3000     ---               1.3086
+ 4000     ---               2.3535
+ 5000     ---               3.8218
+ 6000     ---               5.7008
+ 7000     ---               8.1357
+ 8000     ---              11.0823
+ 9000     ---              14.8139
+numactl --interleave=all ./testing_dsyevd -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100     ---               0.0064
+ 1000     ---               0.1276
+   10     ---               0.0001
+   20     ---               0.0002
+   30     ---               0.0003
+   40     ---               0.0005
+   50     ---               0.0007
+   60     ---               0.0008
+   70     ---               0.0010
+   80     ---               0.0013
+   90     ---               0.0017
+  100     ---               0.0022
+  200     ---               0.0109
+  300     ---               0.0176
+  400     ---               0.0276
+  500     ---               0.0415
+  600     ---               0.0485
+  700     ---               0.0632
+  800     ---               0.0807
+  900     ---               0.1036
+ 1000     ---               0.1245
+ 2000     ---               0.4801
+ 3000     ---               1.3453
+ 4000     ---               2.3808
+ 5000     ---               4.0590
+ 6000     ---               5.9509
+ 7000     ---               8.5131
+ 8000     ---              11.6961
+ 9000     ---              15.5623
+numactl --interleave=all ./testing_dsyevd_gpu -JN -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd_gpu [options] [-h|--help]
+
+using: jobz = No vectors, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0016
+ 1000       ---              0.1690
+   10       ---              0.0001
+   20       ---              0.0001
+   30       ---              0.0001
+   40       ---              0.0002
+   50       ---              0.0002
+   60       ---              0.0004
+   70       ---              0.0004
+   80       ---              0.0006
+   90       ---              0.0008
+  100       ---              0.0011
+  200       ---              0.0113
+  300       ---              0.0209
+  400       ---              0.0355
+  500       ---              0.0500
+  600       ---              0.0696
+  700       ---              0.0891
+  800       ---              0.1209
+  900       ---              0.1484
+ 1000       ---              0.1760
+ 2000       ---              0.6013
+ 3000       ---              1.3152
+ 4000       ---              2.3344
+ 5000       ---              3.7911
+ 6000       ---              5.6472
+ 7000       ---              8.2819
+ 8000       ---             10.9944
+ 9000       ---             14.6560
+numactl --interleave=all ./testing_dsyevd_gpu -JV -N 100 -N 1000 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000
+MAGMA 1.6.1  compiled for CUDA capability >= 3.5
+CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.3, MKL threads 16. 
+ndevices 3
+device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+Usage: ./testing_dsyevd_gpu [options] [-h|--help]
+
+using: jobz = Vectors needed, uplo = Lower
+    N   CPU Time (sec)   GPU Time (sec)
+=======================================
+  100       ---              0.0075
+ 1000       ---              0.1961
+   10       ---              0.0001
+   20       ---              0.0002
+   30       ---              0.0004
+   40       ---              0.0005
+   50       ---              0.0006
+   60       ---              0.0009
+   70       ---              0.0011
+   80       ---              0.0014
+   90       ---              0.0019
+  100       ---              0.0022
+  200       ---              0.0175
+  300       ---              0.0291
+  400       ---              0.0479
+  500       ---              0.0656
+  600       ---              0.0826
+  700       ---              0.1048
+  800       ---              0.1317
+  900       ---              0.1548
+ 1000       ---              0.1819
+ 2000       ---              0.6203
+ 3000       ---              1.3923
+ 4000       ---              2.5416
+ 5000       ---              4.2772
+ 6000       ---              6.3248
+ 7000       ---              9.2650
+ 8000       ---             12.2612
+ 9000       ---             16.3899

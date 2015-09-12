@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @author Mark Gates
        @author Tingxing Dong
@@ -162,6 +162,10 @@ zgemvc_template_fermi(
     @param[in]
     incy    Specifies the increment for the elements of Y.
             INCY must not be zero.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
 
     @ingroup magma_zblas2
     ********************************************************************/

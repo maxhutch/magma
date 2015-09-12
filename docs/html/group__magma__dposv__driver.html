@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -299,16 +299,18 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDA,N) On entry, the symmetric matrix dA. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of dA contains the upper triangular part of the matrix dA, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of dA contains the lower triangular part of the matrix dA, and the strictly upper triangular part of dA is not referenced. <br />
- On exit, if INFO = 0, the factor U or L from the Cholesky factorization dA = U**H*U or dA = L*L**H.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDDA,N) On entry, each pointer is a symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of dA is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
+ On exit, if corresponding entry in dinfo_array = 0, each pointer is the factor U or L from the Cholesky factorization A = U**H*U or A = L*L**H.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array A. LDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a DOUBLE_PRECISION array on the GPU, dimension (LDB,NRHS) On entry, each pointer is a right hand side matrix B. On exit, each pointer is the corresponding solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of each array B. LDB &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dinfo_array</td><td>Array of INTEGERs, dimension (batchCount), for corresponding matrices.<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -541,7 +543,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:51 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

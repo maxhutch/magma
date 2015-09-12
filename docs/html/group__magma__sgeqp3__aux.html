@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -379,7 +379,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>INTEGER The number of rows of A that have been factorized in previous steps.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">NB</td><td>INTEGER The number of columns to factorize.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The number of columns to factorize.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">kb</td><td>INTEGER The number of columns actually factorized.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, block A(OFFSET+1:M,1:KB) is the triangular factor obtained and block A(1:OFFSET,1:N) has been accordingly pivoted, but no factorized. The rest of the matrix, block A(OFFSET+1:M,KB+1:N) has been updated.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
@@ -501,9 +501,9 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>INTEGER The number of rows of A that have been factorized in previous steps.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">NB</td><td>INTEGER The number of columns to factorize.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The number of columns to factorize.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">kb</td><td>INTEGER The number of columns actually factorized.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>REAL array, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, block A(OFFSET+1:M,1:KB) is the triangular factor obtained and block A(1:OFFSET,1:N) has been accordingly pivoted, but no factorized. The rest of the matrix, block A(OFFSET+1:M,KB+1:N) has been updated.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,N) on the GPU On entry, the M-by-N matrix A. On exit, block A(OFFSET+1:M,1:KB) is the triangular factor obtained and block A(1:OFFSET,1:N) has been accordingly pivoted, but no factorized. The rest of the matrix, block A(OFFSET+1:M,KB+1:N) has been updated.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">jpvt</td><td>INTEGER array, dimension (N) JPVT(I) = K &lt;==&gt; Column K of the full matrix A has been permuted into position I in AP.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dtau</td><td>REAL array, dimension (KB) The scalar factors of the elementary reflectors.</td></tr>
@@ -644,7 +644,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:52 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Mark Gates
        @author Azzam Haidar
@@ -110,6 +110,18 @@
     ldworkvt INTEGER
             The leading dimension of the array WORKVT.
             LDWORKVT >= max(1,min(M,N));
+
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
+    @param[in]
+    myhandle   cublasHandle_t
+            Cublas handle might be used internally.
 
     Further Details
     ---------------

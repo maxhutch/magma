@@ -2,6 +2,8 @@
 
 int main( int argc, char** argv )
 {
+    magma_init();
+    
     magma_opts opts;
     opts.parse_opts( argc, argv );
     
@@ -43,6 +45,8 @@ int main( int argc, char** argv )
     printf( "jobz     %3d (%s)\n", opts.jobz,   lapack_vec_const(   opts.jobz   ));
     printf( "jobvr    %3d (%s)\n", opts.jobvr,  lapack_vec_const(   opts.jobvr  ));
     printf( "jobvl    %3d (%s)\n", opts.jobvl,  lapack_vec_const(   opts.jobvl  ));
+    
+    magma_finalize();
     
     return 0;
 }

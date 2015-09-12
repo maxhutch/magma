@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zlahef_gpu.cpp normal z -> c, Tue Aug 25 16:35:18 2015
+       @generated from zlahef_gpu.cpp normal z -> c, Fri Sep 11 18:29:30 2015
 */
 
 #include "common_magma.h"
@@ -76,6 +76,21 @@
     lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
 
+    @param[in,out]
+    dA      COMPLEX array on GPU, dimension (LDDA,N)
+            On entry, the Hermitian matrix A.  If UPLO = 'U', the leading
+            n-by-n upper triangular part of A contains the upper
+            triangular part of the matrix A, and the strictly lower
+            triangular part of A is not referenced.  If UPLO = 'L', the
+            leading n-by-n lower triangular part of A contains the lower
+            triangular part of the matrix A, and the strictly upper
+            triangular part of A is not referenced.
+            On exit, A contains details of the partial factorization.
+
+    @param[in]
+    ldda    INTEGER
+            The leading dimension of the array A.  LDDA >= max(1,N).
+
     @param[out]
     ipiv    INTEGER array, dimension (N)
             Details of the interchanges and the block structure of D.
@@ -97,6 +112,16 @@
     lddw    INTEGER
             The leading dimension of the array W.  LDW >= max(1,N).
 
+    @param[in]
+    queues  magma_queue_t
+            queues contain the streams used for the partial factorization.
+            Currently, only one stream is used.
+
+    @param[in]
+    events  magma_event_t
+            events contain the events used for the partial factorization.
+            Currently, only one event is used.
+
     @param[out]
     info    INTEGER
       -     = 0: successful exit
@@ -112,7 +137,7 @@ magma_clahef_gpu(
     magmaFloatComplex    *hA, magma_int_t lda,
     magmaFloatComplex_ptr dA, magma_int_t ldda, magma_int_t *ipiv,
     magmaFloatComplex_ptr dW, magma_int_t lddw,
-    magma_queue_t queues[], magma_event_t event[],
+    magma_queue_t queues[], magma_event_t events[],
     magma_int_t *info)
 {
     /* .. Parameters .. */
@@ -402,8 +427,8 @@ magma_clahef_gpu(
         }
 
         // copying the panel back to CPU
-        magma_event_record( event[0], queues[0] );
-        magma_queue_wait_event( queues[1], event[0] );
+        magma_event_record( events[0], queues[0] );
+        magma_queue_wait_event( queues[1], events[0] );
         trace_gpu_start( 0, 1, "get", "get" );
         magma_cgetmatrix_async( n,n-(k+1), &dA(0,k+1),ldda, &A(0,k+1),lda, queues[1] );
 
@@ -706,8 +731,8 @@ magma_clahef_gpu(
             }
         }
         // copying the panel back to CPU
-        magma_event_record( event[0], queues[0] );
-        magma_queue_wait_event( queues[1], event[0] );
+        magma_event_record( events[0], queues[0] );
+        magma_queue_wait_event( queues[1], events[0] );
         trace_gpu_start( 0, 1, "get", "get" );
         magma_cgetmatrix_async( n,k, &dA(0,0),ldda, &A(0,0),lda, queues[1] );
         trace_gpu_end( 0, 1 );

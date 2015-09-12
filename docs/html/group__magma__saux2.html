@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -154,9 +154,9 @@ Functions</h2></td></tr>
 <tr class="separator:gac96a15f8dea0fea961d11768531f6b2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4a219b6f52c43f1046cd957de1307732"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga4a219b6f52c43f1046cd957de1307732">magmablas_slacpy_sym_out</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t *rows, magma_int_t *perm, magmaFloat_const_ptr dA, magma_int_t ldda, magmaFloat_ptr dB, magma_int_t lddb)</td></tr>
 <tr class="separator:ga4a219b6f52c43f1046cd957de1307732"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6c3cb47d9474889c3699e57a46ff36ca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga6c3cb47d9474889c3699e57a46ff36ca">magmablas_slag2d_q</a> (magma_int_t m, magma_int_t n, magmaFloat_const_ptr SA, magma_int_t ldsa, magmaDouble_ptr A, magma_int_t lda, magma_int_t *info, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga6c3cb47d9474889c3699e57a46ff36ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLAG2D_STREAM converts a single-real matrix, SA, to a double-real matrix, A.  <a href="#ga6c3cb47d9474889c3699e57a46ff36ca">More...</a><br /></td></tr>
-<tr class="separator:ga6c3cb47d9474889c3699e57a46ff36ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga30d147c1c7ba81ba8ef90229cc317a13"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga30d147c1c7ba81ba8ef90229cc317a13">magmablas_slag2d_q</a> (magma_int_t m, magma_int_t n, magmaFloat_const_ptr SA, magma_int_t ldsa, magmaDouble_ptr A, magma_int_t lda, magma_queue_t queue, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga30d147c1c7ba81ba8ef90229cc317a13"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLAG2D_STREAM converts a single-real matrix, SA, to a double-real matrix, A.  <a href="#ga30d147c1c7ba81ba8ef90229cc317a13">More...</a><br /></td></tr>
+<tr class="separator:ga30d147c1c7ba81ba8ef90229cc317a13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6ac8e4c8c22df17595de76a9cc472c5e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga6ac8e4c8c22df17595de76a9cc472c5e">magmablas_slag2d</a> (magma_int_t m, magma_int_t n, magmaFloat_const_ptr SA, magma_int_t ldsa, magmaDouble_ptr A, magma_int_t lda, magma_int_t *info)</td></tr>
 <tr class="separator:ga6ac8e4c8c22df17595de76a9cc472c5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gadf48aa8bf14f57a160a056a3be1a0cbd"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#gadf48aa8bf14f57a160a056a3be1a0cbd">magmablas_slange</a> (magma_norm_t norm, magma_int_t m, magma_int_t n, magmaFloat_const_ptr dA, magma_int_t ldda, magmaFloat_ptr dwork)</td></tr>
@@ -175,14 +175,14 @@ Functions</h2></td></tr>
 <tr class="separator:ga0547caf32ec6275ef45143bf6c82966a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae9f22a8b5021df879aff2d4e463a835e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#gae9f22a8b5021df879aff2d4e463a835e">magmablas_slascl2</a> (magma_type_t type, magma_int_t m, magma_int_t n, magmaFloat_const_ptr dD, magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
 <tr class="separator:gae9f22a8b5021df879aff2d4e463a835e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae325d22dc49e1c73417363d50d7f28bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#gae325d22dc49e1c73417363d50d7f28bf">magmablas_slascl_2x2_q</a> (magma_type_t type, magma_int_t m, const float *dW, magma_int_t lddw, float *dA, magma_int_t ldda, magma_int_t *info, magma_queue_t queue)</td></tr>
-<tr class="memdesc:gae325d22dc49e1c73417363d50d7f28bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLASCL_2x2 scales the M by M real matrix A by the 2-by-2 pivot.  <a href="#gae325d22dc49e1c73417363d50d7f28bf">More...</a><br /></td></tr>
-<tr class="separator:gae325d22dc49e1c73417363d50d7f28bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga18b91eb365eed526f24fb54fe7eb6ab1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga18b91eb365eed526f24fb54fe7eb6ab1">magmablas_slascl_2x2</a> (magma_type_t type, magma_int_t m, float *dW, magma_int_t lddw, float *dA, magma_int_t ldda, magma_int_t *info)</td></tr>
-<tr class="separator:ga18b91eb365eed526f24fb54fe7eb6ab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6a8c8fb197f139e7c53ccb129a791aff"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga6a8c8fb197f139e7c53ccb129a791aff">magmablas_slascl_diag_q</a> (magma_type_t type, magma_int_t m, magma_int_t n, magmaFloat_const_ptr dD, magma_int_t lddd, magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *info, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga6a8c8fb197f139e7c53ccb129a791aff"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLASCL_DIAG scales the M by N real matrix A by the real diagonal matrix dD.  <a href="#ga6a8c8fb197f139e7c53ccb129a791aff">More...</a><br /></td></tr>
-<tr class="separator:ga6a8c8fb197f139e7c53ccb129a791aff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab9e31b100e665de06b049042fb4a0857"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#gab9e31b100e665de06b049042fb4a0857">magmablas_slascl_2x2_q</a> (magma_type_t type, magma_int_t m, magmaFloat_const_ptr dW, magma_int_t lddw, magmaFloat_ptr dA, magma_int_t ldda, magma_queue_t queue, magma_int_t *info)</td></tr>
+<tr class="memdesc:gab9e31b100e665de06b049042fb4a0857"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLASCL_2x2 scales the M by M real matrix A by the 2-by-2 pivot.  <a href="#gab9e31b100e665de06b049042fb4a0857">More...</a><br /></td></tr>
+<tr class="separator:gab9e31b100e665de06b049042fb4a0857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad63565ce49594f95df52fe2b9e10627b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#gad63565ce49594f95df52fe2b9e10627b">magmablas_slascl_2x2</a> (magma_type_t type, magma_int_t m, magmaFloat_const_ptr dW, magma_int_t lddw, magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
+<tr class="separator:gad63565ce49594f95df52fe2b9e10627b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga653989b4947bdd37ae6b47d39a2cede5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga653989b4947bdd37ae6b47d39a2cede5">magmablas_slascl_diag_q</a> (magma_type_t type, magma_int_t m, magma_int_t n, magmaFloat_const_ptr dD, magma_int_t lddd, magmaFloat_ptr dA, magma_int_t ldda, magma_queue_t queue, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga653989b4947bdd37ae6b47d39a2cede5"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLASCL_DIAG scales the M by N real matrix A by the real diagonal matrix dD.  <a href="#ga653989b4947bdd37ae6b47d39a2cede5">More...</a><br /></td></tr>
+<tr class="separator:ga653989b4947bdd37ae6b47d39a2cede5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4275cab211a7f8bb8ae93544c21f523f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga4275cab211a7f8bb8ae93544c21f523f">magmablas_slascl_diag</a> (magma_type_t type, magma_int_t m, magma_int_t n, magmaFloat_const_ptr dD, magma_int_t lddd, magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
 <tr class="separator:ga4275cab211a7f8bb8ae93544c21f523f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga70ca0586d9adaca49d4252348df1ba89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux2.html#ga70ca0586d9adaca49d4252348df1ba89">magmablas_slaset_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, float offdiag, float diag, magmaFloat_ptr dA, magma_int_t ldda, magma_queue_t queue)</td></tr>
@@ -1180,10 +1180,12 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix dA. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of rows that are swapped. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rows</td><td>INTEGER array, on GPU, dimension (2*n) On entry, it stores the new pivots such that rows[i]-th and rows[n+i]-th rows are swapped.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">perm</td><td>INTEGER array, on GPU, dimension (m) On entry, it stores the identity permutation array. On exit, it is updated with the new pivots given by rows such that i-th row will be the original perm[i]-th row after the pivots are applied.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,N) The M-by-N matrix dA. If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed; if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dB</td><td>REAL array, dimension (LDDB,N) The M-by-N matrix dB. On exit, dB = dA in the locations specified by UPLO.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dB</td><td>REAL array, dimension (LDDB,N) On exit, dB = stores the columns after the pivots are applied.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
@@ -1345,9 +1347,11 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix dA. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,N) The M-by-N matrix dA. If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed; if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rows</td><td>INTEGER array, on GPU, dimension (2*n) On entry, it stores the new pivots such that rows[i]-th and rows[n+i]-th rows are swapped.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">perm</td><td>INTEGER array, on GPU, dimension (m) On entry, it stores the permutation array such that i-th row will be the original perm[i]-th row after the pivots are applied. On exit, it is restored to be identity permutation.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,N) The M-by-N matrix dA. If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed; if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed. On exit, the matrix after the symmetric pivoting is applied.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dB</td><td>REAL array, dimension (LDDB,N) The M-by-N matrix dB. On exit, dB = dA in the locations specified by UPLO.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>REAL array, dimension (LDDB,N) The M-by-N matrix dB. On entry, dB stores the columns after row pivoting is applied.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
@@ -1409,11 +1413,11 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__saux2.html#ga6c3cb47d9474889c3699e57a46ff36ca" title="SLAG2D_STREAM converts a single-real matrix, SA, to a double-real matrix, A. ">magmablas_slag2d_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__saux2.html#ga30d147c1c7ba81ba8ef90229cc317a13" title="SLAG2D_STREAM converts a single-real matrix, SA, to a double-real matrix, A. ">magmablas_slag2d_q</a> </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga6c3cb47d9474889c3699e57a46ff36ca"></a>
+<a class="anchor" id="ga30d147c1c7ba81ba8ef90229cc317a13"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1456,14 +1460,14 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>info</em>, </td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1847,7 +1851,7 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
 
 </div>
 </div>
-<a class="anchor" id="ga18b91eb365eed526f24fb54fe7eb6ab1"></a>
+<a class="anchor" id="gad63565ce49594f95df52fe2b9e10627b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1866,7 +1870,7 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
           <td class="paramname"><em>dW</em>, </td>
         </tr>
         <tr>
@@ -1878,7 +1882,7 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
           <td class="paramname"><em>dA</em>, </td>
         </tr>
         <tr>
@@ -1904,7 +1908,7 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
 
 </div>
 </div>
-<a class="anchor" id="gae325d22dc49e1c73417363d50d7f28bf"></a>
+<a class="anchor" id="gab9e31b100e665de06b049042fb4a0857"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1923,7 +1927,7 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const float *&#160;</td>
+          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
           <td class="paramname"><em>dW</em>, </td>
         </tr>
         <tr>
@@ -1935,7 +1939,7 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
           <td class="paramname"><em>dA</em>, </td>
         </tr>
         <tr>
@@ -1947,14 +1951,14 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>info</em>, </td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1976,9 +1980,10 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value. </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2048,7 +2053,7 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
 
 </div>
 </div>
-<a class="anchor" id="ga6a8c8fb197f139e7c53ccb129a791aff"></a>
+<a class="anchor" id="ga653989b4947bdd37ae6b47d39a2cede5"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -2097,14 +2102,14 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>info</em>, </td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>queue</em>&#160;</td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>info</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2127,9 +2132,10 @@ SLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga0eb5
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value. </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value.</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -2935,8 +2941,7 @@ SLASWPX performs a series of row interchanges on the matrix A. </p>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array on GPU, dimension (*,*) On entry, the matrix of column dimension N to which the row interchanges will be applied. On exit, the permuted matrix.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldx</td><td>INTEGER Stride between elements in same column.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldy</td><td>INTEGER Stride between elements in same row. For A stored row-wise, set ldx=lda and ldy=1. For A stored column-wise, set ldx=1 and ldy=lda.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER Stride between elements in same column.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">k1</td><td>INTEGER The first element of IPIV for which a row interchange will be done. (One based index.)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">k2</td><td>INTEGER The last element of IPIV for which a row interchange will be done. (One based index.)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array, on CPU, dimension (K2*abs(INCI)) The vector of pivot indices. Only the elements in positions K1 through K2 of IPIV are accessed. IPIV(K) = L implies rows K and L are to be interchanged.</td></tr>
@@ -3309,12 +3314,13 @@ SLASWPX performs a series of row interchanges on the matrix A. </p>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrices dA and dB. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The size of diagonal blocks. NB &gt; 0 and NB &lt;= maximum threads per CUDA block (512 or 1024).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,N) The matrix dA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= (nblocks - 1)*nb*inca + nb.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a REAL array dA, dimension (ldda,n) The matrix dA.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of each array dA. ldda &gt;= (nblocks - 1)*nb*inca + nb.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">inca</td><td>INTEGER The row increment between diagonal blocks of dA. inca &gt;= 0. For example, inca = 1 means blocks are stored on the diagonal at dA(i*nb, i*nb), inca = 0 means blocks are stored side-by-side at dA(0,    i*nb).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>REAL array, dimension (LDDB,N) The matrix dB.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array db. LDDB &gt;= (nblocks - 1)*nb*incb + nb.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB_array</td><td>Array of pointers, dimension (batchCount). Each is a REAL array dB, dimension (lddb,n) The matrix dB.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of each array dB. lddb &gt;= (nblocks - 1)*nb*incb + nb.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">incb</td><td>INTEGER The row increment between diagonal blocks of dB. incb &gt;= 0. See inca.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -3990,7 +3996,7 @@ SLASWPX performs a series of row interchanges on the matrix A. </p>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:53 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

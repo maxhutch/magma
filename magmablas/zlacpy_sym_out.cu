@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Mark Gates
        @author Azzam Haidar
@@ -196,21 +196,33 @@ void zlacpy_sym_out_upper_kernel(
     @param[in]
     n       INTEGER
             The number of columns of the matrix dA.  N >= 0.
-    
+
     @param[in]
+    rows    INTEGER array, on GPU, dimension (2*n)
+            On entry, it stores the new pivots such that rows[i]-th and rows[n+i]-th
+            rows are swapped.
+
+    @param[in,out]
+    perm    INTEGER array, on GPU, dimension (m)
+            On entry, it stores the permutation array such that i-th row will be 
+            the original perm[i]-th row after the pivots are applied.
+            On exit, it is restored to be identity permutation.
+
+    @param[in,out]
     dA      COMPLEX_16 array, dimension (LDDA,N)
             The M-by-N matrix dA.
             If UPLO = MagmaUpper, only the upper triangle or trapezoid is accessed;
             if UPLO = MagmaLower, only the lower triangle or trapezoid is accessed.
+            On exit, the matrix after the symmetric pivoting is applied.
     
     @param[in]
     ldda    INTEGER
             The leading dimension of the array dA.  LDDA >= max(1,M).
     
-    @param[out]
+    @param[in]
     dB      COMPLEX_16 array, dimension (LDDB,N)
             The M-by-N matrix dB.
-            On exit, dB = dA in the locations specified by UPLO.
+            On entry, dB stores the columns after row pivoting is applied.
     
     @param[in]
     lddb    INTEGER

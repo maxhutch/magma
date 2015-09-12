@@ -117,6 +117,7 @@ var searchData=
   ['sgemm_5fkernel_5ft_5fn_5f32_5f32_5f8_5f8_5f8',['sgemm_kernel_T_N_32_32_8_8_8',['../group__magma__sblas3.html#gabfd18de23d86fce65d96bc7387ffdb0b',1,'sgemm_tesla_T_N.cu']]],
   ['sgemm_5fkernel_5ft_5ft_5f64_5f16_5f16_5f16_5f4',['sgemm_kernel_T_T_64_16_16_16_4',['../group__magma__sblas3.html#ga6e861d690fec08a0a7c6701b3bb6f6e0',1,'sgemm_tesla_T_T.cu']]],
   ['sgemm_5fkernel_5ft_5ft_5f64_5f16_5f16_5f16_5f4_5fspecial',['sgemm_kernel_T_T_64_16_16_16_4_special',['../group__magma__sblas3.html#gab9374a80a778eb2259ae66d46a3e1863',1,'sgemm_tesla_T_T_special.cu']]],
+  ['sgeqrf_5fcopy_5fupper_5fbatched',['sgeqrf_copy_upper_batched',['../group__magma__sgeqrf__aux.html#ga888f903ca9ec1157060509f0e8062352',1,'sgeqr2_kernels.cu']]],
   ['sparse',['Sparse',['../group__sparse.html',1,'']]],
   ['sparse_2diter',['Sparse-Iter',['../sparse-iter.html',1,'']]],
   ['sparse_20auxiliary',['Sparse auxiliary',['../group__sparse__aux.html',1,'']]],

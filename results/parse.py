@@ -75,7 +75,7 @@ def process( filename ):
 	infile = open( filename )
 	for line in infile:
 		# look for header line
-		m = re.search( r'^(?:numactl.*)?\./testing_(\w+)', line )
+		m = re.search( r'^(?:numactl.*)?testing_(\w+)', line )
 		if ( m ):
 			if ( data.rows ):
 				output( data )
@@ -128,15 +128,20 @@ def process( filename ):
 			try:
 				map( float, fields )
 			except:
-				print >>sys.stderr, 'ignoring:', line.strip(), '\n>       ', line2
+				print >>sys.stderr, 'ignoring:', line.strip()  #, '\n>       ', line2
 				continue
 			
-			# skip warmup runs (N = 100 or 1000 in first two runs)
+			# skip warmup runs (N = 123, 1234 in first two runs)
 			if ( warmup > 0 ):
 				warmup -= 1
-				m = re.search( r'^ *([a-zA-Z]+ +)*1000?\b', line )
+				m = re.search( r'^ *([a-zA-Z]+ +)*(1000?|1234?)\b', line )
 				if ( m ):
 					continue
+			
+			# for gesvd, skip second field, jobv
+			# this makes it match gesdd, which has only job, not jobu and jobv
+			if ( data.name[1:] == 'gesvd' ):
+				fields = fields[0:1] + fields[2:]
 			
 			data.rows.append( fields )
 		# end
@@ -156,9 +161,15 @@ if ( len(sys.argv) > 1 ):
 		print "version = '%s'" % (m.group(1))
 		print "cuda    = '%s'" % (m.group(2))
 		print "device  = '%s'" % (m.group(3))
+		print "cpu     = 'unknown'"
 		print
 	else:
-		print >>sys.stderr, "Warning: no version information"
+		print "version = 'unknown'"
+		print "cuda    = 'unknown'"
+		print "device  = 'unknown'"
+		print "cpu     = 'unknown'"
+		print
+		print >>sys.stderr, "\nWarning: no version information\n"
 	# end
 # end
 

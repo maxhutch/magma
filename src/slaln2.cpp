@@ -3,7 +3,7 @@
     Later cleaned up by hand, particularly to be thread-safe (no static variables).
     
     @author Mark Gates
-    @generated from dlaln2.cpp normal d -> s, Tue Aug 25 16:35:20 2015
+    @generated from dlaln2.cpp normal d -> s, Fri Sep 11 18:29:32 2015
 */
 #include "common_magma.h"
 

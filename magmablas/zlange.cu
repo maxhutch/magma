@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -275,7 +275,7 @@ magmablas_zlange(
     else if ( norm == MagmaOneNorm ) {
         dim3 grid( n );
         zlange_one_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );  // note N instead of M
         cudaMemcpy( &result, &dwork[0], sizeof(double), cudaMemcpyDeviceToHost );
     }
     

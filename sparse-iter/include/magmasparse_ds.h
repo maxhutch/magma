@@ -1,11 +1,11 @@
 /*
--- MAGMA (version 1.6.3-beta1) --
+-- MAGMA (version 1.7.0) --
  Univ. of Tennessee, Knoxville
  Univ. of California, Berkeley
  Univ. of Colorado, Denver
- @date August 2015
+ @date September 2015
 
- @generated from magmasparse_zc.h mixed zc -> ds, Tue Aug 25 16:35:29 2015
+ @generated from magmasparse_zc.h mixed zc -> ds, Fri Sep 11 18:29:41 2015
  @author Hartwig Anzt
 */
 

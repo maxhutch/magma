@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from magma_zbatched.h normal z -> c, Tue Aug 25 16:35:05 2015
+       @generated from magma_zbatched.h normal z -> c, Fri Sep 11 18:29:17 2015
 */
 
 #ifndef MAGMA_CBATCHED_H

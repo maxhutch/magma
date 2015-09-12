@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from magmablas_zc_q.h mixed zc -> ds, Tue Aug 25 16:35:05 2015
+       @generated from magmablas_zc_q.h mixed zc -> ds, Fri Sep 11 18:29:17 2015
 */
 
 #ifndef MAGMABLAS_DS_Q_H
@@ -44,29 +44,29 @@ void magmablas_dlag2s_q(
     magma_int_t m, magma_int_t n,
     magmaDouble_const_ptr A,  magma_int_t lda,
     magmaFloat_ptr       SA, magma_int_t ldsa,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 void magmablas_slag2d_q(
     magma_int_t m, magma_int_t n,
     magmaFloat_const_ptr SA, magma_int_t ldsa,
     magmaDouble_ptr       A,  magma_int_t lda,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 void magmablas_dlat2s_q(
     magma_uplo_t uplo, magma_int_t n,
     magmaDouble_const_ptr A,  magma_int_t lda,
     magmaFloat_ptr       SA, magma_int_t ldsa,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 void magmablas_slat2d_q(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloat_const_ptr SA, magma_int_t ldsa,
     magmaDouble_ptr       A,  magma_int_t lda,
-    magma_int_t *info,
-    magma_queue_t queue );
+    magma_queue_t queue,
+    magma_int_t *info );
 
 #ifdef __cplusplus
 }

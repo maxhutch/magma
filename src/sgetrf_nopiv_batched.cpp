@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.6.3-beta1) --
+   -- MAGMA (version 1.7.0) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date August 2015
+   @date September 2015
 
    @author Azzam Haidar
    @author Adrien Remy
 
-   @generated from zgetrf_nopiv_batched.cpp normal z -> s, Tue Aug 25 16:35:20 2015
+   @generated from zgetrf_nopiv_batched.cpp normal z -> s, Fri Sep 11 18:29:32 2015
  */
 
 #include "common_magma.h"
@@ -19,47 +19,42 @@
 /**
     Purpose
     -------
-    SGETRF computes an LU factorization of a general M-by-N matrix A
-    using partial pivoting with row interchanges.
+    SGETRF computes an LU factorization of a general M-by-N matrix A without pivoting
 
     The factorization has the form
-        A = P * L * U
-    where P is a permutation matrix, L is lower triangular with unit
+        A = L * U
+    where L is lower triangular with unit
     diagonal elements (lower trapezoidal if m > n), and U is upper
     triangular (upper trapezoidal if m < n).
 
     This is the right-looking Level 3 BLAS version of the algorithm.
-    
-    If the current stream is NULL, this version replaces it with a new
-    stream to overlap computation with communication.
+
+    This is a batched version that factors batchCount M-by-N matrices in parallel.
+    dA, and info become arrays with one entry per matrix.
 
     Arguments
     ---------
     @param[in]
     m       INTEGER
-            The number of rows of the matrix A.  M >= 0.
+            The number of rows of each matrix A.  M >= 0.
 
     @param[in]
     n       INTEGER
-            The number of columns of the matrix A.  N >= 0.
+            The number of columns of each matrix A.  N >= 0.
 
     @param[in,out]
-    dA      REAL array on the GPU, dimension (LDDA,N).
-            On entry, the M-by-N matrix to be factored.
+    dA_array    Array of pointers, dimension (batchCount).
+            Each is a REAL array on the GPU, dimension (LDDA,N).
+            On entry, each pointer is an M-by-N matrix to be factored.
             On exit, the factors L and U from the factorization
             A = P*L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
-    ldda     INTEGER
-            The leading dimension of the array A.  LDDA >= max(1,M).
+    ldda    INTEGER
+            The leading dimension of each array A.  LDDA >= max(1,M).
 
     @param[out]
-    ipiv    INTEGER array, dimension (min(M,N))
-            The pivot indices; for 1 <= i <= min(M,N), row i of the
-            matrix was interchanged with row IPIV(i).
-
-    @param[out]
-    info    INTEGER
+    info_array  Array of INTEGERs, dimension (batchCount), for corresponding matrices.
       -     = 0:  successful exit
       -     < 0:  if INFO = -i, the i-th argument had an illegal value
                   or another error occured, such as memory allocation failed.
@@ -68,17 +63,25 @@
                   singular, and division by zero will occur if it is used
                   to solve a system of equations.
 
+    @param[in]
+    batchCount  INTEGER
+                The number of matrices to operate on.
+
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_sgesv_comp
     ********************************************************************/
 extern "C" magma_int_t
 magma_sgetrf_nopiv_batched(
         magma_int_t m, magma_int_t n,
         float **dA_array, 
-        magma_int_t lda,
+        magma_int_t ldda,
         magma_int_t *info_array, 
         magma_int_t batchCount, magma_queue_t queue)
 {
-#define A(i_, j_)  (A + (i_) + (j_)*lda)   
+#define A(i_, j_)  (A + (i_) + (j_)*ldda)   
     magma_int_t min_mn = min(m, n);
     cudaMemset(info_array, 0, batchCount*sizeof(magma_int_t));
 
@@ -88,7 +91,7 @@ magma_sgetrf_nopiv_batched(
         arginfo = -1;
     else if (n < 0)
         arginfo = -2;
-    else if (lda < max(1,m))
+    else if (ldda < max(1,m))
         arginfo = -4;
 
     if (arginfo != 0) {
@@ -187,13 +190,13 @@ magma_sgetrf_nopiv_batched(
     {
         ib = min(nb, min_mn-i);
         pm = m-i;
-        magma_sdisplace_pointers(dA_displ, dA_array, lda, i, i, batchCount, queue);
+        magma_sdisplace_pointers(dA_displ, dA_array, ldda, i, i, batchCount, queue);
         sset_pointer(dwork_array, dwork, nb, 0, 0, dwork_msize, batchCount, queue);
 #if 0
         /* buggy: TODO */
         arginfo = magma_sgetrf_panel_nopiv_batched(
                 pm, ib,
-                dA_displ, lda,
+                dA_displ, ldda,
                 dwork_array, nb, 
                 dinvA_array, invA_msize, 
                 dW0_displ, dW1_displ, dW2_displ, 
@@ -204,7 +207,7 @@ magma_sgetrf_nopiv_batched(
 #else
         arginfo = magma_sgetrf_recpanel_nopiv_batched(
                 pm, ib, 32,
-                dA_displ, lda,
+                dA_displ, ldda,
                 dwork_array, nb, 
                 dinvA_array, invA_msize, 
                 dW0_displ, dW1_displ, dW2_displ, 
@@ -221,16 +224,16 @@ magma_sgetrf_nopiv_batched(
         if ( (i + ib) < n)
         {
             // swap right side and trsm     
-            //magma_sdisplace_pointers(dA_displ, dA_array, lda, i, i+ib, batchCount);
+            //magma_sdisplace_pointers(dA_displ, dA_array, ldda, i, i+ib, batchCount);
             sset_pointer(dwork_array, dwork, nb, 0, 0, dwork_msize, batchCount, queue); // I don't think it is needed Azzam
 
-            magma_sdisplace_pointers(dA_displ, dA_array, lda, i, i, batchCount, queue);
-            magma_sdisplace_pointers(dW0_displ, dA_array, lda, i, i+ib, batchCount, queue);
+            magma_sdisplace_pointers(dA_displ, dA_array, ldda, i, i, batchCount, queue);
+            magma_sdisplace_pointers(dW0_displ, dA_array, ldda, i, i+ib, batchCount, queue);
             magmablas_strsm_work_batched( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
                     ib, n-i-ib,
                     MAGMA_S_ONE,
-                    dA_displ,    lda, // dA
-                    dW0_displ,   lda, // dB
+                    dA_displ,    ldda, // dA
+                    dW0_displ,   ldda, // dB
                     dwork_array,  nb, // dX
                     dinvA_array,  invA_msize, 
                     dW1_displ,   dW2_displ, 
@@ -261,9 +264,9 @@ magma_sgetrf_nopiv_batched(
                         magmablasSetKernelStream(stream[streamid]);
                         magma_sgemm(MagmaNoTrans, MagmaNoTrans, 
                                 m-i-ib, n-i-ib, ib,
-                                neg_one, cpuAarray[k] + (i+ib)+i*lda, lda, 
-                                         cpuAarray[k] + i+(i+ib)*lda, lda,
-                                one,     cpuAarray[k] + (i+ib)+(i+ib)*lda, lda);
+                                neg_one, cpuAarray[k] + (i+ib)+i*ldda, ldda, 
+                                         cpuAarray[k] + i+(i+ib)*ldda, ldda,
+                                one,     cpuAarray[k] + (i+ib)+(i+ib)*ldda, ldda);
                     }
                     // need to synchronise to be sure that sgetf2 do not start before
                     // finishing the update at least of the next panel
@@ -281,14 +284,14 @@ magma_sgetrf_nopiv_batched(
                 //-------------------------------------------
                 else
                 {
-                    magma_sdisplace_pointers(dA_displ, dA_array,  lda, i+ib,    i, batchCount, queue);
-                    magma_sdisplace_pointers(dW1_displ, dA_array, lda,    i, i+ib, batchCount, queue);
-                    magma_sdisplace_pointers(dW2_displ, dA_array, lda, i+ib, i+ib, batchCount, queue);
+                    magma_sdisplace_pointers(dA_displ, dA_array,  ldda, i+ib,    i, batchCount, queue);
+                    magma_sdisplace_pointers(dW1_displ, dA_array, ldda,    i, i+ib, batchCount, queue);
+                    magma_sdisplace_pointers(dW2_displ, dA_array, ldda, i+ib, i+ib, batchCount, queue);
                     //printf("caling batched dgemm %d %d %d \n", m-i-ib, n-i-ib, ib);
                     magma_sgemm_batched( MagmaNoTrans, MagmaNoTrans, m-i-ib, n-i-ib, ib, 
-                                         neg_one, dA_displ, lda, 
-                                         dW1_displ, lda, 
-                                         one,  dW2_displ, lda, 
+                                         neg_one, dA_displ, ldda, 
+                                         dW1_displ, ldda, 
+                                         one,  dW2_displ, ldda, 
                                          batchCount, queue, myhandle);
                 } // end of batched/stream gemm
             } // end of if ( (i + ib) < m) 

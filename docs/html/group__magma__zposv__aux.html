@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.6.3</span>
+   &#160;<span id="projectnumber">1.7.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -123,9 +123,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga8b11119e4b391bbc60fb22113f083a1f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zposv__aux.html#ga8b11119e4b391bbc60fb22113f083a1f">magma_zpotf2_gpu</a> (magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga8b11119e4b391bbc60fb22113f083a1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">zpotf2 computes the Cholesky factorization of a real symmetric positive definite matrix A.  <a href="#ga8b11119e4b391bbc60fb22113f083a1f">More...</a><br /></td></tr>
 <tr class="separator:ga8b11119e4b391bbc60fb22113f083a1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2c2fdbcd49652320ed343a5d9c8e38e3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zposv__aux.html#ga2c2fdbcd49652320ed343a5d9c8e38e3">zlacgv</a> (magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)</td></tr>
-<tr class="memdesc:ga2c2fdbcd49652320ed343a5d9c8e38e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLACGV conjugates a complex vector of length N.  <a href="#ga2c2fdbcd49652320ed343a5d9c8e38e3">More...</a><br /></td></tr>
-<tr class="separator:ga2c2fdbcd49652320ed343a5d9c8e38e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga93bf48ff3d0a784f66152a72d3e11be5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zposv__aux.html#ga93bf48ff3d0a784f66152a72d3e11be5">magma_zpotf2_tile_batched</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaDoubleComplex **dA_array, magma_int_t lda, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga93bf48ff3d0a784f66152a72d3e11be5"><td class="mdescLeft">&#160;</td><td class="mdescRight">zpotf2 computes the Cholesky factorization of a real symmetric positive definite matrix A.  <a href="#ga93bf48ff3d0a784f66152a72d3e11be5">More...</a><br /></td></tr>
 <tr class="separator:ga93bf48ff3d0a784f66152a72d3e11be5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -406,58 +403,20 @@ Functions</h2></td></tr>
 <li>= MagmaLower: Lower triangular</li>
 </ul>
 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0 and N &lt;= 512.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array, dimension (LDDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading n by n upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading n by n lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA_array</td><td>Array of pointers, dimension (batchCount). Each is a COMPLEX_16 array A, dimension (lda,n) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading n by n upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading n by n lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, if INFO = 0, the factor U or L from the Cholesky factorization A = U**H * U or A = L * L**H.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">info_array</td><td>INTEGER array, dimension (batchCount). Each is the info parameter for the corresponding matrix A<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -k, the k-th argument had an illegal value</li>
-<li>&gt; 0: if INFO = k, the leading minor of order k is not positive definite, and the factorization could not be completed. </li>
+<li>&gt; 0: if INFO = k, the leading minor of order k is not positive definite, and the factorization could not be completed.</li>
 </ul>
 </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga2c2fdbcd49652320ed343a5d9c8e38e3"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void zlacgv </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex *&#160;</td>
-          <td class="paramname"><em>x</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>incx</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>ZLACGV conjugates a complex vector of length N. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The length of the vector X. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>COMPLEX*16 array, dimension (1+(N-1)*abs(INCX)) On entry, the vector of length N to be conjugated. On exit, X is overwritten with conjg(X).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>INTEGER The spacing between successive elements of X. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gbstep</td><td>INTEGER Internal use, global step.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -469,7 +428,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Aug 25 2015 16:35:51 for MAGMA by
+    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

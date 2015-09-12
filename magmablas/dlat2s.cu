@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
 
-       @generated from zlat2c.cu mixed zc -> ds, Tue Aug 25 16:35:07 2015
+       @generated from zlat2c.cu mixed zc -> ds, Fri Sep 11 18:29:20 2015
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -200,8 +200,8 @@ magmablas_dlat2s_q(
     magma_uplo_t uplo, magma_int_t n,
     magmaDouble_const_ptr  A, magma_int_t lda,
     magmaFloat_ptr        SA, magma_int_t ldsa,
-    magma_int_t *info,
-    magma_queue_t queue )
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     *info = 0;
     if ( uplo != MagmaLower && uplo != MagmaUpper )
@@ -251,5 +251,5 @@ magmablas_dlat2s(
     magmaFloat_ptr        SA, magma_int_t ldsa,
     magma_int_t *info )
 {
-    magmablas_dlat2s_q( uplo, n, A, lda, SA, ldsa, info, magma_stream );
+    magmablas_dlat2s_q( uplo, n, A, lda, SA, ldsa, magma_stream, info );
 }

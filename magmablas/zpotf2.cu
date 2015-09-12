@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.6.3-beta1) --
+    -- MAGMA (version 1.7.0) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date August 2015
+       @date September 2015
        
        @precisions normal z -> s d c
 */
@@ -17,7 +17,7 @@ void zpotf2_zdscal(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
 void zpotf2_zdotc(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
 
 #if defined(PRECISION_z) || defined(PRECISION_c)
-void zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
+void magmablas_zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx);
 #endif
 
 /**
@@ -112,7 +112,7 @@ magma_zpotf2_gpu(
             zpotf2_zdotc(j, dA(0,j), 1); // including zdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, dA(0, j), 1);
+                magmablas_zlacgv(j, dA(0, j), 1);
                 #endif
                 magma_zgemv( MagmaTrans, j, n-j-1,
                              alpha, dA(0, j+1), ldda,
@@ -120,7 +120,7 @@ magma_zpotf2_gpu(
                              beta,  dA(j, j+1), ldda);
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, dA(0, j), 1);
+                magmablas_zlacgv(j, dA(0, j), 1);
                 #endif
                 zpotf2_zdscal(n-j, dA(j,j), ldda);
             }
@@ -131,7 +131,7 @@ magma_zpotf2_gpu(
             zpotf2_zdotc(j, dA(j,0), ldda); // including zdotc product and update a(j,j)
             if (j < n) {
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, dA(j, 0), ldda);
+                magmablas_zlacgv(j, dA(j, 0), ldda);
                 #endif
                 magma_zgemv( MagmaNoTrans, n-j-1, j,
                              alpha, dA(j+1, 0), ldda,
@@ -139,7 +139,7 @@ magma_zpotf2_gpu(
                              beta,  dA(j+1, j), 1 );
 
                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                zlacgv(j, dA(j, 0), ldda);
+                magmablas_zlacgv(j, dA(j, 0), ldda);
                 #endif
                 zpotf2_zdscal(n-j, dA(j,j), 1);
             }
@@ -294,9 +294,9 @@ __global__ void kernel_zlacgv(int n, magmaDoubleComplex *x, int incx)
     incx    INTEGER
             The spacing between successive elements of X.
 
-    @ingroup magma_zposv_aux
+    @ingroup magma_zaux1
     ********************************************************************/
-void zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
+void magmablas_zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
 {
     dim3 threads(zlacgv_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, zlacgv_bs );
