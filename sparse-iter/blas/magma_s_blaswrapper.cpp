@@ -1,22 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_z_blaswrapper.cpp normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/magma_z_blaswrapper.cpp normal z -> s, Wed Jan  6 17:59:40 2016
        @author Hartwig Anzt
 
 */
 #include "common_magmasparse.h"
-
-
-#include "common_magmasparse.h"
-#include "magmablas.h"
-#include "magmasparse_types.h"
-
-
 
 
 /**
@@ -91,11 +84,11 @@ magma_s_spmv(
     // DEV case
     if ( A.memory_location == Magma_DEV ) {
         if ( A.num_cols == x.num_rows && x.num_cols == 1 ) {
-             if ( A.storage_type == Magma_CSR
+             if ( A.storage_type == Magma_CSR || A.storage_type == Magma_CUCSR
                             || A.storage_type == Magma_CSRL
                             || A.storage_type == Magma_CSRU ) {
               CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-              CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+              CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
               CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             
               CHECK_CUSPARSE( cusparseSetMatType( descr, CUSPARSE_MATRIX_TYPE_GENERAL ));
@@ -150,10 +143,10 @@ magma_s_spmv(
                  //printf("using CUSPARSE BCSR kernel for SpMV: ");
                 // CUSPARSE context //
                 cusparseDirection_t dirA = CUSPARSE_DIRECTION_ROW;
-                int mb = (A.num_rows + A.blocksize-1)/A.blocksize;
-                int nb = (A.num_cols + A.blocksize-1)/A.blocksize;
+                int mb = magma_ceildiv( A.num_rows, A.blocksize );
+                int nb = magma_ceildiv( A.num_cols, A.blocksize );
                 CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-                CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+                CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
                 CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
                 cusparseSbsrmv( cusparseHandle, dirA,
                     CUSPARSE_OPERATION_NON_TRANSPOSE, mb, nb, A.numblocks,
@@ -169,7 +162,7 @@ magma_s_spmv(
             magma_int_t num_vecs = x.num_rows / A.num_cols * x.num_cols;
             if ( A.storage_type == Magma_CSR ) {
                 CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-                CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+                CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
                 CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
                 CHECK_CUSPARSE( cusparseSetMatType( descr, CUSPARSE_MATRIX_TYPE_GENERAL ));
                 CHECK_CUSPARSE( cusparseSetMatIndexBase( descr, CUSPARSE_INDEX_BASE_ZERO ));

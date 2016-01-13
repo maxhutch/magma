@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgetf2_nopiv.cpp normal z -> c, Fri Sep 11 18:29:26 2015
+       @generated from src/zgetf2_nopiv.cpp normal z -> c, Wed Jan  6 17:59:29 2016
 
 */
-#include "common_magma.h"
-
-#define PRECISION_c
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -25,6 +23,8 @@
     trapezoidal if m < n).
 
     This is the right-looking Level 2 BLAS version of the algorithm.
+    
+    This is a CPU-only (not accelerated) version.
 
     Arguments
     ---------
@@ -70,8 +70,8 @@ magma_cgetf2_nopiv(
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     magma_int_t ione = 1;
 
-    magma_int_t min_mn, i__2, i__3;
-    magmaFloatComplex z__1;
+    magma_int_t min_mn, m_j, n_j;
+    magmaFloatComplex inv_Ajj;
     magma_int_t i, j;
     float sfmin;
 
@@ -105,13 +105,13 @@ magma_cgetf2_nopiv(
             /* Compute elements J+1:M of J-th column. */
             if (j < m) {
                 if (MAGMA_C_ABS( *A(j,j) ) >= sfmin) {
-                    i__2 = m - j;
-                    z__1 = MAGMA_C_DIV(c_one, *A(j,j));
-                    blasf77_cscal(&i__2, &z__1, A(j+1,j), &ione);
+                    m_j = m - j;
+                    inv_Ajj = MAGMA_C_DIV(c_one, *A(j,j));
+                    blasf77_cscal( &m_j, &inv_Ajj, A(j+1,j), &ione );
                 }
                 else {
-                    i__2 = m - j;
-                    for (i = 1; i <= i__2; ++i) {
+                    m_j = m - j;
+                    for (i = 1; i <= m_j; ++i) {
                         *A(j+i,j) = MAGMA_C_DIV( *A(j+i,j), *A(j,j) );
                     }
                 }
@@ -123,12 +123,12 @@ magma_cgetf2_nopiv(
 
         if (j < min_mn) {
             /* Update trailing submatrix. */
-            i__2 = m - j;
-            i__3 = n - j;
-            blasf77_cgeru( &i__2, &i__3, &c_neg_one,
+            m_j = m - j;
+            n_j = n - j;
+            blasf77_cgeru( &m_j, &n_j, &c_neg_one,
                            A(j+1,j),   &ione,
                            A(j,j+1),   &lda,
-                           A(j+1,j+1), &lda);
+                           A(j+1,j+1), &lda );
         }
     }
 

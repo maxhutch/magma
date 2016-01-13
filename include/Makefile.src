@@ -1,42 +1,36 @@
-# Automatically generated from Makefile ZHDR and ZSRC
-CHDR = \
-	magma_c.h \
-	magmablas_c.h \
-	magmablas_c_q.h \
-	magma_clapack.h \
-	magma_cbulge.h \
-	magma_cbulgeinc.h \
-	magma_cgehrd_m.h \
-	magma_cbatched.h
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 2.0.0-beta2) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      @date January 2016
+#//////////////////////////////////////////////////////////////////////////////
 
-DHDR = \
-	magma_d.h \
-	magma_ds.h \
-	magmablas_d.h \
-	magmablas_ds.h \
-	magmablas_d_q.h \
-	magmablas_ds_q.h \
-	magma_dlapack.h \
-	magma_dbulge.h \
-	magma_dbulgeinc.h \
-	magma_dgehrd_m.h \
-	magma_dbatched.h
+# push previous directory
+dir_stack := $(dir_stack) $(cdir)
+cdir      := include
+# ----------------------------------------------------------------------
 
-SHDR = \
-	magma_s.h \
-	magmablas_s.h \
-	magmablas_s_q.h \
-	magma_slapack.h \
-	magma_sbulge.h \
-	magma_sbulgeinc.h \
-	magma_sgehrd_m.h \
-	magma_sbatched.h
 
-CSRC = \
-	
+# only headers needing precision generation need to go here.
+# plain headers do not need to be listed.
+zhdr += \
+	$(cdir)/magma_z.h		\
+	$(cdir)/magma_zc.h		\
+	$(cdir)/magmablas_z_q.h		\
+	$(cdir)/magmablas_z_v1.h	\
+	$(cdir)/magmablas_z_v2.h	\
+	$(cdir)/magmablas_zc_q.h	\
+	$(cdir)/magmablas_zc_v1.h	\
+	$(cdir)/magmablas_zc_v2.h	\
+	$(cdir)/magma_zlapack.h		\
+	$(cdir)/magma_zbulge.h		\
+	$(cdir)/magma_zbulgeinc.h	\
+	$(cdir)/magma_zgehrd_m.h	\
+	$(cdir)/magma_zbatched.h	\
 
-DSRC = \
-	
 
-SSRC = \
-	
+# ----------------------------------------------------------------------
+# pop first directory
+cdir      := $(firstword $(dir_stack))
+dir_stack := $(wordlist 2, $(words $(dir_stack)), $(dir_stack))

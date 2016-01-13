@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Mark Gates
        @author Azzam Haidar
 
-       @generated from dsyevdx_gpu.cpp normal d -> s, Fri Sep 11 18:29:30 2015
+       @generated from src/dsyevdx_gpu.cpp normal d -> s, Wed Jan  6 17:59:32 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 #define REAL
@@ -278,25 +278,28 @@ magma_ssyevdx_gpu(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
         magma_int_t lda = n;
         float *A;
         magma_smalloc_cpu( &A, lda*n );
-        magma_sgetmatrix( n, n, dA, ldda, A, lda );
+        magma_sgetmatrix( n, n, dA, ldda, A, lda, queue );
         // TODO: deal with range and mout. Use lapack ssyevx? (There is no lapack ssyevdx.)
         lapackf77_ssyevd( lapack_vec_const(jobz), lapack_uplo_const(uplo),
                           &n, A, &lda,
                           w, work, &lwork,
                           iwork, &liwork, info );
         *mout = n;
-        magma_ssetmatrix( n, n, A, lda, dA, ldda );
+        magma_ssetmatrix( n, n, A, lda, dA, ldda, queue );
         magma_free_cpu( A );
+        magma_queue_destroy( queue );
         return *info;
     }
-
-    magma_queue_t stream;
-    magma_queue_create( &stream );
 
     // ssytrd2_gpu requires ldda*ceildiv(n,64) + 2*ldda*nb
     // sormtr_gpu  requires lddc*n
@@ -321,7 +324,7 @@ magma_ssyevdx_gpu(
     rmax = magma_ssqrt( bignum );
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_slansy( MagmaMaxNorm, uplo, n, dA, ldda, dwork );
+    anrm = magmablas_slansy( MagmaMaxNorm, uplo, n, dA, ldda, dwork, ldwork, queue );
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -332,7 +335,7 @@ magma_ssyevdx_gpu(
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        magmablas_slascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, info );
+        magmablas_slascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, queue, info );
     }
 
     /* Call SSYTRD to reduce symmetric matrix to tridiagonal form. */
@@ -383,12 +386,12 @@ magma_ssyevdx_gpu(
 
         magma_smove_eig( range, n, w, &il, &iu, vl, vu, mout );
 
-        magma_ssetmatrix( n, *mout, &work[indwrk + n* (il-1) ], n, dwork, lddc );
+        magma_ssetmatrix( n, *mout, &work[indwrk + n* (il-1) ], n, dwork, lddc, queue );
 
         magma_sormtr_gpu( MagmaLeft, uplo, MagmaNoTrans, n, *mout, dA, ldda, &work[indtau],
                           dwork, lddc, wA, ldwa, &iinfo );
 
-        magma_scopymatrix( n, *mout, dwork, lddc, dA, ldda );
+        magma_scopymatrix( n, *mout, dwork, lddc, dA, ldda, queue );
 
         timer_stop( time );
         timer_printf( "time sormtr + copy = %6.2f\n", time );
@@ -403,7 +406,7 @@ magma_ssyevdx_gpu(
     work[0]  = lwmin * one_eps;  // round up
     iwork[0] = liwmin;
 
-    magma_queue_destroy( stream );
+    magma_queue_destroy( queue );
     magma_free( dwork );
 
     return *info;

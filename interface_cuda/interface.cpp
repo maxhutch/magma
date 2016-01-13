@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
  
        @author Mark Gates
 */
@@ -11,6 +11,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+
+#include <map>
+
+#if __cplusplus >= 201103  // C++11 standard
+#include <atomic>
+#endif
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -24,6 +30,9 @@
 #include <acml.h>
 #endif
 
+#include <cuda_runtime.h>
+#include <cublas_v2.h>
+
 // defining MAGMA_LAPACK_H is a hack to NOT include magma_lapack.h
 // via common_magma.h here, since it conflicts with acml.h and we don't
 // need lapack here, but we want acml.h for the acmlversion() function.
@@ -33,16 +42,77 @@
 
 #ifdef HAVE_CUBLAS
 
+#define HAVE_PTHREAD_KEY
+
+
+#ifdef DEBUG_MEMORY
+// defined in alloc.cpp
+extern pthread_mutex_t           g_pointers_mutex;
+extern std::map< void*, size_t > g_pointers_dev;
+extern std::map< void*, size_t > g_pointers_cpu;
+extern std::map< void*, size_t > g_pointers_pin;
+#endif
+
+
+// ------------------------------------------------------------
+// stubs if C++11 atomics are not available.
+// these are NOT atomic!
+#if ! (__cplusplus >= 201103)  // not C++11 standard
+bool atomic_flag_test_and_set( bool* flag )
+{
+    bool x = *flag;
+    // note race condition here, if someone else modifies flag!
+    *flag = true;
+    return x;
+}
+
+void atomic_flag_clear( bool* flag )
+{
+    *flag = false;
+}
+#endif  // not C++11
+
+
+// ------------------------------------------------------------
+// constants
+
+// bit flags
+enum {
+    own_none     = 0x0000,
+    own_stream   = 0x0001,
+    own_cublas   = 0x0002,
+    own_cusparse = 0x0004,
+    own_opencl   = 0x0008
+};
+
+
+// ------------------------------------------------------------
+// globals
+#if __cplusplus >= 201103  // C++11 standard
+    std::atomic_flag g_init = ATOMIC_FLAG_INIT;
+#else
+    bool g_init = false;
+#endif
+
+magma_queue_t g_null_queues[ MagmaMaxAccelerators ] = { NULL };
+
+#ifdef HAVE_PTHREAD_KEY
+    pthread_key_t g_magma_queue_key;
+#else
+    magma_queue_t g_magma_queue = NULL;
+#endif
+
+
 // --------------------
 // subset of the CUDA device properties, set by magma_init()
-struct magma_device
+struct magma_device_info
 {
     size_t memory;
     magma_int_t cuda_arch;
 };
 
 int g_magma_devices_cnt = 0;
-struct magma_device* g_magma_devices = NULL;
+struct magma_device_info* g_magma_devices = NULL;
 
 
 // ========================================
@@ -63,13 +133,18 @@ struct magma_device* g_magma_devices = NULL;
 extern "C"
 magma_int_t magma_init()
 {
-    if ( g_magma_devices == NULL ) {
+    magma_int_t info = MAGMA_ERR_REINITIALIZED;
+    if ( ! atomic_flag_test_and_set( &g_init )) {
+        info = 0;
+        
+        // query devices
         cudaError_t err;
         err = cudaGetDeviceCount( &g_magma_devices_cnt );
         check_error( err );
-        magma_malloc_cpu( (void**) &g_magma_devices, g_magma_devices_cnt * sizeof(struct magma_device) );
+        magma_malloc_cpu( (void**) &g_magma_devices, g_magma_devices_cnt * sizeof(struct magma_device_info) );
         if ( g_magma_devices == NULL ) {
-            return MAGMA_ERR_HOST_ALLOC;
+            info = MAGMA_ERR_HOST_ALLOC;
+            goto cleanup;
         }
         for( int i = 0; i < g_magma_devices_cnt; ++i ) {
             cudaDeviceProp prop;
@@ -78,9 +153,58 @@ magma_int_t magma_init()
             g_magma_devices[i].memory = prop.totalGlobalMem;
             g_magma_devices[i].cuda_arch  = prop.major*100 + prop.minor*10;
         }
+        
+        // build NULL queues (for backwards compatability with MAGMA 1.x) on each device
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        
+        for( int dev=0; dev < g_magma_devices_cnt; ++dev ) {
+            if ( g_null_queues[dev] == NULL ) {
+                // TODO
+                //info = 
+                magma_queue_create_from_cuda( dev, NULL, NULL, NULL, &g_null_queues[dev] );
+                //if ( info != 0 ) {
+                //    goto cleanup;
+                //}
+            }
+        }
+        
+        // set default queue on current device (for backwards compatability with MAGMA 1.x)
+        #ifdef HAVE_PTHREAD_KEY
+            info = pthread_key_create( &g_magma_queue_key, NULL );
+            if ( info != 0 ) {
+                info = MAGMA_ERR_NOT_INITIALIZED;
+            }
+        #endif
+        
+        magma_setdevice( cdev );
+        magmablasSetKernelStream( g_null_queues[cdev] );
+        
+        #ifdef DEBUG_MEMORY
+        pthread_mutex_init( &g_pointers_mutex, NULL );
+        #endif
     }
-    return MAGMA_SUCCESS;
+    
+cleanup:
+    return info;
 }
+
+// --------------------
+#ifdef DEBUG_MEMORY
+extern "C"
+void magma_warn_leaks( const std::map< void*, size_t >& pointers, const char* type )
+{
+    if ( pointers.size() > 0 ) {
+        fprintf( stderr, "Warning: MAGMA detected memory leak of %ld %s pointers:\n",
+                 pointers.size(), type );
+        std::map< void*, size_t >::const_iterator iter;
+        for( iter = pointers.begin(); iter != pointers.end(); ++iter ) {
+            fprintf( stderr, "    pointer %p, size %lu\n", iter->first, iter->second );
+        }
+    }
+}
+#endif
+
 
 // --------------------
 /**
@@ -90,9 +214,30 @@ magma_int_t magma_init()
 extern "C"
 magma_int_t magma_finalize()
 {
-    magma_free_cpu( g_magma_devices );
-    g_magma_devices = NULL;
-    return MAGMA_SUCCESS;
+    magma_int_t info = MAGMA_ERR_NOT_INITIALIZED;
+    if ( atomic_flag_test_and_set( &g_init )) {
+        info = 0;
+        
+        magma_free_cpu( g_magma_devices );
+        g_magma_devices = NULL;
+        
+        for( int dev=0; dev < g_magma_devices_cnt; ++dev ) {
+            magma_queue_destroy( g_null_queues[dev] );
+            g_null_queues[dev] = NULL;
+        }
+        #ifdef HAVE_PTHREAD_KEY
+            pthread_key_delete( g_magma_queue_key );
+        #endif
+    }
+    atomic_flag_clear( &g_init );
+    
+    #ifdef DEBUG_MEMORY
+    magma_warn_leaks( g_pointers_dev, "device" );
+    magma_warn_leaks( g_pointers_cpu, "CPU" );
+    magma_warn_leaks( g_pointers_pin, "CPU pinned" );
+    #endif
+    
+    return info;
 }
 
 // --------------------
@@ -188,7 +333,7 @@ void magma_print_environment()
 extern "C"
 magma_int_t magma_getdevice_arch()
 {
-    int dev;
+    magma_device_t dev;
     cudaError_t err;
     err = cudaGetDevice( &dev );
     check_error( err );
@@ -204,8 +349,8 @@ magma_int_t magma_getdevice_arch()
 extern "C"
 void magma_getdevices(
     magma_device_t* devices,
-    magma_int_t     size,
-    magma_int_t*    numPtr )
+    magma_int_t  size,
+    magma_int_t* numPtr )
 {
     cudaError_t err;
     int cnt;
@@ -238,6 +383,8 @@ void magma_setdevice( magma_device_t device )
 }
 
 // --------------------
+/// This functionality does not exist in OpenCL, so it is deprecated for CUDA, too.
+/// @deprecated
 extern "C"
 void magma_device_sync()
 {
@@ -251,20 +398,187 @@ void magma_device_sync()
 // queue support
 // At the moment, MAGMA queue == CUDA stream.
 // In the future, MAGMA queue may be CUBLAS handle.
+extern "C"
+magma_int_t
+magma_queue_get_device( magma_queue_t queue )
+{
+    return queue->device();
+}
+
+extern "C"
+cudaStream_t
+magma_queue_get_cuda_stream( magma_queue_t queue )
+{
+    return queue->cuda_stream();
+}
+
+extern "C"
+cublasHandle_t
+magma_queue_get_cublas_handle( magma_queue_t queue )
+{
+    return queue->cublas_handle();
+}
+
+extern "C"
+cusparseHandle_t
+magma_queue_get_cusparse_handle( magma_queue_t queue )
+{
+    return queue->cusparse_handle();
+}
+
+// --------------------
+extern "C"
+magma_int_t magmablasSetKernelStream( magma_queue_t queue )
+{
+    magma_int_t info = 0;
+    if ( queue == NULL ) {
+        magma_device_t dev;
+        magma_getdevice( &dev );
+        assert( 0 <= dev && dev < g_magma_devices_cnt );
+        assert( g_null_queues != NULL );
+        assert( g_null_queues[dev] != NULL );
+        queue = g_null_queues[dev];
+    }
+    #ifdef HAVE_PTHREAD_KEY
+    info = pthread_setspecific( g_magma_queue_key, queue );
+    #else
+    g_magma_queue = queue;
+    #endif
+    return info;
+}
+
+
+// --------------------
+extern "C"
+magma_int_t magmablasGetKernelStream( magma_queue_t *queue_ptr )
+{
+    #ifdef HAVE_PTHREAD_KEY
+    *queue_ptr = (magma_queue_t) pthread_getspecific( g_magma_queue_key );
+    #else
+    *queue_ptr = g_magma_queue;
+    #endif
+    return 0;
+}
+
+
+// --------------------
+extern "C"
+magma_queue_t magmablasGetQueue()
+{
+    magma_queue_t queue;
+    #ifdef HAVE_PTHREAD_KEY
+        queue = (magma_queue_t) pthread_getspecific( g_magma_queue_key );
+    #else
+        queue = g_magma_queue;
+    #endif
+    assert( queue != NULL );
+    return queue;
+}
+
+
 // --------------------
 extern "C"
 void magma_queue_create_internal(
-    /*magma_device_t device,*/ magma_queue_t* queuePtr,
-    const char* func, const char* file, int line )    
+    magma_queue_t* queue_ptr,
+    const char* func, const char* file, int line )
 {
-    //cudaStream_t   stream;
-    //cublasStatus_t stat;
-    cudaError_t    err;
-    //err  = cudaSetDevice( device );
-    //stat = cublasCreate( queuePtr );
-    err  = cudaStreamCreate( queuePtr );  //&stream );
-    //stat = cublasSetStream( *queuePtr, stream );
+    magma_device_t device;
+    cudaError_t err;
+    err = cudaGetDevice( &device );
     check_xerror( err, func, file, line );
+    
+    magma_queue_create_v2_internal( device, queue_ptr, func, file, line );
+}
+
+// --------------------
+extern "C"
+void magma_queue_create_v2_internal(
+    magma_device_t device, magma_queue_t* queue_ptr,
+    const char* func, const char* file, int line )
+{
+    magma_queue_t queue;
+    magma_malloc_cpu( (void**)&queue, sizeof(*queue) );
+    assert( queue != NULL );
+    *queue_ptr = queue;
+    
+    queue->own__      = own_none;
+    queue->device__   = device;
+    queue->stream__   = NULL;
+    queue->cublas__   = NULL;
+    queue->cusparse__ = NULL;
+    
+    cudaError_t err;
+    err = cudaSetDevice( device );
+    check_xerror( err, func, file, line );
+    
+    err = cudaStreamCreate( &queue->stream__ );
+    check_xerror( err, func, file, line );
+    queue->own__ |= own_stream;
+    
+    cublasStatus_t stat;
+    stat = cublasCreate( &queue->cublas__ );
+    check_xerror( stat, func, file, line );
+    queue->own__ |= own_cublas;
+    stat = cublasSetStream( queue->cublas__, queue->stream__ );
+    check_xerror( stat, func, file, line );
+    
+    cusparseStatus_t stat2;
+    stat2 = cusparseCreate( &queue->cusparse__ );
+    check_xerror( stat2, func, file, line );
+    queue->own__ |= own_cusparse;
+    stat2 = cusparseSetStream( queue->cusparse__, queue->stream__ );
+    check_xerror( stat2, func, file, line );
+}
+
+// --------------------
+extern "C"
+void magma_queue_create_from_cuda_internal(
+    magma_device_t   device,
+    cudaStream_t     stream,
+    cublasHandle_t   cublas_handle,
+    cusparseHandle_t cusparse_handle,
+    magma_queue_t*   queue_ptr,
+    const char* func, const char* file, int line )
+{
+    magma_queue_t queue;
+    magma_malloc_cpu( (void**)&queue, sizeof(*queue) );
+    assert( queue != NULL );
+    *queue_ptr = queue;
+    
+    queue->own__      = own_none;
+    queue->device__   = device;
+    queue->stream__   = NULL;
+    queue->cublas__   = NULL;
+    queue->cusparse__ = NULL;
+    
+    cudaError_t err;
+    err = cudaSetDevice( device );
+    check_xerror( err, func, file, line );
+    
+    // stream can be NULL
+    queue->stream__ = stream;
+    
+    // allocate cublas handle if given as NULL
+    cublasStatus_t stat;
+    if ( cublas_handle == NULL ) {
+        stat  = cublasCreate( &cublas_handle );
+        check_xerror( stat, func, file, line );
+        queue->own__ |= own_cublas;
+    }
+    queue->cublas__ = cublas_handle;
+    stat  = cublasSetStream( queue->cublas__, queue->stream__ );
+    check_xerror( stat, func, file, line );
+    
+    // allocate cusparse handle if given as NULL
+    cusparseStatus_t stat2;
+    if ( cusparse_handle == NULL ) {
+        stat2 = cusparseCreate( &cusparse_handle );
+        check_xerror( stat, func, file, line );
+        queue->own__ |= own_cusparse;
+    }
+    queue->cusparse__ = cusparse_handle;
+    stat2 = cusparseSetStream( queue->cusparse__, queue->stream__ );
+    check_xerror( stat2, func, file, line );
 }
 
 // --------------------
@@ -274,8 +588,24 @@ void magma_queue_destroy_internal(
     const char* func, const char* file, int line )
 {
     if ( queue != NULL ) {
-        cudaError_t err = cudaStreamDestroy( queue );
-        check_xerror( err, func, file, line );
+        if ( queue->cublas__ != NULL && (queue->own__ & own_cublas)) {
+            cublasStatus_t stat = cublasDestroy( queue->cublas__ );
+            check_xerror( stat, func, file, line );
+        }
+        if ( queue->cusparse__ != NULL && (queue->own__ & own_cusparse)) {
+            cusparseStatus_t stat = cusparseDestroy( queue->cusparse__ );
+            check_xerror( stat, func, file, line );
+        }
+        if ( queue->stream__ != NULL && (queue->own__ & own_stream)) {
+            cudaError_t err = cudaStreamDestroy( queue->stream__ );
+            check_xerror( err, func, file, line );
+        }
+        queue->own__      = own_none;
+        queue->device__   = -1;
+        queue->stream__   = NULL;
+        queue->cublas__   = NULL;
+        queue->cusparse__ = NULL;
+        magma_free_cpu( queue );
     }
 }
 
@@ -285,12 +615,26 @@ void magma_queue_sync_internal(
     magma_queue_t queue,
     const char* func, const char* file, int line )
 {
-    //cudaStream_t   stream;
-    //cublasStatus_t stat;
-    cudaError_t    err;
-    //stat = cublasGetStream( queue, &stream );
-    err  = cudaStreamSynchronize( queue );  //stream );
+    cudaError_t err;
+    if ( queue != NULL ) {
+        err = cudaStreamSynchronize( queue->cuda_stream() );
+    }
+    else {
+        err = cudaStreamSynchronize( NULL );
+    }
     check_xerror( err, func, file, line );
+}
+
+
+// --------------------
+// TODO: do set device based on queue? and restore device?
+extern "C" size_t
+magma_queue_mem_size( magma_queue_t queue )
+{
+    size_t freeMem, totalMem;
+    cudaError_t err = cudaMemGetInfo( &freeMem, &totalMem );
+    check_error( err );
+    return freeMem;
 }
 
 
@@ -321,7 +665,7 @@ extern "C"
 void magma_event_record( magma_event_t event, magma_queue_t queue )
 {
     cudaError_t err;
-    err = cudaEventRecord( event, queue );
+    err = cudaEventRecord( event, queue->cuda_stream() );
     check_error( err );
 }
 
@@ -341,7 +685,7 @@ extern "C"
 void magma_queue_wait_event( magma_queue_t queue, magma_event_t event )
 {
     cudaError_t err;
-    err = cudaStreamWaitEvent( queue, event, 0 );
+    err = cudaStreamWaitEvent( queue->cuda_stream(), event, 0 );
     check_error( err );
 }
 

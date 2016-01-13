@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlascl2.cu normal z -> s, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlascl2.cu normal z -> s, Wed Jan  6 17:59:37 2016
 
        @author Theo Mary
 */
@@ -139,13 +139,13 @@ magmablas_slascl2_q(
     dim3 threads( NB );
     
     if (type == MagmaLower) {
-        slascl2_lower <<< grid, threads, 0, queue >>> (m, n, dD, dA, ldda);
+        slascl2_lower <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, dD, dA, ldda);
     }
     else if (type == MagmaUpper) {
-        slascl2_upper <<< grid, threads, 0, queue >>> (m, n, dD, dA, ldda);
+        slascl2_upper <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, dD, dA, ldda);
     }
     else if (type == MagmaFull) {
-        slascl2_full  <<< grid, threads, 0, queue >>> (m, n, dD, dA, ldda);
+        slascl2_full  <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, dD, dA, ldda);
     }
 }
 
@@ -160,5 +160,5 @@ magmablas_slascl2(
     magmaFloat_const_ptr dD,
     magmaFloat_ptr dA, magma_int_t ldda, magma_int_t *info )
 {
-    magmablas_slascl2_q( type, m, n, dD, dA, ldda, magma_stream, info );
+    magmablas_slascl2_q( type, m, n, dD, dA, ldda, magmablasGetQueue(), info );
 }

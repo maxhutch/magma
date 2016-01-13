@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -130,9 +130,9 @@ int main( int argc, char** argv)
             magma_zsetmatrix( Bm, Bn*batchCount, h_B, ldb, d_B, lddb );
             magma_zsetmatrix( M, N*batchCount, h_C, ldc, d_C, lddc );
             
-            zset_pointer(A_array, d_A, ldda, 0, 0, ldda*An, batchCount, opts.queue);
-            zset_pointer(B_array, d_B, lddb, 0, 0, lddb*Bn, batchCount, opts.queue);
-            zset_pointer(C_array, d_C, lddc, 0, 0, lddc*N,  batchCount, opts.queue);
+            magma_zset_pointer( A_array, d_A, ldda, 0, 0, ldda*An, batchCount, opts.queue );
+            magma_zset_pointer( B_array, d_B, lddb, 0, 0, lddb*Bn, batchCount, opts.queue );
+            magma_zset_pointer( C_array, d_C, lddc, 0, 0, lddc*N,  batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
             magmablas_zgemm_batched(opts.transA, opts.transB, M, N, K,
@@ -267,6 +267,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

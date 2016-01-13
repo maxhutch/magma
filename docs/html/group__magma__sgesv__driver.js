@@ -5,6 +5,6 @@ var group__magma__sgesv__driver =
     [ "magma_sgesv_gpu", "group__magma__sgesv__driver.html#gad9fdef0ee848a448e18b811f880b91bb", null ],
     [ "magma_sgesv_nopiv_batched", "group__magma__sgesv__driver.html#gada0339b5943fca6e4b9a324d618ad1a4", null ],
     [ "magma_sgesv_nopiv_gpu", "group__magma__sgesv__driver.html#gacf27e06d774ef649633976b54fee06f4", null ],
-    [ "magma_sgesv_rbt", "group__magma__sgesv__driver.html#gaf1d8c05e16d087ac596582c29d051e26", null ],
+    [ "magma_sgesv_rbt", "group__magma__sgesv__driver.html#gafe268a92a7065c1c179d3a45e83e2c0d", null ],
     [ "magma_sgesv_rbt_batched", "group__magma__sgesv__driver.html#ga4bc872e52496594c42efdfb65c88789e", null ]
 ];

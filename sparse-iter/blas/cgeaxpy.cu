@@ -1,14 +1,13 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeaxpy.cu normal z -> c, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zgeaxpy.cu normal z -> c, Wed Jan  6 17:59:41 2016
 
 */
-#include "common_magma.h"
 #include "common_magmasparse.h"
 
 #define BLOCK_SIZE 256
@@ -81,7 +80,7 @@ magma_cgeaxpy(
     int n = X.num_cols;
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
-    cgeaxpy_kernel<<< grid, threads, 0, queue >>>
+    cgeaxpy_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                     ( m, n, alpha, X.dval, beta, Y->dval );
                     
     return MAGMA_SUCCESS;

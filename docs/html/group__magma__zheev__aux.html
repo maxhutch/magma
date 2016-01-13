@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -114,19 +114,19 @@ $(document).ready(function(){initNavTree('group__magma__zheev__aux.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaca2ebfeeb6d8a832adf949cc78865462"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zheev__aux.html#gaca2ebfeeb6d8a832adf949cc78865462">magma_zlatrd</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magmaDoubleComplex *A, magma_int_t lda, double *e, magmaDoubleComplex *tau, magmaDoubleComplex *W, magma_int_t ldw, magmaDoubleComplex_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dW, magma_int_t lddw)</td></tr>
-<tr class="memdesc:gaca2ebfeeb6d8a832adf949cc78865462"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLATRD reduces NB rows and columns of a complex Hermitian matrix A to Hermitian tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#gaca2ebfeeb6d8a832adf949cc78865462">More...</a><br /></td></tr>
-<tr class="separator:gaca2ebfeeb6d8a832adf949cc78865462"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga05cd3a3d3e2feb6236da82b7ee95de78"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zheev__aux.html#ga05cd3a3d3e2feb6236da82b7ee95de78">magma_zlatrd2</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magmaDoubleComplex *A, magma_int_t lda, double *e, magmaDoubleComplex *tau, magmaDoubleComplex *W, magma_int_t ldw, magmaDoubleComplex_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dW, magma_int_t lddw, magmaDoubleComplex_ptr dwork, magma_int_t ldwork)</td></tr>
-<tr class="memdesc:ga05cd3a3d3e2feb6236da82b7ee95de78"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLATRD2 reduces NB rows and columns of a complex Hermitian matrix A to Hermitian tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga05cd3a3d3e2feb6236da82b7ee95de78">More...</a><br /></td></tr>
-<tr class="separator:ga05cd3a3d3e2feb6236da82b7ee95de78"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf3d87a0561ecd062213c3e410f62c78e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zheev__aux.html#gaf3d87a0561ecd062213c3e410f62c78e">magma_zlatrd</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magmaDoubleComplex *A, magma_int_t lda, double *e, magmaDoubleComplex *tau, magmaDoubleComplex *W, magma_int_t ldw, magmaDoubleComplex *work, magma_int_t lwork, magmaDoubleComplex_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dW, magma_int_t lddw, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf3d87a0561ecd062213c3e410f62c78e"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLATRD reduces NB rows and columns of a complex Hermitian matrix A to Hermitian tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#gaf3d87a0561ecd062213c3e410f62c78e">More...</a><br /></td></tr>
+<tr class="separator:gaf3d87a0561ecd062213c3e410f62c78e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0527cca5cfed50b9deadd818a085212d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zheev__aux.html#ga0527cca5cfed50b9deadd818a085212d">magma_zlatrd2</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magmaDoubleComplex *A, magma_int_t lda, double *e, magmaDoubleComplex *tau, magmaDoubleComplex *W, magma_int_t ldw, magmaDoubleComplex *work, magma_int_t lwork, magmaDoubleComplex_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dW, magma_int_t lddw, magmaDoubleComplex_ptr dwork, magma_int_t ldwork, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga0527cca5cfed50b9deadd818a085212d"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLATRD2 reduces NB rows and columns of a complex Hermitian matrix A to Hermitian tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga0527cca5cfed50b9deadd818a085212d">More...</a><br /></td></tr>
+<tr class="separator:ga0527cca5cfed50b9deadd818a085212d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga48bee2c3cd82991d4754ee88617a7680"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zheev__aux.html#ga48bee2c3cd82991d4754ee88617a7680">magma_zlatrd_mgpu</a> (magma_int_t ngpu, magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magma_int_t nb0, magmaDoubleComplex *A, magma_int_t lda, double *e, magmaDoubleComplex *tau, magmaDoubleComplex *W, magma_int_t ldw, magmaDoubleComplex_ptr dA[], magma_int_t ldda, magma_int_t offset, magmaDoubleComplex_ptr dW[], magma_int_t lddw, magmaDoubleComplex *hwork, magma_int_t lhwork, magmaDoubleComplex_ptr dwork[], magma_int_t ldwork, magma_queue_t queues[])</td></tr>
 <tr class="memdesc:ga48bee2c3cd82991d4754ee88617a7680"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLATRD reduces NB rows and columns of a complex Hermitian matrix A to Hermitian tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga48bee2c3cd82991d4754ee88617a7680">More...</a><br /></td></tr>
 <tr class="separator:ga48bee2c3cd82991d4754ee88617a7680"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="gaca2ebfeeb6d8a832adf949cc78865462"></a>
+<a class="anchor" id="gaf3d87a0561ecd062213c3e410f62c78e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -187,6 +187,18 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>work</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
           <td class="paramname"><em>dA</em>, </td>
         </tr>
@@ -206,7 +218,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddw</em>&#160;</td>
+          <td class="paramname"><em>lddw</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -263,7 +281,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga05cd3a3d3e2feb6236da82b7ee95de78"></a>
+<a class="anchor" id="ga0527cca5cfed50b9deadd818a085212d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -324,6 +342,18 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>work</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
           <td class="paramname"><em>dA</em>, </td>
         </tr>
@@ -355,7 +385,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldwork</em>&#160;</td>
+          <td class="paramname"><em>ldwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -613,7 +649,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

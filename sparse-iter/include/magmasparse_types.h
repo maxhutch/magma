@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 */
 
 #ifndef MAGMASPARSE_TYPES_H
@@ -18,6 +18,7 @@
 #include <read_matrix.h>
 #include <get_options.h>
 #include <assert.h>
+#include <omp.h>
 #endif
 
 // includes CUDA
@@ -44,6 +45,7 @@ typedef struct magma_z_matrix
     magma_int_t        nnz;                     // opt: number of nonzeros
     magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
     magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    magma_int_t        true_nnz;              // opt: true nnz
     union {
         magmaDoubleComplex      *val;           // array containing values in CPU case
         magmaDoubleComplex_ptr  dval;           // array containing values in DEV case
@@ -53,16 +55,20 @@ typedef struct magma_z_matrix
         magmaDoubleComplex_ptr  ddiag;          // opt: diagonal entries in DEV case
     };
     union {
-        magma_index_t           *row;           // row pointer CPU case
-        magmaIndex_ptr          drow;           // row pointer DEV case
+        magma_index_t           *row;           // opt: row pointer CPU case
+        magmaIndex_ptr          drow;           // opt: row pointer DEV case
     };
     union {
         magma_index_t           *rowidx;        // opt: array containing row indices CPU case
         magmaIndex_ptr          drowidx;        // opt: array containing row indices DEV case
     };
     union {
-        magma_index_t           *col;           // array containing col indices CPU case
-        magmaIndex_ptr          dcol;           // array containing col indices DEV case
+        magma_index_t           *col;           // opt: array containing col indices CPU case
+        magmaIndex_ptr          dcol;           // opt: array containing col indices DEV case
+    };
+    union {
+        magma_index_t           *list;          // opt: linked list pointing to next element
+        magmaIndex_ptr          dlist;          // opt: linked list pointing to next element
     };
     magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
     magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
@@ -84,6 +90,7 @@ typedef struct magma_c_matrix
     magma_int_t        nnz;                     // opt: number of nonzeros
     magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
     magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    magma_int_t        true_nnz;              // opt: true nnz
     union {
         magmaFloatComplex       *val;           // array containing values in CPU case
         magmaFloatComplex_ptr   dval;           // array containing values in DEV case
@@ -103,6 +110,10 @@ typedef struct magma_c_matrix
     union {
         magma_index_t           *col;           // array containing col indices CPU case
         magmaIndex_ptr          dcol;           // array containing col indices DEV case
+    };
+    union {
+        magma_index_t           *list;          // opt: linked list pointing to next element
+        magmaIndex_ptr          dlist;          // opt: linked list pointing to next element
     };
     magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
     magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
@@ -125,6 +136,7 @@ typedef struct magma_d_matrix
     magma_int_t        nnz;                     // opt: number of nonzeros
     magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
     magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    magma_int_t        true_nnz;              // opt: true nnz
     union {
         double                  *val;           // array containing values in CPU case
         magmaDouble_ptr         dval;           // array containing values in DEV case
@@ -144,6 +156,10 @@ typedef struct magma_d_matrix
     union {
         magma_index_t           *col;           // array containing col indices CPU case
         magmaIndex_ptr          dcol;           // array containing col indices DEV case
+    };
+    union {
+        magma_index_t           *list;          // opt: linked list pointing to next element
+        magmaIndex_ptr          dlist;          // opt: linked list pointing to next element
     };
     magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
     magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
@@ -166,6 +182,7 @@ typedef struct magma_s_matrix
     magma_int_t        nnz;                     // opt: number of nonzeros
     magma_int_t        max_nnz_row;             // opt: max number of nonzeros in one row
     magma_int_t        diameter;                // opt: max distance of entry from main diagonal
+    magma_int_t        true_nnz;              // opt: true nnz
     union {
         float                   *val;           // array containing values in CPU case
         magmaFloat_ptr          dval;           // array containing values in DEV case
@@ -175,16 +192,20 @@ typedef struct magma_s_matrix
         magmaFloat_ptr          ddiag;          // opt: diagonal entries in DEV case
     };
     union {
-        magma_index_t           *row;           // row pointer CPU case
-        magmaIndex_ptr          drow;           // row pointer DEV case
+        magma_index_t           *row;           // opt: row pointer CPU case
+        magmaIndex_ptr          drow;           // opt: row pointer DEV case
     };
     union {
         magma_index_t           *rowidx;        // opt: array containing row indices CPU case
         magmaIndex_ptr          drowidx;        // opt: array containing row indices DEV case
     };
     union {
-        magma_index_t           *col;           // array containing col indices CPU case
-        magmaIndex_ptr          dcol;           // array containing col indices DEV case
+        magma_index_t           *col;           // opt: array containing col indices CPU case
+        magmaIndex_ptr          dcol;           // opt: array containing col indices DEV case
+    };
+    union {
+        magma_index_t           *list;          // opt: linked list pointing to next element
+        magmaIndex_ptr          dlist;          // opt: linked list pointing to next element
     };
     magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
     magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
@@ -275,6 +296,7 @@ typedef struct magma_z_solver_par
     magma_int_t        restart;                 // for GMRES
     magma_ortho_t      ortho;                   // for GMRES
     magma_int_t        numiter;                 // feedback: number of needed iterations
+    magma_int_t        spmv_count;              // feedback: number of needed SpMV - can be different to iteration count
     double             init_res;                // feedback: initial residual
     double             final_res;               // feedback: final residual
     double             iter_res;                // feedback: iteratively computed residual
@@ -313,6 +335,7 @@ typedef struct magma_c_solver_par
     magma_int_t        restart;                 // for GMRES
     magma_ortho_t      ortho;                   // for GMRES
     magma_int_t        numiter;                 // feedback: number of needed iterations
+    magma_int_t        spmv_count;              // feedback: number of needed SpMV - can be different to iteration count
     float              init_res;                // feedback: initial residual
     float              final_res;               // feedback: final residual
     float              iter_res;                // feedback: iteratively computed residual
@@ -351,6 +374,7 @@ typedef struct magma_d_solver_par
     magma_int_t        restart;                 // for GMRES
     magma_ortho_t      ortho;                   // for GMRES
     magma_int_t        numiter;                 // feedback: number of needed iterations
+    magma_int_t        spmv_count;              // feedback: number of needed SpMV - can be different to iteration count
     double             init_res;                // feedback: initial residual
     double             final_res;               // feedback: final residual
     double             iter_res;                // feedback: iteratively computed residual
@@ -389,6 +413,7 @@ typedef struct magma_s_solver_par
     magma_int_t        restart;                 // for GMRES
     magma_ortho_t      ortho;                   // for GMRES
     magma_int_t        numiter;                 // feedback: number of needed iterations
+    magma_int_t        spmv_count;              // feedback: number of needed SpMV - can be different to iteration count
     float              init_res;                // feedback: initial residual
     float              final_res;               // feedback: final residual
     float              iter_res;                // feedback: iteratively computed residual
@@ -432,11 +457,16 @@ typedef struct magma_z_preconditioner
     magma_int_t             maxiter;
     magma_int_t             restart; 
     magma_int_t             numiter;
+    magma_int_t             spmv_count;  
     double                  init_res;
     double                  final_res;
+    real_Double_t      runtime;                // feedback: preconditioner runtime needed
+    real_Double_t      setuptime;           // feedback: preconditioner setup time needed
     magma_z_matrix   M;
     magma_z_matrix   L;
+    magma_z_matrix   LT;
     magma_z_matrix   U;
+    magma_z_matrix   UT;
     magma_z_matrix   LD;
     magma_z_matrix   UD;
     magma_z_matrix          d;
@@ -447,7 +477,9 @@ typedef struct magma_z_preconditioner
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
     cusparseSolveAnalysisInfo_t cuinfoL;
+    cusparseSolveAnalysisInfo_t cuinfoLT;
     cusparseSolveAnalysisInfo_t cuinfoU;
+    cusparseSolveAnalysisInfo_t cuinfoUT;
 #if defined(HAVE_PASTIX)
     pastix_data_t*          pastix_data;
     magma_int_t*            iparm;
@@ -466,11 +498,16 @@ typedef struct magma_c_preconditioner
     magma_int_t             maxiter;
     magma_int_t             restart; 
     magma_int_t             numiter;
+    magma_int_t             spmv_count;
     float                   init_res;
     float                   final_res;
+    real_Double_t      runtime;                // feedback: preconditioner runtime needed
+    real_Double_t      setuptime;           // feedback: preconditioner setup time needed
     magma_c_matrix   M;
     magma_c_matrix   L;
+    magma_c_matrix   LT;
     magma_c_matrix   U;
+    magma_c_matrix   UT;
     magma_c_matrix   LD;
     magma_c_matrix   UD;
     magma_c_matrix          d;
@@ -481,7 +518,9 @@ typedef struct magma_c_preconditioner
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
     cusparseSolveAnalysisInfo_t cuinfoL;
+    cusparseSolveAnalysisInfo_t cuinfoLT;
     cusparseSolveAnalysisInfo_t cuinfoU;
+    cusparseSolveAnalysisInfo_t cuinfoUT;
 #if defined(HAVE_PASTIX)
     pastix_data_t*          pastix_data;
     magma_int_t*            iparm;
@@ -501,11 +540,16 @@ typedef struct magma_d_preconditioner
     magma_int_t             maxiter;
     magma_int_t             restart; 
     magma_int_t             numiter;
+    magma_int_t             spmv_count;
     double                  init_res;
     double                  final_res;
+    real_Double_t      runtime;                // feedback: preconditioner runtime needed
+    real_Double_t      setuptime;           // feedback: preconditioner setup time needed
     magma_d_matrix   M;
     magma_d_matrix   L;
+    magma_d_matrix   LT;
     magma_d_matrix   U;
+    magma_d_matrix   UT;
     magma_d_matrix   LD;
     magma_d_matrix   UD;
     magma_d_matrix          d;
@@ -516,7 +560,9 @@ typedef struct magma_d_preconditioner
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
     cusparseSolveAnalysisInfo_t cuinfoL;
+    cusparseSolveAnalysisInfo_t cuinfoLT;
     cusparseSolveAnalysisInfo_t cuinfoU;
+    cusparseSolveAnalysisInfo_t cuinfoUT;
 #if defined(HAVE_PASTIX)
     pastix_data_t*          pastix_data;
     magma_int_t*            iparm;
@@ -536,11 +582,16 @@ typedef struct magma_s_preconditioner
     magma_int_t             maxiter;
     magma_int_t             restart; 
     magma_int_t             numiter;
+    magma_int_t             spmv_count;
     float                   init_res;
     float                   final_res;
+    real_Double_t      runtime;                // feedback: preconditioner runtime needed
+    real_Double_t      setuptime;           // feedback: preconditioner setup time needed
     magma_s_matrix   M;
     magma_s_matrix   L;
+    magma_s_matrix   LT;
     magma_s_matrix   U;
+    magma_s_matrix   UT;
     magma_s_matrix   LD;
     magma_s_matrix   UD;
     magma_s_matrix          d;
@@ -551,7 +602,9 @@ typedef struct magma_s_preconditioner
     magma_int_t*            int_array_2;
     cusparseSolveAnalysisInfo_t cuinfo;
     cusparseSolveAnalysisInfo_t cuinfoL;
+    cusparseSolveAnalysisInfo_t cuinfoLT;
     cusparseSolveAnalysisInfo_t cuinfoU;
+    cusparseSolveAnalysisInfo_t cuinfoUT;
 #if defined(HAVE_PASTIX)
     pastix_data_t*          pastix_data;
     magma_int_t*            iparm;
@@ -571,8 +624,8 @@ typedef struct magma_zopts
     magma_z_solver_par      solver_par;
     magma_z_preconditioner  precond_par;
     magma_storage_t         input_format;
-    int                     blocksize;
-    int                     alignment;
+    magma_int_t             blocksize;
+    magma_int_t             alignment;
     magma_storage_t         output_format;
     magma_location_t        input_location;
     magma_location_t        output_location;
@@ -584,8 +637,8 @@ typedef struct magma_copts
     magma_c_solver_par      solver_par;
     magma_c_preconditioner  precond_par;
     magma_storage_t         input_format;
-    int                     blocksize;
-    int                     alignment;
+    magma_int_t             blocksize;
+    magma_int_t             alignment;
     magma_storage_t         output_format;
     magma_location_t        input_location;
     magma_location_t        output_location;
@@ -597,8 +650,8 @@ typedef struct magma_dopts
     magma_d_solver_par      solver_par;
     magma_d_preconditioner  precond_par;
     magma_storage_t         input_format;
-    int                     blocksize;
-    int                     alignment;
+    magma_int_t             blocksize;
+    magma_int_t             alignment;
     magma_storage_t         output_format;
     magma_location_t        input_location;
     magma_location_t        output_location;
@@ -610,8 +663,8 @@ typedef struct magma_sopts
     magma_s_solver_par      solver_par;
     magma_s_preconditioner  precond_par;
     magma_storage_t         input_format;
-    int                     blocksize;
-    int                     alignment;
+    magma_int_t             blocksize;
+    magma_int_t             alignment;
     magma_storage_t         output_format;
     magma_location_t        input_location;
     magma_location_t        output_location;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zswapblk.cu normal z -> d, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zswapblk.cu normal z -> d, Wed Jan  6 17:59:38 2016
 
 */
 #include "common_magma.h"
@@ -102,7 +102,7 @@ magmablas_dswapblk_q(
                 else
                     params.ipiv[j] = im - offset;
             }
-            magmagpu_dswapblkcm<<< blocks, blocksize, 0, queue >>>( params );
+            magmagpu_dswapblkcm<<< blocks, blocksize, 0, queue->cuda_stream() >>>( params );
         }
     }
     else {
@@ -118,7 +118,7 @@ magmablas_dswapblk_q(
                 else
                     params.ipiv[j] = im - offset;
             }
-            magmagpu_dswapblkrm<<< blocks, blocksize, 0, queue >>>( params );
+            magmagpu_dswapblkrm<<< blocks, blocksize, 0, queue->cuda_stream() >>>( params );
         }
     }
 }
@@ -137,5 +137,5 @@ magmablas_dswapblk(
     const magma_int_t *ipiv, magma_int_t inci, magma_int_t offset )
 {
     magmablas_dswapblk_q(
-        order, n, dA, ldda, dB, lddb, i1, i2, ipiv, inci, offset, magma_stream );
+        order, n, dA, ldda, dB, lddb, i1, i2, ipiv, inci, offset, magmablasGetQueue() );
 }

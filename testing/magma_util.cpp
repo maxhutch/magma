@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
        
@@ -157,6 +157,8 @@ const char *usage =
 "  --dev x          GPU device to use, default 0.\n"
 "  --align n        Round up LDDA on GPU to multiple of align, default 32.\n"
 "  --verbose        Verbose output.\n"
+"  --null-stream    Use NULL CUDA stream; mainly to test old codes that relied\n"
+"                   on extra synchronization provided by the NULL stream.\n"
 "  -x  --exclusive  Lock file for exclusive use (internal ICL functionality).\n"
 "\n"
 "The following options apply to only some routines.\n"
@@ -165,18 +167,20 @@ const char *usage =
 "  --nrhs x         Number of right hand sides, default 1.\n"
 "  --nstream x      Number of CUDA streams, default 1.\n"
 "  --ngpu x         Number of GPUs, default 1. Also set with $MAGMA_NUM_GPUS.\n"
+"                   (Some testers take --ngpu -1 to run the multi-GPU code with 1 GPU.\n"
 "  --nsub x         Number of submatrices, default 1.\n"
 "  --niter x        Number of iterations to repeat each test, default 1.\n"
-"  --nthread x      Number of CPU threads, default 1.\n"
+"  --nthread x      Number of CPU threads for some experimental codes, default 1.\n"
+"                   (For most testers, set $OMP_NUM_THREADS or $MKL_NUM_THREADS\n"
+"                    to control the number of CPU threads.)\n"
 "  --offset x       Offset from beginning of matrix, default 0.\n"
 "  --itype [123]    Generalized Hermitian-definite eigenproblem type, default 1.\n"
 "  --svd_work [0123] SVD workspace size, from min (1) to optimal (3), or query (0), default 0.\n"
 "  --version x      version of routine, e.g., during development, default 1.\n"
 "  --fraction x     fraction of eigenvectors to compute, default 1.\n"
+"                   If fraction == 0, computes eigenvalues il=0.1*N to iu=0.3*N.\n"
 "  --tolerance x    accuracy tolerance, multiplied by machine epsilon, default 30.\n"
 "  --tol x          same.\n"
-"  --panel_nthread x Number of threads in the first dimension if the panel is decomposed into a 2D layout, default 1.\n"
-"  --fraction_dcpu x Percentage of the workload to schedule on the cpu. Used in magma_amc algorithms only, default 0.\n"
 "  -L -U -F         uplo   = Lower*, Upper, or Full.\n"
 "  -[NTC][NTC]      transA = NoTrans*, Trans, or ConjTrans (first letter) and\n"
 "                   transB = NoTrans*, Trans, or ConjTrans (second letter).\n"
@@ -211,8 +215,6 @@ magma_opts::magma_opts( magma_opts_t flag )
     this->version  = 1;
     this->fraction = 1.;
     this->tolerance = 30.;
-    this->panel_nthread = 1;
-    this->fraction_dcpu = 0.0;
     this->check     = (getenv("MAGMA_TESTINGS_CHECK") != NULL);
     this->lapack    = (getenv("MAGMA_RUN_LAPACK")     != NULL);
     this->warmup    = (getenv("MAGMA_WARMUP")         != NULL);
@@ -261,6 +263,8 @@ void magma_opts::parse_opts( int argc, char** argv )
     
     int ndevices;
     cudaGetDeviceCount( &ndevices );
+    
+    bool null_stream = false;
     
     int info;
     this->ntest = 0;
@@ -412,15 +416,17 @@ void magma_opts::parse_opts( int argc, char** argv )
                           "error: --ngpu %s exceeds MagmaMaxGPUs, %d.\n", argv[i], MagmaMaxGPUs );
             magma_assert( this->ngpu <= ndevices,
                           "error: --ngpu %s exceeds number of CUDA devices, %d.\n", argv[i], ndevices );
-            magma_assert( this->ngpu > 0,
-                          "error: --ngpu %s is invalid; ensure ngpu > 0.\n", argv[i] );
+            // allow ngpu == -1, which forces multi-GPU code with 1 GPU. see testing_zhegvd, etc.
+            magma_assert( this->ngpu > 0 || this->ngpu == -1,
+                          "error: --ngpu %s is invalid; ensure ngpu != 0.\n", argv[i] );
             // save in environment variable, so magma_num_gpus() picks it up
+            char env_num_gpus[20];  // space for "MAGMA_NUM_GPUS=", 4 digits, and nil
             #if defined( _WIN32 ) || defined( _WIN64 )
-                char env_num_gpus[20] = "MAGMA_NUM_GPUS=";  // space for 4 digits & nil
-                strncat( env_num_gpus, argv[i], sizeof(env_num_gpus) - strlen(env_num_gpus) - 1 );
+                snprintf( env_num_gpus, sizeof(env_num_gpus), "MAGMA_NUM_GPUS=%d", abs(this->ngpu) );
                 putenv( env_num_gpus );
             #else
-                setenv( "MAGMA_NUM_GPUS", argv[i], true );
+                snprintf( env_num_gpus, sizeof(env_num_gpus), "%d", abs(this->ngpu) );
+                setenv( "MAGMA_NUM_GPUS", env_num_gpus, true );
             #endif
         }
         else if ( strcmp("--nsub", argv[i]) == 0 && i+1 < argc ) {
@@ -474,16 +480,6 @@ void magma_opts::parse_opts( int argc, char** argv )
             magma_assert( this->tolerance >= 0 && this->tolerance <= 1000,
                           "error: --tolerance %s is invalid; ensure tolerance in [0,1000].\n", argv[i] );
         }
-        else if ( strcmp("--panel_nthread", argv[i]) == 0 && i+1 < argc ) {
-            this->panel_nthread = atoi( argv[++i] );
-            magma_assert( this->panel_nthread > 0,
-                          "error: --panel_nthread %s is invalid; ensure panel_nthread > 0.\n", argv[i] );
-        }
-        else if ( strcmp("--fraction_dcpu", argv[i]) == 0 && i+1 < argc ) {
-            this->fraction_dcpu = atof( argv[++i] );
-            magma_assert( this->fraction_dcpu > 0 && this->fraction_dcpu <= 1,
-                          "error: --fraction_dcpu %s is invalid; ensure fraction_dcpu in [0, 1]\n", argv[i] );
-        }
         else if ( strcmp("--batch", argv[i]) == 0 && i+1 < argc ) {
             this->batchcount = atoi( argv[++i] );
             magma_assert( this->batchcount > 0,
@@ -504,6 +500,7 @@ void magma_opts::parse_opts( int argc, char** argv )
         else if ( strcmp("--all",      argv[i]) == 0 ) { this->all    = true;  }
         else if ( strcmp("--notall",   argv[i]) == 0 ) { this->all    = false; }
         else if ( strcmp("--verbose",  argv[i]) == 0 ) { this->verbose= true;  }
+        else if ( strcmp("--null-stream", argv[i]) == 0 ) { null_stream = true; }
         
         // ----- lapack flag arguments
         else if ( strcmp("-L",  argv[i]) == 0 ) { this->uplo = MagmaLower; }
@@ -636,13 +633,38 @@ void magma_opts::parse_opts( int argc, char** argv )
     
     this->queue = this->queues2[ 0 ];
     
+    if ( ! null_stream ) {
+        magma_queue_create( &this->default_queue );
+    }
+    else {
+        this->default_queue = NULL;
+    }
+    magmablasSetKernelStream( this->default_queue );
+    
     #ifdef HAVE_CUBLAS
     // handle for directly calling cublas
-    cublasCreate( &this->handle );
-    cublasSetStream( this->handle, this->queue );
+    this->handle = magma_queue_get_cublas_handle( this->queue );
     #endif
 }
 // end parse_opts
+
+
+// ------------------------------------------------------------
+void magma_opts::cleanup()
+{
+    this->queue = NULL;
+    magma_queue_destroy( this->queues2[0] );
+    magma_queue_destroy( this->queues2[1] );
+    this->queues2[0] = NULL;
+    this->queues2[1] = NULL;
+    
+    magma_queue_destroy( this->default_queue );
+    this->default_queue = NULL;
+    
+    #ifdef HAVE_CUBLAS
+    this->handle = NULL;
+    #endif
+}
 
 
 // ------------------------------------------------------------

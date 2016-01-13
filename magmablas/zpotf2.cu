@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @precisions normal z -> s d c
 */
@@ -226,7 +226,10 @@ void zpotf2_zdotc(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
         threadSize = 64;
     }
 
-    kernel_zdotc<<< 1, threadSize, threadSize * sizeof(double), magma_stream>>> (n, x, incx, threadSize);
+    size_t shmem = threadSize * sizeof(double);
+    kernel_zdotc
+        <<< 1, threadSize, shmem, magmablasGetQueue()->cuda_stream() >>>
+        (n, x, incx, threadSize);
 }
 
 __global__ void kernel_zdscal(int n, magmaDoubleComplex *x, int incx)
@@ -255,7 +258,9 @@ void zpotf2_zdscal(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
     dim3 threads(zdscal_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, zdscal_bs );
     dim3 grid(num_blocks,1);
-    kernel_zdscal<<< grid, threads, 0, magma_stream >>> (n, x, incx);
+    kernel_zdscal
+        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        (n, x, incx);
 }
 
 
@@ -285,8 +290,7 @@ __global__ void kernel_zlacgv(int n, magmaDoubleComplex *x, int incx)
             The length of the vector X.  N >= 0.
 
     @param[in,out]
-    x       COMPLEX*16 array, dimension
-                           (1+(N-1)*abs(INCX))
+    x       COMPLEX*16 array, dimension (1+(N-1)*abs(INCX))
             On entry, the vector of length N to be conjugated.
             On exit, X is overwritten with conjg(X).
 
@@ -301,7 +305,9 @@ void magmablas_zlacgv(magma_int_t n, magmaDoubleComplex *x, magma_int_t incx)
     dim3 threads(zlacgv_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, zlacgv_bs );
     dim3 grid(num_blocks,1);
-    kernel_zlacgv<<< grid, threads, 0, magma_stream >>> (n, x, incx);
+    kernel_zlacgv
+        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        (n, x, incx);
 }
 
 #endif // defined(PRECISION_z) || defined(PRECISION_c)

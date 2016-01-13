@@ -1,17 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zutil_sparse.cpp normal z -> d, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zutil_sparse.cpp normal z -> d, Wed Jan  6 17:59:43 2016
 
        @author Hartwig Anzt
 
        Utilities for testing MAGMA-sparse.
 */
-#include "common_magmasparse.h"
+#include <cuda_runtime_api.h>
+
+#include "magmasparse_internal.h"
 
 #define PRECISION_d
 
@@ -21,50 +23,30 @@ static const char *usage_sparse_short =
 
 static const char *usage_sparse =
 "Options are:\n"
-" --format x     Possibility to choose a format for the sparse matrix:\n"
-"               0   CSR\n"
-"               1   ELL\n"
-"               2   SELL-P\n"
+" --format      Possibility to choose a format for the sparse matrix:\n"
+"               CSR, ELL, SELLP, CUSPARSECSR\n"
 " --blocksize x Set a specific blocksize for SELL-P format.\n"
 " --alignment x Set a specific alignment for SELL-P format.\n"
 " --mscale      Possibility to scale the original matrix:\n"
 "               0   no scaling\n"
 "               1   symmetric scaling to unit diagonal\n"
 " --solver      Possibility to choose a solver:\n"
-"               0   CG\n"
-"               1   merged CG\n"
-"               2   preconditioned CG\n"
-"               3   BiCGSTAB\n"
-"               4   merged BiCGSTAB\n"
-"               5   preconditioned BiCGSTAB\n"
-"               6   GMRES\n"
-"               7   preconditioned GMRES\n"
-"               8   LOBPCG\n"
-"               9   Jacobi\n"
-"               10  Block-asynchronous Iteration\n"
-"               11  IDR (smoothed)\n"
-"               12  PIDR (smoothed)\n"
-"               21  Iterative Refinement\n"
+"               CG, PCG, BICGSTAB, PBICGSTAB, GMRES, PGMRES, LOBPCG, JACOBI,\n"
+"               BAITER, IDR, PIDR, CGS, PCGS, TFQMR, PTFQMR, QMR, BICG\n"
+"               BOMBARDMENT, ITERREF.\n"
+" --basic       Use non-optimized version\n"
 " --restart     For GMRES: possibility to choose the restart.\n"
 "               For IDR: Number of distinct subspaces (1,2,4,8).\n"
 " --precond x   Possibility to choose a preconditioner:\n"
-"               0   no preconditioner\n"
-"               1   Jacobi\n"
-"               2   ILU(0) / IC(0)\n"
-"               -2   iterative ILU(0) / IC(0)\n"
-"                   For Iterative Refinement also possible: \n"
-"                   3   CG\n"
-"                   4   BiCGSTAB\n"
-"                   5   GMRES\n"
-"                   6   Block-asynchronous Iteration\n"
+"               CG, BICGSTAB, GMRES, LOBPCG, JACOBI,\n"
+"               BAITER, IDR, CGS, TFQMR, QMR, BICG\n"
+"               BOMBARDMENT, ITERREF, ILU, AILU, NONE.\n"
 "                   --patol atol  Absolute residual stopping criterion for preconditioner.\n"
 "                   --prtol rtol  Relative residual stopping criterion for preconditioner.\n"
 "                   --psweeps k   Iteration count for iterative incomplete factorizations.\n"
 "                   --piter k     Iteration count for iterative preconditioner.\n"
 "                   --plevels k   Number of ILU levels.\n"
-"                   7   IDR\n"
-" --piter x     Number of relaxation steps for approximate triangular solve (ILU case).\n"
-" --psweeps x   Number of iterative ILU sweeps for to generate preconditioner (iterative ILU case).\n"
+"                   --psweeps x   Number of iterative ILU sweeps.\n"
 " --ev x        For eigensolvers, set number of eigenvalues/eigenvectors to compute.\n"
 " --verbose x   Possibility to print intermediate residuals every x iteration.\n"
 " --maxiter x   Set an upper limit for the iteration count.\n"
@@ -114,10 +96,12 @@ magma_dparse_opts(
     int *matrices,
     magma_queue_t queue )
 {
+    magma_int_t info = MAGMA_SUCCESS;
+    
     // fill in default values
     opts->input_format = Magma_CSR;
-    opts->blocksize = 8;
-    opts->alignment = 8;
+    opts->blocksize = 32;
+    opts->alignment = 1;
     opts->output_format = Magma_CSR;
     opts->input_location = Magma_CPU;
     opts->output_location = Magma_CPU;
@@ -146,71 +130,201 @@ magma_dparse_opts(
     opts->precond_par.restart = 10;
     opts->precond_par.levels = 0;
     opts->precond_par.sweeps = 5;
-    opts->solver_par.solver = Magma_CG;
+    opts->solver_par.solver = Magma_CGMERGE;
     
     printf( usage_sparse_short, argv[0] );
     
     int ndevices;
     cudaGetDeviceCount( &ndevices );
     
-    int info;
-    
+    int basic = 0;
 
     for( int i = 1; i < argc; ++i ) {
         if ( strcmp("--format", argv[i]) == 0 && i+1 < argc ) {
-            info = atoi( argv[++i] );
-            switch( info ) {
-                case 0: opts->output_format = Magma_CSR; break;
-                case 1: opts->output_format = Magma_ELL; break;
-                case 2: opts->output_format = Magma_SELLP; break;
-                //case 2: opts->output_format = Magma_ELLRT; break;
+            i++;
+            if ( strcmp("CSR", argv[i]) == 0 ) {
+                opts->output_format = Magma_CSR;
+            } else if ( strcmp("ELL", argv[i]) == 0 ) {
+                opts->output_format = Magma_ELL;
+            } else if ( strcmp("SELLP", argv[i]) == 0 ) {
+                opts->output_format = Magma_SELLP;
+            } else if ( strcmp("CUSPARSECSR", argv[i]) == 0 ) {
+                opts->output_format = Magma_CUCSR;
+            } else {
+                printf( "error: invalid format, use default (CSR).\n" );
             }
         } else if ( strcmp("--mscale", argv[i]) == 0 && i+1 < argc ) {
-            info = atoi( argv[++i] );
-            switch( info ) {
-                case 0: opts->scaling = Magma_NOSCALE; break;
-                case 1: opts->scaling = Magma_UNITDIAG; break;
-                case 2: opts->scaling = Magma_UNITROW; break;
+            i++;
+            if ( strcmp("NOSCALE", argv[i]) == 0 ) {
+                opts->scaling = Magma_NOSCALE;
+            }
+            else if ( strcmp("UNITDIAG", argv[i]) == 0 ) {
+                opts->scaling = Magma_UNITDIAG;
+            }
+            else if ( strcmp("UNITROW", argv[i]) == 0 ) {
+                opts->scaling = Magma_UNITROW;
+            }
+            else {
+                printf( "error: invalid scaling, use default.\n" );
             }
         } else if ( strcmp("--solver", argv[i]) == 0 && i+1 < argc ) {
-            info = atoi( argv[++i] );
-            switch( info ) {
-                case 0: opts->solver_par.solver = Magma_CG; break;
-                case 1: opts->solver_par.solver = Magma_CGMERGE; break;
-                case 2: opts->solver_par.solver = Magma_PCG; break;
-                case 3: opts->solver_par.solver = Magma_BICGSTAB; break;
-                case 4: opts->solver_par.solver = Magma_BICGSTABMERGE; break;
-                case 5: opts->solver_par.solver = Magma_PBICGSTAB; break;
-                case 6: opts->solver_par.solver = Magma_GMRES; break;
-                case 7: opts->solver_par.solver = Magma_PGMRES; break;
-                case 8: opts->solver_par.solver = Magma_LOBPCG;
-                        opts->solver_par.num_eigenvalues = 16; break;
-                case 9: opts->solver_par.solver = Magma_JACOBI; break;
-                case 10: opts->solver_par.solver = Magma_BAITER; break;
-                case 11: opts->solver_par.solver = Magma_IDR; 
-                         opts->solver_par.restart = 4; break;
-                case 12: opts->solver_par.solver = Magma_PIDR;
-                         opts->solver_par.restart = 4; break;
-                case 21: opts->solver_par.solver = Magma_ITERREF; break;
+            i++;
+            if ( strcmp("CG", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_CGMERGE;
+            }
+            else if ( strcmp("PCG", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PCGMERGE;
+            }
+            else if ( strcmp("BICG", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_BICG;
+            }
+            else if ( strcmp("PBICG", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PBICG;
+            }
+            else if ( strcmp("BICGSTAB", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_BICGSTABMERGE;
+            }
+            else if ( strcmp("PBICGSTAB", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PBICGSTABMERGE;
+            }
+            else if ( strcmp("QMR", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_QMRMERGE;
+            }
+            else if ( strcmp("PQMR", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PQMRMERGE;
+            }
+            else if ( strcmp("TFQMR", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_TFQMRMERGE;
+            }
+            else if ( strcmp("PTFQMR", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PTFQMRMERGE;
+            }
+            else if ( strcmp("GMRES", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_GMRES;
+            }
+            else if ( strcmp("PGMRES", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PGMRES;
+            }
+            else if ( strcmp("LOBPCG", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_LOBPCG;
+            }
+            else if ( strcmp("LSQR", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_LSQR;
+            }
+            else if ( strcmp("JACOBI", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_JACOBI;
+            }
+            else if ( strcmp("BA", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_BAITER;
+            }
+            else if ( strcmp("BAO", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_BAITERO;
+            }
+            else if ( strcmp("IDR", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_IDRMERGE;
+            }
+            else if ( strcmp("PIDR", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PIDRMERGE;
+            }
+            else if ( strcmp("CGS", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_CGSMERGE;
+            }
+            else if ( strcmp("PCGS", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_PCGSMERGE;
+            }
+            else if ( strcmp("BOMBARDMENT", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_BOMBARDMERGE;
+            }
+            else if ( strcmp("ITERREF", argv[i]) == 0 ) {
+                opts->solver_par.solver = Magma_ITERREF;
+            }
+            else {
+                printf( "error: invalid solver.\n" );
             }
         } else if ( strcmp("--restart", argv[i]) == 0 && i+1 < argc ) {
             opts->solver_par.restart = atoi( argv[++i] );
         } else if ( strcmp("--precond", argv[i]) == 0 && i+1 < argc ) {
-            info = atoi( argv[++i] );
-            switch( info ) {
-                case 0: opts->precond_par.solver = Magma_NONE; break;
-                case 1: opts->precond_par.solver = Magma_JACOBI; break;
-                case 2: opts->precond_par.solver = Magma_ILU; break;
-                case -2: opts->precond_par.solver = Magma_AILU; break;
-                case 3: opts->precond_par.solver = Magma_CG; break;
-                case 4: opts->precond_par.solver = Magma_BICGSTAB; break;
-                case 5: opts->precond_par.solver = Magma_GMRES; break;
-                case 6: opts->precond_par.solver = Magma_BAITER; break;
-                case 7: opts->precond_par.solver = Magma_IDR; break;
+            i++;
+            if ( strcmp("CG", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_CGMERGE;
             }
+            else if ( strcmp("PCG", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_PCG;
+            }
+            else if ( strcmp("BICGSTAB", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_BICGSTABMERGE;
+            }
+            else if ( strcmp("QMR", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_QMRMERGE;
+            }
+            else if ( strcmp("TFQMR", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_TFQMRMERGE;
+            }
+            else if ( strcmp("PTFQMR", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_PTFQMRMERGE;
+            }
+            else if ( strcmp("GMRES", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_GMRES;
+            }
+            else if ( strcmp("PGMRES", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_PGMRES;
+            }
+            else if ( strcmp("LOBPCG", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_LOBPCG;
+            }
+            else if ( strcmp("JACOBI", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_JACOBI;
+            }
+            else if ( strcmp("BA", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_BAITER;
+            }
+            else if ( strcmp("BAO", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_BAITERO;
+            }
+            else if ( strcmp("IDR", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_IDRMERGE;
+            }
+            else if ( strcmp("PIDR", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_PIDRMERGE;
+            }
+            else if ( strcmp("CGS", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_CGSMERGE;
+            }
+            else if ( strcmp("PCGS", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_PCGSMERGE;
+            }
+            else if ( strcmp("BOMBARDMENT", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_BOMBARD;
+            }
+            else if ( strcmp("ITERREF", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_ITERREF;
+            }
+            else if ( strcmp("ILU", argv[i]) == 0 || strcmp("IC", argv[i]) == 0 )  {
+                opts->precond_par.solver = Magma_ILU;
+            }
+            else if ( strcmp("AILU", argv[i]) == 0 || strcmp("AIC", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_AILU;
+            }
+            else if ( strcmp("AICT", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_AICT;
+            }
+            else if ( strcmp("CUSTOMIC", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_CUSTOMIC;
+            }
+            else if ( strcmp("CUSTOMILU", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_CUSTOMILU;
+            }
+            else if ( strcmp("NONE", argv[i]) == 0 ) {
+                opts->precond_par.solver = Magma_NONE;
+            }
+            else {
+                printf( "error: invalid preconditioner.\n" );
+            }
+        } else if ( strcmp("--basic", argv[i]) == 0 && i+1 < argc ) {
+            basic = 1;
         } else if ( strcmp("--patol", argv[i]) == 0 && i+1 < argc ) {
             sscanf( argv[++i], "%lf", &opts->precond_par.atol );
-        } else if ( strcmp("--prtol", argv[i]) == 0 && i+1 < argc ) {
+        }else if ( strcmp("--prtol", argv[i]) == 0 && i+1 < argc ) {
             sscanf( argv[++i], "%lf", &opts->precond_par.rtol );
         } else if ( strcmp("--piter", argv[i]) == 0 && i+1 < argc ) {
             opts->precond_par.maxiter = atoi( argv[++i] );
@@ -244,14 +358,82 @@ magma_dparse_opts(
             break;
         }
     }
+    if( basic == 1 ){
+        if ( opts->solver_par.solver == Magma_CGMERGE ) {
+            opts->solver_par.solver = Magma_CG;
+        }
+        else if ( opts->solver_par.solver == Magma_PCGMERGE) {
+            opts->solver_par.solver = Magma_PCG;
+        }
+        else if ( opts->solver_par.solver == Magma_BICGSTABMERGE ) {
+            opts->solver_par.solver = Magma_BICGSTAB;
+        }
+        else if ( opts->solver_par.solver == Magma_PBICGSTAB ) {
+            opts->solver_par.solver = Magma_PBICGSTAB;
+        }
+        else if ( opts->solver_par.solver == Magma_TFQMRMERGE ) {
+            opts->solver_par.solver = Magma_TFQMR;
+        }
+        else if ( opts->solver_par.solver == Magma_PTFQMRMERGE) {
+            opts->solver_par.solver = Magma_PTFQMR;
+        }
+        else if ( opts->solver_par.solver == Magma_CGSMERGE ) {
+            opts->solver_par.solver = Magma_CGS;
+        }
+        else if ( opts->solver_par.solver == Magma_PCGSMERGE) {
+            opts->solver_par.solver = Magma_PCGS;
+        }
+        else if ( opts->solver_par.solver == Magma_QMRMERGE ) {
+            opts->solver_par.solver = Magma_QMR;
+        }
+        else if ( opts->solver_par.solver == Magma_PQMRMERGE) {
+            opts->solver_par.solver = Magma_PQMR;
+        }
+        else if ( opts->solver_par.solver == Magma_QMRMERGE ) {
+            opts->solver_par.solver = Magma_QMR;
+        }
+        else if ( opts->solver_par.solver == Magma_PCGMERGE) {
+            opts->solver_par.solver = Magma_PCG;
+        }
+        else if ( opts->solver_par.solver == Magma_IDRMERGE) {
+            opts->solver_par.solver = Magma_IDR;
+        }
+        else if ( opts->solver_par.solver == Magma_PIDRMERGE) {
+            opts->solver_par.solver = Magma_PIDR;
+        }
+        else if ( opts->solver_par.solver == Magma_BOMBARDMERGE) {
+            opts->solver_par.solver = Magma_BOMBARD;
+        }
+    }
+    
+    // make sure preconditioner is NONE for unpreconditioned systems
+    if ( opts->solver_par.solver != Magma_PCG &&
+         opts->solver_par.solver != Magma_PCGMERGE &&
+         opts->solver_par.solver != Magma_PGMRES &&
+         opts->solver_par.solver != Magma_PBICGSTAB &&
+         opts->solver_par.solver != Magma_PBICGSTABMERGE &&
+         opts->solver_par.solver != Magma_ITERREF  &&
+         opts->solver_par.solver != Magma_PIDR  &&
+         opts->solver_par.solver != Magma_PIDRMERGE  &&
+         opts->solver_par.solver != Magma_PCGS  &&
+         opts->solver_par.solver != Magma_PCGSMERGE &&
+         opts->solver_par.solver != Magma_PTFQMR &&
+         opts->solver_par.solver != Magma_PTFQMRMERGE &&
+         opts->solver_par.solver != Magma_PQMR &&
+         opts->solver_par.solver != Magma_PBICG &&
+         opts->solver_par.solver != Magma_LSQR &&
+         opts->solver_par.solver != Magma_LOBPCG ){
+                    opts->precond_par.solver = Magma_NONE;
+         }
     
     // ensure to take a symmetric preconditioner for the PCG
-    if ( opts->solver_par.solver == Magma_PCG
+    if ( ( opts->solver_par.solver == Magma_PCG || opts->solver_par.solver == Magma_PCGMERGE )
         && opts->precond_par.solver == Magma_ILU )
             opts->precond_par.solver = Magma_ICC;
-    if ( opts->solver_par.solver == Magma_PCG
+    if ( ( opts->solver_par.solver == Magma_PCG || opts->solver_par.solver == Magma_PCGMERGE )
         && opts->precond_par.solver == Magma_AILU )
             opts->precond_par.solver = Magma_AICC;
             
-    return MAGMA_SUCCESS;
+            
+    return info;
 }

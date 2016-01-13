@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing_zhetrd_gpu.cpp normal z -> d, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zhetrd_gpu.cpp normal z -> d, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -73,7 +73,7 @@ int main( int argc, char** argv)
             N = opts.nsize[itest];
             lda    = N;
             ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
-            n2     = N*lda;
+            n2     = lda*N;
             nb     = magma_get_dsytrd_nb(N);
             lwork  = N*nb;  /* We suppose the magma nb is bigger than lapack nb */
             gflops = FLOPS_DSYTRD( N ) / 1e9;
@@ -206,6 +206,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

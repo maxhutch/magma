@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from clag2z.cu mixed zc -> ds, Fri Sep 11 18:29:19 2015
+       @generated from magmablas/clag2z.cu mixed zc -> ds, Wed Jan  6 17:59:35 2016
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -55,8 +55,8 @@ void slag2d_kernel(
 /**
     Purpose
     -------
-    SLAG2D_STREAM converts a single-real matrix, SA,
-                        to a double-real matrix, A.
+    SLAG2D converts a single-real matrix, SA,
+                 to a double-real matrix, A.
 
     Note that while it is possible to overflow while converting
     from double to single, it is not possible to overflow when
@@ -73,7 +73,7 @@ void slag2d_kernel(
             The number of columns of the matrix A.  N >= 0.
 
     @param[in]
-    SA      REAL array, dimension (LDSA,N)
+    SA      SINGLE PRECISION array, dimension (LDSA,N)
             On entry, the M-by-N coefficient matrix SA.
 
     @param[in]
@@ -129,7 +129,7 @@ magmablas_slag2d_q(
 
     dim3 threads( BLK_X, 1 );
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
-    slag2d_kernel<<< grid, threads, 0, queue >>> ( m, n, SA, ldsa, A, lda );
+    slag2d_kernel<<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, SA, ldsa, A, lda );
 }
 
 
@@ -142,7 +142,7 @@ magmablas_slag2d(
     magma_int_t m, magma_int_t n,
     magmaFloat_const_ptr SA, magma_int_t ldsa,
     magmaDouble_ptr       A, magma_int_t lda,
-    magma_int_t *info )
+    magma_int_t *info)
 {
-    magmablas_slag2d_q( m, n, SA, ldsa, A, lda, magma_stream, info );
+    magmablas_slag2d_q( m, n, SA, ldsa, A, lda, magmablasGetQueue(), info );
 }

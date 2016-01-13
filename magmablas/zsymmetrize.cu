@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -30,7 +30,7 @@ zsymmetrize_lower( int m, magmaDoubleComplex *dA, int ldda )
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dAT = cuConj(*dA);  // upper := lower
+            *dAT = MAGMA_Z_CNJG(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
@@ -50,7 +50,7 @@ zsymmetrize_upper( int m, magmaDoubleComplex *dA, int ldda )
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dA = cuConj(*dAT);  // lower := upper
+            *dA = MAGMA_Z_CNJG(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
@@ -114,15 +114,14 @@ magmablas_zsymmetrize_q(
     if ( m == 0 )
         return;
     
-    
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
     
     if ( uplo == MagmaUpper ) {
-        zsymmetrize_upper<<< grid, threads, 0, queue >>>( m, dA, ldda );
+        zsymmetrize_upper<<< grid, threads, 0, queue->cuda_stream() >>>( m, dA, ldda );
     }
     else {
-        zsymmetrize_lower<<< grid, threads, 0, queue >>>( m, dA, ldda );
+        zsymmetrize_lower<<< grid, threads, 0, queue->cuda_stream() >>>( m, dA, ldda );
     }
 }
 
@@ -136,5 +135,5 @@ magmablas_zsymmetrize(
     magma_uplo_t uplo, magma_int_t m,
     magmaDoubleComplex_ptr dA, magma_int_t ldda )
 {
-    magmablas_zsymmetrize_q( uplo, m, dA, ldda, magma_stream );
+    magmablas_zsymmetrize_q( uplo, m, dA, ldda, magmablasGetQueue() );
 }

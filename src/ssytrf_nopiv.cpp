@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Ichitaro Yamazaki
        @author Stan Tomov
 
-       @generated from zhetrf_nopiv.cpp normal z -> s, Fri Sep 11 18:29:29 2015
+       @generated from src/zhetrf_nopiv.cpp normal z -> s, Wed Jan  6 17:59:32 2016
 */
-
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "trace.h"
 
 /**
@@ -23,8 +22,8 @@
     as input. GPU memory is allocated in the routine.
 
     The factorization has the form
-       A = U^H * D * U,   if UPLO = 'U', or
-       A = L   * D * L^H, if UPLO = 'L',
+       A = U^H * D * U,   if UPLO = MagmaUpper, or
+       A = L   * D * L^H, if UPLO = MagmaLower,
     where U is an upper triangular matrix, L is lower triangular, and
     D is a diagonal matrix.
 
@@ -33,9 +32,9 @@
     Arguments
     ---------
     @param[in]
-    uplo    CHARACTER*1
-      -     = 'U':  Upper triangle of A is stored;
-      -     = 'L':  Lower triangle of A is stored.
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
 
     @param[in]
     n       INTEGER
@@ -43,10 +42,10 @@
 
     @param[in,out]
     A       REAL array, dimension (LDA,N)
-            On entry, the symmetric matrix A.  If UPLO = 'U', the leading
+            On entry, the symmetric matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of A contains the lower
             triangular part of the matrix A, and the strictly upper
             triangular part of A is not referenced.
@@ -82,8 +81,8 @@ magma_ssytrf_nopiv(
     #define dW(i, j)  (dW +(j)*ldda + (i))
     #define dWt(i, j) (dW +(j)*nb   + (i))
 
-    float zone  = MAGMA_S_ONE;
-    float mzone = MAGMA_S_NEG_ONE;
+    float c_one     = MAGMA_S_ONE;
+    float c_neg_one = MAGMA_S_NEG_ONE;
     int                upper = (uplo == MagmaUpper);
     magma_int_t j, k, jb, ldda, nb, ib, iinfo;
     magmaFloat_ptr dA;
@@ -117,12 +116,15 @@ magma_ssytrf_nopiv(
         return *info;
     }
 
-    magma_queue_t stream[2];
+    magma_device_t cdev;
+    magma_queue_t queues[2];
     magma_event_t event;
-    magma_queue_create(&stream[0]);
-    magma_queue_create(&stream[1]);
+
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
     magma_event_create( &event );
-    trace_init( 1, 1, 2, stream );
+    trace_init( 1, 1, 2, queues );
 
     /* Use hybrid blocked code. */
     if (upper) {
@@ -132,7 +134,7 @@ magma_ssytrf_nopiv(
         for (j=0; j < n; j += nb) {
             jb = min(nb, (n-j));
             trace_gpu_start( 0, 0, "set", "set" );
-            magma_ssetmatrix_async(j+jb, jb, A(0, j), lda, dA(0, j), ldda, stream[0]);
+            magma_ssetmatrix_async(j+jb, jb, A(0, j), lda, dA(0, j), ldda, queues[0]);
             trace_gpu_end( 0, 0 );
         }
         
@@ -144,14 +146,14 @@ magma_ssytrf_nopiv(
             trace_gpu_start( 0, 0, "get", "get" );
             if ( j != 0) {
                 //magma_event_sync(event);
-                magma_sgetmatrix_async(jb, jb, dA(j, j), ldda, A(j,j), lda, stream[1]);
+                magma_sgetmatrix_async(jb, jb, dA(j, j), ldda, A(j,j), lda, queues[1]);
             }
             trace_gpu_end( 0, 0 );
             
             // factorize the diagonal block
-            magma_queue_sync(stream[1]);
+            magma_queue_sync(queues[1]);
             trace_cpu_start( 0, "potrf", "potrf" );
-            ssytrf_nopiv_cpu(MagmaUpper, jb, ib, A(j, j), lda, info);
+            magma_ssytrf_nopiv_cpu( MagmaUpper, jb, ib, A(j, j), lda, info );
             trace_cpu_end( 0 );
             if (*info != 0) {
                 *info = *info + j;
@@ -160,42 +162,43 @@ magma_ssytrf_nopiv(
             
             // copy A(j,j) back to GPU
             trace_gpu_start( 0, 0, "set", "set" );
-            magma_ssetmatrix_async(jb, jb, A(j, j), lda, dA(j, j), ldda, stream[0]);
+            magma_ssetmatrix_async(jb, jb, A(j, j), lda, dA(j, j), ldda, queues[0]);
             trace_gpu_end( 0, 0 );
             
             // copy j-th column of U back to CPU
             trace_gpu_start( 0, 1, "get", "get" );
-            magma_sgetmatrix_async(j, jb, dA(0, j), ldda, A(0, j), lda, stream[1]);
+            magma_sgetmatrix_async(j, jb, dA(0, j), ldda, A(0, j), lda, queues[1]);
             trace_gpu_end( 0, 1 );
 
             if ( (j+jb) < n) {
                 // compute the off-diagonal blocks of current block column
-                magmablasSetKernelStream( stream[0] );
                 trace_gpu_start( 0, 0, "trsm", "trsm" );
-                magma_strsm(MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaUnit,
-                            jb, (n-j-jb),
-                            zone, dA(j, j),    ldda,
-                            dA(j, j+jb), ldda);
-                magma_scopymatrix( jb, n-j-jb, dA( j, j+jb ), ldda, dWt( 0, j+jb ), nb );
+                magma_strsm( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaUnit,
+                             jb, (n-j-jb),
+                             c_one, dA(j, j), ldda,
+                             dA(j, j+jb), ldda,
+                             queues[0] );
+                magma_scopymatrix( jb, n-j-jb, dA( j, j+jb ), ldda, dWt( 0, j+jb ), nb, queues[0] );
                 
                 // update the trailing submatrix with D
-                magmablas_slascl_diag(MagmaUpper, jb, n-j-jb,
-                                      dA(j,    j), ldda,
-                                      dA(j, j+jb), ldda,
-                                      &iinfo);
+                magmablas_slascl_diag( MagmaUpper, jb, n-j-jb,
+                                       dA(j,    j), ldda,
+                                       dA(j, j+jb), ldda,
+                                       queues[0], &iinfo);
                 trace_gpu_end( 0, 0 );
                 
                 // update the trailing submatrix with U and W
                 trace_gpu_start( 0, 0, "gemm", "gemm" );
                 for (k=j+jb; k < n; k += nb) {
                     magma_int_t kb = min(nb,n-k);
-                    magma_sgemm(MagmaConjTrans, MagmaNoTrans, kb, n-k, jb,
-                                mzone, dWt(0, k), nb,
-                                       dA(j, k), ldda,
-                                zone,  dA(k, k), ldda);
+                    magma_sgemm( MagmaConjTrans, MagmaNoTrans, kb, n-k, jb,
+                                 c_neg_one, dWt(0, k), nb,
+                                            dA(j, k),  ldda,
+                                 c_one,     dA(k, k),  ldda,
+                                 queues[0]);
                     if (k == j+jb) {
-                        // magma_event_record( event, stream[0] );
-                        magma_queue_sync( stream[0] );
+                        // magma_event_record( event, queues[0] );
+                        magma_queue_sync( queues[0] );
                     }
                 }
                 trace_gpu_end( 0, 0 );
@@ -208,7 +211,7 @@ magma_ssytrf_nopiv(
         for (j=0; j < n; j += nb) {
             jb = min(nb, (n-j));
             trace_gpu_start( 0, 0, "set", "set" );
-            magma_ssetmatrix_async((n-j), jb, A(j, j), lda, dA(j, j), ldda, stream[0]);
+            magma_ssetmatrix_async((n-j), jb, A(j, j), lda, dA(j, j), ldda, queues[0]);
             trace_gpu_end( 0, 0 );
         }
         
@@ -220,14 +223,14 @@ magma_ssytrf_nopiv(
             trace_gpu_start( 0, 0, "get", "get" );
             if (j != 0) {
                 //magma_event_sync(event);
-                magma_sgetmatrix_async(jb, jb, dA(j, j), ldda, A(j,j), lda, stream[1]);
+                magma_sgetmatrix_async(jb, jb, dA(j, j), ldda, A(j,j), lda, queues[1]);
             }
             trace_gpu_end( 0, 0 );
             
             // factorize the diagonal block
-            magma_queue_sync(stream[1]);
+            magma_queue_sync(queues[1]);
             trace_cpu_start( 0, "potrf", "potrf" );
-            ssytrf_nopiv_cpu(MagmaLower, jb, ib, A(j, j), lda, info);
+            magma_ssytrf_nopiv_cpu( MagmaLower, jb, ib, A(j, j), lda, info );
             trace_cpu_end( 0 );
             if (*info != 0) {
                 *info = *info + j;
@@ -236,42 +239,43 @@ magma_ssytrf_nopiv(
 
             // copy A(j,j) back to GPU
             trace_gpu_start( 0, 0, "set", "set" );
-            magma_ssetmatrix_async(jb, jb, A(j, j), lda, dA(j, j), ldda, stream[0]);
+            magma_ssetmatrix_async(jb, jb, A(j, j), lda, dA(j, j), ldda, queues[0]);
             trace_gpu_end( 0, 0 );
             
             // copy j-th row of L back to CPU
             trace_gpu_start( 0, 1, "get", "get" );
-            magma_sgetmatrix_async(jb, j, dA(j, 0), ldda, A(j, 0), lda, stream[1]);
+            magma_sgetmatrix_async(jb, j, dA(j, 0), ldda, A(j, 0), lda, queues[1]);
             trace_gpu_end( 0, 1 );
             
             if ( (j+jb) < n) {
                 // compute the off-diagonal blocks of current block column
-                magmablasSetKernelStream( stream[0] );
                 trace_gpu_start( 0, 0, "trsm", "trsm" );
-                magma_strsm(MagmaRight, MagmaLower, MagmaConjTrans, MagmaUnit,
-                            (n-j-jb), jb,
-                            zone, dA(j,    j), ldda,
-                            dA(j+jb, j), ldda);
-                magma_scopymatrix( n-j-jb,jb, dA( j+jb, j ), ldda, dW( j+jb, 0 ), ldda );
+                magma_strsm( MagmaRight, MagmaLower, MagmaConjTrans, MagmaUnit,
+                             (n-j-jb), jb,
+                             c_one, dA(j, j), ldda,
+                             dA(j+jb, j), ldda,
+                             queues[0] );
+                magma_scopymatrix( n-j-jb,jb, dA( j+jb, j ), ldda, dW( j+jb, 0 ), ldda, queues[0] );
                 
                 // update the trailing submatrix with D
-                magmablas_slascl_diag(MagmaLower, n-j-jb, jb,
-                                      dA(j,    j), ldda,
-                                      dA(j+jb, j), ldda,
-                                      &iinfo);
+                magmablas_slascl_diag( MagmaLower, n-j-jb, jb,
+                                       dA(j,    j), ldda,
+                                       dA(j+jb, j), ldda,
+                                       queues[0], &iinfo );
                 trace_gpu_end( 0, 0 );
                 
                 // update the trailing submatrix with L and W
                 trace_gpu_start( 0, 0, "gemm", "gemm" );
                 for (k=j+jb; k < n; k += nb) {
                     magma_int_t kb = min(nb,n-k);
-                    magma_sgemm(MagmaNoTrans, MagmaConjTrans, n-k, kb, jb,
-                                mzone, dA(k, j), ldda,
-                                       dW(k, 0), ldda,
-                                zone,  dA(k, k), ldda);
+                    magma_sgemm( MagmaNoTrans, MagmaConjTrans, n-k, kb, jb,
+                                 c_neg_one, dA(k, j), ldda,
+                                            dW(k, 0), ldda,
+                                 c_one,     dA(k, k), ldda,
+                                 queues[0] );
                     if (k == j+jb) {
-                        //magma_event_record( event, stream[0] );
-                        magma_queue_sync(stream[0]);
+                        //magma_event_record( event, queues[0] );
+                        magma_queue_sync(queues[0]);
                     }
                 }
                 trace_gpu_end( 0, 0 );
@@ -280,8 +284,8 @@ magma_ssytrf_nopiv(
     }
     
     trace_finalize( "ssytrf.svg","trace.css" );
-    magma_queue_destroy(stream[0]);
-    magma_queue_destroy(stream[1]);
+    magma_queue_destroy(queues[0]);
+    magma_queue_destroy(queues[1]);
     magma_event_destroy( event );
     magma_free(dW);
     magma_free(dA);

@@ -1,19 +1,26 @@
-# Automatically generated from Makefile ZHDR and ZSRC
-CHDR = \
-	magmasparse_c.h
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 2.0.0-beta2) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      @date January 2016
+#//////////////////////////////////////////////////////////////////////////////
 
-DHDR = \
-	magmasparse_d.h \
-	magmasparse_ds.h
+# push previous directory
+dir_stack := $(dir_stack) $(cdir)
+cdir      := sparse-iter/include
+# ----------------------------------------------------------------------
 
-SHDR = \
-	magmasparse_s.h
 
-CSRC = \
-	
+# only headers needing precision generation need to go here.
+# plain headers do not need to be listed.
+zhdr += \
+	$(cdir)/magmasparse_z.h               \
+	$(cdir)/magmasparse_zc.h              \
+	$(cdir)/magmasparse_types.h           \
 
-DSRC = \
-	
 
-SSRC = \
-	
+# ----------------------------------------------------------------------
+# pop first directory
+cdir      := $(firstword $(dir_stack))
+dir_stack := $(wordlist 2, $(words $(dir_stack)), $(dir_stack))

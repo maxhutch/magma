@@ -1,9 +1,9 @@
     /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -77,7 +77,9 @@ setup_pivinfo_batched( magma_int_t **pivinfo_array, magma_int_t **ipiv_array,
                          magma_queue_t queue)
 {
     if (nb == 0 ) return;
-    setup_pivinfo_kernel_batched<<<batchCount, min(m, MAX_NTHREADS), 0, queue>>>(pivinfo_array, ipiv_array, m, nb);
+    setup_pivinfo_kernel_batched
+        <<< batchCount, min(m, MAX_NTHREADS), 0, queue->cuda_stream() >>>
+        (pivinfo_array, ipiv_array, m, nb);
 }
 
 
@@ -93,7 +95,9 @@ setup_pivinfo( magma_int_t *pivinfo, magma_int_t *ipiv,
                  magma_queue_t queue)
 {
     if (nb == 0 ) return;
-    setup_pivinfo_kernel<<<1, min(m, MAX_NTHREADS), 0, queue>>>(pivinfo, ipiv, m, nb);
+    setup_pivinfo_kernel
+        <<< 1, min(m, MAX_NTHREADS), 0, queue->cuda_stream() >>>
+        (pivinfo, ipiv, m, nb);
 }
 //=================================================================================================
 
@@ -148,7 +152,9 @@ adjust_ipiv_batched( magma_int_t **ipiv_array,
         printf(" adjust_ipiv_batched_q m=%d > %d, not supported \n", int(m), int(MAX_NTHREADS) );
         return;
     }
-    adjust_ipiv_kernel_batched<<<batchCount, m, 0, queue>>>(ipiv_array, m, offset);
+    adjust_ipiv_kernel_batched
+        <<< batchCount, m, 0, queue->cuda_stream() >>>
+        (ipiv_array, m, offset);
 }
 
 
@@ -172,5 +178,7 @@ adjust_ipiv( magma_int_t *ipiv,
         printf(" adjust_ipiv_q m=%d > %d, not supported \n", int(m), int(MAX_NTHREADS) );
         return;
     }
-    adjust_ipiv_kernel<<<1, m, 0, queue>>>(ipiv, m, offset);
+    adjust_ipiv_kernel
+        <<< 1, m, 0, queue->cuda_stream() >>>
+        (ipiv, m, offset);
 }

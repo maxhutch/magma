@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -459,6 +459,7 @@ int main( int argc, char** argv )
         printf( "all tests passed\n" );
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     
     int status = (total_error != 0.);

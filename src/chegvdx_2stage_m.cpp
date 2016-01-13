@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from zhegvdx_2stage_m.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+       @generated from src/zhegvdx_2stage_m.cpp normal z -> c, Wed Jan  6 17:59:34 2016
 
 */
 #include "common_magma.h"
@@ -108,9 +108,9 @@
             The leading dimension of the array B.  LDB >= max(1,N).
 
     @param[in]
-    vl      REAL
+    vl      DOUBLE_PRECISION
     @param[in]
-    vu      REAL
+    vu      DOUBLE_PRECISION
             If RANGE=MagmaRangeV, the lower and upper bounds of the interval to
             be searched for eigenvalues. VL < VU.
             Not referenced if RANGE = MagmaRangeAll or MagmaRangeI.
@@ -130,7 +130,7 @@
             If RANGE = MagmaRangeAll, M = N, and if RANGE = MagmaRangeI, M = IU-IL+1.
 
     @param[out]
-    w       REAL array, dimension (N)
+    w       DOUBLE_PRECISION array, dimension (N)
             If INFO = 0, the eigenvalues in ascending order.
 
     @param[out]
@@ -141,10 +141,14 @@
     lwork   INTEGER
             The length of the array WORK.
             If N <= 1,                      LWORK >= 1.
-            If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N + N*NB.
-            If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 2*N + N**2.
+            For COMPLEX ([cz]hegvdx):
+                If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + N + N*NB.
+                If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 2*N + N**2.
+            For REAL ([sd]sygvdx):
+                If JOBZ = MagmaNoVec and N > 1, LWORK >= LQ2 + 2*N + N*NB.
+                If JOBZ = MagmaVec   and N > 1, LWORK >= LQ2 + 1 + 6*N + 2*N**2.
             where LQ2 is the size needed to store the Q2 matrix
-            and is returned by magma_bulge_get_lq2.
+            as returned by magma_bulge_get_lq2.
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal sizes of the WORK, RWORK and
@@ -152,9 +156,12 @@
             the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
 
+#ifdef COMPLEX
     @param[out]
-    rwork   (workspace) REAL array, dimension (MAX(1,LRWORK))
+    rwork   (workspace) DOUBLE_PRECISION array, dimension (MAX(1,LRWORK))
             On exit, if INFO = 0, RWORK[0] returns the optimal LRWORK.
+    \n
+            COMPLEX [cz]hegvdx only
 
     @param[in]
     lrwork  INTEGER
@@ -168,6 +175,9 @@
             and IWORK arrays, returns these values as the first entries
             of the WORK, RWORK and IWORK arrays, and no error message
             related to LWORK or LRWORK or LIWORK is issued by XERBLA.
+    \n
+            COMPLEX [cz]hegvdx only
+#endif
 
     @param[out]
     iwork   (workspace) INTEGER array, dimension (MAX(1,LIWORK))
@@ -232,10 +242,14 @@ magma_chegvdx_2stage_m(
     magma_int_t *iwork, magma_int_t liwork,
     magma_int_t *info)
 {
+    /* Constants */
+    const magmaFloatComplex c_one = MAGMA_C_ONE;
+
+    /* Local variables */
+    magma_timer_t time=0;
+    
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
-
-    magmaFloatComplex c_one = MAGMA_C_ONE;
 
     magma_int_t lower;
     magma_trans_t trans;
@@ -245,7 +259,9 @@ magma_chegvdx_2stage_m(
 
     magma_int_t lwmin;
     magma_int_t liwmin;
+    #ifdef COMPLEX
     magma_int_t lrwmin;
+    #endif
 
     /* determine the number of threads */
     magma_int_t parallel_threads = magma_get_parallel_numthreads();
@@ -255,8 +271,11 @@ magma_chegvdx_2stage_m(
     alleig = (range == MagmaRangeAll);
     valeig = (range == MagmaRangeV);
     indeig = (range == MagmaRangeI);
-    lquery = (lwork == -1 || lrwork == -1 || liwork == -1);
-
+    lquery = (lwork == -1 || liwork == -1);
+    #ifdef COMPLEX
+    lquery = (lquery || lrwork == -1);
+    #endif
+    
     *info = 0;
     if (itype < 1 || itype > 3) {
         *info = -1;
@@ -286,32 +305,52 @@ magma_chegvdx_2stage_m(
         }
     }
 
-    magma_int_t nb = magma_cbulge_get_nb(n, parallel_threads);
-    magma_int_t lq2 = magma_cbulge_get_lq2(n, parallel_threads, wantz);
+    magma_int_t nb = magma_get_cbulge_nb(n, parallel_threads);
+    magma_int_t lq2 = magma_get_cbulge_lq2(n, parallel_threads, wantz);
 
-    if (wantz) {
-        lwmin  = lq2 + 2*n + n*n;
-        lrwmin = 1 + 5*n + 2*n*n;
-        liwmin = 5*n + 3;
-    } else {
-        lwmin  = lq2 + n + n*nb;
-        lrwmin = n;
-        liwmin = 1;
-    }
+    #ifdef COMPLEX
+        if (wantz) {
+            lwmin  = lq2 + 2*n + n*n;
+            lrwmin = 1 + 5*n + 2*n*n;
+            liwmin = 5*n + 3;
+        } else {
+            lwmin  = lq2 + n + n*nb;
+            lrwmin = n;
+            liwmin = 1;
+        }
+    #else
+        if (wantz) {
+            lwmin  = lq2 + 1 + 6*n + 2*n*n;
+            liwmin = 3 + 5*n;
+        } else {
+            lwmin  = 2*n + n*nb;
+            liwmin = 1;
+        }
+    #endif
 
     // multiply by 1+eps (in Double!) to ensure length gets rounded up,
     // if it cannot be exactly represented in floating point.
     real_Double_t one_eps = 1. + lapackf77_slamch("Epsilon");
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0. );  // round up
+    #ifdef COMPLEX
     rwork[0] = lrwmin * one_eps;
+    #endif
     iwork[0] = liwmin;
 
     if (lwork < lwmin && ! lquery) {
         *info = -17;
-    } else if (lrwork < lrwmin && ! lquery) {
+    }
+    #ifdef COMPLEX
+    else if (lrwork < lrwmin && ! lquery) {
         *info = -19;
-    } else if (liwork < liwmin && ! lquery) {
+    }
+    #endif
+    else if (liwork < liwmin && ! lquery) {
+        #ifdef COMPLEX
         *info = -21;
+        #else
+        *info = -19;
+        #endif
     }
 
     if (*info != 0) {
@@ -340,7 +379,6 @@ magma_chegvdx_2stage_m(
     }
 
     /* Form a Cholesky factorization of B. */
-    magma_timer_t time=0;
     timer_start( time );
 
     magma_cpotrf_m( ngpu, uplo, n, B, ldb, info );
@@ -360,7 +398,12 @@ magma_chegvdx_2stage_m(
     timer_printf( "time chegst_m = %6.2f\n", time );
     timer_start( time );
 
-    magma_cheevdx_2stage_m( ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu, mout, w, work, lwork, rwork, lrwork, iwork, liwork, info );
+    magma_cheevdx_2stage_m( ngpu, jobz, range, uplo, n, A, lda, vl, vu, il, iu,
+                            mout, w, work, lwork,
+                            #ifdef COMPLEX
+                            rwork, lrwork,
+                            #endif
+                            iwork, liwork, info );
 
     timer_stop( time );
     timer_printf( "time cheevdx_2stage_m = %6.2f\n", time );
@@ -418,8 +461,10 @@ magma_chegvdx_2stage_m(
         timer_printf( "time trsm/mm_m = %6.2f\n", time );
     }
 
-    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0.);  // round up
+    work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0. );  // round up
+    #ifdef COMPLEX
     rwork[0] = lrwmin * one_eps;
+    #endif
     iwork[0] = liwmin;
 
     return *info;

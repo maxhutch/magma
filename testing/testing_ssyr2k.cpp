@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zher2k.cpp normal z -> s, Fri Sep 11 18:29:36 2015
+       @generated from testing/testing_zher2k.cpp normal z -> s, Wed Jan  6 17:59:46 2016
        @author Chongxiao Cao
 */
 // includes, system
@@ -175,6 +175,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

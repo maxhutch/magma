@@ -13,8 +13,6 @@
 
 #include "common_magma.h"
 #include "magma_zbulgeinc.h"
-
-#define PRECISION_z
  
 #ifdef __cplusplus
 extern "C" {
@@ -120,8 +118,8 @@ magma_ztrdtype1cbHLsym_withQ(
     lapackf77_zlarfg( &len, A(st, st-1), V(vpos+1), &IONE, TAU(taupos) );
     /* apply left and right on A(st:ed,st:ed)*/
     magma_zlarfxsym(len,A(st,st),LDX,V(vpos),TAU(taupos));
-    //conjtmp = MAGMA_Z_CNJG(*TAU(taupos));
-    //lapackf77_zlarfy("L", &len, V(vpos), &IONE, &conjtmp, A(st,st), &LDX, WORK); //&(MAGMA_Z_CNJG(*TAU(taupos)))
+    //conjtmp = MAGMA_Z_CONJ(*TAU(taupos));
+    //lapackf77_zlarfy("L", &len, V(vpos), &IONE, &conjtmp, A(st,st), &LDX, WORK); //&(MAGMA_Z_CONJ(*TAU(taupos)))
     magma_free_cpu(WORK);
 }
 #undef A
@@ -174,7 +172,7 @@ magma_ztrdtype2cbHLsym_withQ(
         lapackf77_zlarfg( &lem, A(J1, st), V(vpos+1), &IONE, TAU(taupos) );
         /* apply left on A(J1:J2,st+1:ed) */
         len = len-1; /* because we start at col st+1 instead of st. col st is the col that has been revomved; */
-        conjtmp = MAGMA_Z_CNJG(*TAU(taupos));
+        conjtmp = MAGMA_Z_CONJ(*TAU(taupos));
         lapackf77_zlarfx("L", &lem, &len, V(vpos),  &conjtmp, A(J1, st+1), &LDX, WORK);
     }
     magma_free_cpu(WORK);
@@ -213,8 +211,8 @@ magma_ztrdtype3cbHLsym_withQ(
     
     /* apply left and right on A(st:ed,st:ed)*/
     magma_zlarfxsym(len,A(st,st),LDX,V(vpos),TAU(taupos));
-    //conjtmp = MAGMA_Z_CNJG(*TAU(taupos));
-    //lapackf77_zlarfy("L", &len, V(vpos), &IONE,  &(MAGMA_Z_CNJG(*TAU(taupos))), A(st,st), &LDX, WORK);
+    //conjtmp = MAGMA_Z_CONJ(*TAU(taupos));
+    //lapackf77_zlarfy("L", &len, V(vpos), &IONE,  &(MAGMA_Z_CONJ(*TAU(taupos))), A(st,st), &LDX, WORK);
     magma_free_cpu(WORK);
 }
 #undef A

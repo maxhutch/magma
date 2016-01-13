@@ -1,32 +1,10 @@
-#//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.7.0) --
-#      Univ. of Tennessee, Knoxville
-#      Univ. of California, Berkeley
-#      Univ. of Colorado, Denver
-#      @date September 2015
-#//////////////////////////////////////////////////////////////////////////////
+# See Makefile.src for list of files in this directory.
+# This makefile simply forwards commands to the top-level makefile.
 
-DIR = sparse-iter/include
-MAGMA_DIR = ../..
-include $(MAGMA_DIR)/Makefile.internal
+top  := ../..
+pwd  := $(shell pwd)
+cdir := sparse-iter/include
 
-ZHDR := \
-	magmasparse_z.h		\
-	magmasparse_zc.h	\
-	magmasparse_types.h	\
+default: $(cdir)
 
-
-# ------------------------------------------------------------
--include Makefile.local
--include Makefile.src
-
-ALLHDR := $(ZHDR) $(CHDR) $(DHDR) $(SHDR)
-
-.PHONY: all clean cleanall
-
-all: $(ALLHDR)
-
-clean:
-	rm -f *~ *.mod
-
-cleanall: clean
+include $(top)/Makefile.subdir

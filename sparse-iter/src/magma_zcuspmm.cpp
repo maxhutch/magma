@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define RTOLERANCE     lapackf77_dlamch( "E" )
 #define ATOLERANCE     lapackf77_dlamch( "E" )
@@ -89,7 +89,7 @@ magma_zcuspmm(
     {
         // CUSPARSE context /
         CHECK_CUSPARSE( cusparseCreate( &handle ));
-        CHECK_CUSPARSE( cusparseSetStream( handle, queue ));
+        CHECK_CUSPARSE( cusparseSetStream( handle, queue->cuda_stream() ));
         CHECK_CUSPARSE( cusparseCreateMatDescr( &descrA ));
         CHECK_CUSPARSE( cusparseCreateMatDescr( &descrB ));
         CHECK_CUSPARSE( cusparseCreateMatDescr( &descrC ));
@@ -114,8 +114,8 @@ magma_zcuspmm(
             C.nnz = *nnzTotalDevHostPtr;
         } else {
             // workaround as nnz and base C are magma_int_t
-            magma_index_getvector( 1, C.drow+C.num_rows, 1, &nnz_t, 1 );
-            magma_index_getvector( 1, C.drow,   1, &base_t,    1 );
+            magma_index_getvector( 1, C.drow+C.num_rows, 1, &nnz_t, 1, queue );
+            magma_index_getvector( 1, C.drow,   1, &base_t,    1, queue );
             C.nnz = (magma_int_t) nnz_t;
             baseC = (magma_int_t) base_t;
             C.nnz -= baseC;
@@ -132,7 +132,8 @@ magma_zcuspmm(
                         descrC,
                         C.dval, C.drow, C.dcol ));
         // end CUSPARSE context //
-
+        //magma_device_sync();
+        magma_queue_sync( queue );
         CHECK( magma_zmtransfer( C, AB, Magma_DEV, Magma_DEV, queue ));
     }
     else {

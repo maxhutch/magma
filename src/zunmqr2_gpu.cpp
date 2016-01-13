@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Stan Tomov
+       @author Mark Gates
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -29,8 +30,9 @@
 
           Q = H(1) H(2) . . . H(k)
 
-    as returned by ZGEQRF. Q is of order M if SIDE = MagmaLeft and of order N
-    if SIDE = MagmaRight.
+    as returned by ZGEQRF.
+    Q is of order M if SIDE = MagmaLeft
+    and  of order N if SIDE = MagmaRight.
 
     Arguments
     ---------
@@ -59,7 +61,7 @@
             If SIDE = MagmaLeft,  M >= K >= 0;
             if SIDE = MagmaRight, N >= K >= 0.
 
-    @param[in]
+    @param[in,out]
     dA      COMPLEX_16 array on the GPU, dimension (LDDA,K)
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,k, as returned by
@@ -88,16 +90,18 @@
             The leading dimension of the array dC. LDDC >= max(1,M).
 
     @param[in]
-    wA      (workspace) COMPLEX_16 array, dimension
+    wA      COMPLEX_16 array, dimension
                                  (LDWA,M) if SIDE = MagmaLeft
                                  (LDWA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
             returned by ZHETRD_GPU.
+            (A copy of the upper or lower part of dA, on the host.)
 
     @param[in]
     ldwa    INTEGER
             The leading dimension of the array wA.
-            LDWA >= max(1,M) if SIDE = MagmaLeft; LDWA >= max(1,N) if SIDE = MagmaRight.
+            If SIDE = MagmaLeft,  LDWA >= max(1,M);
+            if SIDE = MagmaRight, LDWA >= max(1,N).
 
     @param[out]
     info    INTEGER
@@ -113,39 +117,40 @@ magma_zunmqr2_gpu(
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magmaDoubleComplex    *tau,
     magmaDoubleComplex_ptr dC, magma_int_t lddc,
-    magmaDoubleComplex    *wA, magma_int_t ldwa,
+    const magmaDoubleComplex *wA, magma_int_t ldwa,
     magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dC(i_,j_) (dC + (i_) + (j_)*lddc)
     #define wA(i_,j_) (wA + (i_) + (j_)*ldwa)
     
-    /* Allocate work space on the GPU */
-    magmaDoubleComplex_ptr dwork = NULL;
-
-    magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
-    magmaDoubleComplex c_one  = MAGMA_Z_ONE;
+    /* Constants */
+    const magmaDoubleComplex c_zero = MAGMA_Z_ZERO;
+    const magmaDoubleComplex c_one  = MAGMA_Z_ONE;
+    const magma_int_t nbmax = 64;
     
-    magma_int_t i, i__4, lddwork;
-    magmaDoubleComplex T[2*4160]        /* was [65][64] */;
-    magma_int_t i1, i2, step, ib, ic, jc, nb, mi, ni, nq;
-    int left, notran;
+    /* Local variables */
+    magmaDoubleComplex_ptr dwork = NULL, dT = NULL;
+    magmaDoubleComplex T[ nbmax*nbmax ];
+    magma_int_t i, i1, i2, step, ib, ic, jc, lddwork, nb, mi, ni, nq, nq_i, nw;
+    magma_queue_t queue = NULL;
 
+    // Parameter adjustments for Fortran indexing
     wA -= 1 + ldwa;
     dC -= 1 + lddc;
     --tau;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    notran = (trans == MagmaNoTrans);
+    bool left   = (side == MagmaLeft);
+    bool notran = (trans == MagmaNoTrans);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
         nq = m;
-        //nw = n;
+        nw = n;
     } else {
         nq = n;
-        //nw = m;
+        nw = m;
     }
     if (! left && side != MagmaRight) {
         *info = -1;
@@ -165,9 +170,6 @@ magma_zunmqr2_gpu(
         *info = -12;
     }
 
-    // size of the block
-    nb = 64;
-
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
         return *info;
@@ -178,8 +180,15 @@ magma_zunmqr2_gpu(
         return *info;
     }
 
+    // size of the block
+    nb = nbmax;
+    
+    lddwork = nw;
+
     /* Use hybrid CPU-GPU code */
-    if ( ( left && (! notran) ) ||  ( (! left) && notran ) ) {
+    if ( (  left && ! notran) ||
+         (! left &&   notran) )
+    {
         i1 = 1;
         i2 = k;
         step = nb;
@@ -189,17 +198,6 @@ magma_zunmqr2_gpu(
         step = -nb;
     }
     
-    if ( left ) {
-        magma_zmalloc( &dwork, (n + 64)*64 );
-    }
-    else {
-        magma_zmalloc( &dwork, (m + 64)*64 );
-    }
-    if ( dwork == NULL ) {
-        *info = MAGMA_ERR_DEVICE_ALLOC;
-        goto cleanup;
-    }
-
     // silence "uninitialized" warnings
     mi = 0;
     ni = 0;
@@ -211,48 +209,55 @@ magma_zunmqr2_gpu(
         mi = m;
         ic = 1;
     }
+    
+    // dwork is (n or m) x nb + nb x nb, for left or right respectively
+    if (MAGMA_SUCCESS != magma_zmalloc( &dwork, lddwork*nb + nb*nb )) {
+        *info = MAGMA_ERR_DEVICE_ALLOC;
+        goto cleanup;
+    }
+    dT = dwork + lddwork*nb;
 
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     // set nb-1 super-diagonals to 0, and diagonal to 1.
     // This way we can copy V directly to the GPU,
     // with the upper triangle parts already set to identity.
-    magmablas_zlaset_band( MagmaUpper, k, k, nb, c_zero, c_one, dA, ldda );
+    magmablas_zlaset_band( MagmaUpper, k, k, nb, c_zero, c_one, dA, ldda, queue );
 
     // for i=i1 to i2 by step
     for (i = i1; (step < 0 ? i >= i2 : i <= i2); i += step) {
-        ib = min(nb, k - i + 1);
+        ib = min( nb, k - i + 1 );
 
         /* Form the triangular factor of the block reflector
            H = H(i) H(i+1) . . . H(i+ib-1) */
-        i__4 = nq - i + 1;
-        lapackf77_zlarft("Forward", "Columnwise", &i__4, &ib,
-                         wA(i,i), &ldwa, &tau[i], T, &ib);
+        nq_i = nq - i + 1;
+        lapackf77_zlarft( "Forward", "Columnwise", &nq_i, &ib,
+                          wA(i,i), &ldwa, &tau[i], T, &ib );
 
         if (left) {
-            /* H or H' is applied to C(i:m,1:n) */
+            /* H or H^H is applied to C(i:m,1:n) */
             mi = m - i + 1;
             ic = i;
         }
         else {
-            /* H or H' is applied to C(1:m,i:n) */
+            /* H or H^H is applied to C(1:m,i:n) */
             ni = n - i + 1;
             jc = i;
         }
 
-        if (left)
-            lddwork = ni;
-        else
-            lddwork = mi;
-
-        /* Apply H or H'; First copy T to the GPU */
-        magma_zsetmatrix( ib, ib, T, ib, dwork, ib );
+        /* Apply H or H^H; First copy T to the GPU */
+        magma_zsetmatrix( ib, ib, T, ib, dT, ib, queue );
         magma_zlarfb_gpu( side, trans, MagmaForward, MagmaColumnwise,
                           mi, ni, ib,
-                          dA(i-1,i-1), ldda, dwork, ib,  // dA using 0-based indices here
+                          dA(i-1,i-1), ldda, dT, ib,  // dA using 0-based indices here
                           dC(ic,jc), lddc,
-                          dwork + ib*ib, lddwork);
+                          dwork, lddwork, queue );
     }
 
 cleanup:
+    magma_queue_destroy( queue );
     magma_free( dwork );
 
     return *info;

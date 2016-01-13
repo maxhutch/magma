@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from ztranspose_conj_inplace.cu normal z -> c, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/ztranspose_conj_inplace.cu normal z -> c, Wed Jan  6 17:59:39 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -189,11 +189,11 @@ magmablas_ctranspose_conj_inplace_q(
     // block assignment differs depending on whether nblock is odd or even.
     if ( nblock % 2 == 1 ) {
         dim3 grid( nblock, (nblock+1)/2 );
-        ctranspose_conj_inplace_odd<<< grid, threads, 0, queue >>>( n, dA, ldda );
+        ctranspose_conj_inplace_odd<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda );
     }
     else {
         dim3 grid( nblock+1, nblock/2 );
-        ctranspose_conj_inplace_even<<< grid, threads, 0, queue >>>( n, dA, ldda );
+        ctranspose_conj_inplace_even<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda );
     }
 }
 
@@ -207,5 +207,5 @@ magmablas_ctranspose_conj_inplace(
     magma_int_t n,
     magmaFloatComplex_ptr dA, magma_int_t ldda )
 {
-    magmablas_ctranspose_conj_inplace_q( n, dA, ldda, magma_stream );
+    magmablas_ctranspose_conj_inplace_q( n, dA, ldda, magmablasGetQueue() );
 }

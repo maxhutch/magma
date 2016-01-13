@@ -1,14 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include <cuda_runtime.h>
+
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -62,7 +64,7 @@
     @param[in]
     lwork   INTEGER
             The dimension of the array WORK.  LWORK >= N*NB,
-            where NB can be obtained through magma_get_zgeqrf_nb(M).
+            where NB can be obtained through magma_get_zgeqrf_nb( M, N ).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -79,11 +81,11 @@
     ---------------
     The matrix Q is represented as a product of elementary reflectors
 
-       Q = H(1) H(2) . . . H(k), where k = min(m,n).
+        Q = H(1) H(2) . . . H(k), where k = min(m,n).
 
     Each H(i) has the form
 
-       H(i) = I - tau * v * v'
+        H(i) = I - tau * v * v'
 
     where tau is a complex scalar, and v is a complex vector with
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
@@ -98,20 +100,22 @@ magma_zgeqrf_ooc(
     magmaDoubleComplex *work, magma_int_t lwork,
     magma_int_t *info )
 {
-    #define  A(a_1,a_2) ( A + (a_2)*(lda) + (a_1))
-    #define dA(a_1,a_2) (dA + (a_2)*ldda  + (a_1))
+    #define  A(i_,j_) ( A + (i_) + (j_)*lda )
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
 
-    magmaDoubleComplex *dA, *dwork;
-    magmaDoubleComplex c_one = MAGMA_Z_ONE;
+    /* Constants */
+    const magmaDoubleComplex c_one = MAGMA_Z_ONE;
+    
+    /* Local variables */
+    magmaDoubleComplex_ptr dA, dwork;
+    magma_int_t i, ib, IB, j, k, lddwork, ldda, rows;
 
-    int  k, lddwork, ldda;
+    magma_int_t nb = magma_get_zgeqrf_nb( m, n );
 
-    *info = 0;
-    int nb = magma_get_zgeqrf_nb(min(m, n));
-
-    int lwkopt = n * nb;
+    magma_int_t lwkopt = n * nb;
     work[0] = MAGMA_Z_MAKE( (double)lwkopt, 0 );
-    int lquery = (lwork == -1);
+    bool lquery = (lwork == -1);
+    *info = 0;
     if (m < 0) {
         *info = -1;
     } else if (n < 0) {
@@ -129,15 +133,12 @@ magma_zgeqrf_ooc(
         return *info;
     }
 
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-    
     /* Check how much memory do we have */
     size_t freeMem, totalMem;
     cudaMemGetInfo( &freeMem, &totalMem );
     freeMem /= sizeof(magmaDoubleComplex);
     
-    magma_int_t IB, NB = (magma_int_t)(0.8*freeMem/m);
+    magma_int_t NB = magma_int_t(0.8*freeMem/m);
     NB = (NB / nb) * nb;
 
     if (NB >= n)
@@ -157,29 +158,29 @@ magma_zgeqrf_ooc(
         return *info;
     }
 
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
 
-    //   magmablasSetKernelStream(stream[1]);
-
-    magmaDoubleComplex *ptr = dA + ldda * NB;
+    magmaDoubleComplex_ptr ptr = dA + ldda*NB;
     dwork = dA + ldda*(NB + nb);
 
     /* start the main loop over the blocks that fit in the GPU memory */
-    for (int i=0; i < n; i += NB) {
-        IB = min(n-i, NB);
+    for (i=0; i < n; i += NB) {
+        IB = min( n-i, NB );
         //printf("Processing %5d columns -- %5d to %5d ... \n", IB, i, i+IB);
 
         /* 1. Copy the next part of the matrix to the GPU */
-        magma_zsetmatrix_async( (m), IB,
+        magma_zsetmatrix_async( m, IB,
                                 A(0,i),  lda,
-                                dA(0,0), ldda, stream[0] );
-        magma_queue_sync( stream[0] );
+                                dA(0,0), ldda, queues[0] );
+        magma_queue_sync( queues[0] );
 
         /* 2. Update it with the previous transformations */
-        for (int j=0; j < min(i,k); j += nb) {
-            magma_int_t ib = min(k-j, nb);
+        for (j=0; j < min(i,k); j += nb) {
+            ib = min( k-j, nb );
 
             /* Get a panel in ptr.                                           */
             //   1. Form the triangular factor of the block reflector
@@ -188,44 +189,42 @@ magma_zgeqrf_ooc(
             //   4. Send V to the GPU in ptr.
             //   5. Update the matrix.
             //   6. Restore the upper part of V.
-            magma_int_t rows = m-j;
+            rows = m-j;
             lapackf77_zlarft( MagmaForwardStr, MagmaColumnwiseStr,
                               &rows, &ib, A(j,j), &lda, tau+j, work, &ib);
             magma_zsetmatrix_async( ib, ib,
                                     work,  ib,
-                                    dwork, lddwork, stream[1] );
+                                    dwork, lddwork, queues[1] );
 
-            magma_zpanel_to_q(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
+            magma_zpanel_to_q( MagmaUpper, ib, A(j,j), lda, work+ib*ib );
             magma_zsetmatrix_async( rows, ib,
                                     A(j,j), lda,
-                                    ptr,        rows, stream[1] );
-            magma_queue_sync( stream[1] );
+                                    ptr,    rows, queues[1] );
+            magma_queue_sync( queues[1] );
 
             magma_zlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                               rows, IB, ib,
                               ptr, rows, dwork,    lddwork,
-                              dA(j, 0), ldda, dwork+ib, lddwork);
+                              dA(j, 0), ldda, dwork+ib, lddwork, queues[1] );
 
-            magma_zq_to_panel(MagmaUpper, ib, A(j,j), lda, work+ib*ib);
+            magma_zq_to_panel( MagmaUpper, ib, A(j,j), lda, work+ib*ib );
         }
 
         /* 3. Do a QR on the current part */
         if (i < k)
-            magma_zgeqrf2_gpu(m-i, IB, dA(i,0), ldda, tau+i, info);
+            magma_zgeqrf2_gpu( m-i, IB, dA(i,0), ldda, tau+i, info );
 
         /* 4. Copy the current part back to the CPU */
-        magma_zgetmatrix_async( (m), IB,
+        magma_zgetmatrix_async( m, IB,
                                 dA(0,0), ldda,
-                                A(0,i),  lda, stream[0] );
+                                A(0,i),  lda, queues[0] );
     }
 
-    magma_queue_sync( stream[0] );
+    magma_queue_sync( queues[0] );
 
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     magma_free( dA );
-
-    magmablasSetKernelStream( orig_stream );
     
     return *info;
 } /* magma_zgeqrf_ooc */

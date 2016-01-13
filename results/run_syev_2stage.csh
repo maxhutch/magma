@@ -13,6 +13,9 @@ setenv SIZES "-N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:9
 # uncomment next line to get LAPACK results --- takes a VERY LONG time!
 #setenv SIZES "$SIZES --lapack"
 
+# 2 hours = 16 cores * 2 * 60 * 60
+limit cputime 115200
+
 
 $NUMA ../testing/testing_ssyevdx_2stage -JN $SIZES >>&! ssyevd_2stage.txt
 $NUMA ../testing/testing_ssyevdx_2stage -JV $SIZES >>&! ssyevd_2stage.txt

@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Mark Gates
 
-   @generated from testing_zgetri_batched.cpp normal z -> d, Fri Sep 11 18:29:39 2015
+   @generated from testing/testing_zgetri_batched.cpp normal z -> d, Wed Jan  6 17:59:51 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -110,9 +110,9 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            dset_pointer(dA_array, d_A, ldda, 0, 0, ldda * N, batchCount, opts.queue);
-            dset_pointer(dinvA_array, d_invA, ldda, 0, 0, ldda * N, batchCount, opts.queue);
-            set_ipointer(dipiv_array, d_ipiv, 1, 0, 0, N, batchCount, opts.queue);
+            magma_dset_pointer( dA_array, d_A, ldda, 0, 0, ldda * N, batchCount, opts.queue );
+            magma_dset_pointer( dinvA_array, d_invA, ldda, 0, 0, ldda * N, batchCount, opts.queue );
+            magma_iset_pointer( dipiv_array, d_ipiv, 1, 0, 0, N, batchCount, opts.queue );
 
             gpu_time = magma_sync_wtime( opts.queue );
             info1 = magma_dgetrf_batched( N, N, dA_array, ldda, dipiv_array, dinfo_array, batchCount, opts.queue);
@@ -246,6 +246,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

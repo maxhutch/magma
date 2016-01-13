@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
 
@@ -134,7 +134,7 @@ magmablas_clag2z_sparse(
     dim3 threads( blksize );
     dim3 grid( magma_ceildiv( M, blksize ) );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    magmaint_clag2z_sparse<<< dimGrid , dimBlock, 0, queue >>>
+    magmaint_clag2z_sparse<<< dimGrid , dimBlock, 0, queue->cuda_stream >>>
                                         ( M, N, SA, lda, A, ldsa, RMAX );
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }

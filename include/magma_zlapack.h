@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 */
@@ -591,7 +591,9 @@ void   lapackf77_zheevx( const char *jobz, const char *range, const char *uplo,
                          magma_int_t *m, double *w,
                          magmaDoubleComplex *Z, const magma_int_t *ldz,
                          magmaDoubleComplex *work, const magma_int_t *lwork,
+                         #ifdef COMPLEX
                          double *rwork,
+                         #endif
                          magma_int_t *iwork, magma_int_t *ifail,
                          magma_int_t *info);
 
@@ -769,7 +771,7 @@ void   lapackf77_zlarfg( const magma_int_t *n,
 
 void   lapackf77_zlarft( const char *direct, const char *storev,
                          const magma_int_t *n, const magma_int_t *k,
-                         magmaDoubleComplex *V, const magma_int_t *ldv,
+                         const magmaDoubleComplex *V, const magma_int_t *ldv,
                          const magmaDoubleComplex *tau,
                          magmaDoubleComplex *T, const magma_int_t *ldt );
 

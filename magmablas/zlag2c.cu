@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -82,15 +82,13 @@ void zlag2c_kernel(
 /**
     Purpose
     -------
-    ZLAG2C_Q converts a double-complex matrix, A,
-                   to a single-complex matrix, SA.
+    ZLAG2C converts a double-complex matrix, A,
+                 to a single-complex matrix, SA.
     
     RMAX is the overflow for the single-complex arithmetic.
     ZLAG2C checks that all the entries of A are between -RMAX and
     RMAX. If not, the conversion is aborted and a flag is raised.
     
-    This is the same as ZLAG2C, but adds queue argument.
-        
     Arguments
     ---------
     @param[in]
@@ -166,7 +164,7 @@ magmablas_zlag2c_q(
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
-    zlag2c_kernel<<< grid, threads, 0, queue >>>( m, n, A, lda, SA, ldsa, rmax );
+    zlag2c_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( m, n, A, lda, SA, ldsa, rmax );
     
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }
@@ -183,5 +181,5 @@ magmablas_zlag2c(
     magmaFloatComplex_ptr SA,       magma_int_t ldsa,
     magma_int_t *info )
 {
-    magmablas_zlag2c_q( m, n, A, lda, SA, ldsa, magma_stream, info );
+    magmablas_zlag2c_q( m, n, A, lda, SA, ldsa, magmablasGetQueue(), info );
 }

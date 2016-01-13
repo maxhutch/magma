@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -117,15 +117,33 @@ Functions</h2></td></tr>
 <tr class="memitem:gae44374a54a36edfde6d39ed0611780ca"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#gae44374a54a36edfde6d39ed0611780ca">magma_dcumilusetup</a> (magma_d_matrix A, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gae44374a54a36edfde6d39ed0611780ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the ILU preconditioner via the cuSPARSE.  <a href="#gae44374a54a36edfde6d39ed0611780ca">More...</a><br /></td></tr>
 <tr class="separator:gae44374a54a36edfde6d39ed0611780ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab66aab988b4725c04c16455b842b543b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#gab66aab988b4725c04c16455b842b543b">magma_dcumilusetup_transpose</a> (magma_d_matrix A, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab66aab988b4725c04c16455b842b543b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the ILU transpose preconditioner via the cuSPARSE.  <a href="#gab66aab988b4725c04c16455b842b543b">More...</a><br /></td></tr>
+<tr class="separator:gab66aab988b4725c04c16455b842b543b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga5560e05ae308b4717aa8adf34ae518ff"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga5560e05ae308b4717aa8adf34ae518ff">magma_dcumilugeneratesolverinfo</a> (magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga5560e05ae308b4717aa8adf34ae518ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the ILU triangular solves via cuSPARSE using an ILU factorization matrix stored either in precond-&gt;M or on the device as precond-&gt;L and precond-&gt;U.  <a href="#ga5560e05ae308b4717aa8adf34ae518ff">More...</a><br /></td></tr>
 <tr class="separator:ga5560e05ae308b4717aa8adf34ae518ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga13109984d5ee927881e2395a4f67594b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga13109984d5ee927881e2395a4f67594b">magma_dapplycumilu_l</a> (magma_d_matrix b, magma_d_matrix *x, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga13109984d5ee927881e2395a4f67594b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the left triangular solves using the ILU preconditioner.  <a href="#ga13109984d5ee927881e2395a4f67594b">More...</a><br /></td></tr>
 <tr class="separator:ga13109984d5ee927881e2395a4f67594b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga833d43d3a9b0cd5073393c3db68c3a15"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga833d43d3a9b0cd5073393c3db68c3a15">magma_dapplycumilu_l_transpose</a> (magma_d_matrix b, magma_d_matrix *x, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga833d43d3a9b0cd5073393c3db68c3a15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the left triangular solves using the transpose ILU preconditioner.  <a href="#ga833d43d3a9b0cd5073393c3db68c3a15">More...</a><br /></td></tr>
+<tr class="separator:ga833d43d3a9b0cd5073393c3db68c3a15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga35d86e5cf9fa27ddc5e1ec805e7f1331"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga35d86e5cf9fa27ddc5e1ec805e7f1331">magma_dapplycumilu_r</a> (magma_d_matrix b, magma_d_matrix *x, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga35d86e5cf9fa27ddc5e1ec805e7f1331"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the right triangular solves using the ILU preconditioner.  <a href="#ga35d86e5cf9fa27ddc5e1ec805e7f1331">More...</a><br /></td></tr>
 <tr class="separator:ga35d86e5cf9fa27ddc5e1ec805e7f1331"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9dffd504a734a55cb45c7aa965c9b561"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga9dffd504a734a55cb45c7aa965c9b561">magma_dapplycumilu_r_transpose</a> (magma_d_matrix b, magma_d_matrix *x, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga9dffd504a734a55cb45c7aa965c9b561"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs the right triangular solves using the transpose ILU preconditioner.  <a href="#ga9dffd504a734a55cb45c7aa965c9b561">More...</a><br /></td></tr>
+<tr class="separator:ga9dffd504a734a55cb45c7aa965c9b561"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae6da80abbc8bd2b2d9f0364561731420"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#gae6da80abbc8bd2b2d9f0364561731420">magma_dcustomicsetup</a> (magma_d_matrix A, magma_d_matrix b, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gae6da80abbc8bd2b2d9f0364561731420"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in an Incomplete Cholesky preconditioner.  <a href="#gae6da80abbc8bd2b2d9f0364561731420">More...</a><br /></td></tr>
+<tr class="separator:gae6da80abbc8bd2b2d9f0364561731420"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga82b1bbd4635b8d55fcbc5c06bcde9967"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga82b1bbd4635b8d55fcbc5c06bcde9967">magma_dcustomilusetup</a> (magma_d_matrix A, magma_d_matrix b, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga82b1bbd4635b8d55fcbc5c06bcde9967"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads in an Incomplete LU preconditioner.  <a href="#ga82b1bbd4635b8d55fcbc5c06bcde9967">More...</a><br /></td></tr>
+<tr class="separator:ga82b1bbd4635b8d55fcbc5c06bcde9967"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7618c10df78b75110ca0d0d8e50c491f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga7618c10df78b75110ca0d0d8e50c491f">magma_diterictsetup</a> (magma_d_matrix A, magma_d_matrix b, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga7618c10df78b75110ca0d0d8e50c491f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the iterative threshold Incomplete Cholesky preconditioner.  <a href="#ga7618c10df78b75110ca0d0d8e50c491f">More...</a><br /></td></tr>
+<tr class="separator:ga7618c10df78b75110ca0d0d8e50c491f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0b5c5758fa1880ddf19da2ecdf42785d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__dgepr.html#ga0b5c5758fa1880ddf19da2ecdf42785d">magma_diterilusetup</a> (magma_d_matrix A, magma_d_matrix b, magma_d_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga0b5c5758fa1880ddf19da2ecdf42785d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the ILU preconditioner via the iterative ILU iteration.  <a href="#ga0b5c5758fa1880ddf19da2ecdf42785d">More...</a><br /></td></tr>
 <tr class="separator:ga0b5c5758fa1880ddf19da2ecdf42785d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -187,6 +205,55 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga833d43d3a9b0cd5073393c3db68c3a15"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dapplycumilu_l_transpose </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_matrix *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Performs the left triangular solves using the transpose ILU preconditioner. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix RHS</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_d_matrix* vector to precondition</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_d_preconditioner* preconditioner parameters </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga35d86e5cf9fa27ddc5e1ec805e7f1331"></a>
 <div class="memitem">
 <div class="memproto">
@@ -224,6 +291,55 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Performs the right triangular solves using the ILU preconditioner. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix RHS</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_d_matrix* vector to precondition</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_d_preconditioner* preconditioner parameters </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga9dffd504a734a55cb45c7aa965c9b561"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dapplycumilu_r_transpose </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_matrix *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Performs the right triangular solves using the transpose ILU preconditioner. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix RHS</td></tr>
@@ -411,6 +527,196 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gab66aab988b4725c04c16455b842b543b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dcumilusetup_transpose </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prepares the ILU transpose preconditioner via the cuSPARSE. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_d_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_d_preconditioner* preconditioner parameters </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gae6da80abbc8bd2b2d9f0364561731420"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dcustomicsetup </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads in an Incomplete Cholesky preconditioner. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_d_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix input RHS b</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_d_preconditioner* preconditioner parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga82b1bbd4635b8d55fcbc5c06bcde9967"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_dcustomilusetup </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reads in an Incomplete LU preconditioner. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_d_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix input RHS b</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_d_preconditioner* preconditioner parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga7618c10df78b75110ca0d0d8e50c491f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_diterictsetup </td>
+          <td>(</td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_d_preconditioner *&#160;</td>
+          <td class="paramname"><em>precond</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prepares the iterative threshold Incomplete Cholesky preconditioner. </p>
+<p>This function requires OpenMP, and is only available if OpenMP is activated.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_d_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_d_matrix input RHS b</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_d_preconditioner* preconditioner parameters</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga0b5c5758fa1880ddf19da2ecdf42785d"></a>
 <div class="memitem">
 <div class="memproto">
@@ -465,7 +771,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

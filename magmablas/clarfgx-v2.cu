@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlarfgx-v2.cu normal z -> c, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlarfgx-v2.cu normal z -> c, Wed Jan  6 17:59:37 2016
 
 */
 #include "common_magma.h"
@@ -107,6 +107,24 @@ void magma_clarfgx_gpu_kernel( int n, magmaFloatComplex* dx0, magmaFloatComplex*
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
+magma_clarfgx_gpu_q(
+    magma_int_t n,
+    magmaFloatComplex_ptr dx0,
+    magmaFloatComplex_ptr dx,
+    magmaFloatComplex_ptr dtau,
+    magmaFloat_ptr        dxnorm,
+    magmaFloatComplex_ptr dA, magma_int_t iter, 
+    magma_queue_t queue )
+{
+    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
+    dim3 threads( BLOCK_SIZE );
+ 
+    magma_clarfgx_gpu_kernel
+        <<< blocks, threads, 0, queue->cuda_stream() >>>
+        ( n, dx0, dx, dtau, dxnorm, dA, iter);
+}
+
+extern "C" void
 magma_clarfgx_gpu(
     magma_int_t n,
     magmaFloatComplex_ptr dx0,
@@ -115,10 +133,7 @@ magma_clarfgx_gpu(
     magmaFloat_ptr        dxnorm,
     magmaFloatComplex_ptr dA, magma_int_t iter)
 {
-    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
-    dim3 threads( BLOCK_SIZE );
- 
-    magma_clarfgx_gpu_kernel<<< blocks, threads, 0, magma_stream >>>( n, dx0, dx, dtau, dxnorm, dA, iter);
+    magma_clarfgx_gpu_q( n, dx0, dx, dtau, dxnorm, dA, iter, magmablasGetQueue() );
 }
 
 //==============================================================================
@@ -136,6 +151,39 @@ magma_clarfgx_gpu(
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
+magma_clarfgtx_gpu_q(
+    magma_int_t n,
+    magmaFloatComplex_ptr dx0,
+    magmaFloatComplex_ptr dx,
+    magmaFloatComplex_ptr dtau,
+    magmaFloat_ptr        dxnorm,
+    magmaFloatComplex_ptr dA, magma_int_t iter,
+    magmaFloatComplex_ptr V,  magma_int_t ldv,
+    magmaFloatComplex_ptr T,  magma_int_t ldt,
+    magmaFloatComplex_ptr dwork,
+    magma_queue_t queue )
+{
+    /*  Generate the elementary reflector H(iter)  */
+    magma_clarfgx_gpu_q(n, dx0, dx, dtau, dxnorm, dA, iter, queue);
+    
+    if (iter == 0) {
+        magmaFloatComplex tt = MAGMA_C_ONE;
+        magmablas_clacpy_q(MagmaUpperLower, 1, 1, dtau, 1, T+iter+iter*ldt, 1, queue);
+        magma_csetmatrix_q(1,1, &tt,1, dx0,1, queue);
+    }
+    else {
+        /* Compute the iter-th column of T */
+        magma_cgemv_kernel3
+            <<< iter, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( n, V, ldv, dx0, dwork, dtau );
+        
+        magma_ctrmv_kernel2
+            <<< iter, iter,       0, queue->cuda_stream() >>>
+            ( T, ldt, dwork, T+iter*ldt, dtau );
+    }
+}
+
+extern "C" void
 magma_clarfgtx_gpu(
     magma_int_t n,
     magmaFloatComplex_ptr dx0,
@@ -145,21 +193,10 @@ magma_clarfgtx_gpu(
     magmaFloatComplex_ptr dA, magma_int_t iter,
     magmaFloatComplex_ptr V,  magma_int_t ldv,
     magmaFloatComplex_ptr T,  magma_int_t ldt,
-    magmaFloatComplex_ptr dwork)
+    magmaFloatComplex_ptr dwork )
 {
-    /*  Generate the elementary reflector H(iter)  */
-    magma_clarfgx_gpu(n, dx0, dx, dtau, dxnorm, dA, iter);
-    
-    if (iter == 0) {
-        magmaFloatComplex tt = MAGMA_C_ONE;
-        magmablas_clacpy(MagmaUpperLower, 1, 1, dtau, 1, T+iter+iter*ldt, 1);
-        magma_csetmatrix(1,1, &tt,1, dx0,1);
-    }
-    else {
-        /* Compute the iter-th column of T */
-        magma_cgemv_kernel3<<< iter, BLOCK_SIZE, 0, magma_stream >>>( n, V, ldv, dx0, dwork, dtau );
-        magma_ctrmv_kernel2<<< iter, iter,       0, magma_stream >>>( T, ldt, dwork, T+iter*ldt, dtau );
-    }
+    magma_clarfgtx_gpu_q(n, dx0, dx, dtau, dxnorm, dA, iter, V, ldv,
+                         T, ldt, dwork, magmablasGetQueue() );
 }
 
 //==============================================================================

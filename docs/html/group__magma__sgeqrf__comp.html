@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -159,12 +159,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gac0f5c030789f0e1645b75efcb8e37096"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgeqrf__comp.html#gac0f5c030789f0e1645b75efcb8e37096">magma_sormqr</a> (magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, float *A, magma_int_t lda, float *tau, float *C, magma_int_t ldc, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:gac0f5c030789f0e1645b75efcb8e37096"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMQR overwrites the general real M-by-N matrix C with.  <a href="#gac0f5c030789f0e1645b75efcb8e37096">More...</a><br /></td></tr>
 <tr class="separator:gac0f5c030789f0e1645b75efcb8e37096"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gac861062d0b56fb347a73e3849221503b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgeqrf__comp.html#gac861062d0b56fb347a73e3849221503b">magma_sormqr2_gpu</a> (magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_ptr dA, magma_int_t ldda, float *tau, magmaFloat_ptr dC, magma_int_t lddc, float *wA, magma_int_t ldwa, magma_int_t *info)</td></tr>
-<tr class="memdesc:gac861062d0b56fb347a73e3849221503b"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMQR overwrites the general real M-by-N matrix C with.  <a href="#gac861062d0b56fb347a73e3849221503b">More...</a><br /></td></tr>
-<tr class="separator:gac861062d0b56fb347a73e3849221503b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6e1e8e375e197b27d1ca27b5b393d01e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgeqrf__comp.html#ga6e1e8e375e197b27d1ca27b5b393d01e">magma_sormqr_gpu</a> (magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_ptr dA, magma_int_t ldda, float *tau, magmaFloat_ptr dC, magma_int_t lddc, float *hwork, magma_int_t lwork, magmaFloat_ptr dT, magma_int_t nb, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga6e1e8e375e197b27d1ca27b5b393d01e"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMQR_GPU overwrites the general real M-by-N matrix C with.  <a href="#ga6e1e8e375e197b27d1ca27b5b393d01e">More...</a><br /></td></tr>
-<tr class="separator:ga6e1e8e375e197b27d1ca27b5b393d01e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf0ab032dc9c089e54b1b9aa1779f7961"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgeqrf__comp.html#gaf0ab032dc9c089e54b1b9aa1779f7961">magma_sormqr2_gpu</a> (magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_ptr dA, magma_int_t ldda, float *tau, magmaFloat_ptr dC, magma_int_t lddc, const float *wA, magma_int_t ldwa, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaf0ab032dc9c089e54b1b9aa1779f7961"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMQR overwrites the general real M-by-N matrix C with.  <a href="#gaf0ab032dc9c089e54b1b9aa1779f7961">More...</a><br /></td></tr>
+<tr class="separator:gaf0ab032dc9c089e54b1b9aa1779f7961"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4e7c61a1b509da9b09736163410525a8"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgeqrf__comp.html#ga4e7c61a1b509da9b09736163410525a8">magma_sormqr_gpu</a> (magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_const_ptr dA, magma_int_t ldda, float const *tau, magmaFloat_ptr dC, magma_int_t lddc, float *hwork, magma_int_t lwork, magmaFloat_ptr dT, magma_int_t nb, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga4e7c61a1b509da9b09736163410525a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMQR_GPU overwrites the general real M-by-N matrix C with.  <a href="#ga4e7c61a1b509da9b09736163410525a8">More...</a><br /></td></tr>
+<tr class="separator:ga4e7c61a1b509da9b09736163410525a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2dbbb86d1e21d333639e8d3a7755f996"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__sgeqrf__comp.html#ga2dbbb86d1e21d333639e8d3a7755f996">magma_sormqr_m</a> (magma_int_t ngpu, magma_side_t side, magma_trans_t trans, magma_int_t m, magma_int_t n, magma_int_t k, float *A, magma_int_t lda, float *tau, float *C, magma_int_t ldc, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga2dbbb86d1e21d333639e8d3a7755f996"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMQR overwrites the general real M-by-N matrix C with.  <a href="#ga2dbbb86d1e21d333639e8d3a7755f996">More...</a><br /></td></tr>
 <tr class="separator:ga2dbbb86d1e21d333639e8d3a7755f996"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -321,7 +321,7 @@ Functions</h2></td></tr>
 
 <p>SGEQRF computes a QR factorization of a REAL M-by-N matrix A: A = Q * R. </p>
 <p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine.</p>
-<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
+<p>This uses 2 queues to overlap communication and computation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -332,7 +332,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
  Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= max( N*NB, 2*NB*NB ), where NB can be obtained through magma_get_sgeqrf_nb(M). <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= max( N*NB, 2*NB*NB ), where NB can be obtained through magma_get_sgeqrf_nb( M, N ). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -399,7 +399,6 @@ Functions</h2></td></tr>
 
 <p>SGEQRF computes a QR factorization of a real M-by-N matrix A: A = Q * R. </p>
 <p>This version has LAPACK-complaint arguments.</p>
-<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <p>Other versions (magma_sgeqrf_gpu and magma_sgeqrf3_gpu) store the intermediate T matrices.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -418,7 +417,7 @@ Functions</h2></td></tr>
 </dl>
 <h2>Further Details </h2>
 <p>The matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(k), where k = min(m,n).
-</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v'
+</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v^H
 </pre><p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
 
 </div>
@@ -559,7 +558,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SGEQRF3 computes a QR factorization of a real M-by-N matrix A: A = Q * R. </p>
-<p>This version stores the triangular dT matrices used in the block QR factorization so that they can be applied directly (i.e., without being recomputed) later. As a result, the application of Q is much faster. Also, the upper triangular matrices for V have 0s in them and the corresponding parts of the upper triangular R are stored separately in dT.</p>
+<p>This version stores the triangular dT matrices used in the block QR factorization so that they can be applied directly (i.e., without being recomputed) later. As a result, the application of Q is much faster. Also, the upper triangular matrices for V have 0s in them. The corresponding parts of the upper triangular R are stored separately in dT.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -567,7 +566,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, the elements on and above the diagonal of the array contain the min(M,N)-by-N upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the orthogonal matrix Q as a product of min(m,n) elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>(workspace) REAL array on the GPU, dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB, where NB can be obtained through magma_get_sgeqrf_nb(M). It starts with MIN(M,N)*NB block that store the triangular T matrices, followed by the MIN(M,N)*NB block of the diagonal matrices for the R matrix. The rest of the array is used as workspace.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>(workspace) REAL array on the GPU, dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB, where NB can be obtained through magma_get_sgeqrf_nb( M, N ). It starts with a MIN(M,N)*NB block that stores the triangular T matrices, followed by a MIN(M,N)*NB block that stores the diagonal blocks of the R matrix. The rest of the array is used as workspace.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
@@ -577,11 +576,9 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <h2>Further Details </h2>
-<p>The matrix Q is represented as a product of elementary reflectors</p>
-<p>Q = H(1) H(2) . . . H(k), where k = min(m,n).</p>
-<p>Each H(i) has the form</p>
-<p>H(i) = I - tau * v * v'</p>
-<p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
+<p>The matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(k), where k = min(m,n).
+</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v^H
+</pre><p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
 
 </div>
 </div>
@@ -855,7 +852,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array on the GPU, dimension (LDDA,N) On entry, the M-by-N matrix A. On exit, the elements on and above the diagonal of the array contain the min(M,N)-by-N upper trapezoidal matrix R (R is upper triangular if m &gt;= n); the elements below the diagonal, with the array TAU, represent the orthogonal matrix Q as a product of min(m,n) elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M). To benefit from coalescent memory accesses LDDA must be divisible by 16.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>(workspace) REAL array on the GPU, dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB, where NB can be obtained through magma_get_sgeqrf_nb(M). It starts with MIN(M,N)*NB block that store the triangular T matrices, followed by the MIN(M,N)*NB block of the diagonal inverses for the R matrix. The rest of the array is used as workspace.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dT</td><td>(workspace) REAL array on the GPU, dimension (2*MIN(M, N) + ceil(N/32)*32 )*NB, where NB can be obtained through magma_get_sgeqrf_nb( M, N ). It starts with a MIN(M,N)*NB block that stores the triangular T matrices, followed by a MIN(M,N)*NB block that stores inverses of the diagonal blocks of the R matrix. The rest of the array is used as workspace.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
@@ -865,11 +862,9 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <h2>Further Details </h2>
-<p>The matrix Q is represented as a product of elementary reflectors</p>
-<p>Q = H(1) H(2) . . . H(k), where k = min(m,n).</p>
-<p>Each H(i) has the form</p>
-<p>H(i) = I - tau * v * v'</p>
-<p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
+<p>The matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(k), where k = min(m,n).
+</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v^H
+</pre><p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
 
 </div>
 </div>
@@ -952,7 +947,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
  Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB can be obtained through magma_get_sgeqrf_nb(M). <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB can be obtained through magma_get_sgeqrf_nb( M, N ). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1043,7 +1038,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (min(M,N)) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK. <br />
  Higher performance is achieved if WORK is in pinned memory, e.g. allocated using magma_malloc_pinned.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB can be obtained through magma_get_sgeqrf_nb(M). <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= N*NB, where NB can be obtained through magma_get_sgeqrf_nb( M, N ). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1054,11 +1049,9 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <h2>Further Details </h2>
-<p>The matrix Q is represented as a product of elementary reflectors</p>
-<p>Q = H(1) H(2) . . . H(k), where k = min(m,n).</p>
-<p>Each H(i) has the form</p>
-<p>H(i) = I - tau * v * v'</p>
-<p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
+<p>The matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(k), where k = min(m,n).
+</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v'
+</pre><p>where tau is a real scalar, and v is a real vector with v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i), and tau in TAU(i). </p>
 
 </div>
 </div>
@@ -1143,7 +1136,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER This is the block size used in SGEQRF_GPU, and correspondingly the size of the T matrices, used in the factorization, and stored in DT.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument has an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
 </ul>
 </td></tr>
   </table>
@@ -1310,7 +1303,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER This is the block size used in SGEQRF_GPU, and correspondingly the size of the T matrices, used in the factorization, and stored in DT.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument has an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
 </ul>
 </td></tr>
   </table>
@@ -1400,7 +1393,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER This is the block size used in SGEQRF_GPU, and correspondingly the size of the T matrices, used in the factorization, and stored in T.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument has an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
 </ul>
 </td></tr>
   </table>
@@ -1539,7 +1532,7 @@ TRANS = MagmaTrans:  Q**H * C           C * Q**H
 
 </div>
 </div>
-<a class="anchor" id="gac861062d0b56fb347a73e3849221503b"></a>
+<a class="anchor" id="gaf0ab032dc9c089e54b1b9aa1779f7961"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1606,7 +1599,7 @@ TRANS = MagmaTrans:  Q**H * C           C * Q**H
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">const float *&#160;</td>
           <td class="paramname"><em>wA</em>, </td>
         </tr>
         <tr>
@@ -1650,13 +1643,13 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix C. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER The number of elementary reflectors whose product defines the matrix Q. If SIDE = MagmaLeft, M &gt;= K &gt;= 0; if SIDE = MagmaRight, N &gt;= K &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>REAL array on the GPU, dimension (LDDA,K) The i-th column must contain the vector which defines the elementary reflector H(i), for i = 1,2,...,k, as returned by SGEQRF in the first k columns of its array argument dA. The diagonal and the upper part are destroyed, the reflectors are not modified.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array on the GPU, dimension (LDDA,K) The i-th column must contain the vector which defines the elementary reflector H(i), for i = 1,2,...,k, as returned by SGEQRF in the first k columns of its array argument dA. The diagonal and the upper part are destroyed, the reflectors are not modified.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. If SIDE = MagmaLeft, LDDA &gt;= max(1,M); if SIDE = MagmaRight, LDDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>REAL array, dimension (K) TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by SGEQRF.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>REAL array on the GPU, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array dC. LDDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>(workspace) REAL array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. LDWA &gt;= max(1,M) if SIDE = MagmaLeft; LDWA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>REAL array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU. (A copy of the upper or lower part of dA, on the host.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. If SIDE = MagmaLeft, LDWA &gt;= max(1,M); if SIDE = MagmaRight, LDWA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -1668,7 +1661,7 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
 
 </div>
 </div>
-<a class="anchor" id="ga6e1e8e375e197b27d1ca27b5b393d01e"></a>
+<a class="anchor" id="ga4e7c61a1b509da9b09736163410525a8"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1705,7 +1698,7 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
           <td class="paramname"><em>dA</em>, </td>
         </tr>
         <tr>
@@ -1717,7 +1710,7 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">float const *&#160;</td>
           <td class="paramname"><em>tau</em>, </td>
         </tr>
         <tr>
@@ -1800,7 +1793,7 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
  Currently, sgetrs_gpu assumes that on exit, hwork contains the last block of A and C. This will change and <em>should not be relied on</em>!</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK. LWORK &gt;= (M-K+NB)*(N+NB) + N*NB if SIDE = MagmaLeft, and LWORK &gt;= (N-K+NB)*(M+NB) + M*NB if SIDE = MagmaRight, where NB is the given blocksize. <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dT</td><td>REAL array on the GPU that is the output (the 9th argument) of magma_sgeqrf_gpu.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dT</td><td>REAL array on the GPU that is the output (the 9th argument) of magma_sgeqrf_gpu. Part used as workspace.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER This is the blocking size that was used in pre-computing DT, e.g., the blocking size used in magma_sgeqrf_gpu.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1955,7 +1948,7 @@ TRANS = MagmaTrans:    Q**H * C            C * Q**H
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:09 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

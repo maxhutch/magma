@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
 */
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
             //=====================================================================
             magma_zgetmatrix( N, nrhs, d_X, ldx, h_X, ldx );
             
-            Anorm = lapackf77_zlanhe( "I", lapack_uplo_const(opts.uplo), &N, h_A, &N, h_workd);
+            Anorm = safe_lapackf77_zlanhe( "I", lapack_uplo_const(opts.uplo), &N, h_A, &N, h_workd);
             blasf77_zhemm( "L", lapack_uplo_const(opts.uplo), &N, &nrhs,
                            &c_one,     h_A, &lda,
                                        h_X, &ldx,
@@ -193,6 +193,7 @@ int main(int argc, char **argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

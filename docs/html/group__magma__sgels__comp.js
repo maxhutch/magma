@@ -1,5 +1,5 @@
 var group__magma__sgels__comp =
 [
-    [ "magma_sgeqrs3_gpu", "group__magma__sgels__comp.html#ga07000f9f7b19bae521b7833ba46b112d", null ],
-    [ "magma_sgeqrs_gpu", "group__magma__sgels__comp.html#gaa04d371b318f1f29e2a9f3bb521ce8a6", null ]
+    [ "magma_sgeqrs3_gpu", "group__magma__sgels__comp.html#gacee6ee738006f47dc2bd201e778c1939", null ],
+    [ "magma_sgeqrs_gpu", "group__magma__sgels__comp.html#ga879e8eda4f8360109974647d1325f9ea", null ]
 ];

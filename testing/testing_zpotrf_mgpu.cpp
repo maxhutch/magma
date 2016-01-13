@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 */
@@ -39,6 +39,7 @@ int main( int argc, char** argv )
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
+    opts.ngpu = abs( opts.ngpu );  // always uses multi-GPU code
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
@@ -77,7 +78,7 @@ int main( int argc, char** argv )
             /* Initialize the matrix */
             lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
             magma_zmake_hpd( N, h_A, lda );
-            lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -103,7 +104,7 @@ int main( int argc, char** argv )
                 ldda = (1+N/(nb*ngpu))*nb;
                 magma_zsetmatrix_1D_row_bcyclic( N, N, h_R, lda, d_lA, ldda, ngpu, nb );
             }
-            
+
             gpu_time = magma_wtime();
             magma_zpotrf_mgpu( ngpu, opts.uplo, N, d_lA, ldda, &info );
             gpu_time = magma_wtime() - gpu_time;
@@ -122,10 +123,6 @@ int main( int argc, char** argv )
             /* =====================================================================
                Check the result compared to LAPACK
                =================================================================== */
-            for( int dev=0; dev < ngpu; dev++ ) {
-                magma_setdevice( dev );
-                magma_device_sync();
-            }
             if ( opts.lapack ) {
                 error = lapackf77_zlange("f", &N, &N, h_A, &lda, work );
                 blasf77_zaxpy( &n2, &c_neg_one, h_A, &ione, h_R, &ione );
@@ -154,6 +151,7 @@ int main( int argc, char** argv )
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

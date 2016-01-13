@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -139,12 +139,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga7f61a6336b27c0f3ca235ba3f474bc90"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__util.html#ga7f61a6336b27c0f3ca235ba3f474bc90">magma_xerbla</a> (const char *srname, magma_int_t minfo)</td></tr>
 <tr class="memdesc:ga7f61a6336b27c0f3ca235ba3f474bc90"><td class="mdescLeft">&#160;</td><td class="mdescRight">magma_xerbla is an error handler for the MAGMA routines.  <a href="#ga7f61a6336b27c0f3ca235ba3f474bc90">More...</a><br /></td></tr>
 <tr class="separator:ga7f61a6336b27c0f3ca235ba3f474bc90"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0bbe77c58765b97bf03f589c43cb7ac1"><td class="memItemLeft" align="right" valign="top">cublasStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__util.html#ga0bbe77c58765b97bf03f589c43cb7ac1">magmablasSetKernelStream</a> (magma_queue_t stream)</td></tr>
-<tr class="memdesc:ga0bbe77c58765b97bf03f589c43cb7ac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">magmablasSetKernelStream sets the CUDA stream that MAGMA BLAS and CUBLAS (v1) routines use (unless explicitly given a stream).  <a href="#ga0bbe77c58765b97bf03f589c43cb7ac1">More...</a><br /></td></tr>
-<tr class="separator:ga0bbe77c58765b97bf03f589c43cb7ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaabeed319817963779e00351649216a46"><td class="memItemLeft" align="right" valign="top">cublasStatus_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__util.html#gaabeed319817963779e00351649216a46">magmablasGetKernelStream</a> (magma_queue_t *stream)</td></tr>
-<tr class="memdesc:gaabeed319817963779e00351649216a46"><td class="mdescLeft">&#160;</td><td class="mdescRight">magmablasGetKernelStream gets the CUDA stream that MAGMA BLAS routines use.  <a href="#gaabeed319817963779e00351649216a46">More...</a><br /></td></tr>
-<tr class="separator:gaabeed319817963779e00351649216a46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf1a014b017dcd37c5157b89ac4c89200"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__util.html#gaf1a014b017dcd37c5157b89ac4c89200">cusparse2magma_error</a> (cusparseStatus_t status)</td></tr>
 <tr class="memdesc:gaf1a014b017dcd37c5157b89ac4c89200"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps a cuSPARSE error to a MAGMA error.  <a href="#gaf1a014b017dcd37c5157b89ac4c89200">More...</a><br /></td></tr>
 <tr class="separator:gaf1a014b017dcd37c5157b89ac4c89200"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -389,79 +383,12 @@ magma_set_omp_numthreads( nthread_save );
 
 </div>
 </div>
-<a class="anchor" id="gaabeed319817963779e00351649216a46"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">cublasStatus_t magmablasGetKernelStream </td>
-          <td>(</td>
-          <td class="paramtype">magma_queue_t *&#160;</td>
-          <td class="paramname"><em>stream</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>magmablasGetKernelStream gets the CUDA stream that MAGMA BLAS routines use. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">stream</td><td>magma_queue_t The CUDA stream. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga0bbe77c58765b97bf03f589c43cb7ac1"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">cublasStatus_t magmablasSetKernelStream </td>
-          <td>(</td>
-          <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>stream</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>magmablasSetKernelStream sets the CUDA stream that MAGMA BLAS and CUBLAS (v1) routines use (unless explicitly given a stream). </p>
-<p>In a multi-threaded application, be careful to avoid race conditions when using this. For instance, if calls are executed in this order:</p>
-<pre class="fragment">    thread 1                            thread 2
-    ------------------------------      ------------------------------
-1.  magmablasSetKernelStream( s1 )         
-2.                                      magmablasSetKernelStream( s2 )
-3.  magma_dgemm( ... )
-4.                                      magma_dgemm( ... )
-</pre><p>both magma_dgemm would occur on stream s2. A lock should be used to prevent this, so the dgemm in thread 1 uses stream s1, and the dgemm in thread 2 uses s2:</p>
-<pre class="fragment">    thread 1                            thread 2
-    ------------------------------      ------------------------------
-1.  lock()                                  
-2.  magmablasSetKernelStream( s1 )          
-3.  magma_dgemm( ... )                      
-4.  unlock()                                
-5.                                      lock()
-6.                                      magmablasSetKernelStream( s2 )
-7.                                      magma_dgemm( ... )
-8.                                      unlock()
-</pre><p>Most BLAS calls in MAGMA, such as magma_dgemm, are asynchronous, so the lock will only have to wait until dgemm is queued, not until it is finished.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">stream</td><td>magma_queue_t The CUDA stream. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:03 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:08 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -110,9 +110,9 @@ int main( int argc, char** argv)
             magma_zsetvector( Xm*batchCount, h_X, incx, d_X, incx );
             magma_zsetvector( Ym*batchCount, h_Y, incy, d_Y, incy );
             
-            zset_pointer(A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue);
-            zset_pointer(X_array, d_X, 1, 0, 0, incx*Xm, batchCount, opts.queue);
-            zset_pointer(Y_array, d_Y, 1, 0, 0, incy*Ym, batchCount, opts.queue);
+            magma_zset_pointer( A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_zset_pointer( X_array, d_X, 1, 0, 0, incx*Xm, batchCount, opts.queue );
+            magma_zset_pointer( Y_array, d_Y, 1, 0, 0, incy*Ym, batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
             magmablas_zgemv_batched(opts.transA, M, N,
@@ -204,6 +204,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

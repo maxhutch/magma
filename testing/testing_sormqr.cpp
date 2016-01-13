@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
-       @generated from testing_zunmqr.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zunmqr.cpp normal z -> s, Wed Jan  6 17:59:50 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -58,7 +58,7 @@ int main( int argc, char** argv )
             m = opts.msize[itest];
             n = opts.nsize[itest];
             k = opts.ksize[itest];
-            nb  = magma_get_sgeqrf_nb( m );
+            nb  = magma_get_sgeqrf_nb( m, n );
             ldc = m;
             // A is m x k (left) or n x k (right)
             mm = (side[iside] == MagmaLeft ? m : n);
@@ -173,6 +173,7 @@ int main( int argc, char** argv )
       printf( "\n" );
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

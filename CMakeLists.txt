@@ -67,7 +67,7 @@ endif()
 
 # ----------------------------------------
 # locate CUDA libraries
-set( GPU_TARGET "Fermi Kepler" CACHE STRING "CUDA architectures to compile for; one or more of Tesla, Fermi, Kepler" )
+set( GPU_TARGET "Fermi Kepler" CACHE STRING "CUDA architectures to compile for; one or more of Fermi, Kepler, or Maxwell" )
 find_package( CUDA )
 if ( CUDA_FOUND )
 	message( "-- Found CUDA ${CUDA_VERSION}" )
@@ -86,10 +86,6 @@ if ( CUDA_FOUND )
 	set( NV_COMP  "" )
 	
 	message( "   GPU_TARGET ${GPU_TARGET}" )
-	if ( ${GPU_TARGET} MATCHES Tesla )
-	    set( GPU_TARGET "${GPU_TARGET} sm13" )
-	endif()
-	
 	if ( ${GPU_TARGET} MATCHES Fermi )
 	    set( GPU_TARGET "${GPU_TARGET} sm20" )
 	endif()
@@ -103,24 +99,6 @@ if ( CUDA_FOUND )
 	endif()
 	
 	message( "   GPU_TARGET_NEW ${GPU_TARGET}" )
-	
-	if ( ${GPU_TARGET} MATCHES sm10 )
-		if ( NOT MIN_ARCH )
-			set( MIN_ARCH 100 )
-		endif()
-		set( NV_SM "${NV_SM} -gencode arch=compute_10,code=sm_10" )
-		set( NV_COMP        "-gencode arch=compute_10,code=compute_10" )
-		message( "   compile for CUDA arch 1.0 (Tesla)" )
-	endif()
-	
-	if ( ${GPU_TARGET} MATCHES sm13 )
-		if ( NOT MIN_ARCH )
-			set( MIN_ARCH 130 )
-		endif()
-		set( NV_SM "${NV_SM} -gencode arch=compute_13,code=sm_13" )
-		set( NV_COMP        "-gencode arch=compute_13,code=compute_13" )
-		message( "   compile for CUDA arch 1.3 (Tesla)" )
-	endif()
 	
 	if ( ${GPU_TARGET} MATCHES sm20 )
 		if ( NOT MIN_ARCH )
@@ -159,7 +137,7 @@ if ( CUDA_FOUND )
 	endif()
 	
 	if ( NOT MIN_ARCH )
-		message( FATAL_ERROR "GPU_TARGET must contain one or more of Tesla, Fermi, Kepler, Maxwell, or sm{10,13,20,30,35,50}." )
+		message( FATAL_ERROR "GPU_TARGET must contain one or more of Fermi, Kepler, Maxwell, or sm{20,30,35,50}." )
 	endif()
 	
 	set( CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -DHAVE_CUBLAS ${NV_SM} ${NV_COMP}" )

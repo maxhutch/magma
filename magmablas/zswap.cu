@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Mark Gates
 
@@ -70,9 +70,9 @@ magmablas_zswap_q(
     magmaDoubleComplex_ptr dy, magma_int_t incy,
     magma_queue_t queue )
 {
-    dim3 grid( magma_ceildiv( n, NB ) );
     dim3 threads( NB );
-    zswap_kernel<<< grid, threads, 0, queue >>>( n, dx, incx, dy, incy );
+    dim3 grid( magma_ceildiv( n, NB ) );
+    zswap_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dx, incx, dy, incy );
 }
 
 
@@ -86,5 +86,5 @@ magmablas_zswap(
     magmaDoubleComplex_ptr dx, magma_int_t incx, 
     magmaDoubleComplex_ptr dy, magma_int_t incy)
 {
-    magmablas_zswap_q( n, dx, incx, dy, incy, magma_stream );
+    magmablas_zswap_q( n, dx, incx, dy, incy, magmablasGetQueue() );
 }

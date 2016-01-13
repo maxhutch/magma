@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -158,6 +158,44 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="grou
 <tr class="memitem:gaa8809b904a19b654cc4cbb1cea7b6d2e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gaa8809b904a19b654cc4cbb1cea7b6d2e">magma_dswap</a> (magma_int_t n, magmaDouble_ptr dx, magma_int_t incx, magmaDouble_ptr dy, magma_int_t incy)</td></tr>
 <tr class="memdesc:gaa8809b904a19b654cc4cbb1cea7b6d2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#gaa8809b904a19b654cc4cbb1cea7b6d2e">More...</a><br /></td></tr>
 <tr class="separator:gaa8809b904a19b654cc4cbb1cea7b6d2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga88a86d3f7aed9a4feb3cb3bcd9b7d454"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#ga88a86d3f7aed9a4feb3cb3bcd9b7d454">magma_idamax_q</a> (magma_int_t n, magmaDouble_const_ptr dx, magma_int_t incx, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga88a86d3f7aed9a4feb3cb3bcd9b7d454"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns index of element of vector x having max.  <a href="#ga88a86d3f7aed9a4feb3cb3bcd9b7d454">More...</a><br /></td></tr>
+<tr class="separator:ga88a86d3f7aed9a4feb3cb3bcd9b7d454"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafa8c31282da7cef8176039be033d70da"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gafa8c31282da7cef8176039be033d70da">magma_idamin_q</a> (magma_int_t n, magmaDouble_const_ptr dx, magma_int_t incx, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gafa8c31282da7cef8176039be033d70da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns index of element of vector x having min.  <a href="#gafa8c31282da7cef8176039be033d70da">More...</a><br /></td></tr>
+<tr class="separator:gafa8c31282da7cef8176039be033d70da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf17263a58ac0bffdc637751da5c18089"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gaf17263a58ac0bffdc637751da5c18089">magma_dasum_q</a> (magma_int_t n, magmaDouble_const_ptr dx, magma_int_t incx, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf17263a58ac0bffdc637751da5c18089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the sum of absolute values of vector x; i.e., one norm.  <a href="#gaf17263a58ac0bffdc637751da5c18089">More...</a><br /></td></tr>
+<tr class="separator:gaf17263a58ac0bffdc637751da5c18089"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabdf56d9c6b2c516dab12ff03d5999e49"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gabdf56d9c6b2c516dab12ff03d5999e49">magma_daxpy_q</a> (magma_int_t n, double alpha, magmaDouble_const_ptr dx, magma_int_t incx, magmaDouble_ptr dy, magma_int_t incy, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gabdf56d9c6b2c516dab12ff03d5999e49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constant times a vector plus a vector; \( y = \alpha x + y \).  <a href="#gabdf56d9c6b2c516dab12ff03d5999e49">More...</a><br /></td></tr>
+<tr class="separator:gabdf56d9c6b2c516dab12ff03d5999e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf358b913d3c1bc277bad229fd5723601"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gaf358b913d3c1bc277bad229fd5723601">magma_dcopy_q</a> (magma_int_t n, magmaDouble_const_ptr dx, magma_int_t incx, magmaDouble_ptr dy, magma_int_t incy, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf358b913d3c1bc277bad229fd5723601"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy vector x to vector y; \( y = x \).  <a href="#gaf358b913d3c1bc277bad229fd5723601">More...</a><br /></td></tr>
+<tr class="separator:gaf358b913d3c1bc277bad229fd5723601"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga029fd1e19dd328f97ec14c97bda2dd64"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#ga029fd1e19dd328f97ec14c97bda2dd64">magma_ddot</a> (magma_int_t n, magmaDouble_const_ptr dx, magma_int_t incx, magmaDouble_const_ptr dy, magma_int_t incy, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga029fd1e19dd328f97ec14c97bda2dd64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns dot product of vectors x and y; \( x^H y \).  <a href="#ga029fd1e19dd328f97ec14c97bda2dd64">More...</a><br /></td></tr>
+<tr class="separator:ga029fd1e19dd328f97ec14c97bda2dd64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf5a77997c14f9290524460b80c10d571"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gaf5a77997c14f9290524460b80c10d571">magma_dnrm2_q</a> (magma_int_t n, magmaDouble_const_ptr dx, magma_int_t incx, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf5a77997c14f9290524460b80c10d571"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns 2-norm of vector x.  <a href="#gaf5a77997c14f9290524460b80c10d571">More...</a><br /></td></tr>
+<tr class="separator:gaf5a77997c14f9290524460b80c10d571"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf248ba86f16b380803e3d251fbb335ef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gaf248ba86f16b380803e3d251fbb335ef">magma_drot_q</a> (magma_int_t n, magmaDouble_ptr dx, magma_int_t incx, magmaDouble_ptr dy, magma_int_t incy, double c, double s, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf248ba86f16b380803e3d251fbb335ef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply Givens plane rotation, where cos (c) is real and sin (s) is real.  <a href="#gaf248ba86f16b380803e3d251fbb335ef">More...</a><br /></td></tr>
+<tr class="separator:gaf248ba86f16b380803e3d251fbb335ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga025c5d363904a55573e129910f8c602c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ga025c5d363904a55573e129910f8c602c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#ga025c5d363904a55573e129910f8c602c">magma_drotm_q</a> (magma_int_t n, double *dx, magma_int_t incx, double *dy, magma_int_t incy, const double *param, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga025c5d363904a55573e129910f8c602c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply modified plane rotation. <br /></td></tr>
+<tr class="separator:ga025c5d363904a55573e129910f8c602c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaff848ae240fb8086caeaefe97be847dc"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="gaff848ae240fb8086caeaefe97be847dc"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gaff848ae240fb8086caeaefe97be847dc">magma_drotmg_q</a> (double *d1, double *d2, double *x1, const double *y1, double *param, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaff848ae240fb8086caeaefe97be847dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate modified plane rotation. <br /></td></tr>
+<tr class="separator:gaff848ae240fb8086caeaefe97be847dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaccd5c4ed91eeb39fdb6675408ad94694"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#gaccd5c4ed91eeb39fdb6675408ad94694">magma_dscal_q</a> (magma_int_t n, double alpha, magmaDouble_ptr dx, magma_int_t incx, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaccd5c4ed91eeb39fdb6675408ad94694"><td class="mdescLeft">&#160;</td><td class="mdescRight">Scales a vector by a constant; \( x = \alpha x \).  <a href="#gaccd5c4ed91eeb39fdb6675408ad94694">More...</a><br /></td></tr>
+<tr class="separator:gaccd5c4ed91eeb39fdb6675408ad94694"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5c42003712c8bcee01662916325b63ee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#ga5c42003712c8bcee01662916325b63ee">magma_dswap_q</a> (magma_int_t n, magmaDouble_ptr dx, magma_int_t incx, magmaDouble_ptr dy, magma_int_t incy, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga5c42003712c8bcee01662916325b63ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga5c42003712c8bcee01662916325b63ee">More...</a><br /></td></tr>
+<tr class="separator:ga5c42003712c8bcee01662916325b63ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8c61c0e15e2b8c691f3414e31864a053"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dblas1.html#ga8c61c0e15e2b8c691f3414e31864a053">magmablas_dswap_q</a> (magma_int_t n, magmaDouble_ptr dx, magma_int_t incx, magmaDouble_ptr dy, magma_int_t incy, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga8c61c0e15e2b8c691f3414e31864a053"><td class="mdescLeft">&#160;</td><td class="mdescRight"><h1>Purpose: </h1>
 Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31864a053">More...</a><br /></td></tr>
@@ -309,6 +347,54 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
 
 </div>
 </div>
+<a class="anchor" id="gaf17263a58ac0bffdc637751da5c18089"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double magma_dasum_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the sum of absolute values of vector x; i.e., one norm. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga87e79e0dfecc8a725565af7e951819e7"></a>
 <div class="memitem">
 <div class="memproto">
@@ -348,6 +434,75 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>incy</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Constant times a vector plus a vector; \( y = \alpha x + y \). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vectors x and y. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>Scalar \( \alpha \)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dy</td><td>DOUBLE_PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gabdf56d9c6b2c516dab12ff03d5999e49"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_daxpy_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -428,6 +583,68 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
 
 </div>
 </div>
+<a class="anchor" id="gaf358b913d3c1bc277bad229fd5723601"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_dcopy_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Copy vector x to vector y; \( y = x \). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vectors x and y. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dy</td><td>DOUBLE_PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga06be612d45f0fac6d7667e6300f89ac7"></a>
 <div class="memitem">
 <div class="memproto">
@@ -484,6 +701,68 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
 
 </div>
 </div>
+<a class="anchor" id="ga029fd1e19dd328f97ec14c97bda2dd64"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double magma_ddot </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns dot product of vectors x and y; \( x^H y \). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x and y. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dy</td><td>DOUBLE_PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga1a32beefe35bcce1f70c9221b0016e1c"></a>
 <div class="memitem">
 <div class="memproto">
@@ -505,6 +784,55 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>incx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns 2-norm of vector x. </p>
+<p>Avoids unnecesary over/underflow.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x and y. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaf5a77997c14f9290524460b80c10d571"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double magma_dnrm2_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -597,6 +925,82 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
 
 </div>
 </div>
+<a class="anchor" id="gaf248ba86f16b380803e3d251fbb335ef"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_drot_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>c</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Apply Givens plane rotation, where cos (c) is real and sin (s) is real. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x and y. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx). On output, overwritten with c*x + s*y.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dy</td><td>DOUBLE_PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy). On output, overwritten with -conj(s)*x + c*y.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">c</td><td>double. cosine.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>DOUBLE_PRECISION. sine. c and s define a rotation [ c s ] where c*c + s*conj(s) = 1. [ -conj(s) c ] </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga1388a2f29630157cc19e2b5be8d6c686"></a>
 <div class="memitem">
 <div class="memproto">
@@ -624,6 +1028,61 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>incx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Scales a vector by a constant; \( x = \alpha x \). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>Scalar \( \alpha \)</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaccd5c4ed91eeb39fdb6675408ad94694"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_dscal_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -702,6 +1161,68 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
 
 </div>
 </div>
+<a class="anchor" id="ga5c42003712c8bcee01662916325b63ee"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magma_dswap_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Swap vector x and y; \( x &lt;-&gt; y \). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x and y. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx != 0.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dy</td><td>DOUBLE_PRECISION array on GPU device. The n element vector y of dimension (1 + (n-1)*incy).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incy</td><td>Stride between consecutive elements of dy. incy != 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga2600aeb5e601ab8fa6626b02dd6af5ca"></a>
 <div class="memitem">
 <div class="memproto">
@@ -745,6 +1266,55 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
 
 </div>
 </div>
+<a class="anchor" id="ga88a86d3f7aed9a4feb3cb3bcd9b7d454"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_idamax_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns index of element of vector x having max. </p>
+<p>absolute value; i.e., max (infinity) norm.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga6945fa1dbfa46614510c2e8f3c726b46"></a>
 <div class="memitem">
 <div class="memproto">
@@ -766,6 +1336,55 @@ Swap vector x and y; \( x &lt;-&gt; y \).  <a href="#ga8c61c0e15e2b8c691f3414e31
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>incx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns index of element of vector x having min. </p>
+<p>absolute value.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of elements in vector x. n &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dx</td><td>DOUBLE_PRECISION array on GPU device. The n element vector x of dimension (1 + (n-1)*incx).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>Stride between consecutive elements of dx. incx &gt; 0. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gafa8c31282da7cef8176039be033d70da"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_idamin_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_const_ptr&#160;</td>
+          <td class="paramname"><em>dx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>incx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -902,7 +1521,7 @@ Swap vector x and y; \( x &lt;-&gt; y \). </p>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

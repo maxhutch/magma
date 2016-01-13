@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zlatrd2.cpp normal z -> s, Fri Sep 11 18:29:30 2015
+       @generated from src/zlatrd2.cpp normal z -> s, Wed Jan  6 17:59:33 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_s
+#define REAL
 
 /**
     Purpose
@@ -171,9 +171,11 @@ magma_slatrd2(
     float *A,  magma_int_t lda,
     float *e, float *tau,
     float *W,  magma_int_t ldw,
+    float *work, magma_int_t lwork,
     magmaFloat_ptr dA, magma_int_t ldda,
     magmaFloat_ptr dW, magma_int_t lddw,
-    magmaFloat_ptr dwork, magma_int_t ldwork)
+    magmaFloat_ptr dwork, magma_int_t ldwork,
+    magma_queue_t queue )
 {
     #define A(i_, j_) (A + (i_) + (j_)*lda)
     #define W(i_, j_) (W + (i_) + (j_)*ldw)
@@ -181,11 +183,13 @@ magma_slatrd2(
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
     #define dW(i_, j_) (dW + (i_) + (j_)*lddw)
 
+    /* Constants */
     const float c_neg_one = MAGMA_S_NEG_ONE;
     const float c_one     = MAGMA_S_ONE;
     const float c_zero    = MAGMA_S_ZERO;
     const magma_int_t ione = 1;
 
+    /* Local variables */
     float alpha, value;
     magma_int_t i, i_n, i_1, iw;
 
@@ -201,12 +205,14 @@ magma_slatrd2(
         info = -5;
     } else if ( ldw < max(1,n) ) {
         info = -9;
-    } else if ( ldda < max(1,n) ) {
+    } else if ( lwork < max(1,n) ) {
         info = -11;
-    } else if ( lddw < max(1,n) ) {
+    } else if ( ldda < max(1,n) ) {
         info = -13;
-    } else if ( ldwork < ldda*magma_ceildiv(n,64) ) {
+    } else if ( lddw < max(1,n) ) {
         info = -15;
+    } else if ( ldwork < ldda*magma_ceildiv(n,64) ) {
+        info = -17;
     }
     
     if (info != 0) {
@@ -216,16 +222,6 @@ magma_slatrd2(
     
     /* Quick return if possible */
     if (n == 0) {
-        return info;
-    }
-
-    magma_queue_t stream;
-    magma_queue_create( &stream );
-    
-    float *f;
-    magma_smalloc_cpu( &f, n );
-    if ( f == NULL ) {
-        info = MAGMA_ERR_HOST_ALLOC;
         return info;
     }
     
@@ -238,18 +234,18 @@ magma_slatrd2(
             iw = i - n + nb;
             if (i < n-1) {
                 /* Update A(1:i,i) */
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 lapackf77_slacgv( &i_n, W(i, iw+1), &ldw );
                 #endif
                 blasf77_sgemv( "No transpose", &i_1, &i_n, &c_neg_one, A(0, i+1), &lda,
                                W(i, iw+1), &ldw, &c_one, A(0, i), &ione );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 lapackf77_slacgv( &i_n, W(i, iw+1), &ldw );
                 lapackf77_slacgv( &i_n, A(i, i+1),  &lda );
                 #endif
                 blasf77_sgemv( "No transpose", &i_1, &i_n, &c_neg_one, W(0, iw+1), &ldw,
                                A(i, i+1), &lda, &c_one, A(0, i), &ione );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 lapackf77_slacgv( &i_n, A(i, i+1), &lda );
                 #endif
             }
@@ -264,16 +260,16 @@ magma_slatrd2(
                 
                 /* Compute W(1:i-1,i) */
                 // 1. Send the block reflector  A(0:n-i-1,i) to the GPU
-                magma_ssetvector_async( i, A(0, i), 1, dA(0, i), 1, stream );
+                magma_ssetvector_async( i, A(0, i), 1, dA(0, i), 1, queue );
                 
                 magmablas_ssymv_work( MagmaUpper, i, c_one, dA(0, 0), ldda,
                                       dA(0, i), ione, c_zero, dW(0, iw), ione,
-                                      dwork, ldwork, stream );
+                                      dwork, ldwork, queue );
                 
                 // 2. Start getting the result back (asynchronously)
                 magma_sgetmatrix_async( i, 1,
                                         dW(0, iw), lddw,
-                                        W(0, iw),  ldw, stream );
+                                        W(0, iw),  ldw, queue );
                 
                 if (i < n-1) {
                     blasf77_sgemv( MagmaConjTransStr, &i, &i_n, &c_one, W(0, iw+1), &ldw,
@@ -281,7 +277,7 @@ magma_slatrd2(
                 }
                 
                 // 3. Here we need ssymv result W(0, iw)
-                magma_queue_sync( stream );
+                magma_queue_sync( queue );
                 
                 if (i < n-1) {
                     blasf77_sgemv( "No transpose", &i, &i_n, &c_neg_one, A(0, i+1), &lda,
@@ -308,18 +304,18 @@ magma_slatrd2(
         for (i = 0; i < nb; ++i) {
             /* Update A(i:n,i) */
             i_n = n - i;
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_slacgv( &i, W(i, 0), &ldw );
             #endif
             blasf77_sgemv( "No transpose", &i_n, &i, &c_neg_one, A(i, 0), &lda,
                            W(i, 0), &ldw, &c_one, A(i, i), &ione );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_slacgv( &i, W(i, 0), &ldw );
             lapackf77_slacgv( &i, A(i, 0), &lda );
             #endif
             blasf77_sgemv( "No transpose", &i_n, &i, &c_neg_one, W(i, 0), &ldw,
                            A(i, 0), &lda, &c_one, A(i, i), &ione );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_slacgv( &i, A(i, 0), &lda );
             #endif
             
@@ -333,31 +329,31 @@ magma_slatrd2(
                 
                 /* Compute W(i+1:n,i) */
                 // 1. Send the block reflector  A(i+1:n,i) to the GPU
-                magma_ssetvector_async( i_n, A(i+1, i), 1, dA(i+1, i), 1, stream );
+                magma_ssetvector_async( i_n, A(i+1, i), 1, dA(i+1, i), 1, queue );
                 
                 magmablas_ssymv_work( MagmaLower, i_n, c_one, dA(i+1, i+1), ldda,
                                       dA(i+1, i), ione, c_zero, dW(i+1, i), ione,
-                                      dwork, ldwork, stream );
+                                      dwork, ldwork, queue );
                 
                 // 2. Start getting the result back (asynchronously)
                 magma_sgetmatrix_async( i_n, 1,
                                         dW(i+1, i), lddw,
-                                        W(i+1, i),  ldw, stream );
+                                        W(i+1, i),  ldw, queue );
                 
                 blasf77_sgemv( MagmaConjTransStr, &i_n, &i, &c_one, W(i+1, 0), &ldw,
                                A(i+1, i), &ione, &c_zero, W(0, i), &ione );
                 
                 blasf77_sgemv( "No transpose", &i_n, &i, &c_neg_one, A(i+1, 0), &lda,
-                               W(0, i), &ione, &c_zero, f, &ione );
+                               W(0, i), &ione, &c_zero, work, &ione );
                 
                 blasf77_sgemv( MagmaConjTransStr, &i_n, &i, &c_one, A(i+1, 0), &lda,
                                A(i+1, i), &ione, &c_zero, W(0, i), &ione );
                 
                 // 3. Here we need ssymv result W(i+1, i)
-                magma_queue_sync( stream );
+                magma_queue_sync( queue );
                 
                 if (i != 0)
-                    blasf77_saxpy( &i_n, &c_one, f, &ione, W(i+1, i), &ione );
+                    blasf77_saxpy( &i_n, &c_one, work, &ione, W(i+1, i), &ione );
                 
                 blasf77_sgemv( "No transpose", &i_n, &i, &c_neg_one, W(i+1, 0), &ldw,
                                W(0, i), &ione, &c_one, W(i+1, i), &ione );
@@ -369,9 +365,6 @@ magma_slatrd2(
             }
         }
     }
-
-    magma_free_cpu( f );
-    magma_queue_destroy( stream );
 
     return info;
 } /* magma_slatrd */

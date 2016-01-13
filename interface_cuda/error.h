@@ -1,7 +1,7 @@
 #ifndef ERROR_H
 #define ERROR_H
 
-#include "common_magma.h"
+#include "magma_types.h"
 
 // cuGetErrorString requires cuda.h, which we don't include elsewhere
 // since we don't use the CUDA driver routines, only the CUDA runtime routines.

@@ -1,22 +1,21 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Raffaele Solca
        @author Ichitaro Yamazaki
        @author Mark Gates
 
-       @generated from zlatrd_mgpu.cpp normal z -> c, Fri Sep 11 18:29:30 2015
+       @generated from src/zlatrd_mgpu.cpp normal z -> c, Wed Jan  6 17:59:33 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "trace.h"
 
-#define PRECISION_c
 #define COMPLEX
 
 /**
@@ -210,11 +209,13 @@ magma_clatrd_mgpu(
 #define dW(dev, i, j)  (dW[(dev)] + (j)          *lddw + (i))
 #define dW1(dev, i, j) (dW[(dev)] + ((j)+nb)     *lddw + (i))
 
+    /* Constants */
     const magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     const magmaFloatComplex c_one     = MAGMA_C_ONE;
     const magmaFloatComplex c_zero    = MAGMA_C_ZERO;
     const magma_int_t ione = 1;
 
+    /* Local variables */
     magmaFloatComplex alpha, value;
     magma_int_t dev;
     magma_int_t i, n_i, n_i_1, ip1, iw;
@@ -235,8 +236,6 @@ magma_clatrd_mgpu(
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
     
     if (uplo == MagmaUpper) {
         /* Reduce last NB columns of upper triangle */
@@ -267,7 +266,7 @@ magma_clatrd_mgpu(
                     magma_setdevice( dev );
                     magma_csetvector_async( n, A(0,i), 1, dW1(dev, 0, iw), 1, queues[dev] );
                 }
-                magmablas_chemv_mgpu(
+                magmablas_chemv_mgpu( 
                     MagmaUpper, i, c_one, dA, ldda, 0,
                     A(0,i), 1, c_zero, W(0, iw), 1,
                     hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
@@ -303,7 +302,7 @@ magma_clatrd_mgpu(
                 }
 
                 // synchronize to get chemv result W(0, iw)
-                magmablas_chemv_mgpu_sync(
+                magmablas_chemv_mgpu_sync( 
                     MagmaUpper, i, c_one, dA, ldda, 0,
                     A(0,i), 1, c_zero, W(0, iw), 1,
                     hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
@@ -371,7 +370,7 @@ magma_clatrd_mgpu(
                     magma_csetvector_async( n, A(0,i), 1, dW1(dev, 0, i), 1, queues[dev] );
                 }
                 
-                magmablas_chemv_mgpu(
+                magmablas_chemv_mgpu( 
                     MagmaLower, n_i_1, c_one, dA, ldda, offset+i+1,
                     A(i+1, i), 1, c_zero, W(i+1, i), 1,
                     hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
@@ -418,7 +417,7 @@ magma_clatrd_mgpu(
                 }
 
                 // synchronize to get chemv result W(i+1, i)
-                magmablas_chemv_mgpu_sync(
+                magmablas_chemv_mgpu_sync( 
                     MagmaLower, n_i_1, c_one, dA, ldda, offset+i+1,
                     A(i+1, i), 1, c_zero, W(i+1, i), 1,
                     hwork, lhwork, dwork, ldwork, ngpu, nb0, queues );
@@ -449,7 +448,6 @@ magma_clatrd_mgpu(
     magma_free_cpu( f );
 
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
     
     return info;
 } /* magma_clatrd_mgpu */

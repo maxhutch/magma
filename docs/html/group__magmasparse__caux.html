@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -117,26 +117,29 @@ Functions</h2></td></tr>
 <tr class="memitem:gab5e9c68a1889c08a38d0dc9a09c4c97f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gab5e9c68a1889c08a38d0dc9a09c4c97f">magma_cresidual</a> (magma_c_matrix A, magma_c_matrix b, magma_c_matrix x, float *res, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gab5e9c68a1889c08a38d0dc9a09c4c97f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the residual ||b-Ax|| for a solution approximation x.  <a href="#gab5e9c68a1889c08a38d0dc9a09c4c97f">More...</a><br /></td></tr>
 <tr class="separator:gab5e9c68a1889c08a38d0dc9a09c4c97f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga90ec303f5952a3ed350bbbc2df85e584"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga90ec303f5952a3ed350bbbc2df85e584">magma_cresidual_slice</a> (magma_int_t start, magma_int_t end, magma_c_matrix A, magma_c_matrix b, magma_c_matrix x, float *res, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga90ec303f5952a3ed350bbbc2df85e584"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the residual r=||b-Ax|| for the slice r(start:end) for a solution approximation x.  <a href="#ga90ec303f5952a3ed350bbbc2df85e584">More...</a><br /></td></tr>
+<tr class="separator:ga90ec303f5952a3ed350bbbc2df85e584"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga14b19f4616a14c288721a58ed14e47b3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga14b19f4616a14c288721a58ed14e47b3">magma_cresidualvec</a> (magma_c_matrix A, magma_c_matrix b, magma_c_matrix x, magma_c_matrix *r, float *res, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga14b19f4616a14c288721a58ed14e47b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the residual r = b-Ax for a solution approximation x.  <a href="#ga14b19f4616a14c288721a58ed14e47b3">More...</a><br /></td></tr>
 <tr class="separator:ga14b19f4616a14c288721a58ed14e47b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6ddaea19d0dccb083af27c37a9b19589"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga6ddaea19d0dccb083af27c37a9b19589">magma_c_precond</a> (magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga6ddaea19d0dccb083af27c37a9b19589"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is chosen.  <a href="#ga6ddaea19d0dccb083af27c37a9b19589">More...</a><br /></td></tr>
 <tr class="separator:ga6ddaea19d0dccb083af27c37a9b19589"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga40b896a61b8434dc8ce0ab4e5ddd5558"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga40b896a61b8434dc8ce0ab4e5ddd5558">magma_c_precondsetup</a> (magma_c_matrix A, magma_c_matrix b, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga40b896a61b8434dc8ce0ab4e5ddd5558"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is preprocessed.  <a href="#ga40b896a61b8434dc8ce0ab4e5ddd5558">More...</a><br /></td></tr>
-<tr class="separator:ga40b896a61b8434dc8ce0ab4e5ddd5558"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9ddd3167e68274662fbad5c8f589f0e6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga9ddd3167e68274662fbad5c8f589f0e6">magma_c_precondsetup</a> (magma_c_matrix A, magma_c_matrix b, magma_c_solver_par *solver, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga9ddd3167e68274662fbad5c8f589f0e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix M and vectors x, y and the preconditioner parameters, the respective preconditioner is preprocessed.  <a href="#ga9ddd3167e68274662fbad5c8f589f0e6">More...</a><br /></td></tr>
+<tr class="separator:ga9ddd3167e68274662fbad5c8f589f0e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga4b8b67c03dbcb6cdefff1413fc0184ec"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga4b8b67c03dbcb6cdefff1413fc0184ec">magma_c_applyprecond</a> (magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga4b8b67c03dbcb6cdefff1413fc0184ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is applied.  <a href="#ga4b8b67c03dbcb6cdefff1413fc0184ec">More...</a><br /></td></tr>
 <tr class="separator:ga4b8b67c03dbcb6cdefff1413fc0184ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3e10390abb848fbfcc8b5865f0ff8af0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga3e10390abb848fbfcc8b5865f0ff8af0">magma_c_applyprecond_left</a> (magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga3e10390abb848fbfcc8b5865f0ff8af0"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective left preconditioner is applied.  <a href="#ga3e10390abb848fbfcc8b5865f0ff8af0">More...</a><br /></td></tr>
-<tr class="separator:ga3e10390abb848fbfcc8b5865f0ff8af0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga84de15d4ddc15232bd156840e2a92c69"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga84de15d4ddc15232bd156840e2a92c69">magma_c_applyprecond_right</a> (magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga84de15d4ddc15232bd156840e2a92c69"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective right-preconditioner is applied.  <a href="#ga84de15d4ddc15232bd156840e2a92c69">More...</a><br /></td></tr>
-<tr class="separator:ga84de15d4ddc15232bd156840e2a92c69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac203f58f56bd85c51916a48a3bc71da1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gac203f58f56bd85c51916a48a3bc71da1">magma_c_applyprecond_left</a> (magma_trans_t trans, magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gac203f58f56bd85c51916a48a3bc71da1"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective left preconditioner is applied.  <a href="#gac203f58f56bd85c51916a48a3bc71da1">More...</a><br /></td></tr>
+<tr class="separator:gac203f58f56bd85c51916a48a3bc71da1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga86b976908de272c7007bae4e19dd24f9"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga86b976908de272c7007bae4e19dd24f9">magma_c_applyprecond_right</a> (magma_trans_t trans, magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga86b976908de272c7007bae4e19dd24f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a given input matrix A and vectors x, y and the preconditioner parameters, the respective right-preconditioner is applied.  <a href="#ga86b976908de272c7007bae4e19dd24f9">More...</a><br /></td></tr>
+<tr class="separator:ga86b976908de272c7007bae4e19dd24f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga77266310d73ccd5b800e90ad05d8735e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga77266310d73ccd5b800e90ad05d8735e">magma_c_solver</a> (magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x, magma_copts *zopts, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga77266310d73ccd5b800e90ad05d8735e"><td class="mdescLeft">&#160;</td><td class="mdescRight">ALlows the user to choose a solver.  <a href="#ga77266310d73ccd5b800e90ad05d8735e">More...</a><br /></td></tr>
+<tr class="memdesc:ga77266310d73ccd5b800e90ad05d8735e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allows the user to choose a solver.  <a href="#ga77266310d73ccd5b800e90ad05d8735e">More...</a><br /></td></tr>
 <tr class="separator:ga77266310d73ccd5b800e90ad05d8735e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae5eccf6ccf0bb8c4cf6d7f1c6358f7e3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gae5eccf6ccf0bb8c4cf6d7f1c6358f7e3">magma_capplycustomprecond_l</a> (magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gae5eccf6ccf0bb8c4cf6d7f1c6358f7e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to the left solve for any custom preconditioner.  <a href="#gae5eccf6ccf0bb8c4cf6d7f1c6358f7e3">More...</a><br /></td></tr>
@@ -144,9 +147,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaedf9af3d6c9f21a3b91b1c566cd2ba65"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gaedf9af3d6c9f21a3b91b1c566cd2ba65">magma_capplycustomprecond_r</a> (magma_c_matrix b, magma_c_matrix *x, magma_c_preconditioner *precond, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gaedf9af3d6c9f21a3b91b1c566cd2ba65"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an interface to the right solve for any custom preconditioner.  <a href="#gaedf9af3d6c9f21a3b91b1c566cd2ba65">More...</a><br /></td></tr>
 <tr class="separator:gaedf9af3d6c9f21a3b91b1c566cd2ba65"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1bea63e607fde34343c64d7b7b1f96d3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga1bea63e607fde34343c64d7b7b1f96d3">magma_ccsrsplit</a> (magma_int_t bsize, magma_c_matrix A, magma_c_matrix *D, magma_c_matrix *R, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga1bea63e607fde34343c64d7b7b1f96d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a CSR matrix into two matrices, one containing the diagonal blocks with the diagonal element stored first, one containing the rest of the original matrix.  <a href="#ga1bea63e607fde34343c64d7b7b1f96d3">More...</a><br /></td></tr>
-<tr class="separator:ga1bea63e607fde34343c64d7b7b1f96d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga81de36345fd732c141074d3a45d70366"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga81de36345fd732c141074d3a45d70366">magma_ccsrsplit</a> (magma_int_t offset, magma_int_t bsize, magma_c_matrix A, magma_c_matrix *D, magma_c_matrix *R, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga81de36345fd732c141074d3a45d70366"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splits a CSR matrix into two matrices, one containing the diagonal blocks with the diagonal element stored first, one containing the rest of the original matrix.  <a href="#ga81de36345fd732c141074d3a45d70366">More...</a><br /></td></tr>
+<tr class="separator:ga81de36345fd732c141074d3a45d70366"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf6ed3e2b7d6c5faa53f497c7cd2bbd99"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gaf6ed3e2b7d6c5faa53f497c7cd2bbd99">magma_cdomainoverlap</a> (magma_index_t num_rows, magma_int_t *num_indices, magma_index_t *rowptr, magma_index_t *colidx, magma_index_t *x, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gaf6ed3e2b7d6c5faa53f497c7cd2bbd99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generates the update list.  <a href="#gaf6ed3e2b7d6c5faa53f497c7cd2bbd99">More...</a><br /></td></tr>
 <tr class="separator:gaf6ed3e2b7d6c5faa53f497c7cd2bbd99"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -246,6 +249,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gae92008da51b5487807d675d92ca677cc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gae92008da51b5487807d675d92ca677cc">magma_cmdiagadd</a> (magma_c_matrix *A, magmaFloatComplex add, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gae92008da51b5487807d675d92ca677cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a multiple of the Identity matrix to a matrix: A = A+add * I.  <a href="#gae92008da51b5487807d675d92ca677cc">More...</a><br /></td></tr>
 <tr class="separator:gae92008da51b5487807d675d92ca677cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga12f3f1320e05691f00501ed3c84ddc32"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga12f3f1320e05691f00501ed3c84ddc32">magma_cmshrink</a> (magma_c_matrix A, magma_c_matrix *B, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga12f3f1320e05691f00501ed3c84ddc32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shrinks a non-square matrix (m &lt; n) to the smaller dimension.  <a href="#ga12f3f1320e05691f00501ed3c84ddc32">More...</a><br /></td></tr>
+<tr class="separator:ga12f3f1320e05691f00501ed3c84ddc32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga23c44b716c134439c22c209e74bc360b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga23c44b716c134439c22c209e74bc360b">magma_cmslice</a> (magma_int_t num_slices, magma_int_t slice, magma_c_matrix A, magma_c_matrix *B, magma_c_matrix *ALOC, magma_c_matrix *ANLOC, magma_index_t *comm_i, magmaFloatComplex *comm_v, magma_int_t *start, magma_int_t *end, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga23c44b716c134439c22c209e74bc360b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Takes a matrix and extracts a slice for solving the system in parallel:  <a href="#ga23c44b716c134439c22c209e74bc360b">More...</a><br /></td></tr>
+<tr class="separator:ga23c44b716c134439c22c209e74bc360b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabc049ccc9981c466ba3334ec6c991e2c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gabc049ccc9981c466ba3334ec6c991e2c">magma_cmtransfer</a> (magma_c_matrix A, magma_c_matrix *B, magma_location_t src, magma_location_t dst, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gabc049ccc9981c466ba3334ec6c991e2c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copies a matrix from memory location src to memory location dst.  <a href="#gabc049ccc9981c466ba3334ec6c991e2c">More...</a><br /></td></tr>
 <tr class="separator:gabc049ccc9981c466ba3334ec6c991e2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -258,6 +267,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga18f1837d571fe4e8d1594dd39b9ca3d1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga18f1837d571fe4e8d1594dd39b9ca3d1">magma_c_cucsrtranspose</a> (magma_c_matrix A, magma_c_matrix *B, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga18f1837d571fe4e8d1594dd39b9ca3d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Helper function to transpose CSR matrix.  <a href="#ga18f1837d571fe4e8d1594dd39b9ca3d1">More...</a><br /></td></tr>
 <tr class="separator:ga18f1837d571fe4e8d1594dd39b9ca3d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab79a49e79b2b1e27a9cda7d2797603f8"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gab79a49e79b2b1e27a9cda7d2797603f8">magma_cmtransposeconjugate</a> (magma_c_matrix A, magma_c_matrix *B, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab79a49e79b2b1e27a9cda7d2797603f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function forms the transpose conjugate of a matrix.  <a href="#gab79a49e79b2b1e27a9cda7d2797603f8">More...</a><br /></td></tr>
+<tr class="separator:gab79a49e79b2b1e27a9cda7d2797603f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabf84dc7a8129fe86759e7ffc77c29c42"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gabf84dc7a8129fe86759e7ffc77c29c42">magma_csolverinfo</a> (magma_c_solver_par *solver_par, magma_c_preconditioner *precond_par, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gabf84dc7a8129fe86759e7ffc77c29c42"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints information about a previously called solver.  <a href="#gabf84dc7a8129fe86759e7ffc77c29c42">More...</a><br /></td></tr>
 <tr class="separator:gabf84dc7a8129fe86759e7ffc77c29c42"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -270,9 +282,24 @@ Functions</h2></td></tr>
 <tr class="memitem:ga3c145096be514e4b93cb8b25f7f975af"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga3c145096be514e4b93cb8b25f7f975af">magma_ceigensolverinfo_init</a> (magma_c_solver_par *solver_par, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga3c145096be514e4b93cb8b25f7f975af"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes space for eigensolvers.  <a href="#ga3c145096be514e4b93cb8b25f7f975af">More...</a><br /></td></tr>
 <tr class="separator:ga3c145096be514e4b93cb8b25f7f975af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga00f815f57150db00ce24c8303c43e490"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga00f815f57150db00ce24c8303c43e490">magma_csort</a> (magmaFloatComplex *x, magma_int_t first, magma_int_t last, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga00f815f57150db00ce24c8303c43e490"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts an array of values in increasing order.  <a href="#ga00f815f57150db00ce24c8303c43e490">More...</a><br /></td></tr>
+<tr class="separator:ga00f815f57150db00ce24c8303c43e490"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacf9105f3bd8030ca240a69c020f93c5d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gacf9105f3bd8030ca240a69c020f93c5d">magma_cmsort</a> (magmaFloatComplex *x, magma_index_t *col, magma_index_t *row, magma_int_t first, magma_int_t last, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gacf9105f3bd8030ca240a69c020f93c5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts an array of values in increasing order.  <a href="#gacf9105f3bd8030ca240a69c020f93c5d">More...</a><br /></td></tr>
+<tr class="separator:gacf9105f3bd8030ca240a69c020f93c5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga514d1b7ef3115e752e7a7dd469ec64ed"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga514d1b7ef3115e752e7a7dd469ec64ed">magma_cindexsort</a> (magma_index_t *x, magma_int_t first, magma_int_t last, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga514d1b7ef3115e752e7a7dd469ec64ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts an array of integers.  <a href="#ga514d1b7ef3115e752e7a7dd469ec64ed">More...</a><br /></td></tr>
+<tr class="memdesc:ga514d1b7ef3115e752e7a7dd469ec64ed"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts an array of integers in increasing order.  <a href="#ga514d1b7ef3115e752e7a7dd469ec64ed">More...</a><br /></td></tr>
 <tr class="separator:ga514d1b7ef3115e752e7a7dd469ec64ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab500040e3864a342f73b05bd5b5d1ab0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gab500040e3864a342f73b05bd5b5d1ab0">magma_cindexsortval</a> (magma_index_t *x, magmaFloatComplex *y, magma_int_t first, magma_int_t last, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab500040e3864a342f73b05bd5b5d1ab0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sorts an array of integers, updates a respective array of values.  <a href="#gab500040e3864a342f73b05bd5b5d1ab0">More...</a><br /></td></tr>
+<tr class="separator:gab500040e3864a342f73b05bd5b5d1ab0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga52f9bbc4685e4f036eb166c46dc650a6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga52f9bbc4685e4f036eb166c46dc650a6">magma_cmorderstatistics</a> (magmaFloatComplex *val, magma_index_t *col, magma_index_t *row, magma_int_t length, magma_int_t k, magma_int_t r, magmaFloatComplex *element, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga52f9bbc4685e4f036eb166c46dc650a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identifies the kth smallest/largest element in an array and reorders such that these elements come to the front.  <a href="#ga52f9bbc4685e4f036eb166c46dc650a6">More...</a><br /></td></tr>
+<tr class="separator:ga52f9bbc4685e4f036eb166c46dc650a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab3dba52576a15ba4e6ce1a53625d41a1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gab3dba52576a15ba4e6ce1a53625d41a1">magma_corderstatistics</a> (magmaFloatComplex *val, magma_int_t length, magma_int_t k, magma_int_t r, magmaFloatComplex *element, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab3dba52576a15ba4e6ce1a53625d41a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identifies the kth smallest/largest element in an array.  <a href="#gab3dba52576a15ba4e6ce1a53625d41a1">More...</a><br /></td></tr>
+<tr class="separator:gab3dba52576a15ba4e6ce1a53625d41a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaaff279eab3659c4f8b8305cef279ba14"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gaaff279eab3659c4f8b8305cef279ba14">magma_cparse_opts</a> (int argc, char **argv, magma_copts *opts, int *matrices, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gaaff279eab3659c4f8b8305cef279ba14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parses input options for a solver.  <a href="#gaaff279eab3659c4f8b8305cef279ba14">More...</a><br /></td></tr>
 <tr class="separator:gaaff279eab3659c4f8b8305cef279ba14"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -312,9 +339,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga8eca2d0c2a12d6daee340f71b7e5be9a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga8eca2d0c2a12d6daee340f71b7e5be9a">magma_clobpcg_shift</a> (magma_int_t num_rows, magma_int_t num_vecs, magma_int_t shift, magmaFloatComplex_ptr x, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga8eca2d0c2a12d6daee340f71b7e5be9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">For a Block-LOBPCG, the set of residuals (entries consecutive in memory) shrinks and the vectors are shifted in case shift residuals drop below threshold.  <a href="#ga8eca2d0c2a12d6daee340f71b7e5be9a">More...</a><br /></td></tr>
 <tr class="separator:ga8eca2d0c2a12d6daee340f71b7e5be9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gacf7f4fb1547c73643a644246540875c3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gacf7f4fb1547c73643a644246540875c3">magma_ccopyscale</a> (int n, int k, magmaFloatComplex_ptr r, magmaFloatComplex_ptr v, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
-<tr class="memdesc:gacf7f4fb1547c73643a644246540875c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the correction term of the pipelined GMRES according to P.  <a href="#gacf7f4fb1547c73643a644246540875c3">More...</a><br /></td></tr>
-<tr class="separator:gacf7f4fb1547c73643a644246540875c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0afb3b6efb5a0b3e7d462a1365cb0a24"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga0afb3b6efb5a0b3e7d462a1365cb0a24">magma_ccopyscale</a> (magma_int_t n, magma_int_t k, magmaFloatComplex_ptr r, magmaFloatComplex_ptr v, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga0afb3b6efb5a0b3e7d462a1365cb0a24"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the correction term of the pipelined GMRES according to P.  <a href="#ga0afb3b6efb5a0b3e7d462a1365cb0a24">More...</a><br /></td></tr>
+<tr class="separator:ga0afb3b6efb5a0b3e7d462a1365cb0a24"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9dcd02f5a11871bada132b2bae3edda9"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga9dcd02f5a11871bada132b2bae3edda9">magma_cdiagcheck</a> (magma_c_matrix dA, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga9dcd02f5a11871bada132b2bae3edda9"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine checks for a CSR matrix whether there exists a zero on the diagonal.  <a href="#ga9dcd02f5a11871bada132b2bae3edda9">More...</a><br /></td></tr>
 <tr class="separator:ga9dcd02f5a11871bada132b2bae3edda9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -324,6 +351,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa6119f9908c45c0956ed6c8d391a3476"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gaa6119f9908c45c0956ed6c8d391a3476">magma_sparse_matrix_clag2z</a> (magma_c_sparse_matrix A, magma_z_matrix *B, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gaa6119f9908c45c0956ed6c8d391a3476"><td class="mdescLeft">&#160;</td><td class="mdescRight">convertes magma_c_sparse_matrix from C to Z  <a href="#gaa6119f9908c45c0956ed6c8d391a3476">More...</a><br /></td></tr>
 <tr class="separator:gaa6119f9908c45c0956ed6c8d391a3476"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga42c856528a2584b0cdf5301611eeba1a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#ga42c856528a2584b0cdf5301611eeba1a">magma_cmconjugate</a> (magma_c_matrix *A, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga42c856528a2584b0cdf5301611eeba1a"><td class="mdescLeft">&#160;</td><td class="mdescRight">This function conjugates a matrix.  <a href="#ga42c856528a2584b0cdf5301611eeba1a">More...</a><br /></td></tr>
+<tr class="separator:ga42c856528a2584b0cdf5301611eeba1a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac958bb98e26067d2035de9c25fbe909f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__caux.html#gac958bb98e26067d2035de9c25fbe909f">magma_cmcsrcompressor_gpu</a> (magma_c_matrix *A, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gac958bb98e26067d2035de9c25fbe909f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes zeros in a CSR matrix.  <a href="#gac958bb98e26067d2035de9c25fbe909f">More...</a><br /></td></tr>
 <tr class="separator:gac958bb98e26067d2035de9c25fbe909f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -499,13 +529,19 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga3e10390abb848fbfcc8b5865f0ff8af0"></a>
+<a class="anchor" id="gac203f58f56bd85c51916a48a3bc71da1"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_c_applyprecond_left </td>
           <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">magma_c_matrix&#160;</td>
           <td class="paramname"><em>A</em>, </td>
         </tr>
@@ -556,13 +592,19 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga84de15d4ddc15232bd156840e2a92c69"></a>
+<a class="anchor" id="ga86b976908de272c7007bae4e19dd24f9"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_c_applyprecond_right </td>
           <td>(</td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">magma_c_matrix&#160;</td>
           <td class="paramname"><em>A</em>, </td>
         </tr>
@@ -876,7 +918,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga40b896a61b8434dc8ce0ab4e5ddd5558"></a>
+<a class="anchor" id="ga9ddd3167e68274662fbad5c8f589f0e6"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -891,6 +933,12 @@ Functions</h2></td></tr>
           <td></td>
           <td class="paramtype">magma_c_matrix&#160;</td>
           <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_solver_par *&#160;</td>
+          <td class="paramname"><em>solver</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -912,11 +960,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>For a given input matrix A and vectors x, y and the preconditioner parameters, the respective preconditioner is preprocessed. </p>
+<p>For a given input matrix M and vectors x, y and the preconditioner parameters, the respective preconditioner is preprocessed. </p>
 <p>E.g. for Jacobi: the scaling-vetor, for ILU the factorization.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix sparse matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix sparse matrix M</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_c_matrix input vector y</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">precond</td><td>magma_c_preconditioner preconditioner </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
@@ -968,7 +1016,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>ALlows the user to choose a solver. </p>
+<p>Allows the user to choose a solver. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix sparse matrix A</td></tr>
@@ -1082,20 +1130,20 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gacf7f4fb1547c73643a644246540875c3"></a>
+<a class="anchor" id="ga0afb3b6efb5a0b3e7d462a1365cb0a24"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_ccopyscale </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>k</em>, </td>
         </tr>
         <tr>
@@ -1433,13 +1481,19 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga1bea63e607fde34343c64d7b7b1f96d3"></a>
+<a class="anchor" id="ga81de36345fd732c141074d3a45d70366"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_ccsrsplit </td>
           <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>bsize</em>, </td>
         </tr>
@@ -1478,6 +1532,7 @@ Functions</h2></td></tr>
 <p>Splits a CSR matrix into two matrices, one containing the diagonal blocks with the diagonal element stored first, one containing the rest of the original matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>magma_int_t size of the first block</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bsize</td><td>magma_int_t size of the diagonal blocks</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix CSR input matrix</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">D</td><td>magma_c_matrix* CSR matrix containing diagonal blocks</td></tr>
@@ -1885,10 +1940,66 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Sorts an array of integers. </p>
+<p>Sorts an array of integers in increasing order. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_index_t* array to sort</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">first</td><td>magma_int_t pointer to first element</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">last</td><td>magma_int_t pointer to last element</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gab500040e3864a342f73b05bd5b5d1ab0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cindexsortval </td>
+          <td>(</td>
+          <td class="paramtype">magma_index_t *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sorts an array of integers, updates a respective array of values. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magma_index_t* array to sort</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">y</td><td>magmaFloatComplex* array to sort</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">first</td><td>magma_int_t pointer to first element</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">last</td><td>magma_int_t pointer to last element</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
@@ -2204,6 +2315,42 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga42c856528a2584b0cdf5301611eeba1a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cmconjugate </td>
+          <td>(</td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function conjugates a matrix. </p>
+<p>For a real matrix, no value is changed.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>magma_c_matrix* input/output matrix </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga308b1fde73f948ce187afb23b19aa912"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2323,7 +2470,7 @@ Functions</h2></td></tr>
 <p>This is a GPU implementation of the CSR compressor.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir"></td><td class="paramname">A</td><td>magma_c_matrix* input/output matrix </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>magma_c_matrix* input/output matrix </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -2608,6 +2755,84 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga52f9bbc4685e4f036eb166c46dc650a6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cmorderstatistics </td>
+          <td>(</td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_index_t *&#160;</td>
+          <td class="paramname"><em>col</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_index_t *&#160;</td>
+          <td class="paramname"><em>row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>element</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Identifies the kth smallest/largest element in an array and reorders such that these elements come to the front. </p>
+<p>The related arrays col and row are also reordered.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">val</td><td>magmaFloatComplex* Target array, will be modified during operation.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">col</td><td>magma_index_t* Target array, will be modified during operation.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">row</td><td>magma_index_t* Target array, will be modified during operation.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>magma_int_t Length of the target array.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>magma_int_t Element to be identified (largest/smallest).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>magma_int_t rule how to sort: '1' -&gt; largest, '0' -&gt; smallest</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">element</td><td>magmaFloatComplex* location of the respective element</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga5e0ac2b7a72fec0011c162d175704c97"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2643,6 +2868,212 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>magma_c_matrix* input/output matrix</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">scaling</td><td>magma_scale_t scaling type (unit rownorm / unit diagonal)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga12f3f1320e05691f00501ed3c84ddc32"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cmshrink </td>
+          <td>(</td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Shrinks a non-square matrix (m &lt; n) to the smaller dimension. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix sparse matrix A</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">B</td><td>magma_c_matrix* sparse matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga23c44b716c134439c22c209e74bc360b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cmslice </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_slices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>slice</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>ALOC</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>ANLOC</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_index_t *&#160;</td>
+          <td class="paramname"><em>comm_i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>comm_v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t *&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Takes a matrix and extracts a slice for solving the system in parallel: </p>
+<p>B = A( i:i+n, : ) and ALOC = A(i:i+n,i:i+n) and ANLOCA(0:start - end:n,:)</p>
+<p>B is of size n x n, ALOC of size end-start x end-start, ANLOC of size end-start x n</p>
+<p>The last slice might be smaller. For the non-local parts, B is the identity. comm contains 1ess in the locations that are non-local but needed to solve local system.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_slices</td><td>magma_int_t number of slices</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">slice</td><td>magma_int_t slice id (0.. num_slices-1)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix sparse matrix in CSR</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">B</td><td>magma_c_matrix* sparse matrix in CSR</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ALOC</td><td>magma_c_matrix* sparse matrix in CSR</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ANLOC</td><td>magma_c_matrix* sparse matrix in CSR</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">comm_i</td><td>magma_int_t* communication plan</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">comm_v</td><td>magmaFloatComplex* communication plan</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">start</td><td>magma_int_t* start of slice (row-index)</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">end</td><td>magma_int_t* end of slice (row-index) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gacf9105f3bd8030ca240a69c020f93c5d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cmsort </td>
+          <td>(</td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_index_t *&#160;</td>
+          <td class="paramname"><em>col</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_index_t *&#160;</td>
+          <td class="paramname"><em>row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sorts an array of values in increasing order. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex* array to sort</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">col</td><td>magma_index_t* Target array, will be modified during operation.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">row</td><td>magma_index_t* Target array, will be modified during operation.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">first</td><td>magma_int_t pointer to first element</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">last</td><td>magma_int_t pointer to last element</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -2748,6 +3179,49 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gab79a49e79b2b1e27a9cda7d2797603f8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cmtransposeconjugate </td>
+          <td>(</td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This function forms the transpose conjugate of a matrix. </p>
+<p>For a real-value matrix, the output is the transpose.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix input matrix (CSR)</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">B</td><td>magma_c_matrix* output matrix (CSR) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="gaf16ced866ad5c1fe2e9087c782f3e9f5"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2804,6 +3278,69 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">U</td><td>magma_c_matrix input sparse matrix in CSR</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">LU</td><td>magma_c_matrix* output sparse matrix in A-LU in CSR</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">res</td><td>real_Double_t* Frobenius norm of difference</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gab3dba52576a15ba4e6ce1a53625d41a1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_corderstatistics </td>
+          <td>(</td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>val</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>length</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>element</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Identifies the kth smallest/largest element in an array. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">val</td><td>magmaFloatComplex* Target array, will be modified during operation.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">length</td><td>magma_int_t Length of the target array.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>magma_int_t Element to be identified (largest/smallest).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>magma_int_t rule how to sort: '1' -&gt; largest, '0' -&gt; smallest</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">element</td><td>magmaFloatComplex* location of the respective element</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -3155,6 +3692,76 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga90ec303f5952a3ed350bbbc2df85e584"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cresidual_slice </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>res</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes the residual r=||b-Ax|| for the slice r(start:end) for a solution approximation x. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">start</td><td>magma_int_t start of slice (row-index)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end</td><td>magma_int_t end of slice (row-index)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A</td><td>magma_c_matrix input matrix A</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_c_matrix RHS b</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>magma_c_matrix solution approximation</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">res</td><td>magmaFloatComplex* return residual</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga14b19f4616a14c288721a58ed14e47b3"></a>
 <div class="memitem">
 <div class="memproto">
@@ -3375,6 +3982,55 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">solver_par</td><td>magma_c_solver_par* structure containing all solver information </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">precond_par</td><td>magma_c_preconditioner* structure containing all preconditioner information</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga00f815f57150db00ce24c8303c43e490"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_csort </td>
+          <td>(</td>
+          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>last</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sorts an array of values in increasing order. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex* array to sort</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">first</td><td>magma_int_t pointer to first element</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">last</td><td>magma_int_t pointer to last element</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -4172,7 +4828,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:07 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

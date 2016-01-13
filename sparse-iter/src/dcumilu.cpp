@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
-       @generated from zcumilu.cpp normal z -> d, Fri Sep 11 18:29:45 2015
+       @generated from sparse-iter/src/zcumilu.cpp normal z -> d, Wed Jan  6 17:59:46 2016
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 #include <cuda.h>  // for CUDA_VERSION
 
 #define PRECISION_d
@@ -77,7 +77,7 @@ magma_dcumilusetup(
 
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrA ));
     CHECK_CUSPARSE( cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_GENERAL ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrA, CUSPARSE_DIAG_TYPE_NON_UNIT ));
@@ -201,6 +201,103 @@ cleanup:
     Purpose
     -------
 
+    Prepares the ILU transpose preconditioner via the cuSPARSE.
+
+    Arguments
+    ---------
+
+    @param[in]
+    A           magma_d_matrix
+                input matrix A
+
+    @param[in,out]
+    precond     magma_d_preconditioner*
+                preconditioner parameters
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_dgepr
+    ********************************************************************/
+
+extern "C" magma_int_t
+magma_dcumilusetup_transpose(
+    magma_d_matrix A,
+    magma_d_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+    magma_d_matrix Ah1={Magma_CSR}, Ah2={Magma_CSR};
+    cusparseHandle_t cusparseHandle=NULL;
+    cusparseMatDescr_t descrLT=NULL;
+    cusparseMatDescr_t descrUT=NULL;
+    
+    // CUSPARSE context //
+    CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
+
+    // transpose the matrix
+    magma_dmtransfer( precond->L, &Ah1, Magma_DEV, Magma_CPU, queue );
+    magma_dmconvert( Ah1, &Ah2, A.storage_type, Magma_CSR, queue );
+    magma_dmfree(&Ah1, queue );
+    magma_dmtransposeconjugate( Ah2, &Ah1, queue );
+    magma_dmfree(&Ah2, queue );
+    Ah2.blocksize = A.blocksize;
+    Ah2.alignment = A.alignment;
+    magma_dmconvert( Ah1, &Ah2, Magma_CSR, A.storage_type, queue );
+    magma_dmfree(&Ah1, queue );
+    magma_dmtransfer( Ah2, &(precond->LT), Magma_CPU, Magma_DEV, queue );
+    magma_dmfree(&Ah2, queue );
+    
+    magma_dmtransfer( precond->U, &Ah1, Magma_DEV, Magma_CPU, queue );
+    magma_dmconvert( Ah1, &Ah2, A.storage_type, Magma_CSR, queue );
+    magma_dmfree(&Ah1, queue );
+    magma_dmtransposeconjugate( Ah2, &Ah1, queue );
+    magma_dmfree(&Ah2, queue );
+    Ah2.blocksize = A.blocksize;
+    Ah2.alignment = A.alignment;
+    magma_dmconvert( Ah1, &Ah2, Magma_CSR, A.storage_type, queue );
+    magma_dmfree(&Ah1, queue );
+    magma_dmtransfer( Ah2, &(precond->UT), Magma_CPU, Magma_DEV, queue );
+    magma_dmfree(&Ah2, queue );
+   
+    CHECK_CUSPARSE( cusparseCreateMatDescr( &descrLT ));
+    CHECK_CUSPARSE( cusparseSetMatType( descrLT, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
+    CHECK_CUSPARSE( cusparseSetMatDiagType( descrLT, CUSPARSE_DIAG_TYPE_UNIT ));
+    CHECK_CUSPARSE( cusparseSetMatIndexBase( descrLT, CUSPARSE_INDEX_BASE_ZERO ));
+    CHECK_CUSPARSE( cusparseSetMatFillMode( descrLT, CUSPARSE_FILL_MODE_UPPER ));
+    CHECK_CUSPARSE( cusparseCreateSolveAnalysisInfo( &precond->cuinfoLT ));
+    CHECK_CUSPARSE( cusparseDcsrsm_analysis( cusparseHandle,
+        CUSPARSE_OPERATION_NON_TRANSPOSE, precond->LT.num_rows,
+        precond->LT.nnz, descrLT,
+        precond->LT.dval, precond->LT.drow, precond->LT.dcol, precond->cuinfoLT ));
+    
+    CHECK_CUSPARSE( cusparseCreateMatDescr( &descrUT ));
+    CHECK_CUSPARSE( cusparseSetMatType( descrUT, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
+    CHECK_CUSPARSE( cusparseSetMatDiagType( descrUT, CUSPARSE_DIAG_TYPE_NON_UNIT ));
+    CHECK_CUSPARSE( cusparseSetMatIndexBase( descrUT, CUSPARSE_INDEX_BASE_ZERO ));
+    CHECK_CUSPARSE( cusparseSetMatFillMode( descrUT, CUSPARSE_FILL_MODE_LOWER ));
+    CHECK_CUSPARSE( cusparseCreateSolveAnalysisInfo( &precond->cuinfoUT ));
+    CHECK_CUSPARSE( cusparseDcsrsm_analysis( cusparseHandle,
+        CUSPARSE_OPERATION_NON_TRANSPOSE, precond->UT.num_rows,
+        precond->UT.nnz, descrUT,
+        precond->UT.dval, precond->UT.drow, precond->UT.dcol, precond->cuinfoUT ));
+cleanup:
+    cusparseDestroyMatDescr( descrLT );
+    cusparseDestroyMatDescr( descrUT );
+    cusparseDestroy( cusparseHandle );
+    magma_dmfree(&Ah1, queue );
+    magma_dmfree(&Ah2, queue );
+
+    return info;
+}
+
+
+
+/**
+    Purpose
+    -------
+
     Prepares the ILU triangular solves via cuSPARSE using an ILU factorization
     matrix stored either in precond->M or on the device as
     precond->L and precond->U.
@@ -249,7 +346,7 @@ magma_dcumilugeneratesolverinfo(
     
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
 
 
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrL ));
@@ -346,7 +443,7 @@ magma_dapplycumilu_l(
 
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrL ));
     CHECK_CUSPARSE( cusparseSetMatType( descrL, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrL, CUSPARSE_DIAG_TYPE_UNIT ));
@@ -367,7 +464,81 @@ magma_dapplycumilu_l(
                             x->dval,
                             precond->L.num_rows ));
     
-    magma_device_sync();
+    
+
+cleanup:
+    cusparseDestroyMatDescr( descrL );
+    cusparseDestroy( cusparseHandle );
+    return info;
+}
+
+
+
+/**
+    Purpose
+    -------
+
+    Performs the left triangular solves using the transpose ILU preconditioner.
+
+    Arguments
+    ---------
+
+    @param[in]
+    b           magma_d_matrix
+                RHS
+
+    @param[in,out]
+    x           magma_d_matrix*
+                vector to precondition
+
+    @param[in,out]
+    precond     magma_d_preconditioner*
+                preconditioner parameters
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_dgepr
+    ********************************************************************/
+   
+extern "C" magma_int_t
+magma_dapplycumilu_l_transpose(
+    magma_d_matrix b,
+    magma_d_matrix *x,
+    magma_d_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+    
+    cusparseHandle_t cusparseHandle=NULL;
+    cusparseMatDescr_t descrL=NULL;
+    
+    double one = MAGMA_D_MAKE( 1.0, 0.0);
+
+    // CUSPARSE context //
+    CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
+    CHECK_CUSPARSE( cusparseCreateMatDescr( &descrL ));
+    CHECK_CUSPARSE( cusparseSetMatType( descrL, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
+    CHECK_CUSPARSE( cusparseSetMatDiagType( descrL, CUSPARSE_DIAG_TYPE_UNIT ));
+    CHECK_CUSPARSE( cusparseSetMatIndexBase( descrL, CUSPARSE_INDEX_BASE_ZERO ));
+    CHECK_CUSPARSE( cusparseSetMatFillMode( descrL, CUSPARSE_FILL_MODE_UPPER ));
+    CHECK_CUSPARSE( cusparseDcsrsm_solve( cusparseHandle,
+                            CUSPARSE_OPERATION_NON_TRANSPOSE,
+                            precond->LT.num_rows,
+                            b.num_rows*b.num_cols/precond->LT.num_rows,
+                            &one,
+                            descrL,
+                            precond->LT.dval,
+                            precond->LT.drow,
+                            precond->LT.dcol,
+                            precond->cuinfoLT,
+                            b.dval,
+                            precond->LT.num_rows,
+                            x->dval,
+                            precond->LT.num_rows ));
+    
+    
 
 cleanup:
     cusparseDestroyMatDescr( descrL );
@@ -419,7 +590,7 @@ magma_dapplycumilu_r(
 
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrU ));
     CHECK_CUSPARSE( cusparseSetMatType( descrU, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrU, CUSPARSE_DIAG_TYPE_NON_UNIT ));
@@ -440,7 +611,80 @@ magma_dapplycumilu_r(
                             x->dval,
                             precond->U.num_rows ));
     
-    magma_device_sync();
+    
+
+cleanup:
+    cusparseDestroyMatDescr( descrU );
+    cusparseDestroy( cusparseHandle );
+    return info; 
+}
+
+
+/**
+    Purpose
+    -------
+
+    Performs the right triangular solves using the transpose ILU preconditioner.
+
+    Arguments
+    ---------
+
+    @param[in]
+    b           magma_d_matrix
+                RHS
+
+    @param[in,out]
+    x           magma_d_matrix*
+                vector to precondition
+
+    @param[in,out]
+    precond     magma_d_preconditioner*
+                preconditioner parameters
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_dgepr
+    ********************************************************************/
+
+extern "C" magma_int_t
+magma_dapplycumilu_r_transpose(
+    magma_d_matrix b,
+    magma_d_matrix *x,
+    magma_d_preconditioner *precond,
+    magma_queue_t queue )
+{
+    magma_int_t info = 0;
+    
+    cusparseHandle_t cusparseHandle=NULL;
+    cusparseMatDescr_t descrU=NULL;
+    
+    double one = MAGMA_D_MAKE( 1.0, 0.0);
+
+    // CUSPARSE context //
+    CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
+    CHECK_CUSPARSE( cusparseCreateMatDescr( &descrU ));
+    CHECK_CUSPARSE( cusparseSetMatType( descrU, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
+    CHECK_CUSPARSE( cusparseSetMatDiagType( descrU, CUSPARSE_DIAG_TYPE_NON_UNIT ));
+    CHECK_CUSPARSE( cusparseSetMatIndexBase( descrU, CUSPARSE_INDEX_BASE_ZERO ));
+    CHECK_CUSPARSE( cusparseSetMatFillMode( descrU, CUSPARSE_FILL_MODE_LOWER ));
+    CHECK_CUSPARSE( cusparseDcsrsm_solve( cusparseHandle,
+                            CUSPARSE_OPERATION_NON_TRANSPOSE,
+                            precond->UT.num_rows,
+                            b.num_rows*b.num_cols/precond->UT.num_rows,
+                            &one,
+                            descrU,
+                            precond->UT.dval,
+                            precond->UT.drow,
+                            precond->UT.dcol,
+                            precond->cuinfoUT,
+                            b.dval,
+                            precond->UT.num_rows,
+                            x->dval,
+                            precond->UT.num_rows ));
+    
+    
 
 cleanup:
     cusparseDestroyMatDescr( descrU );
@@ -510,7 +754,7 @@ magma_dcumiccsetup(
 
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrA ));
     CHECK_CUSPARSE( cusparseCreateSolveAnalysisInfo( &(precond->cuinfo) ));
     // use kernel to manually check for zeros n the diagonal
@@ -684,7 +928,7 @@ magma_dcumicgeneratesolverinfo(
     
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrL ));
     CHECK_CUSPARSE( cusparseSetMatType( descrL, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrL, CUSPARSE_DIAG_TYPE_NON_UNIT ));
@@ -785,7 +1029,7 @@ magma_dapplycumicc_l(
 
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrL ));
     CHECK_CUSPARSE( cusparseSetMatType( descrL, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrL, CUSPARSE_DIAG_TYPE_NON_UNIT ));
@@ -806,7 +1050,7 @@ magma_dapplycumicc_l(
                             x->dval,
                             precond->M.num_rows ));
     
-    magma_device_sync();
+    
 
 cleanup:
     cusparseDestroyMatDescr( descrL );
@@ -860,7 +1104,7 @@ magma_dapplycumicc_r(
 
     // CUSPARSE context //
     CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+    CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
     CHECK_CUSPARSE( cusparseCreateMatDescr( &descrU ));
     CHECK_CUSPARSE( cusparseSetMatType( descrU, CUSPARSE_MATRIX_TYPE_TRIANGULAR ));
     CHECK_CUSPARSE( cusparseSetMatDiagType( descrU, CUSPARSE_DIAG_TYPE_NON_UNIT ));
@@ -881,7 +1125,7 @@ magma_dapplycumicc_r(
                             x->dval,
                             precond->M.num_rows ));
     
-    magma_device_sync();
+    
 
 cleanup:
     cusparseDestroyMatDescr( descrU );

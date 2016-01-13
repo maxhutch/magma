@@ -1,16 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
+       @author Ahmad Abdelfattah
 
-       @generated from zpotrf_panel_batched.cpp normal z -> d, Fri Sep 11 18:29:32 2015
+       @generated from src/zpotrf_panel_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 ////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -27,7 +28,7 @@ magma_dpotrf_panel_batched(
     double** dW2_displ, double** dW3_displ,
     double** dW4_displ, 
     magma_int_t *info_array, magma_int_t gbstep,
-    magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)
+    magma_int_t batchCount, magma_queue_t queue)
 {
     magma_int_t arginfo = 0;
     //===============================================
@@ -45,7 +46,7 @@ magma_dpotrf_panel_batched(
                        dW1_displ, dW2_displ,
                        dW3_displ, dW4_displ,
                        info_array, gbstep,
-                       batchCount, myhandle, queue);
+                       batchCount, queue);
 #else
     arginfo = magma_dpotf2_batched(
                        uplo, nb, nb,
@@ -53,11 +54,11 @@ magma_dpotrf_panel_batched(
                        dW1_displ, dW2_displ,
                        dW3_displ, dW4_displ,
                        info_array, gbstep,
-                       batchCount, myhandle, queue);
+                       batchCount, queue);
 
     if ((n-nb) > 0) {
         magma_ddisplace_pointers(dW0_displ, dA_array, ldda, nb, 0, batchCount, queue);
-        magmablas_dtrsm_work_batched(MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+        magmablas_dtrsm_work_batched( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                               1, n-nb, nb, 
                               MAGMA_D_ONE,
                               dA_array,    ldda, 
@@ -66,7 +67,7 @@ magma_dpotrf_panel_batched(
                               dinvA_array, dinvA_length, 
                               dW1_displ,   dW2_displ, 
                               dW3_displ,   dW4_displ,
-                              0, batchCount, queue, myhandle);
+                              0, batchCount, queue );
     }
 #endif
     return arginfo;
@@ -93,7 +94,7 @@ magma_dpotrf_recpanel_batched(
     double** dW2_displ, double** dW3_displ,
     double** dW4_displ,
     magma_int_t *info_array, magma_int_t gbstep, 
-    magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)
+    magma_int_t batchCount, magma_queue_t queue)
 {
     magma_int_t arginfo = 0;
     // Quick return if possible
@@ -131,7 +132,7 @@ magma_dpotrf_recpanel_batched(
                            dW0_displ, dW1_displ, dW2_displ,
                            dW3_displ, dW4_displ,
                            info_array, gbstep,
-                           batchCount, myhandle, queue);
+                           batchCount, queue);
     }
     else {
         // split A over two [A A2]
@@ -153,7 +154,7 @@ magma_dpotrf_recpanel_batched(
                            dW0_displ, dW1_displ, dW2_displ,
                            dW3_displ, dW4_displ, 
                            info_array, gbstep,
-                           batchCount, myhandle, queue);
+                           batchCount, queue);
         if (arginfo != 0) {
             magma_free(dA_displ);
             return arginfo;
@@ -163,11 +164,11 @@ magma_dpotrf_recpanel_batched(
         //printf("calling update A2 with             m=%d n=%d k=%d\n",m2,n2,n1);
         magma_ddisplace_pointers(dA_displ,  dA_array, ldda, p1+n1, p1, batchCount, queue);        
         magma_ddisplace_pointers(dW0_displ, dA_array, ldda, p1+n1, p2, batchCount, queue);        
-        magma_dgemm_batched(MagmaNoTrans, MagmaConjTrans, m2, n2, n1,
+        magma_dgemm_batched( MagmaNoTrans, MagmaConjTrans, m2, n2, n1,
                              alpha, dA_displ, ldda, 
                              dA_displ, ldda, 
                              beta,  dW0_displ, ldda, 
-                             batchCount, queue, myhandle);
+                             batchCount, queue );
         // panel on A2
         //printf("calling recursive panel on A2 with m=%d nb=%d min_recpnb %d\n",m2,n2,min_recpnb);
         magma_ddisplace_pointers(dA_displ, dA_array, ldda, p2, p2, batchCount, queue);        
@@ -179,7 +180,7 @@ magma_dpotrf_recpanel_batched(
                                       dW0_displ, dW1_displ, dW2_displ,
                                       dW3_displ, dW4_displ,
                                       info_array, gbstep,
-                                      batchCount, myhandle, queue);
+                                      batchCount, queue);
     }
 
     magma_free(dA_displ);
@@ -203,7 +204,7 @@ magma_dpotrf_rectile_batched(
     double** dW2_displ, double** dW3_displ,
     double** dW4_displ,
     magma_int_t *info_array, magma_int_t gbstep,
-    magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)
+    magma_int_t batchCount, magma_queue_t queue)
 {
     //magma_int_t DEBUG=0;
 
@@ -238,7 +239,7 @@ magma_dpotrf_rectile_batched(
                            dW0_displ, dW1_displ, dW2_displ,
                            dW3_displ, dW4_displ,
                            info_array, gbstep,
-                           batchCount, myhandle, queue);
+                           batchCount, queue);
     }
     else {
         // split A over two [A11 A12;  A21 A22; A31 A32]
@@ -262,13 +263,13 @@ magma_dpotrf_rectile_batched(
                            dW0_displ, dW1_displ, dW2_displ,
                            dW3_displ, dW4_displ, 
                            info_array, gbstep,
-                           batchCount, myhandle, queue);
+                           batchCount, queue);
 
         // TRSM on A21
         //if (DEBUG == 1) printf("calling trsm on A21=A(%d,%d) using A11 == A(%d,%d) with m=%d k=%d \n",p2,p1,p1,p1,n2,n1);
         magma_ddisplace_pointers(dA_displ,  dA_array, ldda, p1, p1, batchCount, queue);        
         magma_ddisplace_pointers(dW0_displ, dA_array, ldda, p2, p1, batchCount, queue);
-        magmablas_dtrsm_work_batched(MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+        magmablas_dtrsm_work_batched( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                               1, n2, n1, 
                               MAGMA_D_ONE,
                               dA_displ,    ldda, 
@@ -277,7 +278,7 @@ magma_dpotrf_rectile_batched(
                               dinvA_array, dinvA_length, 
                               dW1_displ,   dW2_displ, 
                               dW3_displ,   dW4_displ,
-                              0, batchCount, queue, myhandle);
+                              0, batchCount, queue );
         // update A22
         //if (DEBUG == 1) printf("calling update A22=A(%d,%d) using A21 == A(%d,%d) with m=%d n=%d k=%d\n",p2,p2,p2,p1,n2,n2,n1);
         magma_ddisplace_pointers(dA_displ,  dA_array, ldda, p2, p1, batchCount, queue);        
@@ -286,7 +287,7 @@ magma_dpotrf_rectile_batched(
                              alpha, dA_displ, ldda, 
                              dA_displ, ldda, 
                              beta,  dW0_displ, ldda, 
-                             batchCount, queue, myhandle);
+                             batchCount, queue );
 
         // panel on A22
         //if (DEBUG == 1) printf("calling recursive panel on A22=A(%d,%d) with n=%d min_recpnb %d\n",p2,p2,n2,min_recpnb);
@@ -299,7 +300,7 @@ magma_dpotrf_rectile_batched(
                            dW0_displ, dW1_displ, dW2_displ,
                            dW3_displ, dW4_displ, 
                            info_array, gbstep,
-                           batchCount, myhandle, queue);
+                           batchCount, queue);
     }
 
     if (m > n) {
@@ -307,7 +308,7 @@ magma_dpotrf_rectile_batched(
         //if (DEBUG == 1) printf("calling trsm AT THE END on A3=A(%d,%d): using A1222 == A(%d,%d) with m=%d k=%d \n",n,0,0,0,m-n,n);
         magma_ddisplace_pointers(dA_displ,  dA_array, ldda, 0, 0, batchCount, queue);        
         magma_ddisplace_pointers(dW0_displ, dA_array, ldda, n, 0, batchCount, queue);
-        magmablas_dtrsm_work_batched(MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+        magmablas_dtrsm_work_batched( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                               1, m-n, n, 
                               MAGMA_D_ONE,
                               dA_displ,    ldda, 
@@ -316,7 +317,7 @@ magma_dpotrf_rectile_batched(
                               dinvA_array, dinvA_length, 
                               dW1_displ,   dW2_displ, 
                               dW3_displ,   dW4_displ,
-                              0, batchCount, queue, myhandle);
+                              0, batchCount, queue );
     }
 
     magma_free(dA_displ);

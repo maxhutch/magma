@@ -1,18 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgetri_gpu.cpp normal z -> d, Fri Sep 11 18:29:26 2015
+       @generated from src/zgetri_gpu.cpp normal z -> d, Wed Jan  6 17:59:29 2016
 
 */
-#include "common_magma.h"
-
-#define PRECISION_d
+#include "magma_internal.h"
 
 // === Define what BLAS to use ============================================
+#undef  magma_dtrsm
 #define magma_dtrsm magmablas_dtrsm
 // === End defining what BLAS to use ======================================
 
@@ -79,14 +78,15 @@ magma_dgetri_gpu(
     #define dA(i, j)  (dA + (i) + (j)*ldda)
     #define dL(i, j)  (dL + (i) + (j)*lddl)
     
+    /* Constants */
+    const double c_zero    = MAGMA_D_ZERO;
+    const double c_one     = MAGMA_D_ONE;
+    const double c_neg_one = MAGMA_D_NEG_ONE;
+    
     /* Local variables */
-    double c_zero    = MAGMA_D_ZERO;
-    double c_one     = MAGMA_D_ONE;
-    double c_neg_one = MAGMA_D_NEG_ONE;
-    magmaDouble_ptr dL = dwork;
-    magma_int_t lddl = n;
-    magma_int_t nb   = magma_get_dgetri_nb(n);
-    magma_int_t j, jmax, jb, jp;
+    magmaDouble_ptr dL;
+    magma_int_t nb = magma_get_dgetri_nb( n );
+    magma_int_t j, jmax, jb, jp, lddl;
     
     *info = 0;
     if (n < 0)
@@ -105,10 +105,23 @@ magma_dgetri_gpu(
     if ( n == 0 )
         return *info;
     
+    if (lwork >= ldda*n) {
+        lddl = ldda;
+    }
+    else {
+        lddl = n;
+    }
+    dL = dwork;
+    
     /* Invert the triangular factor U */
     magma_dtrtri_gpu( MagmaUpper, MagmaNonUnit, n, dA, ldda, info );
     if ( *info != 0 )
         return *info;
+    
+    magma_queue_t queue = NULL;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
     
     jmax = ((n-1) / nb)*nb;
     for( j = jmax; j >= 0; j -= nb ) {
@@ -119,8 +132,8 @@ magma_dgetri_gpu(
         // then zero the strictly lower trapezoid block column of A.
         magmablas_dlacpy( MagmaFull, n-j, jb,
                           dA(j,j), ldda,
-                          dL(j,0), lddl );
-        magmablas_dlaset( MagmaLower, n-j-1, jb, c_zero, c_zero, dA(j+1,j), ldda );
+                          dL(j,0), lddl, queue );
+        magmablas_dlaset( MagmaLower, n-j-1, jb, c_zero, c_zero, dA(j+1,j), ldda, queue );
         
         // compute current block column of Ainv
         // Ainv(:, j:j+jb-1)
@@ -131,22 +144,24 @@ magma_dgetri_gpu(
             magma_dgemm( MagmaNoTrans, MagmaNoTrans, n, jb, n-j-jb,
                          c_neg_one, dA(0,j+jb), ldda,
                                     dL(j+jb,0), lddl,
-                         c_one,     dA(0,j),    ldda );
+                         c_one,     dA(0,j),    ldda, queue );
         }
         // TODO use magmablas work interface
         magma_dtrsm( MagmaRight, MagmaLower, MagmaNoTrans, MagmaUnit,
                      n, jb, c_one,
                      dL(j,0), lddl,
-                     dA(0,j), ldda );
+                     dA(0,j), ldda, queue );
     }
 
     // Apply column interchanges
     for( j = n-2; j >= 0; --j ) {
         jp = ipiv[j] - 1;
         if ( jp != j ) {
-            magmablas_dswap( n, dA(0,j), 1, dA(0,jp), 1 );
+            magmablas_dswap( n, dA(0,j), 1, dA(0,jp), 1, queue );
         }
     }
+    
+    magma_queue_destroy( queue );
     
     return *info;
 }

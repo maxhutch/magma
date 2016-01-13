@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zungqr2.cpp normal z -> s, Fri Sep 11 18:29:29 2015
+       @generated from src/zungqr2.cpp normal z -> s, Wed Jan  6 17:59:31 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -77,7 +77,7 @@ magma_sorgqr2(
     float c_zero = MAGMA_S_ZERO;
     float c_one  = MAGMA_S_ONE;
 
-    magma_int_t nb = magma_get_sgeqrf_nb(min(m, n));
+    magma_int_t nb = magma_get_sgeqrf_nb( m, n );
 
     magma_int_t  m_kk, n_kk, k_kk, mi;
     magma_int_t lwork, ldda;
@@ -105,9 +105,6 @@ magma_sorgqr2(
         return *info;
     }
 
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-    
     // first kk columns are handled by blocked method.
     // ki is start of 2nd-to-last block
     if ((nb > 1) && (nb < k)) {
@@ -146,8 +143,10 @@ magma_sorgqr2(
     }
     float *V = work + (n+nb)*nb;
 
-    magma_queue_t stream;
-    magma_queue_create( &stream );
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
     // Use unblocked code for the last or only block.
     if (kk < n) {
@@ -159,8 +158,8 @@ magma_sorgqr2(
                               A(kk, kk), &lda,
                               &tau[kk], work, &lwork, &iinfo );
         */
-        lapackf77_slacpy( MagmaUpperLowerStr, &m_kk, &k_kk, A(kk,kk), &lda, V, &m_kk);
-        lapackf77_slaset( MagmaUpperLowerStr, &m_kk, &n_kk, &c_zero, &c_one, A(kk, kk), &lda );
+        lapackf77_slacpy( MagmaFullStr, &m_kk, &k_kk, A(kk,kk), &lda, V, &m_kk);
+        lapackf77_slaset( MagmaFullStr, &m_kk, &n_kk, &c_zero, &c_one, A(kk, kk), &lda );
 
         lapackf77_slarft( MagmaForwardStr, MagmaColumnwiseStr,
                           &m_kk, &k_kk,
@@ -172,18 +171,17 @@ magma_sorgqr2(
         if (kk > 0) {
             magma_ssetmatrix( m_kk, n_kk,
                               A(kk, kk),  lda,
-                              dA(kk, kk), ldda );
+                              dA(kk, kk), ldda, queue );
         
             // Set A(1:kk,kk+1:n) to zero.
-            magmablas_slaset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk), ldda );
+            magmablas_slaset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk), ldda, queue );
         }
     }
 
     if (kk > 0) {
         // Use blocked code
-        // stream: set Aii (V) --> laset --> laset --> larfb --> [next]
+        // queue: set Aii (V) --> laset --> laset --> larfb --> [next]
         // CPU has no computation
-        magmablasSetKernelStream( stream );
         
         for (i = ki; i >= 0; i -= nb) {
             ib = min(nb, k - i);
@@ -193,38 +191,36 @@ magma_sorgqr2(
             lapackf77_slaset( "Upper", &ib, &ib, &c_zero, &c_one, A(i, i), &lda );
             magma_ssetmatrix_async( mi, ib,
                                     A(i, i), lda,
-                                    dV,      ldda, stream );
+                                    dV,      ldda, queue );
             lapackf77_slarft( MagmaForwardStr, MagmaColumnwiseStr,
                               &mi, &ib,
                               A(i,i), &lda, &tau[i], T, &nb);
             magma_ssetmatrix_async( ib, ib,
                                     T, nb,
-                                    dT, nb, stream );
+                                    dT, nb, queue );
 
             // set panel to identity
-            magmablas_slaset( MagmaFull, i,  ib, c_zero, c_zero, dA(0, i), ldda );
-            magmablas_slaset( MagmaFull, mi, ib, c_zero, c_one,  dA(i, i), ldda );
+            magmablas_slaset( MagmaFull, i,  ib, c_zero, c_zero, dA(0, i), ldda, queue );
+            magmablas_slaset( MagmaFull, mi, ib, c_zero, c_one,  dA(i, i), ldda, queue );
             
-            magma_queue_sync( stream );
+            magma_queue_sync( queue );
             if (i < n) {
                 // Apply H to A(i:m,i:n) from the left
                 magma_slarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise,
                                   mi, n-i, ib,
                                   dV,       ldda, dT, nb,
-                                  dA(i, i), ldda, dW, lddwork );
+                                  dA(i, i), ldda, dW, lddwork, queue );
             }
         }
     
         // copy result back to CPU
         magma_sgetmatrix( m, n,
-                          dA(0, 0), ldda, A(0, 0), lda);
+                          dA(0, 0), ldda, A(0, 0), lda, queue );
     }
 
-    magma_queue_destroy( stream );
+    magma_queue_destroy( queue );
     magma_free( dA );
     magma_free_cpu( work );
 
-    magmablasSetKernelStream( orig_stream );
-    
     return *info;
 } /* magma_sorgqr */

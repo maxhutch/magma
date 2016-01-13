@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgesellcmv.cu normal z -> d, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zgesellcmv.cu normal z -> d, Wed Jan  6 17:59:41 2016
 
 */
 #include "common_magmasparse.h"
@@ -141,7 +141,7 @@ magma_dgesellcmv(
    // (~2M rows for blocksize 32)
    dim3 grid( slices, 1, 1);
    magma_int_t threads = blocksize;
-   dgesellcmv_kernel<<< grid, threads, 0, queue >>>
+   dgesellcmv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
    ( m, n, blocksize, alpha,
         dval, dcolind, drowptr, dx, beta, dy );
 

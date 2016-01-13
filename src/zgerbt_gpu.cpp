@@ -1,18 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Adrien REMY
 */
-#include "common_magma.h"
-
-#define PRECISION_z
-#define COMPLEX
-
+#include "magma_internal.h"
 
 
 static void
@@ -20,14 +16,13 @@ init_butterfly(
         magma_int_t n,
         magmaDoubleComplex* u, magmaDoubleComplex* v)
 {
-    magma_int_t idx;
+    magma_int_t i;
     double u1, v1;
-    for (idx=0; idx < n; idx++) {
-        u1 = exp((((rand() * 1.0)/RAND_MAX)-0.5)/10);
-        v1 = exp((((rand() * 1.0)/RAND_MAX)-0.5)/10);
-        u[idx] = MAGMA_Z_MAKE(u1,u1);
-
-        v[idx] = MAGMA_Z_MAKE(v1,v1);
+    for (i=0; i < n; ++i) {
+        u1 = exp( (rand()/double(RAND_MAX) - 0.5)/10 );
+        v1 = exp( (rand()/double(RAND_MAX) - 0.5)/10 );
+        u[i] = MAGMA_Z_MAKE( u1, u1 );
+        v[i] = MAGMA_Z_MAKE( v1, v1 );
     }
 }
 
@@ -36,12 +31,12 @@ init_butterfly(
     Purpose
     -------
     ZGERBT solves a system of linear equations
-       A * X = B
+        A * X = B
     where A is a general n-by-n matrix and X and B are n-by-nrhs matrices.
     Random Butterfly Tranformation is applied on A and B, then
     the LU decomposition with no pivoting is
     used to factor A as
-       A = L * U,
+        A = L * U,
     where L is unit lower triangular, and U is
     upper triangular.  The factored form of A is then used to solve the
     system of equations A * X = B.
@@ -111,10 +106,12 @@ magma_zgerbt_gpu(
     magmaDoubleComplex *U, magmaDoubleComplex *V,
     magma_int_t *info)
 {
+    #define dB(i_, j_) (dB + (i_) + (j_)*lddb)
+    
     /* Function Body */
     *info = 0;
     if ( ! (gen == MagmaTrue) &&
-            ! (gen == MagmaFalse) ) {
+         ! (gen == MagmaFalse) ) {
         *info = -1;
     }
     else if (n < 0) {
@@ -128,7 +125,6 @@ magma_zgerbt_gpu(
     }
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-
         return *info;
     }
 
@@ -136,35 +132,42 @@ magma_zgerbt_gpu(
     if (nrhs == 0 || n == 0)
         return *info;
 
-    magmaDoubleComplex *du, *dv;
+    magmaDoubleComplex_ptr dU=NULL, dV=NULL;
+    magma_int_t j;
 
     /* Allocate memory for the buterfly matrices */
-    if (MAGMA_SUCCESS != magma_zmalloc( &du, 2*n )) {
-        *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
-    }
-    if (MAGMA_SUCCESS != magma_zmalloc( &dv, 2*n )) {
+    if (MAGMA_SUCCESS != magma_zmalloc( &dU, 2*n ) ||
+        MAGMA_SUCCESS != magma_zmalloc( &dV, 2*n )) {
+        magma_free( dU );
+        magma_free( dV );
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
 
-    /* Initialize Butterfly matrix on the CPU*/
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
+    /* Initialize Butterfly matrix on the CPU */
     if (gen == MagmaTrue)
-        init_butterfly(2*n, U, V);
+        init_butterfly( 2*n, U, V );
 
     /* Copy the butterfly to the GPU */
-    magma_zsetvector( 2*n, U, 1, du, 1);
-    magma_zsetvector( 2*n, V, 1, dv, 1);
+    magma_zsetvector( 2*n, U, 1, dU, 1, queue );
+    magma_zsetvector( 2*n, V, 1, dV, 1, queue );
 
-    /* Perform Partial Random Butterfly Transformation on the GPU*/
-    magmablas_zprbt(n, dA, ldda, du, dv);
+    /* Perform Partial Random Butterfly Transformation on the GPU */
+    magmablas_zprbt( n, dA, ldda, dU, dV, queue );
 
-    /* Compute U^T.b on the GPU*/
-    for (int i= 0; i < nrhs; i++)
-        magmablas_zprbt_mtv(n, du, dB+(i*lddb));
+    /* Compute U^T * b on the GPU*/
+    for (j= 0; j < nrhs; j++) {
+        magmablas_zprbt_mtv( n, dU, dB(0,j), queue );
+    }
 
-    magma_free( du );
-    magma_free( dv );
+    magma_queue_destroy( queue );
+    magma_free( dU );
+    magma_free( dV );
 
     return *info;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
  
        @author Raffaele Solca
        @author Azzam Haidar
@@ -11,7 +11,7 @@
        @precisions normal z -> c
  
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 //#define FAST_HEMV
 
@@ -264,25 +264,26 @@ magma_zheevr_gpu(
     magma_int_t *iwork, magma_int_t liwork,
     magma_int_t *info)
 {
+    /* Constants */
+    magma_int_t ione = 1;
+    float szero = 0.;
+    float sone  = 1.;
+    
+    /* Local variables */
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
     const char* range_ = lapack_range_const( range );
     
-    magma_int_t ione = 1;
-    float szero = 0.;
-    float sone = 1.;
-    
     magma_int_t indrd, indre;
     magma_int_t imax;
     magma_int_t lopt, itmp1, indree, indrdd;
-    magma_int_t lower, wantz, tryrac;
+    magma_int_t tryrac;
     magma_int_t i, j, jj, i__1;
-    magma_int_t alleig, valeig, indeig;
     magma_int_t iscale, indibl, indifl;
     magma_int_t indiwo, indisp, indtau;
     magma_int_t indrwk, indwk;
     magma_int_t llwork, llrwork, nsplit;
-    magma_int_t lquery, ieeeok;
+    magma_int_t ieeeok;
     magma_int_t iinfo;
     magma_int_t lwmin, lrwmin, liwmin;
     double safmin;
@@ -294,12 +295,12 @@ magma_zheevr_gpu(
     double rmin, rmax;
     magmaDouble_ptr dwork;
     
-    lower = (uplo == MagmaLower);
-    wantz = (jobz == MagmaVec);
-    alleig = (range == MagmaRangeAll);
-    valeig = (range == MagmaRangeV);
-    indeig = (range == MagmaRangeI);
-    lquery = (lwork == -1 || lrwork == -1 || liwork == -1);
+    bool lower  = (uplo == MagmaLower);
+    bool wantz  = (jobz == MagmaVec);
+    bool alleig = (range == MagmaRangeAll);
+    bool valeig = (range == MagmaRangeV);
+    bool indeig = (range == MagmaRangeI);
+    bool lquery = (lwork == -1 || lrwork == -1 || liwork == -1);
     
     *info = 0;
     if (! (wantz || (jobz == MagmaNoVec))) {
@@ -359,6 +360,11 @@ magma_zheevr_gpu(
     
     *m = 0;
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
         #ifdef ENABLE_DEBUG
@@ -366,16 +372,17 @@ magma_zheevr_gpu(
         printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
         printf("--------------------------------------------------------------\n");
         #endif
-        magmaDoubleComplex *a;
-        magma_zmalloc_cpu( &a, n*n );
-        magma_zgetmatrix(n, n, dA, ldda, a, n);
+        magmaDoubleComplex *A;
+        magma_zmalloc_cpu( &A, n*n );
+        magma_zgetmatrix( n, n, dA, ldda, A, n, queue );
         lapackf77_zheevr(jobz_, range_, uplo_,
-                         &n, a, &n, &vl, &vu, &il, &iu, &abstol, m,
+                         &n, A, &n, &vl, &vu, &il, &iu, &abstol, m,
                          w, wZ, &ldwz, isuppz, work, &lwork,
                          rwork, &lrwork, iwork, &liwork, info);
-        magma_zsetmatrix( n,  n,  a,    n, dA, ldda);
-        magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz);
-        magma_free_cpu(a);
+        magma_zsetmatrix( n,  n,  A,    n, dA, ldda, queue );
+        magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz, queue );
+        magma_free_cpu( A );
+        magma_queue_destroy( queue );
         return *info;
     }
 
@@ -400,7 +407,7 @@ magma_zheevr_gpu(
     rmax = magma_dsqrt(bignum);
     
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_zlanhe(MagmaMaxNorm, uplo, n, dA, ldda, dwork);
+    anrm = magmablas_zlanhe( MagmaMaxNorm, uplo, n, dA, ldda, dwork, n, queue );
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -412,8 +419,7 @@ magma_zheevr_gpu(
     }
     if (iscale == 1) {
         d__1 = 1.;
-        magmablas_zlascl(uplo, 0, 0, 1., sigma, n, n, dA,
-                         ldda, info);
+        magmablas_zlascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, queue, info );
         
         if (abstol > 0.) {
             abstol *= sigma;
@@ -490,7 +496,7 @@ magma_zheevr_gpu(
                          &llrwork, &iwork[1], &liwork, info);
         
         if (*info == 0 && wantz) {
-            magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz );
+            magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz, queue );
             magma_zunmtr_gpu(MagmaLeft, uplo, MagmaNoTrans, n, *m, dA, ldda, &work[indtau],
                              dZ, lddz, wA, ldwa, &iinfo);
         }
@@ -510,7 +516,7 @@ magma_zheevr_gpu(
         
         /* Apply unitary matrix used in reduction to tridiagonal
            form to eigenvectors returned by ZSTEIN. */
-        magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz );
+        magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz, queue );
         magma_zunmtr_gpu(MagmaLeft, uplo, MagmaNoTrans, n, *m, dA, ldda, &work[indtau],
                          dZ, lddz, wA, ldwa, &iinfo);
     }
@@ -545,7 +551,7 @@ magma_zheevr_gpu(
                 iwork[indibl + i - 1] = iwork[indibl + j - 1];
                 w[j] = tmp1;
                 iwork[indibl + j - 1] = itmp1;
-                magma_zswap(n, dZ + (i-1)*lddz, ione, dZ + (j-1)*lddz, ione);
+                magma_zswap( n, dZ + (i-1)*lddz, ione, dZ + (j-1)*lddz, ione, queue );
             }
         }
     }
@@ -554,6 +560,8 @@ magma_zheevr_gpu(
     work[1] = MAGMA_Z_MAKE( lopt, 0 );
     rwork[1] = (double) lrwmin;
     iwork[1] = liwmin;
+    
+    magma_queue_destroy( queue );
     
     return *info;
 } /* magma_zheevr_gpu */

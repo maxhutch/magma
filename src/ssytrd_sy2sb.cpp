@@ -1,16 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zhetrd_he2hb.cpp normal z -> s, Fri Sep 11 18:29:31 2015
+       @generated from src/zhetrd_he2hb.cpp normal z -> s, Wed Jan  6 17:59:33 2016
 
 */
+#include <cuda_runtime.h>
+
 #include "common_magma.h"
 #include "trace.h"
 
@@ -154,8 +156,8 @@ magma_ssytrd_sy2sb(
     #define tau_ref(a_1) (tau + (a_1)-1)
     #define dT(a_1)      (dT + ((a_1)-1)*(lddt))
 
-    int ldda = magma_roundup( n, 32 );
-    int lddt = nb;
+    magma_int_t ldda = magma_roundup( n, 32 );
+    magma_int_t lddt = nb;
    
     float c_neg_one  = MAGMA_S_NEG_ONE;
     float c_neg_half = MAGMA_S_NEG_HALF;
@@ -166,13 +168,12 @@ magma_ssytrd_sy2sb(
     magma_int_t pm, pn, indi, indj, pk;
     magma_int_t pm_old=0, pn_old=0, indi_old=0, indj_old=0;
 
-    int i;
-    int lwkopt;
-    int lquery;
+    magma_int_t i;
+    magma_int_t lwkopt;
 
     *info = 0;
-    int upper = (uplo == MagmaUpper);
-    lquery = (lwork == -1);
+    bool upper = (uplo == MagmaUpper);
+    bool lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {

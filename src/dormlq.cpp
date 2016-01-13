@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
 
-       @generated from zunmlq.cpp normal z -> d, Fri Sep 11 18:29:28 2015
+       @generated from src/zunmlq.cpp normal z -> d, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -130,13 +130,12 @@ magma_dormlq(
     double *T, *T2;
     magma_int_t i, i1, i2, ib, ic, jc, nb, mi, ni, nq, nq_i, nw, step;
     magma_int_t iinfo, ldwork, lwkopt;
-    magma_int_t left, notran, lquery;
     magma_trans_t transt;
 
     *info = 0;
-    left   = (side  == MagmaLeft);
-    notran = (trans == MagmaNoTrans);
-    lquery = (lwork == -1);
+    bool left   = (side  == MagmaLeft);
+    bool notran = (trans == MagmaNoTrans);
+    bool lquery = (lwork == -1);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
@@ -167,7 +166,7 @@ magma_dormlq(
     }
 
     if (*info == 0) {
-        nb = magma_get_dgelqf_nb( min( m, n ));
+        nb = magma_get_dgelqf_nb( m, n );
         lwkopt = max(1,nw)*nb;
         work[0] = MAGMA_D_MAKE( lwkopt, 0 );
     }
@@ -191,7 +190,7 @@ magma_dormlq(
     if (nb >= k) {
         /* Use CPU code */
         lapackf77_dormlq( lapack_side_const(side), lapack_trans_const(trans),
-            &m, &n, &k, A, &lda, tau, C, &ldc, work, &lwork, &iinfo);
+            &m, &n, &k, A, &lda, tau, C, &ldc, work, &lwork, &iinfo );
     }
     else {
         /* Use hybrid CPU-GPU code */
@@ -223,8 +222,13 @@ magma_dormlq(
         }
         T2 = T + nb*nb;
         
+        magma_queue_t queue;
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        magma_queue_create( cdev, &queue );
+        
         /* Copy matrix C from the CPU to the GPU */
-        magma_dsetmatrix( m, n, C, ldc, dC(0,0), lddc );
+        magma_dsetmatrix( m, n, C, ldc, dC(0,0), lddc, queue );
         
         if ( (left && notran) || (! left && ! notran) ) {
             i1 = 0;
@@ -267,7 +271,7 @@ magma_dormlq(
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
             magma_dpanel_to_q( MagmaLower, ib, A(i,i), lda, T2 );
-            magma_dsetmatrix( ib, nq_i,  A(i,i), lda, dV(0,0), ib );
+            magma_dsetmatrix( ib, nq_i,  A(i,i), lda, dV(0,0), ib, queue );
             magma_dq_to_panel( MagmaLower, ib, A(i,i), lda, T2 );
             
             if (left) {
@@ -282,16 +286,17 @@ magma_dormlq(
             }
             
             /* Apply H or H**H; First copy T to the GPU */
-            magma_dsetmatrix( ib, ib, T, ib, dT(0,0), ib );
+            magma_dsetmatrix( ib, ib, T, ib, dT(0,0), ib, queue );
             magma_dlarfb_gpu( side, transt, MagmaForward, MagmaRowwise,
                               mi, ni, ib,
                               dV(0,0), ib,
                               dT(0,0), ib,
                               dC(ic,jc), lddc,
-                              dwork(0), ldwork );
+                              dwork(0), ldwork, queue );
         }
-        magma_dgetmatrix( m, n, dC(0,0), lddc, C, ldc );
+        magma_dgetmatrix( m, n, dC(0,0), lddc, C, ldc, queue );
         
+        magma_queue_destroy( queue );
         magma_free( dwork );
         magma_free_cpu( T );
     }

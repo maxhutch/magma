@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -115,10 +115,10 @@ $(document).ready(function(){initNavTree('group__magma__zposv__aux.html','');});
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ga6eeff9fb7989b4a118c9e1ae7bd7c29e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zposv__aux.html#ga6eeff9fb7989b4a118c9e1ae7bd7c29e">magma_zlauum</a> (magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex *A, magma_int_t lda, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga6eeff9fb7989b4a118c9e1ae7bd7c29e"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAUUM computes the product U * U' or L' * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array A.  <a href="#ga6eeff9fb7989b4a118c9e1ae7bd7c29e">More...</a><br /></td></tr>
+<tr class="memdesc:ga6eeff9fb7989b4a118c9e1ae7bd7c29e"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAUUM computes the product U * U^H or L^H * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array A.  <a href="#ga6eeff9fb7989b4a118c9e1ae7bd7c29e">More...</a><br /></td></tr>
 <tr class="separator:ga6eeff9fb7989b4a118c9e1ae7bd7c29e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab60622fd1a62e473c9e6c2c03001aa58"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zposv__aux.html#gab60622fd1a62e473c9e6c2c03001aa58">magma_zlauum_gpu</a> (magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
-<tr class="memdesc:gab60622fd1a62e473c9e6c2c03001aa58"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAUUM computes the product U * U' or L' * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array dA.  <a href="#gab60622fd1a62e473c9e6c2c03001aa58">More...</a><br /></td></tr>
+<tr class="memdesc:gab60622fd1a62e473c9e6c2c03001aa58"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAUUM computes the product U * U^H or L^H * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array dA.  <a href="#gab60622fd1a62e473c9e6c2c03001aa58">More...</a><br /></td></tr>
 <tr class="separator:gab60622fd1a62e473c9e6c2c03001aa58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8b11119e4b391bbc60fb22113f083a1f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zposv__aux.html#ga8b11119e4b391bbc60fb22113f083a1f">magma_zpotf2_gpu</a> (magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga8b11119e4b391bbc60fb22113f083a1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">zpotf2 computes the Cholesky factorization of a real symmetric positive definite matrix A.  <a href="#ga8b11119e4b391bbc60fb22113f083a1f">More...</a><br /></td></tr>
@@ -171,7 +171,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>ZLAUUM computes the product U * U' or L' * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array A. </p>
+<p>ZLAUUM computes the product U * U^H or L^H * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array A. </p>
 <p>If UPLO = MagmaUpper then the upper triangle of the result is stored, overwriting the factor U in A. If UPLO = MagmaLower then the lower triangle of the result is stored, overwriting the factor L in A. This is the blocked form of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -181,7 +181,7 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the triangular factor U or L. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COPLEX_16 array, dimension (LDA,N) On entry, the triangular factor U or L. On exit, if UPLO = MagmaUpper, the upper triangle of A is overwritten with the upper triangle of the product U * U'; if UPLO = MagmaLower, the lower triangle of A is overwritten with the lower triangle of the product L' * L.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX_16 array, dimension (LDA,N) On entry, the triangular factor U or L. On exit, if UPLO = MagmaUpper, the upper triangle of A is overwritten with the upper triangle of the product U * U^H; if UPLO = MagmaLower, the lower triangle of A is overwritten with the lower triangle of the product L^H * L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -236,7 +236,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>ZLAUUM computes the product U * U' or L' * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array dA. </p>
+<p>ZLAUUM computes the product U * U^H or L^H * L, where the triangular factor U or L is stored in the upper or lower triangular part of the array dA. </p>
 <p>If UPLO = MagmaUpper then the upper triangle of the result is stored, overwriting the factor U in dA. If UPLO = MagmaLower then the lower triangle of the result is stored, overwriting the factor L in dA. This is the blocked form of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -246,7 +246,7 @@ Functions</h2></td></tr>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the triangular factor U or L. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>DOUBLE PRECISION array on the GPU, dimension (LDDA,N) On entry, the triangular factor U or L. On exit, if UPLO = MagmaUpper, the upper triangle of dA is overwritten with the upper triangle of the product U * U'; if UPLO = MagmaLower, the lower triangle of dA is overwritten with the lower triangle of the product L' * L.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array on the GPU, dimension (LDDA,N) On entry, the triangular factor U or L. On exit, if UPLO = MagmaUpper, the upper triangle of dA is overwritten with the upper triangle of the product U * U^H; if UPLO = MagmaLower, the lower triangle of dA is overwritten with the lower triangle of the product L^H * L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -428,7 +428,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:09 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

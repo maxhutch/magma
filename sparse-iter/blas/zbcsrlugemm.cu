@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
@@ -377,7 +377,7 @@ magma_zbcsrluegemm(
         dim3 threads( 64, 4 );
     
         dim3 grid(1, 1, num_brows);
-        zbcsr_gemm_kernel64<<< grid, threads, 0, queue >>>( 
+        zbcsr_gemm_kernel64<<< grid, threads, 0, queue->cuda_stream() >>>( 
                       size_b, size_b, kblocks, dA, dB, dC );
     }
 

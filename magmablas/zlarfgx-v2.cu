@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -107,6 +107,24 @@ void magma_zlarfgx_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComple
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
+magma_zlarfgx_gpu_q(
+    magma_int_t n,
+    magmaDoubleComplex_ptr dx0,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex_ptr dtau,
+    magmaDouble_ptr        dxnorm,
+    magmaDoubleComplex_ptr dA, magma_int_t iter, 
+    magma_queue_t queue )
+{
+    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
+    dim3 threads( BLOCK_SIZE );
+ 
+    magma_zlarfgx_gpu_kernel
+        <<< blocks, threads, 0, queue->cuda_stream() >>>
+        ( n, dx0, dx, dtau, dxnorm, dA, iter);
+}
+
+extern "C" void
 magma_zlarfgx_gpu(
     magma_int_t n,
     magmaDoubleComplex_ptr dx0,
@@ -115,10 +133,7 @@ magma_zlarfgx_gpu(
     magmaDouble_ptr        dxnorm,
     magmaDoubleComplex_ptr dA, magma_int_t iter)
 {
-    dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
-    dim3 threads( BLOCK_SIZE );
- 
-    magma_zlarfgx_gpu_kernel<<< blocks, threads, 0, magma_stream >>>( n, dx0, dx, dtau, dxnorm, dA, iter);
+    magma_zlarfgx_gpu_q( n, dx0, dx, dtau, dxnorm, dA, iter, magmablasGetQueue() );
 }
 
 //==============================================================================
@@ -136,6 +151,39 @@ magma_zlarfgx_gpu(
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
+magma_zlarfgtx_gpu_q(
+    magma_int_t n,
+    magmaDoubleComplex_ptr dx0,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex_ptr dtau,
+    magmaDouble_ptr        dxnorm,
+    magmaDoubleComplex_ptr dA, magma_int_t iter,
+    magmaDoubleComplex_ptr V,  magma_int_t ldv,
+    magmaDoubleComplex_ptr T,  magma_int_t ldt,
+    magmaDoubleComplex_ptr dwork,
+    magma_queue_t queue )
+{
+    /*  Generate the elementary reflector H(iter)  */
+    magma_zlarfgx_gpu_q(n, dx0, dx, dtau, dxnorm, dA, iter, queue);
+    
+    if (iter == 0) {
+        magmaDoubleComplex tt = MAGMA_Z_ONE;
+        magmablas_zlacpy_q(MagmaUpperLower, 1, 1, dtau, 1, T+iter+iter*ldt, 1, queue);
+        magma_zsetmatrix_q(1,1, &tt,1, dx0,1, queue);
+    }
+    else {
+        /* Compute the iter-th column of T */
+        magma_zgemv_kernel3
+            <<< iter, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( n, V, ldv, dx0, dwork, dtau );
+        
+        magma_ztrmv_kernel2
+            <<< iter, iter,       0, queue->cuda_stream() >>>
+            ( T, ldt, dwork, T+iter*ldt, dtau );
+    }
+}
+
+extern "C" void
 magma_zlarfgtx_gpu(
     magma_int_t n,
     magmaDoubleComplex_ptr dx0,
@@ -145,21 +193,10 @@ magma_zlarfgtx_gpu(
     magmaDoubleComplex_ptr dA, magma_int_t iter,
     magmaDoubleComplex_ptr V,  magma_int_t ldv,
     magmaDoubleComplex_ptr T,  magma_int_t ldt,
-    magmaDoubleComplex_ptr dwork)
+    magmaDoubleComplex_ptr dwork )
 {
-    /*  Generate the elementary reflector H(iter)  */
-    magma_zlarfgx_gpu(n, dx0, dx, dtau, dxnorm, dA, iter);
-    
-    if (iter == 0) {
-        magmaDoubleComplex tt = MAGMA_Z_ONE;
-        magmablas_zlacpy(MagmaUpperLower, 1, 1, dtau, 1, T+iter+iter*ldt, 1);
-        magma_zsetmatrix(1,1, &tt,1, dx0,1);
-    }
-    else {
-        /* Compute the iter-th column of T */
-        magma_zgemv_kernel3<<< iter, BLOCK_SIZE, 0, magma_stream >>>( n, V, ldv, dx0, dwork, dtau );
-        magma_ztrmv_kernel2<<< iter, iter,       0, magma_stream >>>( T, ldt, dwork, T+iter*ldt, dtau );
-    }
+    magma_zlarfgtx_gpu_q(n, dx0, dx, dtau, dxnorm, dA, iter, V, ldv,
+                         T, ldt, dwork, magmablasGetQueue() );
 }
 
 //==============================================================================

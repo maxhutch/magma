@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
-       csymv.cu is nearly identical to chemv.cu, just change names and drop cuConjf.
+       csymv.cu is nearly identical to chemv.cu, just change names and drop MAGMA_C_CNJG.
        
        csymv_kernel_U (upper) in csymv_upper.cu is very similar to
        csymv_kernel_L (lower) in csymv.cu; diff the two files to compare.
        
        Note: [ds] precisions generated from chemv.cu
-       @generated from zsymv.cu normal z -> c, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zsymv.cu normal z -> c, Wed Jan  6 17:59:39 2016
        
        @author Mark Gates
 */
@@ -643,17 +643,17 @@ magmablas_csymv_work(
     dim3 threads_sum( NB_X, 1, 1 );
 
     if ( upper ) {
-        csymv_kernel_U<<< grid, threads, 0, queue >>>
+        csymv_kernel_U<<< grid, threads, 0, queue->cuda_stream() >>>
             (n, dA, ldda, dx, incx, dwork);
         
-        csymv_kernel_U_sum<<< grid, threads_sum, 0, queue >>>
+        csymv_kernel_U_sum<<< grid, threads_sum, 0, queue->cuda_stream() >>>
             (n, alpha, ldda, beta, dy, incy, dwork);
     }
     else {
-        csymv_kernel_L<<< grid, threads, 0, queue >>>
+        csymv_kernel_L<<< grid, threads, 0, queue->cuda_stream() >>>
             (n, dA, ldda, dx, incx, dwork);
         
-        csymv_kernel_L_sum<<< grid, threads_sum, 0, queue >>>
+        csymv_kernel_L_sum<<< grid, threads_sum, 0, queue->cuda_stream() >>>
             (n, alpha, ldda, beta, dy, incy, dwork);
     }
     return info;
@@ -806,7 +806,7 @@ magmablas_csymv(
     }
     
     magmablas_csymv_work( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy,
-                          dwork, lwork, magma_stream );
+                          dwork, lwork, magmablasGetQueue() );
     
     magma_free( dwork );
     

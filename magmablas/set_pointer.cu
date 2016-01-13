@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -48,36 +48,41 @@ void stepinit_ipiv(magma_int_t **ipiv_array,
                  magma_int_t batchCount, magma_queue_t queue)
 
 {
-    stepinit_ipiv_kernel<<<batchCount, pm, 0, queue>>>(ipiv_array, pm);
+    stepinit_ipiv_kernel
+        <<< batchCount, pm, 0, queue->cuda_stream() >>>
+        (ipiv_array, pm);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
 static
-__global__ void set_ipointer_kernel(magma_int_t **output_array,
-                 magma_int_t *input,
-                 int lda,
-                 int row, int column, 
-                 int batchSize)
+__global__ void magma_iset_pointer_kernel(
+    magma_int_t **output_array,
+    magma_int_t *input,
+    int lda,
+    int row, int column, 
+    int batchSize)
 {
     output_array[blockIdx.x] =  input + blockIdx.x * batchSize + row + column * lda;
 }
 
 
 extern "C"
-void set_ipointer(magma_int_t **output_array,
-                 magma_int_t *input,
-                 magma_int_t lda,
-                 magma_int_t row, magma_int_t column, 
-                 magma_int_t batchSize,
-                 magma_int_t batchCount, magma_queue_t queue)
-
+void magma_iset_pointer(
+    magma_int_t **output_array,
+    magma_int_t *input,
+    magma_int_t lda,
+    magma_int_t row, magma_int_t column, 
+    magma_int_t batchSize,
+    magma_int_t batchCount, magma_queue_t queue)
 {
     /*
     convert consecutive stored variable to array stored
     for example the size  of A is N*batchCount; N is the size of A(batchSize)
     change into A_array[0] A_array[1],... A_array[batchCount-1], where the size of each A_array[i] is N
     */
-    set_ipointer_kernel<<<batchCount, 1, 0, queue>>>(output_array, input, lda,  row, column, batchSize);
+    magma_iset_pointer_kernel
+        <<< batchCount, 1, 0, queue->cuda_stream() >>>
+        (output_array, input, lda,  row, column, batchSize);
 }
 
 
@@ -104,5 +109,7 @@ void magma_idisplace_pointers(magma_int_t **output_array,
     input_array contains the pointers to the initial position.
     output_array[i] = input_array[i] + row + lda * column; 
     */
-    idisplace_pointers_kernel<<<batchCount, 1, 0, queue>>>(output_array, input_array, lda, row, column);
+    idisplace_pointers_kernel
+        <<< batchCount, 1, 0, queue->cuda_stream() >>>
+        (output_array, input_array, lda, row, column);
 }

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
-       @generated from zpcg.cpp normal z -> c, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/zpcg.cpp normal z -> c, Wed Jan  6 17:59:45 2016
 */
 
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
@@ -62,21 +62,17 @@ magma_cpcg(
     magma_c_preconditioner *precond_par,
     magma_queue_t queue )
 {
-    magma_int_t info = 0;
+    magma_int_t info = MAGMA_NOTCONVERGED;
     
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
-
     // prepare solver feedback
     solver_par->solver = Magma_PCG;
     solver_par->numiter = 0;
-    solver_par->info = MAGMA_SUCCESS;
+    solver_par->spmv_count = 0;
     
     // solver variables
     magmaFloatComplex alpha, beta;
-    float nom, nom0, r0, gammaold=1, gammanew, den, res;
-
+    float nom, nom0, r0,  res, nomb;
+    magmaFloatComplex den, gammanew, gammaold = MAGMA_C_MAKE(1.0,0.0);
     // local variables
     magmaFloatComplex c_zero = MAGMA_C_ZERO, c_one = MAGMA_C_ONE;
     
@@ -95,68 +91,77 @@ magma_cpcg(
     CHECK(  magma_cresidualvec( A, b, *x, &r, &nom0, queue));
 
     // preconditioner
-    CHECK( magma_c_applyprecond_left( A, r, &rt, precond_par, queue ));
-    CHECK( magma_c_applyprecond_right( A, rt, &h, precond_par, queue ));
+    CHECK( magma_c_applyprecond_left( MagmaNoTrans, A, r, &rt, precond_par, queue ));
+    CHECK( magma_c_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
 
-    magma_ccopy( dofs, h.dval, 1, p.dval, 1 );                    // p = h
-    nom = MAGMA_C_REAL( magma_cdotc(dofs, r.dval, 1, h.dval, 1) );
+    magma_ccopy( dofs, h.dval, 1, p.dval, 1, queue );                    // p = h
+    nom = MAGMA_C_ABS( magma_cdotc( dofs, r.dval, 1, h.dval, 1, queue ));
     CHECK( magma_c_spmv( c_one, A, p, c_zero, q, queue ));             // q = A p
-    den = MAGMA_C_REAL( magma_cdotc(dofs, p.dval, 1, q.dval, 1) ); // den = p dot q
+    den =  magma_cdotc( dofs, p.dval, 1, q.dval, 1, queue ); // den = p dot q
     solver_par->init_res = nom0;
-    
-    if ( (r0 = nom * solver_par->rtol) < ATOLERANCE )
+            
+    nomb = magma_scnrm2( dofs, b.dval, 1, queue );
+    if ( nomb == 0.0 ){
+        nomb=1.0;
+    }       
+    if ( (r0 = nomb * solver_par->rtol) < ATOLERANCE ){
         r0 = ATOLERANCE;
+    }
+    solver_par->final_res = solver_par->init_res;
+    solver_par->iter_res = solver_par->init_res;
+    if ( solver_par->verbose > 0 ) {
+        solver_par->res_vec[0] = (real_Double_t)nom0;
+        solver_par->timing[0] = 0.0;
+    }
     if ( nom < r0 ) {
-        solver_par->final_res = solver_par->init_res;
-        solver_par->iter_res = solver_par->init_res;
+        info = MAGMA_SUCCESS;
         goto cleanup;
     }
     // check positive definite
-    if (den <= 0.0) {
-        printf("Operator A is not postive definite. (Ar,r) = %f\n", den);
+    if ( MAGMA_C_ABS(den) <= 0.0 ) {
         info = MAGMA_NONSPD;
         goto cleanup;
     }
 
     //Chronometry
-    real_Double_t tempo1, tempo2;
+    real_Double_t tempo1, tempo2, tempop1, tempop2;
     tempo1 = magma_sync_wtime( queue );
-    if ( solver_par->verbose > 0 ) {
-        solver_par->res_vec[0] = (real_Double_t)nom0;
-        solver_par->timing[0] = 0.0;
-    }
     
     solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     // start iteration
     do
     {
         solver_par->numiter++;
 
         // preconditioner
-        CHECK( magma_c_applyprecond_left( A, r, &rt, precond_par, queue ));
-        CHECK( magma_c_applyprecond_right( A, rt, &h, precond_par, queue ));
-
-        gammanew = MAGMA_C_REAL( magma_cdotc(dofs, r.dval, 1, h.dval, 1) );
+        tempop1 = magma_sync_wtime( queue );
+        CHECK( magma_c_applyprecond_left( MagmaNoTrans, A, r, &rt, precond_par, queue ));
+        CHECK( magma_c_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
+        tempop2 = magma_sync_wtime( queue );
+        precond_par->runtime += tempop2-tempop1;
+        
+        gammanew = magma_cdotc( dofs, r.dval, 1, h.dval, 1, queue );
                                                             // gn = < r,h>
 
         if ( solver_par->numiter == 1 ) {
-            magma_ccopy( dofs, h.dval, 1, p.dval, 1 );                    // p = h
+            magma_ccopy( dofs, h.dval, 1, p.dval, 1, queue );                    // p = h
         } else {
-            beta = MAGMA_C_MAKE(gammanew/gammaold, 0.);       // beta = gn/go
-            magma_cscal(dofs, beta, p.dval, 1);            // p = beta*p
-            magma_caxpy(dofs, c_one, h.dval, 1, p.dval, 1); // p = p + h
+            beta = (gammanew/gammaold);       // beta = gn/go
+            magma_cscal( dofs, beta, p.dval, 1, queue );            // p = beta*p
+            magma_caxpy( dofs, c_one, h.dval, 1, p.dval, 1, queue ); // p = p + h
         }
 
         CHECK( magma_c_spmv( c_one, A, p, c_zero, q, queue ));   // q = A p
-        den = MAGMA_C_REAL(magma_cdotc(dofs, p.dval, 1, q.dval, 1));
+        den = magma_cdotc( dofs, p.dval, 1, q.dval, 1, queue );
                 // den = p dot q
 
-        alpha = MAGMA_C_MAKE(gammanew/den, 0.);
-        magma_caxpy(dofs,  alpha, p.dval, 1, x->dval, 1);     // x = x + alpha p
-        magma_caxpy(dofs, -alpha, q.dval, 1, r.dval, 1);      // r = r - alpha q
+        alpha = gammanew / den;
+        magma_caxpy( dofs,  alpha, p.dval, 1, x->dval, 1, queue );     // x = x + alpha p
+        magma_caxpy( dofs, -alpha, q.dval, 1, r.dval, 1, queue );      // r = r - alpha q
         gammaold = gammanew;
 
-        res = magma_scnrm2( dofs, r.dval, 1 );
+        res = magma_scnrm2( dofs, r.dval, 1, queue );
         if ( solver_par->verbose > 0 ) {
             tempo2 = magma_sync_wtime( queue );
             if ( (solver_par->numiter)%solver_par->verbose == 0 ) {
@@ -167,7 +172,7 @@ magma_cpcg(
             }
         }
 
-        if ( res/nom0 <= solver_par->rtol || res <= solver_par->atol ){
+        if ( res/nomb <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
     }
@@ -216,7 +221,6 @@ cleanup:
     magma_cmfree(&q, queue );
     magma_cmfree(&h, queue );
 
-    magmablasSetKernelStream( orig_queue );
     solver_par->info = info;
     return info;
 }   /* magma_ccg */

@@ -1,3 +1,6 @@
+# Script to plot MAGMA performance data. See help below and readme.txt.
+# @author Mark Gates
+
 from __future__ import print_function
 
 import matplotlib.pyplot as pp
@@ -12,19 +15,19 @@ pp.rcParams['figure.facecolor'] = 'white'
 
 
 # ----------------------------------------------------------------------
-# import versions and setup color for each
+# import versions
 import v150_cuda70_k40c
 import v160_cuda70_k40c
 import v161_cuda70_k40c
 import v162_cuda70_k40c  # same as v161 except sy/heevd
-#import v170_cuda70_k40c
+import v170_cuda70_k40c
 
 versions = [
 	v150_cuda70_k40c,
 	v160_cuda70_k40c,
 	v161_cuda70_k40c,
 	v162_cuda70_k40c,
-	#v170_cuda70_k40c,
+	v170_cuda70_k40c,
 ]
 
 # add local if it exists
@@ -34,6 +37,12 @@ try:
 	local.version = 'local'
 except ImportError:
 	pass
+
+versions = numpy.array( versions )
+
+
+# ----------------------------------------------------------------------
+# setup colors for versions
 
 # get nice distribution of colors from purple (old versions) to red (new versions)
 #x = linspace( 0, 1, len(versions) )
@@ -58,8 +67,10 @@ for i in xrange( len(versions) ):
 	versions[i].color = colors[ len(versions) - 1 - i ]
 # end
 
+
 # ----------------------------------------------------------------------
 # defaults
+pp.rcParams['font.size'] = 10
 pp.rcParams['legend.fontsize'] = 10
 
 g_figsize = [9, 7]
@@ -134,7 +145,7 @@ def savefig( name, rows=0, cols=0 ):
 # end
 
 
-# ----------------------------------------------------------------------
+# --------------------
 def set_title( versions, title ):
 	v0 = versions[0]
 	t = None
@@ -147,6 +158,33 @@ def set_title( versions, title ):
 	if ( title ):
 		t = title + '\n' + t
 	pp.title( t, fontsize=9 )
+# end
+
+
+# --------------------
+def set_xticks():
+	if ( g_log ):
+		pp.xlabel( r'matrix dimension (log scale)' )
+		xticks = [ 10, 100, 1000, 10000, 20000 ]
+		xtickl = [ 10, 100, '1k', '10k', '20k' ]
+	else:
+		pp.xlabel( r'matrix dimension' )
+		xticks = range( 0, 20001, 4000 )
+		xtickl = xticks
+	pp.xticks( xticks, xtickl )
+	pp.xlim( 9, 20000 )
+	pp.grid( True )
+# end
+
+
+# --------------------
+# returns list of versions -- either original versions, or if it is single module, stick it in a list
+module = type(numpy)  # why doesn't python know "module"?
+def get_versions( versions ):
+	if ( type(versions) == module ):
+		return [versions]
+	else:
+		return versions
 # end
 
 
@@ -209,6 +247,10 @@ symv_cublas_error  = 11
 
 
 # ----------------------------------------------------------------------
+def str_none( s ):
+	return str(s) if s is not None else ''
+
+
 def plot_getrf_data( data, style='.-', color='y', label=None, idx=getrf_gpu_flops ):
 	if ( g_log ):
 		pp.semilogx( data[:,getrf_m], data[:,idx], style, color=color, lw=1.5, label=label )
@@ -217,21 +259,15 @@ def plot_getrf_data( data, style='.-', color='y', label=None, idx=getrf_gpu_flop
 # end
 
 def plot_getrf_labels( versions, title=None ):
-	set_title( versions, title )
+	set_title( versions, 'LU factorization ' + str_none(title) )
 	pp.legend( loc='upper left' )
-	pp.ylabel( r'Gflop/s' )
-	if ( g_log ):
-		pp.xlabel( r'matrix size (log scale)' )
-		xticks = [ 10, 100, 1000, 10000 ]
-	else:
-		pp.xlabel( r'matrix size' )
-		xticks = range( 0, 20001, 4000 )
-	pp.xticks( xticks, xticks )
-	pp.xlim( 9, 20000 )
-	pp.grid( True )
+	pp.ylabel( r'Gflop/s  $\frac{2}{3} n^3 / t$' )
+	set_xticks()
 # end
 
 def plot_getrf( versions, cpu=True, gpu=True, lapack=True ):
+	print( 'plotting getrf' )
+	versions = get_versions( versions )
 	figure( 1 )
 	clf( 2, 2 )
 	
@@ -311,21 +347,15 @@ def plot_potrf_data( data, style='.-', color='y', label=None, idx=potrf_gpu_flop
 # end
 
 def plot_potrf_labels( versions, title=None ):
-	set_title( versions, title )
+	set_title( versions, 'Cholesky factorization ' + str_none(title) )
 	pp.legend( loc='upper left' )
-	pp.ylabel( r'Gflop/s' )
-	if ( g_log ):
-		pp.xlabel( r'matrix size (log scale)' )
-		xticks = [ 10, 100, 1000, 10000 ]
-	else:
-		pp.xlabel( r'matrix size' )
-		xticks = range( 0, 20001, 4000 )
-	pp.xticks( xticks, xticks )
-	pp.xlim( 9, 20000 )
-	pp.grid( True )
+	pp.ylabel( r'Gflop/s  $\frac{1}{3} n^3 / t$' )
+	set_xticks()
 # end
 
 def plot_potrf( versions, cpu=True, gpu=True, lapack=True ):
+	print( 'plotting potrf' )
+	versions = get_versions( versions )
 	figure( 2 )
 	clf( 2, 2 )
 	
@@ -405,21 +435,15 @@ def plot_geqrf_data( data, style='.-', color='y', label=None, idx=geqrf_gpu_flop
 # end
 
 def plot_geqrf_labels( versions, title=None ):
-	set_title( versions, title )
+	set_title( versions, 'QR factorization ' + str_none(title) )
 	pp.legend( loc='upper left' )
-	pp.ylabel( r'Gflop/s' )
-	if ( g_log ):
-		pp.xlabel( r'matrix size (log scale)' )
-		xticks = [ 10, 100, 1000, 10000 ]
-	else:
-		pp.xlabel( r'matrix size' )
-		xticks = range( 0, 20001, 4000 )
-	pp.xticks( xticks, xticks )
-	pp.xlim( 9, 20000 )
-	pp.grid( True )
+	pp.ylabel( r'Gflop/s  $\frac{4}{3} n^3 / t$' )
+	set_xticks()
 # end
 
 def plot_geqrf( versions, cpu=True, gpu=True, lapack=True ):
+	print( 'plotting geqrf' )
+	versions = get_versions( versions )
 	figure( 3 )
 	clf( 2, 2 )
 	
@@ -495,9 +519,11 @@ def plot_geev_data( data, vec, style='.-', color='y', label=None, idx=geev_gpu_t
 	n = data[:,geev_n]
 	t = data[:,idx]
 	if ( vec ):
-		gflop = 1e-9 * 10/3. * n**3 # TODO
+		# 10/3 Hess + 10/3 QR iter + 4/3 generate Q + 4/3 right vectors
+		gflop = 1e-9 * 28/3. * n**3
 	else:
-		gflop = 1e-9 * 10/3. * n**3 # TODO
+		# 10/3 Hess +  4/3 QR iter
+		gflop = 1e-9 * 14/3. * n**3
 	if ( g_log ):
 		pp.semilogx( n, gflop/t, style, color=color, lw=1.5, label=label )
 	else:
@@ -505,25 +531,19 @@ def plot_geev_data( data, vec, style='.-', color='y', label=None, idx=geev_gpu_t
 # end
 
 def plot_geev_labels( versions, title, vec ):
-	set_title( versions, title )
+	set_title( versions, 'Non-symmetric eigenvalues, ' + str_none(title) )
 	pp.legend( loc='upper left' )
 	if ( vec ):
-		pp.ylabel( r'Gflop/s   $\frac{10n^3}{3t}$ TODO' )
+		pp.ylabel( r'Gflop/s   $\frac{28}{3} n^3 / t$' )
 	else:
-		pp.ylabel( r'Gflop/s   $\frac{10n^3}{3t}$ TODO' )
+		pp.ylabel( r'Gflop/s   $\frac{14}{3} n^3 / t$' )
 	#pp.ylabel( 'time (sec)' )
-	if ( g_log ):
-		pp.xlabel( r'matrix size (log scale)' )
-		xticks = [ 10, 100, 1000, 10000 ]
-	else:
-		pp.xlabel( r'matrix size' )
-		xticks = range( 0, 20001, 4000 )
-	pp.xticks( xticks, xticks )
-	pp.xlim( 9, 20000 )
-	pp.grid( True )
+	set_xticks()
 # end
 
 def plot_geev( versions, lapack=True ):
+	print( 'plotting geev' )
+	versions = get_versions( versions )
 	figure( 4 )
 	clf( 2, 2 )
 	
@@ -551,19 +571,19 @@ def plot_geev( versions, lapack=True ):
 			print( 'found LAPACK in', v.version )
 			subplot( 2, 2, 1 )
 			if v.__dict__.has_key('sgeev_RN'):
-				plot_geev_data(  v.sgeev_RN, 'k+-', color='k', label='MKL sgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.sgeev_RN, False, 'k+-', color='k', label='MKL sgeev', idx=geev_cpu_time )
 			
 			subplot( 2, 2, 2 )
 			if v.__dict__.has_key('dgeev_RN'):
-				plot_geev_data(  v.dgeev_RN, 'k+-', color='k', label='MKL dgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.dgeev_RN, False, 'k+-', color='k', label='MKL dgeev', idx=geev_cpu_time )
 			
 			subplot( 2, 2, 3 )
 			if v.__dict__.has_key('cgeev_RN'):
-				plot_geev_data(  v.cgeev_RN, 'k+-', color='k', label='MKL cgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.cgeev_RN, False, 'k+-', color='k', label='MKL cgeev', idx=geev_cpu_time )
 			
 			subplot( 2, 2, 4 )
 			if v.__dict__.has_key('zgeev_RN'):
-				plot_geev_data(  v.zgeev_RN, 'k+-', color='k', label='MKL zgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.zgeev_RN, False, 'k+-', color='k', label='MKL zgeev', idx=geev_cpu_time )
 			break
 	# end
 	
@@ -572,7 +592,7 @@ def plot_geev( versions, lapack=True ):
 		plot_geev_labels( versions, 'no vectors', False )
 	# end
 	resize( g_figsize, 2, 2 )
-	savefig( 'geev-rn.pdf', 2, 2 )
+	savefig( 'geev_rn.pdf', 2, 2 )
 	
 	# --------------------
 	figure( 5 )
@@ -602,19 +622,19 @@ def plot_geev( versions, lapack=True ):
 			print( 'found LAPACK in', v.version )
 			subplot( 2, 2, 1 )
 			if v.__dict__.has_key('sgeev_RV'):
-				plot_geev_data(  v.sgeev_RV, 'k+-', color='k', label='MKL sgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.sgeev_RV, True, 'k+-', color='k', label='MKL sgeev', idx=geev_cpu_time )
 			
 			subplot( 2, 2, 2 )
 			if v.__dict__.has_key('dgeev_RV'):
-				plot_geev_data(  v.dgeev_RV, 'k+-', color='k', label='MKL dgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.dgeev_RV, True, 'k+-', color='k', label='MKL dgeev', idx=geev_cpu_time )
 			
 			subplot( 2, 2, 3 )
 			if v.__dict__.has_key('cgeev_RV'):
-				plot_geev_data(  v.cgeev_RV, 'k+-', color='k', label='MKL cgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.cgeev_RV, True, 'k+-', color='k', label='MKL cgeev', idx=geev_cpu_time )
 			
 			subplot( 2, 2, 4 )
 			if v.__dict__.has_key('zgeev_RV'):
-				plot_geev_data(  v.zgeev_RV, 'k+-', color='k', label='MKL zgeev', idx=geev_cpu_time )
+				plot_geev_data(  v.zgeev_RV, True, 'k+-', color='k', label='MKL zgeev', idx=geev_cpu_time )
 			break
 	# end
 	
@@ -623,7 +643,7 @@ def plot_geev( versions, lapack=True ):
 		plot_geev_labels( versions, 'with right vectors', True )
 	# end
 	resize( g_figsize, 2, 2 )
-	savefig( 'geev-rv.pdf', 2, 2 )
+	savefig( 'geev_rv.pdf', 2, 2 )
 # end
 
 
@@ -632,6 +652,7 @@ def plot_syev_data( data, vec, style='.-', color='y', label=None, idx=syev_gpu_t
 	n = data[:,syev_n]
 	t = data[:,idx]  # idx is syev_cpu_time or syev_gpu_time
 	if ( vec ):
+		# 4/3 sytrd + 4/3 solve + 2 mqr
 		gflop = 1e-9 * 14/3. * n**3
 	else:
 		gflop = 1e-9 * 4/3. * n**3
@@ -643,26 +664,19 @@ def plot_syev_data( data, vec, style='.-', color='y', label=None, idx=syev_gpu_t
 # end
 
 def plot_syev_labels( versions, title, vec ):
-	set_title( versions, title )
+	set_title( versions, 'Symmetric eigenvalues, ' + str_none(title) )
 	pp.legend( loc='upper left' )
 	if ( vec ):
-		pp.ylabel( r'Gflop/s   $\frac{14}{3} n^3 / t$' )  # TODO
+		pp.ylabel( r'Gflop/s   $\frac{14}{3} n^3 / t$' )
 	else:
 		pp.ylabel( r'Gflop/s   $\frac{4}{3} n^3 / t$' )
 	#pp.ylabel( 'time (sec)' )
-	
-	if ( g_log ):
-		pp.xlabel( r'matrix size (log scale)' )
-		xticks = [ 10, 100, 1000, 10000 ]
-	else:
-		pp.xlabel( r'matrix size' )
-		xticks = range( 0, 20001, 4000 )
-	pp.xticks( xticks, xticks )
-	pp.xlim( 9, 20000 )
-	pp.grid( True )
+	set_xticks()
 # end
 
 def plot_syev( versions, cpu=True, gpu=True, bulge=True, lapack=True ):
+	print( 'plotting syev' )
+	versions = get_versions( versions )
 	figure( 6 )
 	clf( 2, 2 )
 	
@@ -746,7 +760,7 @@ def plot_syev( versions, cpu=True, gpu=True, bulge=True, lapack=True ):
 		plot_syev_labels( versions, 'no vectors', False )
 	# end
 	resize( g_figsize, 2, 2 )
-	savefig( 'syev-rn.pdf', 2, 2 )
+	savefig( 'syev_jn.pdf', 2, 2 )
 	
 	# --------------------
 	figure( 7 )
@@ -832,7 +846,7 @@ def plot_syev( versions, cpu=True, gpu=True, bulge=True, lapack=True ):
 		plot_syev_labels( versions, 'with vectors', True )
 	# end
 	resize( g_figsize, 2, 2 )
-	savefig( 'syev-rv.pdf', 2, 2 )
+	savefig( 'syev_jv.pdf', 2, 2 )
 # end
 
 
@@ -845,18 +859,11 @@ def plot_gesvd_data( data, vec, style='.-', color='y', label=None, ratio=1, idx=
 	M = mn.max( axis=1 )  # M = max(m,n)
 	N = mn.min( axis=1 )  # N = min(m,n)
 	
-	# with vectors (approx.)
-	# 2*m*n*(m + 3*n)    => 24n^3/3 = 8n^3 if m == n
-	# 8*n**2*(3*m + n)/3 # tall QR optimization
-	#
-	# no vectors
-	# 4*n**2*(3*m - n)/3 => 8n^3/3 if m == n
-	# 2*n**2*(3*m - n)   # tall QR optimization
-	
 	if ( vec ):
-		gflop = 1e-9 * 2*M*N*(M + 3*N)
+		# for D&C some vectors (no initial QR)
+		gflop = 1e-9 * (8*M*N**2 + (4/3.)*N**3)
 	else:
-		gflop = 1e-9 * 4*N**2*(3*M - N)/3
+		gflop = 1e-9 * (4*M*N**2 - (4/3.)*N**3)
 	t = data[ii,idx]
 	
 	if ( g_log ):
@@ -866,31 +873,25 @@ def plot_gesvd_data( data, vec, style='.-', color='y', label=None, ratio=1, idx=
 # end
 
 def plot_gesvd_labels( versions, title, vec, square ):
-	set_title( versions, title )
+	set_title( versions, 'SVD, ' + str_none(title) )
 	pp.legend( loc='upper left' )
 	if ( vec ):
 		if ( square ):
-			pp.ylabel( r'Gflop/s   $8n^3/t$' )
+			pp.ylabel( r'Gflop/s   $9n^3/t$' )
 		else:
-			pp.ylabel( r'Gflop/s   $2mn(m + 3n)/t$' )
+			pp.ylabel( r'Gflop/s   $(8mn^2 + \frac{4}{3}n^3)/t$' )
 	else:
 		if ( square ):
-			pp.ylabel( r'Gflop/s   $\frac{8}{3}n^3/t$' )
+			pp.ylabel( r'Gflop/s   $\frac{8}{3} n^3 / t$' )
 		else:
-			pp.ylabel( r'Gflop/s   $\frac{4}{3}n^2(3m - n)/t$' )
+			pp.ylabel( r'Gflop/s   $(4mn^2 - \frac{4}{3} n^3) / t$' )
 	#pp.ylabel( 'time (sec)' )
-	if ( g_log ):
-		pp.xlabel( r'matrix size, max(M,N), log scale' )
-		xticks = [ 10, 100, 1000, 10000 ]
-	else:
-		pp.xlabel( r'matrix size, max(M,N)' )
-		xticks = range( 0, 20001, 4000 )
-	pp.xticks( xticks, xticks )
-	pp.xlim( 9, 20000 )
-	pp.grid( True )
+	set_xticks()
 # end
 
 def plot_gesvd( versions, ratio=1, lapack=True, svd=True, sdd=True ):
+	print( 'plotting gesvd' )
+	versions = get_versions( versions )
 	figure( 8 )
 	clf( 2, 2 )
 	
@@ -960,6 +961,7 @@ def plot_gesvd( versions, ratio=1, lapack=True, svd=True, sdd=True ):
 		plot_gesvd_labels( versions, 'no vectors, M:N ratio %.3g:%.3g' % (m,n), vec=False, square=(ratio == 1) )
 	# end
 	resize( g_figsize, 2, 2 )
+	savefig( 'gesvd_jn.pdf', 2, 2 )
 	
 	# --------------------
 	figure( 9 )
@@ -1031,7 +1033,7 @@ def plot_gesvd( versions, ratio=1, lapack=True, svd=True, sdd=True ):
 		plot_gesvd_labels( versions, 'some vectors, M:N ratio %.3g:%.3g' % (m,n), vec=True, square=(ratio == 1) )
 	# end
 	resize( g_figsize, 2, 2 )
-	savefig( 'gesvd.pdf', 2, 2 )
+	savefig( 'gesvd_js.pdf', 2, 2 )
 # end
 
 
@@ -1040,37 +1042,31 @@ def plot_symv_data( data, uplo, style='.-', color='y', label=None, first=False )
 	uplo += ' '
 	if ( first ):
 		if ( g_log ):
-			pp.semilogx( data[:,symv_n], data[:,symv_atomics_flops], style, color='#aaaaaa', label=uplo + 'cublas atomics' )
-			pp.semilogx( data[:,symv_n], data[:,symv_cublas_flops],  style, color='#666666', label=uplo + 'cublas'         )
-			pp.semilogx( data[:,symv_n], data[:,symv_cpu_flops],     style, color='black',   label=uplo + 'MKL'            )
+			pp.semilogx( data[:,symv_n], data[:,symv_atomics_flops], style, markevery=10, color='#aaaaaa', lw=1.5, label=uplo + 'cublas atomics' )
+			pp.semilogx( data[:,symv_n], data[:,symv_cublas_flops],  style, markevery=10, color='#666666', lw=1.5, label=uplo + 'cublas'         )
+			pp.semilogx( data[:,symv_n], data[:,symv_cpu_flops],     style, markevery=10, color='black',   lw=1.5, label=uplo + 'MKL'            )
 		else:
-			pp.plot(     data[:,symv_n], data[:,symv_atomics_flops], style, color='#aaaaaa', label=uplo + 'cublas atomics' )
-			pp.plot(     data[:,symv_n], data[:,symv_cublas_flops],  style, color='#666666', label=uplo + 'cublas'         )
-			pp.plot(     data[:,symv_n], data[:,symv_cpu_flops],     style, color='black',   label=uplo + 'MKL'            )
+			pp.plot(     data[:,symv_n], data[:,symv_atomics_flops], style, markevery=10, color='#aaaaaa', lw=1.5, label=uplo + 'cublas atomics' )
+			pp.plot(     data[:,symv_n], data[:,symv_cublas_flops],  style, markevery=10, color='#666666', lw=1.5, label=uplo + 'cublas'         )
+			pp.plot(     data[:,symv_n], data[:,symv_cpu_flops],     style, markevery=10, color='black',   lw=1.5, label=uplo + 'MKL'            )
 	if ( g_log ):
-		pp.semilogx( data[:,symv_n], data[:,symv_gpu_flops], style, color=color, lw=1.5, label=uplo + label )
+		pp.semilogx( data[:,symv_n], data[:,symv_gpu_flops], style, markevery=10, color=color, lw=1.5, label=uplo + label )
 	else:
-		pp.plot(     data[:,symv_n], data[:,symv_gpu_flops], style, color=color, lw=1.5, label=uplo + label )
+		pp.plot(     data[:,symv_n], data[:,symv_gpu_flops], style, markevery=10, color=color, lw=1.5, label=uplo + label )
 # end
 
 def plot_symv_labels( versions, title=None ):
-	set_title( versions, title )
+	set_title( versions, 'Symmetric matrix-vector multiply (symv) ' + str_none(title) )
 	pp.legend( loc='upper left' )
-	pp.ylabel( r'Gflop/s' )
-	if ( g_log ):
-		pp.xlabel( r'matrix size (log scale)' )
-		xticks = [ 10, 100, 1000, 10000 ]
-	else:
-		pp.xlabel( r'matrix size' )
-		xticks = range( 0, 20001, 4000 )
-	(ymin, ymax) = pp.ylim()
-	pp.ylim( 0, min(310, ymax) )
-	pp.xticks( xticks, xticks )
-	pp.xlim( 9, 20000 )
-	pp.grid( True )
+	pp.ylabel( r'Gflop/s  $2n^2 / t$' )
+	set_xticks()
+	#(ymin, ymax) = pp.ylim()
+	#pp.ylim( 0, min(310, ymax) )
 # end
 
 def plot_symv( versions ):
+	print( 'plotting symv' )
+	versions = get_versions( versions )
 	figure( 10 )
 	clf( 2, 2 )
 	
@@ -1078,27 +1074,27 @@ def plot_symv( versions ):
 	for v in versions:
 		subplot( 2, 2, 1 )
 		if v.__dict__.has_key('ssymv_L'):
-			plot_symv_data(  v.ssymv_L, 'lower', '-',  color=v.color, label=v.version+' ssymv', first=first )
+			plot_symv_data(  v.ssymv_L, 'lower', '-',   color=v.color, label=v.version+' ssymv', first=first )
 		if v.__dict__.has_key('ssymv_U'):
-			plot_symv_data(  v.ssymv_U, 'upper', '--', color=v.color, label=v.version+' ssymv', first=first )
+			plot_symv_data(  v.ssymv_U, 'upper', 'x--', color=v.color, label=v.version+' ssymv', first=first )
 		
 		subplot( 2, 2, 2 )
 		if v.__dict__.has_key('dsymv_L'):
-			plot_symv_data(  v.dsymv_L, 'lower', '-',  color=v.color, label=v.version+' dsymv', first=first )
+			plot_symv_data(  v.dsymv_L, 'lower', '-',   color=v.color, label=v.version+' dsymv', first=first )
 		if v.__dict__.has_key('dsymv_U'):
-			plot_symv_data(  v.dsymv_U, 'upper', '--', color=v.color, label=v.version+' dsymv', first=first )
+			plot_symv_data(  v.dsymv_U, 'upper', 'x--', color=v.color, label=v.version+' dsymv', first=first )
 		
 		subplot( 2, 2, 3 )
 		if v.__dict__.has_key('chemv_L'):
-			plot_symv_data(  v.chemv_L, 'lower', '-',  color=v.color, label=v.version+' chemv', first=first )
+			plot_symv_data(  v.chemv_L, 'lower', '-',   color=v.color, label=v.version+' chemv', first=first )
 		if v.__dict__.has_key('chemv_U'):
-			plot_symv_data(  v.chemv_U, 'upper', '--', color=v.color, label=v.version+' chemv', first=first )
+			plot_symv_data(  v.chemv_U, 'upper', 'x--', color=v.color, label=v.version+' chemv', first=first )
 		
 		subplot( 2, 2, 4 )
 		if v.__dict__.has_key('zhemv_L'):
-			plot_symv_data(  v.zhemv_L, 'lower', '-',  color=v.color, label=v.version+' zhemv', first=first )
+			plot_symv_data(  v.zhemv_L, 'lower', '-',   color=v.color, label=v.version+' zhemv', first=first )
 		if v.__dict__.has_key('zhemv_U'):
-			plot_symv_data(  v.zhemv_U, 'upper', '--', color=v.color, label=v.version+' zhemv', first=first )
+			plot_symv_data(  v.zhemv_U, 'upper', 'x--', color=v.color, label=v.version+' zhemv', first=first )
 		first = False
 	# end
 	

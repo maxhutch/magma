@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zlatrd.cpp normal z -> d, Fri Sep 11 18:29:29 2015
+       @generated from src/zlatrd.cpp normal z -> d, Wed Jan  6 17:59:33 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_d
+#define REAL
 
 /**
     Purpose
@@ -164,8 +164,10 @@ magma_dlatrd(
     double *A,  magma_int_t lda,
     double *e, double *tau,
     double *W,  magma_int_t ldw,
+    double *work, magma_int_t lwork,
     magmaDouble_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr dW, magma_int_t lddw)
+    magmaDouble_ptr dW, magma_int_t lddw,
+    magma_queue_t queue )
 {
     #define A(i_, j_) (A + (i_) + (j_)*lda)
     #define W(i_, j_) (W + (i_) + (j_)*ldw)
@@ -173,11 +175,13 @@ magma_dlatrd(
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
     #define dW(i_, j_) (dW + (i_) + (j_)*lddw)
 
+    /* Constants */
     const double c_neg_one = MAGMA_D_NEG_ONE;
     const double c_one     = MAGMA_D_ONE;
     const double c_zero    = MAGMA_D_ZERO;
     const magma_int_t ione = 1;
 
+    /* Local variables */
     double alpha, value;
     magma_int_t i, i_n, i_1, iw;
 
@@ -209,16 +213,6 @@ magma_dlatrd(
         return info;
     }
 
-    magma_queue_t stream;
-    magma_queue_create( &stream );
-    
-    double *f;
-    magma_dmalloc_cpu( &f, n );
-    if ( f == NULL ) {
-        info = MAGMA_ERR_HOST_ALLOC;
-        return info;
-    }
-    
     if (uplo == MagmaUpper) {
         /* Reduce last NB columns of upper triangle */
         for (i = n-1; i >= n - nb; --i) {
@@ -228,18 +222,18 @@ magma_dlatrd(
             iw = i - n + nb;
             if (i < n-1) {
                 /* Update A(1:i,i) */
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 lapackf77_dlacgv( &i_n, W(i, iw+1), &ldw );
                 #endif
                 blasf77_dgemv( "No transpose", &i_1, &i_n, &c_neg_one, A(0, i+1), &lda,
                                W(i, iw+1), &ldw, &c_one, A(0, i), &ione );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 lapackf77_dlacgv( &i_n, W(i, iw+1), &ldw );
                 lapackf77_dlacgv( &i_n, A(i, i+1),  &lda );
                 #endif
                 blasf77_dgemv( "No transpose", &i_1, &i_n, &c_neg_one, W(0, iw+1), &ldw,
                                A(i, i+1), &lda, &c_one, A(0, i), &ione );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 lapackf77_dlacgv( &i_n, A(i, i+1), &lda );
                 #endif
             }
@@ -254,15 +248,15 @@ magma_dlatrd(
                 
                 /* Compute W(1:i-1,i) */
                 // 1. Send the block reflector  A(0:n-i-1,i) to the GPU
-                magma_dsetvector( i, A(0, i), 1, dA(0, i), 1 );
+                magma_dsetvector( i, A(0, i), 1, dA(0, i), 1, queue );
                 
                 magma_dsymv( MagmaUpper, i, c_one, dA(0, 0), ldda,
-                             dA(0, i), ione, c_zero, dW(0, iw), ione );
+                             dA(0, i), ione, c_zero, dW(0, iw), ione, queue );
                 
                 // 2. Start putting the result back (asynchronously)
                 magma_dgetmatrix_async( i, 1,
                                         dW(0, iw), lddw,
-                                        W(0, iw),  ldw, stream );
+                                        W(0, iw),  ldw, queue );
                 
                 if (i < n-1) {
                     blasf77_dgemv( MagmaConjTransStr, &i, &i_n, &c_one, W(0, iw+1), &ldw,
@@ -270,7 +264,7 @@ magma_dlatrd(
                 }
                 
                 // 3. Here is where we need it // TODO find the right place
-                magma_queue_sync( stream );
+                magma_queue_sync( queue );
                 
                 if (i < n-1) {
                     blasf77_dgemv( "No transpose", &i, &i_n, &c_neg_one, A(0, i+1), &lda,
@@ -297,18 +291,18 @@ magma_dlatrd(
         for (i = 0; i < nb; ++i) {
             /* Update A(i:n,i) */
             i_n = n - i;
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_dlacgv( &i, W(i, 0), &ldw );
             #endif
             blasf77_dgemv( "No transpose", &i_n, &i, &c_neg_one, A(i, 0), &lda,
                            W(i, 0), &ldw, &c_one, A(i, i), &ione );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_dlacgv( &i, W(i, 0), &ldw );
             lapackf77_dlacgv( &i, A(i, 0), &lda );
             #endif
             blasf77_dgemv( "No transpose", &i_n, &i, &c_neg_one, W(i, 0), &ldw,
                            A(i, 0), &lda, &c_one, A(i, i), &ione );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_dlacgv( &i, A(i, 0), &lda );
             #endif
             
@@ -322,30 +316,30 @@ magma_dlatrd(
                 
                 /* Compute W(i+1:n,i) */
                 // 1. Send the block reflector  A(i+1:n,i) to the GPU
-                magma_dsetvector( i_n, A(i+1, i), 1, dA(i+1, i), 1 );
+                magma_dsetvector( i_n, A(i+1, i), 1, dA(i+1, i), 1, queue );
                 
                 magma_dsymv( MagmaLower, i_n, c_one, dA(i+1, i+1), ldda,
-                             dA(i+1, i), ione, c_zero, dW(i+1, i), ione );
+                             dA(i+1, i), ione, c_zero, dW(i+1, i), ione, queue );
                 
                 // 2. Start putting the result back (asynchronously)
                 magma_dgetmatrix_async( i_n, 1,
                                         dW(i+1, i), lddw,
-                                        W(i+1, i),  ldw, stream );
+                                        W(i+1, i),  ldw, queue );
                 
                 blasf77_dgemv( MagmaConjTransStr, &i_n, &i, &c_one, W(i+1, 0), &ldw,
                                A(i+1, i), &ione, &c_zero, W(0, i), &ione );
                 
                 blasf77_dgemv( "No transpose", &i_n, &i, &c_neg_one, A(i+1, 0), &lda,
-                               W(0, i), &ione, &c_zero, f, &ione );
+                               W(0, i), &ione, &c_zero, work, &ione );
                 
                 blasf77_dgemv( MagmaConjTransStr, &i_n, &i, &c_one, A(i+1, 0), &lda,
                                A(i+1, i), &ione, &c_zero, W(0, i), &ione );
                 
                 // 3. Here is where we need it
-                magma_queue_sync( stream );
+                magma_queue_sync( queue );
                 
                 if (i != 0)
-                    blasf77_daxpy( &i_n, &c_one, f, &ione, W(i+1, i), &ione );
+                    blasf77_daxpy( &i_n, &c_one, work, &ione, W(i+1, i), &ione );
                 
                 blasf77_dgemv( "No transpose", &i_n, &i, &c_neg_one, W(i+1, 0), &ldw,
                                W(0, i), &ione, &c_one, W(i+1, i), &ione );
@@ -357,9 +351,6 @@ magma_dlatrd(
             }
         }
     }
-
-    magma_free_cpu( f );
-    magma_queue_destroy( stream );
 
     return info;
 } /* magma_dlatrd */

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
        @precisions normal z -> s d c
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define PRECISION_z
 
@@ -113,8 +113,8 @@ magma_ziterilusetup(
 
     magma_zmfree(&hAtmp, queue );
 
-    CHECK( magma_zcsrsplit( 256, hAL, &DL, &RL , queue ));
-    CHECK( magma_zcsrsplit( 256, hAU, &DU, &RU , queue ));
+    CHECK( magma_zcsrsplit( 0, 256, hAL, &DL, &RL , queue ));
+    CHECK( magma_zcsrsplit( 0, 256, hAU, &DU, &RU , queue ));
 
     CHECK( magma_zmtransfer( DL, &precond->LD, Magma_CPU, Magma_DEV , queue ));
     CHECK( magma_zmtransfer( DU, &precond->UD, Magma_CPU, Magma_DEV , queue ));
@@ -271,7 +271,6 @@ magma_ziteriluupdate(
     if( updates > 0 ){
         
         CHECK( magma_zmtransfer( precond->M, &hAcopy, Magma_DEV, Magma_CPU , queue ));
-        
         // in case using fill-in
         CHECK( magma_zsymbilu( &hAcopy, precond->levels, &hAL, &hAUt,  queue ));
         // add a unit diagonal to L for the algorithm
@@ -286,21 +285,20 @@ magma_ziteriluupdate(
         magma_zmfree(&hAUt, queue );
         magma_zmfree(&precond->M, queue );
         magma_zmfree(&hAcopy, queue );
-
         
         // copy original matrix as CSRCOO to device
         for(int i=0; i<updates; i++){
             CHECK( magma_ziterilu_csr( A, dL, dU, queue ));
         }
-        
         CHECK( magma_zmtransfer( dL, &hL, Magma_DEV, Magma_CPU , queue ));
         CHECK( magma_zmtransfer( dU, &hU, Magma_DEV, Magma_CPU , queue ));
         CHECK( magma_z_cucsrtranspose(  hU, &hUT , queue ));
-        
         magma_zmfree(&dL, queue );
         magma_zmfree(&dU, queue );
         magma_zmfree(&hU, queue );
         CHECK( magma_zmlumerge( hL, hUT, &hAtmp, queue ));
+        // for CUSPARSE
+        CHECK( magma_zmtransfer( hAtmp, &precond->M, Magma_CPU, Magma_DEV , queue ));
         
         magma_zmfree(&hL, queue );
         magma_zmfree(&hUT, queue );

@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -258,7 +258,7 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldvt</td><td>INTEGER The leading dimension of the array VT. LDVT &gt;= 1; if JOBZ = MagmaAllVec or JOBZ = MagmaOverwriteVec and M &gt;= N, LDVT &gt;= N; if JOBZ = MagmaSomeVec, LDVT &gt;= min(M,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. Let x = max(M,N) and y = min(M,N). The optimal block size nb can be obtained through magma_get_sgesvd_nb(N). The threshold for x &gt;&gt; y currently is x &gt;= y*11/6. Required size different than in LAPACK.* In most cases, these sizes should give optimal performance for both MAGMA and LAPACK.<ul>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. Let x = max(M,N) and y = min(M,N). The optimal block size nb can be obtained through magma_get_sgesvd_nb( M, N ). The threshold for x &gt;&gt; y currently is x &gt;= y*11/6. Required size different than in LAPACK.* In most cases, these sizes should give optimal performance for both MAGMA and LAPACK.<ul>
 <li>If JOBZ = MagmaNoVec, if x &gt;&gt; y, LWORK &gt;= 3*y + max( (2*y)*nb, 7*y ); otherwise, LWORK &gt;= 3*y + max( (x+y)*nb, 7*y ).</li>
 <li>If JOBZ = MagmaOverwriteVec, if x &gt;&gt; y, LWORK &gt;= y*y + 3*y + max( (2*y)*nb, 4*y*y + 4*y ), prefer LWORK &gt;= y*y + 3*y + max( (2*y)*nb, 4*y*y + 4*y, y*y + y*nb ); otherwise, LWORK &gt;= 3*y + max( (x+y)*nb, 4*y*y + 4*y ).</li>
 <li>If JOBZ = MagmaSomeVec, if x &gt;&gt; y, LWORK &gt;= y*y + 3*y + max( (2*y)*nb, 3*y*y + 4*y ); otherwise, LWORK &gt;= 3*y + max( (x+y)*nb, 3*y*y + 4*y ).</li>
@@ -447,7 +447,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

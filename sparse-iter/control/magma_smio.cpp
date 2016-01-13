@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zmio.cpp normal z -> s, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zmio.cpp normal z -> s, Wed Jan  6 17:59:44 2016
        @author Hartwig Anzt
        @author Mark Gates
 */
@@ -225,7 +225,7 @@ magma_int_t read_s_csr_from_mtx(
         }
         magma_index_t true_nonzeros = 2*off_diagonals + (*nnz - off_diagonals);
         
-        //printf("%% total number of nonzeros: %d\n%%", (int) *nnz);
+        //printf("%% total number of nonzeros: %d\n%%", int(*nnz));
 
         CHECK( magma_index_malloc_cpu( &new_row, true_nonzeros ));
         CHECK( magma_index_malloc_cpu( &new_col, true_nonzeros ));
@@ -805,8 +805,7 @@ magma_sprint_matrix(
 
     if ( A.memory_location == Magma_CPU ) {
         printf("visualizing matrix of size %d x %d with %d nonzeros:\n",
-            (int) A.num_rows, (int) A.num_cols, (int) A.nnz);
-        
+            int(A.num_rows), int(A.num_cols), int(A.nnz));
         if ( A.storage_type == Magma_DENSE ) {
             for( i=0; i < (A.num_rows); i++ ) {
                 for( j=0; j < A.num_cols; j++ ) {
@@ -814,6 +813,10 @@ magma_sprint_matrix(
                 }
                 printf( "\n" );
             }
+        }
+        else if( A.num_cols < 8 || A.num_rows < 8 ) { 
+            CHECK( magma_smconvert( A, &C, A.storage_type, Magma_DENSE, queue ));
+            CHECK( magma_sprint_matrix(  C, queue ));
         }
         else if ( A.storage_type == Magma_CSR ) {
             // visualize only small matrices like dense
@@ -844,7 +847,7 @@ magma_sprint_matrix(
                         printf( "             " );
                     }
                     // upper right corner
-                    for( j=A.num_rows-4; j < A.num_rows; j++ ) {
+                    for( j=A.num_cols-4; j < A.num_cols; j++ ) {
                         float tmp = MAGMA_S_ZERO;
                         magma_index_t rbound = min( A.row[i+1], A.row[i+1]);
                         magma_index_t lbound = max( A.row[i+1]-4, A.row[i]);
@@ -876,7 +879,7 @@ magma_sprint_matrix(
                     }
                     printf( "             ");
                     // lower right corner
-                    for( j=A.num_rows-4; j < A.num_rows; j++ ) {
+                    for( j=A.num_cols-4; j < A.num_cols; j++ ) {
                         float tmp = MAGMA_S_ZERO;
                         magma_index_t rbound = min( A.row[i+1], A.row[i+1]);
                         magma_index_t lbound = max( A.row[i+1]-4, A.row[i]);
@@ -1072,7 +1075,7 @@ magma_s_csr_mtx(
         }
         magma_index_t true_nonzeros = 2*off_diagonals + (A->nnz - off_diagonals);
         
-        //printf("%% total number of nonzeros: %d\n%%", (int) A->nnz);
+        //printf("%% total number of nonzeros: %d\n%%", int(A->nnz));
 
         CHECK( magma_index_malloc_cpu( &new_row, true_nonzeros ));
         CHECK( magma_index_malloc_cpu( &new_col, true_nonzeros ));
@@ -1183,7 +1186,7 @@ magma_s_csr_mtx(
         CHECK( magma_smtransfer( B, A, Magma_CPU, Magma_CPU, queue ));
         //printf("done.\n");
     }
-    
+    A->true_nnz = A->nnz;
     printf(" done.\n");
 cleanup:
     if ( fid != NULL ) {
@@ -1425,6 +1428,7 @@ magma_s_csr_mtxsymm(
 
         //printf("done.\n");
     }
+    A->true_nnz = A->nnz;
     
     printf(" done.\n");
 cleanup:

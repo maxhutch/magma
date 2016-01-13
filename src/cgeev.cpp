@@ -1,18 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeev.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/zgeev.cpp normal z -> c, Wed Jan  6 17:59:35 2016
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
-#define PRECISION_c
 #define COMPLEX
 
 /*
@@ -424,7 +423,7 @@ magma_cgeev(
                 rwork[irwork + k] = d__1*d__1 + d__2*d__2;
             }
             k = blasf77_isamax( &n, &rwork[irwork], &ione ) - 1;  // subtract 1; k is 0-based
-            tmp = MAGMA_C_CNJG( *VL(k,i) ) / magma_ssqrt( rwork[irwork + k] );
+            tmp = MAGMA_C_CONJ( *VL(k,i) ) / magma_ssqrt( rwork[irwork + k] );
             blasf77_cscal( &n, &tmp, VL(0,i), &ione );
             *VL(k,i) = MAGMA_C_MAKE( MAGMA_C_REAL( *VL(k,i) ), 0 );
         }
@@ -448,7 +447,7 @@ magma_cgeev(
                 rwork[irwork + k] = d__1*d__1 + d__2*d__2;
             }
             k = blasf77_isamax( &n, &rwork[irwork], &ione ) - 1;  // subtract 1; k is 0-based
-            tmp = MAGMA_C_CNJG( *VR(k,i) ) / magma_ssqrt( rwork[irwork + k] );
+            tmp = MAGMA_C_CONJ( *VR(k,i) ) / magma_ssqrt( rwork[irwork + k] );
             blasf77_cscal( &n, &tmp, VR(0,i), &ione );
             *VR(k,i) = MAGMA_C_MAKE( MAGMA_C_REAL( *VR(k,i) ), 0 );
         }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
        @author Stan Tomov
@@ -236,7 +236,7 @@ magma_zheevdx_2stage_m(
     /* determine the number of threads and other parameter */
     magma_int_t Vblksiz, ldv, ldt, blkcnt, sizTAU2, sizT2, sizV2, sizTAU1, ldz, lwstg1, lda2;
     magma_int_t parallel_threads = magma_get_parallel_numthreads();
-    magma_int_t nb               = magma_zbulge_get_nb(n, parallel_threads);
+    magma_int_t nb               = magma_get_zbulge_nb(n, parallel_threads);
     magma_int_t lwstg2           = magma_zbulge_getlwstg2( n, parallel_threads, wantz, 
                                                            &Vblksiz, &ldv, &ldt, &blkcnt, 
                                                            &sizTAU2, &sizT2, &sizV2);

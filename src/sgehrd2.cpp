@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgehrd2.cpp normal z -> s, Fri Sep 11 18:29:31 2015
+       @generated from src/zgehrd2.cpp normal z -> s, Wed Jan  6 17:59:35 2016
        
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -124,18 +124,30 @@ magma_sgehrd2(
     float *work, magma_int_t lwork,
     magma_int_t *info)
 {
-    #define A(i_,j_)  (A  + (i_) + (j_)*lda)
-    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
-    
-    float c_one = MAGMA_S_ONE;
-    float c_zero = MAGMA_S_ZERO;
+    #define  A(i_,j_) ( A + (i_) + (j_)*lda)
 
-    magma_int_t nb = magma_get_sgehrd_nb(n);
+    #ifdef HAVE_clBLAS
+    #define dA(i_,j_)  dwork, ((i_) + (j_)*ldda + nb*ldda*2)
+    #define dT(i_,j_)  dT,    ((i_) + (j_)*nb   + dT_offset)
+    #define dV(i_,j_)  dwork, ((i_) + (j_)*ldda + nb*ldda)
+    #define dwork(i_)  dwork, ((i_))
+    #else
+    #define dA(i_,j_) (dA    + (i_) + (j_)*ldda)
+    #define dT(i_,j_) (dT    + (i_) + (j_)*nb)
+    #define dV(i_,j_) (dV    + (i_) + (j_)*ldda)
+    #define dwork(i_) (dwork + (i_))
+    #endif
+
+    // Constants
+    const float c_one  = MAGMA_S_ONE;
+    const float c_zero = MAGMA_S_ZERO;
+
+    // Local variables
+    magma_int_t nb = magma_get_sgehrd_nb( n );
     magma_int_t ldda = magma_roundup( n, 32 );
 
     magma_int_t i, nh, iws;
     magma_int_t iinfo;
-    magma_int_t ldwork;
     magma_int_t lquery;
 
     *info = 0;
@@ -182,13 +194,17 @@ magma_sgehrd2(
     }
     else {
         // Use blocked code
+        magma_queue_t queue;
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        magma_queue_create( cdev, &queue );
         
         // GPU workspace is:
         //   nb*ldda for dwork for slahru
         //   nb*ldda for dV
         //   n*ldda  for dA
         //   nb*nb   for dT
-        float *dwork;
+        magmaFloat_ptr dwork;
         if (MAGMA_SUCCESS != magma_smalloc( &dwork, 2*nb*ldda + n*ldda + nb*nb )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
@@ -196,7 +212,6 @@ magma_sgehrd2(
         float *dV = dwork + nb*ldda;
         float *dA = dwork + nb*ldda*2;
         float *dT = dwork + nb*ldda*2 + n*ldda;
-        ldwork = ldda;
         
         float *T;
         magma_smalloc_cpu( &T, nb*nb );
@@ -205,23 +220,23 @@ magma_sgehrd2(
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
         }
-    
+        
         // zero first block of V, which is lower triangular
-        magmablas_slaset( MagmaFull, nb, nb, c_zero, c_zero, dV, ldda );
-    
+        magmablas_slaset( MagmaFull, nb, nb, c_zero, c_zero, dV(0,0), ldda, queue );
+        
         // Set elements 0:ILO-1 and IHI-1:N-2 of TAU to zero
         for (i = 0; i < ilo; ++i)
             tau[i] = c_zero;
-    
+        
         for (i = max(0,ihi-1); i < n-1; ++i)
             tau[i] = c_zero;
-    
+        
         assert( nb % 4 == 0 );
         for (i=0; i < nb*nb; i += 4)
             T[i] = T[i+1] = T[i+2] = T[i+3] = c_zero;
-    
+        
         // Copy the matrix to the GPU
-        magma_ssetmatrix( n, n-ilo, A(0,ilo), lda, dA, ldda );
+        magma_ssetmatrix( n, n-ilo, A(0,ilo), lda, dA(0,0), ldda, queue );
         
         for (i = ilo; i < ihi-1 - nb; i += nb) {
             // Reduce columns i:i+nb-1 to Hessenberg form, returning the
@@ -231,33 +246,35 @@ magma_sgehrd2(
             // Get the current panel (no need for the 1st iteration)
             magma_sgetmatrix( ihi-i, nb,
                               dA(i,i-ilo), ldda,
-                              A(i,i), lda );
+                              A(i,i), lda, queue );
             
             // add 1 to i for 1-based index
             magma_slahr2( ihi, i+1, nb,
                           dA(0,i-ilo), ldda,
-                          dV,          ldda,
+                          dV(0,0),     ldda,
                           A(0,i),      lda,
-                          &tau[i], T, nb, work, ldwork );
+                          &tau[i], T, nb, work, n, queue );
             
             // Copy T from the CPU to dT on the GPU
-            magma_ssetmatrix( nb, nb, T, nb, dT, nb );
+            magma_ssetmatrix( nb, nb, T, nb, dT(0,0), nb, queue );
             
             magma_slahru( n, ihi, i, nb,
                           A(0,i),      lda,
                           dA(0,i-ilo), ldda, // dA
                           dA(i,i-ilo), ldda, // dY, stored over current panel
-                          dV,          ldda,
-                          dT, dwork );
+                          dV(0,0),     ldda,
+                          dT(0,0), dwork, queue );
         }
         
         // Copy remainder to host
         magma_sgetmatrix( n, n-i,
                           dA(0,i-ilo), ldda,
-                          A(0,i),  lda );
+                          A(0,i), lda, queue );
         
         magma_free( dwork );
         magma_free_cpu( T );
+        
+        magma_queue_destroy( queue );
     }
 
     // Use unblocked code to reduce the rest of the matrix

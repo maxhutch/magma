@@ -17,9 +17,9 @@ class data_t( object ):
 		self.reset()
 	
 	def reset( self ):
-		self.cmd  = ''
+		self.cmd  = []
 		self.name = ''
-		self.opt  = ''
+		self.name_usage = ''
 		self.rows = []
 #end
 
@@ -31,6 +31,8 @@ def output( data ):
 		return
 	
 	if ( not data.name ):
+		data.name = data.name_usage
+	if ( not data.name ):
 		data.name = 'unknown'
 	
 	# find maximum width of each column and make printf format
@@ -38,7 +40,7 @@ def output( data ):
 	maxwidths = [0] * n
 	for row in data.rows:
 		if ( len(row) != n ):
-			print '# error: row has', len(widths), 'fields; first row had', n, 'fields'
+			print '# error: row has', len(row), 'fields; first row had', n, 'fields'
 			continue
 		widths = map( len, row )
 		for i in xrange( n ):
@@ -46,11 +48,10 @@ def output( data ):
 	formats = map( lambda x: '%%%ds' % x, maxwidths )
 	format = '\t[ ' + ',  '.join( formats ) + ' ],'
 	
-	name = data.name + data.opt
-	
 	# output table
-	print '#', data.cmd
-	print name, '= array(['
+	for cmd in data.cmd:
+		print '#', cmd
+	print data.name, '= array(['
 	for row in data.rows:
 		#print format, row
 		try:
@@ -66,42 +67,65 @@ def output( data ):
 # --------------------
 # process one file
 def process( filename ):
-	data = data_t()
 	warmup = 0
 	
 	print '# ------------------------------------------------------------'
 	print '# file:', filename
+	
+	data   = data_t()
+	keys   = []
+	tables = {}
 	
 	infile = open( filename )
 	for line in infile:
 		# look for header line
 		m = re.search( r'^(?:numactl.*)?testing_(\w+)', line )
 		if ( m ):
-			if ( data.rows ):
-				output( data )
-			
-			data.name = m.group(1)
-			data.cmd  = line.strip()
-			warmup = 2
-			
-			opt = ''
+			name = m.group(1)
 			m2 = re.search( r'-([LU])\b',       line )  # lower/upper
-			if ( m2 ): opt += '_' + m2.group(1)
+			if ( m2 ): name += '_' + m2.group(1)
 			m2 = re.search( r'-([UV][ASON])\b', line )  # svd U & V vectors
-			if ( m2 ): opt += '_' + m2.group(1)
+			if ( m2 ): name += '_' + m2.group(1)
 			m2 = re.search( r'-([JRL][NV])\b',  line )  # syev job vectors, geev right & left vectors
-			if ( m2 ): opt += '_' + m2.group(1)
-			data.opt  = opt
-			continue;
+			if ( m2 ): name += '_' + m2.group(1)
+			
+			# code repeated below
+			if ( name in keys ):
+				data = tables[name]
+			else:
+				data = data_t()
+				data.name = name
+				keys.append( name )
+				tables[name] = data
+			# end
+			
+			data.cmd.append( line.strip() )
+			warmup = 2
+			continue
 		# end
 		
 		# look for usage line (in case no header line)
 		m = re.search( r'Usage: ./testing_(\w+)', line )
 		if ( m ):
+			name = m.group(1)
 			if ( data.rows ):
-				output( data )
-			data.name = m.group(1)
-			warmup = 2
+				# new table with no header
+				# code repeated above
+				if ( name in keys ):
+					data = tables[name]
+				else:
+					data = data_t()
+					data.name = name
+					keys.append( name )
+					tables[name] = data
+				# end
+				
+				data.cmd.append( line.strip() )
+				warmup = 2
+				continue
+			else:
+				# table had header
+				data.name_usage = name
 		# end
 		
 		# look for data lines
@@ -119,8 +143,8 @@ def process( filename ):
 			
 			# gesvd has two job columns, usually the same, while gesdd has
 			# only one job column. This eliminates 2nd job column for gesvd.
-			if ( data.name == 'gesvd' ):
-				line2 = re.sub( r'^( *nan) +nan', r'$1', line2 )
+			if ( re.search( 'gesvd', data.name )):
+				line2 = re.sub( r'^( *nan) +nan', r'\1', line2 )
 			
 			fields = re.split( ' +', line2 )
 			
@@ -146,7 +170,8 @@ def process( filename ):
 			data.rows.append( fields )
 		# end
 	# end
-	output( data )
+	for key in keys:
+		output( tables[key] )
 # end
 
 

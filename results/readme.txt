@@ -116,33 +116,45 @@ shown below, to select which versions to plot.
 plots.help() prints the global settings and available plots.
 
 It is easiest to use plots.py from an interactive Python shell. IPython is
-recommended. Examples:
+recommended.
+
+Example using ipython:
 
     mint magma-trunk/results> ipython
-    >>> run -i plots
-        # -i is necesary so g_save, etc. are in the right namespace to be modified
-        # prints help
-    >>> g_save = True
-    >>> g_subplots = False
-    >>> plot_potrf( versions[2:] )
+    >>> run -i plots  # this prints help; -i is necessary so g_save, etc. are in the right name space to be modified
+    
+    Available versions:
+    versions[0] = 1.5.0
+    versions[1] = 1.6.0
+    versions[2] = 1.6.1
+    versions[3] = 1.6.2
+    versions[4] = 1.7.0
+    
+    >>> plot_potrf( versions[ 4 ] )        # index 4 (1.7.0) only
+    >>> plot_potrf( versions[ 2: ] )       # index 2 (1.6.1) and later
+    >>> g_save = True                      # save PDF files
+    >>> g_subplots = False                 # plot precisions as 4 figures instead of 4 subplots
+    >>> plot_potrf( versions[ [0,2,4] ] )  # index 0 (1.5.0), 2 (1.6.1), and 4 (1.7.0)
     saving spotrf.pdf
     saving dpotrf.pdf
     saving cpotrf.pdf
     saving zpotrf.pdf
 
+Using regular python:
 
     magma-trunk/results> python
-    >>> import plots
-        # prints help
+    >>> import plots  # this prints help
     >>> plots.g_save = True
-    >>> plots.plot_getrf( plots.versions[2:] )
+    >>> plots.plot_getrf( plots.versions[ [0,2,4] ] )
     saving getrf.pdf
+    
     >>> plots.g_subplots = False
-    >>> plots.plot_getrf( plots.versions[2:] )
+    >>> plots.plot_getrf( plots.versions[ [0,2,4] ] )
     saving sgetrf.pdf
     saving dgetrf.pdf
     saving cgetrf.pdf
     saving zgetrf.pdf
+    
     >>> plots.help()
     Global settings:
     g_save      # True to save plots as PDF files
@@ -168,3 +180,4 @@ recommended. Examples:
     versions[1] = 1.6.0
     versions[2] = 1.6.1
     versions[3] = 1.6.2
+    versions[4] = 1.7.0

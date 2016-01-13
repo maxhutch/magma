@@ -34,8 +34,8 @@ magma_cabs(magmaDoubleComplex z)
 extern "C" float
 magma_cabsf(magmaFloatComplex z)
 {
-    float x = fabs( real( z ));
-    float y = fabs( imag( z ));
+    float x = fabsf( real( z ));
+    float y = fabsf( imag( z ));
     float big, little;
     if ( x > y ) {
         big    = x;

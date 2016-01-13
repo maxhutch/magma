@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
-       @generated from magma_znan_inf.cpp normal z -> s, Fri Sep 11 18:29:33 2015
+       @generated from control/magma_znan_inf.cpp normal z -> s, Wed Jan  6 17:59:28 2016
 
 */
 #include <limits>
@@ -25,11 +25,11 @@ const float MAGMA_S_INF
                     std::numeric_limits<float>::infinity() );
 
 /** @return true if either real(x) or imag(x) is NAN. */
-inline bool magma_s_isnan( float x )
+int magma_s_isnan( float x )
 {
 #ifdef COMPLEX
-    return isnan( MAGMA_S_REAL( x )) ||
-           isnan( MAGMA_S_IMAG( x ));
+    return isnan( real( x )) ||
+           isnan( imag( x ));
 #else
     return isnan( x );
 #endif
@@ -37,13 +37,27 @@ inline bool magma_s_isnan( float x )
 
 
 /** @return true if either real(x) or imag(x) is INF. */
-inline bool magma_s_isinf( float x )
+int magma_s_isinf( float x )
 {
 #ifdef COMPLEX
-    return isinf( MAGMA_S_REAL( x )) ||
-           isinf( MAGMA_S_IMAG( x ));
+    return isinf( real( x )) ||
+           isinf( imag( x ));
 #else
     return isinf( x );
+#endif
+}
+
+
+/** @return true if either real(x) or imag(x) is NAN or INF. */
+int magma_s_isnan_inf( float x )
+{
+#ifdef COMPLEX
+    return isnan( real( x )) ||
+           isnan( imag( x )) ||
+           isinf( real( x )) ||
+           isinf( imag( x ));
+#else
+    return isnan( x ) || isinf( x );
 #endif
 }
 

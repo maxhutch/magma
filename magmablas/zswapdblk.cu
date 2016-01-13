@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -124,7 +124,7 @@ magmablas_zswapdblk_q(
     }
 
     if ( nblocks > 0 ) {
-        zswapdblk_kernel<<< nblocks, nb, 0, queue >>>
+        zswapdblk_kernel<<< nblocks, nb, 0, queue->cuda_stream() >>>
             ( nb, dA, ldda, inca,
                   dB, lddb, incb );
     }
@@ -141,5 +141,5 @@ magmablas_zswapdblk(
     magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t inca,
     magmaDoubleComplex_ptr dB, magma_int_t lddb, magma_int_t incb )
 {
-    magmablas_zswapdblk_q( n, nb, dA, ldda, inca, dB, lddb, incb, magma_stream );
+    magmablas_zswapdblk_q( n, nb, dA, ldda, inca, dB, lddb, incb, magmablasGetQueue() );
 }

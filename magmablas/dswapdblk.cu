@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zswapdblk.cu normal z -> d, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zswapdblk.cu normal z -> d, Wed Jan  6 17:59:38 2016
 
 */
 #include "common_magma.h"
@@ -124,7 +124,7 @@ magmablas_dswapdblk_q(
     }
 
     if ( nblocks > 0 ) {
-        dswapdblk_kernel<<< nblocks, nb, 0, queue >>>
+        dswapdblk_kernel<<< nblocks, nb, 0, queue->cuda_stream() >>>
             ( nb, dA, ldda, inca,
                   dB, lddb, incb );
     }
@@ -141,5 +141,5 @@ magmablas_dswapdblk(
     magmaDouble_ptr dA, magma_int_t ldda, magma_int_t inca,
     magmaDouble_ptr dB, magma_int_t lddb, magma_int_t incb )
 {
-    magmablas_dswapdblk_q( n, nb, dA, ldda, inca, dB, lddb, incb, magma_stream );
+    magmablas_dswapdblk_q( n, nb, dA, ldda, inca, dB, lddb, incb, magmablasGetQueue() );
 }

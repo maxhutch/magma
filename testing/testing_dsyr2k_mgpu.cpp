@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zher2k_mgpu.cpp normal z -> d, Fri Sep 11 18:29:37 2015
+       @generated from testing/testing_zher2k_mgpu.cpp normal z -> d, Wed Jan  6 17:59:47 2016
        
        @author Mark Gates
 */
@@ -39,7 +39,7 @@ int main( int argc, char** argv)
     double beta = 3.14159;
     
     real_Double_t    gflops, gpu_perf, cpu_perf, gpu_time, cpu_time;
-    double           error, work[1];
+    double           Anorm, error, work[1];
     double *hA, *hR, *hR2, *hV, *hW;
     magmaDouble_ptr dV[MagmaMaxGPUs], dW[MagmaMaxGPUs], dA[MagmaMaxGPUs];
     magma_int_t n, k, size, lda, ldda, nb, ngpu, nstream;
@@ -51,6 +51,7 @@ int main( int argc, char** argv)
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
+    opts.ngpu = abs( opts.ngpu );  // always uses multi-GPU code
 
     double tol = opts.tolerance * lapackf77_dlamch("E");
     
@@ -59,7 +60,7 @@ int main( int argc, char** argv)
     nstream = (opts.nstream > 0 ? opts.nstream :  2);
     
     printf( "%% version 1: magmablas_dsyr2k_mgpu2     %s\n", (opts.version == 1 ? "(enabled)" : ""));
-    printf( "%% version 2: magmablas_dsyr2k_mgpu_spec %s\n", (opts.version == 2 ? "(enabled)" : ""));
+    //printf( "%% version 2: magmablas_dsyr2k_mgpu_spec %s\n", (opts.version == 2 ? "(enabled)" : ""));
 #ifdef ICHI
     printf( "%% version 3: magma_dsyr2k_mgpu (Ichi)   %s\n", (opts.version == 3 ? "(enabled)" : ""));
 #endif
@@ -123,12 +124,14 @@ int main( int argc, char** argv)
                         ngpu, nb, streams, nstream );
                 }
                 else if ( opts.version == 2 ) {
-                    magmablas_dsyr2k_mgpu_spec(
-                        MagmaLower, MagmaNoTrans, n-offset, k,
-                        alpha, dV, ldda, 0,
-                               dW, ldda, 0,
-                        beta,  dA, ldda, offset,
-                        ngpu, nb, streams, nstream );
+                    // see src/obsolete and magmablas/obsolete
+                    printf( "magmablas_dsyr2k_mgpu_spec not compiled\n" );
+                    //magmablas_dsyr2k_mgpu_spec(
+                    //    MagmaLower, MagmaNoTrans, n-offset, k,
+                    //    alpha, dV, ldda, 0,
+                    //           dW, ldda, 0,
+                    //    beta,  dA, ldda, offset,
+                    //    ngpu, nb, streams, nstream );
                 }
                 else {
 #ifdef ICHI
@@ -153,9 +156,9 @@ int main( int argc, char** argv)
                 if ( opts.lapack || opts.check ) {
                     // store ||V||*||W|| + ||A||
                     magma_int_t n_offset = n - offset;
-                    error  = lapackf77_dlange("f", &n_offset, &k, hV, &lda, work );
-                    error *= lapackf77_dlange("f", &n_offset, &k, hW, &lda, work );
-                    error += lapackf77_dlange("f", &n_offset, &n_offset, &hA[offset + offset*lda], &lda, work );
+                    Anorm  = lapackf77_dlange("f", &n_offset, &k, hV, &lda, work );
+                    Anorm *= lapackf77_dlange("f", &n_offset, &k, hW, &lda, work );
+                    Anorm += lapackf77_dlange("f", &n_offset, &n_offset, &hA[offset + offset*lda], &lda, work );
                     
                     cpu_time = magma_wtime();
                     blasf77_dsyr2k( "Lower", "NoTrans", &n_offset, &k,
@@ -168,7 +171,8 @@ int main( int argc, char** argv)
                     // compute relative error ||R||/||A||, where R := A_magma - A_lapack = R - A
                     size = lda*n;
                     blasf77_daxpy( &size, &c_neg_one, hA, &ione, hR, &ione );
-                    error = lapackf77_dlansy("fro", "Lower", &n_offset, &hR[offset + offset*lda], &lda, work) / error;
+                    error = safe_lapackf77_dlansy("fro", "Lower", &n_offset, &hR[offset + offset*lda], &lda, work)
+                          / Anorm;
                     
                     printf( "%5d %5d %5d %5d   %7.1f (%7.4f)   %7.1f (%7.4f)   %8.2e   %s\n",
                             (int) n, (int) k, (int) nb, (int) offset,
@@ -206,6 +210,7 @@ int main( int argc, char** argv)
         printf( "\n" );
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

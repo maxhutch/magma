@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgecsrmv.cu normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zgecsrmv.cu normal z -> s, Wed Jan  6 17:59:40 2016
 
 */
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 256
 
@@ -147,7 +147,7 @@ magma_sgecsrmv(
 {
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
-    sgecsrmv_kernel<<< grid, threads, 0, queue >>>
+    sgecsrmv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                     (m, n, alpha, dval, drowptr, dcolind, dx, beta, dy);
 
     return MAGMA_SUCCESS;
@@ -238,15 +238,15 @@ magma_sgecsrmv_shift(
     magmaIndex_ptr dcolind,
     magmaFloat_ptr dx,
     float beta,
-    int offset,
-    int blocksize,
+    magma_int_t offset,
+    magma_int_t blocksize,
     magma_index_t * addrows,
     magmaFloat_ptr dy,
     magma_queue_t queue )
 {
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
-    sgecsrmv_kernel_shift<<< grid, threads, 0, queue >>>
+    sgecsrmv_kernel_shift<<< grid, threads, 0, queue->cuda_stream() >>>
                          (m, n, alpha, lambda, dval, drowptr, dcolind, dx, 
                                     beta, offset, blocksize, addrows, dy);
 

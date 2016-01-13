@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zmgeellmv.cu normal z -> d, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zmgeellmv.cu normal z -> d, Wed Jan  6 17:59:42 2016
 
 */
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
@@ -131,7 +131,7 @@ magma_dmgeellmv(
     magma_int_t threads = BLOCK_SIZE;
     unsigned int MEM_SIZE =  num_vecs* BLOCK_SIZE 
                             * sizeof( double ); // num_vecs vectors 
-    dmgeellmv_kernel<<< grid, threads, MEM_SIZE, queue >>>
+    dmgeellmv_kernel<<< grid, threads, MEM_SIZE, queue->cuda_stream() >>>
         ( m, n, num_vecs, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
 
 

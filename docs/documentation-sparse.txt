@@ -27,12 +27,13 @@ For a more generic programming approach, the sparse data structures
 (matrices and vectors) are stored in data structures containing all information
 necessary to access the sparse-BLAS via wrappers:
 
-    struct magma_z_matrix{
+    struct magma_z_matrix
+    {
         magma_storage_t    storage_type;            // matrix format - CSR, ELL, SELL-P
         magma_location_t   memory_location;         // CPU or DEV
         magma_symmetry_t   sym;                     // opt: indicate symmetry
         magma_diagorder_t  diagorder_type;          // opt: only needed for factorization matrices
-        magma_fillmode_t   fill_mode;               // fill mode full/lower/upper
+        magma_uplo_t   fill_mode;               // fill mode full/lower/upper
         magma_int_t        num_rows;                // number of rows
         magma_int_t        num_cols;                // number of columns
         magma_int_t        nnz;                     // opt: number of nonzeros
@@ -47,34 +48,29 @@ necessary to access the sparse-BLAS via wrappers:
             magmaDoubleComplex_ptr  ddiag;          // opt: diagonal entries in DEV case
         };
         union {
-            magma_index_t           *row;           // row pointer CPU case
-            magmaIndex_ptr          drow;           // row pointer DEV case
+            magma_index_t           *row;           // opt: row pointer CPU case
+            magmaIndex_ptr          drow;           // opt: row pointer DEV case
         };
         union {
             magma_index_t           *rowidx;        // opt: array containing row indices CPU case
             magmaIndex_ptr          drowidx;        // opt: array containing row indices DEV case
         };
         union {
-            magma_index_t           *col;           // array containing col indices CPU case
-            magmaIndex_ptr          dcol;           // array containing col indices  DEV case
+            magma_index_t           *col;           // opt: array containing col indices CPU case
+            magmaIndex_ptr          dcol;           // opt: array containing col indices DEV case
+        };
+        union {
+            magma_index_t           *list;          // opt: linked list pointing to next element
+            magmaIndex_ptr          dlist;          // opt: linked list pointing to next element
         };
         magma_index_t      *blockinfo;              // opt: for BCSR format CPU case
         magma_int_t        blocksize;               // opt: info for SELL-P/BCSR
         magma_int_t        numblocks;               // opt: info for SELL-P/BCSR
         magma_int_t        alignment;               // opt: info for SELL-P/BCSR
-    }magma_z_matrix;
-    
-    struct magma_z_matrix{
-        magma_location_t   memory_location;         // CPU or DEV
-        magma_int_t        num_rows;                // number of rows
-        magma_int_t        num_cols;                // number of columns (in case of a block of vectors)
-        magma_int_t        nnz;                     // opt: number of nonzeros
-        union {
-            magmaDoubleComplex      *val;           // array containing values in CPU case
-            magmaDoubleComplex_ptr  dval;           // array containing values in DEV case
-        };
-        magma_order_t      major;                   // storage type:Row/Column-Major
-    }magma_z_matrix;
+        magma_order_t      major;                   // opt: row/col major for dense matrices
+        magma_int_t        ld;                      // opt: leading dimension for dense
+    } magma_z_matrix;
+
 
 The purpose of the unions (e.g. for the val array) is to support different
 hardware platforms, where the magmaXXX_ptr is adapted to the respective
@@ -162,7 +158,8 @@ Similarly, matrices handled in MAGMA can be returned via the functions
 Additionally, MAGMA contains routines to generate stencil discretizations
 of different kind.
 
-Vectors can be initiated inside MAGMA via
+Vectors are handled as dense matrices (Magma_DENSE) and 
+can be initialized inside MAGMA via
 
     magma_z_vinit(
         magma_z_matrix *x,
@@ -247,12 +244,7 @@ Linear algebra objects can be deallocated via
         magma_z_matrix *A,
         magma_queue_t queue );
 
-    magma_z_vfree(
-        magma_z_matrix *x,
-        magma_queue_t queue );
-
-
-
+        
 Iterative Solvers {#sparsesolvers}
 =================================
 The sparse-iter package contains a variety of linear solvers, eigensolvers,
@@ -261,10 +253,12 @@ pass the linear algebra objects (located on the device) and a structure called
 magma_z_solver_par (respectively and magma_z_precond_par)
 controlling the iterative solver and collecting information during the execution:
 
-    struct magma_z_solver_par{
+    struct magma_z_solver_par
+    {
         magma_solver_type  solver;                  // solver type
         magma_int_t        version;                 // sometimes there are different versions
-        double             epsilon;                 // relative residual stopping criterion
+        double             atol;                     // absolute residual stopping criterion
+        double             rtol;                    // relative residual stopping criterion
         magma_int_t        maxiter;                 // upper iteration limit
         magma_int_t        restart;                 // for GMRES
         magma_ortho_t      ortho;                   // for GMRES
@@ -279,9 +273,21 @@ controlling the iterative solver and collecting information during the execution
         magma_int_t        num_eigenvalues;         // number of EV for eigensolvers
         magma_int_t        ev_length;               // needed for framework
         double             *eigenvalues;            // feedback: array containing eigenvalues
-        magmaDoubleComplex *eigenvectors;           // feedback: array containing eigenvectors
-        magma_int_t        info;                    // feedback: did the solver converge etc
-    }magma_z_solver_par;
+        magmaDoubleComplex_ptr      eigenvectors;   // feedback: array containing eigenvectors on DEV
+        magma_int_t        info;                    // feedback: did the solver converge etc.
+    
+        //---------------------------------
+        // the input for verbose is:
+        // 0 = production mode
+        // k>0 = convergence and timing is monitored in *res_vec and *timeing every  
+        // k-th iteration 
+        //
+        // the output of info is:
+        //  0 = convergence (stopping criterion met)
+        // -1 = no convergence
+        // -2 = convergence but stopping criterion not met within maxiter
+        //--------------------------------
+    } magma_z_solver_par;
 
 These entities can either be initialized manually, or via the function
 
@@ -329,7 +335,7 @@ A solver can then be called via
 
 respectively
 
-    magma_z*solvername*(
+    magma_zp*solvername*(
         magma_z_matrix A,
         magma_z_matrix b,
         magma_z_matrix *x,
@@ -337,7 +343,7 @@ respectively
         magma_z_preconditioner *precond_par,
         magma_queue_t queue );
 
-More conveniant is the use the wrapper
+for preconditioned solvers. More conveniant is the use the wrapper
 
     magma_z_solver(
         magma_z_matrix A, magma_z_matrix b,
@@ -387,7 +393,7 @@ sparse-iter/testing folder.
 
 First, we copy the includes, initialization and finalization into our
 application program. Then we focus on the linear system we want to solve.
-We extract line 34-54 and copy it into the right location. This includes the
+We extract line 34-43 and copy it into the right location. This includes the
 setup of the solver parameters via command line.
 As we do not want to read the linear system from file, but solve the system
 present in memory, we use
@@ -404,7 +410,7 @@ For the solution vector, we allocate an initial guess on the device via:
         magma_d_vector x_d;
         magma_d_vinit( &x_d, Magma_DEV, A.num_cols, one, queue );
 
-We then copy line 74-78 into the application to convert the matrix into the
+We then copy line 93-95 into the application to convert the matrix into the
 preferred format and copy it to the device. The RHS is transferred via
 
         magma_d_vector b_d;

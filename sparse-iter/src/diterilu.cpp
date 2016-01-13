@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
-       @generated from ziterilu.cpp normal z -> d, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/ziterilu.cpp normal z -> d, Wed Jan  6 17:59:46 2016
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define PRECISION_d
 
@@ -113,8 +113,8 @@ magma_diterilusetup(
 
     magma_dmfree(&hAtmp, queue );
 
-    CHECK( magma_dcsrsplit( 256, hAL, &DL, &RL , queue ));
-    CHECK( magma_dcsrsplit( 256, hAU, &DU, &RU , queue ));
+    CHECK( magma_dcsrsplit( 0, 256, hAL, &DL, &RL , queue ));
+    CHECK( magma_dcsrsplit( 0, 256, hAU, &DU, &RU , queue ));
 
     CHECK( magma_dmtransfer( DL, &precond->LD, Magma_CPU, Magma_DEV , queue ));
     CHECK( magma_dmtransfer( DU, &precond->UD, Magma_CPU, Magma_DEV , queue ));
@@ -271,7 +271,6 @@ magma_diteriluupdate(
     if( updates > 0 ){
         
         CHECK( magma_dmtransfer( precond->M, &hAcopy, Magma_DEV, Magma_CPU , queue ));
-        
         // in case using fill-in
         CHECK( magma_dsymbilu( &hAcopy, precond->levels, &hAL, &hAUt,  queue ));
         // add a unit diagonal to L for the algorithm
@@ -286,21 +285,20 @@ magma_diteriluupdate(
         magma_dmfree(&hAUt, queue );
         magma_dmfree(&precond->M, queue );
         magma_dmfree(&hAcopy, queue );
-
         
         // copy original matrix as CSRCOO to device
         for(int i=0; i<updates; i++){
             CHECK( magma_diterilu_csr( A, dL, dU, queue ));
         }
-        
         CHECK( magma_dmtransfer( dL, &hL, Magma_DEV, Magma_CPU , queue ));
         CHECK( magma_dmtransfer( dU, &hU, Magma_DEV, Magma_CPU , queue ));
         CHECK( magma_d_cucsrtranspose(  hU, &hUT , queue ));
-        
         magma_dmfree(&dL, queue );
         magma_dmfree(&dU, queue );
         magma_dmfree(&hU, queue );
         CHECK( magma_dmlumerge( hL, hUT, &hAtmp, queue ));
+        // for CUSPARSE
+        CHECK( magma_dmtransfer( hAtmp, &precond->M, Magma_CPU, Magma_DEV , queue ));
         
         magma_dmfree(&hL, queue );
         magma_dmfree(&hUT, queue );

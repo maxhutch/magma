@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zheevdx_2stage_m.cpp normal z -> s, Fri Sep 11 18:29:31 2015
+       @generated from src/zheevdx_2stage_m.cpp normal z -> s, Wed Jan  6 17:59:34 2016
 
 */
 #include "common_magma.h"
@@ -236,7 +236,7 @@ magma_ssyevdx_2stage_m(
     /* determine the number of threads and other parameter */
     magma_int_t Vblksiz, ldv, ldt, blkcnt, sizTAU2, sizT2, sizV2, sizTAU1, ldz, lwstg1, lda2;
     magma_int_t parallel_threads = magma_get_parallel_numthreads();
-    magma_int_t nb               = magma_sbulge_get_nb(n, parallel_threads);
+    magma_int_t nb               = magma_get_sbulge_nb(n, parallel_threads);
     magma_int_t lwstg2           = magma_sbulge_getlwstg2( n, parallel_threads, wantz, 
                                                            &Vblksiz, &ldv, &ldt, &blkcnt, 
                                                            &sizTAU2, &sizT2, &sizV2);

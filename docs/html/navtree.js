@@ -51,14 +51,16 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"group__magma__cgesv__aux.html#gab4afeddba989986e30df79efc1517959",
-"group__magma__dblas3.html#ga91027c8a3a4e0b00c3eb8d9c9c2cd2c2",
-"group__magma__saux0.html",
-"group__magma__sgesvd__driver.html",
-"group__magma__zgeev__aux.html#gac75ef7e3b5157a20e22f0617e8b3e55e",
-"group__magmasparse__caux.html#ga722c1ede523d0aee08cdd9115f335c54",
-"group__magmasparse__dgepr.html#ga13109984d5ee927881e2395a4f67594b",
-"group__magmasparse__zaux.html#ga6f4f9a116b25515b9322456b575c9353"
+"group__magma__cgeqp3__aux.html#ga828099ff0760147d8f4555c63f0435fc",
+"group__magma__dblas1.html#ga6945fa1dbfa46614510c2e8f3c726b46",
+"group__magma__dsyev__comp.html#ga894ce156db4fe17a0997135548f3db20",
+"group__magma__sgels__driver.html#gaaf1d00b107f2c5c058465263a0e66870",
+"group__magma__zaux2.html#gadcec0370486edd54eb2f39076fd98702",
+"group__magma__zheev__comp.html",
+"group__magmasparse__cgepr.html#ga32a1c889ade45d58e10655210fef3d68",
+"group__magmasparse__dgesv.html#ga32c1461f94ad7263d34861aeec3c2e2b",
+"group__magmasparse__shepr.html",
+"group__magmasparse__zhepr.html#gadfc02cb240090c6ca1eb9f1ac0e0eccf"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

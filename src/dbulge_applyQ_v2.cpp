@@ -8,9 +8,10 @@
  *     @author Stan Tomov
  *     @author Raffaele Solca
  *
- *     @generated from zbulge_applyQ_v2.cpp normal z -> d, Fri Sep 11 18:29:30 2015
+ *     @generated from src/zbulge_applyQ_v2.cpp normal z -> d, Wed Jan  6 17:59:34 2016
  *
  */
+#include <cuda_runtime.h>
 
 #include "common_magma.h"
 #include "magma_bulge.h"

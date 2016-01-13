@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zvtranspose.cpp normal z -> s, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zvtranspose.cpp normal z -> s, Wed Jan  6 17:59:43 2016
        @author Hartwig Anzt
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /**
@@ -47,10 +47,6 @@ magma_svtranspose(
     magma_int_t    m = x.num_rows;
     magma_int_t    n = x.num_cols;
     
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
-
     magma_s_matrix x_d={Magma_CSR}, y_d={Magma_CSR};
             
     if ( x.memory_location == Magma_DEV ) {
@@ -60,11 +56,11 @@ magma_svtranspose(
         y->storage_type = x.storage_type;
         if ( x.major == MagmaColMajor) {
             y->major = MagmaRowMajor;
-            magmablas_stranspose( m, n, x.val, m, y->val, n );
+            magmablas_stranspose( m, n, x.val, m, y->val, n, queue );
         }
         else {
             y->major = MagmaColMajor;
-            magmablas_stranspose( n, m, x.val, n, y->val, m );
+            magmablas_stranspose( n, m, x.val, n, y->val, m, queue );
         }
     } else {
         CHECK( magma_smtransfer( x, &x_d, Magma_CPU, Magma_DEV, queue ));
@@ -78,6 +74,5 @@ cleanup:
     }
     magma_smfree( &x_d, queue );
     magma_smfree( &y_d, queue );
-    magmablasSetKernelStream( orig_queue );
     return info;
 }

@@ -1,14 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
+       
+       @author Stan Tomov
 
-       @generated from zgeqr2x_gpu.cpp normal z -> d, Fri Sep 11 18:29:27 2015
+       @generated from src/zgeqr2x_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -104,12 +106,17 @@ magma_dgeqr2x_gpu(
     magmaDouble_ptr        dwork,
     magma_int_t *info)
 {
-    #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     
     magma_int_t i, k;
 
     magmaDouble_ptr dnorm = dwork;
-    double *work = (double *)(dwork+2*n);
+    magmaDouble_ptr dwork2 = (magmaDouble_ptr)(dwork + 2*n);
+
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
     *info = 0;
     if (m < 0) {
@@ -126,22 +133,24 @@ magma_dgeqr2x_gpu(
 
     /* Compute the norms of the trailing columns */
     k = min(m,n);
-    // magmablas_dnrm2_cols(m, k, dA(0,0), ldda, dnorm);
+    // magmablas_dnrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
 
     for (i = 0; i < k; ++i) {
         /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i) */
-        magmablas_dnrm2_cols(m-i, 1, dA(i,i), ldda, dnorm+i);
-        magma_dlarfgx_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dnorm+i,
-                          ddA + i + i*n, i);
+        magmablas_dnrm2_cols( m-i, 1, dA(i,i), ldda, dnorm+i, queue );
+        magma_dlarfgx_gpu( m-i, dA(i, i), dA(min(i+1,m), i), dtau+i, dnorm+i,
+                           ddA + i + i*n, i, queue );
         
         if (i < n) {
             /* Apply H(i)' to A(i:m,i+1:n) from the left */
-            magma_dlarfx_gpu(m-i, n-i-1, dA(i, i), dtau+i,
-                             //dA(i, i+1), ldda, dnorm+i+1,
-                             dA(i, 0), ldda, dnorm+i+1,
-                             dT, i, work );
+            magma_dlarfx_gpu( m-i, n-i-1, dA(i, i), dtau+i,
+                              //dA(i, i+1), ldda, dnorm+i+1,
+                              dA(i, 0), ldda, dnorm+i+1,
+                              dT, i, dwork2, queue );
         }
     }
+    
+    magma_queue_destroy( queue );
 
     return *info;
 } /* magma_dgeqr2 */

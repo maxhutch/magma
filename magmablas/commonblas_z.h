@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 */
@@ -53,7 +53,7 @@ void magmablas_zgemv_tesla(
     magmaDoubleComplex *y, magma_int_t incy );
 
 
-// kernels used in dznrm2, zgeqr2x-v4, laqps2_gpu, laqps3_gpu, zlarfbx, zlarfgx-v2, zlarfx
+// kernels used in dznrm2, zgeqr2x-v4, laqps2_gpu, zlarfbx, zlarfgx-v2, zlarfx
 __global__ void
 magma_zgemv_kernel1(int m, const magmaDoubleComplex * __restrict__ V, int ldv,
                     const magmaDoubleComplex * __restrict__ c,

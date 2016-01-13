@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgelqf.cpp normal z -> c, Fri Sep 11 18:29:38 2015
+       @generated from testing/testing_zgelqf.cpp normal z -> c, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -58,7 +58,7 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            nb     = magma_get_cgeqrf_nb(M);
+            nb     = magma_get_cgeqrf_nb( M, N );
             gflops = FLOPS_CGELQF( M, N ) / 1e9;
 
             // query for workspace size
@@ -122,7 +122,7 @@ int main( int argc, char** argv)
                 // error = || I - Q*Q^H || / N
                 lapackf77_claset( "Upper", &min_mn, &min_mn, &c_zero, &c_one, L, &ldl );
                 blasf77_cherk( "Upper", "NoTrans", &min_mn, &N, &d_neg_one, Q, &ldq, &d_one, L, &ldl );
-                error2 = lapackf77_clanhe( "1", "Upper", &min_mn, L, &ldl, work );
+                error2 = safe_lapackf77_clanhe( "1", "Upper", &min_mn, L, &ldl, work );
                 if ( N > 0 )
                     error2 /= N;
                 
@@ -176,6 +176,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

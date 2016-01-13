@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -117,9 +117,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga36bdc329547b4127b61012335f0844a0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#ga36bdc329547b4127b61012335f0844a0">magma_chegst</a> (magma_int_t itype, magma_uplo_t uplo, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, magmaFloatComplex *B, magma_int_t ldb, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga36bdc329547b4127b61012335f0844a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHEGST reduces a complex Hermitian-definite generalized eigenproblem to standard form.  <a href="#ga36bdc329547b4127b61012335f0844a0">More...</a><br /></td></tr>
 <tr class="separator:ga36bdc329547b4127b61012335f0844a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1de6761a3a22b276aa40cfa8038bf86f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#ga1de6761a3a22b276aa40cfa8038bf86f">magma_chegst_gpu</a> (magma_int_t itype, magma_uplo_t uplo, magma_int_t n, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloatComplex_ptr dB, magma_int_t lddb, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga1de6761a3a22b276aa40cfa8038bf86f"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHEGST_GPU reduces a complex Hermitian-definite generalized eigenproblem to standard form.  <a href="#ga1de6761a3a22b276aa40cfa8038bf86f">More...</a><br /></td></tr>
-<tr class="separator:ga1de6761a3a22b276aa40cfa8038bf86f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga44180ddcf785d42793f0088a2cebb52c"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#ga44180ddcf785d42793f0088a2cebb52c">magma_chegst_gpu</a> (magma_int_t itype, magma_uplo_t uplo, magma_int_t n, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloatComplex_const_ptr dB, magma_int_t lddb, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga44180ddcf785d42793f0088a2cebb52c"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHEGST_GPU reduces a complex Hermitian-definite generalized eigenproblem to standard form.  <a href="#ga44180ddcf785d42793f0088a2cebb52c">More...</a><br /></td></tr>
+<tr class="separator:ga44180ddcf785d42793f0088a2cebb52c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa56ce9a5e5530a95c9414cc7e607757e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#gaa56ce9a5e5530a95c9414cc7e607757e">magma_chegst_m</a> (magma_int_t ngpu, magma_int_t itype, magma_uplo_t uplo, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, magmaFloatComplex *B, magma_int_t ldb, magma_int_t *info)</td></tr>
 <tr class="memdesc:gaa56ce9a5e5530a95c9414cc7e607757e"><td class="mdescLeft">&#160;</td><td class="mdescRight">CHEGST_M reduces a complex Hermitian-definite generalized eigenproblem to standard form.  <a href="#gaa56ce9a5e5530a95c9414cc7e607757e">More...</a><br /></td></tr>
 <tr class="separator:gaa56ce9a5e5530a95c9414cc7e607757e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,9 +147,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gad50c2fac66780cac5185f58a2e53130e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#gad50c2fac66780cac5185f58a2e53130e">magma_cunmtr</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, magmaFloatComplex *tau, magmaFloatComplex *C, magma_int_t ldc, magmaFloatComplex *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:gad50c2fac66780cac5185f58a2e53130e"><td class="mdescLeft">&#160;</td><td class="mdescRight">CUNMTR overwrites the general complex M-by-N matrix C with.  <a href="#gad50c2fac66780cac5185f58a2e53130e">More...</a><br /></td></tr>
 <tr class="separator:gad50c2fac66780cac5185f58a2e53130e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga15daa18fe25805b6820d02879145c8b8"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#ga15daa18fe25805b6820d02879145c8b8">magma_cunmtr_gpu</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloatComplex *tau, magmaFloatComplex_ptr dC, magma_int_t lddc, magmaFloatComplex *wA, magma_int_t ldwa, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga15daa18fe25805b6820d02879145c8b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">CUNMTR overwrites the general complex M-by-N matrix C with.  <a href="#ga15daa18fe25805b6820d02879145c8b8">More...</a><br /></td></tr>
-<tr class="separator:ga15daa18fe25805b6820d02879145c8b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa5b1eb7a52798ecdfacfd3d22c4669b1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#gaa5b1eb7a52798ecdfacfd3d22c4669b1">magma_cunmtr_gpu</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloatComplex *tau, magmaFloatComplex_ptr dC, magma_int_t lddc, const magmaFloatComplex *wA, magma_int_t ldwa, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaa5b1eb7a52798ecdfacfd3d22c4669b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">CUNMTR overwrites the general complex M-by-N matrix C with.  <a href="#gaa5b1eb7a52798ecdfacfd3d22c4669b1">More...</a><br /></td></tr>
+<tr class="separator:gaa5b1eb7a52798ecdfacfd3d22c4669b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga09fc92bf4191da2db8e1f54462ea41ae"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__cheev__comp.html#ga09fc92bf4191da2db8e1f54462ea41ae">magma_cunmtr_m</a> (magma_int_t ngpu, magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex *A, magma_int_t lda, magmaFloatComplex *tau, magmaFloatComplex *C, magma_int_t ldc, magmaFloatComplex *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga09fc92bf4191da2db8e1f54462ea41ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">CUNMTR overwrites the general complex M-by-N matrix C with.  <a href="#ga09fc92bf4191da2db8e1f54462ea41ae">More...</a><br /></td></tr>
 <tr class="separator:ga09fc92bf4191da2db8e1f54462ea41ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -217,22 +217,28 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CHEGST reduces a complex Hermitian-definite generalized eigenproblem to standard form. </p>
-<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)</p>
-<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.</p>
-<p>B must have been previously factorized as U**H*U or L*L**H by CPOTRF.</p>
+<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H)</p>
+<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U^H or L^H*A*L.</p>
+<p>B must have been previously factorized as U^H*U or L*L^H by CPOTRF.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H); = 2 or 3: compute U*A*U**H or L**H*A*L.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H); = 2 or 3: compute U*A*U^H or L^H*A*L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**H*U;</li>
-<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**H.</li>
+<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U^H*U;</li>
+<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L^H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrices A and B. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX array, dimension (LDA,N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, if INFO = 0, the transformed matrix, stored in the same format as A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>COMPLEX array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by CPOTRF.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>COMPLEX array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by CPOTRF.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>B is modified by the routine but restored on exit (in lapack chegst/chegs2).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -245,7 +251,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga1de6761a3a22b276aa40cfa8038bf86f"></a>
+<a class="anchor" id="ga44180ddcf785d42793f0088a2cebb52c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -282,7 +288,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramtype">magmaFloatComplex_const_ptr&#160;</td>
           <td class="paramname"><em>dB</em>, </td>
         </tr>
         <tr>
@@ -306,23 +312,23 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>CHEGST_GPU reduces a complex Hermitian-definite generalized eigenproblem to standard form. </p>
-<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)</p>
-<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.</p>
-<p>B must have been previously factorized as U**H*U or L*L**H by CPOTRF.</p>
+<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H)</p>
+<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U^H or L^H*A*L.</p>
+<p>B must have been previously factorized as U^H*U or L*L^H by CPOTRF.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H); = 2 or 3: compute U*A*U**H or L**H*A*L.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H); = 2 or 3: compute U*A*U^H or L^H*A*L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**H*U;</li>
-<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**H.</li>
+<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U^H*U;</li>
+<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L^H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrices A and B. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDA,N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, on the GPU device, dimension (LDDA,N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, if INFO = 0, the transformed matrix, stored in the same format as A.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>COMPLEX array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by CPOTRF.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>COMPLEX array, on the GPU device, dimension (LDDB,N) The triangular factor from the Cholesky factorization of B, as returned by CPOTRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -417,7 +423,13 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>COMPLEX array, dimension (LDA,N) On entry, the Hermitian matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, if INFO = 0, the transformed matrix, stored in the same format as A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>COMPLEX array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by CPOTRF.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>COMPLEX array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by CPOTRF.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>B is modified by the routine but restored on exit (in lapack chegst/chegs2).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -905,7 +917,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER Number of GPUs to use. ngpu &gt; 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nqueue</td><td>INTEGER The number of GPU streams used for update. 10 &gt;= nqueue &gt; 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nqueue</td><td>INTEGER The number of GPU queues used for update. 10 &gt;= nqueue &gt; 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
 <li>= MagmaUpper: Upper triangle of A is stored;</li>
 <li>= MagmaLower: Lower triangle of A is stored.</li>
@@ -1476,7 +1488,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga15daa18fe25805b6820d02879145c8b8"></a>
+<a class="anchor" id="gaa5b1eb7a52798ecdfacfd3d22c4669b1"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1543,7 +1555,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magmaFloatComplex *&#160;</td>
+          <td class="paramtype">const magmaFloatComplex *&#160;</td>
           <td class="paramname"><em>wA</em>, </td>
         </tr>
         <tr>
@@ -1590,13 +1602,13 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix C. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,M) if SIDE = MagmaLeft (LDDA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by CHETRD_GPU. On output the diagonal, the subdiagonal and the upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper) are destroyed.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array DA. LDDA &gt;= max(1,M) if SIDE = MagmaLeft; LDDA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX array, dimension (LDDA,M) if SIDE = MagmaLeft (LDDA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by CHETRD_GPU. On output the diagonal, the subdiagonal and the upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper) are destroyed.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. If SIDE = MagmaLeft, LDDA &gt;= max(1,M); if SIDE = MagmaRight, LDDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>COMPLEX array, dimension (M-1) if SIDE = MagmaLeft (N-1) if SIDE = MagmaRight TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by CHETRD.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>COMPLEX array, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array C. LDDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>(workspace) COMPLEX array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by CHETRD_GPU.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. LDWA &gt;= max(1,M) if SIDE = MagmaLeft; LDWA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>COMPLEX array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by CHETRD_GPU. (A copy of the upper or lower part of dA, on the host.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. If SIDE = MagmaLeft, LDWA &gt;= max(1,M); if SIDE = MagmaRight, LDWA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -1753,7 +1765,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

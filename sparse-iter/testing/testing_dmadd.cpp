@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zmadd.cpp normal z -> d, Fri Sep 11 18:29:47 2015
+       @generated from sparse-iter/testing/testing_zmadd.cpp normal z -> d, Wed Jan  6 17:59:51 2016
        @author Hartwig Anzt
 */
 
@@ -52,7 +52,7 @@ int main(  int argc, char** argv )
         CHECK( magma_d_csr_mtx( &A,  argv[i], queue ));
     }
     printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                        (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
+                        int(A.num_rows), int(A.num_cols), int(A.nnz) );
     i++;
 
     if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
@@ -63,7 +63,7 @@ int main(  int argc, char** argv )
         CHECK( magma_d_csr_mtx( &B,  argv[i], queue ));
     }
     printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                        (int) B.num_rows,(int) B.num_cols,(int) B.nnz );
+                        int(B.num_rows), int(B.num_cols), int(B.nnz) );
 
 
     CHECK( magma_dmtransfer( A, &A_d, Magma_CPU, Magma_DEV, queue ));

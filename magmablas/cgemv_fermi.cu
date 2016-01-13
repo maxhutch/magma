@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Mark Gates
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from zgemv_fermi.cu normal z -> c, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zgemv_fermi.cu normal z -> c, Wed Jan  6 17:59:39 2016
 */
 #include "common_magma.h"
 #include "commonblas_c.h"
@@ -33,13 +33,15 @@ cgemvn_template_kernel_fermi(
     int m, int n, magmaFloatComplex alpha,
     const magmaFloatComplex * __restrict__ A, int lda,
     const magmaFloatComplex * __restrict__ x, int incx, magmaFloatComplex beta,
-    magmaFloatComplex       *y, int incy)
+    magmaFloatComplex       * __restrict__ y, int incy)
 {
 #if (__CUDA_ARCH__ >= 200)
-
-    gemvn_template_device<magmaFloatComplex, DIM_X, DIM_Y, TILE_SIZE>(m, n, alpha, A, lda, x, incx, beta, y, incy);
+    gemvn_template_device<magmaFloatComplex, DIM_X, DIM_Y, TILE_SIZE>
+        (m, n, alpha, A, lda, x, incx, beta, y, incy);
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Trans/ConjTans kernel
 template<const int DIM_X, const int DIM_Y, const int TILE_SIZE, magma_trans_t trans>
@@ -48,13 +50,13 @@ cgemvc_template_kernel_fermi(
     int m, int n, magmaFloatComplex alpha,
     const magmaFloatComplex * __restrict__ A, int lda,
     const magmaFloatComplex * __restrict__ x, int incx, magmaFloatComplex beta,
-    magmaFloatComplex       *y, int incy)
+    magmaFloatComplex       * __restrict__ y, int incy)
 {
 #if (__CUDA_ARCH__ >= 200)
-    gemvc_template_device< magmaFloatComplex, DIM_X, DIM_Y, TILE_SIZE, trans >(m, n, alpha, A, lda, x, incx, beta, y, incy);
+    gemvc_template_device< magmaFloatComplex, DIM_X, DIM_Y, TILE_SIZE, trans >
+        (m, n, alpha, A, lda, x, incx, beta, y, incy);
 #endif /* (__CUDA_ARCH__ >= 200) */
 }
-//////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -65,13 +67,18 @@ cgemvn_template_fermi(
     magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
     const magmaFloatComplex * __restrict__ A, magma_int_t lda,
     const magmaFloatComplex * __restrict__ x, magma_int_t incx, magmaFloatComplex beta,
-    magmaFloatComplex       *y, magma_int_t incy, magma_queue_t queue)
+    magmaFloatComplex       * __restrict__ y, magma_int_t incy,
+    magma_queue_t queue)
 {
     dim3 grid( magma_ceildiv(m, TILE_SIZE) );
     dim3 threads( DIM_X, DIM_Y, 1 );
 
-    cgemvn_template_kernel_fermi<DIM_X, DIM_Y, TILE_SIZE><<< grid, threads, 0, queue >>>(m, n, alpha, A, lda, x, incx, beta, y, incy);
+    cgemvn_template_kernel_fermi<DIM_X, DIM_Y, TILE_SIZE>
+        <<< grid, threads, 0, queue->cuda_stream() >>>
+        (m, n, alpha, A, lda, x, incx, beta, y, incy);
 }
+
+
 //////////////////////////////////////////////////////////////////////////////////////////
 // Trans/ConjTans CPU driver
 template<const int DIM_X, const int DIM_Y, const int TILE_SIZE>
@@ -80,18 +87,21 @@ cgemvc_template_fermi(
     magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
     const magmaFloatComplex * __restrict__ A, magma_int_t lda,
     const magmaFloatComplex * __restrict__ x, magma_int_t incx, magmaFloatComplex beta,
-    magmaFloatComplex       *y, magma_int_t incy, magma_queue_t queue)
+    magmaFloatComplex       * __restrict__ y, magma_int_t incy,
+    magma_queue_t queue)
 {
     dim3 grid    ( 1,  magma_ceildiv(n, TILE_SIZE),  1 );
     dim3 threads ( DIM_X, DIM_Y, 1 );
 
-    if (trans == MagmaConjTrans)
-    {
-        cgemvc_template_kernel_fermi< DIM_X, DIM_Y, TILE_SIZE, MagmaConjTrans ><<< grid, threads, 0, queue >>>(m, n, alpha, A, lda, x, incx, beta, y, incy);
+    if (trans == MagmaConjTrans) {
+        cgemvc_template_kernel_fermi< DIM_X, DIM_Y, TILE_SIZE, MagmaConjTrans >
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            (m, n, alpha, A, lda, x, incx, beta, y, incy);
     }
-    else
-    {
-        cgemvc_template_kernel_fermi< DIM_X, DIM_Y, TILE_SIZE, MagmaTrans ><<< grid, threads, 0, queue >>>(m, n, alpha, A, lda, x, incx, beta, y, incy);
+    else {
+        cgemvc_template_kernel_fermi< DIM_X, DIM_Y, TILE_SIZE, MagmaTrans >
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            (m, n, alpha, A, lda, x, incx, beta, y, incy);
     }
 }
 
@@ -198,20 +208,6 @@ magmablas_cgemv_q(
         return;  //info;
     }
 
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch < 200  ) {
-        // --------------------
-        // call CUDA ARCH 1.x version
-        // magmablas for [sd] precisions, cublas for [zc] precisions.
-        #if defined(PRECISION_z) || defined(PRECISION_c)
-        magma_cgemv( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
-        #else
-        magmablas_cgemv_tesla( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy );
-        #endif
-        return;
-    }
-    
-    
     // --------------------
     // CUDA ARCH 2.x (Fermi) version
     if ( trans == MagmaNoTrans ) {
@@ -231,6 +227,10 @@ magmablas_cgemv_q(
 }
 
 
+/**
+    @see magmablas_cgemv_q
+    @ingroup magma_cblas2
+    ********************************************************************/
 extern "C" void
 magmablas_cgemv(
     magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloatComplex alpha,
@@ -239,5 +239,5 @@ magmablas_cgemv(
     magmaFloatComplex beta,
     magmaFloatComplex_ptr dy, magma_int_t incy)
 {
-    magmablas_cgemv_q( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, magma_stream);
+    magmablas_cgemv_q( trans, m, n, alpha, dA, ldda, dx, incx, beta, dy, incy, magmablasGetQueue() );
 }

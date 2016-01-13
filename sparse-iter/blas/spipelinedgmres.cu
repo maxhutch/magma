@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zpipelinedgmres.cu normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zpipelinedgmres.cu normal z -> s, Wed Jan  6 17:59:42 2016
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define REAL
 
@@ -184,8 +184,8 @@ magma_spipelinesscale(
 
 extern "C" magma_int_t
 magma_scopyscale(
-    int n, 
-    int k,
+    magma_int_t n, 
+    magma_int_t k,
     magmaFloat_ptr r, 
     magmaFloat_ptr v,
     magmaFloat_ptr skp,
@@ -198,9 +198,9 @@ magma_scopyscale(
     dim3 Gs2( magma_ceildiv( n, BLOCK_SIZE ) );
 
 
-    magma_spipelined_correction<<<Gs, Bs, Ms, queue >>>
+    magma_spipelined_correction<<< Gs, Bs, Ms, queue->cuda_stream() >>>
                                             ( n, k, skp, r, v );
-    magma_spipelined_copyscale<<<Gs2, Bs, 0, queue >>>
+    magma_spipelined_copyscale<<< Gs2, Bs, 0, queue->cuda_stream() >>>
                                             ( n, k, skp, r, v );
 
     return MAGMA_SUCCESS;
@@ -209,20 +209,20 @@ magma_scopyscale(
 
 extern "C" magma_int_t
 magma_snrm2scale(
-    int m, 
+    magma_int_t m, 
     magmaFloat_ptr r, 
-    int lddr, 
+    magma_int_t lddr, 
     magmaFloat_ptr drnorm,
     magma_queue_t queue )
 {
     dim3  blocks( 1 );
     dim3 threads( 512 );
-    magma_spipelinedsnrm2_kernel<<< blocks, threads, 0, queue >>>
+    magma_spipelinedsnrm2_kernel<<< blocks, threads, 0, queue->cuda_stream() >>>
                                 ( m, r, lddr, drnorm );
 
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs2( magma_ceildiv( m, BLOCK_SIZE ) );
-    magma_spipelinesscale<<<Gs2, Bs, 0, queue >>>( m, r, drnorm );
+    magma_spipelinesscale<<< Gs2, Bs, 0, queue->cuda_stream() >>>( m, r, drnorm );
 
     return MAGMA_SUCCESS;
 }

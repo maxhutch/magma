@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Ichitaro Yamazaki
@@ -18,8 +18,8 @@
 #include "flops.h"
 #include "magma.h"
 #include "magma_lapack.h"
-#include "testings.h"
 #include "magma_operators.h"  // for MAGMA_Z_DIV
+#include "testings.h"
 
 /* ================================================================================================== */
 
@@ -130,8 +130,8 @@ double get_residual_aasen(
     magma_int_t *ipiv )
 {
     magma_int_t ione = 1;
-    magmaDoubleComplex c_one  = MAGMA_Z_ONE;
-    magmaDoubleComplex c_mone = MAGMA_Z_NEG_ONE;
+    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
     magmaDoubleComplex *L, *T;
     #define  A(i,j) ( A[(i) + (j)*lda])
     #define  L(i,j) ( L[(i) + (j)*n])
@@ -143,24 +143,24 @@ double get_residual_aasen(
 
     int nb = magma_get_zhetrf_aasen_nb(n);
     // extract T
-    for (int i=0; i<n; i++)
+    for (int i=0; i < n; i++)
     {
         int istart = max(0, i-nb);
-        for (int j=istart; j<=i; j++) {
+        for (int j=istart; j <= i; j++) {
             T(i,j) = A(i,j);
         }
-        for (int j=istart; j<i;  j++) {
-            T(j,i) = MAGMA_Z_CNJG(A(i,j));
+        for (int j=istart; j < i; j++) {
+            T(j,i) = MAGMA_Z_CONJ(A(i,j));
         }
     }
     // extract L
-    for (int i=0; i<min(n,nb); i++) 
+    for (int i=0; i < min(n,nb); i++) 
     {
         L(i,i) = c_one;
     }
-    for (int i=nb; i<n; i++)
+    for (int i=nb; i < n; i++)
     {
-        for (int j=0; j<i-nb; j++) {
+        for (int j=0; j < i-nb; j++) {
             L(i,nb+j) = A(i,j);
         }
         L(i,i) = c_one;
@@ -177,7 +177,7 @@ double get_residual_aasen(
     lapackf77_zlarnv( &ione, ISEED, &n, b );
     blasf77_zcopy( &n, b, &ione, x, &ione );
     // pivot..
-    for (int i=0; i<n; i++) {
+    for (int i=0; i < n; i++) {
         int piv = ipiv[i]-1;
         magmaDoubleComplex val = x[i];
         x[i] = x[piv];
@@ -207,7 +207,7 @@ double get_residual_aasen(
     init_matrix( nopiv, n, n, A, lda );
 
     // compute r = Ax - b, saved in b
-    blasf77_zgemv( "Notrans", &n, &n, &c_one, A, &lda, x, &ione, &c_mone, b, &ione );
+    blasf77_zgemv( "Notrans", &n, &n, &c_one, A, &lda, x, &ione, &c_neg_one, b, &ione );
     
     // compute residual |Ax - b| / (n*|A|*|x|)
     double norm_x, norm_A, norm_r, work[1];
@@ -263,7 +263,7 @@ double get_LDLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
                 piv = -(piv+1);
                 // extract 2-by-2 pivot
                 D(j,j)     = LD(j,j);
-                D(j,j-1)   = MAGMA_Z_CNJG(LD(j-1,j));
+                D(j,j-1)   = MAGMA_Z_CONJ(LD(j-1,j));
                 D(j-1,j)   = LD(j-1,j);
                 D(j-1,j-1) = LD(j-1,j-1);
                 // exract L
@@ -349,7 +349,7 @@ double get_LDLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
                 piv = -(piv+1);
                 // extract 2-by-2 pivot
                 D(j,j)     = LD(j,j);
-                D(j,j+1)   = MAGMA_Z_CNJG(LD(j+1,j));
+                D(j,j+1)   = MAGMA_Z_CONJ(LD(j+1,j));
                 D(j+1,j)   = LD(j+1,j);
                 D(j+1,j+1) = LD(j+1,j+1);
                 // exract L
@@ -458,17 +458,17 @@ double get_LTLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
     /*
     magma_int_t *p;
     magma_imalloc_cpu(&p, N);
-    for (int i=0; i<N; i++) {
+    for (int i=0; i < N; i++) {
         p[i] = i;
     }
-    for (int i=0; i<N; i++) {
+    for (int i=0; i < N; i++) {
         int piv = ipiv[i]-1;
         int i2 = p[piv];
         p[piv] = p[i];
         p[i] = i2;
     }
     printf( " p=[" );
-    for (int i=0; i<N; i++) {
+    for (int i=0; i < N; i++) {
         printf("%d ", p[i] );
     }
     printf( "];\n" );
@@ -480,20 +480,20 @@ double get_LTLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
         for (int j=istart; j <= i; j++) {
             T(i,j) = LT(i,j);
         }
-        for (int j=istart; j < i;  j++) {
-            T(j,i) = MAGMA_Z_CNJG( LT(i,j) );
+        for (int j=istart; j < i; j++) {
+            T(j,i) = MAGMA_Z_CONJ( LT(i,j) );
         }
     }
     //printf( "T=" );
     //magma_zprint(N,N, &T(0,0),N);
     // extract L
-    for (int i=0; i<min(N,nb); i++) 
+    for (int i=0; i < min(N,nb); i++) 
     {
         L(i,i) = c_one;
     }
-    for (int i=nb; i<N; i++)
+    for (int i=nb; i < N; i++)
     {
-        for (int j=0; j<i-nb; j++) {
+        for (int j=0; j < i-nb; j++) {
             L(i,nb+j) = LT(i,j);
         }
         L(i,i) = c_one;
@@ -515,17 +515,17 @@ double get_LTLt_error(int nopiv, magma_uplo_t uplo, magma_int_t N,
     //magma_zprint(N,N, &A(0,0),N);
 
     // apply symmetric pivoting
-    for (int j=0; j<N; j++) {
+    for (int j=0; j < N; j++) {
         int piv = ipiv[j]-1;
         if (piv != j) {
             // apply row-pivoting to A
-            for (int i=0; i<N; i++) {
+            for (int i=0; i < N; i++) {
                 magmaDoubleComplex val = A(j,i);
                 A(j,i) = A(piv,i);
                 A(piv,i) = val;
             }
             // apply col-pivoting to A
-            for (int i=0; i<N; i++) {
+            for (int i=0; i < N; i++) {
                 magmaDoubleComplex val = A(i,j);
                 A(i,j) = A(i,piv);
                 A(i,piv) = val;
@@ -738,6 +738,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -70,7 +70,7 @@
     @param[out]
     info    INTEGER
       -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument has an illegal value
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
     @ingroup magma_zheev_2stage
     ********************************************************************/

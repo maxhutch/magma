@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from ztranspose_conj.cu normal z -> c, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/ztranspose_conj.cu normal z -> c, Wed Jan  6 17:59:39 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -187,7 +187,7 @@ magmablas_ctranspose_conj_q(
 
     dim3 threads( NX, NY );
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ) );
-    ctranspose_conj_kernel<<< grid, threads, 0, queue >>>
+    ctranspose_conj_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA, ldda, dAT, lddat );
 }
 
@@ -202,7 +202,7 @@ magmablas_ctranspose_conj(
     magmaFloatComplex_const_ptr dA,  magma_int_t ldda,
     magmaFloatComplex_ptr       dAT, magma_int_t lddat )
 {
-    magmablas_ctranspose_conj_q( m, n, dA, ldda, dAT, lddat, magma_stream );
+    magmablas_ctranspose_conj_q( m, n, dA, ldda, dAT, lddat, magmablasGetQueue() );
 }
 
 
@@ -281,7 +281,7 @@ magmablas_ctranspose_conj_batched_q(
 
     dim3 threads( NX, NY );
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ), batchCount );
-    ctranspose_conj_kernel_batched<<< grid, threads, 0, queue >>>
+    ctranspose_conj_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA_array, ldda, dAT_array, lddat );
 }
 
@@ -296,5 +296,5 @@ magmablas_ctranspose_conj_batched(
     magmaFloatComplex **dA_array,  magma_int_t ldda,
     magmaFloatComplex **dAT_array, magma_int_t lddat, magma_int_t batchCount )
 {
-    magmablas_ctranspose_conj_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magma_stream );
+    magmablas_ctranspose_conj_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magmablasGetQueue() );
 }

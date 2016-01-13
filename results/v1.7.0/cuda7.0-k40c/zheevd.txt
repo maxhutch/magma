@@ -1,0 +1,390 @@
+
+Sat Sep 12 12:24:51 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:24:57 2015
+% Usage: ../testing/testing_zheevd [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 1234      0.28             0.31
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   10      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   20      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   30      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   40      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   50      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   60      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   70      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   80      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   90      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  100      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  200      0.01             0.01
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  300      0.01             0.01
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  400      0.02             0.02
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  500      0.04             0.04
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  600      0.05             0.05
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  700      0.07             0.07
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  800      0.10             0.10
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  900      0.13             0.13
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 1000      0.16             0.16
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 2000      0.80             0.82
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 3000      2.51             2.03
+    | S_magma - S_lapack | / |S| = 3.17e-19   ok
+
+ 4000      6.04             3.90
+    | S_magma - S_lapack | / |S| = 2.41e-18   ok
+
+ 5000      9.41             6.62
+    | S_magma - S_lapack | / |S| = 1.19e-19   ok
+
+ 6000     15.73            10.26
+    | S_magma - S_lapack | / |S| = 5.56e-19   ok
+
+ 7000     23.73            15.06
+    | S_magma - S_lapack | / |S| = 1.25e-19   ok
+
+ 8000     36.43            21.08
+    | S_magma - S_lapack | / |S| = 1.08e-19   ok
+
+ 9000     48.41            28.74
+    | S_magma - S_lapack | / |S| = 9.17e-19   ok
+
+10000     63.89            37.79
+    | S_magma - S_lapack | / |S| = 1.19e-18   ok
+
+Sat Sep 12 12:30:52 EDT 2015
+
+Sat Sep 12 12:30:52 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:30:58 2015
+% Usage: ../testing/testing_zheevd [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123      0.00             0.01
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 1234      0.47             0.32
+    | S_magma - S_lapack | / |S| = 1.52e-18   ok
+
+   10      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   20      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   30      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   40      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   50      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   60      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   70      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   80      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   90      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  100      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  200      0.01             0.01
+    | S_magma - S_lapack | / |S| = 1.11e-17   ok
+
+  300      0.02             0.02
+    | S_magma - S_lapack | / |S| = 5.44e-18   ok
+
+  400      0.04             0.03
+    | S_magma - S_lapack | / |S| = 4.47e-18   ok
+
+  500      0.06             0.05
+    | S_magma - S_lapack | / |S| = 2.15e-18   ok
+
+  600      0.09             0.07
+    | S_magma - S_lapack | / |S| = 9.92e-19   ok
+
+  700      0.13             0.09
+    | S_magma - S_lapack | / |S| = 1.46e-18   ok
+
+  800      0.17             0.12
+    | S_magma - S_lapack | / |S| = 1.39e-18   ok
+
+  900      0.23             0.16
+    | S_magma - S_lapack | / |S| = 2.43e-18   ok
+
+ 1000      0.30             0.20
+    | S_magma - S_lapack | / |S| = 3.57e-19   ok
+
+ 2000      1.57             0.95
+    | S_magma - S_lapack | / |S| = 1.79e-19   ok
+
+ 3000      5.40             2.39
+    | S_magma - S_lapack | / |S| = 6.74e-19   ok
+
+ 4000     10.83             4.64
+    | S_magma - S_lapack | / |S| = 2.23e-19   ok
+
+ 5000     20.30             7.91
+    | S_magma - S_lapack | / |S| = 5.14e-19   ok
+
+ 6000     32.82            12.42
+    | S_magma - S_lapack | / |S| = 1.19e-19   ok
+
+ 7000     52.75            18.38
+    | S_magma - S_lapack | / |S| = 4.37e-20   ok
+
+ 8000     63.81            25.90
+    | S_magma - S_lapack | / |S| = 5.58e-20   ok
+
+ 9000     82.38            35.02
+    | S_magma - S_lapack | / |S| = 3.53e-20   ok
+
+10000    109.63            46.07
+    | S_magma - S_lapack | / |S| = 2.86e-19   ok
+
+Sat Sep 12 12:40:18 EDT 2015
+
+Sat Sep 12 12:40:18 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd_gpu -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:40:24 2015
+% Usage: ../testing/testing_zheevd_gpu [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.00
+ 1234       ---              0.26
+   10       ---              0.00
+   20       ---              0.00
+   30       ---              0.00
+   40       ---              0.00
+   50       ---              0.00
+   60       ---              0.00
+   70       ---              0.00
+   80       ---              0.00
+   90       ---              0.00
+  100       ---              0.00
+  200       ---              0.01
+  300       ---              0.01
+  400       ---              0.02
+  500       ---              0.04
+  600       ---              0.05
+  700       ---              0.08
+  800       ---              0.10
+  900       ---              0.13
+ 1000       ---              0.16
+ 2000       ---              0.82
+ 3000       ---              2.04
+ 4000       ---              3.98
+ 5000       ---              6.65
+ 6000       ---             10.23
+ 7000       ---             15.04
+ 8000       ---             20.99
+ 9000       ---             28.68
+10000       ---             37.68
+Sat Sep 12 12:42:53 EDT 2015
+
+Sat Sep 12 12:42:53 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd_gpu -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:42:59 2015
+% Usage: ../testing/testing_zheevd_gpu [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.01
+ 1234       ---              0.32
+   10       ---              0.00
+   20       ---              0.00
+   30       ---              0.00
+   40       ---              0.00
+   50       ---              0.00
+   60       ---              0.00
+   70       ---              0.00
+   80       ---              0.00
+   90       ---              0.00
+  100       ---              0.00
+  200       ---              0.01
+  300       ---              0.02
+  400       ---              0.04
+  500       ---              0.05
+  600       ---              0.07
+  700       ---              0.10
+  800       ---              0.13
+  900       ---              0.17
+ 1000       ---              0.24
+ 2000       ---              0.97
+ 3000       ---              2.35
+ 4000       ---              4.58
+ 5000       ---              7.77
+ 6000       ---             12.29
+ 7000       ---             17.88
+ 8000       ---             25.17
+ 9000       ---             35.09
+10000       ---             46.07
+Sat Sep 12 12:45:59 EDT 2015
+
+Sat Sep 12 14:01:49 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd -JN -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 14:01:55 2015
+% Usage: ../testing/testing_zheevd [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123     ---               0.00
+ 1234     ---               0.31
+12000     ---              61.61
+14000     ---              93.11
+16000     ---             135.60
+18000     ---             189.18
+20000     ---             258.83
+Sat Sep 12 14:15:21 EDT 2015
+
+Sat Sep 12 14:15:21 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd -JV -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 14:15:28 2015
+% Usage: ../testing/testing_zheevd [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123     ---               0.01
+ 1234     ---               0.31
+12000     ---              76.29
+14000     ---             115.62
+16000     ---             168.32
+18000     ---             238.85
+20000     ---             323.71
+Sat Sep 12 14:32:12 EDT 2015
+
+Sat Sep 12 14:32:12 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd_gpu -JN -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 14:32:18 2015
+% Usage: ../testing/testing_zheevd_gpu [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.00
+ 1234       ---              0.27
+12000       ---             61.37
+14000       ---             92.66
+16000       ---            135.23
+18000       ---            188.62
+magma_zheevd_gpu returned error -113: cannot allocate memory on GPU device.
+20000       ---              0.00
+Sat Sep 12 14:41:30 EDT 2015
+
+Sat Sep 12 14:41:30 EDT 2015
+numactl --interleave=all ../testing/testing_zheevd_gpu -JV -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 14:41:36 2015
+% Usage: ../testing/testing_zheevd_gpu [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.01
+ 1234       ---              0.31
+12000       ---             75.65
+14000       ---            116.57
+16000       ---            169.13
+18000       ---            239.42
+magma_zheevd_gpu returned error -113: cannot allocate memory on GPU device.
+20000       ---              0.00
+Sat Sep 12 14:53:07 EDT 2015

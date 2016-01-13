@@ -1,11 +1,11 @@
 !
-!   -- MAGMA (version 1.7.0) --
+!   -- MAGMA (version 2.0.0-beta2) --
 !      Univ. of Tennessee, Knoxville
 !      Univ. of California, Berkeley
 !      Univ. of Colorado, Denver
-!      @date September 2015
+!      @date January 2016
 !
-!  @generated from testing_zgetrf_f.f90 normal z -> s, Fri Sep 11 18:29:39 2015
+!  @generated from testing/testing_zgetrf_f.f90 normal z -> s, Wed Jan  6 17:59:51 2016
 !
       program testing_sgetrf_f
 
@@ -21,12 +21,12 @@
       real, allocatable       :: A2(:)
       integer,    allocatable       :: ipiv(:)
 
-      real                    :: zone, mzone
+      real                    :: c_one, c_neg_one
       integer                       :: i, n, info, lda
       integer                       :: nrhs
       real(kind=8)                  :: flops, t, tstart, tend
 
-      PARAMETER          ( nrhs = 1, zone = 1., mzone = -1. )
+      PARAMETER          ( nrhs = 1, c_one = 1., c_neg_one = -1. )
       
       call cublas_init()
 
@@ -75,7 +75,7 @@
       Bnorm = slange('I', n, nrhs, B,  lda, work)
       Xnorm = slange('I', n, nrhs, X,  lda, work)
 
-      call sgemm('n', 'n', n,  nrhs, n, zone, A2, lda, X, lda, mzone, B, lda)
+      call sgemm('n', 'n', n,  nrhs, n, c_one, A2, lda, X, lda, c_neg_one, B, lda)
       Rnorm = slange('I', n, nrhs, B, lda, work)
             
       write(*,*)

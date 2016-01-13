@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlaswp_batched.cu normal z -> d, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zlaswp_batched.cu normal z -> d, Wed Jan  6 17:59:40 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
@@ -112,13 +112,17 @@ magma_dlaswp_rowparallel_batched( magma_int_t n,
 
     if ( n < SWP_WIDTH)
     {
-        dlaswp_rowparallel_kernel_batched<<<grid, height, sizeof(double) * height * n, queue >>>
-                                           ( n, n, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
+        size_t shmem = sizeof(double) * height * n;
+        dlaswp_rowparallel_kernel_batched
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, n, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
     }
     else
     {
-        dlaswp_rowparallel_kernel_batched<<< grid, height, sizeof(double) * height * SWP_WIDTH, queue >>>
-                                            (n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array );
+        size_t shmem = sizeof(double) * height * SWP_WIDTH;
+        dlaswp_rowparallel_kernel_batched
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array );
     }
 }
 
@@ -148,13 +152,17 @@ magma_dlaswp_rowparallel_q( magma_int_t n,
 
     if ( n < SWP_WIDTH)
     {
-        dlaswp_rowparallel_kernel<<<grid, height, sizeof(double) * height * n, queue >>>
-                                   ( n, n, height, input, ldi, output, ldo, pivinfo ); 
+        size_t shmem = sizeof(double) * height * n;
+        dlaswp_rowparallel_kernel
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, n, height, input, ldi, output, ldo, pivinfo ); 
     }
     else
     {
-        dlaswp_rowparallel_kernel<<< grid, height, sizeof(double) * height * SWP_WIDTH, queue >>>
-                                    (n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
+        size_t shmem = sizeof(double) * height * SWP_WIDTH;
+        dlaswp_rowparallel_kernel
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
     }
 }
 
@@ -167,7 +175,7 @@ magma_dlaswp_rowparallel( magma_int_t n, double* input, magma_int_t ldi,
                    magma_int_t k1, magma_int_t k2,
                    magma_int_t *pivinfo)
 {
-    magma_dlaswp_rowparallel_q(n, input, ldi, output, ldo, k1, k2, pivinfo, magma_stream);
+    magma_dlaswp_rowparallel_q( n, input, ldi, output, ldo, k1, k2, pivinfo, magmablasGetQueue() );
 }
 
 //=================================================================================================
@@ -220,8 +228,9 @@ magma_dlaswp_rowserial_batched(magma_int_t n, double** dA_array, magma_int_t lda
     int blocks = magma_ceildiv( n, BLK_SIZE );
     dim3  grid(blocks, 1, batchCount);
 
-    dlaswp_rowserial_kernel_batched<<< grid, max(BLK_SIZE, n), 0, queue >>>(
-        n, dA_array, lda, k1, k2, ipiv_array);
+    dlaswp_rowserial_kernel_batched
+        <<< grid, max(BLK_SIZE, n), 0, queue->cuda_stream() >>>
+        (n, dA_array, lda, k1, k2, ipiv_array);
 }
 
 
@@ -285,6 +294,7 @@ magma_dlaswp_columnserial_batched(magma_int_t n, double** dA_array, magma_int_t 
     int blocks = magma_ceildiv( n, BLK_SIZE );
     dim3  grid(blocks, 1, batchCount);
 
-    dlaswp_columnserial_kernel_batched<<< grid, min(BLK_SIZE, n), 0, queue >>>(
-        n, dA_array, lda, k1, k2, ipiv_array);
+    dlaswp_columnserial_kernel_batched
+        <<< grid, min(BLK_SIZE, n), 0, queue->cuda_stream() >>>
+        (n, dA_array, lda, k1, k2, ipiv_array);
 }

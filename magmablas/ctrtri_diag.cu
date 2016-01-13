@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from ztrtri_diag.cu normal z -> c, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/ztrtri_diag.cu normal z -> c, Wed Jan  6 17:59:39 2016
 
        @author Peng Du
        @author Tingxing Dong
@@ -57,15 +57,15 @@
     dA      COMPLEX array of dimension ( ldda, n )
             The triangular matrix A.
     \n
-            If UPLO = 'U', the leading N-by-N upper triangular part of A
+            If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A
             contains the upper triangular matrix, and the strictly lower
             triangular part of A is not referenced.
     \n
-            If UPLO = 'L', the leading N-by-N lower triangular part of A
+            If UPLO = MagmaLower, the leading N-by-N lower triangular part of A
             contains the lower triangular matrix, and the strictly upper
             triangular part of A is not referenced.
     \n
-            If DIAG = 'U', the diagonal elements of A are also not referenced
+            If DIAG = MagmaUnit, the diagonal elements of A are also not referenced
             and are assumed to be 1.
 
     @param[in]
@@ -111,7 +111,9 @@ magmablas_ctrtri_diag_q(
     
     if ( uplo == MagmaLower ) {
         // invert diagonal IB x IB inner blocks
-        ctrtri_diag_lower_kernel<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
+        ctrtri_diag_lower_kernel
+            <<< nblocks, IB, 0, queue->cuda_stream() >>>
+            ( diag, n, dA, ldda, d_dinvA );
 
         // build up NB x NB blocks (assuming IB=16 here):
         // use   16 x 16  blocks to build  32 x 32  blocks,  1 x (1 x npages) grid,  4 x 4 threads;
@@ -127,28 +129,30 @@ magmablas_ctrtri_diag_q(
             //printf( "n %d, jb %d, grid %d x %d (%d x %d)\n", n, jb, grid.x, grid.y, grid.y / npages, npages );
             switch (jb) {
                 case 16:
-                    triple_cgemm16_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm16_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm16_part1_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm16_part2_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 32:
-                    triple_cgemm32_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm32_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm32_part1_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm32_part2_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 64:
-                    triple_cgemm64_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm64_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm64_part1_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm64_part2_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 default:
-                    triple_cgemm_above64_part1_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm_above64_part2_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm_above64_part3_lower_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm_above64_part1_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm_above64_part2_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm_above64_part3_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
             }
             if ( kb >= n ) break;
         }
     }
     else {
-        ctrtri_diag_upper_kernel<<< nblocks, IB, 0, queue >>>( diag, n, dA, ldda, d_dinvA );
+        ctrtri_diag_upper_kernel
+            <<< nblocks, IB, 0, queue->cuda_stream() >>>
+            ( diag, n, dA, ldda, d_dinvA );
 
         // update the inverse up to the size of IB
         for( int jb=IB; jb < NB; jb *= 2 ) {
@@ -159,21 +163,21 @@ magmablas_ctrtri_diag_q(
             
             switch (jb) {
                 case 16:
-                    triple_cgemm16_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm16_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm16_part1_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm16_part2_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 32:
-                    triple_cgemm32_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm32_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm32_part1_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm32_part2_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 case 64:
-                    triple_cgemm64_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm64_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm64_part1_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm64_part2_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
                 default:
-                    triple_cgemm_above64_part1_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm_above64_part2_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
-                    triple_cgemm_above64_part3_upper_kernel<<< grid, threads, 0, queue >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm_above64_part1_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm_above64_part2_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
+                    triple_cgemm_above64_part3_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda, d_dinvA, jb, npages );
                     break;
             }
             if ( kb >= n ) break;
@@ -191,5 +195,5 @@ magmablas_ctrtri_diag(
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
     magmaFloatComplex_ptr d_dinvA)
 {
-    magmablas_ctrtri_diag_q( uplo, diag, n, dA, ldda, d_dinvA, magma_stream );
+    magmablas_ctrtri_diag_q( uplo, diag, n, dA, ldda, d_dinvA, magmablasGetQueue() );
 }

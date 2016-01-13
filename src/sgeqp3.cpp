@@ -1,18 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
   
-       @generated from zgeqp3.cpp normal z -> s, Fri Sep 11 18:29:28 2015
+       @generated from src/zgeqp3.cpp normal z -> s, Wed Jan  6 17:59:32 2016
 
+       @author Stan Tomov
+       @author Ichitaro Yamazaki
+       @author Mark Gates
        @author Mitch Horton
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_s
 #define REAL
 
 /**
@@ -128,7 +130,7 @@ magma_sgeqp3(
         *info = -4;
     }
     
-    nb = magma_get_sgeqp3_nb(min(m, n));
+    nb = magma_get_sgeqp3_nb( m, n );
     minmn = min(m,n);
     if (*info == 0) {
         if (minmn == 0) {
@@ -169,8 +171,10 @@ magma_sgeqp3(
     df = dwork + n*ldda;
     // dwork used for dA
 
-    magma_queue_t stream;
-    magma_queue_create( &stream );
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
     /* Move initial columns up front.
      * Note jpvt uses 1-based indices for historical compatibility. */
@@ -219,7 +223,7 @@ magma_sgeqp3(
             // Set the original matrix to the GPU
             magma_ssetmatrix_async( m, sn,
                                     A (0,j), lda,
-                                    dA(0,j), ldda, stream );
+                                    dA(0,j), ldda, queue );
         }
 
         /* Initialize partial column norms. */
@@ -231,7 +235,7 @@ magma_sgeqp3(
         j = nfxd;
         if (nb < sminmn) {
             /* Use blocked code initially. */
-            magma_queue_sync( stream );
+            magma_queue_sync( queue );
             
             /* Compute factorization: while loop. */
             topbmn = minmn - nb;
@@ -245,12 +249,12 @@ magma_sgeqp3(
                     // Get panel to the CPU
                     magma_sgetmatrix( m-j, jb,
                                       dA(j,j), ldda,
-                                      A (j,j), lda );
+                                      A (j,j), lda, queue );
                     
                     // Get the rows
                     magma_sgetmatrix( jb, n_j - jb,
                                       dA(j,j + jb), ldda,
-                                      A (j,j + jb), lda );
+                                      A (j,j + jb), lda, queue );
                 }
 
                 magma_slaqps( m, n_j, j, jb, &fjb,
@@ -271,7 +275,7 @@ magma_sgeqp3(
             if (j > nfxd) {
                 magma_sgetmatrix( m-j, n_j,
                                   dA(j,j), ldda,
-                                  A (j,j), lda );
+                                  A (j,j), lda, queue );
             }
             lapackf77_slaqp2(&m, &n_j, &j, A(0, j), &lda, &jpvt[j],
                              &tau[j], &rwork[j], &rwork[n+j], work );
@@ -281,7 +285,7 @@ magma_sgeqp3(
     work[0] = MAGMA_S_MAKE( lwkopt, 0. );
     magma_free( dwork );
 
-    magma_queue_destroy( stream );
+    magma_queue_destroy( queue );
 
     return *info;
 } /* magma_sgeqp3 */

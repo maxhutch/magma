@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
@@ -51,15 +51,15 @@
              Each is a COMPLEX_16 array A of dimension ( ldda, n )
              The triangular matrix A.
     \n
-             If UPLO = 'U', the leading N-by-N upper triangular part of A
+             If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A
              contains the upper triangular matrix, and the strictly lower
              triangular part of A is not referenced.
     \n
-            If UPLO = 'L', the leading N-by-N lower triangular part of A
+            If UPLO = MagmaLower, the leading N-by-N lower triangular part of A
             contains the lower triangular matrix, and the strictly upper
             triangular part of A is not referenced.
     \n
-            If DIAG = 'U', the diagonal elements of A are also not referenced
+            If DIAG = MagmaUnit, the diagonal elements of A are also not referenced
             and are assumed to be 1.
 
     @param[in]
@@ -122,7 +122,9 @@ magmablas_ztrtri_diag_batched(
     if ( uplo == MagmaLower ) {
         // invert diagonal IB x IB inner blocks
         dim3 diaggrid( nblocks, 1, batchCount );  // emulate 3D grid
-        ztrtri_diag_lower_kernel_batched<<< diaggrid, IB, 0, queue >>>( diag, n, dA_array, ldda, dinvA_array );
+        ztrtri_diag_lower_kernel_batched
+            <<< diaggrid, IB, 0, queue->cuda_stream() >>>
+            ( diag, n, dA_array, ldda, dinvA_array );
 
         // build up NB x NB blocks (assuming IB=16 here):
         // use   16 x 16  blocks to build  32 x 32  blocks,  1 x (1 x npages) grid,  4 x 4 threads;
@@ -138,21 +140,21 @@ magmablas_ztrtri_diag_batched(
             //printf( "n %d, jb %d, grid %d x %d (%d x %d)\n", n, jb, grid.x, grid.y, grid.y / npages, npages );
             switch (jb) {
                 case 16:
-                    triple_zgemm16_part1_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm16_part2_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm16_part1_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm16_part2_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
                 case 32:
-                    triple_zgemm32_part1_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm32_part2_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm32_part1_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm32_part2_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
                 case 64:
-                    triple_zgemm64_part1_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm64_part2_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm64_part1_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm64_part2_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
                 default:
-                    triple_zgemm_above64_part1_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm_above64_part2_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm_above64_part3_lower_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm_above64_part1_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm_above64_part2_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm_above64_part3_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
             }
             if ( kb >= n ) break;
@@ -160,7 +162,9 @@ magmablas_ztrtri_diag_batched(
     }
     else {
         dim3 diaggrid( nblocks, 1, batchCount );  // emulate 3D grid
-        ztrtri_diag_upper_kernel_batched<<< diaggrid, IB, 0, queue >>>( diag, n, dA_array, ldda, dinvA_array );
+        ztrtri_diag_upper_kernel_batched
+            <<< diaggrid, IB, 0, queue->cuda_stream() >>>
+            ( diag, n, dA_array, ldda, dinvA_array );
 
         // update the inverse up to the size of IB
         for( int jb=IB; jb < NB; jb *= 2 ) {
@@ -171,21 +175,21 @@ magmablas_ztrtri_diag_batched(
             
             switch (jb) {
                 case 16:
-                    triple_zgemm16_part1_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm16_part2_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm16_part1_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm16_part2_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
                 case 32:
-                    triple_zgemm32_part1_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm32_part2_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm32_part1_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm32_part2_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
                 case 64:
-                    triple_zgemm64_part1_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm64_part2_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm64_part1_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm64_part2_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
                 default:
-                    triple_zgemm_above64_part1_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm_above64_part2_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
-                    triple_zgemm_above64_part3_upper_kernel_batched<<< grid, threads, 0, queue >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm_above64_part1_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm_above64_part2_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
+                    triple_zgemm_above64_part3_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA_array, ldda, dinvA_array, jb, npages );
                     break;
             }
             if ( kb >= n ) break;

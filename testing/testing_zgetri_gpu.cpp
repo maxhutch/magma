@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -141,10 +141,10 @@ int main( int argc, char** argv )
                     // R -= A*A^{-1}
                     // err = ||I - A*A^{-1}|| / ( N ||A||*||A^{-1}|| ) = ||R|| * rcond / N, using 1-norm
                     lapackf77_zlaset( "full", &N, &N, &c_zero, &c_one, h_R, &lda );
-                    blasf77_zgemm( "no", "no", &N, &N, &N, &c_neg_one,
-                                   h_A,    &lda,
-                                   h_Ainv, &lda, &c_one,
-                                   h_R,    &lda );
+                    blasf77_zgemm( "no", "no", &N, &N, &N,
+                                   &c_neg_one, h_A,    &lda,
+                                               h_Ainv, &lda,
+                                   &c_one,     h_R,    &lda );
                     error = lapackf77_zlange( "1", &N, &N, h_R, &lda, rwork );
                     error = error * rcond / N;
                 }
@@ -173,6 +173,7 @@ int main( int argc, char** argv )
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

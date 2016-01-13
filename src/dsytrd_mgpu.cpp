@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zhetrd_mgpu.cpp normal z -> d, Fri Sep 11 18:29:30 2015
+       @generated from src/zhetrd_mgpu.cpp normal z -> d, Wed Jan  6 17:59:33 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "trace.h"
 
 /**
@@ -30,7 +30,7 @@
 
     @param[in]
     nqueue  INTEGER
-            The number of GPU streams used for update.  10 >= nqueue > 0.
+            The number of GPU queues used for update.  10 >= nqueue > 0.
 
     @param[in]
     uplo    magma_uplo_t
@@ -156,15 +156,17 @@ magma_dsytrd_mgpu(
 #define dA(id, i, j) (dA[(id)]    + (j)*ldda + (i))
 #define dW(id, i, j) (dW[(id)] + (j)*ldda + (i))
 
+    /* Constants */
+    const double c_neg_one = MAGMA_D_NEG_ONE;
+    const double c_one     = MAGMA_D_ONE;
+    const double             d_one     = MAGMA_D_ONE;
+    
+    /* Local variables */
     const char* uplo_ = lapack_uplo_const( uplo );
     
     magma_int_t nlocal, ldda;
     magma_int_t nb = magma_get_dsytrd_nb(n), ib, ib2;
 
-    const double c_neg_one = MAGMA_D_NEG_ONE;
-    const double c_one     = MAGMA_D_ONE;
-    const double             d_one     = MAGMA_D_ONE;
-    
     #ifdef PROFILE_SY2RK
     double mv_time = 0.0;
     double up_time = 0.0;
@@ -174,7 +176,6 @@ magma_dsytrd_mgpu(
     magma_int_t i, ii, iii, j, dev, i_n;
     magma_int_t iinfo;
     magma_int_t ldwork, lddw, lwkopt, ldwork2, lhwork;
-    magma_int_t lquery;
     
     // set pointers to NULL so it is safe to goto CLEANUP if any malloc fails.
     magma_queue_t queues[MagmaMaxGPUs][10] = { { NULL, NULL } };
@@ -185,8 +186,8 @@ magma_dsytrd_mgpu(
     magmaDouble_ptr dW[MagmaMaxGPUs]     = { NULL };
 
     *info = 0;
-    int upper = (uplo == MagmaUpper);
-    lquery = (lwork == -1);
+    bool upper = (uplo == MagmaUpper);
+    bool lquery = (lwork == -1);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {
@@ -222,8 +223,6 @@ magma_dsytrd_mgpu(
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
 
     //#define PROFILE_SY2RK
     #ifdef PROFILE_SY2RK
@@ -250,7 +249,9 @@ magma_dsytrd_mgpu(
         dW[dev] = dA[dev] + nlocal*ldda;
         
         for( kk=0; kk < nqueue; kk++ ) {
-            magma_queue_create( &queues[dev][kk] );
+            magma_device_t cdev;
+            magma_getdevice( &cdev );
+            magma_queue_create( cdev, &queues[dev][kk] );
         }
         queues0[dev] = queues[dev][0];
     }
@@ -300,7 +301,7 @@ magma_dsytrd_mgpu(
             magma_dsyr2k_mgpu( ngpu, MagmaUpper, MagmaNoTrans, nb, i, ib,
                                c_neg_one, dW, i+ib, 0,
                                d_one,     dA, ldda, 0,
-                               nqueue, queues);
+                               nqueue, queues );
 
             /* get the next panel */
             if (i-nb >= nx ) {
@@ -351,7 +352,7 @@ magma_dsytrd_mgpu(
         }
     }
     else {
-        trace_init( 1, ngpu, nqueue, (CUstream_st**)queues );
+        trace_init( 1, ngpu, nqueue, queues );
         /* Copy the matrix to the GPU */
         if (1 <= n-nx) {
             magma_dhtodhe( ngpu, uplo, n, nb, A, lda, dA, ldda, queues, &iinfo );
@@ -400,7 +401,7 @@ magma_dsytrd_mgpu(
             
             magma_dsyr2k_mgpu( ngpu, MagmaLower, MagmaNoTrans, nb, n-i-ib, ib,
                                c_neg_one, dW, n-i, ib,
-                               d_one, dA, ldda, i+ib, nqueue, queues);
+                               d_one, dA, ldda, i+ib, nqueue, queues );
             
             #ifdef PROFILE_SY2RK
             magma_setdevice( 0 );
@@ -481,7 +482,6 @@ CLEANUP:
     magma_free_pinned( hwork );
     
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
     
     work[0] = MAGMA_D_MAKE( lwkopt, 0 );
     
@@ -568,15 +568,12 @@ magma_dsyr2k_mgpu(
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
     
     /* diagonal update */
     for( i=0; i < n; i += nb ) {
         id = ((i+c_offset)/nb)%ngpu;
         kk = (i/(nb*ngpu))%nqueue;
         magma_setdevice( id );
-        magmablasSetKernelStream( queues[id][kk] );
 
         ib = min(nb, n-i);
         ii = nb*((i+c_offset)/(nb*ngpu));
@@ -586,7 +583,7 @@ magma_dsyr2k_mgpu(
         magma_dsyr2k( uplo, trans, ib, k,
                       alpha, dB1(id, i,          0 ), lddb,
                              dB(id,  i,          0 ), lddb,
-                      beta,  dC(id,  i+c_offset, ii), lddc );
+                      beta,  dC(id,  i+c_offset, ii), lddc, queues[id][kk] );
         trace_gpu_end( id, kk );
     }
 
@@ -596,14 +593,13 @@ magma_dsyr2k_mgpu(
             id = ((i+c_offset)/nb)%ngpu;
             kk = (i/(nb*ngpu))%nqueue;
             magma_setdevice( id );
-            magmablasSetKernelStream( queues[id][kk] );
             
             ib = min(nb, n-i);
             ii = nb*((i+c_offset)/(nb*ngpu));
             magma_dgemm( MagmaNoTrans, MagmaConjTrans, i, ib, k,
                          alpha, dB1(id, 0, 0 ), lddb,
                                 dB(id,  i, 0 ), lddb,
-                         c_one, dC(id,  0, ii), lddc );
+                         c_one, dC(id,  0, ii), lddc, queues[id][kk] );
         }
     }
     else {
@@ -611,7 +607,6 @@ magma_dsyr2k_mgpu(
             id = ((i+c_offset)/nb)%ngpu;
             kk = (i/(nb*ngpu))%nqueue;
             magma_setdevice( id );
-            magmablasSetKernelStream( queues[id][kk] );
             
             ib = min(nb, n-i);
             ii = nb*((i+c_offset)/(nb*ngpu));
@@ -622,7 +617,7 @@ magma_dsyr2k_mgpu(
             magma_dgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
                          alpha, dB1(id, i+ib,          0 ), lddb,
                                 dB(id,  i,             0 ), lddb,
-                         c_one, dC(id,  i+c_offset+ib, ii), lddc );
+                         c_one, dC(id,  i+c_offset+ib, ii), lddc, queues[id][kk] );
             trace_gpu_end( id, kk );
         }
     }
@@ -632,21 +627,19 @@ magma_dsyr2k_mgpu(
             id = ((i+c_offset)/nb)%ngpu;
             kk = (i/(nb*ngpu))%nqueue;
             magma_setdevice( id );
-            magmablasSetKernelStream( queues[id][kk] );
             
             ib = min(nb, n-i);
             ii = nb*((i+c_offset)/(nb*ngpu));
             magma_dgemm( MagmaNoTrans, MagmaConjTrans, i, ib, k,
                          alpha, dB( id, 0, 0 ), lddb,
                                 dB1(id, i, 0 ), lddb,
-                         c_one, dC(id,  0, ii), lddc );
+                         c_one, dC(id,  0, ii), lddc, queues[id][kk] );
         }
     } else {
         for( i=0; i < n-nb; i += nb ) {
             id = ((i+c_offset)/nb)%ngpu;
             kk = (i/(nb*ngpu))%nqueue;
             magma_setdevice( id );
-            magmablasSetKernelStream( queues[id][kk] );
             
             ib = min(nb, n-i);
             ii = nb*((i+c_offset)/(nb*ngpu));
@@ -657,7 +650,7 @@ magma_dsyr2k_mgpu(
             magma_dgemm( MagmaNoTrans, MagmaConjTrans, n1, ib, k,
                          alpha, dB(id,  i+ib,          0 ), lddb,
                                 dB1(id, i,             0 ), lddb,
-                         c_one, dC(id,  i+c_offset+ib, ii), lddc );
+                         c_one, dC(id,  i+c_offset+ib, ii), lddc, queues[id][kk] );
             trace_gpu_end( id, kk );
         }
     }
@@ -669,5 +662,4 @@ magma_dsyr2k_mgpu(
         }
     }
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
 }

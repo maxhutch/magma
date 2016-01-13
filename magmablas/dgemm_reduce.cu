@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgemm_reduce.cu normal z -> d, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zgemm_reduce.cu normal z -> d, Wed Jan  6 17:59:36 2016
 
 */
 #include "common_magma.h"
@@ -87,13 +87,14 @@ void dgemm_reduce_kernel(
     @ingroup magma_dblas3
     ********************************************************************/
 extern "C" void
-magmablas_dgemm_reduce(
+magmablas_dgemm_reduce_q(
     magma_int_t m, magma_int_t n, magma_int_t k,
     double alpha,
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_const_ptr dB, magma_int_t lddb,
     double beta,
-    magmaDouble_ptr       dC, magma_int_t lddc )
+    magmaDouble_ptr       dC, magma_int_t lddc,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -120,9 +121,9 @@ magmablas_dgemm_reduce(
         // call CUDA ARCH 1.x -- maximum 512 threads
         const int NUM_THREADS = 512;
         const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N)); // == 2
-        dim3 blocks( magma_ceildiv( m, BLK_M ), magma_ceildiv( n, BLK_N ) );
         dim3 threads( BLK_K, BLK_M, BLK_N );
-        dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
+        dim3 blocks( magma_ceildiv( m, BLK_M ), magma_ceildiv( n, BLK_N ), 1 );
+        dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, queue->cuda_stream() >>>
             ( m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
     }
     else {
@@ -130,11 +131,27 @@ magmablas_dgemm_reduce(
         // call CUDA ARCH 2.x -- maximum 1024 threads
         const int NUM_THREADS = 1024;
         const int BLK_K = (NUM_THREADS / (BLK_M * BLK_N)); // == 4
-        dim3 blocks( magma_ceildiv( m, BLK_M ), magma_ceildiv( n, BLK_N ) );
         dim3 threads( BLK_K, BLK_M, BLK_N );
-        dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, magma_stream >>>
+        dim3 blocks( magma_ceildiv( m, BLK_M ), magma_ceildiv( n, BLK_N ), 1 );
+        dgemm_reduce_kernel<BLK_K> <<< blocks, threads, 0, queue->cuda_stream() >>>
             ( m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
     }
 }
 
-//==============================================================================
+
+/**
+    @see magmablas_dgemm_reduce_q
+    @ingroup magma_dblas3
+    ********************************************************************/
+extern "C" void
+magmablas_dgemm_reduce(
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    double alpha,
+    magmaDouble_const_ptr dA, magma_int_t ldda,
+    magmaDouble_const_ptr dB, magma_int_t lddb,
+    double beta,
+    magmaDouble_ptr       dC, magma_int_t lddc )
+{
+    magmablas_dgemm_reduce_q(
+        m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc, magmablasGetQueue() );
+}

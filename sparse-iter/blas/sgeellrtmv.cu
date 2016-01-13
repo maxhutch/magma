@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeellrtmv.cu normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zgeellrtmv.cu normal z -> s, Wed Jan  6 17:59:41 2016
 
 */
-
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 //F. Vázquez, G. Ortega, J.J. Fernández, E.M. Garzón, Almeria University
 __global__ void 
@@ -273,17 +272,17 @@ magma_sgeellrtmv(
     // printf("launch kernel: %dx%d %d %d\n", grid.x, grid.y, num_threads, Ms);
 
     if ( alignment == 32 ) {
-        sgeellrtmv_kernel_32<<< grid, threads, Ms, queue >>>
+        sgeellrtmv_kernel_32<<< grid, threads, Ms, queue->cuda_stream() >>>
                  ( m, n, alpha, dval, dcolind, drowlength, dx, beta, dy, 
                                                  alignment, real_row_length );
     }
     else if ( alignment == 16 ) {
-        sgeellrtmv_kernel_16<<< grid, threads, Ms, queue >>>
+        sgeellrtmv_kernel_16<<< grid, threads, Ms, queue->cuda_stream() >>>
                  ( m, n, alpha, dval, dcolind, drowlength, dx, beta, dy, 
                                                  alignment, real_row_length );
     }
     else if ( alignment == 8 ) {
-        sgeellrtmv_kernel_8<<< grid, threads, Ms, queue >>>
+        sgeellrtmv_kernel_8<<< grid, threads, Ms, queue->cuda_stream() >>>
                  ( m, n, alpha, dval, dcolind, drowlength, dx, beta, dy, 
                                                  alignment, real_row_length );
     }

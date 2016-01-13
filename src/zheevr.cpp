@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
 
        @precisions normal z -> c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -248,26 +248,27 @@ magma_zheevr(
     magma_int_t *iwork, magma_int_t liwork,
     magma_int_t *info)
 {
+    /* Constants */
+    const magma_int_t izero = 0;
+    const magma_int_t ione  = 1;
+    const float szero = 0.;
+    const float sone  = 1.;
+    
+    /* Local variables */
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
     const char* range_ = lapack_range_const( range );
     
-    magma_int_t izero = 0;
-    magma_int_t ione = 1;
-    float szero = 0.;
-    float sone = 1.;
-    
     magma_int_t indrd, indre;
     magma_int_t imax;
     magma_int_t lopt, itmp1, indree, indrdd;
-    magma_int_t lower, wantz, tryrac;
+    magma_int_t tryrac;
     magma_int_t i, j, jj, i__1;
-    magma_int_t alleig, valeig, indeig;
     magma_int_t iscale, indibl, indifl;
     magma_int_t indiwo, indisp, indtau;
     magma_int_t indrwk, indwk;
     magma_int_t llwork, llrwork, nsplit;
-    magma_int_t lquery, ieeeok;
+    magma_int_t ieeeok;
     magma_int_t iinfo;
     magma_int_t lwmin, lrwmin, liwmin;
     double safmin;
@@ -278,12 +279,12 @@ magma_zheevr(
     double sigma, d__1;
     double rmin, rmax;
     
-    lower = (uplo == MagmaLower);
-    wantz = (jobz == MagmaVec);
-    alleig = (range == MagmaRangeAll);
-    valeig = (range == MagmaRangeV);
-    indeig = (range == MagmaRangeI);
-    lquery = (lwork == -1 || lrwork == -1 || liwork == -1);
+    bool lower  = (uplo == MagmaLower);
+    bool wantz  = (jobz == MagmaVec);
+    bool alleig = (range == MagmaRangeAll);
+    bool valeig = (range == MagmaRangeV);
+    bool indeig = (range == MagmaRangeI);
+    bool lquery = (lwork == -1 || lrwork == -1 || liwork == -1);
     
     *info = 0;
     if (! (wantz || (jobz == MagmaNoVec))) {
@@ -440,9 +441,9 @@ magma_zheevr(
         blasf77_dcopy(&n, &rwork[indrd], &ione, &rwork[indrdd], &ione);
         
         if (abstol < 2*n*eps)
-            tryrac=1;
+            tryrac = 1;
         else
-            tryrac=0;
+            tryrac = 0;
         
         lapackf77_zstemr(jobz_, range_, &n, &rwork[indrdd], &rwork[indree], &vl, &vu, &il,
                          &iu, m, &w[1], Z, &ldz, &n, &isuppz[1], &tryrac, &rwork[indrwk],

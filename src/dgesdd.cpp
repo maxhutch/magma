@@ -1,17 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
        @precisions normal d -> s
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_d
 #define REAL
 
 // Version 1 - LAPACK
@@ -126,7 +125,7 @@
     lwork   INTEGER
             The dimension of the array WORK.
             Let x = max(M,N) and y = min(M,N). The optimal block size
-            nb can be obtained through magma_get_dgesvd_nb(N).
+            nb can be obtained through magma_get_dgesvd_nb( M, N ).
             The threshold for x >> y currently is x >= y*11/6.
             *Required size different than in LAPACK.* In most cases, these
             sizes should give optimal performance for both MAGMA and LAPACK.
@@ -242,7 +241,7 @@ magma_dgesdd(
         *info = -10;
     }
     
-    nb = magma_get_dgesvd_nb(n);
+    nb = magma_get_dgesvd_nb( m, n );
 
     /* Compute workspace */
     /* (Note: Comments in the code beginning "Workspace:" describe the */

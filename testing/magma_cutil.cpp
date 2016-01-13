@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zutil.cpp normal z -> c, Fri Sep 11 18:29:39 2015
+       @generated from testing/magma_zutil.cpp normal z -> c, Wed Jan  6 17:59:46 2016
 
        @author Mark Gates
 
@@ -13,6 +13,10 @@
 */
 
 #include "testings.h"
+
+#include "magma.h"
+#include "magma_lapack.h"
+#include "magma_threadsetting.h"  // to work around MKL bug
 
 #define COMPLEX
 
@@ -29,7 +33,7 @@ void magma_cmake_hermitian( magma_int_t N, magmaFloatComplex* A, magma_int_t lda
     for( i=0; i < N; ++i ) {
         A(i,i) = MAGMA_C_MAKE( MAGMA_C_REAL( A(i,i) ), 0. );
         for( j=0; j < i; ++j ) {
-            A(j,i) = MAGMA_C_CNJG( A(i,j) );
+            A(j,i) = MAGMA_C_CONJ( A(i,j) );
         }
     }
 }
@@ -46,7 +50,7 @@ void magma_cmake_hpd( magma_int_t N, magmaFloatComplex* A, magma_int_t lda )
     for( i=0; i < N; ++i ) {
         A(i,i) = MAGMA_C_MAKE( MAGMA_C_REAL( A(i,i) ) + N, 0. );
         for( j=0; j < i; ++j ) {
-            A(j,i) = MAGMA_C_CNJG( A(i,j) );
+            A(j,i) = MAGMA_C_CONJ( A(i,j) );
         }
     }
 }
@@ -84,3 +88,31 @@ void magma_cmake_spd( magma_int_t N, magmaFloatComplex* A, magma_int_t lda )
     }
 }
 #endif
+
+
+// --------------------
+// MKL 11.1 has bug in multi-threaded clanhe; use single thread to work around.
+// MKL 11.2 corrects it for inf, one, max norm.
+// MKL 11.2 still segfaults for Frobenius norm.
+// See testing_clanhe.cpp
+float safe_lapackf77_clanhe(
+    const char *norm, const char *uplo,
+    const magma_int_t *n,
+    const magmaFloatComplex *A, const magma_int_t *lda,
+    float *work )
+{
+    #ifdef MAGMA_WITH_MKL
+    // work around MKL bug in multi-threaded clanhe
+    int la_threads = magma_get_lapack_numthreads();
+    magma_set_lapack_numthreads( 1 );
+    #endif
+    
+    float result = lapackf77_clanhe( norm, uplo, n, A, lda, work );
+    
+    #ifdef MAGMA_WITH_MKL
+    // end single thread to work around MKL bug
+    magma_set_lapack_numthreads( la_threads );
+    #endif
+    
+    return result;
+}

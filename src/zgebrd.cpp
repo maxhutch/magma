@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -167,7 +167,7 @@ magma_zgebrd(
     magma_int_t ldwrkx, ldwrky, lwkopt;
     magma_int_t lquery;
 
-    nb   = magma_get_zgebrd_nb(n);
+    nb   = magma_get_zgebrd_nb( m, n );
     ldda = m;
 
     lwkopt = (m + n) * nb;
@@ -199,8 +199,19 @@ magma_zgebrd(
         return *info;
     }
 
+    magma_queue_t queue = NULL;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
+    magmaDoubleComplex *work2;
+    magma_int_t lwork2 = max(m,n);
+    if (MAGMA_SUCCESS != magma_zmalloc_cpu( &work2, lwork2 )) {
+        *info = MAGMA_ERR_HOST_ALLOC;
+        return *info;
+    }
     if (MAGMA_SUCCESS != magma_zmalloc( &dA, n*ldda + (m + n)*nb )) {
-        fprintf (stderr, "!!!! device memory allocation error in zgebrd\n" );
+        magma_free_cpu( work2 );
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
@@ -214,7 +225,7 @@ magma_zgebrd(
 
     /* Copy the matrix to the GPU */
     if (minmn - nx >= 1) {
-        magma_zsetmatrix( m, n, A, lda, dA, ldda );
+        magma_zsetmatrix( m, n, A, lda, dA, ldda, queue );
     }
     
     for (i=0; i < (minmn - nx); i += nb) {
@@ -224,19 +235,22 @@ magma_zgebrd(
         nrow = m - i;
         ncol = n - i;
 
-        /*   Get the current panel (no need for the 1st iteration) */
+        /* Get the current panel (no need for the 1st iteration) */
         if ( i > 0 ) {
-            magma_zgetmatrix( nrow, nb, dA(i, i), ldda, A( i, i), lda );
+            magma_zgetmatrix( nrow, nb,
+                              dA(i, i), ldda,
+                              A( i, i), lda, queue );
             magma_zgetmatrix( nb, ncol - nb,
                               dA(i, i+nb), ldda,
-                              A( i, i+nb), lda );
+                              A( i, i+nb), lda, queue );
         }
 
         magma_zlabrd_gpu(nrow, ncol, nb,
                          A(i, i),          lda,    dA(i, i),          ldda,
                          d+i, e+i, tauq+i, taup+i,
                          work,             ldwrkx, dwork,             ldwrkx,  // x, dx
-                         work+(ldwrkx*nb), ldwrky, dwork+(ldwrkx*nb), ldwrky); // y, dy
+                         work+(ldwrkx*nb), ldwrky, dwork+(ldwrkx*nb), ldwrky,
+                         work2, lwork2, queue ); // y, dy
 
         /*  Update the trailing submatrix A(i+nb:m,i+nb:n), using an update
             of the form  A := A - V*Y' - X*U' */
@@ -244,22 +258,24 @@ magma_zgebrd(
         ncol = n - i - nb;
 
         // Send Y back to the GPU
-        magma_zsetmatrix( nrow, nb, work  + nb, ldwrkx, dwork + nb, ldwrkx );
+        magma_zsetmatrix( nrow, nb,
+                          work  + nb, ldwrkx,
+                          dwork + nb, ldwrkx, queue );
         magma_zsetmatrix( ncol, nb,
                           work  + (ldwrkx+1)*nb, ldwrky,
-                          dwork + (ldwrkx+1)*nb, ldwrky );
+                          dwork + (ldwrkx+1)*nb, ldwrky, queue );
 
         magma_zgemm( MagmaNoTrans, MagmaConjTrans,
                      nrow, ncol, nb,
                      c_neg_one, dA(i+nb, i   ),      ldda,
                                 dwork+(ldwrkx+1)*nb, ldwrky,
-                     c_one,     dA(i+nb, i+nb),      ldda);
+                     c_one,     dA(i+nb, i+nb),      ldda, queue );
 
         magma_zgemm( MagmaNoTrans, MagmaNoTrans,
                      nrow, ncol, nb,
                      c_neg_one, dwork+nb,         ldwrkx,
                                 dA( i,    i+nb ), ldda,
-                     c_one,     dA( i+nb, i+nb ), ldda);
+                     c_one,     dA( i+nb, i+nb ), ldda, queue );
 
         /* Copy diagonal and off-diagonal elements of B back into A */
         if (m >= n) {
@@ -282,7 +298,9 @@ magma_zgebrd(
     ncol = n - i;
 
     if ( 0 < minmn - nx ) {
-        magma_zgetmatrix( nrow, ncol, dA(i, i), ldda, A(i, i), lda );
+        magma_zgetmatrix( nrow, ncol,
+                          dA(i, i), ldda,
+                          A( i, i), lda, queue );
     }
     
     lapackf77_zgebrd( &nrow, &ncol,
@@ -290,6 +308,10 @@ magma_zgebrd(
                       tauq+i, taup+i, work, &lwork, &iinfo);
     work[0] = MAGMA_Z_MAKE( lwkopt, 0. );
 
+    magma_free_cpu( work2 );
     magma_free( dA );
+    
+    magma_queue_destroy( queue );
+
     return *info;
 } /* magma_zgebrd */

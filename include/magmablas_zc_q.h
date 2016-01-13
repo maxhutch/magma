@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
 */
@@ -18,7 +18,8 @@ extern "C" {
 #endif
 
   /* Mixed precision */
-void magmablas_zcaxpycp_q(
+void
+magmablas_zcaxpycp_q(
     magma_int_t m,
     magmaFloatComplex_ptr  r,
     magmaDoubleComplex_ptr x,
@@ -26,42 +27,41 @@ void magmablas_zcaxpycp_q(
     magmaDoubleComplex_ptr w,
     magma_queue_t queue );
 
-void magmablas_zaxpycp_q(
-    magma_int_t m,
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr x,
-    magmaDoubleComplex_const_ptr b,
-    magma_queue_t queue  );
-
-void magmablas_zclaswp_q(
+void
+magmablas_zclaswp_q(
     magma_int_t n,
     magmaDoubleComplex_ptr A, magma_int_t lda,
-    magmaFloatComplex_ptr SA, magma_int_t m,
+    magmaFloatComplex_ptr SA, magma_int_t ldsa,
+    magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx,
     magma_queue_t queue );
 
-void magmablas_zlag2c_q(
+void
+magmablas_zlag2c_q(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr A,  magma_int_t lda,
     magmaFloatComplex_ptr       SA, magma_int_t ldsa,
     magma_queue_t queue,
     magma_int_t *info );
 
-void magmablas_clag2z_q(
+void
+magmablas_clag2z_q(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
     magmaDoubleComplex_ptr       A,  magma_int_t lda,
     magma_queue_t queue,
     magma_int_t *info );
 
-void magmablas_zlat2c_q(
+void
+magmablas_zlat2c_q(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_const_ptr A,  magma_int_t lda,
     magmaFloatComplex_ptr       SA, magma_int_t ldsa,
     magma_queue_t queue,
     magma_int_t *info );
 
-void magmablas_clat2z_q(
+void
+magmablas_clat2z_q(
     magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
     magmaDoubleComplex_ptr       A,  magma_int_t lda,

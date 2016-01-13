@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from zlacpy_sym_in.cu normal z -> s, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlacpy_sym_in.cu normal z -> s, Wed Jan  6 17:59:37 2016
 
 */
 #include "common_magma.h"
@@ -267,13 +267,13 @@ magmablas_slacpy_sym_in_q(
     dim3 grid( magma_ceildiv(m, BLK_X), magma_ceildiv(n, BLK_Y) );
     
     if ( uplo == MagmaLower ) {
-        slacpy_sym_in_lower_kernel<<< grid, threads, 0, queue >>> ( m, n, rows, perm, dA, ldda, dB, lddb );
+        slacpy_sym_in_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, rows, perm, dA, ldda, dB, lddb );
     }
     else if ( uplo == MagmaUpper ) {
-        slacpy_sym_in_upper_kernel<<< grid, threads, 0, queue >>> ( m, n, dA, ldda, dB, lddb );
+        slacpy_sym_in_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, dA, ldda, dB, lddb );
     }
     else {
-        slacpy_sym_in_full_kernel <<< grid, threads, 0, queue >>> ( m, n, dA, ldda, dB, lddb );
+        slacpy_sym_in_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, dA, ldda, dB, lddb );
     }
 }
 
@@ -289,5 +289,5 @@ magmablas_slacpy_sym_in(
     magmaFloat_const_ptr dA, magma_int_t ldda,
     magmaFloat_ptr       dB, magma_int_t lddb )
 {
-    magmablas_slacpy_sym_in_q( uplo, m, n, rows, perm, dA, ldda, dB, lddb, magma_stream );
+    magmablas_slacpy_sym_in_q( uplo, m, n, rows, perm, dA, ldda, dB, lddb, magmablasGetQueue() );
 }

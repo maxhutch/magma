@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
-       @generated from testing_zunmql.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zunmql.cpp normal z -> s, Wed Jan  6 17:59:50 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -35,7 +35,7 @@ int main( int argc, char** argv )
     magma_int_t mm, m, n, k, size, info;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t nb, ldc, lda, lwork, lwork_max;
-    float *C, *R, *A, *W, *tau;
+    float *C, *R, *A, *hwork, *tau;
     magma_int_t status = 0;
     
     magma_opts opts;
@@ -58,7 +58,7 @@ int main( int argc, char** argv )
             m = opts.msize[itest];
             n = opts.nsize[itest];
             k = opts.ksize[itest];
-            nb  = magma_get_sgeqlf_nb( m );
+            nb  = magma_get_sgeqlf_nb( m, n );
             ldc = m;
             // A is m x k (left) or n x k (right)
             mm = (side[iside] == MagmaLeft ? m : n);
@@ -83,11 +83,11 @@ int main( int argc, char** argv )
             // need at least 2*nb*nb for geqlf
             lwork_max = max( max( m*nb, n*nb ), 2*nb*nb );
             
-            TESTING_MALLOC_CPU( C,   float, ldc*n );
-            TESTING_MALLOC_CPU( R,   float, ldc*n );
-            TESTING_MALLOC_CPU( A,   float, lda*k );
-            TESTING_MALLOC_CPU( W,   float, lwork_max );
-            TESTING_MALLOC_CPU( tau, float, k );
+            TESTING_MALLOC_CPU( C,     float, ldc*n );
+            TESTING_MALLOC_CPU( R,     float, ldc*n );
+            TESTING_MALLOC_CPU( A,     float, lda*k );
+            TESTING_MALLOC_CPU( hwork, float, lwork_max );
+            TESTING_MALLOC_CPU( tau,   float, k );
             
             // C is full, m x n
             size = ldc*n;
@@ -98,7 +98,7 @@ int main( int argc, char** argv )
             lapackf77_slarnv( &ione, ISEED, &size, A );
             
             // compute QL factorization to get Householder vectors in A, tau
-            magma_sgeqlf( mm, k, A, lda, tau, W, lwork_max, &info );
+            magma_sgeqlf( mm, k, A, lda, tau, hwork, lwork_max, &info );
             if (info != 0)
                 printf("magma_sgeqlf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
@@ -109,7 +109,7 @@ int main( int argc, char** argv )
             cpu_time = magma_wtime();
             lapackf77_sormql( lapack_side_const( side[iside] ), lapack_trans_const( trans[itran] ),
                               &m, &n, &k,
-                              A, &lda, tau, C, &ldc, W, &lwork_max, &info );
+                              A, &lda, tau, C, &ldc, hwork, &lwork_max, &info );
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gflops / cpu_time;
             if (info != 0)
@@ -123,11 +123,11 @@ int main( int argc, char** argv )
             lwork = -1;
             magma_sormql( side[iside], trans[itran],
                           m, n, k,
-                          A, lda, tau, R, ldc, W, lwork, &info );
+                          A, lda, tau, R, ldc, hwork, lwork, &info );
             if (info != 0)
                 printf("magma_sormql (lwork query) returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
-            lwork = (magma_int_t) MAGMA_S_REAL( W[0] );
+            lwork = (magma_int_t) MAGMA_S_REAL( hwork[0] );
             if ( lwork < 0 || lwork > lwork_max ) {
                 printf("optimal lwork %d > lwork_max %d\n", (int) lwork, (int) lwork_max );
                 lwork = lwork_max;
@@ -136,7 +136,7 @@ int main( int argc, char** argv )
             gpu_time = magma_wtime();
             magma_sormql( side[iside], trans[itran],
                           m, n, k,
-                          A, lda, tau, R, ldc, W, lwork, &info );
+                          A, lda, tau, R, ldc, hwork, lwork, &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
@@ -162,7 +162,7 @@ int main( int argc, char** argv )
             TESTING_FREE_CPU( C );
             TESTING_FREE_CPU( R );
             TESTING_FREE_CPU( A );
-            TESTING_FREE_CPU( W );
+            TESTING_FREE_CPU( hwork );
             TESTING_FREE_CPU( tau );
             fflush( stdout );
         }
@@ -173,6 +173,7 @@ int main( int argc, char** argv )
       printf( "\n" );
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

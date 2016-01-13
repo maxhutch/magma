@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zjacobisetup.cu normal z -> d, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zjacobisetup.cu normal z -> d, Wed Jan  6 17:59:41 2016
        @author Hartwig Anzt
 
 */
 #include "common_magmasparse.h"
 
-#define BLOCK_SIZE 128
+#define BLOCK_SIZE 512
 
 
 #define PRECISION_d
@@ -79,7 +79,7 @@ dvjacobisetup_gpu(  int num_rows,
 
 extern "C" magma_int_t
 magma_djacobisetup_vector_gpu(
-    int num_rows, 
+    magma_int_t num_rows, 
     magma_d_matrix b, 
     magma_d_matrix d, 
     magma_d_matrix c,
@@ -89,7 +89,7 @@ magma_djacobisetup_vector_gpu(
     dim3 grid( magma_ceildiv( num_rows, BLOCK_SIZE ) );
     int num_vecs = b.num_rows / num_rows;
     magma_int_t threads = BLOCK_SIZE;
-    dvjacobisetup_gpu<<< grid, threads, 0 >>>
+    dvjacobisetup_gpu<<< grid, threads, 0, queue->cuda_stream()>>>
                 ( num_rows, num_vecs, b.dval, d.dval, c.dval, x->val );
 
     return MAGMA_SUCCESS;
@@ -156,16 +156,16 @@ djacobidiagscal_kernel(  int num_rows,
 
 extern "C" magma_int_t
 magma_djacobi_diagscal(
-    int num_rows, 
+    magma_int_t num_rows, 
     magma_d_matrix d, 
     magma_d_matrix b, 
     magma_d_matrix *c,
     magma_queue_t queue )
 {
-    dim3 grid( magma_ceildiv( num_rows, BLOCK_SIZE ));
+    dim3 grid( magma_ceildiv( num_rows, 512 ));
     int num_vecs = b.num_rows*b.num_cols/num_rows;
-    magma_int_t threads = BLOCK_SIZE;
-    djacobidiagscal_kernel<<< grid, threads, 0 >>>( num_rows, num_vecs, b.dval, d.dval, c->val );
+    magma_int_t threads = 512;
+    djacobidiagscal_kernel<<< grid, threads, 0, queue->cuda_stream()>>>( num_rows, num_vecs, b.dval, d.dval, c->val );
 
     return MAGMA_SUCCESS;
 }
@@ -243,7 +243,7 @@ magma_djacobiupdate(
 {
     dim3 grid( magma_ceildiv( t.num_rows, BLOCK_SIZE ));
     magma_int_t threads = BLOCK_SIZE;
-    djacobiupdate_kernel<<< grid, threads, 0 >>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
+    djacobiupdate_kernel<<< grid, threads, 0, queue->cuda_stream()>>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
 
     return MAGMA_SUCCESS;
 }
@@ -351,9 +351,9 @@ magma_djacobispmvupdate(
     for( magma_int_t i=0; i<maxiter; i++ ) {
         // distinct routines imply synchronization
         // magma_d_spmv( c_one, A, *x, c_zero, t, queue );                // t =  A * x
-        // djacobiupdate_kernel<<< grid, threads, 0 >>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
+        // djacobiupdate_kernel<<< grid, threads, 0, queue->cuda_stream()>>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
         // merged in one implies asynchronous update
-        djacobispmvupdate_kernel<<< grid, threads, 0 >>>
+        djacobispmvupdate_kernel<<< grid, threads, 0, queue->cuda_stream()>>>
             ( t.num_rows, t.num_cols, A.dval, A.drow, A.dcol, t.dval, b.dval, d.dval, x->dval );
     }
 
@@ -458,9 +458,9 @@ magma_djacobispmvupdate_bw(
     for( magma_int_t i=0; i<maxiter; i++ ) {
         // distinct routines imply synchronization
         // magma_d_spmv( c_one, A, *x, c_zero, t, queue );                // t =  A * x
-        // djacobiupdate_kernel<<< grid, threads, 0 >>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
+        // djacobiupdate_kernel<<< grid, threads, 0, queue->cuda_stream()>>>( t.num_rows, t.num_cols, t.dval, b.dval, d.dval, x->dval );
         // merged in one implies asynchronous update
-        djacobispmvupdate_bw_kernel<<< grid, threads, 0 >>>
+        djacobispmvupdate_bw_kernel<<< grid, threads, 0, queue->cuda_stream()>>>
             ( t.num_rows, t.num_cols, A.dval, A.drow, A.dcol, t.dval, b.dval, d.dval, x->dval );
     }
 
@@ -595,7 +595,7 @@ magma_djacobispmvupdateselect(
     printf("num updates:%d %d %d\n", int(num_updates), int(threads), int(grid.x) );
 
     for( magma_int_t i=0; i<maxiter; i++ ) {
-        djacobispmvupdateselect_kernel<<< grid, threads, 0 >>>
+        djacobispmvupdateselect_kernel<<< grid, threads, 0, queue->cuda_stream()>>>
             ( t.num_rows, t.num_cols, num_updates, indices, A.dval, A.drow, A.dcol, t.dval, b.dval, d.dval, x->dval, tmp.dval );
         magma_device_sync();
         //swp.dval = x->dval;

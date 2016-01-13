@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -41,13 +41,15 @@ void clat2z_lower(
             // full block-column, off-diagonal block
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
-                A[j*lda] = cuComplexFloatToDouble( SA[j*ldsa] );
+                A[j*lda] = MAGMA_Z_MAKE( MAGMA_C_REAL( SA[j*ldsa] ),
+                                         MAGMA_C_IMAG( SA[j*ldsa] ) );
             }
         }
         else {
             // either partial block-column or diagonal block
             for( int j=0; j < BLK_Y && iby+j < n && ind >= iby+j; ++j ) {
-                A[j*lda] = cuComplexFloatToDouble( SA[j*ldsa] );
+                A[j*lda] = MAGMA_Z_MAKE( MAGMA_C_REAL( SA[j*ldsa] ),
+                                         MAGMA_C_IMAG( SA[j*ldsa] ) );
             }
         }
     }
@@ -78,14 +80,16 @@ void clat2z_upper(
             // full block-column, off-diagonal block
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
-                A[j*lda] = cuComplexFloatToDouble( SA[j*ldsa] );
+                A[j*lda] = MAGMA_Z_MAKE( MAGMA_C_REAL( SA[j*ldsa] ),
+                                         MAGMA_C_IMAG( SA[j*ldsa] ) );
             }
         }
         else {
             // either partial block-column or diagonal block
             for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
                 if ( ind <= iby+j ) {
-                    A[j*lda] = cuComplexFloatToDouble( SA[j*ldsa] );
+                    A[j*lda] = MAGMA_Z_MAKE( MAGMA_C_REAL( SA[j*ldsa] ),
+                                             MAGMA_C_IMAG( SA[j*ldsa] ) );
                 }
             }
         }
@@ -96,8 +100,8 @@ void clat2z_upper(
 /**
     Purpose
     -------
-    CLAT2Z_STREAM converts a single-complex matrix, SA,
-                        to a double-complex matrix, A.
+    CLAT2Z converts a single-complex matrix, SA,
+                 to a double-complex matrix, A.
 
     Note that while it is possible to overflow while converting
     from double to single, it is not possible to overflow when
@@ -175,10 +179,10 @@ magmablas_clat2z_q(
     dim3 grid( magma_ceildiv( n, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     
     if (uplo == MagmaLower) {
-        clat2z_lower<<< grid, threads, 0, queue >>> (n, SA, ldsa, A, lda);
+        clat2z_lower<<< grid, threads, 0, queue->cuda_stream() >>> (n, SA, ldsa, A, lda);
     }
     else if (uplo == MagmaUpper) {
-        clat2z_upper<<< grid, threads, 0, queue >>> (n, SA, ldsa, A, lda);
+        clat2z_upper<<< grid, threads, 0, queue->cuda_stream() >>> (n, SA, ldsa, A, lda);
     }
 }
 
@@ -194,5 +198,5 @@ magmablas_clat2z(
     magmaDoubleComplex_ptr      A,  magma_int_t lda,
     magma_int_t *info )
 {
-    magmablas_clat2z_q( uplo, n, SA, ldsa, A, lda, magma_stream, info );
+    magmablas_clat2z_q( uplo, n, SA, ldsa, A, lda, magmablasGetQueue(), info );
 }

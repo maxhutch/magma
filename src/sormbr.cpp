@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
 
-       @generated from zunmbr.cpp normal z -> s, Fri Sep 11 18:29:31 2015
+       @generated from src/zunmbr.cpp normal z -> s, Wed Jan  6 17:59:35 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /*
  * Version 1 - LAPACK
@@ -212,7 +212,7 @@ magma_sormbr(
         if (nw > 0) {
             // TODO have get_sormqr_nb and get_sormlq_nb routines? see original LAPACK sormbr.
             // TODO make them dependent on m, n, and k?
-            nb = magma_get_sgebrd_nb( min( m, n ));
+            nb = magma_get_sgebrd_nb( m, n );
             lwkopt = max(1, nw*nb);
         }
         else {

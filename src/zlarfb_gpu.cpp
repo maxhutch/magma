@@ -1,15 +1,21 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Mark Gates
+       
        @precisions normal z -> s d c
 */
-#include "common_magma.h"
+
+// include v1 header first; the v2 header will redefine non-q names,
+// but we can undef them to get back to the v1 versions.
+#include "magmablas_v1.h"
+
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -66,7 +72,7 @@
     @param[in]
     lddv    INTEGER
             The leading dimension of the array V.
-            If STOREV = MagmaColumnwise and SIDE = MagmaLeft, LDDV >= max(1,M);
+            If STOREV = MagmaColumnwise and SIDE = MagmaLeft,  LDDV >= max(1,M);
             if STOREV = MagmaColumnwise and SIDE = MagmaRight, LDDV >= max(1,N);
             if STOREV = MagmaRowwise, LDDV >= K.
 
@@ -97,6 +103,10 @@
             If SIDE = MagmaLeft,  LDWORK >= max(1,N);
             if SIDE = MagmaRight, LDWORK >= max(1,M);
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     Further Details
     ---------------
     The shape of the matrix V and the storage of the vectors which define
@@ -125,23 +135,25 @@
     @ingroup magma_zaux3
     ********************************************************************/
 extern "C" magma_int_t
-magma_zlarfb_gpu(
+magma_zlarfb_gpu_q(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex_const_ptr dV,    magma_int_t lddv,
     magmaDoubleComplex_const_ptr dT,    magma_int_t lddt,
     magmaDoubleComplex_ptr dC,          magma_int_t lddc,
-    magmaDoubleComplex_ptr dwork,       magma_int_t ldwork )
+    magmaDoubleComplex_ptr dwork,       magma_int_t ldwork,
+    magma_queue_t queue )
 {
     #define dV(i_,j_)  (dV    + (i_) + (j_)*lddv)
     #define dT(i_,j_)  (dT    + (i_) + (j_)*lddt)
     #define dC(i_,j_)  (dC    + (i_) + (j_)*lddc)
     #define dwork(i_)  (dwork + (i_))
     
-    magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
-    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
-    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-
+    /* Constants */
+    const magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
+    const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    
     /* Check input arguments */
     magma_int_t info = 0;
     if (m < 0) {
@@ -171,7 +183,8 @@ magma_zlarfb_gpu(
     if (m <= 0 || n <= 0) {
         return info;
     }
-
+    
+    /* Local variables */
     // opposite of trans
     magma_trans_t transt;
     if (trans == MagmaNoTrans)
@@ -199,52 +212,73 @@ magma_zlarfb_gpu(
 
     if ( side == MagmaLeft ) {
         // Form H C or H^H C
-        // Comments assume H C. When forming H^H C, T gets transposed via transt.
+        // Comments assume H C.
+        // When forming H^H C, T gets transposed via transt.
         
         // W = C^H V
         magma_zgemm( Magma_ConjTrans, notransV,
                      n, k, m,
                      c_one,  dC(0,0),  lddc,
                              dV(0,0),  lddv,
-                     c_zero, dwork(0), ldwork);
+                     c_zero, dwork(0), ldwork, queue );
 
         // W = W T^H = C^H V T^H
         magma_ztrmm( MagmaRight, uplo, transt, MagmaNonUnit,
                      n, k,
                      c_one, dT(0,0),  lddt,
-                            dwork(0), ldwork);
+                            dwork(0), ldwork, queue );
 
         // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
         magma_zgemm( notransV, Magma_ConjTrans,
                      m, n, k,
                      c_neg_one, dV(0,0),  lddv,
                                 dwork(0), ldwork,
-                     c_one,     dC(0,0),  lddc);
+                     c_one,     dC(0,0),  lddc, queue );
     }
     else {
         // Form C H or C H^H
-        // Comments assume C H. When forming C H^H, T gets transposed via trans.
+        // Comments assume C H.
+        // When forming C H^H, T gets transposed via trans.
         
         // W = C V
         magma_zgemm( MagmaNoTrans, notransV,
                      m, k, n,
                      c_one,  dC(0,0),  lddc,
                              dV(0,0),  lddv,
-                     c_zero, dwork(0), ldwork);
+                     c_zero, dwork(0), ldwork, queue );
 
         // W = W T = C V T
         magma_ztrmm( MagmaRight, uplo, trans, MagmaNonUnit,
                      m, k,
                      c_one, dT(0,0),  lddt,
-                            dwork(0), ldwork);
+                            dwork(0), ldwork, queue );
 
         // C = C - W V^H = C - C V T V^H = C (I - V T V^H) = C H
         magma_zgemm( MagmaNoTrans, transV,
                      m, n, k,
                      c_neg_one, dwork(0), ldwork,
                                 dV(0,0),  lddv,
-                     c_one,     dC(0,0),  lddc);
+                     c_one,     dC(0,0),  lddc, queue );
     }
 
     return info;
 } /* magma_zlarfb */
+
+
+// ------------------------------------------------------------
+// define v1 interface
+#undef magma_zlarfb_gpu
+
+extern "C" magma_int_t
+magma_zlarfb_gpu(
+    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex_const_ptr dV,    magma_int_t lddv,
+    magmaDoubleComplex_const_ptr dT,    magma_int_t lddt,
+    magmaDoubleComplex_ptr dC,          magma_int_t lddc,
+    magmaDoubleComplex_ptr dwork,       magma_int_t ldwork )
+{
+    return magma_zlarfb_gpu_q( side, trans, direct, storev,
+                               m, n, k,
+                               dV, lddv, dT, lddt, dC, lddc, dwork, ldwork, magmablasGetQueue() );
+}

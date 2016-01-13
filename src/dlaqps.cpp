@@ -1,18 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlaqps.cpp normal z -> d, Fri Sep 11 18:29:29 2015
+       @generated from src/zlaqps.cpp normal z -> d, Wed Jan  6 17:59:31 2016
 
+       @author Stan Tomov
+       @author Mark Gates 
        @author Mitch Horton
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_d
+#define REAL
 
 /**
     Purpose
@@ -132,8 +134,10 @@ magma_dlaqps(
     lastrk = min( m, n + offset );
     tol3z = magma_dsqrt( lapackf77_dlamch("Epsilon"));
 
-    magma_queue_t stream;
-    magma_queue_create( &stream );
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
     lsticc = 0;
     k = 0;
@@ -150,7 +154,7 @@ magma_dlaqps(
                 /* 1. Start copy from GPU                           */
                 magma_dgetmatrix_async( m - offset - nb, 1,
                                         dA(offset + nb, pvt), ldda,
-                                        A (offset + nb, pvt), lda, stream );
+                                        A (offset + nb, pvt), lda, queue );
             }
 
             /* F gets swapped so F must be sent at the end to GPU   */
@@ -168,7 +172,7 @@ magma_dlaqps(
             }
             else {
                 /* 1. Finish copy from GPU                          */
-                magma_queue_sync( stream );
+                magma_queue_sync( queue );
 
                 /* 2. Swap as usual on CPU                          */
                 blasf77_dswap(&m, A(0, pvt), &ione, A(0, k), &ione);
@@ -176,7 +180,7 @@ magma_dlaqps(
                 /* 3. Restore the GPU                               */
                 magma_dsetmatrix_async( m - offset - nb, 1,
                                         A (offset + nb, pvt), lda,
-                                        dA(offset + nb, pvt), ldda, stream);
+                                        dA(offset + nb, pvt), ldda, queue );
             }
         }
 
@@ -184,9 +188,9 @@ magma_dlaqps(
            A(RK:M,K) := A(RK:M,K) - A(RK:M,1:K-1)*F(K,1:K-1)'.
            Optimization: multiply with beta=0; wait for vector and subtract */
         if (k > 0) {
-            #if defined(PRECISION_c) || defined(PRECISION_z)
+            #ifdef COMPLEX
             for (j = 0; j < k; ++j) {
-                *F(k,j) = MAGMA_D_CNJG( *F(k,j) );
+                *F(k,j) = MAGMA_D_CONJ( *F(k,j) );
             }
             #endif
 
@@ -197,9 +201,9 @@ magma_dlaqps(
                                        F(k,  0), &ldf,
                            &c_one,     A(rk, k), &ione );
 
-            #if defined(PRECISION_c) || defined(PRECISION_z)
+            #ifdef COMPLEX
             for (j = 0; j < k; ++j) {
-                *F(k,j) = MAGMA_D_CNJG( *F(k,j) );
+                *F(k,j) = MAGMA_D_CONJ( *F(k,j) );
             }
             #endif
         }
@@ -222,7 +226,7 @@ magma_dlaqps(
             i__2 = n - k - 1;
         
             /* Send the vector to the GPU */
-            magma_dsetmatrix( i__1, 1, A(rk, k), lda, dA(rk,k), ldda );
+            magma_dsetmatrix( i__1, 1, A(rk, k), lda, dA(rk,k), ldda, queue );
         
             /* Multiply on GPU */
             // was CALL DGEMV( 'Conjugate transpose', M-RK+1, N-K,
@@ -235,18 +239,18 @@ magma_dlaqps(
             magma_dgemv( MagmaConjTrans, i__1 - i__5, i__2 - i__3,
                          tau[k], dA(rk +i__5, k+1+i__3), ldda,
                                  dA(rk +i__5, k       ), ione,
-                         c_zero, dF(k+1+i__3, k       ), ione );
+                         c_zero, dF(k+1+i__3, k       ), ione, queue );
             
             magma_dgetmatrix_async( i__2-i__3, 1,
                                     dF(k + 1 +i__3, k), i__2,
-                                    F (k + 1 +i__3, k), i__2, stream );
+                                    F (k + 1 +i__3, k), i__2, queue );
             
             blasf77_dgemv( MagmaConjTransStr, &i__1, &i__3,
                            &tau[k], A(rk,  k+1), &lda,
                                     A(rk,  k  ), &ione,
                            &c_zero, F(k+1, k  ), &ione );
             
-            magma_queue_sync( stream );
+            magma_queue_sync( queue );
             blasf77_dgemv( MagmaConjTransStr, &i__5, &i__4,
                            &tau[k], A(rk, k+1+i__3), &lda,
                                     A(rk, k       ), &ione,
@@ -329,28 +333,29 @@ magma_dlaqps(
         /* Send F to the GPU */
         magma_dsetmatrix( i__2, *kb,
                           F (*kb, 0), ldf,
-                          dF(*kb, 0), i__2 );
+                          dF(*kb, 0), i__2, queue );
 
         magma_dgemm( MagmaNoTrans, MagmaConjTrans, i__1, i__2, *kb,
                      c_neg_one, dA(rk+1, 0  ), ldda,
                                 dF(*kb,  0  ), i__2,
-                     c_one,     dA(rk+1, *kb), ldda );
+                     c_one,     dA(rk+1, *kb), ldda, queue );
     }
     
     /* Recomputation of difficult columns. */
     while( lsticc > 0 ) {
         itemp = (magma_int_t)(vn2[lsticc] >= 0. ? floor(vn2[lsticc] + .5) : -floor(.5 - vn2[lsticc]));
         i__1 = m - rk - 1;
-        if (lsticc <= nb)
+        if (lsticc <= nb) {
             vn1[lsticc] = magma_cblas_dnrm2( i__1, A(rk+1,lsticc), ione );
+        }
         else {
             /* Where is the data, CPU or GPU ? */
             double r1, r2;
             
             r1 = magma_cblas_dnrm2( nb-k, A(rk+1,lsticc), ione );
-            r2 = magma_dnrm2(m-offset-nb, dA(offset + nb + 1, lsticc), ione);
+            r2 = magma_dnrm2( m-offset-nb, dA(offset + nb + 1, lsticc), ione, queue );
             
-            //vn1[lsticc] = magma_dnrm2(i__1, dA(rk + 1, lsticc), ione);
+            //vn1[lsticc] = magma_dnrm2( i__1, dA(rk + 1, lsticc), ione, queue );
             vn1[lsticc] = magma_dsqrt(r1*r1 + r2*r2);
         }
         
@@ -360,7 +365,7 @@ magma_dlaqps(
         lsticc = itemp;
     }
     
-    magma_queue_destroy( stream );
+    magma_queue_destroy( queue );
 
     return MAGMA_SUCCESS;
 } /* magma_dlaqps */

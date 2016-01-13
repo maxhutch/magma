@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zbulge.h normal z -> c, Fri Sep 11 18:29:17 2015
+       @generated from include/magma_zbulge.h normal z -> c, Wed Jan  6 17:59:51 2016
 */
 
 #ifndef MAGMA_CBULGE_H
@@ -139,7 +139,7 @@ magma_cunmqr_gpu_2stages(
     magma_int_t *info);
 
 magma_int_t
-magma_cbulge_get_lq2( magma_int_t n, magma_int_t threads, magma_int_t wantz);
+magma_get_cbulge_lq2( magma_int_t n, magma_int_t threads, magma_int_t wantz);
 
 magma_int_t 
 magma_cbulge_getstg2size(magma_int_t n, magma_int_t nb, magma_int_t wantz, 

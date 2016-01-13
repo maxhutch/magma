@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zungqr_gpu.cpp normal z -> c, Fri Sep 11 18:29:28 2015
+       @generated from src/zungqr_gpu.cpp normal z -> c, Wed Jan  6 17:59:31 2016
 
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -72,7 +72,7 @@
     @param[out]
     info    INTEGER
       -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument has an illegal value
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
     @ingroup magma_cgeqrf_comp
     ********************************************************************/
@@ -116,9 +116,6 @@ magma_cungqr_gpu(
         return *info;
     }
 
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-    
     // first kk columns are handled by blocked method.
     // ki is start of 2nd-to-last block
     if ((nb > 1) && (nb < k)) {
@@ -154,8 +151,10 @@ magma_cungqr_gpu(
     lddwork = min(m,n);
     dW = dT + 2*lddwork*nb;
 
-    magma_queue_t stream;
-    magma_queue_create( &stream );
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
     // Use unblocked code for the last or only block.
     if (kk < n) {
@@ -163,24 +162,23 @@ magma_cungqr_gpu(
         n_kk = n - kk;
         k_kk = k - kk;
         magma_cgetmatrix( m_kk, k_kk,
-                          dA(kk, kk), ldda, panel, m_kk );
+                          dA(kk, kk), ldda, panel, m_kk, queue );
         
         lapackf77_cungqr( &m_kk, &n_kk, &k_kk,
                           panel, &m_kk,
                           &tau[kk], work, &lwork, &iinfo );
         
         magma_csetmatrix( m_kk, n_kk,
-                          panel, m_kk, dA(kk, kk), ldda );
+                          panel, m_kk, dA(kk, kk), ldda, queue );
         
         // Set A(1:kk,kk+1:n) to zero.
-        magmablas_claset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk), ldda );
+        magmablas_claset( MagmaFull, kk, n - kk, c_zero, c_zero, dA(0, kk), ldda, queue );
     }
 
     if (kk > 0) {
         // Use blocked code
-        // stream:  copy Aii to V --> laset --> laset --> larfb --> [next]
+        // queue:  copy Aii to V --> laset --> laset --> larfb --> [next]
         // CPU has no computation
-        magmablasSetKernelStream( stream );
         
         for (i = ki; i >= 0; i -= nb) {
             ib = min( nb, k-i );
@@ -189,28 +187,26 @@ magma_cungqr_gpu(
             // Copy current panel on the GPU from dA to dV
             magma_ccopymatrix_async( mi, ib,
                                      dA(i,i), ldda,
-                                     dV,      ldda, stream );
+                                     dV,      ldda, queue );
 
             // set panel to identity
-            magmablas_claset( MagmaFull, i,  ib, c_zero, c_zero, dA(0, i), ldda );
-            magmablas_claset( MagmaFull, mi, ib, c_zero, c_one,  dA(i, i), ldda );
+            magmablas_claset( MagmaFull, i,  ib, c_zero, c_zero, dA(0, i), ldda, queue );
+            magmablas_claset( MagmaFull, mi, ib, c_zero, c_one,  dA(i, i), ldda, queue );
             
             if (i < n) {
                 // Apply H to A(i:m,i:n) from the left
                 magma_clarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise,
                                   mi, n-i, ib,
                                   dV,       ldda, dT(i), nb,
-                                  dA(i, i), ldda, dW, lddwork );
+                                  dA(i, i), ldda, dW, lddwork, queue );
             }
         }
     }
-    magma_queue_sync( stream );
+    magma_queue_sync( queue );
 
     magma_free( dV );
     magma_free_cpu( work );
-    magma_queue_destroy( stream );
-    
-    magmablasSetKernelStream( orig_stream );
+    magma_queue_destroy( queue );
 
     return *info;
 } /* magma_cungqr_gpu */

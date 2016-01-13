@@ -1,12 +1,29 @@
 var group__magmasparse__sgesv =
 [
-    [ "magma_sbaiter", "group__magmasparse__sgesv.html#gacd801fbc1f0ac08e6c399df9b3383294", null ],
+    [ "magma_sbaiter", "group__magmasparse__sgesv.html#ga8217f562ec64d4a78b861dc8eed275bf", null ],
+    [ "magma_sbaiter_overlap", "group__magmasparse__sgesv.html#ga0a2ea815ffcf2b47c8b4c671c56e009d", null ],
+    [ "magma_sbicg", "group__magmasparse__sgesv.html#gaf558e0d225d1dac81b423243e6299667", null ],
     [ "magma_sbicgstab", "group__magmasparse__sgesv.html#ga2522fcae1ec1ab02aed0f78225217d32", null ],
     [ "magma_sbicgstab_merge", "group__magmasparse__sgesv.html#gaae7c1f09ecbd79eeb48e138746e5c7d8", null ],
     [ "magma_sbicgstab_merge2", "group__magmasparse__sgesv.html#ga47c6a282c375f7a421694c5909bfd005", null ],
+    [ "magma_sbicgstab_merge3", "group__magmasparse__sgesv.html#gadd056d4aeb83408c934ef9cdf8ba904f", null ],
+    [ "magma_sbombard", "group__magmasparse__sgesv.html#ga376f4c26d46ceedf3ce937e621b9baa5", null ],
+    [ "magma_sbombard_merge", "group__magmasparse__sgesv.html#ga3138ec1aafce5b95368489556557a8e0", null ],
+    [ "magma_scgs", "group__magmasparse__sgesv.html#gab504001d33fc6ba9077ce166b239f807", null ],
     [ "magma_sfgmres", "group__magmasparse__sgesv.html#gae7d4743edfc3fd956f7d5b4d632e7e18", null ],
     [ "magma_siterref", "group__magmasparse__sgesv.html#gabcb3356d26a9cbaf7b31c41c50e7f2a9", null ],
     [ "magma_sjacobi", "group__magmasparse__sgesv.html#ga9217ed33ecdefe225edbaabfa15d7d9c", null ],
     [ "magma_sjacobidomainoverlap", "group__magmasparse__sgesv.html#gaa8464bcbd0a548221c23aedad1fdaa8b", null ],
-    [ "magma_spbicgstab", "group__magmasparse__sgesv.html#ga9c67452c9253975065ed9e294fd7d782", null ]
+    [ "magma_slsqr", "group__magmasparse__sgesv.html#ga2c10914e15d9fbb2bd7c30777c6d548a", null ],
+    [ "magma_spbicg", "group__magmasparse__sgesv.html#ga04cca0d298d21169ea3494d592c21a0b", null ],
+    [ "magma_spbicgstab", "group__magmasparse__sgesv.html#ga9c67452c9253975065ed9e294fd7d782", null ],
+    [ "magma_spbicgstab_merge", "group__magmasparse__sgesv.html#ga4fa51243e0343df3cc670697e1ef823f", null ],
+    [ "magma_spcgs", "group__magmasparse__sgesv.html#ga4e1ff7b5237093cf59063d3e7f559e69", null ],
+    [ "magma_spcgs_merge", "group__magmasparse__sgesv.html#ga1cc1e4ac8380e4cc979217fd2d688c32", null ],
+    [ "magma_sptfqmr_merge", "group__magmasparse__sgesv.html#ga9baaac6327698148bec7b41922cad53b", null ],
+    [ "magma_sqmr", "group__magmasparse__sgesv.html#ga3ba63933e597dacab36fc56411eaeb02", null ],
+    [ "magma_sqmr_merge", "group__magmasparse__sgesv.html#gad7a60246a8ea4de91f14a3fb6d4fc7e0", null ],
+    [ "magma_stfqmr", "group__magmasparse__sgesv.html#gafe28a9daceaf5317adaee72773b9b29d", null ],
+    [ "magma_stfqmr_merge", "group__magmasparse__sgesv.html#gabef2cd5696c2aae0ef51d245edb85a32", null ],
+    [ "magma_stfqmr_unrolled", "group__magmasparse__sgesv.html#ga16e11cabc8f690d7e575eadfd5e0f90d", null ]
 ];

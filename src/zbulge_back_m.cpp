@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Stan Tomov
@@ -21,7 +21,7 @@
 #endif
 
 
-#define PRECISION_z
+#define COMPLEX
 
 static void *magma_zapplyQ_m_parallel_section(void *arg);
 
@@ -130,7 +130,7 @@ magma_zbulge_back_m(
     double f= 1.;
     magma_int_t n_gpu = ne;
 
-//#if defined(PRECISION_s) || defined(PRECISION_d)
+//#ifdef REAL
 //    double gpu_cpu_perf = 32; //gpu over cpu performance
 //#else
 //    double gpu_cpu_perf = 32;  // gpu over cpu performance
@@ -160,7 +160,7 @@ magma_zbulge_back_m(
     /*============================
      *  use GPU+CPU's
      *==========================*/
-//n_gpu = ne;
+n_gpu = ne;
     if (n_gpu < ne) {
         // define the size of Q to be done on CPU's and the size on GPU's
         // note that GPU use Q(1:N_GPU) and CPU use Q(N_GPU+1:N)

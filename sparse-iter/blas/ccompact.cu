@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zcompact.cu normal z -> c, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zcompact.cu normal z -> c, Wed Jan  6 17:59:42 2016
        @author Stan Tomov
 */
 #include "common_magmasparse.h"
@@ -151,7 +151,7 @@ magma_ccompact(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
     
-    ccompact_kernel<<< grid, threads, 0, queue >>>(
+    ccompact_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
             m, n, dA, ldda, dnorms, tol, active, active+n );
 
     magma_igetvector( 1, active+n, 1, cBlock, 1 );
@@ -223,7 +223,7 @@ magma_ccompactActive(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
 
-    ccompactactive_kernel<<< grid, threads, 0, queue >>>(
+    ccompactactive_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
             m, n, dA, ldda, active);
     return info;
 }

@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeqrf_mgpu.cpp normal z -> d, Fri Sep 11 18:29:28 2015
+       @generated from src/zgeqrf_mgpu.cpp normal z -> d, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -90,7 +90,7 @@ magma_dgeqrf2_mgpu(
     // set to NULL to make cleanup easy: free(NULL) does nothing.
     double *dwork[MagmaMaxGPUs]={NULL}, *dpanel[MagmaMaxGPUs]={NULL};
     double *hwork=NULL, *hpanel=NULL;
-    magma_queue_t stream[MagmaMaxGPUs][2]={{NULL}};
+    magma_queue_t queues[MagmaMaxGPUs][2]={{NULL}};
     magma_event_t panel_event[MagmaMaxGPUs]={NULL};
 
     magma_int_t i, j, min_mn, dev, ldhpanel, lddwork, rows;
@@ -117,10 +117,8 @@ magma_dgeqrf2_mgpu(
 
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
 
-    nb = magma_get_dgeqrf_nb( m );
+    nb = magma_get_dgeqrf_nb( m, n );
 
     /* dwork is (n*nb) --- for T (nb*nb) and dlarfb work ((n-nb)*nb) ---
      *        + dpanel (ldda*nb), on each GPU.
@@ -161,8 +159,8 @@ magma_dgeqrf2_mgpu(
 
     for( dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
-        magma_queue_create( &stream[dev][0] );
-        magma_queue_create( &stream[dev][1] );
+        magma_queue_create( dev, &queues[dev][0] );
+        magma_queue_create( dev, &queues[dev][1] );
         magma_event_create( &panel_event[dev] );
     }
 
@@ -181,11 +179,12 @@ magma_dgeqrf2_mgpu(
             
             /* Send current panel to the CPU, after panel_event indicates it has been updated */
             magma_setdevice( panel_dev );
-            magma_queue_wait_event( stream[panel_dev][1], panel_event[panel_dev] );
+            magma_queue_wait_event( queues[panel_dev][1], panel_event[panel_dev] );
             magma_dgetmatrix_async( rows, ib,
                                     dlA(panel_dev, i, i_local), ldda,
-                                    hpanel(i),                  ldhpanel, stream[panel_dev][1] );
-            magma_queue_sync( stream[panel_dev][1] );
+                                    hpanel(i),                  ldhpanel, 
+                                    queues[panel_dev][1] );
+            magma_queue_sync( queues[panel_dev][1] );
 
             // Factor panel
             lapackf77_dgeqrf( &rows, &ib, hpanel(i), &ldhpanel, tau+i,
@@ -210,11 +209,12 @@ magma_dgeqrf2_mgpu(
                     dpanel[dev] = dwork[dev] + dpanel_offset;
                 magma_dsetmatrix_async( rows, ib,
                                         hpanel(i),   ldhpanel,
-                                        dpanel[dev], ldda, stream[dev][0] );
+                                        dpanel[dev], ldda, 
+                                        queues[dev][0] );
             }
             for( dev=0; dev < ngpu; dev++ ) {
                 magma_setdevice( dev );
-                magma_queue_sync( stream[dev][0] );
+                magma_queue_sync( queues[dev][0] );
             }
 
             // TODO: if magma_dpanel_to_q copied whole block, wouldn't need to restore
@@ -230,13 +230,13 @@ magma_dgeqrf2_mgpu(
                     magma_setdevice( dev );
                     magma_dsetmatrix_async( ib, ib,
                                             hwork,      ib,
-                                            dwork[dev], lddwork, stream[dev][0] );
+                                            dwork[dev], lddwork, 
+                                            queues[dev][0] );
                 }
                 
                 la_dev = (panel_dev+1) % ngpu;
                 for( dev=0; dev < ngpu; dev++ ) {
                     magma_setdevice( dev );
-                    magmablasSetKernelStream( stream[dev][0] );
                     if (dev == la_dev && i+nb < min_mn-nb) {
                         // If not last panel,
                         // for look-ahead panel, apply H' to A(i:m,i+ib:i+2*ib)
@@ -246,15 +246,17 @@ magma_dgeqrf2_mgpu(
                                           dpanel[dev],             ldda,       // V
                                           dwork[dev],              lddwork,    // T
                                           dlA(dev, i, i_nb_local), ldda,       // C
-                                          dwork[dev]+ib,           lddwork );  // work
-                        magma_event_record( panel_event[dev], stream[dev][0] );
+                                          dwork[dev]+ib,           lddwork,    // work
+                                          queues[dev][0] );  
+                        magma_event_record( panel_event[dev], queues[dev][0] );
                         // for trailing matrix, apply H' to A(i:m,i+2*ib:n)
                         magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                           rows, n_local[dev]-(i_nb_local+ib), ib,
                                           dpanel[dev],                ldda,       // V
                                           dwork[dev],                 lddwork,    // T
                                           dlA(dev, i, i_nb_local+ib), ldda,       // C
-                                          dwork[dev]+ib,              lddwork );  // work
+                                          dwork[dev]+ib,              lddwork,    // work
+                                          queues[dev][0] ); 
                     }
                     else {
                         // for trailing matrix, apply H' to A(i:m,i+ib:n)
@@ -267,14 +269,16 @@ magma_dgeqrf2_mgpu(
                                           dpanel[dev],             ldda,       // V
                                           dwork[dev],              lddwork,    // T
                                           dlA(dev, i, i_nb_local), ldda,       // C
-                                          dwork[dev]+ib,           lddwork );  // work
+                                          dwork[dev]+ib,           lddwork,    // work
+                                          queues[dev][0] );
                     }
                 }
                 // Restore top of panel (after larfb is done)
                 magma_setdevice( panel_dev );
                 magma_dsetmatrix_async( ib, ib,
                                         hpanel(i),                  ldhpanel,
-                                        dlA(panel_dev, i, i_local), ldda, stream[panel_dev][0] );
+                                        dlA(panel_dev, i, i_local), ldda, 
+                                        queues[panel_dev][0] );
             }
         }
     }
@@ -292,7 +296,8 @@ magma_dgeqrf2_mgpu(
             magma_setdevice( panel_dev );
             magma_dgetmatrix( rows, ib,
                               dlA(panel_dev, i, i_local), ldda,
-                              hwork + (j-i)*rows,         rows );
+                              hwork + (j-i)*rows,         rows,
+                              queues[panel_dev][0] );
         }
 
         // needs lwork >= 2*n*nb:
@@ -312,7 +317,8 @@ magma_dgeqrf2_mgpu(
             magma_setdevice( panel_dev );
             magma_dsetmatrix( rows, ib,
                               hwork + (j-i)*rows,         rows,
-                              dlA(panel_dev, i, i_local), ldda );
+                              dlA(panel_dev, i, i_local), ldda,
+                              queues[panel_dev][0] );
         }
     }
 
@@ -320,14 +326,13 @@ CLEANUP:
     // free(NULL) does nothing.
     for( dev=0; dev < ngpu; dev++ ) {
         magma_setdevice( dev );
-        magma_queue_destroy( stream[dev][0]   );
-        magma_queue_destroy( stream[dev][1]   );
+        magma_queue_destroy( queues[dev][0]   );
+        magma_queue_destroy( queues[dev][1]   );
         magma_event_destroy( panel_event[dev] );
         magma_free( dwork[dev] );
     }
     magma_free_pinned( hwork );
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_dgeqrf2_mgpu */

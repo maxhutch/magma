@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlarfg.cu normal z -> c, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zlarfg.cu normal z -> c, Wed Jan  6 17:59:37 2016
        
        @author Mark Gates
 */
@@ -19,7 +19,7 @@
 
 
 // ----------------------------------------
-// CUDA kernel for magma_clarfg.
+// kernel for magma_clarfg.
 // Uses one block of NB (currently 512) threads.
 // Each thread sums dx[ tx + k*NB ]^2 for k = 0, 1, ...,
 // then does parallel sum reduction to get norm-squared.
@@ -31,7 +31,8 @@
 __global__ void
 clarfg_kernel(
     int n,
-    magmaFloatComplex* dalpha, magmaFloatComplex* dx, int incx,
+    magmaFloatComplex* dalpha,
+    magmaFloatComplex* dx, int incx,
     magmaFloatComplex* dtau )
 {
     const int tx = threadIdx.x;
@@ -46,7 +47,7 @@ clarfg_kernel(
     if ( tx == 0 ) {
         tmp = *dalpha;
         #ifdef COMPLEX
-        swork[tx] = max( fabs(real(tmp)), fabs(imag(tmp)) );
+        swork[tx] = max( fabs( MAGMA_C_REAL(tmp)), fabs( MAGMA_C_IMAG(tmp)) );
         #else
         swork[tx] = fabs(tmp);
         #endif
@@ -57,7 +58,7 @@ clarfg_kernel(
     for( int j = tx; j < n-1; j += NB ) {
         tmp = dx[j*incx];
         #ifdef COMPLEX
-        swork[tx] = max( swork[tx], max( fabs(real(tmp)), fabs(imag(tmp)) ));
+        swork[tx] = max( swork[tx], max( fabs( MAGMA_C_REAL(tmp)), fabs( MAGMA_C_IMAG(tmp)) ));
         #else
         swork[tx] = max( swork[tx], fabs(tmp) );
         #endif
@@ -73,7 +74,7 @@ clarfg_kernel(
     if ( sscale > 0 ) {
         for( int j = tx; j < n-1; j += NB ) {
             tmp = dx[j*incx] / sscale;
-            swork[tx] += real(tmp)*real(tmp) + imag(tmp)*imag(tmp);
+            swork[tx] += MAGMA_C_REAL(tmp)*MAGMA_C_REAL(tmp) + MAGMA_C_IMAG(tmp)*MAGMA_C_IMAG(tmp);
         }
         magma_sum_reduce< NB >( tx, swork );
         //magma_sum_reduce( blockDim.x, tx, swork );
@@ -81,7 +82,7 @@ clarfg_kernel(
     
     if ( tx == 0 ) {
         magmaFloatComplex alpha = *dalpha;
-        if ( swork[0] == 0 && imag(alpha) == 0 ) {
+        if ( swork[0] == 0 && MAGMA_C_IMAG(alpha) == 0 ) {
             // H = I
             *dtau = MAGMA_C_ZERO;
         }
@@ -89,10 +90,10 @@ clarfg_kernel(
             // beta = norm( [dalpha, dx] )
             float beta;
             tmp  = alpha / sscale;
-            beta = sscale * sqrt( real(tmp)*real(tmp) + imag(tmp)*imag(tmp) + swork[0] );
-            beta = -copysign( beta, real(alpha) );
+            beta = sscale * sqrt( MAGMA_C_REAL(tmp)*MAGMA_C_REAL(tmp) + MAGMA_C_IMAG(tmp)*MAGMA_C_IMAG(tmp) + swork[0] );
+            beta = -copysign( beta, MAGMA_C_REAL(alpha) );
             // todo: deal with badly scaled vectors (see lapack's larfg)
-            *dtau   = MAGMA_C_MAKE( (beta - real(alpha)) / beta, -imag(alpha) / beta );
+            *dtau   = MAGMA_C_MAKE( (beta - MAGMA_C_REAL(alpha)) / beta, -MAGMA_C_IMAG(alpha) / beta );
             *dalpha = MAGMA_C_MAKE( beta, 0 );
             sscale2 = 1 / (alpha - beta);
         }
@@ -169,10 +170,9 @@ void magmablas_clarfg_q(
     magmaFloatComplex_ptr dtau,
     magma_queue_t queue )
 {
-    dim3 blocks( 1 );
     dim3 threads( NB );
-    //dim3 threads( min( NB, max( n-1, 1 )));
-    clarfg_kernel<<< blocks, threads, 0, queue >>>( n, dalpha, dx, incx, dtau );
+    dim3 blocks( 1 );
+    clarfg_kernel<<< blocks, threads, 0, queue->cuda_stream() >>>( n, dalpha, dx, incx, dtau );
 }
 
 
@@ -187,8 +187,5 @@ void magmablas_clarfg(
     magmaFloatComplex_ptr dx, magma_int_t incx,
     magmaFloatComplex_ptr dtau )
 {
-    dim3 blocks( 1 );
-    dim3 threads( NB );
-    //dim3 threads( min( NB, max( n-1, 1 )));
-    clarfg_kernel<<< blocks, threads >>>( n, dalpha, dx, incx, dtau );
+    magmablas_clarfg_q( n, dalpha, dx, incx, dtau, magmablasGetQueue() );
 }

@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
     
        @author Raffaele Solca
        @author Stan Tomov
        @author Mark Gates
        @author Azzam Haidar
     
-       @generated from zheevdx_gpu.cpp normal z -> c, Fri Sep 11 18:29:30 2015
+       @generated from src/zheevdx_gpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 #define COMPLEX
@@ -306,25 +306,28 @@ magma_cheevdx_gpu(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     /* If matrix is very small, then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
         magma_int_t lda = n;
         magmaFloatComplex *A;
         magma_cmalloc_cpu( &A, lda*n );
-        magma_cgetmatrix( n, n, dA, ldda, A, lda );
+        magma_cgetmatrix( n, n, dA, ldda, A, lda, queue );
         lapackf77_cheevd( jobz_, uplo_,
                           &n, A, &lda,
                           w, work, &lwork,
                           rwork, &lrwork,
                           iwork, &liwork, info );
-        magma_csetmatrix( n, n, A, lda, dA, ldda );
+        magma_csetmatrix( n, n, A, lda, dA, ldda, queue );
         magma_free_cpu( A );
+        magma_queue_destroy( queue );
         *mout = n;
         return *info;
     }
-
-    magma_queue_t stream;
-    magma_queue_create( &stream );
 
     // dC and dwork are never used together, so use one buffer for both;
     // unfortunately they're different types (complex and float).
@@ -353,7 +356,7 @@ magma_cheevdx_gpu(
     rmax = magma_ssqrt( bignum );
 
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_clanhe( MagmaMaxNorm, uplo, n, dA, ldda, dwork );
+    anrm = magmablas_clanhe( MagmaMaxNorm, uplo, n, dA, ldda, dwork, ldwork, queue );
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -364,7 +367,7 @@ magma_cheevdx_gpu(
         sigma = rmax / anrm;
     }
     if (iscale == 1) {
-        magmablas_clascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, info );
+        magmablas_clascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, queue, info );
     }
 
     /* Call CHETRD to reduce Hermitian matrix to tridiagonal form. */
@@ -421,12 +424,12 @@ magma_cheevdx_gpu(
 
         magma_smove_eig( range, n, w, &il, &iu, vl, vu, mout );
 
-        magma_csetmatrix( n, *mout, &work[indwrk + n * (il-1) ], n, dC, lddc );
+        magma_csetmatrix( n, *mout, &work[indwrk + n * (il-1) ], n, dC, lddc, queue );
 
         magma_cunmtr_gpu( MagmaLeft, uplo, MagmaNoTrans, n, *mout, dA, ldda, &work[indtau],
                           dC, lddc, wA, ldwa, &iinfo );
 
-        magma_ccopymatrix( n, *mout, dC, lddc, dA, ldda );
+        magma_ccopymatrix( n, *mout, dC, lddc, dA, ldda, queue );
 
         timer_stop( time );
         timer_printf( "time cunmtr_gpu + copy = %6.2f\n", time );
@@ -447,7 +450,7 @@ magma_cheevdx_gpu(
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
 
-    magma_queue_destroy( stream );
+    magma_queue_destroy( queue );
     magma_free( dwork );
 
     return *info;

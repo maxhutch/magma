@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgeqrf_gpu.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgeqrf_gpu.cpp normal z -> s, Wed Jan  6 17:59:49 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -46,8 +46,18 @@ int main( int argc, char** argv)
     magma_int_t status = 0;
     float tol = opts.tolerance * lapackf77_slamch("E");
     
+    // version 3 can do either check
+    if (opts.check == 1 && opts.version == 1) {
+        opts.check = 2;
+        printf( "%% version 1 requires check 2 (solve A*x=b)\n" );
+    }
+    if (opts.check == 2 && opts.version == 2) {
+        opts.check = 1;
+        printf( "%% version 2 requires check 1 (R - Q^H*A)\n" );
+    }
+    
     printf( "%% version %d\n", (int) opts.version );
-    if ( opts.version == 2 ) {
+    if ( opts.check == 1 ) {
         printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |R - Q^H*A|   |I - Q^H*Q|\n");
         printf("%%==============================================================================\n");
     }
@@ -59,15 +69,16 @@ int main( int argc, char** argv)
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
             N = opts.nsize[itest];
-            min_mn = min(M, N);
+            min_mn = min( M, N );
             lda    = M;
             n2     = lda*N;
             ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
+            nb     = magma_get_sgeqrf_nb( M, N );
             gflops = FLOPS_SGEQRF( M, N ) / 1e9;
             
             // query for workspace size
             lwork = -1;
-            lapackf77_sgeqrf(&M, &N, NULL, &M, NULL, tmp, &lwork, &info);
+            lapackf77_sgeqrf( &M, &N, NULL, &M, NULL, tmp, &lwork, &info );
             lwork = (magma_int_t)MAGMA_S_REAL( tmp[0] );
             
             TESTING_MALLOC_CPU( tau,    float, min_mn );
@@ -78,37 +89,40 @@ int main( int argc, char** argv)
             
             TESTING_MALLOC_DEV( d_A,    float, ldda*N );
             
+            if ( opts.version == 1 || opts.version == 3 ) {
+                size = (2*min(M, N) + magma_roundup( N, 32 ) )*nb;
+                TESTING_MALLOC_DEV( dT, float, size );
+                magmablas_slaset( MagmaFull, size, 1, c_zero, c_zero, dT, size );
+            }
+            
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_slacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+            lapackf77_slacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
             magma_ssetmatrix( M, N, h_R, lda, d_A, ldda );
             
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
+            nb = magma_get_sgeqrf_nb( M, N );
+            
             gpu_time = magma_wtime();
-            if ( opts.version == 2 ) {
+            if ( opts.version == 1 ) {
+                // stores dT, V blocks have zeros, R blocks inverted & stored in dT
+                magma_sgeqrf_gpu( M, N, d_A, ldda, tau, dT, &info );
+            }
+            else if ( opts.version == 2 ) {
                 // LAPACK complaint arguments
                 magma_sgeqrf2_gpu( M, N, d_A, ldda, tau, &info );
             }
+            #ifdef HAVE_CUBLAS
+            else if ( opts.version == 3 ) {
+                // stores dT, V blocks have zeros, R blocks stored in dT
+                magma_sgeqrf3_gpu( M, N, d_A, ldda, tau, dT, &info );
+            }
+            #endif
             else {
-                nb = magma_get_sgeqrf_nb( M );
-                size = (2*min(M, N) + magma_roundup( N, 32 ) )*nb;
-                TESTING_MALLOC_DEV( dT, float, size );
-                if ( opts.version == 1 ) {
-                    // stores dT, V blocks have zeros, R blocks inverted & stored in dT
-                    magma_sgeqrf_gpu( M, N, d_A, ldda, tau, dT, &info );
-                }
-                #ifdef HAVE_CUBLAS
-                else if ( opts.version == 3 ) {
-                    // stores dT, V blocks have zeros, R blocks stored in dT
-                    magma_sgeqrf3_gpu( M, N, d_A, ldda, tau, dT, &info );
-                }
-                #endif
-                else {
-                    printf( "Unknown version %d\n", (int) opts.version );
-                    return -1;
-                }
+                printf( "Unknown version %d\n", (int) opts.version );
+                return -1;
             }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
@@ -116,11 +130,20 @@ int main( int argc, char** argv)
                 printf("magma_sgeqrf returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
-            if ( opts.check && opts.version == 2 ) {
+            if ( opts.check == 1 && (opts.version == 2 || opts.version == 3) ) {
+                if ( opts.version == 3 ) {
+                    // copy diagonal blocks of R back to A
+                    for( int i=0; i < min_mn-nb; i += nb ) {
+                        magma_int_t ib = min( min_mn-i, nb );
+                        magmablas_slacpy( MagmaUpper, ib, ib, &dT[min_mn*nb + i*nb], nb, &d_A[ i + i*ldda ], ldda );
+                    }
+                }
+                
                 /* =====================================================================
                    Check the result, following zqrt01 except using the reduced Q.
                    This works for any M,N (square, tall, wide).
                    Only for version 2, which has LAPACK complaint output.
+                   Or   for version 3, after restoring diagonal blocks of A above.
                    =================================================================== */
                 magma_sgetmatrix( M, N, d_A, ldda, h_R, lda );
                 
@@ -153,7 +176,7 @@ int main( int argc, char** argv)
                 // error = || I - Q^H*Q || / N
                 lapackf77_slaset( "Upper", &min_mn, &min_mn, &c_zero, &c_one, R, &ldr );
                 blasf77_ssyrk( "Upper", "Conj", &min_mn, &M, &d_neg_one, Q, &ldq, &d_one, R, &ldr );
-                error2 = lapackf77_slansy( "1", "Upper", &min_mn, R, &ldr, work );
+                error2 = safe_lapackf77_slansy( "1", "Upper", &min_mn, R, &ldr, work );
                 if ( N > 0 )
                     error2 /= N;
                 
@@ -161,7 +184,7 @@ int main( int argc, char** argv)
                 TESTING_FREE_CPU( R    );  R    = NULL;
                 TESTING_FREE_CPU( work );  work = NULL;
             }
-            else if ( opts.check && M >= N ) {
+            else if ( opts.check == 2 && M >= N && (opts.version == 1 || opts.version == 3) ) {
                 /* =====================================================================
                    Check the result by solving consistent linear system, A*x = b.
                    Only for versions 1 & 3 with M >= N.
@@ -242,7 +265,7 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_sgeqrf(&M, &N, h_A, &lda, tau, h_work, &lwork, &info);
+                lapackf77_sgeqrf( &M, &N, h_A, &lda, tau, h_work, &lwork, &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
@@ -261,13 +284,13 @@ int main( int argc, char** argv)
                 printf("  ---   (  ---  )" );
             }
             printf( "   %7.2f (%7.2f)   ", gpu_perf, gpu_time );
-            if ( opts.check ) {
-                if ( opts.version == 2 ) {
-                    bool okay = (error < tol && error2 < tol);
-                    status += ! okay;
-                    printf( "%11.2e   %11.2e   %s\n", error, error2, (okay ? "ok" : "failed") );
-                }
-                else if ( M >= N ) {
+            if ( opts.check == 1 ) {
+                bool okay = (error < tol && error2 < tol);
+                status += ! okay;
+                printf( "%11.2e   %11.2e   %s\n", error, error2, (okay ? "ok" : "failed") );
+            }
+            else if ( opts.check == 2 ) {
+                if ( M >= N ) {
                     bool okay = (error < tol);
                     status += ! okay;
                     printf( "%10.2e   %s\n", error, (okay ? "ok" : "failed") );
@@ -288,8 +311,10 @@ int main( int argc, char** argv)
             
             TESTING_FREE_DEV( d_A );
             
-            if ( opts.version != 2 )
+            if ( opts.version == 1 || opts.version == 3 ) {
                 TESTING_FREE_DEV( dT );
+            }
+            
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -297,6 +322,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

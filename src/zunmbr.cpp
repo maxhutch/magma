@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /*
  * Version 1 - LAPACK
@@ -212,7 +212,7 @@ magma_zunmbr(
         if (nw > 0) {
             // TODO have get_zunmqr_nb and get_zunmlq_nb routines? see original LAPACK zunmbr.
             // TODO make them dependent on m, n, and k?
-            nb = magma_get_zgebrd_nb( min( m, n ));
+            nb = magma_get_zgebrd_nb( m, n );
             lwkopt = max(1, nw*nb);
         }
         else {

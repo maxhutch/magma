@@ -1,17 +1,22 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from ztrsm.cu normal z -> c, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/ztrsm.cu normal z -> c, Wed Jan  6 17:59:39 2016
 
        @author Peng Du
        @author Tingxing Dong
        @author Mark Gates
 */
-#include "common_magma.h"
+
+// include v1 header first; the v2 header will redefine non-q names,
+// but we can undef them to get back to the v1 versions.
+#include "magmablas_v1.h"
+
+#include "magma_internal.h"
 #include "ctrtri.cuh"  // get NB from ctrtri
 
 /**
@@ -19,12 +24,15 @@
     -------
     ctrsm_outofplace solves one of the matrix equations on gpu
 
-        op(A)*X = alpha*B,   or   X*op(A) = alpha*B,
+        op(A)*X = alpha*B,   or
+        X*op(A) = alpha*B,
 
     where alpha is a scalar, X and B are m by n matrices, A is a unit, or
     non-unit, upper or lower triangular matrix and op(A) is one of
 
-        op(A) = A,   or   op(A) = A^T,  or  op(A) = A^H.
+        op(A) = A,    or
+        op(A) = A^T,  or
+        op(A) = A^H.
 
     The matrix X is output.
 
@@ -134,7 +142,7 @@
     @ingroup magma_cblas3
     ********************************************************************/
 extern "C"
-void magmablas_ctrsm_outofplace(
+void magmablas_ctrsm_outofplace_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
@@ -142,7 +150,8 @@ void magmablas_ctrsm_outofplace(
     magmaFloatComplex_ptr       dB, magma_int_t lddb,
     magmaFloatComplex_ptr       dX, magma_int_t lddx,
     magma_int_t flag,
-    magmaFloatComplex_ptr d_dinvA, magma_int_t dinvA_length )
+    magmaFloatComplex_ptr d_dinvA, magma_int_t dinvA_length,
+    magma_queue_t queue )
 {
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
     #define dB(i_, j_) (dB + (i_) + (j_)*lddb)
@@ -207,24 +216,24 @@ void magmablas_ctrsm_outofplace(
     if (side == MagmaLeft) {
         // invert diagonal blocks
         if (flag)
-            magmablas_ctrtri_diag( uplo, diag, m, dA, ldda, d_dinvA );
+            magmablas_ctrtri_diag( uplo, diag, m, dA, ldda, d_dinvA, queue );
 
         if (transA == MagmaNoTrans) {
             if (uplo == MagmaLower) {
                 // left, lower no-transpose
                 // handle first block separately with alpha
                 jb = min(NB, m);
-                magma_cgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(0), NB, dB, lddb, c_zero, dX, lddx );
+                magma_cgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(0), NB, dB, lddb, c_zero, dX, lddx, queue );
                 if (NB < m) {
-                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, m-NB, n, NB, c_neg_one, dA(NB,0), ldda, dX, lddx, alpha, dB(NB,0), lddb );
+                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, m-NB, n, NB, c_neg_one, dA(NB,0), ldda, dX, lddx, alpha, dB(NB,0), lddb, queue );
 
                     // remaining blocks
                     for( i=NB; i < m; i += NB ) {
                         jb = min(m-i, NB);
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx, queue );
                         if (i+NB >= m)
                             break;
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m-i-NB, n, NB, c_neg_one, dA(i+NB,i), ldda, dX(i,0), lddx, c_one, dB(i+NB,0), lddb );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m-i-NB, n, NB, c_neg_one, dA(i+NB,i), ldda, dX(i,0), lddx, c_one, dB(i+NB,0), lddb, queue );
                     }
                 }
             }
@@ -233,16 +242,16 @@ void magmablas_ctrsm_outofplace(
                 // handle first block separately with alpha
                 jb = (m % NB == 0) ? NB : (m % NB);
                 i = m-jb;
-                magma_cgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx );
+                magma_cgemm( MagmaNoTrans, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx, queue );
                 if (i-NB >= 0) {
-                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, i, n, jb, c_neg_one, dA(0,i), ldda, dX(i,0), lddx, alpha, dB, lddb );
+                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, i, n, jb, c_neg_one, dA(0,i), ldda, dX(i,0), lddx, alpha, dB, lddb, queue );
 
                     // remaining blocks
                     for( i=m-jb-NB; i >= 0; i -= NB ) {
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, NB, n, NB, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, NB, n, NB, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx, queue );
                         if (i-NB < 0)
                             break;
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, i, n, NB, c_neg_one, dA(0,i), ldda, dX(i,0), lddx, c_one, dB, lddb );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, i, n, NB, c_neg_one, dA(0,i), ldda, dX(i,0), lddx, c_one, dB, lddb, queue );
                     }
                 }
             }
@@ -253,16 +262,16 @@ void magmablas_ctrsm_outofplace(
                 // handle first block separately with alpha
                 jb = (m % NB == 0) ? NB : (m % NB);
                 i = m-jb;
-                magma_cgemm( transA, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx );
+                magma_cgemm( transA, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx, queue );
                 if (i-NB >= 0) {
-                    magma_cgemm( transA, MagmaNoTrans, i, n, jb, c_neg_one, dA(i,0), ldda, dX(i,0), lddx, alpha, dB, lddb );
+                    magma_cgemm( transA, MagmaNoTrans, i, n, jb, c_neg_one, dA(i,0), ldda, dX(i,0), lddx, alpha, dB, lddb, queue );
 
                     // remaining blocks
                     for( i=m-jb-NB; i >= 0; i -= NB ) {
-                        magma_cgemm( transA, MagmaNoTrans, NB, n, NB, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx );
+                        magma_cgemm( transA, MagmaNoTrans, NB, n, NB, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx, queue );
                         if (i-NB < 0)
                             break;
-                        magma_cgemm( transA, MagmaNoTrans, i, n, NB, c_neg_one, dA(i,0), ldda, dX(i,0), lddx, c_one, dB, lddb );
+                        magma_cgemm( transA, MagmaNoTrans, i, n, NB, c_neg_one, dA(i,0), ldda, dX(i,0), lddx, c_one, dB, lddb, queue );
                     }
                 }
             }
@@ -270,17 +279,17 @@ void magmablas_ctrsm_outofplace(
                 // left, upper transpose
                 // handle first block separately with alpha
                 jb = min(NB, m);
-                magma_cgemm( transA, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(0), NB, dB, lddb, c_zero, dX, lddx );
+                magma_cgemm( transA, MagmaNoTrans, jb, n, jb, alpha, d_dinvA(0), NB, dB, lddb, c_zero, dX, lddx, queue );
                 if (NB < m) {
-                    magma_cgemm( transA, MagmaNoTrans, m-NB, n, NB, c_neg_one, dA(0,NB), ldda, dX, lddx, alpha, dB(NB,0), lddb );
+                    magma_cgemm( transA, MagmaNoTrans, m-NB, n, NB, c_neg_one, dA(0,NB), ldda, dX, lddx, alpha, dB(NB,0), lddb, queue );
 
                     // remaining blocks
                     for( i=NB; i < m; i += NB ) {
                         jb = min(m-i, NB);
-                        magma_cgemm( transA, MagmaNoTrans, jb, n, jb, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx );
+                        magma_cgemm( transA, MagmaNoTrans, jb, n, jb, c_one, d_dinvA(i), NB, dB(i,0), lddb, c_zero, dX(i,0), lddx, queue );
                         if (i+NB >= m)
                             break;
-                        magma_cgemm( transA, MagmaNoTrans, m-i-NB, n, NB, c_neg_one, dA(i,i+NB), ldda, dX(i,0), lddx, c_one, dB(i+NB,0), lddb );
+                        magma_cgemm( transA, MagmaNoTrans, m-i-NB, n, NB, c_neg_one, dA(i,i+NB), ldda, dX(i,0), lddx, c_one, dB(i+NB,0), lddb, queue );
                     }
                 }
             }
@@ -289,7 +298,7 @@ void magmablas_ctrsm_outofplace(
     else {  // side == MagmaRight
         // invert diagonal blocks
         if (flag)
-            magmablas_ctrtri_diag( uplo, diag, n, dA, ldda, d_dinvA );
+            magmablas_ctrtri_diag( uplo, diag, n, dA, ldda, d_dinvA, queue );
 
         if (transA == MagmaNoTrans) {
             if (uplo == MagmaLower) {
@@ -297,16 +306,16 @@ void magmablas_ctrsm_outofplace(
                 // handle first block separately with alpha
                 jb = (n % NB == 0) ? NB : (n % NB);
                 i = n-jb;
-                magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx );
+                magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx, queue );
                 if (i-NB >= 0) {
-                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, i, jb, c_neg_one, dX(0,i), lddx, dA(i,0), ldda, alpha, dB, lddb );
+                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, i, jb, c_neg_one, dX(0,i), lddx, dA(i,0), ldda, alpha, dB, lddb, queue );
 
                     // remaining blocks
                     for( i=n-jb-NB; i >= 0; i -= NB ) {
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, NB, NB, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, NB, NB, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx, queue );
                         if (i-NB < 0)
                             break;
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, i, NB, c_neg_one, dX(0,i), lddx, dA(i,0), ldda, c_one, dB, lddb );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, i, NB, c_neg_one, dX(0,i), lddx, dA(i,0), ldda, c_one, dB, lddb, queue );
                     }
                 }
             }
@@ -314,17 +323,17 @@ void magmablas_ctrsm_outofplace(
                 // right, upper no-transpose
                 // handle first block separately with alpha
                 jb = min(NB, n);
-                magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB, lddb, d_dinvA(0), NB, c_zero, dX, lddx );
+                magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, jb, jb, alpha, dB, lddb, d_dinvA(0), NB, c_zero, dX, lddx, queue );
                 if (NB < n) {
-                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, n-NB, NB, c_neg_one, dX, lddx, dA(0,NB), ldda, alpha, dB(0,NB), lddb );
+                    magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, n-NB, NB, c_neg_one, dX, lddx, dA(0,NB), ldda, alpha, dB(0,NB), lddb, queue );
 
                     // remaining blocks
                     for( i=NB; i < n; i += NB ) {
                         jb = min(NB, n-i);
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, jb, jb, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, jb, jb, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx, queue );
                         if (i+NB >= n)
                             break;
-                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, n-i-NB, NB, c_neg_one, dX(0,i), lddx, dA(i,i+NB), ldda, c_one, dB(0,i+NB), lddb );
+                        magma_cgemm( MagmaNoTrans, MagmaNoTrans, m, n-i-NB, NB, c_neg_one, dX(0,i), lddx, dA(i,i+NB), ldda, c_one, dB(0,i+NB), lddb, queue );
                     }
                 }
             }
@@ -334,17 +343,17 @@ void magmablas_ctrsm_outofplace(
                 // right, lower transpose
                 // handle first block separately with alpha
                 jb = min(NB, n);
-                magma_cgemm( MagmaNoTrans, transA, m, jb, jb, alpha, dB, lddb, d_dinvA(0), NB, c_zero, dX, lddx );
+                magma_cgemm( MagmaNoTrans, transA, m, jb, jb, alpha, dB, lddb, d_dinvA(0), NB, c_zero, dX, lddx, queue );
                 if (NB < n) {
-                    magma_cgemm( MagmaNoTrans, transA, m, n-NB, NB, c_neg_one, dX, lddx, dA(NB,0), ldda, alpha, dB(0,NB), lddb );
+                    magma_cgemm( MagmaNoTrans, transA, m, n-NB, NB, c_neg_one, dX, lddx, dA(NB,0), ldda, alpha, dB(0,NB), lddb, queue );
 
                     // remaining blocks
                     for( i=NB; i < n; i += NB ) {
                         jb = min(NB, n-i);
-                        magma_cgemm( MagmaNoTrans, transA, m, jb, jb, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx );
+                        magma_cgemm( MagmaNoTrans, transA, m, jb, jb, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx, queue );
                         if (i+NB >= n)
                             break;
-                        magma_cgemm( MagmaNoTrans, transA, m, n-i-NB, NB, c_neg_one, dX(0,i), lddx, dA(NB+i,i), ldda, c_one, dB(0,i+NB), lddb );
+                        magma_cgemm( MagmaNoTrans, transA, m, n-i-NB, NB, c_neg_one, dX(0,i), lddx, dA(NB+i,i), ldda, c_one, dB(0,i+NB), lddb, queue );
                     }
                 }
             }
@@ -353,16 +362,16 @@ void magmablas_ctrsm_outofplace(
                 // handle first block separately with alpha
                 jb = (n % NB == 0) ? NB : (n % NB);
                 i = n-jb;
-                magma_cgemm( MagmaNoTrans, transA, m, jb, jb, alpha, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx );
+                magma_cgemm( MagmaNoTrans, transA, m, jb, jb, alpha, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx, queue );
                 if (i-NB >= 0) {
-                    magma_cgemm( MagmaNoTrans, transA, m, i, jb, c_neg_one, dX(0,i), lddx, dA(0,i), ldda, alpha, dB, lddb );
+                    magma_cgemm( MagmaNoTrans, transA, m, i, jb, c_neg_one, dX(0,i), lddx, dA(0,i), ldda, alpha, dB, lddb, queue );
 
                     // remaining blocks
                     for( i=n-jb-NB; i >= 0; i -= NB ) {
-                        magma_cgemm( MagmaNoTrans, transA, m, NB, NB, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx );
+                        magma_cgemm( MagmaNoTrans, transA, m, NB, NB, c_one, dB(0,i), lddb, d_dinvA(i), NB, c_zero, dX(0,i), lddx, queue );
                         if (i-NB < 0)
                             break;
-                        magma_cgemm( MagmaNoTrans, transA, m, i, NB, c_neg_one, dX(0,i), lddx, dA(0,i), ldda, c_one, dB, lddb );
+                        magma_cgemm( MagmaNoTrans, transA, m, i, NB, c_neg_one, dX(0,i), lddx, dA(0,i), ldda, c_one, dB, lddb, queue );
                     }
                 }
             }
@@ -379,7 +388,7 @@ void magmablas_ctrsm_outofplace(
     @ingroup magma_cblas3
     ********************************************************************/
 extern "C"
-void magmablas_ctrsm_work(
+void magmablas_ctrsm_work_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
@@ -387,12 +396,14 @@ void magmablas_ctrsm_work(
     magmaFloatComplex_ptr       dB, magma_int_t lddb,
     magmaFloatComplex_ptr       dX, magma_int_t lddx,
     magma_int_t flag,
-    magmaFloatComplex_ptr d_dinvA, magma_int_t dinvA_length )
+    magmaFloatComplex_ptr d_dinvA, magma_int_t dinvA_length,
+    magma_queue_t queue )
 {
-    magmablas_ctrsm_outofplace( side, uplo, transA, diag, m, n, alpha,
-                                dA, ldda, dB, lddb, dX, lddx, flag, d_dinvA, dinvA_length );
+    magmablas_ctrsm_outofplace_q( side, uplo, transA, diag, m, n, alpha,
+                                  dA, ldda, dB, lddb, dX, lddx, flag,
+                                  d_dinvA, dinvA_length, queue );
     // copy X to B
-    magmablas_clacpy( MagmaFull, m, n, dX, lddx, dB, lddb );
+    magmablas_clacpy( MagmaFull, m, n, dX, lddx, dB, lddb, queue );
 }
 
 
@@ -405,12 +416,13 @@ void magmablas_ctrsm_work(
     @ingroup magma_cblas3
     ********************************************************************/
 extern "C"
-void magmablas_ctrsm(
+void magmablas_ctrsm_q(
     magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
     magma_int_t m, magma_int_t n,
     magmaFloatComplex alpha,
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloatComplex_ptr       dB, magma_int_t lddb )
+    magmaFloatComplex_ptr       dB, magma_int_t lddb,
+    magma_queue_t queue )
 {
     magma_int_t nrowA = (side == MagmaLeft ? m : n);
 
@@ -455,18 +467,84 @@ void magmablas_ctrsm(
 
     magma_cmalloc( &d_dinvA, dinvA_length );
     magma_cmalloc( &dX, size_x );
+    
     if ( d_dinvA == NULL || dX == NULL ) {
         info = MAGMA_ERR_DEVICE_ALLOC;
         magma_xerbla( __func__, -(info) );
         // continue to free
     }
     else {
-        magmablas_claset( MagmaFull, dinvA_length, 1, MAGMA_C_ZERO, MAGMA_C_ZERO, d_dinvA, dinvA_length );
-        magmablas_claset( MagmaFull, m, n, MAGMA_C_ZERO, MAGMA_C_ZERO, dX, lddx );
-        magmablas_ctrsm_work( side, uplo, transA, diag, m, n, alpha,
-                              dA, ldda, dB, lddb, dX, lddx, 1, d_dinvA, dinvA_length );
+        magmablas_claset( MagmaFull, dinvA_length, 1, MAGMA_C_ZERO, MAGMA_C_ZERO, d_dinvA, dinvA_length, queue );
+        magmablas_claset( MagmaFull, m, n, MAGMA_C_ZERO, MAGMA_C_ZERO, dX, lddx, queue );
+        magmablas_ctrsm_work_q( side, uplo, transA, diag, m, n, alpha,
+                                dA, ldda, dB, lddb, dX, lddx, 1, d_dinvA, dinvA_length, queue );
     }
 
     magma_free( d_dinvA );
     magma_free( dX );
+}
+
+
+// ------------------------------------------------------------
+// define v1 interface
+#undef magmablas_ctrsm_outofplace
+#undef magmablas_ctrsm_work
+#undef magmablas_ctrsm
+
+/**
+    @see magmablas_ctrsm_outofplace_q
+    @ingroup magma_cblas3
+    ********************************************************************/
+extern "C"
+void magmablas_ctrsm_outofplace(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex alpha,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr       dB, magma_int_t lddb,
+    magmaFloatComplex_ptr       dX, magma_int_t lddx,
+    magma_int_t flag,
+    magmaFloatComplex_ptr d_dinvA, magma_int_t dinvA_length )
+{
+    magmablas_ctrsm_outofplace_q( side, uplo, transA, diag, m, n, alpha,
+                                  dA, ldda, dB, lddb, dX, lddx, flag,
+                                  d_dinvA, dinvA_length, magmablasGetQueue() );
+}
+
+
+/**
+    @see magmablas_ctrsm_work_q
+    @ingroup magma_cblas3
+    ********************************************************************/
+extern "C"
+void magmablas_ctrsm_work(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex alpha,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr       dB, magma_int_t lddb,
+    magmaFloatComplex_ptr       dX, magma_int_t lddx,
+    magma_int_t flag,
+    magmaFloatComplex_ptr d_dinvA, magma_int_t dinvA_length )
+{
+    magmablas_ctrsm_work_q( side, uplo, transA, diag, m, n, alpha,
+                            dA, ldda, dB, lddb, dX, lddx, flag,
+                            d_dinvA, dinvA_length, magmablasGetQueue() );
+}
+
+
+/**
+    @see magmablas_ctrsm_q
+    @ingroup magma_cblas3
+    ********************************************************************/
+extern "C"
+void magmablas_ctrsm(
+    magma_side_t side, magma_uplo_t uplo, magma_trans_t transA, magma_diag_t diag,
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex alpha,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex_ptr       dB, magma_int_t lddb )
+{
+    magmablas_ctrsm_q( side, uplo, transA, diag, m, n, alpha, dA, ldda, dB, lddb,
+                       magmablasGetQueue() );
 }

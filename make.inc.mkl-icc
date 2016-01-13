@@ -1,17 +1,18 @@
 #//////////////////////////////////////////////////////////////////////////////
-#   -- MAGMA (version 1.7.0) --
+#   -- MAGMA (version 2.0.0-beta2) --
 #      Univ. of Tennessee, Knoxville
 #      Univ. of California, Berkeley
 #      Univ. of Colorado, Denver
-#      @date September 2015
+#      @date January 2016
 #//////////////////////////////////////////////////////////////////////////////
 
-# GPU_TARGET contains one or more of Tesla, Fermi, or Kepler,
+# GPU_TARGET contains one or more of Fermi, Kepler, or Maxwell,
 # to specify for which GPUs you want to compile MAGMA:
-#     Tesla  - NVIDIA compute capability 1.x cards (no longer supported in CUDA 6.5)
-#     Fermi  - NVIDIA compute capability 2.x cards
-#     Kepler - NVIDIA compute capability 3.x cards
+#     Fermi   - NVIDIA compute capability 2.x cards
+#     Kepler  - NVIDIA compute capability 3.x cards
+#     Maxwell - NVIDIA compute capability 5.x cards
 # The default is "Fermi Kepler".
+# Note that NVIDIA no longer supports 1.x cards, as of CUDA 6.5.
 # See http://developer.nvidia.com/cuda-gpus
 #
 #GPU_TARGET ?= Fermi Kepler
@@ -37,10 +38,14 @@ RANLIB    = ranlib
 FPIC      = -fPIC
 
 CFLAGS    = -O3 $(FPIC) -DADD_ -Wall -Wshadow -openmp -DMAGMA_WITH_MKL
-FFLAGS    = -O3 $(FPIC) -DADD_ -warn all -warn nounused
+FFLAGS    = -O3 $(FPIC) -DADD_ -warn all -warn nounused -nogen-interfaces
 F90FLAGS  = -O3 $(FPIC) -DADD_ -warn all -warn nounused
 NVCCFLAGS = -O3         -DADD_           -Xcompiler "$(FPIC) -Wall -Wno-unused-function"
 LDFLAGS   =     $(FPIC)                  -openmp
+
+# C++11 (icc >= 13) is not required, but has benefits like atomic operations
+CXXFLAGS := $(CFLAGS) -std=c++11
+CFLAGS   += -std=c99
 
 
 # --------------------
@@ -53,7 +58,7 @@ LDFLAGS   =     $(FPIC)                  -openmp
 # icc with MKL 10.3, Intel threads
 LIB       = -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lpthread -lstdc++ -lm
 
-LIB      += -lcublas -lcudart
+LIB      += -lcublas -lcusparse -lcudart
 
 
 # --------------------

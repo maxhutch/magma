@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        
@@ -78,7 +78,7 @@ __global__ void zlaswp_sym_kernel( zlaswp_sym_params_t params )
 extern "C" void zlaswp_sym( zlaswp_sym_params_t &params, magma_queue_t queue )
 {
     int blocks = magma_ceildiv(params.n,  NTHREADS);
-    zlaswp_sym_kernel<<< blocks, NTHREADS, 0, queue >>>( params );
+    zlaswp_sym_kernel<<< blocks, NTHREADS, 0, queue->cuda_stream() >>>( params );
 }
 
 
@@ -179,5 +179,5 @@ magmablas_zlaswp_sym( magma_int_t n, magmaDoubleComplex *dA, magma_int_t lda,
                       magma_int_t k1, magma_int_t k2,
                       const magma_int_t *ipiv, magma_int_t inci )
 {
-    return magmablas_zlaswp_sym_q( n, dA, lda, k1, k2, ipiv, inci, magma_stream );
+    return magmablas_zlaswp_sym_q( n, dA, lda, k1, k2, ipiv, inci, magmablasGetQueue() );
 }

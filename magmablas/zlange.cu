@@ -1,26 +1,34 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
 */
-#include "common_magma.h"
+
+// include v1 header first; the v2 header will redefine non-q names,
+// but we can undef them to get back to the v1 versions.
+#include "magmablas_v1.h"
+
+#include "magma_internal.h"
 #include "magma_templates.h"
 
+#define NB_X 64
 
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:m-1, for || A ||_inf,
  * where m and n are any size.
- * Has ceil( m/64 ) blocks of 64 threads. Each thread does one row.
+ * Has ceil( m/NB_X ) blocks of NB_X threads. Each thread does one row.
  * See also zlange_max_kernel code, below. */
 extern "C" __global__ void
 zlange_inf_kernel(
-    int m, int n, const magmaDoubleComplex *A, int lda, double *dwork )
+    int m, int n,
+    const magmaDoubleComplex * __restrict__ A, int lda,
+    double * __restrict__ dwork )
 {
-    int i = blockIdx.x*64 + threadIdx.x;
+    int i = blockIdx.x*NB_X + threadIdx.x;
     double rsum[4] = {0, 0, 0, 0};
     int n_mod_4 = n % 4;
     n -= n_mod_4;
@@ -35,17 +43,17 @@ zlange_inf_kernel(
             A += 4*lda;
             
             while( A < Aend ) {
-                rsum[0] += cuCabs( rA[0] );  rA[0] = A[0];
-                rsum[1] += cuCabs( rA[1] );  rA[1] = A[lda];
-                rsum[2] += cuCabs( rA[2] );  rA[2] = A[2*lda];
-                rsum[3] += cuCabs( rA[3] );  rA[3] = A[3*lda];
+                rsum[0] += MAGMA_Z_ABS( rA[0] );  rA[0] = A[0];
+                rsum[1] += MAGMA_Z_ABS( rA[1] );  rA[1] = A[lda];
+                rsum[2] += MAGMA_Z_ABS( rA[2] );  rA[2] = A[2*lda];
+                rsum[3] += MAGMA_Z_ABS( rA[3] );  rA[3] = A[3*lda];
                 A += 4*lda;
             }
             
-            rsum[0] += cuCabs( rA[0] );
-            rsum[1] += cuCabs( rA[1] );
-            rsum[2] += cuCabs( rA[2] );
-            rsum[3] += cuCabs( rA[3] );
+            rsum[0] += MAGMA_Z_ABS( rA[0] );
+            rsum[1] += MAGMA_Z_ABS( rA[1] );
+            rsum[2] += MAGMA_Z_ABS( rA[2] );
+            rsum[3] += MAGMA_Z_ABS( rA[3] );
         }
     
         /* clean up code */
@@ -54,18 +62,18 @@ zlange_inf_kernel(
                 break;
     
             case 1:
-                rsum[0] += cuCabs( A[0] );
+                rsum[0] += MAGMA_Z_ABS( A[0] );
                 break;
     
             case 2:
-                rsum[0] += cuCabs( A[0]   );
-                rsum[1] += cuCabs( A[lda] );
+                rsum[0] += MAGMA_Z_ABS( A[0]   );
+                rsum[1] += MAGMA_Z_ABS( A[lda] );
                 break;
     
             case 3:
-                rsum[0] += cuCabs( A[0]     );
-                rsum[1] += cuCabs( A[lda]   );
-                rsum[2] += cuCabs( A[2*lda] );
+                rsum[0] += MAGMA_Z_ABS( A[0]     );
+                rsum[1] += MAGMA_Z_ABS( A[lda]   );
+                rsum[2] += MAGMA_Z_ABS( A[2*lda] );
                 break;
         }
     
@@ -77,13 +85,15 @@ zlange_inf_kernel(
 
 /* Computes max of row dwork[i] = max( abs( A(i,:) )), i=0:m-1, for || A ||_max,
  * where m and n are any size.
- * Has ceil( m/64 ) blocks of 64 threads. Each thread does one row.
+ * Has ceil( m/NB_X ) blocks of NB_X threads. Each thread does one row.
  * Based on zlange_inf_kernel code, above. */
 extern "C" __global__ void
 zlange_max_kernel(
-    int m, int n, const magmaDoubleComplex *A, int lda, double *dwork )
+    int m, int n,
+    const magmaDoubleComplex * __restrict__ A, int lda,
+    double * __restrict__ dwork )
 {
-    int i = blockIdx.x*64 + threadIdx.x;
+    int i = blockIdx.x*NB_X + threadIdx.x;
     double rmax[4] = {0, 0, 0, 0};
     int n_mod_4 = n % 4;
     n -= n_mod_4;
@@ -98,17 +108,17 @@ zlange_max_kernel(
             A += 4*lda;
             
             while( A < Aend ) {
-                rmax[0] = max_nan( rmax[0], cuCabs( rA[0] ));  rA[0] = A[0];
-                rmax[1] = max_nan( rmax[1], cuCabs( rA[1] ));  rA[1] = A[lda];
-                rmax[2] = max_nan( rmax[2], cuCabs( rA[2] ));  rA[2] = A[2*lda];
-                rmax[3] = max_nan( rmax[3], cuCabs( rA[3] ));  rA[3] = A[3*lda];
+                rmax[0] = max_nan( rmax[0], MAGMA_Z_ABS( rA[0] ));  rA[0] = A[0];
+                rmax[1] = max_nan( rmax[1], MAGMA_Z_ABS( rA[1] ));  rA[1] = A[lda];
+                rmax[2] = max_nan( rmax[2], MAGMA_Z_ABS( rA[2] ));  rA[2] = A[2*lda];
+                rmax[3] = max_nan( rmax[3], MAGMA_Z_ABS( rA[3] ));  rA[3] = A[3*lda];
                 A += 4*lda;
             }
             
-            rmax[0] = max_nan( rmax[0], cuCabs( rA[0] ));
-            rmax[1] = max_nan( rmax[1], cuCabs( rA[1] ));
-            rmax[2] = max_nan( rmax[2], cuCabs( rA[2] ));
-            rmax[3] = max_nan( rmax[3], cuCabs( rA[3] ));
+            rmax[0] = max_nan( rmax[0], MAGMA_Z_ABS( rA[0] ));
+            rmax[1] = max_nan( rmax[1], MAGMA_Z_ABS( rA[1] ));
+            rmax[2] = max_nan( rmax[2], MAGMA_Z_ABS( rA[2] ));
+            rmax[3] = max_nan( rmax[3], MAGMA_Z_ABS( rA[3] ));
         }
     
         /* clean up code */
@@ -117,18 +127,18 @@ zlange_max_kernel(
                 break;
     
             case 1:
-                rmax[0] = max_nan( rmax[0], cuCabs( A[0] ));
+                rmax[0] = max_nan( rmax[0], MAGMA_Z_ABS( A[0] ));
                 break;                          
                                                 
             case 2:                             
-                rmax[0] = max_nan( rmax[0], cuCabs( A[  0] ));
-                rmax[1] = max_nan( rmax[1], cuCabs( A[lda] ));
+                rmax[0] = max_nan( rmax[0], MAGMA_Z_ABS( A[  0] ));
+                rmax[1] = max_nan( rmax[1], MAGMA_Z_ABS( A[lda] ));
                 break;                          
                                                 
             case 3:                             
-                rmax[0] = max_nan( rmax[0], cuCabs( A[    0] ));
-                rmax[1] = max_nan( rmax[1], cuCabs( A[  lda] ));
-                rmax[2] = max_nan( rmax[2], cuCabs( A[2*lda] ));
+                rmax[0] = max_nan( rmax[0], MAGMA_Z_ABS( A[    0] ));
+                rmax[1] = max_nan( rmax[1], MAGMA_Z_ABS( A[  lda] ));
+                rmax[2] = max_nan( rmax[2], MAGMA_Z_ABS( A[2*lda] ));
                 break;
         }
     
@@ -146,18 +156,20 @@ zlange_max_kernel(
  * and finally thread 0 saves to dwork[j]. */
 extern "C" __global__ void
 zlange_one_kernel(
-    int m, int n, const magmaDoubleComplex *A, int lda, double *dwork )
+    int m, int n,
+    const magmaDoubleComplex * __restrict__ A, int lda,
+    double * __restrict__ dwork )
 {
-    __shared__ double ssum[64];
+    __shared__ double ssum[NB_X];
     int tx = threadIdx.x;
     
     A += blockIdx.x*lda;  // column j
     
     ssum[tx] = 0;
-    for( int i = tx; i < m; i += 64 ) {
-        ssum[tx] += cuCabs( A[i] );
+    for( int i = tx; i < m; i += NB_X ) {
+        ssum[tx] += MAGMA_Z_ABS( A[i] );
     }
-    magma_sum_reduce< 64 >( tx, ssum );
+    magma_sum_reduce< NB_X >( tx, ssum );
     if ( tx == 0 ) {
         dwork[ blockIdx.x ] = ssum[0];
     }
@@ -175,13 +187,13 @@ zlange_one_kernel(
     -----------
     ZLANGE returns the value
     
-       ZLANGE = ( max(abs(A(i,j))), NORM = 'M' or 'm'
+       ZLANGE = ( max(abs(A(i,j))), NORM = MagmaMaxNorm
                 (
-                ( norm1(A),         NORM = '1', 'O' or 'o'
+                ( norm1(A),         NORM = MagmaOneNorm
                 (
-                ( normI(A),         NORM = 'I' or 'i'
+                ( normI(A),         NORM = MagmaInfNorm
                 (
-                ( normF(A),         NORM = 'F', 'f', 'E' or 'e'  ** not yet supported
+                ( normF(A),         NORM = MagmaFrobeniusNorm  ** not yet supported
     
     where norm1 denotes the one norm of a matrix (maximum column sum),
     normI denotes the infinity norm of a matrix (maximum row sum) and
@@ -191,7 +203,7 @@ zlange_one_kernel(
     Arguments
     ---------
     @param[in]
-    norm    CHARACTER*1
+    norm    magma_norm_t
             Specifies the value to be returned in ZLANGE as described
             above.
     
@@ -216,24 +228,22 @@ zlange_one_kernel(
     @param
     dwork   (workspace) DOUBLE PRECISION array on the GPU, dimension (LWORK).
     
-@cond
-TODO add lwork parameter
     @param[in]
     lwork   INTEGER
             The dimension of the array WORK.
-            If NORM = 'I' or 'M', LWORK >= max( 1, M ).
-            If NORM = '1',        LWORK >= max( 1, N ).
+            If NORM = MagmaInfNorm or MagmaMaxNorm, LWORK >= max( 1, M ).
+            If NORM = MagmaOneNorm,                 LWORK >= max( 1, N ).
             Note this is different than LAPACK, which requires WORK only for
-            NORM = 'I', and does not pass LWORK.
-@endcond
+            NORM = MagmaInfNorm, and does not pass LWORK.
 
     @ingroup magma_zaux2
     ********************************************************************/
 extern "C" double
-magmablas_zlange(
+magmablas_zlange_q(
     magma_norm_t norm, magma_int_t m, magma_int_t n,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
-    magmaDouble_ptr dwork )  //, magma_int_t lwork )
+    magmaDouble_ptr dwork, magma_int_t lwork,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( ! (norm == MagmaInfNorm || norm == MagmaMaxNorm || norm == MagmaOneNorm) )
@@ -244,9 +254,9 @@ magmablas_zlange(
         info = -3;
     else if ( ldda < m )
         info = -5;
-    //else if ( ((norm == MagmaInfNorm || norm == MagmaMaxNorm) && (lwork < m)) ||
-    //          ((norm == MagmaOneNorm) && (lwork < n)) )
-    //    info = -7;
+    else if ( ((norm == MagmaInfNorm || norm == MagmaMaxNorm) && (lwork < m)) ||
+              ((norm == MagmaOneNorm) && (lwork < n)) )
+        info = -7;
 
     if ( info != 0 ) {
         magma_xerbla( __func__, -(info) );
@@ -258,26 +268,42 @@ magmablas_zlange(
         return 0;
     
     //int i;
-    dim3 threads( 64 );
+    dim3 threads( NB_X );
     double result = -1;
     if ( norm == MagmaInfNorm ) {
-        dim3 grid( magma_ceildiv( m, 64 ) );
-        zlange_inf_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( m, dwork );
-        cudaMemcpy( &result, &dwork[0], sizeof(double), cudaMemcpyDeviceToHost );
+        dim3 grid( magma_ceildiv( m, NB_X ) );
+        zlange_inf_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( m, n, dA, ldda, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, queue->cuda_stream() >>>( m, dwork );
     }
     else if ( norm == MagmaMaxNorm ) {
-        dim3 grid( magma_ceildiv( m, 64 ) );
-        zlange_max_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( m, dwork );
-        cudaMemcpy( &result, &dwork[0], sizeof(double), cudaMemcpyDeviceToHost );
+        dim3 grid( magma_ceildiv( m, NB_X ) );
+        zlange_max_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( m, n, dA, ldda, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, queue->cuda_stream() >>>( m, dwork );
     }
     else if ( norm == MagmaOneNorm ) {
         dim3 grid( n );
-        zlange_one_kernel<<< grid, threads, 0, magma_stream >>>( m, n, dA, ldda, dwork );
-        magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );  // note N instead of M
-        cudaMemcpy( &result, &dwork[0], sizeof(double), cudaMemcpyDeviceToHost );
+        zlange_one_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( m, n, dA, ldda, dwork );
+        magma_max_nan_kernel<<< 1, 512, 0, queue->cuda_stream() >>>( n, dwork );  // note n instead of m
     }
+    magma_dgetvector( 1, &dwork[0], 1, &result, 1, queue );
     
     return result;
+}
+
+
+// ------------------------------------------------------------
+// define v1 interface
+#undef magmablas_zlange
+
+/**
+    @see magmablas_zlange_q
+    @ingroup magma_zaux2
+    ********************************************************************/
+extern "C" double
+magmablas_zlange(
+    magma_norm_t norm, magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDouble_ptr dwork, magma_int_t lwork )
+{
+    return magmablas_zlange_q( norm, m, n, dA, ldda, dwork, lwork, magmablasGetQueue() );
 }

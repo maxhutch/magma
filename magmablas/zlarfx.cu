@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -159,26 +159,51 @@ void magma_ztrmv_tkernel(magmaDoubleComplex *T, int ldt, magmaDoubleComplex *t, 
     LAPACK's zlarf routine. 
  */
 extern "C" void
-magma_zlarfx_gpu(
+magma_zlarfx_gpu_q(
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex_ptr v,
     magmaDoubleComplex_ptr tau,
     magmaDoubleComplex_ptr C, magma_int_t ldc,
     magmaDouble_ptr        xnorm, 
     magmaDoubleComplex_ptr dT, magma_int_t iter,
-    magmaDoubleComplex_ptr work )
+    magmaDoubleComplex_ptr work,
+    magma_queue_t queue )
 {
     magma_int_t N = n + iter + 1;
 
-    if (iter == 0)
-        magma_zlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, dT+iter*N, iter);
-    else
-        magma_zlarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, work, iter);
+    if (iter == 0) {
+        magma_zlarfx_kernel
+            <<< N, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( m, v, tau, C, ldc, xnorm, dT+iter*N, iter );
+    }
+    else {
+        magma_zlarfx_kernel
+            <<< N, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( m, v, tau, C, ldc, xnorm, work, iter );
+    }
 
     if (iter > 0) {
-        //magma_ztrmv_kernel<<< 1, iter, 0, magma_stream >>>( dT, N, dT+iter*N);
-        magma_ztrmv_kernel2<<< iter, iter, 0, magma_stream  >>>( dT, N, work, dT+iter*N, tau);
+        //magma_ztrmv_kernel
+        //    <<< 1, iter, 0, queue->cuda_stream() >>>
+        //    ( dT, N, dT+iter*N);
+        magma_ztrmv_kernel2
+            <<< iter, iter, 0, queue->cuda_stream() >>>
+            ( dT, N, work, dT+iter*N, tau );
     }
+}
+
+void
+magma_zlarfx_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex_ptr v,
+    magmaDoubleComplex_ptr tau,
+    magmaDoubleComplex_ptr C, magma_int_t ldc,
+    magmaDouble_ptr        xnorm,
+    magmaDoubleComplex_ptr dT, magma_int_t iter,
+    magmaDoubleComplex_ptr work )
+{
+    magma_zlarfx_gpu_q(m, n, v, tau, C, ldc, xnorm, dT, iter, work,
+                       magmablasGetQueue());
 }
 
 //==============================================================================

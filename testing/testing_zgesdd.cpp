@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -86,7 +86,7 @@ int main( int argc, char** argv)
             ldu = M;
             ldv = M_VT;
             n2 = lda*N;
-            nb = magma_get_zgesvd_nb(N);
+            nb = magma_get_zgesvd_nb( M, N );
             
             // x and y abbreviations used in zgesdd and dgesdd documentation
             magma_int_t x = max(M,N);
@@ -192,6 +192,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_CPU( S1,    double, min_mn );
             TESTING_MALLOC_CPU( S2,    double, min_mn );
             TESTING_MALLOC_CPU( iwork, magma_int_t, 8*min_mn );
+            
             TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, lda*N );
             TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork );
             
@@ -344,11 +345,10 @@ int main( int argc, char** argv)
                    Check the result compared to LAPACK
                    =================================================================== */
                 double work[1], c_neg_one = -1;
-                magma_int_t one = 1;
                 
-                blasf77_daxpy(&min_mn, &c_neg_one, S1, &one, S2, &one);
-                result[4]  = lapackf77_dlange("f", &min_mn, &one, S2, &min_mn, work);
-                result[4] /= lapackf77_dlange("f", &min_mn, &one, S1, &min_mn, work);
+                blasf77_daxpy(&min_mn, &c_neg_one, S1, &ione, S2, &ione);
+                result[4]  = lapackf77_dlange("f", &min_mn, &ione, S2, &min_mn, work);
+                result[4] /= lapackf77_dlange("f", &min_mn, &ione, S1, &min_mn, work);
                 
                 printf("   %c %5d %5d  %7.2f         %7.2f         %8.2e",
                        lapack_vec_const(jobz)[0],
@@ -363,9 +363,9 @@ int main( int argc, char** argv)
                 if ( result[0] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[0]); }
                 if ( result[1] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[1]); }
                 if ( result[2] < 0. ) { printf("     ---   "); } else { printf("  %#9.3g", result[2]); }
-                int success = (result[0] < tol) && (result[1] < tol) && (result[2] < tol) && (result[3] == 0.) && (result[4] < tol);
-                printf("   %3s   %s\n", (result[3] == 0. ? "yes" : "no"), (success ? "ok" : "failed"));
-                status += ! success;
+                bool okay = (result[0] < tol) && (result[1] < tol) && (result[2] < tol) && (result[3] == 0.) && (result[4] < tol);
+                printf("   %3s   %s\n", (result[3] == 0. ? "yes" : "no"), (okay ? "ok" : "failed"));
+                status += ! okay;
             }
             else {
                 printf("\n");
@@ -376,11 +376,15 @@ int main( int argc, char** argv)
             TESTING_FREE_CPU( U   );
             TESTING_FREE_CPU( S1  );
             TESTING_FREE_CPU( S2  );
+            TESTING_FREE_CPU( iwork );
+            
             #ifdef COMPLEX
             TESTING_FREE_CPU( rwork );
             #endif
+            
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_work );
+            
             fflush( stdout );
         }}
         if ( opts.all || opts.niter > 1 ) {
@@ -388,6 +392,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Azzam Haidar
@@ -115,7 +115,9 @@ magma_zlarf_sm(magma_int_t m, magma_int_t n, magmaDoubleComplex *dv, magmaDouble
     dim3  blocks( 1 );
     dim3 threads( BLOCK_SIZEx, BLOCK_SIZEy );
 
-    magma_zlarf_smkernel<<< blocks, threads, 0, magma_stream >>>( m, n, dv, dtau, dc, lddc );
+    magma_zlarf_smkernel
+        <<< blocks, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        ( m, n, dv, dtau, dc, lddc );
 }
 //==============================================================================
 /*
@@ -140,7 +142,9 @@ magma_zlarf_gpu(
     dim3 grid( n, 1, 1 );
     dim3 threads( BLOCK_SIZE );
     if ( n > 0 ) {
-        magma_zlarf_kernel<<< grid, threads, 0, magma_stream >>>( m, dv, dtau, dC, lddc);
+        magma_zlarf_kernel
+            <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+            ( m, dv, dtau, dC, lddc);
     }
 
     // The computation can be done on 1 SM with the following routine.

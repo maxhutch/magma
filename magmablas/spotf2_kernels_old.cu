@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zpotf2_kernels_old.cu normal z -> s, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zpotf2_kernels_old.cu normal z -> s, Wed Jan  6 17:59:41 2016
 */
 
 #include "common_magma.h"
@@ -29,6 +29,7 @@ extern __shared__ float shared_data[];
 // dynamically allocated shared memory, set to size number of threads when the kernel is launched.
 // See CUDA Guide B.2.3
 extern __shared__ float dble_shared_data[];
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void sdot_kernel_batched(int n, float **x_array, int incx, int offset, magma_int_t *info_array, int gbstep)
@@ -103,12 +104,14 @@ void magma_spotf2_sdot_batched(magma_int_t n, float **x_array, magma_int_t incx,
     else {
         threadSize = 64;
     }
-
     
     dim3 grid(1, 1, batchCount);
-    sdot_kernel_batched<<< grid, threadSize, 
-                  threadSize * sizeof(float), queue>>> (n, x_array, incx, offset, info_array, gbstep);
+    size_t shmem = threadSize * sizeof(float);
+    sdot_kernel_batched
+        <<< grid, threadSize, shmem, queue->cuda_stream() >>>
+        (n, x_array, incx, offset, info_array, gbstep);
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void sscal_kernel_batched(int n, float **x_array, int incx, int offset, magma_int_t *info_array)
@@ -142,8 +145,11 @@ void magma_spotf2_sscal_batched(magma_int_t n, float **x_array, magma_int_t incx
     dim3 grid(1, 1, batchCount);
     dim3 threads(n, 1, 1); 
 
-    sscal_kernel_batched<<< grid, threads, 0, queue >>> (n, x_array, incx, offset, info_array);
+    sscal_kernel_batched
+        <<< grid, threads, 0, queue->cuda_stream() >>>
+        (n, x_array, incx, offset, info_array);
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void slacgv_kernel_batched(int n, float **x_array, int incx, int offset)
@@ -156,6 +162,7 @@ __global__ void slacgv_kernel_batched(int n, float **x_array, int incx, int offs
         x[id*incx] = MAGMA_S_CNJG(x[id*incx]);
     }
 }
+
 
 void magma_slacgv_batched(magma_int_t n, float **x_array, magma_int_t incx, magma_int_t offset, magma_int_t batchCount, magma_queue_t queue)
 {
@@ -184,10 +191,10 @@ void magma_slacgv_batched(magma_int_t n, float **x_array, magma_int_t incx, magm
     dim3 grid(1, 1, batchCount);
     dim3 threads(n, 1, 1);
    
-    slacgv_kernel_batched<<< grid, threads, 0, queue >>> (n, x_array, incx, offset);
+    slacgv_kernel_batched
+        <<< grid, threads, 0, queue->cuda_stream() >>>
+        (n, x_array, incx, offset);
 }
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -304,6 +311,7 @@ static __device__ void spotf2_device(int m, int n,
     }
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void spotf2_kernel_batched(int m, int n, 
                               float **dA_array, int lda, 
@@ -319,6 +327,8 @@ __global__ void spotf2_kernel_batched(int m, int n,
     int batchid = blockIdx.z;
     spotf2_device(m, n, dA_array[batchid], lda, alpha, beta, &(info_array[batchid]), gbstep);
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 __global__ void spotf2_kernel(int m, int n, 
                               float *dA, int lda, 
@@ -328,6 +338,8 @@ __global__ void spotf2_kernel(int m, int n,
 {
     spotf2_device(m, n, dA, lda, alpha, beta, info, 0);
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -439,12 +451,16 @@ magma_spotf2_tile_batched(
 
     dim3 dimGrid(1, 1, batchCount);
     dim3 threads(POTF2_TILE_SIZE, 1);
-    int shared_mem_size = sizeof(float)*m*n; // + sizeof(float)*(POTF2_TILE_SIZE+1);
+    size_t shmem = sizeof(float)*m*n; // + sizeof(float)*(POTF2_TILE_SIZE+1);
 
-    spotf2_kernel_batched<<<dimGrid, threads, shared_mem_size, queue >>>(m, n, dA_array, lda, alpha, beta, info_array, gbstep);
+    spotf2_kernel_batched
+        <<< dimGrid, threads, shmem, queue->cuda_stream() >>>
+        (m, n, dA_array, lda, alpha, beta, info_array, gbstep);
 
     return arginfo;
 }
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C" magma_int_t
 magma_spotf2_tile(
@@ -483,9 +499,11 @@ magma_spotf2_tile(
 
     dim3 dimGrid(1);
     dim3 threads(POTF2_TILE_SIZE, 1);
-    int shared_mem_size = sizeof(float)*m*n; // + sizeof(float)*(POTF2_TILE_SIZE+1);
+    size_t shmem = sizeof(float)*m*n; // + sizeof(float)*(POTF2_TILE_SIZE+1);
 
-    spotf2_kernel<<<dimGrid, threads, shared_mem_size, magma_stream >>>(m, n, dA, lda, alpha, beta, info);
+    spotf2_kernel
+        <<< dimGrid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        (m, n, dA, lda, alpha, beta, info);
 
     return *info;
 }

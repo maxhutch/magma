@@ -1,19 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from ztrevc3_mt.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/ztrevc3_mt.cpp normal z -> c, Wed Jan  6 17:59:36 2016
 */
 #include "thread_queue.hpp"
 #include "magma_timer.h"
 
-#include "common_magma.h"  // after thread.hpp, so max, min are defined
+#include "magma_internal.h"  // after thread.hpp, so max, min are defined
 
 #define COMPLEX
 
@@ -556,7 +556,7 @@ magma_int_t magma_ctrevc3_mt(
         
             // Form right-hand side.
             for( k = ki + 1; k < n; ++k ) {
-                *work(k,iv) = -MAGMA_C_CNJG( *T(ki,k) );
+                *work(k,iv) = -MAGMA_C_CONJ( *T(ki,k) );
             }
             
             // Solve conjugate-transposed triangular system:

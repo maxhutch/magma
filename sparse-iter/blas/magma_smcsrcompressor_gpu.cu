@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zmcsrcompressor_gpu.cu normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/magma_zmcsrcompressor_gpu.cu normal z -> s, Wed Jan  6 17:59:42 2016
        @author Hartwig Anzt
 
 */
@@ -109,7 +109,7 @@ magma_smcsrgpu_kernel3( int num_rows,
     Arguments
     ---------
 
-    @param
+    @param[in,out]
     A           magma_s_matrix*
                 input/output matrix
     @param[in]
@@ -138,12 +138,12 @@ magma_smcsrcompressor_gpu(
         dim3 grid1( magma_ceildiv( A->num_rows, BLOCK_SIZE1 ) );
 
         // copying the nonzeros into B and write in B.drow how many there are
-        magma_smcsrgpu_kernel1<<< grid1, BLOCK_SIZE1, 0, queue >>>
+        magma_smcsrgpu_kernel1<<< grid1, BLOCK_SIZE1, 0, queue->cuda_stream() >>>
                 ( A->num_rows, A->dval, A->drow, A->dcol, B.dval, B.drow, B.dcol );
 
         // correct the row pointer
         dim3 grid2( 1, 1, 1);
-        magma_smcsrgpu_kernel2<<< grid2, BLOCK_SIZE2, 0, queue >>>
+        magma_smcsrgpu_kernel2<<< grid2, BLOCK_SIZE2, 0, queue->cuda_stream() >>>
                 ( A->num_rows, B.drow, A->drow );
         // access the true number of nonzeros
 
@@ -157,7 +157,7 @@ magma_smcsrcompressor_gpu(
         CHECK( magma_index_malloc( &B.dcol, A->nnz ));
         
         // copy correct values back
-        magma_smcsrgpu_kernel3<<< grid1, BLOCK_SIZE1, 0, queue >>>
+        magma_smcsrgpu_kernel3<<< grid1, BLOCK_SIZE1, 0, queue->cuda_stream() >>>
                 ( A->num_rows, B.dval, B.drow, B.dcol, B2.drow, A->dval, A->drow, A->dcol );
 
         magma_free( A->dcol );

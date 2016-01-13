@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
-       @generated from zpotf2.cu normal z -> c, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zpotf2.cu normal z -> c, Wed Jan  6 17:59:39 2016
 */
 #include "common_magma.h"
 
@@ -226,7 +226,10 @@ void cpotf2_cdotc(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
         threadSize = 64;
     }
 
-    kernel_cdotc<<< 1, threadSize, threadSize * sizeof(float), magma_stream>>> (n, x, incx, threadSize);
+    size_t shmem = threadSize * sizeof(float);
+    kernel_cdotc
+        <<< 1, threadSize, shmem, magmablasGetQueue()->cuda_stream() >>>
+        (n, x, incx, threadSize);
 }
 
 __global__ void kernel_csscal(int n, magmaFloatComplex *x, int incx)
@@ -255,7 +258,9 @@ void cpotf2_csscal(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
     dim3 threads(csscal_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, csscal_bs );
     dim3 grid(num_blocks,1);
-    kernel_csscal<<< grid, threads, 0, magma_stream >>> (n, x, incx);
+    kernel_csscal
+        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        (n, x, incx);
 }
 
 
@@ -285,8 +290,7 @@ __global__ void kernel_clacgv(int n, magmaFloatComplex *x, int incx)
             The length of the vector X.  N >= 0.
 
     @param[in,out]
-    x       COMPLEX array, dimension
-                           (1+(N-1)*abs(INCX))
+    x       COMPLEX array, dimension (1+(N-1)*abs(INCX))
             On entry, the vector of length N to be conjugated.
             On exit, X is overwritten with conjg(X).
 
@@ -301,7 +305,9 @@ void magmablas_clacgv(magma_int_t n, magmaFloatComplex *x, magma_int_t incx)
     dim3 threads(clacgv_bs, 1, 1);
     int num_blocks = magma_ceildiv( n, clacgv_bs );
     dim3 grid(num_blocks,1);
-    kernel_clacgv<<< grid, threads, 0, magma_stream >>> (n, x, incx);
+    kernel_clacgv
+        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        (n, x, incx);
 }
 
 #endif // defined(PRECISION_z) || defined(PRECISION_c)

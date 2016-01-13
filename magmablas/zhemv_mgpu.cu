@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -160,7 +160,7 @@ zhemv_kernel_L_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
-                sA32(j, tx2) = cuConj( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -221,7 +221,7 @@ zhemv_kernel_L_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j < tx2 ) {
-                sA32(j, tx2) = cuConj( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -291,7 +291,7 @@ zhemv_kernel_L_mgpu(
         psum_t = MAGMA_Z_ZERO;
         #pragma unroll
         for (int j=0; j < 4; j++) {
-            psum_t += cuConj( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
+            psum_t += MAGMA_Z_CNJG( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
         }
         __syncthreads();
 
@@ -377,7 +377,7 @@ zhemv_kernel_L_mgpu(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = cuConj( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = MAGMA_Z_CNJG( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
 
@@ -762,20 +762,20 @@ magmablas_zhemv_mgpu(
         dim3 threads_sum( NB_X, 1 );
         
         if ( upper ) {
-            zhemv_kernel_U_mgpu<<< grid, threads, 0, queues[dev] >>>(
+            zhemv_kernel_U_mgpu<<< grid, threads, 0, queues[dev]->cuda_stream() >>>(
                 n, dA_dev, ldda, dx_dev, 1, dwork_dev,
                 new_gpu_id, ngpu, block_offset );
             
-            zhemv_kernel_U_mgpu_sum<<< grid, threads_sum, 0, queues[dev] >>>(
+            zhemv_kernel_U_mgpu_sum<<< grid, threads_sum, 0, queues[dev]->cuda_stream() >>>(
                 n, alpha, ldda, dx_dev, 1, dwork_dev,
                 new_gpu_id, ngpu, block_offset );
         }
         else {
-            zhemv_kernel_L_mgpu<<< grid, threads, 0, queues[dev] >>>(
+            zhemv_kernel_L_mgpu<<< grid, threads, 0, queues[dev]->cuda_stream() >>>(
                 n, dA_dev, ldda, dx_dev, 1, dwork_dev,
                 new_gpu_id, ngpu, block_offset );
             
-            zhemv_kernel_L_mgpu_sum<<< grid, threads_sum, 0, queues[dev] >>>(
+            zhemv_kernel_L_mgpu_sum<<< grid, threads_sum, 0, queues[dev]->cuda_stream() >>>(
                 n, alpha, ldda, dx_dev, 1, dwork_dev,
                 new_gpu_id, ngpu, block_offset );
         }

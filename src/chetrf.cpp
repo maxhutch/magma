@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zhetrf.cpp normal z -> c, Fri Sep 11 18:29:29 2015
+       @generated from src/zhetrf.cpp normal z -> c, Wed Jan  6 17:59:31 2016
 */
-
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "trace.h"
-#define PRECISION_c
 
 /**
     Purpose
@@ -20,7 +18,7 @@
     using the Bunch-Kaufman diagonal pivoting method.  The form of the
     factorization is
  
-     A = U*D*U**H  or  A = L*D*L**H
+        A = U*D*U^H  or  A = L*D*L^H
  
     where U (or L) is a product of permutation and unit upper (lower)
     triangular matrices, and D is Hermitian and block diagonal with
@@ -31,9 +29,9 @@
     Arguments
     ---------
     @param[in]
-    uplo    CHARACTER*1
-      -     = 'U':  Upper triangle of A is stored;
-      -     = 'L':  Lower triangle of A is stored.
+    uplo    magma_uplo_t
+      -     = MagmaUpper:  Upper triangle of A is stored;
+      -     = MagmaLower:  Lower triangle of A is stored.
  
     @param[in]
     n       INTEGER
@@ -41,10 +39,10 @@
   
     @param[in,out]
     A       COMPLEX array, dimension (LDA,N)
-            On entry, the Hermitian matrix A.  If UPLO = 'U', the leading
+            On entry, the Hermitian matrix A.  If UPLO = MagmaUpper, the leading
             N-by-N upper triangular part of A contains the upper
             triangular part of the matrix A, and the strictly lower
-            triangular part of A is not referenced.  If UPLO = 'L', the
+            triangular part of A is not referenced.  If UPLO = MagmaLower, the
             leading N-by-N lower triangular part of A contains the lower
             triangular part of the matrix A, and the strictly upper
             triangular part of A is not referenced.
@@ -61,9 +59,9 @@
             Details of the interchanges and the block structure of D.
             If IPIV(k) > 0, then rows and columns k and IPIV(k) were
             interchanged and D(k,k) is a 1-by-1 diagonal block.
-            If UPLO = 'U' and IPIV(k) = IPIV(k-1) < 0, then rows and
+            If UPLO = MagmaUpper and IPIV(k) = IPIV(k-1) < 0, then rows and
             columns k-1 and -IPIV(k) were interchanged and D(k-1:k,k-1:k)
-            is a 2-by-2 diagonal block.  If UPLO = 'L' and IPIV(k) =
+            is a 2-by-2 diagonal block.  If UPLO = MagmaLower and IPIV(k) =
             IPIV(k+1) < 0, then rows and columns k+1 and -IPIV(k) were
             interchanged and D(k:k+1,k:k+1) is a 2-by-2 diagonal block.
 
@@ -78,7 +76,7 @@
 
     Further Details
     ===============
-    If UPLO = 'U', then A = U*D*U', where
+    If UPLO = MagmaUpper, then A = U*D*U', where
     U = P(n)*U(n)* ... *P(k)U(k)* ...,
     i.e., U is a product of terms P(k)*U(k), where k decreases from n to
     1 in steps of 1 or 2, and D is a block diagonal matrix with 1-by-1
@@ -95,7 +93,7 @@
     If s = 2, the upper triangle of D(k) overwrites A(k-1,k-1), A(k-1,k),
     and A(k,k), and v overwrites A(1:k-2,k-1:k).
   
-    If UPLO = 'L', then A = L*D*L', where
+    If UPLO = MagmaLower, then A = L*D*L', where
        L = P(1)*L(1)* ... *P(k)*L(k)* ...,
     i.e., L is a product of terms P(k)*L(k), where k increases from 1 to
     n in steps of 1 or 2, and D is a block diagonal matrix with 1-by-1
@@ -120,19 +118,18 @@ magma_chetrf(
     magmaFloatComplex *A, magma_int_t lda,
     magma_int_t *ipiv, magma_int_t *info)
 {
-    #define  A(i, j) ( A + (j)*lda  + (i))
-    #define dA(i, j) (dA + (j)*ldda + (i))
+    #define  A(i_, j_) ( A + (i_) + (j_)*lda )
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
 
     /* .. Local Scalars .. */
-    magma_int_t upper;
     magma_int_t nb = magma_get_chetrf_nb(n);
     magma_int_t iinfo = 0, nk, kb;
 
     /* .. Executable Statements .. */
     /* Test the input parameters. */
     *info = 0;
-    upper = (uplo == MagmaUpper);
-    if ( !upper && uplo != MagmaLower ) {
+    bool upper = (uplo == MagmaUpper);
+    if ( ! upper && uplo != MagmaLower ) {
         *info = -1;
     } else if ( n < 0 ) {
         *info = -2;
@@ -144,33 +141,37 @@ magma_chetrf(
         return *info;
     }
 
+    // TODO fix memory leak of dA if dW fails
     magma_int_t ldda = magma_roundup( n, 32 );
-    magmaFloatComplex *dA, *dW;
+    magmaFloatComplex_ptr dA, dW;
     if ((MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda  )) ||
         (MAGMA_SUCCESS != magma_cmalloc( &dW, (1+nb)*ldda ))) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-    magma_queue_t stream[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+
+    magma_queue_t queues[2];
     magma_event_t event[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
     magma_event_create( &event[0] );
     magma_event_create( &event[1] );
-    trace_init( 1, 1, 2, (CUstream_st**)stream );
+    trace_init( 1, 1, 2, queues );
 
     /* copy matrix to GPU */
     trace_gpu_start( 0, 0, "set", "setA" );
-    //magma_csetmatrix_async( n, n, A(0,0), lda, dA(0,0), ldda, stream[0] );
+    //magma_csetmatrix_async( n, n, A(0,0), lda, dA(0,0), ldda, queues[0] );
     if ( upper ) {
         for (int k = 0; k < n; k += nb ) {
             kb = min(nb, n-k);
-            magma_csetmatrix_async( k+kb, kb, A(0,k), lda, dA(0,k), ldda, stream[0] );
+            magma_csetmatrix_async( k+kb, kb, A(0,k), lda, dA(0,k), ldda, queues[0] );
         }
     } else {
         for (int k = 0; k < n; k += nb ) {
             kb = min(nb, n-k);
-            magma_csetmatrix_async( n-k, kb, A(k,k), lda, dA(k,k), ldda, stream[0] );
+            magma_csetmatrix_async( n-k, kb, A(k,k), lda, dA(k,k), ldda, queues[0] );
         }
     }
     trace_gpu_end( 0, 0 );
@@ -192,12 +193,12 @@ magma_chetrf(
                    update columns 1:k-kb */
 
                 magma_clahef_gpu( MagmaUpper, nk, kb, &kb, A( 0, 0 ), lda, dA( 0, 0 ), ldda,
-                                  &ipiv[0], dW, ldda, stream, event, &iinfo );
+                                  &ipiv[0], dW, ldda, queues, event, &iinfo );
             } else {
                 /* Use unblocked code to factorize columns 1:k of A */
 
-                magma_queue_sync( stream[0] );
-                magma_cgetmatrix( nk, nk, dA( 0, 0 ),ldda, A( 0, 0 ),lda );
+                magma_queue_sync( queues[0] );
+                magma_cgetmatrix( nk, nk, dA( 0, 0 ), ldda, A( 0, 0 ), lda, queues[0] );
                 lapackf77_chetf2( MagmaUpperStr, &nk, A( 0, 0 ), &lda, &ipiv[0], &iinfo );
                 kb = k+1;
             }
@@ -220,12 +221,12 @@ magma_chetrf(
                 /* Factorize columns k:k+kb-1 of A and use blocked code to
                    update columns k+kb:n */
                 magma_clahef_gpu( MagmaLower, nk, nb, &kb, A( k, k ), lda, dA( k, k ), ldda,
-                                  &ipiv[k], dW, ldda, stream, event, &iinfo );
+                                  &ipiv[k], dW, ldda, queues, event, &iinfo );
             }
             else {
                 /* Use unblocked code to factorize columns k:n of A */
-                magma_queue_sync( stream[0] );
-                magma_cgetmatrix( nk,nk, dA(k,k),ldda, A(k,k),lda );
+                magma_queue_sync( queues[0] );
+                magma_cgetmatrix( nk, nk, dA(k,k), ldda, A(k,k), lda, queues[0] );
                 lapackf77_chetf2( MagmaLowerStr, &nk, A( k, k ), &lda, &ipiv[k], &iinfo );
             }
             /* Set INFO on the first occurrence of a zero pivot */
@@ -241,16 +242,15 @@ magma_chetrf(
         }
     }
 
-    trace_finalize( "chetrf.svg","trace.css" );
-    magma_queue_sync( stream[0] );
-    magma_queue_sync( stream[1] );
-    magmablasSetKernelStream( NULL );
+    trace_finalize( "chetrf.svg", "trace.css" );
+    magma_queue_sync( queues[0] );
+    magma_queue_sync( queues[1] );
     magma_event_destroy( event[0] );
     magma_event_destroy( event[1] );
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     magma_free( dA );
     magma_free( dW );
+    
     return *info;
-    /* End of CHETRF */
-}
+}   /* End of CHETRF */

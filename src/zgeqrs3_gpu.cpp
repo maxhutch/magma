@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -36,6 +36,7 @@
             The i-th column must contain the vector which defines the
             elementary reflector H(i), for i = 1,2,...,n, as returned by
             ZGEQRF3_GPU in the first n columns of its array argument A.
+            dA is modified by the routine but restored on exit.
 
     @param[in]
     ldda    INTEGER
@@ -51,7 +52,7 @@
             On entry, the M-by-NRHS matrix C.
             On exit, the N-by-NRHS solution matrix X.
 
-    @param[in]
+    @param[in,out]
     dT      COMPLEX_16 array that is the output (the 6th argument)
             of magma_zgeqrf_gpu of size
             2*MIN(M, N)*NB + ceil(N/32)*32 )* MAX(NB, NRHS).
@@ -73,7 +74,7 @@
     lwork   INTEGER
             The dimension of the array WORK,
             LWORK >= (M - N + NB)*(NRHS + NB) + NRHS*NB,
-            where NB is the blocksize given by magma_get_zgeqrf_nb( M ).
+            where NB is the blocksize given by magma_get_zgeqrf_nb( M, N ).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the HWORK array, returns
@@ -90,19 +91,19 @@ extern "C" magma_int_t
 magma_zgeqrs3_gpu(
     magma_int_t m, magma_int_t n, magma_int_t nrhs,
     magmaDoubleComplex_ptr dA,    magma_int_t ldda,
-    magmaDoubleComplex *tau,
+    magmaDoubleComplex const *tau,
     magmaDoubleComplex_ptr dT,
     magmaDoubleComplex_ptr dB,    magma_int_t lddb,
     magmaDoubleComplex *hwork, magma_int_t lwork,
     magma_int_t *info)
 {
-    #define dA(a_1,a_2) (dA + (a_2)*(ldda) + (a_1))
-    #define dT(a_1)     (dT + (lddwork+(a_1))*nb)
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
+    #define dT(i_)    (dT + (lddwork + (i_))*nb)
 
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magma_int_t k, lddwork;
 
-    magma_int_t nb     = magma_get_zgeqrf_nb(m);
+    magma_int_t nb     = magma_get_zgeqrf_nb( m, n );
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
     int lquery = (lwork == -1);
 
@@ -136,12 +137,18 @@ magma_zgeqrs3_gpu(
     }
     lddwork = k;
 
-    /* B := Q' * B */
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
+    /* B := Q^H * B */
     magma_zunmqr_gpu( MagmaLeft, Magma_ConjTrans,
                       m, nrhs, n,
                       dA(0,0), ldda, tau,
                       dB, lddb, hwork, lwork, dT, nb, info );
     if ( *info != 0 ) {
+        magma_queue_destroy( queue );
         return *info;
     }
 
@@ -150,18 +157,18 @@ magma_zgeqrs3_gpu(
        2. Solve
        3. Restore the data format moving data from R back to dT
     */
-    magmablas_zswapdblk(k-1, nb, dA(0,0), ldda, 1, dT(0), nb, 0);
+    magmablas_zswapdblk( k-1, nb, dA(0,0), ldda, 1, dT(0), nb, 0, queue );
     if ( nrhs == 1 ) {
-        magma_ztrsv(MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                    n, dA(0,0), ldda, dB, 1);
+        magma_ztrsv( MagmaUpper, MagmaNoTrans, MagmaNonUnit, n,
+                     dA(0,0), ldda,
+                     dB,      1, queue );
     } else {
-        magma_ztrsm(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                    n, nrhs, c_one, dA(0,0), ldda, dB, lddb);
+        magma_ztrsm( MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, n, nrhs,
+                     c_one, dA(0,0), ldda,
+                            dB,      lddb, queue );
     }
-    magmablas_zswapdblk(k-1, nb, dT(0), nb, 0, dA(0,0), ldda, 1);
+    magmablas_zswapdblk( k-1, nb, dT(0), nb, 0, dA(0,0), ldda, 1, queue );
 
+    magma_queue_destroy( queue );
     return *info;
 }
-
-#undef dA
-#undef dT

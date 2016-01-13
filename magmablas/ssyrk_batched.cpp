@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zherk_batched.cpp normal z -> s, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zherk_batched.cpp normal z -> s, Wed Jan  6 17:59:40 2016
 
        @author Jakub Kurzak
        @author Stan Tomov
@@ -18,7 +18,7 @@
        
        These files are included multiple times, once for each transpose version.
        herk_stencil.cuh             defines the GPU kernel (device function).
-       herk_kernel_batched.cuh              defines the GPU kernel (global function).
+       herk_kernel_batched.cuh      defines the GPU kernel (global function).
        
        The batched version uses herk_kernel_batched.cuh instead of herk_kernel.cuh.
 */
@@ -49,25 +49,25 @@
     ----------
 
     @param[in]
-    uplo    CHARACTER*1.
+    uplo    magma_uplo_t.
            On entry, uplo specifies whether the upper or lower
            triangular part of the array C is to be referenced as
            follows:
 
-           uplo = 'U' or 'u' Only the upper triangular part of C
+           uplo = MagmaUpper Only the upper triangular part of C
            is to be referenced.
 
-           uplo = 'L' or 'l' Only the lower triangular part of C
+           uplo = MagmaLower Only the lower triangular part of C
            is to be referenced.
     
     @param[in]
-    trans   CHARACTER*1.
+    trans   magma_trans_t.
             On entry, trans specifies the operation to be performed as
             follows:
 
-            trans = 'N' or 'n' C := alpha*A*A**H + beta*C.
+            trans = MagmaNoTrans C := alpha*A*A**H + beta*C.
 
-            trans = 'C' or 'c' C := alpha*A**H*A + beta*C.
+            trans = MagmaConjTrans C := alpha*A**H*A + beta*C.
 
     @param[in]
     n       INTEGER.
@@ -76,9 +76,9 @@
     
     @param[in]
     k       INTEGER.
-            On entry with trans = 'N' or 'n', k specifies the number
+            On entry with trans = MagmaNoTrans, k specifies the number
             of columns of the matrix A, and on entry with
-            trans = 'C' or 'c', k specifies the number of rows of the
+            trans = MagmaConjTrans, k specifies the number of rows of the
             matrix A. K must be at least zero.
 
     @param[in]
@@ -109,13 +109,13 @@
     @param[in,out]
     dC_array      Array of pointers, dimension (batchCount).
              Each is a REAL array C of DIMENSION ( lddc, n ).
-             Before entry with uplo = 'U' or 'u', the leading n by n
+             Before entry with uplo = MagmaUpper, the leading n by n
              upper triangular part of the array C must contain the upper
              triangular part of the symmetric matrix and the strictly
              lower triangular part of C is not referenced. On exit, the
              upper triangular part of the array C is overwritten by the
              upper triangular part of the updated matrix.
-             Before entry with uplo = 'L' or 'l', the leading n by n
+             Before entry with uplo = MagmaLower, the leading n by n
              lower triangular part of the array C must contain the lower
              triangular part of the symmetric matrix and the strictly
              upper triangular part of C is not referenced. On exit, the

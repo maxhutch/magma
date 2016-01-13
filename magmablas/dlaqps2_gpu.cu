@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlaqps2_gpu.cu normal z -> d, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlaqps2_gpu.cu normal z -> d, Wed Jan  6 17:59:37 2016
 
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_d.h"
 
 #define PRECISION_d
@@ -98,6 +98,10 @@
     lddf    INTEGER
             The leading dimension of the array F. LDDF >= max(1,N).
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     @ingroup magma_dgeqp3_aux
     ********************************************************************/
 extern "C" magma_int_t
@@ -109,18 +113,21 @@ magma_dlaqps2_gpu(
     magmaDouble_ptr dtau, 
     magmaDouble_ptr dvn1, magmaDouble_ptr dvn2,
     magmaDouble_ptr dauxv,
-    magmaDouble_ptr dF,  magma_int_t lddf)
+    magmaDouble_ptr dF,  magma_int_t lddf,
+    magmaDouble_ptr dlsticcs,
+    magma_queue_t queue )
 {
 #define dA(i_, j_) (dA + (i_) + (j_)*(ldda))
 #define dF(i_, j_) (dF + (i_) + (j_)*(lddf))
 
-    double c_zero    = MAGMA_D_MAKE( 0.,0.);
-    double c_one     = MAGMA_D_MAKE( 1.,0.);
-    double c_neg_one = MAGMA_D_MAKE(-1.,0.);
-    magma_int_t ione = 1;
+    /* Constants */
+    const double c_zero    = MAGMA_D_MAKE( 0.,0.);
+    const double c_one     = MAGMA_D_MAKE( 1.,0.);
+    const double c_neg_one = MAGMA_D_MAKE(-1.,0.);
+    const magma_int_t ione = 1;
     
+    /* Local variables */
     magma_int_t i__1, i__2;
-    
     magma_int_t k, rk;
     double tauk;
     magma_int_t pvt, itemp;
@@ -129,8 +136,7 @@ magma_dlaqps2_gpu(
     magmaDouble_ptr dAkk = dauxv;
     dauxv += nb;
 
-    double lsticc, *lsticcs;
-    magma_dmalloc( &lsticcs, 1+256*(n+255)/256 );
+    double lsticc;
 
     tol3z = magma_dsqrt( lapackf77_dlamch("Epsilon"));
 
@@ -140,41 +146,43 @@ magma_dlaqps2_gpu(
         rk = offset + k;
 
         /* Determine ith pivot column and swap if necessary */
-        pvt = k - 1 + magma_idamax( n-k, &dvn1[k], ione );
+        pvt = k - 1 + magma_idamax( n-k, &dvn1[k], ione, queue );
 
         if (pvt != k) {
-            magmablas_dswap( k+1, dF(pvt,0), lddf, dF(k,0), lddf);
+            magmablas_dswap( k+1, dF(pvt,0), lddf, dF(k,0), lddf, queue );
 
             itemp     = jpvt[pvt];
             jpvt[pvt] = jpvt[k];
             jpvt[k]   = itemp;
-            magma_dswap( 2, &dvn1[pvt], n+offset, &dvn1[k], n+offset );
+            magma_dswap( 2, &dvn1[pvt], n+offset, &dvn1[k], n+offset, queue );
 
-            magmablas_dswap( m, dA(0,pvt), ione, dA(0, k), ione );
+            magmablas_dswap( m, dA(0,pvt), ione, dA(0, k), ione, queue );
         }
 
         /* Apply previous Householder reflectors to column K:
            A(RK:M,K) := A(RK:M,K) - A(RK:M,1:K-1)*F(K,1:K-1)'.
            Optimization: multiply with beta=0; wait for vector and subtract */
         if (k > 0) {
-            magmablas_dgemv_conjv( m-rk, k,
-                                   c_neg_one, dA(rk, 0), ldda,
-                                              dF(k,  0), lddf,
-                                   c_one,     dA(rk, k), ione );
+            magmablas_dgemv_conj( m-rk, k,
+                                  c_neg_one, dA(rk, 0), ldda,
+                                             dF(k,  0), lddf,
+                                  c_one,     dA(rk, k), ione, queue );
         }
 
         /*  Generate elementary reflector H(k). */
-        magma_dlarfg_gpu(m-rk, dA(rk, k), dA(rk + 1, k), &dtau[k], &dvn1[k], &dAkk[k]);
-        magma_dsetvector( 1, &c_one,   1, dA(rk, k), 1 );
+        magma_dlarfg_gpu( m-rk, dA(rk, k), dA(rk + 1, k), &dtau[k], &dvn1[k], &dAkk[k], queue );
+        magma_dsetvector( 1, &c_one,   1, dA(rk, k), 1, queue );
 
         /* Compute Kth column of F:
            Compute  F(K+1:N,K) := tau(K)*A(RK:M,K+1:N)'*A(RK:M,K) on the GPU */
-        if (k < n-1 || k > 0 ) magma_dgetvector( 1, &dtau[k], 1, &tauk, 1 );
+        if (k < n-1 || k > 0 ) {
+            magma_dgetvector( 1, &dtau[k], 1, &tauk, 1, queue );
+        }
         if (k < n-1) {
             magma_dgemv( MagmaConjTrans, m-rk, n-k-1,
-                     tauk,   dA( rk,  k+1 ), ldda,
-                             dA( rk,  k   ), 1,
-                     c_zero, dF( k+1, k   ), 1 );
+                         tauk,   dA( rk,  k+1 ), ldda,
+                                 dA( rk,  k   ), 1,
+                         c_zero, dF( k+1, k   ), 1, queue );
         }
 
         /* Incremental updating of F:
@@ -187,16 +195,17 @@ magma_dlaqps2_gpu(
             magma_dgemv( MagmaConjTrans, m-rk, k,
                          z__1,   dA(rk, 0), ldda,
                                  dA(rk, k), ione,
-                         c_zero, dauxv, ione ); */
+                         c_zero, dauxv, ione, queue ); */
 
-            magma_dgemv_kernel3<<< k, BLOCK_SIZE, 0, magma_stream >>>(m-rk, dA(rk, 0), ldda,
-                                                                      dA(rk, k), dauxv, dtau+k);
+            magma_dgemv_kernel3
+                <<< k, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+                (m-rk, dA(rk, 0), ldda, dA(rk, k), dauxv, dtau+k);
 
             /* I think we only need stricly lower-triangular part */
             magma_dgemv( MagmaNoTrans, n-k-1, k,
                          c_one, dF(k+1,0), lddf,
                                 dauxv,     ione,
-                         c_one, dF(k+1,k), ione );
+                         c_one, dF(k+1,k), ione, queue );
         }
 
        /* Update the current row of A:
@@ -209,25 +218,25 @@ magma_dlaqps2_gpu(
             magma_dgemm( MagmaNoTrans, MagmaConjTrans, ione, i__1, i__2,
                          c_neg_one, dA(rk, 0  ), ldda,
                                     dF(k+1,0  ), lddf,
-                         c_one,     dA(rk, k+1), ldda ); 
+                         c_one,     dA(rk, k+1), ldda, queue ); 
         }
 
         /* Update partial column norms. */
         if (rk < min(m, n+offset)-1) {
-            magmablas_dnrm2_row_check_adjust(n-k-1, tol3z, &dvn1[k+1], 
-                                              &dvn2[k+1], dA(rk,k+1), ldda, lsticcs); 
+            magmablas_dnrm2_row_check_adjust( n-k-1, tol3z, &dvn1[k+1], 
+                                               &dvn2[k+1], dA(rk,k+1), ldda, dlsticcs, queue ); 
             
-            magma_dgetvector( 1, &lsticcs[0], 1, &lsticc, 1 );
+            magma_dgetvector( 1, &dlsticcs[0], 1, &lsticc, 1, queue );
         }
 
         //*dA(rk, k) = Akk;
-        //magma_dsetvector( 1, &Akk, 1, dA(rk, k), 1 );
-        //magmablas_dlacpy(MagmaUpperLower, 1, 1, dAkk, 1, dA(rk, k), 1);
+        //magma_dsetvector( 1, &Akk, 1, dA(rk, k), 1, queue );
+        //magmablas_dlacpy( MagmaFull, 1, 1, dAkk, 1, dA(rk, k), 1, queue );
 
         ++k;
     }
     // restore the diagonals
-    magma_dcopymatrix( 1, k, dAkk, 1, dA(offset, 0), ldda+1 );
+    magma_dcopymatrix( 1, k, dAkk, 1, dA(offset, 0), ldda+1, queue );
 
     // leave k as the last column done
     --k;
@@ -244,17 +253,16 @@ magma_dlaqps2_gpu(
         magma_dgemm( MagmaNoTrans, MagmaConjTrans, i__1, i__2, *kb,
                      c_neg_one, dA(rk+1, 0  ), ldda,
                                 dF(*kb,  0  ), lddf,
-                     c_one,     dA(rk+1, *kb), ldda );
+                     c_one,     dA(rk+1, *kb), ldda, queue );
     }
 
     /* Recomputation of difficult columns. */
     if ( lsticc > 0 ) {
         // printf( " -- recompute dnorms --\n" );
-        magmablas_dnrm2_check(m-rk-1, n-*kb, dA(rk+1,*kb), ldda,
-                               &dvn1[*kb], lsticcs);
-        magma_dcopymatrix( n-*kb, 1, &dvn1[*kb], n, &dvn2[*kb], n );
+        magmablas_dnrm2_check( m-rk-1, n-*kb, dA(rk+1,*kb), ldda,
+                               &dvn1[*kb], dlsticcs, queue );
+        magma_dcopymatrix( n-*kb, 1, &dvn1[*kb], n, &dvn2[*kb], n, queue );
     }
-    magma_free(lsticcs);
     
     return MAGMA_SUCCESS;
-} /* magma_dlaqps */
+} /* magma_dlaqps2_q */

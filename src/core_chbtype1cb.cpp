@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
 
-       @generated from core_zhbtype1cb.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+       @generated from src/core_zhbtype1cb.cpp normal z -> c, Wed Jan  6 17:59:34 2016
 
 */
 #include "common_magma.h"

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zlange.cpp normal z -> d, Fri Sep 11 18:29:37 2015
+       @generated from testing/testing_zlange.cpp normal z -> d, Wed Jan  6 17:59:47 2016
        @author Mark Gates
 */
 // includes, system
@@ -41,7 +41,7 @@ int main( int argc, char** argv)
     double *h_work;
     magmaDouble_ptr d_A;
     magmaDouble_ptr d_work;
-    magma_int_t M, N, n2, lda, ldda, lwork;
+    magma_int_t i, j, M, N, n2, lda, ldda, lwork;
     magma_int_t idist    = 3;  // normal distribution (otherwise max norm is always ~ 1)
     magma_int_t ISEED[4] = {0,0,0,1};
     double      error, norm_magma, norm_lapack;
@@ -53,15 +53,16 @@ int main( int argc, char** argv)
     opts.parse_opts( argc, argv );
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
+    double tol2;
     
-    // Only one norm supported for now, but leave this here for future support
+    // Frobenius norm not currently supported, but leave this here for future support
     // of different norms. See similar code in testing_dlansy.cpp.
-    magma_norm_t norm[] = { MagmaMaxNorm, MagmaOneNorm, MagmaInfNorm };
+    magma_norm_t norm[] = { MagmaMaxNorm, MagmaOneNorm, MagmaInfNorm, MagmaFrobeniusNorm };
     
-    printf("%%   M     N   norm   CPU GByte/s (ms)    GPU GByte/s (ms)        error    error      nan      inf\n");
+    printf("%%   M     N   norm   CPU GByte/s (ms)    GPU GByte/s (ms)        error               nan      inf\n");
     printf("%%================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
-      for( int inorm = 0; inorm < 3; ++inorm ) {
+      for( int inorm = 0; inorm < 3; ++inorm ) {  /* < 4 for Frobenius */
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M   = opts.msize[itest];
             N   = opts.nsize[itest];
@@ -89,12 +90,18 @@ int main( int argc, char** argv)
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            norm_magma = magmablas_dlange( norm[inorm], M, N, d_A, ldda, d_work );
+            norm_magma = magmablas_dlange( norm[inorm], M, N, d_A, ldda, d_work, lwork );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gbytes / gpu_time;
-            if (norm_magma < 0)
+            if (norm_magma == -1) {
+                printf( "%5d   %4c   skipped because %s norm isn't supported\n",
+                        (int) N, lapacke_norm_const( norm[inorm] ), lapack_norm_const( norm[inorm] ));
+                goto cleanup;
+            }
+            else if (norm_magma < 0) {
                 printf("magmablas_dlange returned error %f: %s.\n",
                        norm_magma, magma_strerror( (int) norm_magma ));
+            }
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -112,7 +119,7 @@ int main( int argc, char** argv)
                Max norm should be identical; others should be within tolerance.
                =================================================================== */
             error = fabs( norm_magma - norm_lapack ) / norm_lapack;
-            double tol2 = tol;
+            tol2 = tol;
             if ( norm[inorm] == MagmaMaxNorm ) {
                 // max-norm depends on only one element, so for Real precisions,
                 // MAGMA and LAPACK should exactly agree (tol2 = 0),
@@ -122,35 +129,35 @@ int main( int argc, char** argv)
                 #endif
             }
             
-            bool okay = (error <= tol2);
+            bool okay; okay = (error <= tol2);
             status += ! okay;
             
             /* ====================================================================
                Check for NAN and INF propagation
                =================================================================== */
-            magma_int_t i = rand() % M;
-            magma_int_t j = rand() % N;
+            i = rand() % M;
+            j = rand() % N;
             *h_A(i,j) = MAGMA_D_NAN;
             magma_dsetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
-            norm_magma  = magmablas_dlange( norm[inorm], M, N, d_A, ldda, d_work );
+            norm_magma  = magmablas_dlange( norm[inorm], M, N, d_A, ldda, d_work, lwork );
             norm_lapack = lapackf77_dlange( lapack_norm_const( norm[inorm] ),
                                             &M, &N, h_A, &lda, h_work );
-            bool nan_okay    = isnan(norm_magma);
-            bool la_nan_okay = isnan(norm_lapack);
+            bool nan_okay;    nan_okay    = isnan(norm_magma);
+            bool la_nan_okay; la_nan_okay = isnan(norm_lapack);
             lapack_nan_fail += ! la_nan_okay;
             status          += !    nan_okay;
             
             *h_A(i,j) = MAGMA_D_INF;
             magma_dsetvector( 1, h_A(i,j), 1, d_A(i,j), 1 );
-            norm_magma  = magmablas_dlange( norm[inorm], M, N, d_A, ldda, d_work );
+            norm_magma  = magmablas_dlange( norm[inorm], M, N, d_A, ldda, d_work, lwork );
             norm_lapack = lapackf77_dlange( lapack_norm_const( norm[inorm] ),
                                             &M, &N, h_A, &lda, h_work );
-            bool inf_okay    = isinf(norm_magma);
-            bool la_inf_okay = isinf(norm_lapack);
+            bool inf_okay;    inf_okay    = isinf(norm_magma);
+            bool la_inf_okay; la_inf_okay = isinf(norm_lapack);
             lapack_inf_fail += ! la_inf_okay;
             status          += !    inf_okay;
             
-            printf("%5d %5d   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %6s   %6s%1s  %6s%1s\n",
+            printf("%5d %5d   %4c   %7.2f (%7.2f)   %7.2f (%7.2f)   %#9.3g   %-6s   %6s%1s  %6s%1s\n",
                    (int) M, (int) N,
                    lapacke_norm_const( norm[inorm] ),
                    cpu_perf, cpu_time*1000., gpu_perf, gpu_time*1000.,
@@ -159,6 +166,7 @@ int main( int argc, char** argv)
                    (nan_okay ? "ok" : "failed"), (la_nan_okay ? " " : "*"),
                    (inf_okay ? "ok" : "failed"), (la_inf_okay ? " " : "*"));
             
+        cleanup:
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_work );
             
@@ -180,6 +188,7 @@ int main( int argc, char** argv)
         printf( "* Warning: LAPACK did not pass INF propagation test\n" );
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

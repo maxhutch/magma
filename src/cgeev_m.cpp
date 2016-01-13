@@ -1,24 +1,22 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeev_m.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/zgeev_m.cpp normal z -> c, Wed Jan  6 17:59:35 2016
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_c
 #define COMPLEX
 
 /*
  * Version1 - LAPACK              (lapack_cgehrd and lapack_cunghr)
  * Version2 - MAGMA without dT    (magma_cgehrd2 and lapack_cunghr)
  * Version3 - MAGMA with dT       (magma_cgehrd  and magma_cunghr)
- * Version4 - Multi-GPU magma_cgehrd_m with T on CPU, copied to dT, single-GPU magma_cunghr
  * Version5 - Multi-GPU magma_cgehrd_m with T on CPU, multi-GPU magma_cunghr_m
  */
 #define Version5
@@ -210,17 +208,16 @@ magma_cgeev_m(
         return *info;
     }
     
-    #if defined(Version3) || defined(Version4) || defined(Version5)
+    #if defined(Version3)
     magmaFloatComplex *dT;
     if (MAGMA_SUCCESS != magma_cmalloc( &dT, nb*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
     #endif
-    #if defined(Version4) || defined(Version5)
+    #if defined(Version5)
     magmaFloatComplex *T;
     if (MAGMA_SUCCESS != magma_cmalloc_cpu( &T, nb*n )) {
-        magma_free( dT );
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
     }
@@ -276,11 +273,10 @@ magma_cgeev_m(
         // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored,
         magma_cgehrd( n, ilo, ihi, A, lda,
                       &work[itau], &work[iwrk], liwrk, dT, &ierr );
-    #elif defined(Version4) || defined(Version5)
+    #elif defined(Version5)
         // Version 4 - Multi-GPU, T on host
         magma_cgehrd_m( n, ilo, ihi, A, lda,
                         &work[itau], &work[iwrk], liwrk, T, &ierr );
-        magma_csetmatrix( nb, n, T, nb, dT, nb );
     #endif
 
     if (wantvl) {
@@ -297,7 +293,7 @@ magma_cgeev_m(
             // Version 1 & 2 - LAPACK
             lapackf77_cunghr( &n, &ilo, &ihi, VL, &ldvl, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
-        #elif defined(Version3) || defined(Version4)
+        #elif defined(Version3)
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_cunghr( n, ilo, ihi, VL, ldvl, &work[itau], dT, nb, &ierr );
         #elif defined(Version5)
@@ -335,7 +331,7 @@ magma_cgeev_m(
             // Version 1 & 2 - LAPACK
             lapackf77_cunghr( &n, &ilo, &ihi, VR, &ldvr, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
-        #elif defined(Version3) || defined(Version4)
+        #elif defined(Version3)
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_cunghr( n, ilo, ihi, VR, ldvr, &work[itau], dT, nb, &ierr );
         #elif defined(Version5)
@@ -413,7 +409,7 @@ magma_cgeev_m(
                 rwork[irwork + k] = d__1*d__1 + d__2*d__2;
             }
             k = blasf77_isamax( &n, &rwork[irwork], &ione ) - 1;  // subtract 1; k is 0-based
-            tmp = MAGMA_C_CNJG( *VL(k,i) ) / magma_ssqrt( rwork[irwork + k] );
+            tmp = MAGMA_C_CONJ( *VL(k,i) ) / magma_ssqrt( rwork[irwork + k] );
             blasf77_cscal( &n, &tmp, VL(0,i), &ione );
             *VL(k,i) = MAGMA_C_MAKE( MAGMA_C_REAL( *VL(k,i) ), 0 );
         }
@@ -437,7 +433,7 @@ magma_cgeev_m(
                 rwork[irwork + k] = d__1*d__1 + d__2*d__2;
             }
             k = blasf77_isamax( &n, &rwork[irwork], &ione ) - 1;  // subtract 1; k is 0-based
-            tmp = MAGMA_C_CNJG( *VR(k,i) ) / magma_ssqrt( rwork[irwork + k] );
+            tmp = MAGMA_C_CONJ( *VR(k,i) ) / magma_ssqrt( rwork[irwork + k] );
             blasf77_cscal( &n, &tmp, VR(0,i), &ione );
             *VR(k,i) = MAGMA_C_MAKE( MAGMA_C_REAL( *VR(k,i) ), 0 );
         }
@@ -458,10 +454,10 @@ CLEANUP:
         }
     }
 
-    #if defined(Version3) || defined(Version4) || defined(Version5)
+    #if defined(Version3)
     magma_free( dT );
     #endif
-    #if defined(Version4) || defined(Version5)
+    #if defined(Version5)
     magma_free_cpu( T );
     #endif
     

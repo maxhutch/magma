@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zaxpycp.cu normal z -> d, Fri Sep 11 18:29:19 2015
+       @generated from magmablas/zaxpycp.cu normal z -> d, Wed Jan  6 17:59:37 2016
 
 */
 #include "common_magma.h"
@@ -17,7 +17,9 @@
 // each thread does one index, x[i] and r[i]
 __global__ void
 daxpycp_kernel(
-    int m, double *r, double *x,
+    int m,
+    double *r,
+    double *x,
     const double *b)
 {
     const int i = threadIdx.x + blockIdx.x*NB;
@@ -41,7 +43,7 @@ magmablas_daxpycp_q(
 {
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
-    daxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b );
+    daxpycp_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, r, x, b );
 }
 
 extern "C" void
@@ -51,5 +53,5 @@ magmablas_daxpycp(
     magmaDouble_ptr x,
     magmaDouble_const_ptr b)
 {
-    magmablas_daxpycp_q( m, r, x, b, magma_stream );
+    magmablas_daxpycp_q( m, r, x, b, magmablasGetQueue() );
 }

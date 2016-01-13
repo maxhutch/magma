@@ -1,21 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
+       @author Mark Gates
+       
        @precisions normal z -> s d c
 */
-#include "common_magma.h"
-
-#define PRECISION_z
+#include "magma_internal.h"
 
 // === Define what BLAS to use ============================================
-//#if (defined(PRECISION_s) || defined(PRECISION_d))
+    #undef  magma_ztrsm
     #define magma_ztrsm magmablas_ztrsm
-//#endif
 // === End defining what BLAS to use =======================================
 
 /**
@@ -30,8 +29,6 @@
     where U is an upper triangular matrix and L is lower triangular.
 
     This is the block version of the algorithm, calling Level 3 BLAS.
-    If the current stream is NULL, this version replaces it with a new
-    stream to overlap computation with communication.
 
     Arguments
     ---------
@@ -77,18 +74,26 @@ extern "C" magma_int_t
 magma_zpotrf_gpu(
     magma_uplo_t uplo, magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
-    magma_int_t *info)
+    magma_int_t *info )
 {
-#define dA(i, j) (dA + (j)*ldda + (i))
+    #ifdef HAVE_clBLAS
+    #define dA(i_, j_)  dA, ((i_) + (j_)*ldda + dA_offset)
+    #else
+    #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #endif
 
-    magma_int_t     j, jb, nb;
+    /* Constants */
+    const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    const double d_one     =  1.0;
+    const double d_neg_one = -1.0;
+    
+    /* Local variables */
     const char* uplo_ = lapack_uplo_const( uplo );
-    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
-    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    bool upper = (uplo == MagmaUpper);
+    
+    magma_int_t j, jb, nb;
     magmaDoubleComplex *work;
-    double          d_one     =  1.0;
-    double          d_neg_one = -1.0;
-    int upper = (uplo == MagmaUpper);
 
     *info = 0;
     if (! upper && uplo != MagmaLower) {
@@ -102,78 +107,71 @@ magma_zpotrf_gpu(
         magma_xerbla( __func__, -(*info) );
         return *info;
     }
-
-    nb = magma_get_zpotrf_nb(n);
-
+    
+    nb = magma_get_zpotrf_nb( n );
+    
     if (MAGMA_SUCCESS != magma_zmalloc_pinned( &work, nb*nb )) {
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
     }
-
-    /* Define user stream if current stream is NULL */
-    magma_queue_t stream[2];
     
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
     
-    magma_queue_create( &stream[0] );
-    if (orig_stream == NULL) {
-        magma_queue_create( &stream[1] );
-        magmablasSetKernelStream(stream[1]);
-    }
-    else {
-        stream[1] = orig_stream;
-    }
-    
-    if ((nb <= 1) || (nb >= n)) {
+    if (nb <= 1 || nb >= n) {
         /* Use unblocked code. */
-        magma_zgetmatrix_async( n, n, dA, ldda, work, n, stream[1] );
-        magma_queue_sync( stream[1] );
-        lapackf77_zpotrf(uplo_, &n, work, &n, info);
-        magma_zsetmatrix_async( n, n, work, n, dA, ldda, stream[1] );
+        magma_zgetmatrix( n, n, dA(0,0), ldda, work, n, queues[0] );
+        lapackf77_zpotrf( uplo_, &n, work, &n, info );
+        magma_zsetmatrix( n, n, work, n, dA(0,0), ldda, queues[0] );
     }
     else {
         /* Use blocked code. */
         if (upper) {
+            //=========================================================
             /* Compute the Cholesky factorization A = U'*U. */
             for (j=0; j < n; j += nb) {
-                /* Update and factorize the current diagonal block and test
-                   for non-positive-definiteness. Computing MIN */
-                jb = min(nb, (n-j));
+                // apply all previous updates to diagonal block,
+                // then transfer it to CPU
+                jb = min( nb, n-j );
+                magma_zherk( MagmaUpper, MagmaConjTrans, jb, j,
+                             d_neg_one, dA(0, j), ldda,
+                             d_one,     dA(j, j), ldda, queues[1] );
                 
-                magma_zherk(MagmaUpper, MagmaConjTrans, jb, j,
-                            d_neg_one, dA(0, j), ldda,
-                            d_one,     dA(j, j), ldda);
-
-                magma_queue_sync( stream[1] );
+                magma_queue_sync( queues[1] );
                 magma_zgetmatrix_async( jb, jb,
                                         dA(j, j), ldda,
-                                        work,     jb, stream[0] );
+                                        work,     jb, queues[0] );
                 
-                if ( (j+jb) < n) {
-                    /* Compute the current block row. */
-                    magma_zgemm(MagmaConjTrans, MagmaNoTrans,
-                                jb, (n-j-jb), j,
-                                c_neg_one, dA(0, j   ), ldda,
-                                           dA(0, j+jb), ldda,
-                                c_one,     dA(j, j+jb), ldda);
+                // apply all previous updates to block row right of diagonal block
+                if (j+jb < n) {
+                    magma_zgemm( MagmaConjTrans, MagmaNoTrans,
+                                 jb, n-j-jb, j,
+                                 c_neg_one, dA(0, j   ), ldda,
+                                            dA(0, j+jb), ldda,
+                                 c_one,     dA(j, j+jb), ldda, queues[1] );
                 }
                 
-                magma_queue_sync( stream[0] );
-                lapackf77_zpotrf(MagmaUpperStr, &jb, work, &jb, info);
+                // simultaneous with above zgemm, transfer diagonal block,
+                // factor it on CPU, and test for positive definiteness
+                magma_queue_sync( queues[0] );
+                lapackf77_zpotrf( MagmaUpperStr, &jb, work, &jb, info );
                 magma_zsetmatrix_async( jb, jb,
                                         work,     jb,
-                                        dA(j, j), ldda, stream[1] );
+                                        dA(j, j), ldda, queues[1] );
                 if (*info != 0) {
                     *info = *info + j;
                     break;
                 }
-
-                if ( (j+jb) < n) {
+                
+                // apply diagonal block to block row right of diagonal block
+                if (j+jb < n) {
                     magma_ztrsm( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
-                                 jb, (n-j-jb),
-                                 c_one, dA(j, j   ), ldda,
-                                        dA(j, j+jb), ldda);
+                                 jb, n-j-jb,
+                                 c_one, dA(j, j),    ldda,
+                                        dA(j, j+jb), ldda, queues[1] );
                 }
             }
         }
@@ -181,54 +179,54 @@ magma_zpotrf_gpu(
             //=========================================================
             // Compute the Cholesky factorization A = L*L'.
             for (j=0; j < n; j += nb) {
-                //  Update and factorize the current diagonal block and test
-                //  for non-positive-definiteness. Computing MIN
-                jb = min(nb, (n-j));
-
-                magma_zherk(MagmaLower, MagmaNoTrans, jb, j,
-                            d_neg_one, dA(j, 0), ldda,
-                            d_one,     dA(j, j), ldda);
+                // apply all previous updates to diagonal block,
+                // then transfer it to CPU
+                jb = min( nb, n-j );
+                magma_zherk( MagmaLower, MagmaNoTrans, jb, j,
+                             d_neg_one, dA(j, 0), ldda,
+                             d_one,     dA(j, j), ldda, queues[1] );
                 
-                magma_queue_sync( stream[1] );
+                magma_queue_sync( queues[1] );
                 magma_zgetmatrix_async( jb, jb,
                                         dA(j, j), ldda,
-                                        work,     jb, stream[0] );
+                                        work,     jb, queues[0] );
                 
-                if ( (j+jb) < n) {
+                // apply all previous updates to block column below diagonal block
+                if (j+jb < n) {
                     magma_zgemm( MagmaNoTrans, MagmaConjTrans,
-                                 (n-j-jb), jb, j,
+                                 n-j-jb, jb, j,
                                  c_neg_one, dA(j+jb, 0), ldda,
                                             dA(j,    0), ldda,
-                                 c_one,     dA(j+jb, j), ldda);
+                                 c_one,     dA(j+jb, j), ldda, queues[1] );
                 }
-
-                magma_queue_sync( stream[0] );
-                lapackf77_zpotrf(MagmaLowerStr, &jb, work, &jb, info);
+                
+                // simultaneous with above zgemm, transfer diagonal block,
+                // factor it on CPU, and test for positive definiteness
+                magma_queue_sync( queues[0] );
+                lapackf77_zpotrf( MagmaLowerStr, &jb, work, &jb, info );
                 magma_zsetmatrix_async( jb, jb,
                                         work,     jb,
-                                        dA(j, j), ldda, stream[1] );
+                                        dA(j, j), ldda, queues[1] );
                 if (*info != 0) {
                     *info = *info + j;
                     break;
                 }
                 
-                if ( (j+jb) < n) {
-                    magma_ztrsm(MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
-                                (n-j-jb), jb,
-                                c_one, dA(j,    j), ldda,
-                                       dA(j+jb, j), ldda);
+                // apply diagonal block to block column below diagonal
+                if (j+jb < n) {
+                    magma_ztrsm( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+                                 n-j-jb, jb,
+                                 c_one, dA(j,    j), ldda,
+                                        dA(j+jb, j), ldda, queues[1] );
                 }
             }
         }
     }
-
+    
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
+    
     magma_free_pinned( work );
-
-    magma_queue_destroy( stream[0] );
-    if (orig_stream == NULL) {
-        magma_queue_destroy( stream[1] );
-    }
-    magmablasSetKernelStream( orig_stream );
-
+    
     return *info;
 } /* magma_zpotrf_gpu */

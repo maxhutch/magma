@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
 
-       @generated from zheevx.cpp normal z -> c, Fri Sep 11 18:29:30 2015
+       @generated from src/zheevx.cpp normal z -> c, Wed Jan  6 17:59:33 2016
 
  */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -170,31 +170,35 @@
 extern "C" magma_int_t
 magma_cheevx(
     magma_vec_t jobz, magma_range_t range, magma_uplo_t uplo, magma_int_t n,
-    magmaFloatComplex *A, magma_int_t lda, float vl, float vu,
-    magma_int_t il, magma_int_t iu, float abstol, magma_int_t *m,
-    float *w, magmaFloatComplex *Z, magma_int_t ldz, magmaFloatComplex *work, magma_int_t lwork,
-    float *rwork, magma_int_t *iwork, magma_int_t *ifail,
+    magmaFloatComplex *A, magma_int_t lda,
+    float vl, float vu,
+    magma_int_t il, magma_int_t iu,
+    float abstol,
+    magma_int_t *m, float *w,
+    magmaFloatComplex *Z, magma_int_t ldz,
+    magmaFloatComplex *work, magma_int_t lwork,
+    float *rwork,
+    magma_int_t *iwork, magma_int_t *ifail,
     magma_int_t *info)
 {
+    /* Constants */
+    const magma_int_t izero = 0;
+    const magma_int_t ione  = 1;
+    
+    /* Local variables */
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
     const char* range_ = lapack_range_const( range );
-    
-    magma_int_t izero = 0;
-    magma_int_t ione = 1;
     
     const char* order_;
     magma_int_t indd, inde;
     magma_int_t imax;
     magma_int_t lopt, itmp1, indee;
-    magma_int_t lower, wantz;
     magma_int_t i, j, jj, i__1;
-    magma_int_t alleig, valeig, indeig;
     magma_int_t iscale, indibl;
     magma_int_t indiwk, indisp, indtau;
     magma_int_t indrwk, indwrk;
     magma_int_t llwork, nsplit;
-    magma_int_t lquery;
     magma_int_t iinfo;
     float safmin;
     float bignum;
@@ -205,12 +209,12 @@ magma_cheevx(
     float rmin, rmax;
     
     /* Function Body */
-    lower  = (uplo  == MagmaLower);
-    wantz  = (jobz  == MagmaVec);
-    alleig = (range == MagmaRangeAll);
-    valeig = (range == MagmaRangeV);
-    indeig = (range == MagmaRangeI);
-    lquery = (lwork == -1);
+    bool lower  = (uplo  == MagmaLower);
+    bool wantz  = (jobz  == MagmaVec);
+    bool alleig = (range == MagmaRangeAll);
+    bool valeig = (range == MagmaRangeV);
+    bool indeig = (range == MagmaRangeI);
+    bool lquery = (lwork == -1);
     
     *info = 0;
     if (! (wantz || (jobz == MagmaNoVec))) {

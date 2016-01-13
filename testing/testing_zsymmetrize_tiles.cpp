@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -97,10 +97,10 @@ int main( int argc, char** argv)
                 for( int j = 0; j < nb; ++j ) {
                     for( int i = 0; i < j; ++i ) {
                         if ( opts.uplo == MagmaLower ) {
-                            h_A[offset + i + j*lda] = MAGMA_Z_CNJG( h_A[offset + j + i*lda] );
+                            h_A[offset + i + j*lda] = MAGMA_Z_CONJ( h_A[offset + j + i*lda] );
                         }
                         else {
-                            h_A[offset + j + i*lda] = MAGMA_Z_CNJG( h_A[offset + i + j*lda] );
+                            h_A[offset + j + i*lda] = MAGMA_Z_CONJ( h_A[offset + i + j*lda] );
                         }
                     }
                 }
@@ -133,6 +133,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

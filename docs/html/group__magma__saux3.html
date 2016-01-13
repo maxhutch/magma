@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -117,19 +117,19 @@ Functions</h2></td></tr>
 <tr class="memitem:ga70f69ba7e11bbbe8d5a15f9342ff15a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux3.html#ga70f69ba7e11bbbe8d5a15f9342ff15a0">magma_slarfy</a> (magma_int_t n, float *A, magma_int_t lda, const float *V, const float *TAU, float *work)</td></tr>
 <tr class="memdesc:ga70f69ba7e11bbbe8d5a15f9342ff15a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">magma_slarfy applies an elementary reflector, or Householder matrix, H, to a n-by-n symmetric matrix C, from both the left and the right.  <a href="#ga70f69ba7e11bbbe8d5a15f9342ff15a0">More...</a><br /></td></tr>
 <tr class="separator:ga70f69ba7e11bbbe8d5a15f9342ff15a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga65f48f6106d5e97516d3af96b902bbc6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux3.html#ga65f48f6106d5e97516d3af96b902bbc6">magma_slarfb_gemm_batched</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_const_ptr dV_array[], magma_int_t lddv, magmaFloat_const_ptr dT_array[], magma_int_t lddt, magmaFloat_ptr dC_array[], magma_int_t lddc, magmaFloat_ptr dwork_array[], magma_int_t ldwork, magmaFloat_ptr dworkvt_array[], magma_int_t ldworkvt, magma_int_t batchCount, magma_queue_t queue, cublasHandle_t myhandle)</td></tr>
-<tr class="memdesc:ga65f48f6106d5e97516d3af96b902bbc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left.  <a href="#ga65f48f6106d5e97516d3af96b902bbc6">More...</a><br /></td></tr>
-<tr class="separator:ga65f48f6106d5e97516d3af96b902bbc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga475a4ccd8f6b09af1328a22609b2172d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux3.html#ga475a4ccd8f6b09af1328a22609b2172d">magma_slarfb_gpu</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_const_ptr dV, magma_int_t lddv, magmaFloat_const_ptr dT, magma_int_t lddt, magmaFloat_ptr dC, magma_int_t lddc, magmaFloat_ptr dwork, magma_int_t ldwork)</td></tr>
-<tr class="memdesc:ga475a4ccd8f6b09af1328a22609b2172d"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left.  <a href="#ga475a4ccd8f6b09af1328a22609b2172d">More...</a><br /></td></tr>
-<tr class="separator:ga475a4ccd8f6b09af1328a22609b2172d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga3328c49a1f582f8f7b44805a3216db4b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux3.html#ga3328c49a1f582f8f7b44805a3216db4b">magma_slarfb_gpu_gemm</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_const_ptr dV, magma_int_t lddv, magmaFloat_const_ptr dT, magma_int_t lddt, magmaFloat_ptr dC, magma_int_t lddc, magmaFloat_ptr dwork, magma_int_t ldwork, magmaFloat_ptr dworkvt, magma_int_t ldworkvt)</td></tr>
-<tr class="memdesc:ga3328c49a1f582f8f7b44805a3216db4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left.  <a href="#ga3328c49a1f582f8f7b44805a3216db4b">More...</a><br /></td></tr>
-<tr class="separator:ga3328c49a1f582f8f7b44805a3216db4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaab0f59aa35cc4d7906067d68a5b6dd82"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux3.html#gaab0f59aa35cc4d7906067d68a5b6dd82">magma_slarfb_gemm_batched</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_const_ptr dV_array[], magma_int_t lddv, magmaFloat_const_ptr dT_array[], magma_int_t lddt, magmaFloat_ptr dC_array[], magma_int_t lddc, magmaFloat_ptr dwork_array[], magma_int_t ldwork, magmaFloat_ptr dworkvt_array[], magma_int_t ldworkvt, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaab0f59aa35cc4d7906067d68a5b6dd82"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left.  <a href="#gaab0f59aa35cc4d7906067d68a5b6dd82">More...</a><br /></td></tr>
+<tr class="separator:gaab0f59aa35cc4d7906067d68a5b6dd82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5351cba030e7a13d22c52a558b1dfa44"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux3.html#ga5351cba030e7a13d22c52a558b1dfa44">magma_slarfb_gpu_q</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_const_ptr dV, magma_int_t lddv, magmaFloat_const_ptr dT, magma_int_t lddt, magmaFloat_ptr dC, magma_int_t lddc, magmaFloat_ptr dwork, magma_int_t ldwork, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga5351cba030e7a13d22c52a558b1dfa44"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left.  <a href="#ga5351cba030e7a13d22c52a558b1dfa44">More...</a><br /></td></tr>
+<tr class="separator:ga5351cba030e7a13d22c52a558b1dfa44"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaca6ac8a8f9e4f48dcbff7fbc2d0fe755"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__saux3.html#gaca6ac8a8f9e4f48dcbff7fbc2d0fe755">magma_slarfb_gpu_gemm_q</a> (magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev, magma_int_t m, magma_int_t n, magma_int_t k, magmaFloat_const_ptr dV, magma_int_t lddv, magmaFloat_const_ptr dT, magma_int_t lddt, magmaFloat_ptr dC, magma_int_t lddc, magmaFloat_ptr dwork, magma_int_t ldwork, magmaFloat_ptr dworkvt, magma_int_t ldworkvt, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaca6ac8a8f9e4f48dcbff7fbc2d0fe755"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left.  <a href="#gaca6ac8a8f9e4f48dcbff7fbc2d0fe755">More...</a><br /></td></tr>
+<tr class="separator:gaca6ac8a8f9e4f48dcbff7fbc2d0fe755"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ga65f48f6106d5e97516d3af96b902bbc6"></a>
+<a class="anchor" id="gaab0f59aa35cc4d7906067d68a5b6dd82"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -245,13 +245,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>queue</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">cublasHandle_t&#160;</td>
-          <td class="paramname"><em>myhandle</em>&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -300,7 +294,6 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldworkvt</td><td>INTEGER The leading dimension of the array WORKVT. LDWORKVT &gt;= max(1,min(M,N));</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Cublas handle might be used internally.</td></tr>
   </table>
   </dd>
 </dl>
@@ -324,171 +317,12 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
              (  0  0  1 )</pre> 
 </div>
 </div>
-<a class="anchor" id="ga475a4ccd8f6b09af1328a22609b2172d"></a>
+<a class="anchor" id="gaca6ac8a8f9e4f48dcbff7fbc2d0fe755"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">magma_int_t magma_slarfb_gpu </td>
-          <td>(</td>
-          <td class="paramtype">magma_side_t&#160;</td>
-          <td class="paramname"><em>side</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_trans_t&#160;</td>
-          <td class="paramname"><em>trans</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_direct_t&#160;</td>
-          <td class="paramname"><em>direct</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_storev_t&#160;</td>
-          <td class="paramname"><em>storev</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>k</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
-          <td class="paramname"><em>dV</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddv</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
-          <td class="paramname"><em>dT</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloat_ptr&#160;</td>
-          <td class="paramname"><em>dC</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloat_ptr&#160;</td>
-          <td class="paramname"><em>dwork</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldwork</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
-<li>= MagmaLeft: apply H or H^H from the Left</li>
-<li>= MagmaRight: apply H or H^H from the Right</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
-<li>= MagmaNoTrans: apply H (No transpose)</li>
-<li>= MagmaTrans: apply H^H (Conjugate transpose)</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">direct</td><td>magma_direct_t Indicates how H is formed from a product of elementary reflectors<ul>
-<li>= MagmaForward: H = H(1) H(2) . . . H(k) (Forward)</li>
-<li>= MagmaBackward: H = H(k) . . . H(2) H(1) (Backward)</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">storev</td><td>magma_storev_t Indicates how the vectors which define the elementary reflectors are stored:<ul>
-<li>= MagmaColumnwise: Columnwise</li>
-<li>= MagmaRowwise: Rowwise</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix C.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER The order of the matrix T (= the number of elementary reflectors whose product defines the block reflector).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dV</td><td>REAL array on the GPU, dimension (LDDV,K) if STOREV = MagmaColumnwise (LDDV,M) if STOREV = MagmaRowwise and SIDE = MagmaLeft (LDDV,N) if STOREV = MagmaRowwise and SIDE = MagmaRight The matrix V. See further details.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddv</td><td>INTEGER The leading dimension of the array V. If STOREV = MagmaColumnwise and SIDE = MagmaLeft, LDDV &gt;= max(1,M); if STOREV = MagmaColumnwise and SIDE = MagmaRight, LDDV &gt;= max(1,N); if STOREV = MagmaRowwise, LDDV &gt;= K.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dT</td><td>REAL array on the GPU, dimension (LDDT,K) The triangular k by k matrix T in the representation of the block reflector.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddt</td><td>INTEGER The leading dimension of the array T. LDDT &gt;= K.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>REAL array on the GPU, dimension (LDDC,N) On entry, the m by n matrix C. On exit, C is overwritten by H*C, or H^H*C, or C*H, or C*H^H.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array C. LDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) REAL array, dimension (LDWORK,K)</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldwork</td><td>INTEGER The leading dimension of the array WORK. If SIDE = MagmaLeft, LDWORK &gt;= max(1,N); if SIDE = MagmaRight, LDWORK &gt;= max(1,M);</td></tr>
-  </table>
-  </dd>
-</dl>
-<h2>Further Details </h2>
-<p>The shape of the matrix V and the storage of the vectors which define the H(i) is best illustrated by the following example with n = 5 and k = 3. All elements including 0's and 1's are stored, unlike LAPACK. </p><pre class="fragment">DIRECT = MagmaForward and         DIRECT = MagmaForward and
-STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
-
-         V = (  1  0  0 )                 V = (  1 v1 v1 v1 v1 )
-             ( v1  1  0 )                     (  0  1 v2 v2 v2 )
-             ( v1 v2  1 )                     (  0  0  1 v3 v3 )
-             ( v1 v2 v3 )
-             ( v1 v2 v3 )
-
-DIRECT = MagmaBackward and        DIRECT = MagmaBackward and
-STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
-
-         V = ( v1 v2 v3 )                 V = ( v1 v1  1  0  0 )
-             ( v1 v2 v3 )                     ( v2 v2 v2  1  0 )
-             (  1 v2 v3 )                     ( v3 v3 v3 v3  1 )
-             (  0  1 v3 )
-             (  0  0  1 )</pre> 
-</div>
-</div>
-<a class="anchor" id="ga3328c49a1f582f8f7b44805a3216db4b"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_slarfb_gpu_gemm </td>
+          <td class="memname">magma_int_t magma_slarfb_gpu_gemm_q </td>
           <td>(</td>
           <td class="paramtype">magma_side_t&#160;</td>
           <td class="paramname"><em>side</em>, </td>
@@ -587,7 +421,13 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldworkvt</em>&#160;</td>
+          <td class="paramname"><em>ldworkvt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -634,6 +474,173 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
     <tr><td class="paramdir">[in]</td><td class="paramname">ldwork</td><td>INTEGER The leading dimension of the array WORK. If SIDE = MagmaLeft, LDWORK &gt;= max(1,N); if SIDE = MagmaRight, LDWORK &gt;= max(1,M);</td></tr>
     <tr><td class="paramdir"></td><td class="paramname">dworkvt</td><td>(workspace) REAL array, dimension (LDWORKT,K)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldworkvt</td><td>INTEGER The leading dimension of the array WORKVT. LDWORKVT &gt;= max(1,min(M,N));</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
+  </table>
+  </dd>
+</dl>
+<h2>Further Details </h2>
+<p>The shape of the matrix V and the storage of the vectors which define the H(i) is best illustrated by the following example with n = 5 and k = 3. All elements including 0's and 1's are stored, unlike LAPACK. </p><pre class="fragment">DIRECT = MagmaForward and         DIRECT = MagmaForward and
+STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
+
+         V = (  1  0  0 )                 V = (  1 v1 v1 v1 v1 )
+             ( v1  1  0 )                     (  0  1 v2 v2 v2 )
+             ( v1 v2  1 )                     (  0  0  1 v3 v3 )
+             ( v1 v2 v3 )
+             ( v1 v2 v3 )
+
+DIRECT = MagmaBackward and        DIRECT = MagmaBackward and
+STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
+
+         V = ( v1 v2 v3 )                 V = ( v1 v1  1  0  0 )
+             ( v1 v2 v3 )                     ( v2 v2 v2  1  0 )
+             (  1 v2 v3 )                     ( v3 v3 v3 v3  1 )
+             (  0  1 v3 )
+             (  0  0  1 )</pre> 
+</div>
+</div>
+<a class="anchor" id="ga5351cba030e7a13d22c52a558b1dfa44"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_slarfb_gpu_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_side_t&#160;</td>
+          <td class="paramname"><em>side</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_trans_t&#160;</td>
+          <td class="paramname"><em>trans</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_direct_t&#160;</td>
+          <td class="paramname"><em>direct</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_storev_t&#160;</td>
+          <td class="paramname"><em>storev</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
+          <td class="paramname"><em>dV</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddv</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
+          <td class="paramname"><em>dT</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>dC</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramname"><em>dwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>SLARFB applies a real block reflector H or its transpose H^H to a REAL m by n matrix C, from the left. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">side</td><td>magma_side_t<ul>
+<li>= MagmaLeft: apply H or H^H from the Left</li>
+<li>= MagmaRight: apply H or H^H from the Right</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">trans</td><td>magma_trans_t<ul>
+<li>= MagmaNoTrans: apply H (No transpose)</li>
+<li>= MagmaTrans: apply H^H (Conjugate transpose)</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">direct</td><td>magma_direct_t Indicates how H is formed from a product of elementary reflectors<ul>
+<li>= MagmaForward: H = H(1) H(2) . . . H(k) (Forward)</li>
+<li>= MagmaBackward: H = H(k) . . . H(2) H(1) (Backward)</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">storev</td><td>magma_storev_t Indicates how the vectors which define the elementary reflectors are stored:<ul>
+<li>= MagmaColumnwise: Columnwise</li>
+<li>= MagmaRowwise: Rowwise</li>
+</ul>
+</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix C.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>INTEGER The order of the matrix T (= the number of elementary reflectors whose product defines the block reflector).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dV</td><td>REAL array on the GPU, dimension (LDDV,K) if STOREV = MagmaColumnwise (LDDV,M) if STOREV = MagmaRowwise and SIDE = MagmaLeft (LDDV,N) if STOREV = MagmaRowwise and SIDE = MagmaRight The matrix V. See further details.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddv</td><td>INTEGER The leading dimension of the array V. If STOREV = MagmaColumnwise and SIDE = MagmaLeft, LDDV &gt;= max(1,M); if STOREV = MagmaColumnwise and SIDE = MagmaRight, LDDV &gt;= max(1,N); if STOREV = MagmaRowwise, LDDV &gt;= K.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dT</td><td>REAL array on the GPU, dimension (LDDT,K) The triangular k by k matrix T in the representation of the block reflector.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddt</td><td>INTEGER The leading dimension of the array T. LDDT &gt;= K.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>REAL array on the GPU, dimension (LDDC,N) On entry, the m by n matrix C. On exit, C is overwritten by H*C, or H^H*C, or C*H, or C*H^H.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array C. LDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) REAL array, dimension (LDWORK,K)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldwork</td><td>INTEGER The leading dimension of the array WORK. If SIDE = MagmaLeft, LDWORK &gt;= max(1,N); if SIDE = MagmaRight, LDWORK &gt;= max(1,M);</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in.</td></tr>
   </table>
   </dd>
 </dl>
@@ -729,7 +736,7 @@ STOREV = MagmaColumnwise:         STOREV = MagmaRowwise:
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

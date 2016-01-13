@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Mark Gates
        @author Azzam Haidar
@@ -12,7 +12,7 @@
 */
 #include "magma_timer.h"
 
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define COMPLEX
 
@@ -427,7 +427,7 @@ magma_int_t magma_ztrevc3(
 
             // Form right-hand side.
             for( k = ki + 1; k < n; ++k ) {
-                *work(k,iv) = -MAGMA_Z_CNJG( *T(ki,k) );
+                *work(k,iv) = -MAGMA_Z_CONJ( *T(ki,k) );
             }
 
             // Solve conjugate-transposed triangular system:

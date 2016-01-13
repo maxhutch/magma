@@ -1,18 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
+       @author Mark Gates
 
-       @generated from zunmqr_m.cpp normal z -> d, Fri Sep 11 18:29:28 2015
+       @generated from src/zunmqr_m.cpp normal z -> d, Wed Jan  6 17:59:32 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -135,29 +136,25 @@ magma_dormqr_m(
 #define    dT(gpui, ind)       (dw[gpui] + maxnlocal*lddc + 2*lddac*lddar + (ind)*((nb+1)*nb))
 #define dwork(gpui, ind)       (dw[gpui] + maxnlocal*lddc + 2*lddac*lddar + 2*((nb+1)*nb) + (ind)*(lddwork*nb))
 
+    /* Constants */
     double c_zero = MAGMA_D_ZERO;
     double c_one  = MAGMA_D_ONE;
 
+    /* Local variables */
     const char* side_  = lapack_side_const( side );
     const char* trans_ = lapack_trans_const( trans );
 
-    // TODO fix memory leak (alloc after argument checks)
     magma_int_t nb = 128;
-    double *T;
-    magma_dmalloc_pinned(&T, nb*nb);
-    //printf("calling dormqr_m with nb=%d\n", (int) nb);
-
-    double* dw[MagmaMaxGPUs];
-    magma_queue_t stream [MagmaMaxGPUs][2];
-    magma_event_t  event [MagmaMaxGPUs][2];
+    double *T = NULL;
+    magmaDouble_ptr dw[MagmaMaxGPUs] = { NULL };
+    magma_queue_t queues[MagmaMaxGPUs][2] = { NULL };
+    magma_event_t events[MagmaMaxGPUs][2] = { NULL };
 
     magma_int_t ind_c;
-    magma_device_t igpu;
+    magma_device_t dev;
     
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
 
     *info = 0;
 
@@ -230,36 +227,39 @@ magma_dormqr_m(
     magma_int_t nbl = magma_ceildiv( n, nb_l ); // number of blocks
     magma_int_t maxnlocal = magma_ceildiv( nbl, ngpu )*nb_l;
 
-    ngpu = min(ngpu, magma_ceildiv( n, nb_l )); // Don't use GPU that will not have data.
+    ngpu = min( ngpu, magma_ceildiv( n, nb_l )); // Don't use GPU that will not have data.
 
     magma_int_t ldw = maxnlocal*lddc // dC
                     + 2*lddac*lddar // 2*dA
                     + 2*(nb + 1 + lddwork)*nb; // 2*(dT and dwork)
 
-    for (igpu = 0; igpu < ngpu; ++igpu) {
-        magma_setdevice(igpu);
-        if (MAGMA_SUCCESS != magma_dmalloc( &dw[igpu], ldw )) {
+    if (MAGMA_SUCCESS != magma_dmalloc_pinned( &T, nb*nb )) {
+        *info = MAGMA_ERR_HOST_ALLOC;
+        goto cleanup;
+    }
+    for (dev = 0; dev < ngpu; ++dev) {
+        magma_setdevice( dev );
+        if (MAGMA_SUCCESS != magma_dmalloc( &dw[dev], ldw )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
-            magma_xerbla( __func__, -(*info) );
-            return *info;
+            goto cleanup;
         }
-        magma_queue_create( &stream[igpu][0] );
-        magma_queue_create( &stream[igpu][1] );
-        magma_event_create( &event[igpu][0] );
-        magma_event_create( &event[igpu][1] );
+        magma_queue_create( dev, &queues[dev][0] );
+        magma_queue_create( dev, &queues[dev][1] );
+        magma_event_create( &events[dev][0] );
+        magma_event_create( &events[dev][1] );
     }
 
     /* Use hybrid CPU-MGPU code */
     if (left) {
         //copy C to mgpus
         for (magma_int_t i = 0; i < nbl; ++i) {
-            igpu = i % ngpu;
-            magma_setdevice(igpu);
+            dev = i % ngpu;
+            magma_setdevice( dev );
             magma_int_t kb = min(nb_l, n-i*nb_l);
             magma_dsetmatrix_async( m, kb,
                                    C(0, i*nb_l), ldc,
-                                   dC(igpu, 0, i/ngpu*nb_l), lddc, stream[igpu][0] );
-            nlocal[igpu] += kb;
+                                   dC(dev, 0, i/ngpu*nb_l), lddc, queues[dev][0] );
+            nlocal[dev] += kb;
         }
 
         magma_int_t i1, i2, i3;
@@ -278,14 +278,14 @@ magma_dormqr_m(
         for (magma_int_t i = i1; (i3 < 0 ? i >= i2 : i < i2); i += i3) {
             // start the copy of A panel
             magma_int_t kb = min(nb, k - i);
-            for (igpu = 0; igpu < ngpu; ++igpu) {
-                magma_setdevice(igpu);
-                magma_event_sync(event[igpu][ind_c]); // check if the new data can be copied
+            for (dev = 0; dev < ngpu; ++dev) {
+                magma_setdevice( dev );
+                magma_event_sync( events[dev][ind_c] ); // check if the new data can be copied
                 magma_dsetmatrix_async(nq-i, kb,
                                        A(i, i),                 lda,
-                                       dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0] );
+                                       dA_c(dev, ind_c, i, 0), lddac, queues[dev][0] );
                 // set upper triangular part of dA to identity
-                magmablas_dlaset_band_q( MagmaUpper, kb, kb, kb, c_zero, c_one, dA_c(igpu, ind_c, i, 0), lddac, stream[igpu][0] );
+                magmablas_dlaset_band( MagmaUpper, kb, kb, kb, c_zero, c_one, dA_c(dev, ind_c, i, 0), lddac, queues[dev][0] );
             }
 
             /* Form the triangular factor of the block reflector
@@ -297,51 +297,49 @@ magma_dormqr_m(
             /* H or H' is applied to C(1:m,i:n) */
 
             /* Apply H or H'; First copy T to the GPU */
-            for (igpu = 0; igpu < ngpu; ++igpu) {
-                magma_setdevice(igpu);
+            for (dev = 0; dev < ngpu; ++dev) {
+                magma_setdevice( dev );
                 magma_dsetmatrix_async(kb, kb,
                                        T,               kb,
-                                       dT(igpu, ind_c), kb, stream[igpu][0] );
+                                       dT(dev, ind_c), kb, queues[dev][0] );
             }
 
-            for (igpu = 0; igpu < ngpu; ++igpu) {
-                magma_setdevice(igpu);
-                magma_queue_sync( stream[igpu][0] ); // check if the data was copied
-                magmablasSetKernelStream(stream[igpu][1]);
+            for (dev = 0; dev < ngpu; ++dev) {
+                magma_setdevice( dev );
+                magma_queue_sync( queues[dev][0] ); // check if the data was copied
                 magma_dlarfb_gpu( side, trans, MagmaForward, MagmaColumnwise,
-                                 m-i, nlocal[igpu], kb,
-                                 dA_c(igpu, ind_c, i, 0), lddac, dT(igpu, ind_c), kb,
-                                 dC(igpu, i, 0), lddc,
-                                 dwork(igpu, ind_c), lddwork);
-                magma_event_record(event[igpu][ind_c], stream[igpu][1] );
+                                 m-i, nlocal[dev], kb,
+                                 dA_c(dev, ind_c, i, 0), lddac, dT(dev, ind_c), kb,
+                                 dC(dev, i, 0), lddc,
+                                 dwork(dev, ind_c), lddwork, queues[dev][1] );
+                magma_event_record(events[dev][ind_c], queues[dev][1] );
             }
 
             ind_c = (ind_c+1)%2;
         }
 
-        for (igpu = 0; igpu < ngpu; ++igpu) {
-            magma_setdevice(igpu);
-            magma_queue_sync( stream[igpu][1] );
+        for (dev = 0; dev < ngpu; ++dev) {
+            magma_setdevice( dev );
+            magma_queue_sync( queues[dev][1] );
         }
 
         //copy C from mgpus
         for (magma_int_t i = 0; i < nbl; ++i) {
-            igpu = i % ngpu;
-            magma_setdevice(igpu);
+            dev = i % ngpu;
+            magma_setdevice( dev );
             magma_int_t kb = min(nb_l, n-i*nb_l);
             magma_dgetmatrix( m, kb,
-                              dC(igpu, 0, i/ngpu*nb_l), lddc,
-                              C(0, i*nb_l), ldc );
+                              dC(dev, 0, i/ngpu*nb_l), lddc,
+                              C(0, i*nb_l), ldc, queues[dev][1] );
 //            magma_dgetmatrix_async( m, kb,
-//                                   dC(igpu, 0, i/ngpu*nb_l), lddc,
-//                                   C(0, i*nb_l), ldc, stream[igpu][0] );
+//                                   dC(dev, 0, i/ngpu*nb_l), lddc,
+//                                   C(0, i*nb_l), ldc, queues[dev][0] );
         }
     } else {
-        // TODO fix memory leak T, dw, event, stream
-        fprintf(stderr, "The case (side == right) is not implemented\n");
         *info = MAGMA_ERR_NOT_IMPLEMENTED;
         magma_xerbla( __func__, -(*info) );
-        return *info;
+        goto cleanup;
+        
         /*
         if ( notran ) {
             i1 = 0;
@@ -367,36 +365,37 @@ magma_dormqr_m(
             
             // 1) copy the panel from A to the GPU, and
             // 2) set upper triangular part of dA to identity
-            magma_dsetmatrix( i__4, ib, A(i, i), lda, dA(i, 0), ldda );
-            magmablas_dlaset_band( MagmaUpper, ib, ib, ib, c_zero, c_one, dA(i, 0), ldda );
+            magma_dsetmatrix( i__4, ib, A(i, i), lda, dA(i, 0), ldda, queues[dev][1] );
+            magmablas_dlaset_band( MagmaUpper, ib, ib, ib, c_zero, c_one, dA(i, 0), ldda, queues[dev][1] );
             
             // H or H' is applied to C(1:m,i:n)
             ni = n - i;
             jc = i;
             
             // Apply H or H'; First copy T to the GPU
-            magma_dsetmatrix( ib, ib, T, ib, dT, ib );
+            magma_dsetmatrix( ib, ib, T, ib, dT, ib, queues[dev][1] );
             magma_dlarfb_gpu( side, trans, MagmaForward, MagmaColumnwise,
             mi, ni, ib,
             dA(i, 0), ldda, dT, ib,
             dC(ic, jc), lddc,
-            dwork, lddwork);
+            dwork, lddwork, queues[dev][1] );
         }
         */
     }
 
+cleanup:
     work[0] = MAGMA_D_MAKE( lwkopt, 0 );
 
-    for (igpu = 0; igpu < ngpu; ++igpu) {
-        magma_setdevice(igpu);
-        magma_event_destroy( event[igpu][0] );
-        magma_event_destroy( event[igpu][1] );
-        magma_queue_destroy( stream[igpu][0] );
-        magma_queue_destroy( stream[igpu][1] );
-        magma_free( dw[igpu] );
+    for (dev = 0; dev < ngpu; ++dev) {
+        magma_setdevice( dev );
+        magma_event_destroy( events[dev][0] );
+        magma_event_destroy( events[dev][1] );
+        magma_queue_destroy( queues[dev][0] );
+        magma_queue_destroy( queues[dev][1] );
+        magma_free( dw[dev] );
     }
+    magma_free_pinned( T );
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
 
     return *info;
 } /* magma_dormqr */

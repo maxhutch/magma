@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
-       @generated from zfgmres.cpp normal z -> s, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/zfgmres.cpp normal z -> s, Wed Jan  6 17:59:45 2016
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define PRECISION_s
 
@@ -55,7 +55,7 @@ GeneratePlaneRotation(float dx, float dy, float *cs, float *sn)
 #else   
     // below the code Joss Knight from MathWorks provided me with - this works. 
     // No idea why the above code fails for real - maybe rounding.
-    real_Double_t rho = sqrt(MAGMA_S_REAL(MAGMA_S_CNJG(dx)*dx + MAGMA_S_CNJG(dy)*dy));
+    real_Double_t rho = sqrt(MAGMA_S_REAL(MAGMA_S_CONJ(dx)*dx + MAGMA_S_CONJ(dy)*dy));
     *cs = dx / rho;
     *sn = dy / rho;
 #endif
@@ -70,7 +70,7 @@ static void ApplyPlaneRotation(float *dx, float *dy, float cs, float sn)
 #else  
     // below the code Joss Knight from MathWorks provided me with - this works. 
     // No idea why the above code fails for real - maybe rounding.
-    float temp  =  MAGMA_S_CNJG(cs) * (*dx) +  MAGMA_S_CNJG(sn) * (*dy);
+    float temp  =  MAGMA_S_CONJ(cs) * (*dx) +  MAGMA_S_CONJ(sn) * (*dy);
     *dy = -(sn) * (*dx) + cs * (*dy);
     *dx = temp;
 #endif
@@ -124,14 +124,14 @@ magma_sfgmres(
     magma_s_preconditioner *precond_par,
     magma_queue_t queue )
 {
-    magma_int_t info = 0;
+    magma_int_t info = MAGMA_NOTCONVERGED;
     
     magma_int_t dofs = A.num_rows;
 
     // prepare solver feedback
     solver_par->solver = Magma_PGMRES;
     solver_par->numiter = 0;
-    solver_par->info = MAGMA_SUCCESS;
+    solver_par->spmv_count = 0;
     
     //Chronometry
     real_Double_t tempo1, tempo2;
@@ -180,19 +180,27 @@ magma_sfgmres(
         r0 = ATOLERANCE;
     
     solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     
 
     tempo1 = magma_sync_wtime( queue );
     do
     {
+        solver_par->numiter++;
         // compute initial residual and its norm
         // A.mult(n, 1, x, n, V(0), n);                        // V(0) = A*x
         CHECK( magma_s_spmv( MAGMA_S_ONE, A, *x, MAGMA_S_ZERO, t, queue ));
-        magma_scopy( dofs, t.dval, 1, V(0), 1 );
+        solver_par->spmv_count++;
+        magma_scopy( dofs, t.dval, 1, V(0), 1, queue );
         
         temp = MAGMA_S_MAKE(-1.0, 0.0);
-        magma_saxpy(dofs,temp, b.dval, 1, V(0), 1);           // V(0) = V(0) - b
-        beta = MAGMA_S_MAKE( magma_snrm2( dofs, V(0), 1 ), 0.0); // beta = norm(V(0))
+        magma_saxpy( dofs,temp, b.dval, 1, V(0), 1, queue );           // V(0) = V(0) - b
+        beta = MAGMA_S_MAKE( magma_snrm2( dofs, V(0), 1, queue ), 0.0 ); // beta = norm(V(0))
+        if( magma_s_isnan_inf( beta ) ){
+            info = MAGMA_DIVERGENCE;
+            break;
+        }
+        
         if (solver_par->numiter == 0){
             solver_par->init_res = MAGMA_S_REAL( beta );
             resid0 = MAGMA_S_REAL( beta );
@@ -203,6 +211,7 @@ magma_sfgmres(
             if ( resid0 < r0 ) {
                 solver_par->final_res = solver_par->init_res;
                 solver_par->iter_res = solver_par->init_res;
+                info = MAGMA_SUCCESS;
                 goto cleanup;
             }
         }
@@ -211,7 +220,7 @@ magma_sfgmres(
             solver_par->timing[0] = 0.0;
         }
         temp = -1.0/beta;
-        magma_sscal( dofs, temp, V(0), 1 );                 // V(0) = -V(0)/beta
+        magma_sscal( dofs, temp, V(0), 1, queue );                 // V(0) = -V(0)/beta
 
         // save very first residual norm
         if (solver_par->numiter == 0)
@@ -224,32 +233,33 @@ magma_sfgmres(
         i = -1;
         do
         {
-            solver_par->numiter++;
+
             i++;
             
             // M.apply(n, 1, V(i), n, W(i), n);
             v_t.dval = V(i);
-            CHECK( magma_s_applyprecond_left( A, v_t, &t, precond_par, queue ));
-            CHECK( magma_s_applyprecond_right( A, t, &t2, precond_par, queue ));
-            magma_scopy( dofs, t2.dval, 1, W(i), 1 );
+            CHECK( magma_s_applyprecond_left( MagmaNoTrans, A, v_t, &t, precond_par, queue ));
+            CHECK( magma_s_applyprecond_right( MagmaNoTrans, A, t, &t2, precond_par, queue ));
+            magma_scopy( dofs, t2.dval, 1, W(i), 1, queue );
 
             // A.mult(n, 1, W(i), n, V(i+1), n);
             w_t.dval = W(i);
             CHECK( magma_s_spmv( MAGMA_S_ONE, A, w_t, MAGMA_S_ZERO, t, queue ));
-            magma_scopy( dofs, t.dval, 1, V(i+1), 1 );
+            solver_par->spmv_count++;
+            magma_scopy( dofs, t.dval, 1, V(i+1), 1, queue );
             
             for (k = 0; k <= i; k++)
             {
-                H(k, i) = magma_sdot(dofs, V(k), 1, V(i+1), 1);
+                H(k, i) = magma_sdot( dofs, V(k), 1, V(i+1), 1, queue );
                 temp = -H(k,i);
                 // V(i+1) -= H(k, i) * V(k);
-                magma_saxpy(dofs,-H(k,i), V(k), 1, V(i+1), 1);
+                magma_saxpy( dofs,-H(k,i), V(k), 1, V(i+1), 1, queue );
             }
 
-            H(i+1, i) = MAGMA_S_MAKE( magma_snrm2(dofs, V(i+1), 1), 0. ); // H(i+1,i) = ||r||
+            H(i+1, i) = MAGMA_S_MAKE( magma_snrm2( dofs, V(i+1), 1, queue), 0. ); // H(i+1,i) = ||r||
             temp = 1.0 / H(i+1, i);
             // V(i+1) = V(i+1) / H(i+1, i)
-            magma_sscal(dofs, temp, V(i+1), 1);    //  (to be fused)
+            magma_sscal( dofs, temp, V(i+1), 1, queue );    //  (to be fused)
     
             for (k = 0; k < i; k++)
                 ApplyPlaneRotation(&H(k,i), &H(k+1,i), cs[k], sn[k]);
@@ -287,7 +297,7 @@ magma_sfgmres(
         for (j = 0; j <= i; j++)
         {
             // x = x + s[j] * W(j)
-            magma_saxpy(dofs, s[j], W(j), 1, x->dval, 1);
+            magma_saxpy( dofs, s[j], W(j), 1, x->dval, 1, queue );
         }
     }
     while (rel_resid > solver_par->rtol
@@ -300,8 +310,8 @@ magma_sfgmres(
     solver_par->iter_res = betanom;
     solver_par->final_res = residual;
 
-    if ( solver_par->numiter < solver_par->maxiter ) {
-        solver_par->info = MAGMA_SUCCESS;
+    if ( solver_par->numiter < solver_par->maxiter && info == MAGMA_SUCCESS ) {
+        info = MAGMA_SUCCESS;
     } else if ( solver_par->init_res > solver_par->final_res ) {
         if ( solver_par->verbose > 0 ) {
             if ( (solver_par->numiter)%solver_par->verbose==0 ) {

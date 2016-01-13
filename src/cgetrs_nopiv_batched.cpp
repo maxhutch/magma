@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
 
-       @generated from zgetrs_nopiv_batched.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/zgetrs_nopiv_batched.cpp normal z -> c, Wed Jan  6 17:59:36 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 #include "cublas_v2.h"
 /**
@@ -122,10 +122,6 @@ magma_cgetrs_nopiv_batched(
         return info;
     }
 
-    cublasHandle_t myhandle;
-    cublasCreate_v2(&myhandle);
-    cublasSetStream(myhandle, queue);
-
     magmaFloatComplex **dA_displ   = NULL;
     magmaFloatComplex **dB_displ  = NULL;
     magmaFloatComplex **dW1_displ  = NULL;
@@ -143,9 +139,6 @@ magma_cgetrs_nopiv_batched(
     magma_malloc((void**)&dW4_displ,  batchCount * sizeof(*dW4_displ));
     magma_malloc((void**)&dinvA_array, batchCount * sizeof(*dinvA_array));
     magma_malloc((void**)&dwork_array, batchCount * sizeof(*dwork_array));
-
-
-
 
     magma_int_t invA_msize = magma_roundup( n, TRI_NB )*TRI_NB;
     magma_int_t dwork_msize = n*nrhs;
@@ -172,10 +165,10 @@ magma_cgetrs_nopiv_batched(
         return info;
     }
 
-    magmablas_claset_q(MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue);
-    magmablas_claset_q(MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue);
-    cset_pointer(dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue);
-    cset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
+    magmablas_claset_q( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
+    magmablas_claset_q( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
+    magma_cset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
+    magma_cset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
 
     magma_cdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
     magma_cdisplace_pointers(dB_displ, dB_array, lddb, 0, 0, batchCount, queue);
@@ -184,7 +177,7 @@ magma_cgetrs_nopiv_batched(
         if (nrhs > 1)
         {
             // solve dwork = L^-1 * NRHS
-            magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit, 1,
                     n, nrhs,
                     MAGMA_C_ONE,
                     dA_displ,       ldda, // dA
@@ -193,10 +186,10 @@ magma_cgetrs_nopiv_batched(
                     dinvA_array,  invA_msize, 
                     dW1_displ,   dW2_displ, 
                     dW3_displ,   dW4_displ,
-                    1, batchCount, queue, myhandle);
+                    1, batchCount, queue );
 
             // solve X = U^-1 * dwork
-            magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, 1,
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, 1,
                     n, nrhs,
                     MAGMA_C_ONE,
                     dA_displ,       ldda, // dA
@@ -205,25 +198,25 @@ magma_cgetrs_nopiv_batched(
                     dinvA_array,  invA_msize, 
                     dW1_displ,   dW2_displ, 
                     dW3_displ,   dW4_displ,
-                    1, batchCount, queue, myhandle);
+                    1, batchCount, queue );
         }
         else
         {
             // solve dwork = L^-1 * NRHS
-            magmablas_ctrsv_outofplace_batched(MagmaLower, MagmaNoTrans, MagmaUnit, 
+            magmablas_ctrsv_outofplace_batched( MagmaLower, MagmaNoTrans, MagmaUnit, 
                     n, 
                     dA_displ,       ldda, // dA
                     dB_displ,      1, // dB
                     dwork_array,   // dX //output
-                    batchCount, queue, 0);
+                    batchCount, queue, 0 );
 
             // solve X = U^-1 * dwork
-            magmablas_ctrsv_outofplace_batched(MagmaUpper, MagmaNoTrans, MagmaNonUnit,
+            magmablas_ctrsv_outofplace_batched( MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                     n, 
                     dA_displ,       ldda, // dA
                     dwork_array,        1, // dB 
                     dB_displ,   // dX //output
-                    batchCount, queue, 0);
+                    batchCount, queue, 0 );
         }
     }
     else {
@@ -231,7 +224,7 @@ magma_cgetrs_nopiv_batched(
         {
             /* Solve A**T * X = B  or  A**H * X = B. */
             // solve 
-            magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaUpper, trans, MagmaUnit, 1,
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaUpper, trans, MagmaUnit, 1,
                     n, nrhs,
                     MAGMA_C_ONE,
                     dA_displ,       ldda, // dA
@@ -240,10 +233,10 @@ magma_cgetrs_nopiv_batched(
                     dinvA_array,  invA_msize, 
                     dW1_displ,   dW2_displ, 
                     dW3_displ,   dW4_displ,
-                    1, batchCount, queue, myhandle);
+                    1, batchCount, queue );
 
             // solve 
-            magmablas_ctrsm_outofplace_batched(MagmaLeft, MagmaLower, trans, MagmaNonUnit, 1,
+            magmablas_ctrsm_outofplace_batched( MagmaLeft, MagmaLower, trans, MagmaNonUnit, 1,
                     n, nrhs,
                     MAGMA_C_ONE,
                     dA_displ,       ldda, // dA
@@ -252,31 +245,29 @@ magma_cgetrs_nopiv_batched(
                     dinvA_array,  invA_msize, 
                     dW1_displ,   dW2_displ, 
                     dW3_displ,   dW4_displ,
-                    1, batchCount, queue, myhandle);
+                    1, batchCount, queue );
         }
         else
         {
             /* Solve A**T * X = B  or  A**H * X = B. */
             // solve 
-            magmablas_ctrsv_outofplace_batched(MagmaUpper, trans, MagmaUnit, 
+            magmablas_ctrsv_outofplace_batched( MagmaUpper, trans, MagmaUnit, 
                     n, 
                     dA_displ,       ldda, // dA
                     dB_displ,      1, // dB
                     dwork_array,   // dX //output
-                    batchCount, queue, 0);
+                    batchCount, queue, 0 );
             // solve 
-            magmablas_ctrsv_outofplace_batched(MagmaLower, trans, MagmaNonUnit,
+            magmablas_ctrsv_outofplace_batched( MagmaLower, trans, MagmaNonUnit,
                     n, 
                     dA_displ,       ldda, // dA
                     dwork_array,       1, // dB 
                     dB_displ,   // dX //output
-                    batchCount, queue, 0);
+                    batchCount, queue, 0 );
         }
     }
 
-    magmablasSetKernelStream(queue);
     magma_queue_sync(queue);
-    cublasDestroy_v2(myhandle);
 
     magma_free(dA_displ);
     magma_free(dB_displ);

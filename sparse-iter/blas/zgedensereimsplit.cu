@@ -1,14 +1,13 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
 */
-#include "common_magma.h"
 #include "common_magmasparse.h"
 
 #define BLOCK_SIZE 256
@@ -83,7 +82,7 @@ magma_zgedensereimsplit(
     int n = A.num_cols;
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
-    zgedensereimsplit_kernel<<< grid, threads, 0, queue >>>
+    zgedensereimsplit_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                     ( m, n, A.row, A.dval, ReA->dval, ImA->dval );
                     
     return MAGMA_SUCCESS;

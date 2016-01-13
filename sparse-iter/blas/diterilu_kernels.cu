@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from ziterilu_kernels.cu normal z -> d, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/ziterilu_kernels.cu normal z -> d, Wed Jan  6 17:59:42 2016
 
 */
 #include "common_magmasparse.h"
@@ -140,7 +140,7 @@ magma_diterilu_csr(
 
     dim3 grid( dimgrid1, dimgrid2, dimgrid3 );
     dim3 block( blocksize1, blocksize2, 1 );
-    magma_diterilu_csr_kernel<<< grid, block, 0, magma_stream >>>
+    magma_diterilu_csr_kernel<<< grid, block, 0, queue->cuda_stream() >>>
         ( A.num_rows, A.nnz, 
           A.rowidx, A.col, A.val, 
           L.row, L.col, L.val, 

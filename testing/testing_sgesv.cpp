@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgesv.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgesv.cpp normal z -> s, Wed Jan  6 17:59:48 2016
        @author Mark Gates
 */
 // includes, system
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     nrhs = opts.nrhs;
     
     printf("%% ngpu %d\n", (int) opts.ngpu );
-    if(opts.lapack){
+    if (opts.lapack) {
         printf("%%   N  NRHS   CPU Gflop/s (sec)   GPU GFlop/s (sec)   ||B - AX|| / N*||A||*||X||  ||B - AX|| / N*||A||*||X||_CPU\n");
         printf("%%================================================================================================================\n");
     } else {
@@ -156,6 +156,7 @@ int main(int argc, char **argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zmtranspose.cpp normal z -> s, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zmtranspose.cpp normal z -> s, Wed Jan  6 17:59:44 2016
        @author Hartwig Anzt
        @author Mark Gates
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 /**
     Purpose
@@ -258,6 +258,7 @@ magma_s_cucsrtranspose(
         B->num_rows        = A.num_cols;  // transposed
         B->num_cols        = A.num_rows;  // transposed
         B->nnz             = A.nnz;
+        B->true_nnz = A.true_nnz;
         
         if ( A.fill_mode == MagmaFull ) {
             B->fill_mode = MagmaFull;
@@ -280,7 +281,7 @@ magma_s_cucsrtranspose(
         
         // CUSPARSE context //
         CHECK_CUSPARSE( cusparseCreate( &handle ));
-        CHECK_CUSPARSE( cusparseSetStream( handle, queue ));
+        CHECK_CUSPARSE( cusparseSetStream( handle, queue->cuda_stream() ));
         CHECK_CUSPARSE( cusparseCreateMatDescr( &descrA ));
         CHECK_CUSPARSE( cusparseCreateMatDescr( &descrB ));
         CHECK_CUSPARSE( cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_GENERAL ));
@@ -314,3 +315,112 @@ cleanup:
     }
     return info;
 }
+
+
+
+
+/**
+    Purpose
+    -------
+
+    This function forms the transpose conjugate of a matrix. For a real-value
+    matrix, the output is the transpose.
+
+
+    Arguments
+    ---------
+
+    @param[in]
+    A           magma_s_matrix
+                input matrix (CSR)
+
+    @param[out]
+    B           magma_s_matrix*
+                output matrix (CSR)
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_saux
+    ********************************************************************/
+
+extern "C" magma_int_t
+magma_smtransposeconjugate(
+    magma_s_matrix A,
+    magma_s_matrix *B,
+    magma_queue_t queue )
+{
+    // for symmetric matrices: convert to csc using cusparse
+    
+    magma_int_t info = 0;
+    cusparseHandle_t handle=NULL;
+    cusparseMatDescr_t descrA=NULL;
+    cusparseMatDescr_t descrB=NULL;
+    
+    magma_s_matrix ACSR={Magma_CSR}, BCSR={Magma_CSR};
+    magma_s_matrix A_d={Magma_CSR}, B_d={Magma_CSR};
+
+    if( A.storage_type == Magma_CSR && A.memory_location == Magma_DEV ) {
+        // fill in information for B
+        B->storage_type    = A.storage_type;
+        B->diagorder_type  = A.diagorder_type;
+        B->memory_location = Magma_DEV;
+        B->num_rows        = A.num_cols;  // transposed
+        B->num_cols        = A.num_rows;  // transposed
+        B->nnz             = A.nnz;
+        B->true_nnz = A.true_nnz;
+        if ( A.fill_mode == MagmaFull ) {
+            B->fill_mode = MagmaFull;
+        }
+        else if ( A.fill_mode == MagmaLower ) {
+            B->fill_mode = MagmaUpper;
+        }
+        else if ( A.fill_mode == MagmaUpper ) {
+            B->fill_mode = MagmaLower;
+        }
+        B->dval = NULL;
+        B->drow = NULL;
+        B->dcol = NULL;
+        
+        // memory allocation
+        CHECK( magma_smalloc( &B->dval, B->nnz ));
+        CHECK( magma_index_malloc( &B->drow, B->num_rows + 1 ));
+        CHECK( magma_index_malloc( &B->dcol, B->nnz ));
+        // CUSPARSE context //
+        CHECK_CUSPARSE( cusparseCreate( &handle ));
+        CHECK_CUSPARSE( cusparseSetStream( handle, queue->cuda_stream() ));
+        CHECK_CUSPARSE( cusparseCreateMatDescr( &descrA ));
+        CHECK_CUSPARSE( cusparseCreateMatDescr( &descrB ));
+        CHECK_CUSPARSE( cusparseSetMatType( descrA, CUSPARSE_MATRIX_TYPE_GENERAL ));
+        CHECK_CUSPARSE( cusparseSetMatType( descrB, CUSPARSE_MATRIX_TYPE_GENERAL ));
+        CHECK_CUSPARSE( cusparseSetMatIndexBase( descrA, CUSPARSE_INDEX_BASE_ZERO ));
+        CHECK_CUSPARSE( cusparseSetMatIndexBase( descrB, CUSPARSE_INDEX_BASE_ZERO ));
+        CHECK_CUSPARSE(
+        cusparseScsr2csc( handle, A.num_rows, A.num_cols, A.nnz,
+                          A.dval, A.drow, A.dcol, B->dval, B->dcol, B->drow,
+                          CUSPARSE_ACTION_NUMERIC,
+                          CUSPARSE_INDEX_BASE_ZERO) );
+        CHECK( magma_smconjugate( B, queue ));
+    } else if ( A.memory_location == Magma_CPU ){
+        CHECK( magma_smtransfer( A, &A_d, A.memory_location, Magma_DEV, queue ));
+        CHECK( magma_smtransposeconjugate( A_d, &B_d, queue ));
+        CHECK( magma_smtransfer( B_d, B, Magma_DEV, A.memory_location, queue ));
+    } else {
+        CHECK( magma_smconvert( A, &ACSR, A.storage_type, Magma_CSR, queue ));
+        CHECK( magma_smtransposeconjugate( ACSR, &BCSR, queue ));
+        CHECK( magma_smconvert( BCSR, B, Magma_CSR, A.storage_type, queue ));
+    }
+cleanup:
+    cusparseDestroyMatDescr( descrA );
+    cusparseDestroyMatDescr( descrB );
+    cusparseDestroy( handle );
+    magma_smfree( &A_d, queue );
+    magma_smfree( &B_d, queue );
+    magma_smfree( &ACSR, queue );
+    magma_smfree( &BCSR, queue );
+    if( info != 0 ){
+        magma_smfree( B, queue );
+    }
+    return info;
+}
+

@@ -1,18 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
     
        @author Stan Tomov
        @author Mark Gates
        @precisions normal d -> s
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_d
 #define REAL
 
 // Version 1 - LAPACK
@@ -239,7 +238,7 @@ magma_dgesvd(
     maxwrk = (magma_int_t) MAGMA_D_REAL( work[0] );
     if (*info == 0) {
         // Return required workspace in WORK[0]
-        nb = magma_get_dgesvd_nb(n);
+        nb = magma_get_dgesvd_nb( m, n );
         minwrk = (m + n)*nb + 3*minmn;
         
         // multiply by 1+eps (in Double!) to ensure length gets rounded up,

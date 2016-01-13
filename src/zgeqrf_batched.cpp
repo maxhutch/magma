@@ -1,20 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
 
        @precisions normal z -> s d c
 */
+#include <cuda_runtime.h>
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
-
-#define PRECISION_z
 
 
 /**
@@ -145,8 +144,8 @@ magma_zgeqrf_batched(
         return info;
     }
 
-    zset_pointer(dR_array, dR, lddr, 0, 0, lddr*min(nb, min_mn), batchCount, queue);
-    zset_pointer(dT_array, dT, lddt, 0, 0, lddt*min(nb, min_mn), batchCount, queue);
+    magma_zset_pointer( dR_array, dR, lddr, 0, 0, lddr*min(nb, min_mn), batchCount, queue );
+    magma_zset_pointer( dT_array, dT, lddt, 0, 0, lddt*min(nb, min_mn), batchCount, queue );
 
     arginfo = magma_zgeqrf_expert_batched(m, n,
                                           dA_array, ldda,

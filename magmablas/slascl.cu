@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlascl.cu normal z -> s, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zlascl.cu normal z -> s, Wed Jan  6 17:59:37 2016
 
 
        @author Mark Gates
@@ -18,7 +18,9 @@
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from left edge and moving right.
 __global__ void
-slascl_full(int m, int n, float mul, float* A, int lda)
+slascl_full(
+    int m, int n, float mul,
+    float* A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -33,7 +35,9 @@ slascl_full(int m, int n, float mul, float* A, int lda)
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from left edge and moving right to diagonal.
 __global__ void
-slascl_lower(int m, int n, float mul, float* A, int lda)
+slascl_lower(
+    int m, int n, float mul,
+    float* A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -50,7 +54,9 @@ slascl_lower(int m, int n, float mul, float* A, int lda)
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from right edge and moving left to diagonal.
 __global__ void
-slascl_upper(int m, int n, float mul, float* A, int lda)
+slascl_upper(
+    int m, int n, float mul,
+    float* A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -155,8 +161,8 @@ magmablas_slascl_q(
         return;  //info;
     }
     
-    dim3 grid( magma_ceildiv( m, NB ) );
     dim3 threads( NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
     
     float smlnum, bignum, cfromc, ctoc, cto1, cfrom1, mul;
     magma_int_t done = false;
@@ -204,13 +210,13 @@ magmablas_slascl_q(
         }
         
         if (type == MagmaLower) {
-            slascl_lower <<< grid, threads, 0, queue >>> (m, n, mul, dA, ldda);
+            slascl_lower <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, mul, dA, ldda);
         }
         else if (type == MagmaUpper) {
-            slascl_upper <<< grid, threads, 0, queue >>> (m, n, mul, dA, ldda);
+            slascl_upper <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, mul, dA, ldda);
         }
         else if (type == MagmaFull) {
-            slascl_full  <<< grid, threads, 0, queue >>> (m, n, mul, dA, ldda);
+            slascl_full  <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, mul, dA, ldda);
         }
      
         cnt += 1;
@@ -230,5 +236,5 @@ magmablas_slascl(
     magmaFloat_ptr dA, magma_int_t ldda,
     magma_int_t *info )
 {
-    magmablas_slascl_q( type, kl, ku, cfrom, cto, m, n, dA, ldda, magma_stream, info );
+    magmablas_slascl_q( type, kl, ku, cfrom, cto, m, n, dA, ldda, magmablasGetQueue(), info );
 }

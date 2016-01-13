@@ -7,7 +7,7 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from dbulge_aux.cpp normal d -> s, Fri Sep 11 18:29:30 2015
+ *     @generated from src/dbulge_aux.cpp normal d -> s, Wed Jan  6 17:59:33 2016
  *
  */
 

@@ -1,18 +1,21 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
+       @author Ahmad Abdelfattah
 
-       @generated from zpotrf_batched.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/zpotrf_batched.cpp normal z -> c, Wed Jan  6 17:59:36 2016
 */
-#include "common_magma.h"
+#include <cuda_runtime.h>
+
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
-#include "cublas_v2.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////
 /**
     Purpose
@@ -26,8 +29,6 @@
     where U is an upper triangular matrix and L is lower triangular.
 
     This is the block version of the algorithm, calling Level 3 BLAS.
-    If the current stream is NULL, this version replaces it with a new
-    stream to overlap computation with communication.
 
     Arguments
     ---------
@@ -105,12 +106,6 @@ magma_cpotrf_lg_batched(
     magma_int_t nb, recnb;
     magma_get_cpotrf_batched_nbparam(n, &nb, &recnb);
 
-    cublasHandle_t myhandle;
-    cublasCreate_v2(&myhandle);
-    cublasSetStream(myhandle, queue);
-
-
-
     magmaFloatComplex **dA_displ   = NULL;
     magmaFloatComplex **dW0_displ  = NULL;
     magmaFloatComplex **dW1_displ  = NULL;
@@ -156,19 +151,21 @@ magma_cpotrf_lg_batched(
         magma_xerbla( __func__, -(info) );
         return info;
     }
-    magmablas_claset_q(MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue);
-    magmablas_claset_q(MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue);
-    cset_pointer(dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue);
-    cset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
+    magmablas_claset_q( MagmaFull, invA_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dinvA, invA_msize, queue );
+    magmablas_claset_q( MagmaFull, dwork_msize, batchCount, MAGMA_C_ZERO, MAGMA_C_ZERO, dwork, dwork_msize, queue );
+    magma_cset_pointer( dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue );
+    magma_cset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
 
 
     magma_int_t streamid;
     const magma_int_t nbstreams=10;
-    magma_queue_t stream[nbstreams];
+    magma_queue_t queues[nbstreams];
     for (k=0; k < nbstreams; k++) {
-        magma_queue_create( &stream[k] );
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        magma_queue_create( cdev, &queues[k] );
     }
-    magma_getvector( batchCount, sizeof(magmaFloatComplex*), dA_array, 1, cpuAarray, 1);
+    magma_getvector( batchCount, sizeof(magmaFloatComplex*), dA_array, 1, cpuAarray, 1, queue);
 
     if (uplo == MagmaUpper) {
         printf("Upper side is unavailable \n");
@@ -182,8 +179,8 @@ magma_cpotrf_lg_batched(
             //  panel factorization
             //===============================================
             magma_cdisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount, queue);
-            cset_pointer(dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue);
-            cset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
+            magma_cset_pointer( dwork_array, dwork, 1, 0, 0, dwork_msize, batchCount, queue );
+            magma_cset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
 
 
             if (recnb == nb)
@@ -195,7 +192,7 @@ magma_cpotrf_lg_batched(
                                    dinvA_array, invA_msize,
                                    dW0_displ, dW1_displ, dW2_displ,
                                    dW3_displ, dW4_displ,
-                                   info_array, j, batchCount, myhandle, queue);
+                                   info_array, j, batchCount, queue);
             }
             else {
                 //arginfo = magma_cpotrf_rectile_batched(
@@ -206,7 +203,7 @@ magma_cpotrf_lg_batched(
                                    dinvA_array, invA_msize,
                                    dW0_displ, dW1_displ, dW2_displ,
                                    dW3_displ, dW4_displ, 
-                                   info_array, j, batchCount, myhandle, queue);
+                                   info_array, j, batchCount, queue);
             }
             if (arginfo != 0 ) goto fin;
             //===============================================
@@ -223,33 +220,26 @@ magma_cpotrf_lg_batched(
                     //-------------------------------------------
                     //          USE STREAM  HERK
                     //-------------------------------------------
-                    // since it use different stream I need to wait the panel.
-                    // But since the code use the NULL stream everywhere, 
-                    // so I don't need it, because the NULL stream do the sync by itself
-                    //magma_queue_sync(NULL); 
+                    // since it use different queue I need to wait the panel.
                     /* you must know the matrix layout inorder to do it */  
                     magma_queue_sync(queue); 
                     for (k=0; k < batchCount; k++)
                     {
                         streamid = k%nbstreams;                                       
-                        magmablasSetKernelStream(stream[streamid]);
                         // call herk, class cherk must call cpu pointer 
-                        magma_cherk(MagmaLower, MagmaNoTrans, n-j-ib, ib, 
+                        magma_cherk( MagmaLower, MagmaNoTrans, n-j-ib, ib, 
                             d_alpha, 
                             (const magmaFloatComplex*) cpuAarray[k] + j+ib+j*ldda, ldda, 
                             d_beta,
-                            cpuAarray[k] + j+ib+(j+ib)*ldda, ldda);
+                            cpuAarray[k] + j+ib+(j+ib)*ldda, ldda, queues[streamid] );
                      }
                      // need to synchronise to be sure that panel do not start before
                      // finishing the update at least of the next panel
-                     // BUT no need for it as soon as the other portion of the code 
-                     // use the NULL stream which do the sync by itself 
-                     //magma_device_sync(); 
+                     // if queue is NULL, no need to sync
                      if ( queue != NULL ) {
                          for (magma_int_t s=0; s < nbstreams; s++)
-                             magma_queue_sync(stream[s]);
+                             magma_queue_sync(queues[s]);
                      }
-                     magmablasSetKernelStream(queue);
                 }
                 else
                 {
@@ -258,10 +248,10 @@ magma_cpotrf_lg_batched(
                     //-------------------------------------------
                     magma_cdisplace_pointers(dA_displ, dA_array, ldda, j+ib, j, batchCount, queue);
                     magma_cdisplace_pointers(dW1_displ, dA_array, ldda, j+ib, j+ib, batchCount, queue);
-                    magmablas_cherk_batched(uplo, MagmaNoTrans, n-j-ib, ib,
+                    magmablas_cherk_batched( uplo, MagmaNoTrans, n-j-ib, ib,
                                           d_alpha, dA_displ, ldda, 
                                           d_beta,  dW1_displ, ldda, 
-                                          batchCount, queue);
+                                          batchCount, queue );
                 }
             } 
             //gpu_time = magma_sync_wtime(NULL) - gpu_time;
@@ -273,12 +263,10 @@ magma_cpotrf_lg_batched(
     }
 
 fin:
-    magmablasSetKernelStream(queue);
     magma_queue_sync(queue);
     for (k=0; k < nbstreams; k++) {
-        magma_queue_destroy( stream[k] );
+        magma_queue_destroy( queues[k] );
     }
-    cublasDestroy_v2(myhandle);
 
     magma_free(dA_displ);
     magma_free(dW0_displ);

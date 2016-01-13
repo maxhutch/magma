@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
   
-       @generated from testing_ztrtri.cpp normal z -> d, Fri Sep 11 18:29:37 2015
+       @generated from testing/testing_ztrtri.cpp normal z -> d, Wed Jan  6 17:59:48 2016
        
        @author Mark Gates
 */
@@ -62,21 +62,21 @@ int main( int argc, char** argv)
             lapackf77_dlarnv( &ione, ISEED, &n2, h_A );
             magma_dmake_hpd( N, h_A, lda );
             lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
-            
+
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
             if ( opts.warmup ) {
                 magma_dpotrf( opts.uplo, N, h_R, lda, &info );
                 magma_dtrtri( opts.uplo, opts.diag, N, h_R, lda, &info );
-                lapackf77_dlacpy( MagmaUpperLowerStr, &N, &N, h_A, &lda, h_R, &lda );
+                lapackf77_dlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             }
             
             /* factorize matrix */
             magma_dpotrf( opts.uplo, N, h_R, lda, &info );
             
             // check for exact singularity
-            //h_R[ 10 + 10*lda ] = MAGMA_D_MAKE( 0.0, 0.0 );
+            //h_R[ 10 + 10*lda ] = MAGMA_D_ZERO;
             
             gpu_time = magma_wtime();
             magma_dtrtri( opts.uplo, opts.diag, N, h_R, lda, &info );
@@ -106,10 +106,11 @@ int main( int argc, char** argv)
                 norm  = lapackf77_dlantr("f", lapack_uplo_const(opts.uplo), MagmaNonUnitStr, &N, &N, h_A, &N, work);
                 blasf77_daxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
                 error = lapackf77_dlantr("f", lapack_uplo_const(opts.uplo), MagmaNonUnitStr, &N, &N, h_R, &N, work) / norm;
+                bool okay = (error < tol);
+                status += ! okay;
                 printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                       error, (error < tol ? "ok" : "failed") );
-                status += ! (error < tol);
+                       error, (okay ? "ok" : "failed") );
             }
             else {
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---\n",
@@ -125,6 +126,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

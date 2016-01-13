@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgeqrf_mgpu.cpp normal z -> c, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgeqrf_mgpu.cpp normal z -> c, Wed Jan  6 17:59:49 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -40,11 +40,12 @@ int main( int argc, char** argv )
     
     magma_opts opts;
     opts.parse_opts( argc, argv );
+    opts.ngpu = abs( opts.ngpu );  // always uses multi-GPU code
     opts.lapack |= (opts.check == 2);  // check (-c2) implies lapack (-l)
  
     magma_int_t status = 0;
-    float tol, eps = lapackf77_slamch("E");
-    tol = opts.tolerance * eps;
+    float eps = lapackf77_slamch("E");
+    float tol = opts.tolerance * lapackf77_slamch("E");
 
     printf("%% ngpu %d\n", (int) opts.ngpu );
     if ( opts.check == 1 ) {
@@ -63,7 +64,7 @@ int main( int argc, char** argv )
             lda    = M;
             n2     = lda*N;
             ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
-            nb     = magma_get_cgeqrf_nb( M );
+            nb     = magma_get_cgeqrf_nb( M, N );
             gflops = FLOPS_CGEQRF( M, N ) / 1e9;
             
             // ngpu must be at least the number of blocks
@@ -99,7 +100,7 @@ int main( int argc, char** argv )
             for( int j=0; j < 4; j++ )
                 ISEED2[j] = ISEED[j]; // save seeds
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
-            lapackf77_clacpy( MagmaUpperLowerStr, &M, &N, h_A, &lda, h_R, &lda );
+            lapackf77_clacpy( MagmaFullStr, &M, &N, h_A, &lda, h_R, &lda );
             
             /* =====================================================================
                Performs operation using LAPACK
@@ -121,7 +122,7 @@ int main( int argc, char** argv )
                Performs operation using MAGMA
                =================================================================== */
             magma_csetmatrix_1D_col_bcyclic( M, N, h_R, lda, d_lA, ldda, ngpu, nb );
-            
+
             gpu_time = magma_wtime();
             magma_cgeqrf2_mgpu( ngpu, M, N, d_lA, ldda, tau, &info );
             gpu_time = magma_wtime() - gpu_time;
@@ -131,7 +132,6 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             
             magma_cgetmatrix_1D_col_bcyclic( M, N, d_lA, ldda, h_R, lda, ngpu, nb );
-            magma_queue_sync( NULL );
             
             if ( opts.check == 1 && M >= N ) {
                 /* =====================================================================
@@ -207,7 +207,8 @@ int main( int argc, char** argv )
             printf( "\n" );
         }
     }
-    
+ 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

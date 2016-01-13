@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -51,30 +51,32 @@ void zlat2c_lower(
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
                 tmp = A[j*lda];
-                if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
-#endif
+                if (   (MAGMA_Z_REAL(tmp) < neg_rmax) || (MAGMA_Z_REAL(tmp) > rmax)
+                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    || (MAGMA_Z_IMAG(tmp) < neg_rmax) || (MAGMA_Z_IMAG(tmp) > rmax)
+                    #endif
                     )
                 {
                     flag = 1;
                 }
-                SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
+                SA[j*ldsa] = MAGMA_C_MAKE( MAGMA_Z_REAL(tmp),
+                                           MAGMA_Z_IMAG(tmp) );
             }
         }
         else {
             // either partial block-column or diagonal block
             for( int j=0; j < BLK_Y && iby+j < n && ind >= iby+j; ++j ) {
                 tmp = A[j*lda];
-                if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
-#endif
+                if (   (MAGMA_Z_REAL(tmp) < neg_rmax) || (MAGMA_Z_REAL(tmp) > rmax)
+                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    || (MAGMA_Z_IMAG(tmp) < neg_rmax) || (MAGMA_Z_IMAG(tmp) > rmax)
+                    #endif
                     )
                 {
                     flag = 1;
                 }
-                SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
+                SA[j*ldsa] = MAGMA_C_MAKE( MAGMA_Z_REAL(tmp),
+                                           MAGMA_Z_IMAG(tmp) );
             }
         }
     }
@@ -110,15 +112,16 @@ void zlat2c_upper(
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
                 tmp = A[j*lda];
-                if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                    || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
-#endif
+                if (   (MAGMA_Z_REAL(tmp) < neg_rmax) || (MAGMA_Z_REAL(tmp) > rmax)
+                    #if defined(PRECISION_z) || defined(PRECISION_c)
+                    || (MAGMA_Z_IMAG(tmp) < neg_rmax) || (MAGMA_Z_IMAG(tmp) > rmax)
+                    #endif
                     )
                 {
                     flag = 1;
                 }
-                SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
+                SA[j*ldsa] = MAGMA_C_MAKE( MAGMA_Z_REAL(tmp),
+                                           MAGMA_Z_IMAG(tmp) );
             }
         }
         else {
@@ -126,15 +129,16 @@ void zlat2c_upper(
             for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
                 if ( ind <= iby+j ) {
                     tmp = A[j*lda];
-                    if (   (cuCreal(tmp) < neg_rmax) || (cuCreal(tmp) > rmax)
-#if defined(PRECISION_z) || defined(PRECISION_c)
-                         || (cuCimag(tmp) < neg_rmax) || (cuCimag(tmp) > rmax)
-#endif
+                    if (   (MAGMA_Z_REAL(tmp) < neg_rmax) || (MAGMA_Z_REAL(tmp) > rmax)
+                         #if defined(PRECISION_z) || defined(PRECISION_c)
+                         || (MAGMA_Z_IMAG(tmp) < neg_rmax) || (MAGMA_Z_IMAG(tmp) > rmax)
+                         #endif
                         )
                     {
                         flag = 1;
                     }
-                    SA[j*ldsa] = cuComplexDoubleToFloat( tmp );
+                    SA[j*ldsa] = MAGMA_C_MAKE( MAGMA_Z_REAL(tmp),
+                                               MAGMA_Z_IMAG(tmp) );
                 }
             }
         }
@@ -230,10 +234,10 @@ magmablas_zlat2c_q(
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
     if (uplo == MagmaLower) {
-        zlat2c_lower<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
+        zlat2c_lower<<< grid, threads, 0, queue->cuda_stream() >>> (n, A, lda, SA, ldsa, rmax);
     }
     else if (uplo == MagmaUpper) {
-        zlat2c_upper<<< grid, threads, 0, queue >>> (n, A, lda, SA, ldsa, rmax);
+        zlat2c_upper<<< grid, threads, 0, queue->cuda_stream() >>> (n, A, lda, SA, ldsa, rmax);
     }
     
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
@@ -251,5 +255,5 @@ magmablas_zlat2c(
     magmaFloatComplex_ptr        SA, magma_int_t ldsa,
     magma_int_t *info )
 {
-    magmablas_zlat2c_q( uplo, n, A, lda, SA, ldsa, magma_stream, info );
+    magmablas_zlat2c_q( uplo, n, A, lda, SA, ldsa, magmablasGetQueue(), info );
 }

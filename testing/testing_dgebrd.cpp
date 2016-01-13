@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgebrd.cpp normal z -> d, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgebrd.cpp normal z -> d, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -21,7 +21,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_d
+#define REAL
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dgebrd
@@ -54,7 +54,7 @@ int main( int argc, char** argv)
             M = opts.msize[itest];
             N = opts.nsize[itest];
             minmn  = min(M, N);
-            nb     = magma_get_dgebrd_nb(N);
+            nb     = magma_get_dgebrd_nb( M, N );
             lda    = M;
             n2     = lda*N;
             lhwork = (M + N)*nb;
@@ -102,7 +102,7 @@ int main( int argc, char** argv)
                 
                 // dbdt01 needs M
                 // dort01 needs minmn
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 double *rwork_err;
                 TESTING_MALLOC_CPU( rwork_err, double, M );
                 #endif
@@ -122,25 +122,30 @@ int main( int argc, char** argv)
                 // Test 1:  Check the decomposition A := Q * B * PT
                 //      2:  Check the orthogonality of Q
                 //      3:  Check the orthogonality of PT
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_dbdt01(&M, &N, &ione,
-                                 h_A, &lda, h_Q, &lda,
-                                 diag, offdiag, h_PT, &lda,
-                                 h_work_err, rwork_err, &result[0]);
-                lapackf77_dort01("Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err, rwork_err, &result[1]);
-                lapackf77_dort01("Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err, rwork_err, &result[2]);
-                #else
-                lapackf77_dbdt01(&M, &N, &ione,
-                                 h_A, &lda, h_Q, &lda,
-                                 diag, offdiag, h_PT, &lda,
-                                 h_work_err, &result[0]);
-                lapackf77_dort01("Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err, &result[1]);
-                lapackf77_dort01("Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err, &result[2]);
-                #endif
+                lapackf77_dbdt01( &M, &N, &ione,
+                                  h_A, &lda, h_Q, &lda,
+                                  diag, offdiag, h_PT, &lda,
+                                  h_work_err,
+                                  #ifdef COMPLEX
+                                  rwork_err,
+                                  #endif
+                                  &result[0] );
+                
+                lapackf77_dort01( "Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err,
+                                  #ifdef COMPLEX
+                                  rwork_err,
+                                  #endif
+                                  &result[1]);
+                
+                lapackf77_dort01( "Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err,
+                                  #ifdef COMPLEX
+                                  rwork_err,
+                                  #endif
+                                  &result[2]);
                 
                 TESTING_FREE_CPU( h_PT );
                 TESTING_FREE_CPU( h_work_err );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 TESTING_FREE_CPU( rwork_err );
                 #endif
             }
@@ -195,6 +200,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

@@ -1,0 +1,82 @@
+#
+# included by each sub-dir/Makefile
+# contains rules to forward 'make' to top-level Makefile
+# note that paths in here are relative to the original sub-dir.
+#
+
+.SUFFIXES:
+
+.PHONY: default
+
+targets := \
+	all             \
+	lib             \
+	static          \
+	shared          \
+	test            \
+	headers         \
+	cleanall        \
+	cleangen        \
+	echo            \
+
+subdirs := \
+	blas_fix             \
+	control              \
+	include              \
+	interface_cuda       \
+	src                  \
+	magmablas            \
+	testing              \
+	testing/lin          \
+	sparse-iter          \
+	sparse-iter/blas     \
+	sparse-iter/control  \
+	sparse-iter/src      \
+	sparse-iter/testing  \
+
+ifneq ($(MAKECMDGOALS),)
+
+# goals given on command line
+# forward them in one batch to top level
+
+# global targets in $(targets) and $(subdirs) are forwarded as-is
+# all other, directory-specific goals (e.g., files) are forwarded with directory prefix
+forward := $(filter $(targets) $(subdirs), $(MAKECMDGOALS)) \
+           $(addprefix $(cdir)/, $(filter-out $(targets) $(subdirs), $(MAKECMDGOALS)))
+
+# we want to run one top-level make command, not N different ones.
+# we'll make the first goal forward all the goals,
+# and disable the rest.
+first := $(firstword $(MAKECMDGOALS))
+
+rest  := $(wordlist 2, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS))
+
+$(first): force
+	cd $(top) && $(MAKE) $(forward)
+
+$(rest): ;
+
+else
+
+# no goals given on command line
+# forward default rule to top level as-is
+%:
+	cd $(top) && $(MAKE) $@
+
+endif
+
+force: ;
+
+# don't regenerate Makefiles
+Makefile: ;
+
+$(top)/Makefile.subdir: ;
+
+Makefile.local: ;
+
+-include Makefile.local
+
+# Disable parallel make for sub-directories, which causes problems,
+# e.g., if two top-level makes try to update a library simultaneously.
+# The first/rest mechanism above should also prevent parallel jobs.
+.NOTPARALLEL:

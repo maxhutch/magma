@@ -1,0 +1,130 @@
+
+Sun Sep 13 22:28:48 EDT 2015
+numactl --interleave=all ../testing/testing_dgeev -RN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Sep 13 22:28:54 2015
+% Usage: ../testing/testing_dgeev [options] [-h|--help]
+
+%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|
+%==========================================================================
+  123      0.02             0.02          1.74e-15   ok
+ 1234      1.26             1.40          3.50e-15   ok
+   10      0.00             0.00          0.00e+00   ok
+   20      0.00             0.00          0.00e+00   ok
+   30      0.00             0.00          0.00e+00   ok
+   40      0.00             0.00          1.20e-15   ok
+   50      0.00             0.00          1.03e-15   ok
+   60      0.00             0.00          1.10e-15   ok
+   70      0.00             0.00          1.66e-15   ok
+   80      0.00             0.01          2.05e-15   ok
+   90      0.00             0.01          1.30e-15   ok
+  100      0.01             0.01          1.57e-15   ok
+  200      0.04             0.05          2.38e-15   ok
+  300      0.09             0.10          2.50e-15   ok
+  400      0.17             0.15          2.72e-15   ok
+  500      0.21             0.20          2.59e-15   ok
+  600      0.40             0.39          3.07e-15   ok
+  700      0.53             0.51          3.38e-15   ok
+  800      0.62             0.59          3.35e-15   ok
+  900      0.77             0.75          3.59e-15   ok
+ 1000      0.89             0.85          3.57e-15   ok
+ 2000      3.14             2.71          4.04e-15   ok
+ 3000      9.61             8.08          5.10e-15   ok
+ 4000     17.12            13.38          5.38e-15   ok
+ 5000     28.48            18.73          5.56e-15   ok
+ 6000     48.01            35.36          6.90e-15   ok
+ 7000     67.44            46.81          7.39e-15   ok
+ 8000     85.95            56.89          7.24e-15   ok
+ 9000    110.44            71.13          7.38e-15   ok
+10000    136.88            87.96          7.55e-15   ok
+Sun Sep 13 22:43:32 EDT 2015
+
+Sun Sep 13 22:43:32 EDT 2015
+numactl --interleave=all ../testing/testing_dgeev -RV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sun Sep 13 22:43:38 2015
+% Usage: ../testing/testing_dgeev [options] [-h|--help]
+
+%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|
+%==========================================================================
+  123      0.02             0.02          1.64e-15   ok
+ 1234      1.81             1.57          3.43e-15   ok
+   10      0.00             0.00          0.00e+00   ok
+   20      0.00             0.00          0.00e+00   ok
+   30      0.00             0.00          0.00e+00   ok
+   40      0.00             0.01          1.20e-15   ok
+   50      0.00             0.01          1.14e-15   ok
+   60      0.00             0.01          1.10e-15   ok
+   70      0.00             0.01          1.66e-15   ok
+   80      0.01             0.01          1.88e-15   ok
+   90      0.01             0.01          1.30e-15   ok
+  100      0.01             0.02          1.48e-15   ok
+  200      0.06             0.07          1.97e-15   ok
+  300      0.18             0.14          2.66e-15   ok
+  400      0.22             0.28          2.70e-15   ok
+  500      0.30             0.28          2.74e-15   ok
+  600      0.50             0.46          3.27e-15   ok
+  700      0.68             0.63          3.18e-15   ok
+  800      0.83             0.75          3.27e-15   ok
+  900      1.02             0.92          3.71e-15   ok
+ 1000      1.67             1.16          3.39e-15   ok
+ 2000      5.31             3.83          3.90e-15   ok
+ 3000     18.47            10.43          5.15e-15   ok
+ 4000     34.19            16.77          5.42e-15   ok
+ 5000     57.35            27.81          5.48e-15   ok
+ 6000    102.25            43.77          6.66e-15   ok
+ 7000    138.34            58.79          7.26e-15   ok
+ 8000    194.40            78.75          7.13e-15   ok
+ 9000    280.08            98.89          7.29e-15   ok
+10000    360.04           126.69          7.68e-15   ok
+Sun Sep 13 23:11:47 EDT 2015
+
+Mon Sep 14 02:33:19 EDT 2015
+numactl --interleave=all ../testing/testing_dgeev -RN -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Mon Sep 14 02:33:25 2015
+% Usage: ../testing/testing_dgeev [options] [-h|--help]
+
+%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|
+%==========================================================================
+  123     ---               0.01
+ 1234     ---               1.21
+12000     ---             160.98
+14000     ---             228.10
+16000     ---             246.26
+18000     ---             301.91
+20000     ---             435.68
+Mon Sep 14 02:57:23 EDT 2015
+
+Mon Sep 14 02:57:23 EDT 2015
+numactl --interleave=all ../testing/testing_dgeev -RV -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Mon Sep 14 02:57:29 2015
+% Usage: ../testing/testing_dgeev [options] [-h|--help]
+
+%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|
+%==========================================================================
+  123     ---               0.06
+ 1234     ---               2.62
+12000     ---             268.11
+14000     ---             368.44
+16000     ---             526.02
+18000     ---             668.79
+20000     ---             984.19
+Mon Sep 14 03:45:38 EDT 2015

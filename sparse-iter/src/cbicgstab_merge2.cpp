@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zbicgstab_merge2.cpp normal z -> c, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/zbicgstab_merge2.cpp normal z -> c, Wed Jan  6 17:59:44 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
@@ -58,20 +58,16 @@ magma_cbicgstab_merge2(
     magma_c_matrix *x, magma_c_solver_par *solver_par,
     magma_queue_t queue )
 {
-    magma_int_t info = 0;
+    magma_int_t info = MAGMA_NOTCONVERGED;
     
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
-
     // prepare solver feedback
     solver_par->solver = Magma_BICGSTABMERGE2;
     solver_par->numiter = 0;
-    solver_par->info = MAGMA_SUCCESS;
+    solver_par->spmv_count = 0;
     
     // solver variables
     magmaFloatComplex alpha, beta, omega, rho_old, rho_new, *skp_h={0};
-    float nom, nom0, betanom;
+    float nom, nom0, betanom, nomb;
     //float den;
 
     // some useful variables
@@ -79,12 +75,6 @@ magma_cbicgstab_merge2(
     
     magma_int_t dofs = A.num_rows;
 
-    // GPU stream
-    magma_queue_t stream[2]={0};
-    magma_event_t event[1]={0};
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
-    magma_event_create( &event[0] );
 
     // workspace
     magma_c_matrix q={Magma_CSR}, r={Magma_CSR}, rr={Magma_CSR}, p={Magma_CSR}, v={Magma_CSR}, s={Magma_CSR}, t={Magma_CSR};
@@ -117,13 +107,13 @@ magma_cbicgstab_merge2(
     t.dval = q(5);
 
     // solver setup
-    magma_cscal( dofs, c_zero, x->dval, 1);                             // x = 0
+    magma_cscal( dofs, c_zero, x->dval, 1, queue );                             // x = 0
     CHECK(  magma_cresidualvec( A, b, *x, &r, &nom0, queue));
-    magma_ccopy( dofs, r.dval, 1, q(0), 1 );                            // rr = r
-    magma_ccopy( dofs, r.dval, 1, q(1), 1 );                            // q = r
+    magma_ccopy( dofs, r.dval, 1, q(0), 1, queue );                            // rr = r
+    magma_ccopy( dofs, r.dval, 1, q(1), 1, queue );                            // q = r
     betanom = nom0;
     nom = nom0*nom0;
-    rho_new = magma_cdotc( dofs, r.dval, 1, r.dval, 1 );             // rho=<rr,r>
+    rho_new = magma_cdotc( dofs, r.dval, 1, r.dval, 1, queue );             // rho=<rr,r>
     rho_old = omega = alpha = MAGMA_C_MAKE( 1.0, 0. );
     beta = rho_new;
     solver_par->init_res = nom0;
@@ -136,45 +126,49 @@ magma_cbicgstab_merge2(
     skp_h[3]=rho_old;
     skp_h[4]=rho_new;
     skp_h[5]=MAGMA_C_MAKE(nom, 0.0);
-    magma_csetvector( 8, skp_h, 1, skp, 1 );
+    magma_csetvector( 8, skp_h, 1, skp, 1, queue );
 
-    CHECK( magma_c_spmv( c_one, A, r, c_zero, v, queue ));             // z = A r
-    //den = MAGMA_C_REAL( magma_cdotc(dofs, v.dval, 1, r.dval, 1) ); // den = z dot r
-
-    if( nom0 < solver_par->atol ||
-        nom0/solver_par->init_res < solver_par->rtol ){
-        solver_par->final_res = solver_par->init_res;
-        solver_par->iter_res = solver_par->init_res;
-        goto cleanup;
-    }
-
-    //Chronometry
-    real_Double_t tempo1, tempo2;
-    tempo1 = magma_sync_wtime( queue );
+    solver_par->final_res = solver_par->init_res;
+    solver_par->iter_res = solver_par->init_res;
     if ( solver_par->verbose > 0 ) {
         solver_par->res_vec[0] = nom0;
         solver_par->timing[0] = 0.0;
     }
+    nomb = magma_scnrm2( dofs, b.dval, 1, queue );
+    if( nom0 < solver_par->atol ||
+        nom0/nomb < solver_par->rtol ){
+        info = MAGMA_SUCCESS;
+        goto cleanup;
+    }
+    
+    CHECK( magma_c_spmv( c_one, A, r, c_zero, v, queue ));             // z = A r
+
+    //Chronometry
+    real_Double_t tempo1, tempo2;
+    tempo1 = magma_sync_wtime( queue );
+
 
     solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     // start iteration
     do
     {
         solver_par->numiter++;
 
-        magmablasSetKernelStream(stream[0]);
+        //magmablasSetKernelStream(queues[0]);
 
         // computes p=r+beta*(p-omega*v)
         CHECK( magma_cbicgmerge1( dofs, skp, v.dval, r.dval, p.dval, queue ));
         CHECK( magma_cbicgmerge_spmv1(  A, d1, d2, q(2), q(0), q(3), skp, queue ));
+        solver_par->spmv_count++;
         CHECK( magma_cbicgmerge2( dofs, skp, r.dval, v.dval, s.dval, queue )); // s=r-alpha*v
         CHECK( magma_cbicgmerge_spmv2( A, d1, d2, q(4), q(5), skp, queue ));
+        solver_par->spmv_count++;
         CHECK( magma_cbicgmerge_xrbeta( dofs, d1, d2, q(0), q(1), q(2),
                                                     q(4), q(5), x->dval, skp, queue ));
 
         // check stopping criterion (asynchronous copy)
-        magma_cgetvector_async( 1 , skp+5, 1,
-                                                        skp_h+5, 1, stream[1] );
+        magma_cgetvector( 1 , skp+5, 1, skp_h+5, 1, queue );
 
         betanom = sqrt(MAGMA_C_REAL(skp_h[5]));
 
@@ -189,7 +183,7 @@ magma_cbicgstab_merge2(
         }
 
         if (  betanom  < solver_par->atol || 
-              betanom/solver_par->init_res < solver_par->rtol ) {
+              betanom/nomb < solver_par->rtol ) {
             break;
         }
     }
@@ -203,7 +197,7 @@ magma_cbicgstab_merge2(
     solver_par->final_res = residual;
 
     if ( solver_par->numiter < solver_par->maxiter ) {
-        solver_par->info = MAGMA_SUCCESS;
+        info = MAGMA_SUCCESS;
     } else if ( solver_par->init_res > solver_par->final_res ) {
         if ( solver_par->verbose > 0 ) {
             if ( (solver_par->numiter)%solver_par->verbose==0 ) {
@@ -238,7 +232,6 @@ cleanup:
     magma_free( skp );
     magma_free_cpu( skp_h );
 
-    magmablasSetKernelStream( orig_queue );
     solver_par->info = info;
     return info;
 }   /* cbicgstab_merge2 */

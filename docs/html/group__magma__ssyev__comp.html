@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -120,9 +120,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gaa1ea4a4a50f0ed126f64dde83f3aadb1"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#gaa1ea4a4a50f0ed126f64dde83f3aadb1">magma_sormtr</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, float *A, magma_int_t lda, float *tau, float *C, magma_int_t ldc, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:gaa1ea4a4a50f0ed126f64dde83f3aadb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMTR overwrites the general real M-by-N matrix C with.  <a href="#gaa1ea4a4a50f0ed126f64dde83f3aadb1">More...</a><br /></td></tr>
 <tr class="separator:gaa1ea4a4a50f0ed126f64dde83f3aadb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab7d628108db9ea501eeb7a2602382a1f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#gab7d628108db9ea501eeb7a2602382a1f">magma_sormtr_gpu</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloat_ptr dA, magma_int_t ldda, float *tau, magmaFloat_ptr dC, magma_int_t lddc, float *wA, magma_int_t ldwa, magma_int_t *info)</td></tr>
-<tr class="memdesc:gab7d628108db9ea501eeb7a2602382a1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMTR overwrites the general real M-by-N matrix C with.  <a href="#gab7d628108db9ea501eeb7a2602382a1f">More...</a><br /></td></tr>
-<tr class="separator:gab7d628108db9ea501eeb7a2602382a1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0b71c256fb40cc79ccbbe59c73b5ae6f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#ga0b71c256fb40cc79ccbbe59c73b5ae6f">magma_sormtr_gpu</a> (magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, magmaFloat_ptr dA, magma_int_t ldda, float *tau, magmaFloat_ptr dC, magma_int_t lddc, const float *wA, magma_int_t ldwa, magma_int_t *info)</td></tr>
+<tr class="memdesc:ga0b71c256fb40cc79ccbbe59c73b5ae6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMTR overwrites the general real M-by-N matrix C with.  <a href="#ga0b71c256fb40cc79ccbbe59c73b5ae6f">More...</a><br /></td></tr>
+<tr class="separator:ga0b71c256fb40cc79ccbbe59c73b5ae6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae9553a071eeec8db772d7f86340cab23"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#gae9553a071eeec8db772d7f86340cab23">magma_sormtr_m</a> (magma_int_t ngpu, magma_side_t side, magma_uplo_t uplo, magma_trans_t trans, magma_int_t m, magma_int_t n, float *A, magma_int_t lda, float *tau, float *C, magma_int_t ldc, float *work, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:gae9553a071eeec8db772d7f86340cab23"><td class="mdescLeft">&#160;</td><td class="mdescRight">SORMTR overwrites the general real M-by-N matrix C with.  <a href="#gae9553a071eeec8db772d7f86340cab23">More...</a><br /></td></tr>
 <tr class="separator:gae9553a071eeec8db772d7f86340cab23"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,9 +135,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga2927c21de2f6714285435786526151b2"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#ga2927c21de2f6714285435786526151b2">magma_ssygst</a> (magma_int_t itype, magma_uplo_t uplo, magma_int_t n, float *A, magma_int_t lda, float *B, magma_int_t ldb, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga2927c21de2f6714285435786526151b2"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYGST reduces a real symmetric-definite generalized eigenproblem to standard form.  <a href="#ga2927c21de2f6714285435786526151b2">More...</a><br /></td></tr>
 <tr class="separator:ga2927c21de2f6714285435786526151b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga90055851d296a3f773e18846d4688b20"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#ga90055851d296a3f773e18846d4688b20">magma_ssygst_gpu</a> (magma_int_t itype, magma_uplo_t uplo, magma_int_t n, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_ptr dB, magma_int_t lddb, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga90055851d296a3f773e18846d4688b20"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYGST_GPU reduces a real symmetric-definite generalized eigenproblem to standard form.  <a href="#ga90055851d296a3f773e18846d4688b20">More...</a><br /></td></tr>
-<tr class="separator:ga90055851d296a3f773e18846d4688b20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaab615252287799490f12d0594b0b3945"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#gaab615252287799490f12d0594b0b3945">magma_ssygst_gpu</a> (magma_int_t itype, magma_uplo_t uplo, magma_int_t n, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_const_ptr dB, magma_int_t lddb, magma_int_t *info)</td></tr>
+<tr class="memdesc:gaab615252287799490f12d0594b0b3945"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYGST_GPU reduces a real symmetric-definite generalized eigenproblem to standard form.  <a href="#gaab615252287799490f12d0594b0b3945">More...</a><br /></td></tr>
+<tr class="separator:gaab615252287799490f12d0594b0b3945"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga20f9aedc1b55119bfe50f403083d1571"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__comp.html#ga20f9aedc1b55119bfe50f403083d1571">magma_ssygst_m</a> (magma_int_t ngpu, magma_int_t itype, magma_uplo_t uplo, magma_int_t n, float *A, magma_int_t lda, float *B, magma_int_t ldb, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga20f9aedc1b55119bfe50f403083d1571"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYGST_M reduces a real symmetric-definite generalized eigenproblem to standard form.  <a href="#ga20f9aedc1b55119bfe50f403083d1571">More...</a><br /></td></tr>
 <tr class="separator:ga20f9aedc1b55119bfe50f403083d1571"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -391,7 +391,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gab7d628108db9ea501eeb7a2602382a1f"></a>
+<a class="anchor" id="ga0b71c256fb40cc79ccbbe59c73b5ae6f"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -458,7 +458,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *&#160;</td>
+          <td class="paramtype">const float *&#160;</td>
           <td class="paramname"><em>wA</em>, </td>
         </tr>
         <tr>
@@ -505,13 +505,13 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix C. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix C. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,M) if SIDE = MagmaLeft (LDDA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU. On output the diagonal, the subdiagonal and the upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper) are destroyed.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array DA. LDDA &gt;= max(1,M) if SIDE = MagmaLeft; LDDA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, dimension (LDDA,M) if SIDE = MagmaLeft (LDDA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU. On output the diagonal, the subdiagonal and the upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper) are destroyed.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. If SIDE = MagmaLeft, LDDA &gt;= max(1,M); if SIDE = MagmaRight, LDDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tau</td><td>REAL array, dimension (M-1) if SIDE = MagmaLeft (N-1) if SIDE = MagmaRight TAU(i) must contain the scalar factor of the elementary reflector H(i), as returned by SSYTRD.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dC</td><td>REAL array, dimension (LDDC,N) On entry, the M-by-N matrix C. On exit, C is overwritten by (Q*C) or (Q**H * C) or (C * Q**H) or (C*Q).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddc</td><td>INTEGER The leading dimension of the array C. LDDC &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>(workspace) REAL array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. LDWA &gt;= max(1,M) if SIDE = MagmaLeft; LDWA &gt;= max(1,N) if SIDE = MagmaRight.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">wA</td><td>REAL array, dimension (LDWA,M) if SIDE = MagmaLeft (LDWA,N) if SIDE = MagmaRight The vectors which define the elementary reflectors, as returned by SSYTRD_GPU. (A copy of the upper or lower part of dA, on the host.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldwa</td><td>INTEGER The leading dimension of the array wA. If SIDE = MagmaLeft, LDWA &gt;= max(1,M); if SIDE = MagmaRight, LDWA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -1020,22 +1020,28 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SSYGST reduces a real symmetric-definite generalized eigenproblem to standard form. </p>
-<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)</p>
-<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.</p>
-<p>B must have been previously factorized as U**H*U or L*L**H by SPOTRF.</p>
+<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H)</p>
+<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U^H or L^H*A*L.</p>
+<p>B must have been previously factorized as U^H*U or L*L^H by SPOTRF.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H); = 2 or 3: compute U*A*U**H or L**H*A*L.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H); = 2 or 3: compute U*A*U^H or L^H*A*L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**H*U;</li>
-<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**H.</li>
+<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U^H*U;</li>
+<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L^H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrices A and B. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>REAL array, dimension (LDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, if INFO = 0, the transformed matrix, stored in the same format as A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>REAL array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by SPOTRF.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>REAL array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by SPOTRF.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>B is modified by the routine but restored on exit (in lapack ssygst/ssygs2).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1048,7 +1054,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga90055851d296a3f773e18846d4688b20"></a>
+<a class="anchor" id="gaab615252287799490f12d0594b0b3945"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1085,7 +1091,7 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">magmaFloat_ptr&#160;</td>
+          <td class="paramtype">magmaFloat_const_ptr&#160;</td>
           <td class="paramname"><em>dB</em>, </td>
         </tr>
         <tr>
@@ -1109,23 +1115,23 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>SSYGST_GPU reduces a real symmetric-definite generalized eigenproblem to standard form. </p>
-<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)</p>
-<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.</p>
-<p>B must have been previously factorized as U**H*U or L*L**H by SPOTRF.</p>
+<p>If ITYPE = 1, the problem is A*x = lambda*B*x, and A is overwritten by inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H)</p>
+<p>If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or B*A*x = lambda*x, and A is overwritten by U*A*U^H or L^H*A*L.</p>
+<p>B must have been previously factorized as U^H*U or L*L^H by SPOTRF.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H); = 2 or 3: compute U*A*U**H or L**H*A*L.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">itype</td><td>INTEGER = 1: compute inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H); = 2 or 3: compute U*A*U^H or L^H*A*L.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U**H*U;</li>
-<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L**H.</li>
+<li>= MagmaUpper: Upper triangle of A is stored and B is factored as U^H*U;</li>
+<li>= MagmaLower: Lower triangle of A is stored and B is factored as L*L^H.</li>
 </ul>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrices A and B. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, dimension (LDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>REAL array, on the GPU device, dimension (LDDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, if INFO = 0, the transformed matrix, stored in the same format as A.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>REAL array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by SPOTRF.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dB</td><td>REAL array, on the GPU device, dimension (LDDB,N) The triangular factor from the Cholesky factorization of B, as returned by SPOTRF.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -1220,7 +1226,13 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>REAL array, dimension (LDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. <br />
  On exit, if INFO = 0, the transformed matrix, stored in the same format as A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">B</td><td>REAL array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by SPOTRF.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>REAL array, dimension (LDB,N) The triangular factor from the Cholesky factorization of B, as returned by SPOTRF.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>B is modified by the routine but restored on exit (in lapack ssygst/ssygs2).</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -1708,7 +1720,7 @@ Functions</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER Number of GPUs to use. ngpu &gt; 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nqueue</td><td>INTEGER The number of GPU streams used for update. 10 &gt;= nqueue &gt; 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nqueue</td><td>INTEGER The number of GPU queues used for update. 10 &gt;= nqueue &gt; 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
 <li>= MagmaUpper: Upper triangle of A is stored;</li>
 <li>= MagmaLower: Lower triangle of A is stored.</li>
@@ -1753,7 +1765,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

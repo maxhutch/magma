@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zungtr.cpp normal z -> d, Fri Sep 11 18:29:30 2015
+       @generated from src/zungtr.cpp normal z -> d, Wed Jan  6 17:59:33 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -133,7 +133,7 @@ magma_dorgtr(
     }
 
     if (upper) {
-        /*  Q was determined by a call to DSYTRD with UPLO = 'U'
+        /*  Q was determined by a call to DSYTRD with UPLO = MagmaUpper
             Shift the vectors which define the elementary reflectors one
             column to the left, and set the last row and column of Q to
             those of the unit matrix                                    */
@@ -153,7 +153,7 @@ magma_dorgtr(
         lapackf77_dorgql(&i__1, &i__1, &i__1, A(0,0), &lda, tau, work,
                          &lwork, &iinfo);
     } else {
-        /*  Q was determined by a call to DSYTRD with UPLO = 'L'.
+        /*  Q was determined by a call to DSYTRD with UPLO = MagmaLower.
             Shift the vectors which define the elementary reflectors one
             column to the right, and set the first row and column of Q to
             those of the unit matrix                                      */

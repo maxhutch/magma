@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgemv_batched.cpp normal z -> d, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgemv_batched.cpp normal z -> d, Wed Jan  6 17:59:51 2016
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
@@ -110,9 +110,9 @@ int main( int argc, char** argv)
             magma_dsetvector( Xm*batchCount, h_X, incx, d_X, incx );
             magma_dsetvector( Ym*batchCount, h_Y, incy, d_Y, incy );
             
-            dset_pointer(A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue);
-            dset_pointer(X_array, d_X, 1, 0, 0, incx*Xm, batchCount, opts.queue);
-            dset_pointer(Y_array, d_Y, 1, 0, 0, incy*Ym, batchCount, opts.queue);
+            magma_dset_pointer( A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_dset_pointer( X_array, d_X, 1, 0, 0, incx*Xm, batchCount, opts.queue );
+            magma_dset_pointer( Y_array, d_Y, 1, 0, 0, incy*Ym, batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
             magmablas_dgemv_batched(opts.transA, M, N,
@@ -204,6 +204,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

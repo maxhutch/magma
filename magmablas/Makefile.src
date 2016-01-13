@@ -1,280 +1,216 @@
-# Automatically generated from Makefile ZHDR and ZSRC
-CHDR = \
-	commonblas_c.h \
-	ctrtri.cuh \
-	cgerbt.h \
-	cpotf2_devicesfunc.cuh \
-	clarfg_devicesfunc.cuh \
-	ctrsv_template_device.cuh
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 2.0.0-beta2) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      @date January 2016
+#//////////////////////////////////////////////////////////////////////////////
 
-DHDR = \
-	commonblas_d.h \
-	dtrtri.cuh \
-	dgerbt.h \
-	dpotf2_devicesfunc.cuh \
-	dlarfg_devicesfunc.cuh \
-	dtrsv_template_device.cuh
+# push previous directory
+dir_stack := $(dir_stack) $(cdir)
+cdir      := magmablas
+# ----------------------------------------------------------------------
 
-SHDR = \
-	commonblas_s.h \
-	strtri.cuh \
-	sgerbt.h \
-	spotf2_devicesfunc.cuh \
-	slarfg_devicesfunc.cuh \
-	strsv_template_device.cuh
 
-CSRC = \
-	caxpycp.cu \
-	cgeadd.cu \
-	cgemm_reduce.cu \
-	cgemv_conjv.cu \
-	cgerbt_kernels.cu \
-	cgerbt.cu \
-	chemv.cu \
-	chemv_upper.cu \
-	clacpy.cu \
-	clacpy_cnjg.cu \
-	clacpy_sym_in.cu \
-	clacpy_sym_out.cu \
-	clange.cu \
-	clanhe.cu \
-	claqps2_gpu.cu \
-	claqps3_gpu.cu \
-	clarf.cu \
-	clarfbx.cu \
-	clarfx.cu \
-	clarfg.cu \
-	clarfg-v2.cu \
-	clarfgx-v2.cu \
-	clascl.cu \
-	clascl2.cu \
-	clascl_2x2.cu \
-	clascl_diag.cu \
-	claset.cu \
-	claset_band.cu \
-	claswp.cu \
-	claswp_sym.cu \
-	scnrm2.cu \
-	cswap.cu \
-	cswapblk.cu \
-	cswapdblk.cu \
-	csymv.cu \
-	csymv_upper.cu \
-	csymmetrize.cu \
-	csymmetrize_tiles.cu \
-	ctranspose.cu \
-	ctranspose_conj.cu \
-	ctranspose_inplace.cu \
-	ctranspose_conj_inplace.cu \
-	cgetmatrix_transpose.cpp \
-	csetmatrix_transpose.cpp \
-	ctrsm.cu \
-	ctrtri_diag.cu \
-	ctrtri_lower.cu \
-	ctrtri_upper.cu \
-	clarft_kernels.cu \
-	ctrsv.cu \
-	cgemm_fermi.cu \
-	cgemv_fermi.cu \
-	cbcyclic.cpp \
-	cgetmatrix_transpose_mgpu.cpp \
-	csetmatrix_transpose_mgpu.cpp \
-	chemv_mgpu.cu \
-	chemv_mgpu_upper.cu \
-	chemm_mgpu.cpp \
-	chemm_mgpu_spec.cpp \
-	cher2k_mgpu.cpp \
-	cher2k_mgpu_spec.cpp \
-	cherk_mgpu.cpp \
-	cgetf2.cu \
-	cgeqr2.cpp \
-	cgeqr2x_gpu-v4.cu \
-	cpotf2.cu \
-	cgeadd_batched.cu \
-	cgemm_batched.cpp \
-	cgerbt_func_batched.cu \
-	cgetf2_kernels.cu \
-	claswp_batched.cu \
-	cpotf2_kernels_old.cu \
-	cpotf2_kernels.cu \
-	cset_pointer.cu \
-	ctrsm_batched.cpp \
-	ctrtri_diag_batched.cu \
-	cgeqr2_kernels.cu \
-	cgeqr2_batched.cu \
-	cherk_batched.cpp \
-	cswapdblk_batched.cu \
-	ctrsv_batched.cu
+zhdr += \
+	$(cdir)/commonblas_z.h		\
+	$(cdir)/ztrtri.cuh		\
+	$(cdir)/zgerbt.h		\
+	$(cdir)/zpotf2_devicesfunc.cuh		\
+	$(cdir)/zlarfg_devicesfunc.cuh		\
+	$(cdir)/ztrsv_template_device.cuh	\
 
-DSRC = \
-	daxpycp.cu \
-	dsaxpycp.cu \
-	dgeadd.cu \
-	dgemm_reduce.cu \
-	dgemv_conjv.cu \
-	dgerbt_kernels.cu \
-	dgerbt.cu \
-	dsymv.cu \
-	dsymv_upper.cu \
-	dlacpy.cu \
-	dlacpy_cnjg.cu \
-	dlacpy_sym_in.cu \
-	dlacpy_sym_out.cu \
-	dlag2s.cu \
-	slag2d.cu \
-	dlange.cu \
-	dlansy.cu \
-	dlaqps2_gpu.cu \
-	dlaqps3_gpu.cu \
-	dlarf.cu \
-	dlarfbx.cu \
-	dlarfx.cu \
-	dlarfg.cu \
-	dlarfg-v2.cu \
-	dlarfgx-v2.cu \
-	dlascl.cu \
-	dlascl2.cu \
-	dlascl_2x2.cu \
-	dlascl_diag.cu \
-	dlaset.cu \
-	dlaset_band.cu \
-	dlaswp.cu \
-	dlaswp_sym.cu \
-	dslaswp.cu \
-	dlat2s.cu \
-	slat2d.cu \
-	dnrm2.cu \
-	dswap.cu \
-	dswapblk.cu \
-	dswapdblk.cu \
-	dsymmetrize.cu \
-	dsymmetrize_tiles.cu \
-	dtranspose.cu \
-	dtranspose_inplace.cu \
-	dgetmatrix_transpose.cpp \
-	dsetmatrix_transpose.cpp \
-	dtrsm.cu \
-	dtrtri_diag.cu \
-	dtrtri_lower.cu \
-	dtrtri_upper.cu \
-	dlarft_kernels.cu \
-	dtrsv.cu \
-	dgemm_fermi.cu \
-	dgemv_fermi.cu \
-	dbcyclic.cpp \
-	dgetmatrix_transpose_mgpu.cpp \
-	dsetmatrix_transpose_mgpu.cpp \
-	dsymv_mgpu.cu \
-	dsymv_mgpu_upper.cu \
-	dsymm_mgpu.cpp \
-	dsymm_mgpu_spec.cpp \
-	dsyr2k_mgpu.cpp \
-	dsyr2k_mgpu_spec.cpp \
-	dsyrk_mgpu.cpp \
-	dgetf2.cu \
-	dgeqr2.cpp \
-	dgeqr2x_gpu-v4.cu \
-	dpotf2.cu \
-	dgeadd_batched.cu \
-	dgemm_batched.cpp \
-	dgerbt_func_batched.cu \
-	dgetf2_kernels.cu \
-	dlaswp_batched.cu \
-	dpotf2_kernels_old.cu \
-	dpotf2_kernels.cu \
-	dset_pointer.cu \
-	dtrsm_batched.cpp \
-	dtrtri_diag_batched.cu \
-	dgeqr2_kernels.cu \
-	dgeqr2_batched.cu \
-	dsyrk_batched.cpp \
-	dswapdblk_batched.cu \
-	dtrsv_batched.cu
+# additional dependencies
+$(cdir)/strtri_diag.$(o_ext): $(cdir)/strtri.cuh
+$(cdir)/dtrtri_diag.$(o_ext): $(cdir)/dtrtri.cuh
+$(cdir)/ctrtri_diag.$(o_ext): $(cdir)/ctrtri.cuh
+$(cdir)/ztrtri_diag.$(o_ext): $(cdir)/ztrtri.cuh
 
-SSRC = \
-	saxpycp.cu \
-	sgeadd.cu \
-	sgemm_reduce.cu \
-	sgemv_conjv.cu \
-	sgerbt_kernels.cu \
-	sgerbt.cu \
-	ssymv.cu \
-	ssymv_upper.cu \
-	slacpy.cu \
-	slacpy_cnjg.cu \
-	slacpy_sym_in.cu \
-	slacpy_sym_out.cu \
-	slange.cu \
-	slansy.cu \
-	slaqps2_gpu.cu \
-	slaqps3_gpu.cu \
-	slarf.cu \
-	slarfbx.cu \
-	slarfx.cu \
-	slarfg.cu \
-	slarfg-v2.cu \
-	slarfgx-v2.cu \
-	slascl.cu \
-	slascl2.cu \
-	slascl_2x2.cu \
-	slascl_diag.cu \
-	slaset.cu \
-	slaset_band.cu \
-	slaswp.cu \
-	slaswp_sym.cu \
-	snrm2.cu \
-	sswap.cu \
-	sswapblk.cu \
-	sswapdblk.cu \
-	ssymmetrize.cu \
-	ssymmetrize_tiles.cu \
-	stranspose.cu \
-	stranspose_inplace.cu \
-	sgetmatrix_transpose.cpp \
-	ssetmatrix_transpose.cpp \
-	strsm.cu \
-	strtri_diag.cu \
-	strtri_lower.cu \
-	strtri_upper.cu \
-	slarft_kernels.cu \
-	strsv.cu \
-	sgemm_tesla.cpp \
-	sgemm_tesla_a_0.cu \
-	sgemm_tesla_ab_0.cu \
-	sgemm_tesla_N_N.cu \
-	sgemm_tesla_N_N_special.cu \
-	sgemm_tesla_N_T.cu \
-	sgemm_tesla_T_N.cu \
-	sgemm_tesla_T_T.cu \
-	sgemm_tesla_T_T_special.cu \
-	sgemm_fermi.cu \
-	sgemv_fermi.cu \
-	sbcyclic.cpp \
-	sgetmatrix_transpose_mgpu.cpp \
-	ssetmatrix_transpose_mgpu.cpp \
-	ssymv_mgpu.cu \
-	ssymv_mgpu_upper.cu \
-	ssymm_mgpu.cpp \
-	ssymm_mgpu_spec.cpp \
-	ssyr2k_mgpu.cpp \
-	ssyr2k_mgpu_spec.cpp \
-	ssyrk_mgpu.cpp \
-	sgetf2.cu \
-	sgeqr2.cpp \
-	sgeqr2x_gpu-v4.cu \
-	spotf2.cu \
-	sgeadd_batched.cu \
-	sgemm_batched.cpp \
-	sgerbt_func_batched.cu \
-	sgetf2_kernels.cu \
-	slaswp_batched.cu \
-	spotf2_kernels_old.cu \
-	spotf2_kernels.cu \
-	sset_pointer.cu \
-	strsm_batched.cpp \
-	strtri_diag_batched.cu \
-	sgeqr2_kernels.cu \
-	sgeqr2_batched.cu \
-	ssyrk_batched.cpp \
-	sswapdblk_batched.cu \
-	strsv_batched.cu
+$(cdir)/sgerbt.$(o_ext): $(cdir)/sgerbt.h
+$(cdir)/dgerbt.$(o_ext): $(cdir)/dgerbt.h
+$(cdir)/cgerbt.$(o_ext): $(cdir)/cgerbt.h
+$(cdir)/zgerbt.$(o_ext): $(cdir)/zgerbt.h
+
+$(cdir)/sgerbt_batched.$(o_ext): $(cdir)/sgerbt.h
+$(cdir)/dgerbt_batched.$(o_ext): $(cdir)/dgerbt.h
+$(cdir)/cgerbt_batched.$(o_ext): $(cdir)/cgerbt.h
+$(cdir)/zgerbt_batched.$(o_ext): $(cdir)/zgerbt.h
+
+$(cdir)/strtri_diag_batched.$(o_ext): $(cdir)/strtri.cuh
+$(cdir)/dtrtri_diag_batched.$(o_ext): $(cdir)/dtrtri.cuh
+$(cdir)/ctrtri_diag_batched.$(o_ext): $(cdir)/ctrtri.cuh
+$(cdir)/ztrtri_diag_batched.$(o_ext): $(cdir)/ztrtri.cuh
+
+
+# alphabetic order by base name (ignoring precision)
+libmagma_zsrc += \
+	$(cdir)/zaxpycp.cu		\
+	$(cdir)/zcaxpycp.cu		\
+	$(cdir)/zgeadd.cu		\
+	$(cdir)/zgeadd2.cu		\
+	$(cdir)/zgemm_reduce.cu		\
+	$(cdir)/zgemv_conj.cu		\
+	$(cdir)/zgerbt_kernels.cu	\
+	$(cdir)/zgerbt.cu		\
+	$(cdir)/zhemv.cu		\
+	$(cdir)/zhemv_upper.cu		\
+	$(cdir)/zlacpy.cu		\
+	$(cdir)/zlacpy_conj.cu		\
+	$(cdir)/zlacpy_sym_in.cu	\
+	$(cdir)/zlacpy_sym_out.cu	\
+	$(cdir)/zlag2c.cu		\
+	$(cdir)/clag2z.cu		\
+	$(cdir)/zlange.cu		\
+	$(cdir)/zlanhe.cu		\
+	$(cdir)/zlaqps2_gpu.cu		\
+	$(cdir)/zlarf.cu		\
+	$(cdir)/zlarfbx.cu		\
+	$(cdir)/zlarfx.cu		\
+	$(cdir)/zlarfg.cu		\
+	$(cdir)/zlarfg-v2.cu		\
+	$(cdir)/zlarfgx-v2.cu		\
+	$(cdir)/zlascl.cu		\
+	$(cdir)/zlascl2.cu		\
+	$(cdir)/zlascl_2x2.cu		\
+	$(cdir)/zlascl_diag.cu		\
+	$(cdir)/zlaset.cu		\
+	$(cdir)/zlaset_band.cu		\
+	$(cdir)/zlaswp.cu		\
+	$(cdir)/zlaswp_sym.cu		\
+	$(cdir)/zclaswp.cu		\
+	$(cdir)/zlat2c.cu		\
+	$(cdir)/clat2z.cu		\
+	$(cdir)/dznrm2.cu		\
+	$(cdir)/zswap.cu		\
+	$(cdir)/zswapblk.cu		\
+	$(cdir)/zswapdblk.cu		\
+	$(cdir)/zsymv.cu		\
+	$(cdir)/zsymv_upper.cu		\
+	$(cdir)/zsymmetrize.cu		\
+	$(cdir)/zsymmetrize_tiles.cu	\
+	$(cdir)/ztranspose.cu		\
+	$(cdir)/ztranspose_conj.cu		\
+	$(cdir)/ztranspose_inplace.cu	\
+	$(cdir)/ztranspose_conj_inplace.cu	\
+	$(cdir)/zgetmatrix_transpose.cpp	\
+	$(cdir)/zsetmatrix_transpose.cpp	\
+	$(cdir)/ztrsm.cu		\
+	$(cdir)/ztrtri_diag.cu		\
+	$(cdir)/ztrtri_lower.cu		\
+	$(cdir)/ztrtri_upper.cu		\
+	$(cdir)/zlarft_kernels.cu		\
+	$(cdir)/ztrsv.cu		\
+
+# Fermi-specific (CUDA arch 2.x) codes
+libmagma_zsrc += \
+	$(cdir)/zgemm_fermi.cu		\
+	$(cdir)/zgemv_fermi.cu		\
+
+# multi-GPU
+libmagma_zsrc += \
+	$(cdir)/zbcyclic.cpp		\
+	$(cdir)/zgetmatrix_transpose_mgpu.cpp	\
+	$(cdir)/zsetmatrix_transpose_mgpu.cpp	\
+	$(cdir)/zhemv_mgpu.cu			\
+	$(cdir)/zhemv_mgpu_upper.cu		\
+	$(cdir)/zhemm_mgpu.cpp			\
+	$(cdir)/zher2k_mgpu.cpp			\
+	$(cdir)/zherk_mgpu.cpp			\
+
+# panels for one-sided factorizations in CUDA
+libmagma_zsrc += \
+	$(cdir)/zgetf2.cu		\
+	$(cdir)/zgeqr2.cpp		\
+	$(cdir)/zgeqr2x_gpu-v4.cu	\
+	$(cdir)/zpotf2.cu		\
+
+# batched files, alphabetic order by base name (ignoring precision)
+libmagma_zsrc += \
+	$(cdir)/zgeadd_batched.cu		\
+	$(cdir)/zgemm_batched.cpp		\
+	$(cdir)/zgerbt_func_batched.cu		\
+	$(cdir)/zgetf2_kernels.cu		\
+	$(cdir)/zlaswp_batched.cu		\
+	$(cdir)/zpotf2_kernels_old.cu		\
+	$(cdir)/zpotf2_kernels.cu		\
+	$(cdir)/zset_pointer.cu			\
+	$(cdir)/ztrsm_batched.cpp		\
+	$(cdir)/ztrtri_diag_batched.cu		\
+	$(cdir)/zgeqr2_kernels.cu		\
+	$(cdir)/zgeqr2_batched.cu		\
+	$(cdir)/zherk_batched.cpp		\
+	$(cdir)/zswapdblk_batched.cu	\
+	$(cdir)/ztrsv_batched.cu		\
+
+libmagma_zsrc += \
+	$(cdir)/set_pointer.cu			\
+	$(cdir)/getrf_setup_pivinfo.cu		\
+	$(cdir)/zgemv_batched_core.cu		\
+	$(cdir)/cgemv_batched_core.cu		\
+	$(cdir)/dgemv_batched_core.cu		\
+	$(cdir)/sgemv_batched_core.cu		\
+	$(cdir)/zgemm_batched_core.cu		\
+	$(cdir)/cgemm_batched_core.cu		\
+	$(cdir)/dgemm_batched_core.cu		\
+	$(cdir)/sgemm_batched_core.cu		\
+	$(cdir)/ssyrk_batched_core.cu		\
+	$(cdir)/dsyrk_batched_core.cu		\
+	$(cdir)/cherk_batched_core.cu		\
+	$(cdir)/zherk_batched_core.cu		\
+
+# additional dependencies
+$(cdir)/spotf2_kernels.$(o_ext): $(cdir)/spotf2_devicesfunc.cuh
+$(cdir)/dpotf2_kernels.$(o_ext): $(cdir)/dpotf2_devicesfunc.cuh
+$(cdir)/cpotf2_kernels.$(o_ext): $(cdir)/cpotf2_devicesfunc.cuh
+$(cdir)/zpotf2_kernels.$(o_ext): $(cdir)/zpotf2_devicesfunc.cuh
+$(cdir)/spotf2_kernels_var.$(o_ext): $(cdir)/spotf2_devicesfunc.cuh
+$(cdir)/dpotf2_kernels_var.$(o_ext): $(cdir)/dpotf2_devicesfunc.cuh
+$(cdir)/cpotf2_kernels_var.$(o_ext): $(cdir)/cpotf2_devicesfunc.cuh
+$(cdir)/zpotf2_kernels_var.$(o_ext): $(cdir)/zpotf2_devicesfunc.cuh
+
+# extra include dependencies
+$(cdir)/ztrsv_batched.$(o_ext): $(cdir)/ztrsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/ctrsv_batched.$(o_ext): $(cdir)/ctrsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/dtrsv_batched.$(o_ext): $(cdir)/dtrsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/strsv_batched.$(o_ext): $(cdir)/strsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+
+$(cdir)/ztrsv.$(o_ext): $(cdir)/ztrsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/ctrsv.$(o_ext): $(cdir)/ctrsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/dtrsv.$(o_ext): $(cdir)/dtrsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/strsv.$(o_ext): $(cdir)/strsv_template_device.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+
+$(cdir)/zgemv_fermi.$(o_ext): $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/cgemv_fermi.$(o_ext): $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/dgemv_fermi.$(o_ext): $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/sgemv_fermi.$(o_ext): $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+
+$(cdir)/zgemv_batched_core.$(o_ext): $(cdir)/gemv_template_kernel_batched.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/cgemv_batched_core.$(o_ext): $(cdir)/gemv_template_kernel_batched.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/dgemv_batched_core.$(o_ext): $(cdir)/gemv_template_kernel_batched.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/sgemv_batched_core.$(o_ext): $(cdir)/gemv_template_kernel_batched.cuh $(cdir)/gemv_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+
+$(cdir)/zgemm_batched_core.$(o_ext): $(cdir)/gemm_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/cgemm_batched_core.$(o_ext): $(cdir)/gemm_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/dgemm_batched_core.$(o_ext): $(cdir)/gemm_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/sgemm_batched_core.$(o_ext): $(cdir)/gemm_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+
+$(cdir)/zherk_batched_core.$(o_ext): $(cdir)/herk_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/cherk_batched_core.$(o_ext): $(cdir)/herk_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/dsyrk_batched_core.$(o_ext): $(cdir)/herk_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/ssyrk_batched_core.$(o_ext): $(cdir)/herk_template_kernel_batched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+
+$(cdir)/sgemm_vbatched.$(o_ext): $(cdir)/gemm_template_kernel_vbatched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/dgemm_vbatched.$(o_ext): $(cdir)/gemm_template_kernel_vbatched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/cgemm_vbatched.$(o_ext): $(cdir)/gemm_template_kernel_vbatched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+$(cdir)/zgemm_vbatched.$(o_ext): $(cdir)/gemm_template_kernel_vbatched.cuh $(cdir)/gemm_template_device.cuh $(cdir)/gemm_template_device_defs.cuh
+
+$(cdir)/zgemm_fermi.$(o_ext): $(cdir)/zgemm_fermi_kernels.h $(cdir)/gemm_stencil.cuh $(cdir)/gemm_kernel.cuh $(cdir)/gemm_stencil_defs.h
+$(cdir)/cgemm_fermi.$(o_ext): $(cdir)/cgemm_fermi_kernels.h $(cdir)/gemm_stencil.cuh $(cdir)/gemm_kernel.cuh $(cdir)/gemm_stencil_defs.h
+$(cdir)/dgemm_fermi.$(o_ext): $(cdir)/dgemm_fermi_kernels.h $(cdir)/gemm_stencil.cuh $(cdir)/gemm_kernel.cuh $(cdir)/gemm_stencil_defs.h
+$(cdir)/sgemm_fermi.$(o_ext): $(cdir)/sgemm_fermi_kernels.h $(cdir)/gemm_stencil.cuh $(cdir)/gemm_kernel.cuh $(cdir)/gemm_stencil_defs.h
+
+
+# ----------------------------------------------------------------------
+# pop first directory
+cdir      := $(firstword $(dir_stack))
+dir_stack := $(wordlist 2, $(words $(dir_stack)), $(dir_stack))

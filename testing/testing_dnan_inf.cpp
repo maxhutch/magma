@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
   
-       @generated from testing_znan_inf.cpp normal z -> d, Fri Sep 11 18:29:37 2015
+       @generated from testing/testing_znan_inf.cpp normal z -> d, Wed Jan  6 17:59:47 2016
        @author Mark Gates
 */
 // includes, system
@@ -19,6 +19,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
+#define REAL
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing znan_inf
@@ -42,6 +43,91 @@ int main( int argc, char** argv)
     opts.parse_opts( argc, argv );
 
     magma_uplo_t uplo[] = { MagmaLower, MagmaUpper, MagmaFull };
+    
+    /* ====================================================================
+       Check scalar operations
+       =================================================================== */
+    // here "a" denotes finite scalar, "nan" and "inf" denote exceptions.
+    // before underbar "_" is real, after underbar "_" is imag.
+    printf( "%% checking magma_d_isnan, magma_d_isinf, magma_d_isnan_inf\n" );
+    double a_a     = MAGMA_D_MAKE( 1.2345,      4.3456      );
+                               
+    double a_nan   = MAGMA_D_MAKE( 1.2345,      MAGMA_D_NAN );
+    double a_inf   = MAGMA_D_MAKE( 1.2345,      MAGMA_D_INF );
+                               
+    double nan_a   = MAGMA_D_MAKE( MAGMA_D_NAN, 4.3456      );
+    double inf_a   = MAGMA_D_MAKE( MAGMA_D_INF, 4.3456      );
+    
+    double nan_nan = MAGMA_D_MAKE( MAGMA_D_NAN, MAGMA_D_NAN );
+    double nan_inf = MAGMA_D_MAKE( MAGMA_D_NAN, MAGMA_D_INF );
+    
+    double inf_inf = MAGMA_D_MAKE( MAGMA_D_INF, MAGMA_D_INF );
+    double inf_nan = MAGMA_D_MAKE( MAGMA_D_INF, MAGMA_D_NAN );
+    
+    // ----- isnan
+    magma_assert_warn( ! isnan( MAGMA_D_REAL(a_a)   ), "! isnan( real(a_a)   )" );
+    magma_assert_warn(   isnan( MAGMA_D_REAL(nan_a) ), "  isnan( real(nan_a) )" );
+    magma_assert_warn( ! isnan( MAGMA_D_REAL(inf_a) ), "! isnan( real(inf_a) )" );
+    
+    // ----- isinf
+    magma_assert_warn( ! isinf( MAGMA_D_REAL(a_a)   ), "! isinf( real(a_a)   )" );
+    magma_assert_warn( ! isinf( MAGMA_D_REAL(nan_a) ), "! isinf( real(nan_a) )" );
+    magma_assert_warn(   isinf( MAGMA_D_REAL(inf_a) ), "  isinf( real(inf_a) )" );
+    
+    // ----- magma_isnan
+    magma_assert_warn( ! magma_d_isnan( a_a     ), "! magma_d_isnan( a_a     )" );
+    #ifdef COMPLEX
+    magma_assert_warn(   magma_d_isnan( a_nan   ), "  magma_d_isnan( a_nan   )" );
+    #else
+    magma_assert_warn( ! magma_d_isnan( a_nan   ), "! magma_d_isnan( a_nan   )" );  // for real, a_nan is just a.
+    #endif
+    magma_assert_warn( ! magma_d_isnan( a_inf   ), "! magma_d_isnan( a_inf   )" );
+    magma_assert_warn(   magma_d_isnan( nan_a   ), "  magma_d_isnan( nan_a   )" );
+    magma_assert_warn( ! magma_d_isnan( inf_a   ), "! magma_d_isnan( inf_a   )" );
+    magma_assert_warn(   magma_d_isnan( nan_nan ), "  magma_d_isnan( nan_nan )" );
+    magma_assert_warn(   magma_d_isnan( nan_inf ), "  magma_d_isnan( nan_inf )" );
+    magma_assert_warn( ! magma_d_isnan( inf_inf ), "! magma_d_isnan( inf_inf )" );
+    #ifdef COMPLEX
+    magma_assert_warn(   magma_d_isnan( inf_nan ), "  magma_d_isnan( inf_nan )" );
+    #else
+    magma_assert_warn( ! magma_d_isnan( inf_nan ), "! magma_d_isnan( inf_nan )" );  // for real, inf_nan is just inf.
+    #endif
+    
+    // ----- magma_isinf
+    magma_assert_warn( ! magma_d_isinf( a_a     ), "! magma_d_isinf( a_a     )" );
+    magma_assert_warn( ! magma_d_isinf( a_nan   ), "! magma_d_isinf( a_nan   )" );
+    #ifdef COMPLEX
+    magma_assert_warn(   magma_d_isinf( a_inf   ), "  magma_d_isinf( a_inf   )" );
+    #else
+    magma_assert_warn( ! magma_d_isinf( a_inf   ), "! magma_d_isinf( a_inf   )" );  // for real, a_inf is just a.
+    #endif
+    magma_assert_warn( ! magma_d_isinf( nan_a   ), "! magma_d_isinf( nan_a   )" );
+    magma_assert_warn(   magma_d_isinf( inf_a   ), "  magma_d_isinf( inf_a   )" );
+    magma_assert_warn( ! magma_d_isinf( nan_nan ), "! magma_d_isinf( nan_nan )" );
+    #ifdef COMPLEX
+    magma_assert_warn(   magma_d_isinf( nan_inf ), "  magma_d_isinf( nan_inf )" );
+    #else
+    magma_assert_warn( ! magma_d_isinf( nan_inf ), "! magma_d_isinf( nan_inf )" );  // for real, nan_inf is just nan.
+    #endif
+    magma_assert_warn(   magma_d_isinf( inf_inf ), "  magma_d_isinf( inf_inf )" );
+    magma_assert_warn(   magma_d_isinf( inf_nan ), "  magma_d_isinf( inf_nan )" );
+    
+    // ----- magma_isnan_inf
+    magma_assert_warn( ! magma_d_isnan_inf( a_a     ), "! magma_d_isnan_inf( a_a     )" );
+    #ifdef COMPLEX
+    magma_assert_warn(   magma_d_isnan_inf( a_nan   ), "  magma_d_isnan_inf( a_nan   )" );
+    magma_assert_warn(   magma_d_isnan_inf( a_inf   ), "  magma_d_isnan_inf( a_inf   )" );
+    #else
+    magma_assert_warn( ! magma_d_isnan_inf( a_nan   ), "! magma_d_isnan_inf( a_nan   )" );  // for real, a_nan is just a.
+    magma_assert_warn( ! magma_d_isnan_inf( a_inf   ), "! magma_d_isnan_inf( a_inf   )" );  // for real, a_inf is just a.
+    #endif
+    magma_assert_warn(   magma_d_isnan_inf( nan_a   ), "  magma_d_isnan_inf( nan_a   )" );
+    magma_assert_warn(   magma_d_isnan_inf( nan_nan ), "  magma_d_isnan_inf( nan_nan )" );
+    magma_assert_warn(   magma_d_isnan_inf( inf_a   ), "  magma_d_isnan_inf( inf_a   )" );
+    magma_assert_warn(   magma_d_isnan_inf( inf_inf ), "  magma_d_isnan_inf( inf_inf )" );
+    magma_assert_warn(   magma_d_isnan_inf( nan_inf ), "  magma_d_isnan_inf( nan_inf )" );
+    magma_assert_warn(   magma_d_isnan_inf( inf_nan ), "  magma_d_isnan_inf( inf_nan )" );
+    printf( "\n" );
     
     printf("%% uplo    M     N      CPU nan + inf             GPU nan + inf          actual nan + inf        \n");
     printf("%%==============================================================================================\n");
@@ -156,6 +242,7 @@ int main( int argc, char** argv)
       printf( "\n" );
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

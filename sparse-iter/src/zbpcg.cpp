@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
@@ -81,6 +81,7 @@ magma_zbpcg(
     // prepare solver feedback
     solver_par->solver = Magma_PCG;
     solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     solver_par->info = MAGMA_SUCCESS;
 
     // local variables
@@ -130,8 +131,8 @@ magma_zbpcg(
     CHECK(  magma_zresidualvec( A, b, *x, &r, nom0, queue));
 
     // preconditioner
-    CHECK( magma_z_applyprecond_left( A, r, &rt, precond_par, queue ));
-    CHECK( magma_z_applyprecond_right( A, rt, &h, precond_par, queue ));
+    CHECK( magma_z_applyprecond_left( MagmaNoTrans, A, r, &rt, precond_par, queue ));
+    CHECK( magma_z_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
 
     magma_zcopy( dofs*num_vecs, h.dval, 1, p.dval, 1 );                 // p = h
 
@@ -171,13 +172,14 @@ magma_zbpcg(
     }
     
     solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     // start iteration
     do
     {
         solver_par->numiter++;
         // preconditioner
-        CHECK( magma_z_applyprecond_left( A, r, &rt, precond_par, queue ));
-        CHECK( magma_z_applyprecond_right( A, rt, &h, precond_par, queue ));
+        CHECK( magma_z_applyprecond_left( MagmaNoTrans, A, r, &rt, precond_par, queue ));
+        CHECK( magma_z_applyprecond_right( MagmaNoTrans, A, rt, &h, precond_par, queue ));
 
 
         for( i=0; i<num_vecs; i++)
@@ -195,7 +197,7 @@ magma_zbpcg(
         }
 
         CHECK( magma_z_spmv( c_one, A, p, c_zero, q, queue ));   // q = A p
-
+        solver_par->spmv_count++;
      //   magma_z_bspmv_tuned( dofs, num_vecs, c_one, A, p.dval, c_zero, q.dval, queue );
 
 

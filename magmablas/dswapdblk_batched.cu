@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zswapdblk_batched.cu normal z -> d, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zswapdblk_batched.cu normal z -> d, Wed Jan  6 17:59:40 2016
 
 */
 #include "common_magma.h"
@@ -152,7 +152,7 @@ magmablas_dswapdblk_batched_q(
     dim3 dimBlock(nb);
     
     if ( nblocks > 0 ) {
-        dswapdblk_batched_kernel<<< dimGrid, dimBlock, 0, queue >>>
+        dswapdblk_batched_kernel<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>
             ( nb, n_mod_nb, dA_array, ldda, inca,
                   dB_array, lddb, incb );
     }
@@ -170,5 +170,5 @@ magmablas_dswapdblk_batched(
     double **dB_array, magma_int_t lddb, magma_int_t incb, 
     magma_int_t batchCount)
 {
-    magmablas_dswapdblk_batched_q( n, nb, dA_array, ldda, inca, dB_array, lddb, incb, batchCount, magma_stream );
+    magmablas_dswapdblk_batched_q( n, nb, dA_array, ldda, inca, dB_array, lddb, incb, batchCount, magmablasGetQueue() );
 }

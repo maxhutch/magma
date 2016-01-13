@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zbajac_csr.cu normal z -> c, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zbajac_csr.cu normal z -> c, Wed Jan  6 17:59:40 2016
 
 */
 #include "common_magmasparse.h"
@@ -61,7 +61,7 @@ magma_cbajac_csr_ls_kernel(int localiters, int n,
         __syncthreads();
 
         #pragma unroll
-        for( j=0; j<localiters; j++ )
+        for( j=0; j<localiters-1; j++ )
         {
             tmp = zero;
             #pragma unroll
@@ -181,11 +181,11 @@ magma_cbajac_csr(
     dim3 block( blocksize1, blocksize2, 1 );
     if ( R.nnz > 0 ) { 
         if ( localiters == 1 )
-        magma_cbajac_csr_kernel<<< grid, block, 0, queue >>>
+        magma_cbajac_csr_kernel<<< grid, block, 0, queue->cuda_stream() >>>
             ( D.num_rows, D.dval, D.drow, D.dcol, 
                             R.dval, R.drow, R.dcol, b.dval, x->dval );
         else
-            magma_cbajac_csr_ls_kernel<<< grid, block, 0, queue >>>
+            magma_cbajac_csr_ls_kernel<<< grid, block, 0, queue->cuda_stream() >>>
             ( localiters, D.num_rows, D.dval, D.drow, D.dcol, 
                             R.dval, R.drow, R.dcol, b.dval, x->dval );
     }

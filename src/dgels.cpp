@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgels.cpp normal z -> d, Fri Sep 11 18:29:29 2015
+       @generated from src/zgels.cpp normal z -> d, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -65,7 +65,7 @@
     lwork   INTEGER
             The dimension of the array HWORK,
             LWORK >= max( N*NB, 2*NB*NB ),
-            where NB is the blocksize given by magma_get_dgeqrf_nb( M ).
+            where NB is the blocksize given by magma_get_dgeqrf_nb( M, N ).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the HWORK array, returns
@@ -86,12 +86,15 @@ magma_dgels(
     double *hwork, magma_int_t lwork,
     magma_int_t *info)
 {
-    double *tau, zone = MAGMA_D_ONE;
+    /* Constants */
+    const double c_one = MAGMA_D_ONE;
+    
+    /* Local variables */
+    double *tau;
     magma_int_t k;
-
-    magma_int_t nb     = magma_get_dgeqrf_nb(m);
+    magma_int_t nb     = magma_get_dgeqrf_nb( m, n );
     magma_int_t lwkopt = max( n*nb, 2*nb*nb ); // (m - n + nb)*(nrhs + nb) + nrhs*nb;
-    int lquery = (lwork == -1);
+    bool lquery = (lwork == -1);
 
     hwork[0] = MAGMA_D_MAKE( (double)lwkopt, 0. );
 
@@ -101,7 +104,7 @@ magma_dgels(
         *info = -1;
     else if (m < 0)
         *info = -2;
-    else if (n < 0 || m < n) /* LQ is not handle for now*/
+    else if (n < 0 || m < n) /* LQ is not handle for now */
         *info = -3;
     else if (nrhs < 0)
         *info = -4;
@@ -140,9 +143,9 @@ magma_dgels(
  
         // Solve R*X = B(1:n,:)
         blasf77_dtrsm( MagmaLeftStr, MagmaUpperStr, MagmaNoTransStr, MagmaNonUnitStr, 
-                         &n, &nrhs, &zone, A, &lda, B, &ldb );
+                       &n, &nrhs, &c_one, A, &lda, B, &ldb );
     }
     
-    magma_free_cpu(tau);
+    magma_free_cpu( tau );
     return *info;
 }

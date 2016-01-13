@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Chongxiao Cao
@@ -52,11 +52,15 @@ int main( int argc, char** argv)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
-    printf("%% side = %s, uplo = %s, transA = %s, diag = %s \n",
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% side = %s, uplo = %s, transA = %s, diag = %s, ngpu = %d\n",
            lapack_side_const(opts.side), lapack_uplo_const(opts.uplo),
-           lapack_trans_const(opts.transA), lapack_diag_const(opts.diag) );
+           lapack_trans_const(opts.transA), lapack_diag_const(opts.diag), int(abs_ngpu) );
+    
     printf("%%   M     N  MAGMA Gflop/s (ms)  CUBLAS Gflop/s (ms)   CPU Gflop/s (ms)      MAGMA     CUBLAS   LAPACK error\n");
-    printf("%%===========================================================================================================\n");
+    printf("%%============================================================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             M = opts.msize[itest];
@@ -114,10 +118,18 @@ int main( int argc, char** argv)
                 
                 magmablasSetKernelStream( opts.queue );
                 magma_time = magma_sync_wtime( opts.queue );
-                magmablas_ztrsm( opts.side, opts.uplo, opts.transA, opts.diag,
-                                 M, N,
-                                 alpha, d_A, ldda,
-                                        d_B, lddb );
+                if (opts.ngpu == 1) {
+                    magmablas_ztrsm( opts.side, opts.uplo, opts.transA, opts.diag,
+                                     M, N,
+                                     alpha, d_A, ldda,
+                                            d_B, lddb );
+                }
+                else {
+                    magma_ztrsm_m( abs_ngpu, opts.side, opts.uplo, opts.transA, opts.diag,
+                                   M, N,
+                                   alpha, d_A, ldda,
+                                          d_B, lddb );
+                }
                 magma_time = magma_sync_wtime( opts.queue ) - magma_time;
                 magma_perf = gflops / magma_time;
                 
@@ -253,6 +265,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

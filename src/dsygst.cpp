@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
+       @author Mark Gates
 
-       @generated from zhegst.cpp normal z -> d, Fri Sep 11 18:29:31 2015
+       @generated from src/zhegst.cpp normal z -> d, Wed Jan  6 17:59:34 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -20,24 +21,24 @@
     eigenproblem to standard form.
     
     If ITYPE = 1, the problem is A*x = lambda*B*x,
-    and A is overwritten by inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H)
+    and A is overwritten by inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H)
     
     If ITYPE = 2 or 3, the problem is A*B*x = lambda*x or
-    B*A*x = lambda*x, and A is overwritten by U*A*U**H or L**H*A*L.
+    B*A*x = lambda*x, and A is overwritten by U*A*U^H or L^H*A*L.
     
-    B must have been previously factorized as U**H*U or L*L**H by DPOTRF.
+    B must have been previously factorized as U^H*U or L*L^H by DPOTRF.
     
     Arguments
     ---------
     @param[in]
     itype   INTEGER
-            = 1: compute inv(U**H)*A*inv(U) or inv(L)*A*inv(L**H);
-            = 2 or 3: compute U*A*U**H or L**H*A*L.
+            = 1: compute inv(U^H)*A*inv(U) or inv(L)*A*inv(L^H);
+            = 2 or 3: compute U*A*U^H or L^H*A*L.
     
     @param[in]
     uplo    magma_uplo_t
-      -     = MagmaUpper:  Upper triangle of A is stored and B is factored as U**H*U;
-      -     = MagmaLower:  Lower triangle of A is stored and B is factored as L*L**H.
+      -     = MagmaUpper:  Upper triangle of A is stored and B is factored as U^H*U;
+      -     = MagmaLower:  Lower triangle of A is stored and B is factored as L*L^H.
     
     @param[in]
     n       INTEGER
@@ -60,10 +61,12 @@
     lda     INTEGER
             The leading dimension of the array A.  LDA >= max(1,N).
     
-    @param[in]
+    @param[in,out]
     B       DOUBLE_PRECISION array, dimension (LDB,N)
             The triangular factor from the Cholesky factorization of B,
             as returned by DPOTRF.
+            
+            B is modified by the routine but restored on exit (in lapack dsygst/dsygs2).
     
     @param[in]
     ldb     INTEGER
@@ -83,24 +86,26 @@ magma_dsygst(
     double *B, magma_int_t ldb,
     magma_int_t *info)
 {
-#define A(i, j) (A + (j)*lda + (i))
-#define B(i, j) (B + (j)*ldb + (i))
+    #define A(i_, j_) (A + (i_) + (j_)*lda)
+    #define B(i_, j_) (B + (i_) + (j_)*ldb)
+    
+    #define dA(i_, j_) (dwork + (i_) + (j_)*ldda         )
+    #define dB(i_, j_) (dwork + (i_) + (j_)*lddb + n*ldda)
 
-#define dA(i, j) (dw + (j)*ldda + (i))
-#define dB(i, j) (dw + n*ldda + (j)*lddb + (i))
-
+    /* Constants */
+    const double c_one      = MAGMA_D_ONE;
+    const double c_neg_one  = MAGMA_D_NEG_ONE;
+    const double c_half     = MAGMA_D_HALF;
+    const double c_neg_half = MAGMA_D_NEG_HALF;
+    const double             d_one      = 1.0;
+    
+    /* Local variables */
     const char* uplo_ = lapack_uplo_const( uplo );
-    magma_int_t        nb;
-    magma_int_t        k, kb, kb2;
-    double    c_one      = MAGMA_D_ONE;
-    double    c_neg_one  = MAGMA_D_NEG_ONE;
-    double    c_half     = MAGMA_D_HALF;
-    double    c_neg_half = MAGMA_D_NEG_HALF;
-    double   *dw;
-    magma_int_t        ldda = n;
-    magma_int_t        lddb = n;
-    double             d_one = 1.0;
-    int upper = (uplo == MagmaUpper);
+    magma_int_t k, kb, kb2, nb;
+    magma_int_t ldda = n;
+    magma_int_t lddb = n;
+    magmaDouble_ptr dwork;
+    bool upper = (uplo == MagmaUpper);
     
     /* Test the input parameters. */
     *info = 0;
@@ -115,6 +120,7 @@ magma_dsygst(
     } else if (ldb < max(1,n)) {
         *info = -7;
     }
+    
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
         return *info;
@@ -124,251 +130,243 @@ magma_dsygst(
     if ( n == 0 )
         return *info;
     
-    if (MAGMA_SUCCESS != magma_dmalloc( &dw, 2*n*n )) {
+    if (MAGMA_SUCCESS != magma_dmalloc( &dwork, 2*n*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
     
-    nb = magma_get_dsygst_nb(n);
+    nb = magma_get_dsygst_nb( n );
     
-    magma_queue_t stream[2];
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
     
-    magma_dsetmatrix( n, n, A(0, 0), lda, dA(0, 0), ldda );
-    magma_dsetmatrix( n, n, B(0, 0), ldb, dB(0, 0), lddb );
+    magma_dsetmatrix( n, n, A(0, 0), lda, dA(0, 0), ldda, queues[1] );
+    magma_dsetmatrix( n, n, B(0, 0), ldb, dB(0, 0), lddb, queues[1] );
     
     /* Use hybrid blocked code */
-    
     if (itype == 1) {
         if (upper) {
-            /* Compute inv(U')*A*inv(U) */
-            
+            /* Compute inv(U^H)*A*inv(U) */
             for (k = 0; k < n; k += nb) {
-                kb = min(n-k,nb);
-                kb2= min(n-k-nb,nb);
+                kb  = min( n-k,    nb );
+                kb2 = min( n-k-nb, nb );
                 
                 /* Update the upper triangle of A(k:n,k:n) */
-                
-                lapackf77_dsygst( &itype, uplo_, &kb, A(k,k), &lda, B(k,k), &ldb, info);
+                lapackf77_dsygst( &itype, uplo_, &kb, A(k,k), &lda, B(k,k), &ldb, info );
                 
                 magma_dsetmatrix_async( kb, kb,
-                                        A(k, k),  lda,
-                                        dA(k, k), ldda, stream[0] );
+                                         A(k, k), lda,
+                                        dA(k, k), ldda, queues[0] );
                 
                 if (k+kb < n) {
-                    magma_dtrsm(MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
-                                kb, n-k-kb,
-                                c_one, dB(k,k), lddb,
-                                dA(k,k+kb), ldda);
+                    magma_dtrsm( MagmaLeft, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
+                                 kb, n-k-kb,
+                                 c_one, dB(k,k),    lddb,
+                                        dA(k,k+kb), ldda, queues[1] );
                     
-                    magma_queue_sync( stream[0] );
+                    magma_queue_sync( queues[0] );  // finish set dA(k,k)
                     
-                    magma_dsymm(MagmaLeft, MagmaUpper,
-                                kb, n-k-kb,
-                                c_neg_half, dA(k,k), ldda,
-                                dB(k,k+kb), lddb,
-                                c_one, dA(k, k+kb), ldda);
+                    magma_dsymm( MagmaLeft, MagmaUpper,
+                                 kb, n-k-kb,
+                                 c_neg_half, dA(k,k),    ldda,
+                                             dB(k,k+kb), lddb,
+                                 c_one,      dA(k,k+kb), ldda, queues[1] );
                     
-                    magma_dsyr2k(MagmaUpper, MagmaConjTrans,
-                                 n-k-kb, kb,
-                                 c_neg_one, dA(k,k+kb), ldda,
-                                 dB(k,k+kb), lddb,
-                                 d_one, dA(k+kb,k+kb), ldda);
+                    magma_dsyr2k( MagmaUpper, MagmaConjTrans,
+                                  n-k-kb, kb,
+                                  c_neg_one, dA(k,k+kb),    ldda,
+                                             dB(k,k+kb),    lddb,
+                                  d_one,     dA(k+kb,k+kb), ldda, queues[1] );
                     
+                    // Start copying next A block
+                    magma_queue_sync( queues[1] );
                     magma_dgetmatrix_async( kb2, kb2,
                                             dA(k+kb, k+kb), ldda,
-                                            A(k+kb, k+kb),  lda, stream[1] );
+                                             A(k+kb, k+kb),  lda, queues[0] );
                     
-                    magma_dsymm(MagmaLeft, MagmaUpper,
-                                kb, n-k-kb,
-                                c_neg_half, dA(k,k), ldda,
-                                dB(k,k+kb), lddb,
-                                c_one, dA(k, k+kb), ldda);
+                    magma_dsymm( MagmaLeft, MagmaUpper,
+                                 kb, n-k-kb,
+                                 c_neg_half, dA(k,k),    ldda,
+                                             dB(k,k+kb), lddb,
+                                 c_one,      dA(k,k+kb), ldda, queues[1] );
                     
-                    magma_dtrsm(MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                                kb, n-k-kb,
-                                c_one, dB(k+kb,k+kb), lddb,
-                                dA(k,k+kb), ldda);
+                    magma_dtrsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
+                                 kb, n-k-kb,
+                                 c_one, dB(k+kb,k+kb), lddb,
+                                        dA(k,k+kb),    ldda, queues[1] );
                     
-                    magma_queue_sync( stream[1] );
+                    magma_queue_sync( queues[0] );  // finish get A(k+kb,k+kb)
                 }
             }
-            
-            magma_queue_sync( stream[0] );
         }
         else {
-            /* Compute inv(L)*A*inv(L') */
-            
+            /* Compute inv(L)*A*inv(L^H) */
             for (k = 0; k < n; k += nb) {
-                kb= min(n-k,nb);
-                kb2= min(n-k-nb,nb);
+                kb  = min( n-k,    nb );
+                kb2 = min( n-k-nb, nb );
                 
                 /* Update the lower triangle of A(k:n,k:n) */
-                
-                lapackf77_dsygst( &itype, uplo_, &kb, A(k,k), &lda, B(k,k), &ldb, info);
+                lapackf77_dsygst( &itype, uplo_, &kb, A(k,k), &lda, B(k,k), &ldb, info );
                 
                 magma_dsetmatrix_async( kb, kb,
-                                        A(k, k),  lda,
-                                        dA(k, k), ldda, stream[0] );
+                                         A(k, k), lda,
+                                        dA(k, k), ldda, queues[0] );
                 
                 if (k+kb < n) {
-                    magma_dtrsm(MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
-                                n-k-kb, kb,
-                                c_one, dB(k,k), lddb,
-                                dA(k+kb,k), ldda);
-                    
-                    magma_queue_sync( stream[0] );
-                    
-                    magma_dsymm(MagmaRight, MagmaLower,
-                                n-k-kb, kb,
-                                c_neg_half, dA(k,k), ldda,
-                                dB(k+kb,k), lddb,
-                                c_one, dA(k+kb, k), ldda);
-                    
-                    magma_dsyr2k(MagmaLower, MagmaNoTrans,
+                    magma_dtrsm( MagmaRight, MagmaLower, MagmaConjTrans, MagmaNonUnit,
                                  n-k-kb, kb,
-                                 c_neg_one, dA(k+kb,k), ldda,
-                                 dB(k+kb,k), lddb,
-                                 d_one, dA(k+kb,k+kb), ldda);
+                                 c_one, dB(k,k),    lddb,
+                                        dA(k+kb,k), ldda, queues[1] );
                     
+                    magma_queue_sync( queues[0] );  // finish set dA(k,k)
+                    
+                    magma_dsymm( MagmaRight, MagmaLower,
+                                 n-k-kb, kb,
+                                 c_neg_half, dA(k,k),     ldda,
+                                             dB(k+kb,k),  lddb,
+                                 c_one,      dA(k+kb, k), ldda, queues[1] );
+                    
+                    magma_dsyr2k( MagmaLower, MagmaNoTrans,
+                                  n-k-kb, kb,
+                                  c_neg_one, dA(k+kb,k),    ldda,
+                                             dB(k+kb,k),    lddb,
+                                  d_one,     dA(k+kb,k+kb), ldda, queues[1] );
+                    
+                    // Start copying next A block
+                    magma_queue_sync( queues[1] );
                     magma_dgetmatrix_async( kb2, kb2,
                                             dA(k+kb, k+kb), ldda,
-                                            A(k+kb, k+kb),  lda, stream[1] );
+                                             A(k+kb, k+kb), lda, queues[0] );
                     
-                    magma_dsymm(MagmaRight, MagmaLower,
-                                n-k-kb, kb,
-                                c_neg_half, dA(k,k), ldda,
-                                dB(k+kb,k), lddb,
-                                c_one, dA(k+kb, k), ldda);
+                    magma_dsymm( MagmaRight, MagmaLower,
+                                 n-k-kb, kb,
+                                 c_neg_half, dA(k,k),     ldda,
+                                             dB(k+kb,k),  lddb,
+                                 c_one,      dA(k+kb, k), ldda, queues[1] );
                     
-                    magma_dtrsm(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaNonUnit,
-                                n-k-kb, kb,
-                                c_one, dB(k+kb,k+kb), lddb,
-                                dA(k+kb,k), ldda);
+                    magma_dtrsm( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaNonUnit,
+                                 n-k-kb, kb,
+                                 c_one, dB(k+kb,k+kb), lddb,
+                                        dA(k+kb,k),    ldda, queues[1] );
+                    
+                    magma_queue_sync( queues[0] );  // finish get A(k+kb,k+kb)
                 }
-                
-                magma_queue_sync( stream[1] );
             }
         }
-        
-        magma_queue_sync( stream[0] );
     }
-    else {
+    else {  // itype == 2 or 3
         if (upper) {
-            /* Compute U*A*U' */
+            /* Compute U*A*U^H */
             for (k = 0; k < n; k += nb) {
-                kb= min(n-k,nb);
+                kb = min( n-k, nb );
                 
                 magma_dgetmatrix_async( kb, kb,
                                         dA(k, k), ldda,
-                                        A(k, k),  lda, stream[0] );
+                                         A(k, k),  lda, queues[0] );
                 
                 /* Update the upper triangle of A(1:k+kb-1,1:k+kb-1) */
                 if (k > 0) {
-                    magma_dtrmm(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                                k, kb,
-                                c_one, dB(0,0), lddb,
-                                dA(0,k), ldda);
-                    
-                    magma_dsymm(MagmaRight, MagmaUpper,
-                                k, kb,
-                                c_half, dA(k,k), ldda,
-                                dB(0,k), lddb,
-                                c_one, dA(0, k), ldda);
-                    
-                    magma_queue_sync( stream[1] );
-                    
-                    magma_dsyr2k(MagmaUpper, MagmaNoTrans,
+                    magma_dtrmm( MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                                  k, kb,
-                                 c_one, dA(0,k), ldda,
-                                 dB(0,k), lddb,
-                                 d_one, dA(0,0), ldda);
+                                 c_one, dB(0,0), lddb,
+                                        dA(0,k), ldda, queues[1] );
                     
-                    magma_dsymm(MagmaRight, MagmaUpper,
-                                k, kb,
-                                c_half, dA(k,k), ldda,
-                                dB(0,k), lddb,
-                                c_one, dA(0, k), ldda);
+                    magma_dsymm( MagmaRight, MagmaUpper,
+                                 k, kb,
+                                 c_half, dA(k,k), ldda,
+                                         dB(0,k), lddb,
+                                 c_one,  dA(0,k), ldda, queues[1] );
                     
-                    magma_dtrmm(MagmaRight, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
-                                k, kb,
-                                c_one, dB(k,k), lddb,
-                                dA(0,k), ldda);
+                    magma_dsyr2k( MagmaUpper, MagmaNoTrans,
+                                  k, kb,
+                                  c_one, dA(0,k), ldda,
+                                         dB(0,k), lddb,
+                                  d_one, dA(0,0), ldda, queues[1] );
+                    
+                    magma_dsymm( MagmaRight, MagmaUpper,
+                                 k, kb,
+                                 c_half, dA(k,k), ldda,
+                                         dB(0,k), lddb,
+                                 c_one,  dA(0,k), ldda, queues[1] );
+                    
+                    magma_dtrmm( MagmaRight, MagmaUpper, MagmaConjTrans, MagmaNonUnit,
+                                 k, kb,
+                                 c_one, dB(k,k), lddb,
+                                        dA(0,k), ldda, queues[1] );
                 }
                 
-                magma_queue_sync( stream[0] );
+                magma_queue_sync( queues[0] );  // finish get A(k,k)
                 
-                lapackf77_dsygst( &itype, uplo_, &kb, A(k, k), &lda, B(k, k), &ldb, info);
-                
+                lapackf77_dsygst( &itype, uplo_, &kb, A(k, k), &lda, B(k, k), &ldb, info );
+
+                // this could be done on a 3rd queue
                 magma_dsetmatrix_async( kb, kb,
-                                        A(k, k),  lda,
-                                        dA(k, k), ldda, stream[1] );
+                                         A(k, k), lda,
+                                        dA(k, k), ldda, queues[1] );
             }
-            
-            magma_queue_sync( stream[1] );
         }
         else {
-            /* Compute L'*A*L */
+            /* Compute L^H*A*L */
             for (k = 0; k < n; k += nb) {
-                kb= min(n-k,nb);
+                kb = min( n-k, nb );
                 
                 magma_dgetmatrix_async( kb, kb,
                                         dA(k, k), ldda,
-                                        A(k, k),  lda, stream[0] );
+                                         A(k, k),  lda, queues[0] );
                 
                 /* Update the lower triangle of A(1:k+kb-1,1:k+kb-1) */
                 if (k > 0) {
-                    magma_dtrmm(MagmaRight, MagmaLower, MagmaNoTrans, MagmaNonUnit,
-                                kb, k,
-                                c_one, dB(0,0), lddb,
-                                dA(k,0), ldda);
+                    magma_dtrmm( MagmaRight, MagmaLower, MagmaNoTrans, MagmaNonUnit,
+                                 kb, k,
+                                 c_one, dB(0,0), lddb,
+                                        dA(k,0), ldda, queues[1] );
                     
-                    magma_dsymm(MagmaLeft, MagmaLower,
-                                kb, k,
-                                c_half, dA(k,k), ldda,
-                                dB(k,0), lddb,
-                                c_one, dA(k, 0), ldda);
+                    magma_dsymm( MagmaLeft, MagmaLower,
+                                 kb, k,
+                                 c_half, dA(k,k),  ldda,
+                                         dB(k,0),  lddb,
+                                 c_one,  dA(k, 0), ldda, queues[1] );
                     
-                    magma_queue_sync( stream[1] );
+                    magma_dsyr2k( MagmaLower, MagmaConjTrans,
+                                  k, kb,
+                                  c_one, dA(k,0), ldda,
+                                         dB(k,0), lddb,
+                                  d_one, dA(0,0), ldda, queues[1] );
                     
-                    magma_dsyr2k(MagmaLower, MagmaConjTrans,
-                                 k, kb,
-                                 c_one, dA(k,0), ldda,
-                                 dB(k,0), lddb,
-                                 d_one, dA(0,0), ldda);
+                    magma_dsymm( MagmaLeft, MagmaLower,
+                                 kb, k,
+                                 c_half, dA(k,k),  ldda,
+                                         dB(k,0),  lddb,
+                                 c_one,  dA(k, 0), ldda, queues[1] );
                     
-                    magma_dsymm(MagmaLeft, MagmaLower,
-                                kb, k,
-                                c_half, dA(k,k), ldda,
-                                dB(k,0), lddb,
-                                c_one, dA(k, 0), ldda);
-                    
-                    magma_dtrmm(MagmaLeft, MagmaLower, MagmaConjTrans, MagmaNonUnit,
-                                kb, k,
-                                c_one, dB(k,k), lddb,
-                                dA(k,0), ldda);
+                    magma_dtrmm( MagmaLeft, MagmaLower, MagmaConjTrans, MagmaNonUnit,
+                                 kb, k,
+                                 c_one, dB(k,k), lddb,
+                                        dA(k,0), ldda, queues[1] );
                 }
                 
-                magma_queue_sync( stream[0] );
+                magma_queue_sync( queues[0] );  // finish get A(k,k)
                 
-                lapackf77_dsygst( &itype, uplo_, &kb, A(k,k), &lda, B(k,k), &ldb, info);
-                
+                lapackf77_dsygst( &itype, uplo_, &kb, A(k,k), &lda, B(k,k), &ldb, info );
+
+                // this could be done on a 3rd queue
                 magma_dsetmatrix_async( kb, kb,
-                                        A(k, k),  lda,
-                                        dA(k, k), ldda, stream[1] );
+                                         A(k, k), lda,
+                                        dA(k, k), ldda, queues[1] );
             }
-            
-            magma_queue_sync( stream[1] );
         }
     }
     
-    magma_dgetmatrix( n, n, dA(0, 0), ldda, A(0, 0), lda );
+    magma_queue_sync( queues[0] );  // finish set dA(k,k) for itype 1
+    magma_dgetmatrix( n, n, dA(0, 0), ldda, A(0, 0), lda, queues[1] );
     
-    magma_queue_destroy( stream[0] );
-    magma_queue_destroy( stream[1] );
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
     
-    magma_free( dw );
+    magma_free( dwork );
     
     return *info;
 } /* magma_dsygst_gpu */

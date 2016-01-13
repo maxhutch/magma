@@ -1,25 +1,23 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from dgeev_m.cpp normal d -> s, Fri Sep 11 18:29:32 2015
+       @generated from src/dgeev_m.cpp normal d -> s, Wed Jan  6 17:59:36 2016
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
-#define PRECISION_s
 #define REAL
 
 /*
  * Version1 - LAPACK              (lapack_zgehrd and lapack_zunghr)
  * Version2 - MAGMA without dT    (magma_zgehrd2 and lapack_zunghr)
  * Version3 - MAGMA with dT       (magma_zgehrd  and magma_zunghr)
- * Version4 - Multi-GPU magma_zgehrd_m with T on CPU, copied to dT, single-GPU magma_zunghr
  * Version5 - Multi-GPU magma_zgehrd_m with T on CPU, multi-GPU magma_zunghr_m
  */
 #define Version5
@@ -217,17 +215,16 @@ magma_sgeev_m(
         return *info;
     }
    
-    #if defined(Version3) || defined(Version4) || defined(Version5)
+    #if defined(Version3)
     float *dT;
     if (MAGMA_SUCCESS != magma_smalloc( &dT, nb*n )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
     #endif
-    #if defined(Version4) || defined(Version5)
+    #if defined(Version5)
     float *T;
     if (MAGMA_SUCCESS != magma_smalloc_cpu( &T, nb*n )) {
-        magma_free( dT );
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
     }
@@ -283,11 +280,10 @@ magma_sgeev_m(
         // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored,
         magma_sgehrd( n, ilo, ihi, A, lda,
                       &work[itau], &work[iwrk], liwrk, dT, &ierr );
-    #elif defined(Version4) || defined(Version5)
+    #elif defined(Version5)
         // Version 4 - Multi-GPU, T on host
         magma_sgehrd_m( n, ilo, ihi, A, lda,
                         &work[itau], &work[iwrk], liwrk, T, &ierr );
-        magma_ssetmatrix( nb, n, T, nb, dT, nb );
     #endif
     time_sum += timer_stop( time_gehrd );
     flop_sum += flops_stop( flop_gehrd );
@@ -307,7 +303,7 @@ magma_sgeev_m(
             // Version 1 & 2 - LAPACK
             lapackf77_sorghr( &n, &ilo, &ihi, VL, &ldvl, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
-        #elif defined(Version3) || defined(Version4)
+        #elif defined(Version3)
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_sorghr( n, ilo, ihi, VL, ldvl, &work[itau], dT, nb, &ierr );
         #elif defined(Version5)
@@ -351,7 +347,7 @@ magma_sgeev_m(
             // Version 1 & 2 - LAPACK
             lapackf77_sorghr( &n, &ilo, &ihi, VR, &ldvr, &work[itau],
                               &work[iwrk], &liwrk, &ierr );
-        #elif defined(Version3) || defined(Version4)
+        #elif defined(Version3)
             // Version 3 - LAPACK consistent MAGMA HRD + T matrices stored
             magma_sorghr( n, ilo, ihi, VR, ldvr, &work[itau], dT, nb, &ierr );
         #elif defined(Version5)
@@ -502,10 +498,10 @@ CLEANUP:
         }
     }
 
-    #if defined(Version3) || defined(Version4) || defined(Version5)
+    #if defined(Version3)
     magma_free( dT );
     #endif
-    #if defined(Version4) || defined(Version5)
+    #if defined(Version5)
     magma_free_cpu( T );
     #endif
     

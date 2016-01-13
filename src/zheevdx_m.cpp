@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -12,10 +12,9 @@
        @precisions normal z -> c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
-#define PRECISION_z
 #define COMPLEX
 
 /**
@@ -317,9 +316,9 @@ magma_zheevdx_m(
         lapackf77_zheevd(jobz_, uplo_,
                          &n, A, &lda,
                          w, work, &lwork,
-#if defined(PRECISION_z) || defined(PRECISION_c)
+                         #ifdef COMPLEX
                          rwork, &lrwork,
-#endif
+                         #endif
                          iwork, &liwork, info);
         return *info;
     }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -120,10 +120,10 @@ magmablas_zgeadd_q(
     if ( m == 0 || n == 0 )
         return;
     
-    dim3 threads( BLK_X );
+    dim3 threads( BLK_X, 1 );
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     
-    zgeadd_full<<< grid, threads, 0, queue >>>
+    zgeadd_full<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, alpha, dA, ldda, dB, lddb );
 }
 
@@ -139,5 +139,5 @@ magmablas_zgeadd(
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_ptr       dB, magma_int_t lddb )
 {
-    magmablas_zgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magma_stream );
+    magmablas_zgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magmablasGetQueue() );
 }

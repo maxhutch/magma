@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -60,7 +60,7 @@ int main( int argc, char** argv)
             lda    = M;
             ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
             n2     = lda*N;
-            nb     = magma_get_zgeqrf_nb(M);
+            nb     = magma_get_zgeqrf_nb( M, N );
             gflops = FLOPS_ZGELQF( M, N ) / 1e9;
             
             // query for workspace size
@@ -129,7 +129,7 @@ int main( int argc, char** argv)
                 // error = || I - Q*Q^H || / N
                 lapackf77_zlaset( "Upper", &min_mn, &min_mn, &c_zero, &c_one, L, &ldl );
                 blasf77_zherk( "Upper", "NoTrans", &min_mn, &N, &d_neg_one, Q, &ldq, &d_one, L, &ldl );
-                error2 = lapackf77_zlanhe( "1", "Upper", &min_mn, L, &ldl, work );
+                error2 = safe_lapackf77_zlanhe( "1", "Upper", &min_mn, L, &ldl, work );
                 if ( N > 0 )
                     error2 /= N;
                 
@@ -164,6 +164,7 @@ int main( int argc, char** argv)
             printf( "   %7.2f (%7.2f)   ", gpu_perf, gpu_time );
             if ( opts.check ) {
                 bool okay = (error < tol && error2 < tol);
+                printf( "error %.4g, error2 %.4g, tol %.4g, okay %d\n", error, error2, tol, okay );
                 status += ! okay;
                 printf( "%11.2e   %11.2e   %s\n", error, error2, (okay ? "ok" : "failed") );
             }
@@ -185,6 +186,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

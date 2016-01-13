@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
-       @generated from testing_zlag2c.cpp mixed zc -> ds, Fri Sep 11 18:29:35 2015
+       @generated from testing/testing_zlag2c.cpp mixed zc -> ds, Wed Jan  6 17:59:45 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -171,6 +171,7 @@ int main( int argc, char** argv )
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

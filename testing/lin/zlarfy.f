@@ -68,7 +68,8 @@
      $                   HALF = ( 0.5D+0, 0.0D+0 ) )
 *     ..
 *     .. Local Scalars ..
-      COMPLEX*16         ALPHA
+      COMPLEX*16         ALPHA, tmp
+      integer            i, ix, iy
 *     ..
 *     .. External Subroutines ..
       EXTERNAL           ZAXPY, ZHEMV, ZHER2
@@ -86,7 +87,17 @@
 *
       CALL ZHEMV( UPLO, N, ONE, C, LDC, V, INCV, ZERO, WORK, 1 )
 *
-      ALPHA = -HALF*TAU*ZDOTC( N, WORK, 1, V, INCV )
+**    zdotc crashes on some systems (MKL, MacOS); just inline it. -mgates
+      tmp = 0
+      ix = 1
+      iy = 1
+      do i = 1, n
+         tmp = tmp + conjg(work(ix)) * v(iy)
+         ix = ix + 1
+         iy = iy + incv
+      end do
+      ALPHA = -HALF*TAU*tmp
+**    ALPHA = -HALF*TAU*ZDOTC( N, WORK, 1, V, INCV )
       CALL ZAXPY( N, ALPHA, V, INCV, WORK, 1 )
 *
 *     C := C - v * w' - w * v'

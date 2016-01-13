@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing_zhegvdx.cpp normal z -> c, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zhegvdx.cpp normal z -> c, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -26,7 +26,6 @@
 
 #define COMPLEX
 
-
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing chegvdx
 */
@@ -34,22 +33,23 @@ int main( int argc, char** argv)
 {
     TESTING_INIT();
 
-    real_Double_t   gpu_time /*cpu_time*/;
-    magmaFloatComplex *h_A, *h_R, *h_B, *h_S, *h_work;
-    float *w1, *w2, vl=0, vu=0;
+    /* Constants */
+    const magmaFloatComplex c_zero    = MAGMA_C_ZERO;
+    const magmaFloatComplex c_one     = MAGMA_C_ONE;
+    const magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
+    const magma_int_t ione = 1;
+    
+    /* Local variables */
+    real_Double_t   gpu_time;
+    magmaFloatComplex *h_A, *h_R, *h_B, *h_S, *h_Z, *h_work, aux_work[1];
+    float *w1, *w2, vl=0, vu=0, abstol;
     float result[2] = {0};
-    magma_int_t *iwork;
-    magma_int_t N, n2, info, il, iu, m1, nb, lwork, liwork;
-    magmaFloatComplex c_zero    = MAGMA_C_ZERO;
-    magmaFloatComplex c_one     = MAGMA_C_ONE;
-    magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
+    magma_int_t *iwork, *isuppz, *ifail, aux_iwork[1];
+    magma_int_t N, n2, info, il, iu, m1, lwork, liwork, lda;
     #ifdef COMPLEX
-    float *rwork;
+    float *rwork, aux_rwork[1];
     magma_int_t lrwork;
     #endif
-    //float d_one         =  1.;
-    //float d_ten         = 10.;
-    magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
 
@@ -57,42 +57,109 @@ int main( int argc, char** argv)
     opts.parse_opts( argc, argv );
 
     float tol    = opts.tolerance * lapackf77_slamch("E");
-    //float tolulp = opts.tolerance * lapackf77_slamch("P");
     
     // TODO: how to check NoVec? This doesn't have an equivalent call to LAPACK.
     if ( opts.check && opts.jobz == MagmaNoVec ) {
         fprintf( stderr, "WARNING: cannot currently check results when not computing vectors (option -JN).\n" );
     }
     
-    printf("%% itype = %d, jobz = %s, uplo = %s, check = %d, fraction = %6.4f\n",
+    magma_range_t range = MagmaRangeAll;
+    if (opts.fraction != 1)
+        range = MagmaRangeI;
+    
+    #ifdef REAL
+    if (opts.version == 2 || opts.version == 3) {
+        printf("%% magma_chegvr and magma_chegvx are not available for real precisions (single, float).\n");
+        return status;
+    }
+    #endif
+    
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% itype = %d, jobz = %s, uplo = %s, fraction = %6.4f, ngpu = %d\n",
            (int) opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
-           (int) opts.check, opts.fraction);
+           opts.fraction, (int) abs_ngpu );
 
-    printf("%%   N     M   GPU Time (sec)\n");
-    printf("%%===========================\n");
+    if (opts.version == 1) {
+        printf("%%   N     M   GPU Time (sec)   |AZ-BZD|\n");
+    }                                                   
+    else if ( opts.version == 2) {                      
+        printf("%%   N     M   GPU Time (sec)   |ABZ-ZD|\n");
+    }                                                   
+    else if ( opts.version == 3) {                      
+        printf("%%   N     M   GPU Time (sec)   |BAZ-ZD|\n");
+    }                                     
+        printf("%%======================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
-            n2     = N*N;
-            nb     = magma_get_chetrd_nb(N);
-            #ifdef COMPLEX
-                lwork  = max( N + N*nb, 2*N + N*N );
-                lrwork = 1 + 5*N +2*N*N;
-            #else
-                lwork  = max( 2*N + N*nb, 1 + 6*N + 2*N*N );
-            #endif
-            liwork = 3 + 5*N;
+            lda    = N;
+            n2     = lda*N;
 
-            if ( opts.fraction == 0 ) {
-                il = N / 10;
-                iu = N / 5+il;
+            if (opts.fraction == 0) {
+                il = max( 1, magma_int_t(0.1*N) );
+                iu = max( 1, magma_int_t(0.3*N) );
             }
             else {
                 il = 1;
-                iu = (int) (opts.fraction*N);
-                if (iu < 1) iu = 1;
+                iu = max( 1, magma_int_t(opts.fraction*N) );
             }
-
+            abstol = 0;  // auto in chegvr
+            MAGMA_UNUSED( abstol );  // unused in [sd] precisions
+            
+            // query for workspace sizes
+            if ( opts.version == 1 ) {
+                magma_chegvdx( opts.itype, opts.jobz, range, opts.uplo,
+                               N, NULL, lda, NULL, lda,    // A, B
+                               vl, vu, il, iu, &m1, NULL,  // w
+                               aux_work,  -1,
+                               #ifdef COMPLEX
+                               aux_rwork, -1,
+                               #endif
+                               aux_iwork, -1,
+                               &info );
+            }
+            else if ( opts.version == 2 ) {
+                #ifdef COMPLEX
+                magma_chegvr( opts.itype, opts.jobz, range, opts.uplo,
+                              N, NULL, lda, NULL, lda,  // A, B
+                              vl, vu, il, iu, abstol,
+                              &m1, NULL,                // w
+                              NULL, lda, NULL,          // Z, isuppz
+                              aux_work,  -1,
+                              #ifdef COMPLEX
+                              aux_rwork, -1,
+                              #endif
+                              aux_iwork, -1,
+                              &info );
+                #endif
+            }
+            else if ( opts.version == 3 ) {
+                #ifdef COMPLEX
+                magma_chegvx( opts.itype, opts.jobz, range, opts.uplo,
+                              N, NULL, lda, NULL, lda,  // A, B
+                              vl, vu, il, iu, abstol,
+                              &m1, NULL,         // w
+                              NULL, lda,         // Z
+                              aux_work,  -1,
+                              #ifdef COMPLEX
+                              aux_rwork,
+                              #endif
+                              aux_iwork,
+                              NULL,              // ifail
+                              &info );
+                // cheevx doesn't query rwork, iwork; set them for consistency
+                aux_rwork[0] = float(7*N);
+                aux_iwork[0] = float(5*N);
+                #endif
+            }
+            lwork  = (magma_int_t) MAGMA_C_REAL( aux_work[0] );
+            #ifdef COMPLEX
+            lrwork = (magma_int_t) aux_rwork[0];
+            #endif
+            liwork = aux_iwork[0];
+            
             TESTING_MALLOC_CPU( h_A,    magmaFloatComplex, n2     );
             TESTING_MALLOC_CPU( h_B,    magmaFloatComplex, n2     );
             TESTING_MALLOC_CPU( w1,     float,             N      );
@@ -101,10 +168,19 @@ int main( int argc, char** argv)
             
             TESTING_MALLOC_PIN( h_R,    magmaFloatComplex, n2     );
             TESTING_MALLOC_PIN( h_S,    magmaFloatComplex, n2     );
-            TESTING_MALLOC_PIN( h_work, magmaFloatComplex, lwork  );
+            TESTING_MALLOC_PIN( h_work, magmaFloatComplex, max( lwork, N*N ));  // check needs N*N
             #ifdef COMPLEX
             TESTING_MALLOC_PIN( rwork, float, lrwork);
             #endif
+            
+            if (opts.version == 2) {
+                TESTING_MALLOC_CPU( h_Z,    magmaFloatComplex, N*lda      );
+                TESTING_MALLOC_CPU( isuppz, magma_int_t,        2*max(1,N) );
+            }
+            if (opts.version == 3) {
+                TESTING_MALLOC_CPU( h_Z,    magmaFloatComplex, N*lda      );
+                TESTING_MALLOC_CPU( ifail,  magma_int_t,        N          );
+            }
             
             /* Initialize the matrix */
             lapackf77_clarnv( &ione, ISEED, &n2, h_A );
@@ -112,45 +188,70 @@ int main( int argc, char** argv)
             magma_cmake_hpd( N, h_B, N );
             magma_cmake_hermitian( N, h_A, N );
 
-            // ==================================================================
-            // Warmup using MAGMA
-            // ==================================================================
-            if ( opts.warmup ) {
-                lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &N, h_R, &N );
-                lapackf77_clacpy( MagmaFullStr, &N, &N, h_B, &N, h_S, &N );
-                
-                magma_chegvdx( opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
-                               N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
-                               h_work, lwork,
-                               #ifdef COMPLEX
-                               rwork, lrwork,
-                               #endif
-                               iwork, liwork,
-                               &info );
-                if (info != 0)
-                    printf("magma_chegvdx returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
-            }
+            lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
+            lapackf77_clacpy( MagmaFullStr, &N, &N, h_B, &lda, h_S, &lda );
+            
             /* ====================================================================
                Performs operation using MAGMA
-               =================================================================== */
-            lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &N, h_R, &N );
-            lapackf77_clacpy( MagmaFullStr, &N, &N, h_B, &N, h_S, &N );
-
+               =================================================================== */                
             gpu_time = magma_wtime();
-            magma_chegvdx( opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
-                           N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
-                           h_work, lwork,
-                           #ifdef COMPLEX
-                           rwork, lrwork,
-                           #endif
-                           iwork, liwork,
-                           &info );
+            if (opts.version == 1) {
+                if (opts.ngpu == 1) {
+                    magma_chegvdx( opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
+                                   N, h_R, lda, h_S, lda, vl, vu, il, iu, &m1, w1,
+                                   h_work, lwork,
+                                   #ifdef COMPLEX
+                                   rwork, lrwork,
+                                   #endif
+                                   iwork, liwork,
+                                   &info );
+                }
+                else {
+                    magma_chegvdx_m( abs_ngpu, opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
+                                     N, h_R, lda, h_S, lda, vl, vu, il, iu, &m1, w1,
+                                     h_work, lwork,
+                                     #ifdef COMPLEX
+                                     rwork, lrwork,
+                                     #endif
+                                     iwork, liwork,
+                                     &info );
+                }
+            }
+            else if (opts.version == 2) {
+                #ifdef COMPLEX
+                magma_chegvr( opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
+                              N, h_R, lda, h_S, lda, vl, vu, il, iu, abstol, &m1, w1,
+                              h_Z, lda, isuppz,
+                              h_work, lwork,
+                              #ifdef COMPLEX
+                              rwork, lrwork,
+                              #endif
+                              iwork, liwork,
+                              &info );
+                lapackf77_clacpy( "Full", &N, &N, h_Z, &lda, h_R, &lda );
+                #endif
+            }
+            else if (opts.version == 3) {
+                #ifdef COMPLEX
+                magma_chegvx( opts.itype, opts.jobz, MagmaRangeI, opts.uplo,
+                              N, h_R, lda, h_S, lda, vl, vu, il, iu, abstol, &m1, w1,
+                              h_Z, lda,
+                              h_work, lwork,
+                              #ifdef COMPLEX
+                              rwork, /*lrwork,*/
+                              #endif
+                              iwork, /*liwork,*/
+                              ifail,
+                              &info );
+                lapackf77_clacpy( "Full", &N, &N, h_Z, &lda, h_R, &lda );
+                #endif
+            }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0)
                 printf("magma_chegvdx returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
+            bool okay = true;
             if ( opts.check && opts.jobz != MagmaNoVec ) {
                 /* =====================================================================
                    Check the results following the LAPACK's [zc]hegvdx routine.
@@ -166,41 +267,41 @@ int main( int argc, char** argv)
                 #endif
                 
                 result[0] = 1.;
-                result[0] /= lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_A, &N, rwork);
-                result[0] /= lapackf77_clange("1", &N, &m1, h_R, &N, rwork);
+                result[0] /= safe_lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_A, &lda, rwork);
+                result[0] /= lapackf77_clange("1", &N, &m1, h_R, &lda, rwork);
                 
                 if (opts.itype == 1) {
-                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &N, h_R, &N, &c_zero, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
                     for (int i=0; i < m1; ++i)
                         blasf77_csscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_neg_one, h_B, &N, h_R, &N, &c_one, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_neg_one, h_B, &lda, h_R, &lda, &c_one, h_work, &N);
                     result[0] *= lapackf77_clange("1", &N, &m1, h_work, &N, rwork)/N;
                 }
                 else if (opts.itype == 2) {
-                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_B, &N, h_R, &N, &c_zero, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_B, &lda, h_R, &lda, &c_zero, h_work, &N);
                     for (int i=0; i < m1; ++i)
                         blasf77_csscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &N, h_work, &N, &c_neg_one, h_R, &N);
-                    result[0] *= lapackf77_clange("1", &N, &m1, h_R, &N, rwork)/N;
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &lda, h_work, &N, &c_neg_one, h_R, &lda);
+                    result[0] *= lapackf77_clange("1", &N, &m1, h_R, &lda, rwork)/N;
                 }
                 else if (opts.itype == 3) {
-                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &N, h_R, &N, &c_zero, h_work, &N);
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_A, &lda, h_R, &lda, &c_zero, h_work, &N);
                     for (int i=0; i < m1; ++i)
                         blasf77_csscal(&N, &w1[i], &h_R[i*N], &ione);
-                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_B, &N, h_work, &N, &c_neg_one, h_R, &N);
-                    result[0] *= lapackf77_clange("1", &N, &m1, h_R, &N, rwork)/N;
+                    blasf77_chemm("L", lapack_uplo_const(opts.uplo), &N, &m1, &c_one, h_B, &lda, h_work, &N, &c_neg_one, h_R, &lda);
+                    result[0] *= lapackf77_clange("1", &N, &m1, h_R, &lda, rwork)/N;
                 }
                 
                 // Disable eigenvalue check which calls routine again --
                 // it obscures whether error occurs in first call above or in this call.
                 // TODO: add comparison to LAPACK, as in testing_chegvd.cpp?
                 //
-                //lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &N, h_R, &N );
-                //lapackf77_clacpy( MagmaFullStr, &N, &N, h_B, &N, h_S, &N );
+                //lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
+                //lapackf77_clacpy( MagmaFullStr, &N, &N, h_B, &lda, h_S, &lda );
                 //
                 //magma_int_t m2;
                 //magma_chegvdx( opts.itype, MagmaNoVec, MagmaRangeI, opts.uplo,
-                //               N, h_R, N, h_S, N, vl, vu, il, iu, &m2, w2,
+                //               N, h_R, lda, h_S, lda, vl, vu, il, iu, &m2, w2,
                 //               h_work, lwork,
                 //               #ifdef COMPLEX
                 //               rwork, lrwork,
@@ -223,22 +324,19 @@ int main( int argc, char** argv)
             /* =====================================================================
                Print execution time
                =================================================================== */
-            printf("%5d %5d   %7.2f\n",
+            printf("%5d %5d   %9.4f     ",
                    (int) N, (int) m1, gpu_time);
+            
+            // print error checks
             if ( opts.check && opts.jobz != MagmaNoVec ) {
-                printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if (opts.itype == 1) {
-                    printf("    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
-                }
-                else if (opts.itype == 2) {
-                    printf("    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
-                }
-                else if (opts.itype == 3) {
-                    printf("    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed"));
-                }
-                //printf(    "    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e   %s\n\n", result[1], (result[1] < tolulp ? "ok" : "failed"));
-                status += ! (result[0] < tol);  // && result[1] < tolulp);
+                okay = okay && (result[0] < tol);
+                printf("   %8.2e", result[0] );
             }
+            else {
+                printf("     ---   ");
+            }
+            printf("   %s\n", (okay ? "ok" : "failed"));
+            status += ! okay;
             
             TESTING_FREE_CPU( h_A );
             TESTING_FREE_CPU( h_B );
@@ -252,6 +350,16 @@ int main( int argc, char** argv)
             #ifdef COMPLEX
             TESTING_FREE_PIN( rwork );
             #endif
+            
+            if ( opts.version == 2 ) {
+                TESTING_FREE_CPU( h_Z    );
+                TESTING_FREE_CPU( isuppz );
+            }
+            if ( opts.version == 3 ) {
+                TESTING_FREE_CPU( h_Z    );
+                TESTING_FREE_CPU( ifail  );
+            }
+            
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -259,6 +367,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

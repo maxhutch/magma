@@ -1,15 +1,15 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Mark gates
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing_zgesv_batched.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+   @generated from testing/testing_zgesv_batched.cpp normal z -> s, Wed Jan  6 17:59:51 2016
  */
 // includes, system
 #include <stdio.h>
@@ -100,9 +100,9 @@ int main(int argc, char **argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            sset_pointer(dA_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue);
-            sset_pointer(dB_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, opts.queue);
-            set_ipointer(dipiv_array, dipiv, 1, 0, 0, N, batchCount, opts.queue);
+            magma_sset_pointer( dA_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_sset_pointer( dB_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, opts.queue );
+            magma_iset_pointer( dipiv_array, dipiv, 1, 0, 0, N, batchCount, opts.queue );
 
             gpu_time = magma_sync_wtime( opts.queue );
             //magma_sgesv_gpu( N, nrhs, d_A, ldda, ipiv, d_B, lddb, &info );
@@ -209,6 +209,7 @@ int main(int argc, char **argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

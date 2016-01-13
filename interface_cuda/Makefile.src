@@ -1,21 +1,31 @@
-# Automatically generated from Makefile ZHDR and ZSRC
-CHDR = \
-	
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 2.0.0-beta2) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      @date January 2016
+#//////////////////////////////////////////////////////////////////////////////
 
-DHDR = \
-	
+# push previous directory
+dir_stack := $(dir_stack) $(cdir)
+cdir      := interface_cuda
+# ----------------------------------------------------------------------
 
-SHDR = \
-	
 
-CSRC = \
-	blas_c.cpp \
-	cset_get.cpp
+# alphabetic order by base name (ignoring precision)
+libmagma_zsrc += \
+	$(cdir)/blas_z_v1.cpp	\
+	$(cdir)/blas_z_v2.cpp	\
 
-DSRC = \
-	blas_d.cpp \
-	dset_get.cpp
+libmagma_src += \
+	$(cdir)/alloc.cpp	\
+	$(cdir)/error.cpp	\
+	$(cdir)/interface.cpp	\
+	$(cdir)/copy_v1.cpp	\
+	$(cdir)/copy_v2.cpp	\
 
-SSRC = \
-	blas_s.cpp \
-	sset_get.cpp
+
+# ----------------------------------------------------------------------
+# pop first directory
+cdir      := $(firstword $(dir_stack))
+dir_stack := $(wordlist 2, $(words $(dir_stack)), $(dir_stack))

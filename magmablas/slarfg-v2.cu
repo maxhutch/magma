@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlarfg-v2.cu normal z -> s, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlarfg-v2.cu normal z -> s, Wed Jan  6 17:59:37 2016
 
 */
 #include "common_magma.h"
@@ -97,21 +97,35 @@ void magma_slarfg_gpu_kernel( int n, float* dx0, float* dx,
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
-magma_slarfg_gpu(
+magma_slarfg_gpu_q(
     magma_int_t n,
     magmaFloat_ptr dx0,
     magmaFloat_ptr dx,
     magmaFloat_ptr dtau,
     magmaFloat_ptr        dxnorm,
-    magmaFloat_ptr dAkk)
+    magmaFloat_ptr dAkk,
+    magma_queue_t queue )
 {
     dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
     dim3 threads( BLOCK_SIZE );
 
     /* recomputing the norm */
     //magmablas_snrm2_cols(n, 1, dx0, n, dxnorm);
-    magmablas_snrm2_cols(n-1, 1, dx0+1, n, dxnorm);
+    magmablas_snrm2_cols_q(n-1, 1, dx0+1, n, dxnorm, queue);
 
-    magma_slarfg_gpu_kernel<<< blocks, threads,
-                               0, magma_stream >>>(n, dx0, dx, dtau, dxnorm, dAkk);
+    magma_slarfg_gpu_kernel
+        <<< blocks, threads, 0, queue->cuda_stream() >>>
+        (n, dx0, dx, dtau, dxnorm, dAkk);
+}
+
+extern "C" void
+magma_slarfg_gpu(
+    magma_int_t n,
+    magmaFloat_ptr dx0,
+    magmaFloat_ptr dx,
+    magmaFloat_ptr dtau,
+    magmaFloat_ptr        dxnorm,
+    magmaFloat_ptr dAkk )
+{
+    magma_slarfg_gpu_q( n, dx0, dx, dtau, dxnorm, dAkk, magmablasGetQueue() );
 }

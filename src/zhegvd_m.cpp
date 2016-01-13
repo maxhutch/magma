@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -13,7 +13,7 @@
        @precisions normal z -> c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 #define COMPLEX
@@ -211,9 +211,6 @@ magma_zhegvd_m(
     magma_int_t liwmin;
     magma_int_t lrwmin;
 
-    magma_queue_t stream;
-    magma_queue_create( &stream );
-
     wantz = (jobz == MagmaVec);
     lower = (uplo == MagmaLower);
     lquery = (lwork == -1 || lrwork == -1 || liwork == -1);
@@ -352,11 +349,19 @@ magma_zhegvd_m(
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
-            magma_zsetmatrix( n, n, B, ldb, dB, lddb );
-            magma_zsetmatrix( n, n, A, lda, dA, ldda );
+            
+            magma_queue_t queue;
+            magma_device_t cdev;
+            magma_getdevice( &cdev );
+            magma_queue_create( cdev, &queue );
+        
+            magma_zsetmatrix( n, n, B, ldb, dB, lddb, queue );
+            magma_zsetmatrix( n, n, A, lda, dA, ldda, queue );
             magma_ztrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
-                         n, n, c_one, dB, lddb, dA, ldda );
-            magma_zgetmatrix( n, n, dA, ldda, A, lda );
+                         n, n, c_one, dB, lddb, dA, ldda, queue );
+            magma_zgetmatrix( n, n, dA, ldda, A, lda, queue );
+            
+            magma_queue_destroy( queue );
             
             magma_free( dA );
             magma_free( dB );
@@ -369,6 +374,6 @@ magma_zhegvd_m(
     work[0]  = MAGMA_Z_MAKE( lwmin * one_eps, 0 );  // round up
     rwork[0] = lrwmin * one_eps;
     iwork[0] = liwmin;
-
+    
     return *info;
 } /* magma_zhegvd_m */

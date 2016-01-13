@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
        @author Mark Gates
@@ -55,8 +55,8 @@ void clag2z_kernel(
 /**
     Purpose
     -------
-    CLAG2Z_STREAM converts a single-complex matrix, SA,
-                        to a double-complex matrix, A.
+    CLAG2Z converts a single-complex matrix, SA,
+                 to a double-complex matrix, A.
 
     Note that while it is possible to overflow while converting
     from double to single, it is not possible to overflow when
@@ -73,7 +73,7 @@ void clag2z_kernel(
             The number of columns of the matrix A.  N >= 0.
 
     @param[in]
-    SA      REAL array, dimension (LDSA,N)
+    SA      COMPLEX array, dimension (LDSA,N)
             On entry, the M-by-N coefficient matrix SA.
 
     @param[in]
@@ -129,7 +129,7 @@ magmablas_clag2z_q(
 
     dim3 threads( BLK_X, 1 );
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
-    clag2z_kernel<<< grid, threads, 0, queue >>> ( m, n, SA, ldsa, A, lda );
+    clag2z_kernel<<< grid, threads, 0, queue->cuda_stream() >>> ( m, n, SA, ldsa, A, lda );
 }
 
 
@@ -142,7 +142,7 @@ magmablas_clag2z(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_const_ptr SA, magma_int_t ldsa,
     magmaDoubleComplex_ptr       A, magma_int_t lda,
-    magma_int_t *info )
+    magma_int_t *info)
 {
-    magmablas_clag2z_q( m, n, SA, ldsa, A, lda, magma_stream, info );
+    magmablas_clag2z_q( m, n, SA, ldsa, A, lda, magmablasGetQueue(), info );
 }

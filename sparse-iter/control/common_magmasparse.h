@@ -1,80 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
-
-       @author Mark Gates
+       @date January 2016
 */
 
 #ifndef MAGMASPARSE_COMMON_H
 #define MAGMASPARSE_COMMON_H
 
-#include "common_magma.h"
-#include "magmasparse.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-magma_int_t cusparse2magma_error( cusparseStatus_t status );
-
-
-/**
-    Macro checks the return code of a function;
-    if non-zero, sets info to err, then does goto cleanup.
-    err is evaluated only once.
-    Assumes variable info and label cleanup exist.
-    Usually, all paths (successful and error) exit through the cleanup code.
-    Example:
-    
-        magma_int_t function()
-        {
-            magma_int_t info = 0;
-            double *A=NULL, *B=NULL;
-            CHECK( magma_malloc( &A, sizeA ));
-            CHECK( magma_malloc( &B, sizeB ));
-            ...
-        cleanup:
-            magma_free( A );
-            magma_free( B );
-            return info;
-        }
-    
-    @ingroup internal
-    ********************************************************************/
-#define CHECK( err )             \
-    do {                         \
-        magma_int_t e_ = (err);  \
-        if ( e_ != 0 ) {         \
-            info = e_;           \
-            goto cleanup;        \
-        }                        \
-    } while(0)
-
-
-/**
-    Macro checks the return code of a cusparse function;
-    if non-zero, maps the cusparse error to a magma error and sets info,
-    then does goto cleanup.
-    
-    @see CHECK
-    @ingroup internal
-    ********************************************************************/
-#define CHECK_CUSPARSE( err )                   \
-    do {                                        \
-        cusparseStatus_t e_ = (err);            \
-        if ( e_ != 0 ) {                        \
-            info = cusparse2magma_error( e_ );  \
-            goto cleanup;                       \
-        }                                       \
-    } while(0)
-
-
-#ifdef __cplusplus
-} // extern C
-#endif
+// MAGMA_SOURCE is used in magma_internal.h to include magma.h (v1) instead of magma_v2.h
+#define MAGMA_SOURCE 1
+#include "magmasparse_internal.h"
 
 #endif        //  #ifndef MAGMASPARSE_COMMON_H

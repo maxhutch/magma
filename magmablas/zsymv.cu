@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
-       zsymv.cu is nearly identical to zhemv.cu, just change names and drop cuConj.
+       zsymv.cu is nearly identical to zhemv.cu, just change names and drop MAGMA_Z_CNJG.
        
        zsymv_kernel_U (upper) in zsymv_upper.cu is very similar to
        zsymv_kernel_L (lower) in zsymv.cu; diff the two files to compare.
@@ -643,17 +643,17 @@ magmablas_zsymv_work(
     dim3 threads_sum( NB_X, 1, 1 );
 
     if ( upper ) {
-        zsymv_kernel_U<<< grid, threads, 0, queue >>>
+        zsymv_kernel_U<<< grid, threads, 0, queue->cuda_stream() >>>
             (n, dA, ldda, dx, incx, dwork);
         
-        zsymv_kernel_U_sum<<< grid, threads_sum, 0, queue >>>
+        zsymv_kernel_U_sum<<< grid, threads_sum, 0, queue->cuda_stream() >>>
             (n, alpha, ldda, beta, dy, incy, dwork);
     }
     else {
-        zsymv_kernel_L<<< grid, threads, 0, queue >>>
+        zsymv_kernel_L<<< grid, threads, 0, queue->cuda_stream() >>>
             (n, dA, ldda, dx, incx, dwork);
         
-        zsymv_kernel_L_sum<<< grid, threads_sum, 0, queue >>>
+        zsymv_kernel_L_sum<<< grid, threads_sum, 0, queue->cuda_stream() >>>
             (n, alpha, ldda, beta, dy, incy, dwork);
     }
     return info;
@@ -806,7 +806,7 @@ magmablas_zsymv(
     }
     
     magmablas_zsymv_work( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy,
-                          dwork, lwork, magma_stream );
+                          dwork, lwork, magmablasGetQueue() );
     
     magma_free( dwork );
     

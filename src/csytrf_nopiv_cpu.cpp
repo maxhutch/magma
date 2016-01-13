@@ -1,58 +1,64 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Ichitaro Yamazaki                                                                   
        @author Adrien Remy
        
-       @generated from zsytrf_nopiv_cpu.cpp normal z -> c, Fri Sep 11 18:29:29 2015
+       @generated from src/zsytrf_nopiv_cpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
        
  
 */
-#include "common_magma.h"
-#define PRECISION_c
+#include "magma_internal.h"
 
 #define  A(i, j) ( A[(j)*lda  + (i)])
 #define  C(i, j) ( C[(j)*ldc  + (i)])
 #define  D(i)    ( D[(i)*incD] )
 
 // trailing submatrix update with inner-blocking 
-int csyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
-            magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
-            magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
-            magmaFloatComplex *D, magma_int_t incD)
+magma_int_t csyrk_d(
+    magma_uplo_t uplo, magma_int_t m, magma_int_t n,
+    magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
+    magmaFloatComplex *D, magma_int_t incD)
 {
     magmaFloatComplex *Aik;
     magmaFloatComplex *Dkk;
     magmaFloatComplex *Akj;
 
     /* Check input arguments */
+    magma_int_t info = 0;
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
-        return -1;
+        info = -1;
     }
-    if (m < 0) {
-        return -3;
+    else if (m < 0) {
+        info = -3;
     }
-    if (n < 0) {
-        return -4;
+    else if (n < 0) {
+        info = -4;
     }
-    if ((lda < max(1, m)) && (m > 0)) {
-        return -7;
+    else if ((lda < max(1, m)) && (m > 0)) {
+        info = -7;
     }
-    if ((ldc < max(1, m)) && (m > 0)) {
-        return -10;
+    else if ((ldc < max(1, m)) && (m > 0)) {
+        info = -10;
     }
-    if ( incD < 0 ) {
-        return -12;
+    else if ( incD < 0 ) {
+        info = -12;
+    }
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;        
     }
 
     /* Quick return */
     if (m == 0 || n == 0 ||
         ((alpha == 0.0 || m == 0) && beta == 1.0) ) {
-        return MAGMA_SUCCESS;
+        return info;
     }
 
     if ( uplo == MagmaLower ) {
@@ -83,75 +89,97 @@ int csyrk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
             }
         }
     }
-    return MAGMA_SUCCESS;
+    return info;
 }
+
 
 // trailing submatrix update with inner-blocking, using workshpace that
 // stores D*L'
-int csyrk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
-                      magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
-                      magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
-                      magmaFloatComplex *work, magma_int_t ldw)
+magma_int_t csyrk_d_workspace(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t k,
+    magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
+    magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
+    magmaFloatComplex *work, magma_int_t ldw)
 {
-    magmaFloatComplex c_one  =  MAGMA_C_ONE;
-    magmaFloatComplex c_mone = -MAGMA_C_ONE;
+    const magmaFloatComplex c_one     = MAGMA_C_ONE;
+    const magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
     /* Check input arguments */
+    magma_int_t info = 0;
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
-        return -1;
+        info = -1;
     }
-    if (n < 0) {
-        return -2;
+    else if (n < 0) {
+        info = -2;
     }
-    if (k < 0) {
-        return -3;
+    else if (k < 0) {
+        info = -3;
     }
-    if ((lda < max(1,n)) && (n > 0)) {
-        return -6;
+    else if ((lda < max(1,n)) && (n > 0)) {
+        info = -6;
     }
-    if ((ldc < max(1,n)) && (n > 0)) {
-        return -9;
+    else if ((ldc < max(1,n)) && (n > 0)) {
+        info = -9;
+    }
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;        
     }
 
     /* Quick return */
     if (n == 0 || k == 0 ||
         ((alpha == 0.0 || k == 0) && beta == 1.0) ) {
-        return MAGMA_SUCCESS;
+        return info;
     }
 
     if ( uplo == MagmaLower ) {
         blasf77_cgemm( MagmaNoTransStr, MagmaNoTransStr, 
                        &n, &n, &k,
-                       &c_mone, A,    &lda,
-                                work, &ldw,
-                       &c_one,  C,    &ldc );
+                       &c_neg_one, A,    &lda,
+                                   work, &ldw,
+                       &c_one,     C,    &ldc );
     }
     else {
         blasf77_cgemm( MagmaNoTransStr, MagmaNoTransStr, 
                        &n, &n, &k,
-                       &c_mone, work, &ldw,
-                                A,    &lda,
-                       &c_one,  C,    &ldc );
+                       &c_neg_one, work, &ldw,
+                                   A,    &lda,
+                       &c_one,     C,    &ldc );
     }
-    return MAGMA_SUCCESS;
+    return info;
 }
 
-// diagonal factorization with inner-block
-int csytrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n, 
-                      magmaFloatComplex *A, magma_int_t lda)
-{
-    /* Quick return */
-    if (n == 1)
-        return 0;
-    if (lda < n) 
-        return -1;
 
-    /**/
-    magma_int_t info = 0, ione = 1;
+// diagonal factorization with inner-block
+magma_int_t csytrf_diag_nopiv(
+    magma_uplo_t uplo, magma_int_t n, 
+    magmaFloatComplex *A, magma_int_t lda)
+{
+    /* Constants */
+    const magma_int_t ione = 1;
+    const magmaFloatComplex c_one = MAGMA_C_ONE;
+    
+    /* Local variables */
     magmaFloatComplex *Ak1k = NULL;
     magmaFloatComplex Akk;
-    magmaFloatComplex zone = MAGMA_C_ONE;
     magmaFloatComplex alpha;
+    
+    /* Check input arguments */
+    magma_int_t info = 0;
+    if (lda < n) {
+        info = -4;
+    }
+    /* TODO: need to check all other arguments */
+    
+    if (info != 0) {
+        magma_xerbla( __func__, -(info) );
+        return info;        
+    }
+    
+    /* Quick return */
+    if (n <= 1)
+        return info;
 
     if ( uplo == MagmaLower ) {
         /* Diagonal element */
@@ -167,7 +195,7 @@ int csytrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
             }
 
             // scale off-diagonals
-            alpha = MAGMA_C_DIV( zone, Akk );
+            alpha = MAGMA_C_DIV( c_one, Akk );
             blasf77_cscal(&k, &alpha, Ak1k, &ione);
 
             // update remaining
@@ -194,7 +222,7 @@ int csytrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
             }
 
             // scale off-diagonals
-            alpha = MAGMA_C_DIV(zone, Akk );
+            alpha = MAGMA_C_DIV( c_one, Akk );
             blasf77_cscal(&k, &alpha, Ak1k, &lda);
 
             // update remaining
@@ -215,22 +243,31 @@ int csytrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
 
 // main routine
 extern "C" magma_int_t
-csytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
-                 magmaFloatComplex *A, magma_int_t lda,
-                 magma_int_t *info)
+magma_csytrf_nopiv_cpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
+    magmaFloatComplex *A, magma_int_t lda,
+    magma_int_t *info)
 {
-    magma_int_t ione = 1;
-    magmaFloatComplex alpha;
-    magmaFloatComplex zone  =  MAGMA_C_ONE;
-    magmaFloatComplex mzone = -MAGMA_C_ONE;
+    /* Constants */
+    const magma_int_t ione = 1;
+    const magmaFloatComplex c_one     = MAGMA_C_ONE;
+    const magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
+    /* Local variables */
+    magmaFloatComplex alpha;
+    
     /* Check input arguments */
+    *info = 0;
     if (lda < n) {
-        *info = -1;
-        return *info;
+        *info = -5;
+    }
+    /* TODO: need to check all other arguments */
+    
+    if (*info != 0) {
+        magma_xerbla( __func__, -(*info) );
+        return *info;        
     }
 
-    *info = 0;
     /* Quick return */
     if (n == 1) {
         return *info;
@@ -252,8 +289,8 @@ csytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
                     MagmaRightStr, MagmaLowerStr, 
                     MagmaTransStr, MagmaUnitStr,
                     &height, &sb, 
-                    &zone, &A(i, i),    &lda,
-                           &A(i+sb, i), &lda);
+                    &c_one, &A(i, i),    &lda,
+                            &A(i+sb, i), &lda);
 
                 /* Scale the block to divide by D */
                 for (magma_int_t k=0; k < sb; k++) {
@@ -263,21 +300,21 @@ csytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
                         A(i+k, ii) = A(ii, i+k);
                     }
                     #endif
-                    alpha = MAGMA_C_DIV( zone,A(i+k, i+k));
+                    alpha = MAGMA_C_DIV( c_one, A(i+k, i+k));
                     blasf77_cscal(&height, &alpha, &A(i+sb, i+k), &ione);
                 }
 
                 /* Update the trailing submatrix A22 = A22 - A21 * D11 * A21' */
                 #ifdef CSYRK_D_WORKSPACE
-                csyrk_d_workspace(MagmaLower, height, sb,
-                                  mzone, &A(i+sb, i), lda,    // A21
-                                  zone,  &A(i+sb, i+sb), lda, // A22
-                                         &A(i, i+sb), lda);   // workspace, I am writing on upper part :)
+                csyrk_d_workspace( MagmaLower, height, sb,
+                                   c_neg_one, &A(i+sb, i),    lda,    // A21
+                                   c_one,     &A(i+sb, i+sb), lda,    // A22
+                                              &A(i, i+sb),    lda );  // workspace, I am writing on upper part :)
                 #else
-                csyrk_d(MagmaLower, height, sb,
-                        mzone, &A(i+sb, i), lda,    // A21
-                        zone,  &A(i+sb, i+sb), lda, // A22
-                               &A(i, i), lda+1);    // D11
+                csyrk_d( MagmaLower, height, sb,
+                         c_neg_one, &A(i+sb, i),    lda,      // A21
+                         c_one,     &A(i+sb, i+sb), lda,      // A22
+                                    &A(i, i),       lda+1 );  // D11
                 #endif
             }
         }
@@ -297,8 +334,8 @@ csytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
                     MagmaLeftStr, MagmaUpperStr, 
                     MagmaTransStr, MagmaUnitStr,
                     &sb, &height, 
-                    &zone, &A(i, i),    &lda,
-                           &A(i, i+sb), &lda);
+                    &c_one, &A(i, i),    &lda,
+                            &A(i, i+sb), &lda);
 
                 /* Scale the block to divide by D */
                 for (magma_int_t k=0; k < sb; k++) {
@@ -308,21 +345,21 @@ csytrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
                         A(ii, i+k) = A(i+k, ii);
                     }
                     #endif
-                    alpha = MAGMA_C_DIV( zone, A(i+k, i+k) );
+                    alpha = MAGMA_C_DIV( c_one, A(i+k, i+k) );
                     blasf77_cscal(&height, &alpha, &A(i+k, i+sb), &lda);
                 }
 
                 /* Update the trailing submatrix A22 = A22 - A21 * D11 * A21' */
                 #ifdef CSYRK_D_WORKSPACE
-                csyrk_d_workspace(MagmaUpper, height, sb,
-                                  mzone, &A(i, i+sb), lda,    // A21
-                                  zone,  &A(i+sb, i+sb), lda, // A22
-                                         &A(i+sb, i), lda);   // workspace, I am writing on upper part :)
+                csyrk_d_workspace( MagmaUpper, height, sb,
+                                   c_neg_one, &A(i, i+sb),    lda,    // A21
+                                   c_one,     &A(i+sb, i+sb), lda,    // A22
+                                              &A(i+sb, i),    lda );  // workspace, I am writing on upper part :)
                 #else
-                csyrk_d(MagmaUpper, height, sb,
-                        mzone, &A(i, i+sb), lda,    // A21
-                        zone,  &A(i+sb, i+sb), lda, // A22
-                               &A(i, i), lda+1);    // D11
+                csyrk_d( MagmaUpper, height, sb,
+                         c_neg_one, &A(i, i+sb),    lda,      // A21
+                         c_one,     &A(i+sb, i+sb), lda,      // A22
+                                    &A(i, i),       lda+1 );  // D11
                 #endif
             }
         }

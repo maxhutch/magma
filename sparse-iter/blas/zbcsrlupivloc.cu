@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
@@ -98,7 +98,7 @@ magma_zbcsrlupivloc(
     dim3 threads( 64, 1 );
 
     dim3 grid(kblocks, 1, 1);
-    zbcsrlupivloc_kernel<<< grid, threads, 0, queue >>>( 
+    zbcsrlupivloc_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( 
                   size_b, kblocks, dA, ipiv );
     #endif
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
@@ -21,7 +21,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_z
+#define COMPLEX
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zgeqp3
@@ -52,17 +52,17 @@ int main( int argc, char** argv)
             min_mn = min(M, N);
             lda    = M;
             n2     = lda*N;
-            nb     = magma_get_zgeqp3_nb( min_mn );
+            nb     = magma_get_zgeqp3_nb( M, N );
             gflops = FLOPS_ZGEQRF( M, N ) / 1e9;
             
             lwork = ( N+1 )*nb;
-            #if defined(PRECISION_d) || defined(PRECISION_s)
+            #ifdef REAL
             lwork += 2*N;
             #endif
             if ( opts.check )
                 lwork = max( lwork, M*N + N );
             
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             double *rwork;
             TESTING_MALLOC_CPU( rwork,  double, 2*N );
             #endif
@@ -85,11 +85,11 @@ int main( int argc, char** argv)
                     jpvt[j] = 0;
                 
                 cpu_time = magma_wtime();
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_zgeqp3(&M, &N, h_R, &lda, jpvt, tau, h_work, &lwork, rwork, &info);
-                #else
-                lapackf77_zgeqp3(&M, &N, h_R, &lda, jpvt, tau, h_work, &lwork, &info);
-                #endif
+                lapackf77_zgeqp3( &M, &N, h_R, &lda, jpvt, tau, h_work, &lwork,
+                                  #ifdef COMPLEX
+                                  rwork,
+                                  #endif
+                                  &info );
                 cpu_time = magma_wtime() - cpu_time;
                 cpu_perf = gflops / cpu_time;
                 if (info != 0)
@@ -105,11 +105,11 @@ int main( int argc, char** argv)
                 jpvt[j] = 0;
             
             gpu_time = magma_wtime();
-            #if defined(PRECISION_z) || defined(PRECISION_c)
-            magma_zgeqp3(M, N, h_R, lda, jpvt, tau, h_work, lwork, rwork, &info);
-            #else
-            magma_zgeqp3(M, N, h_R, lda, jpvt, tau, h_work, lwork, &info);
-            #endif
+            magma_zgeqp3( M, N, h_R, lda, jpvt, tau, h_work, lwork,
+                          #ifdef COMPLEX
+                          rwork,
+                          #endif
+                          &info );
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
@@ -142,7 +142,7 @@ int main( int argc, char** argv)
                 printf("     ---  \n");
             }
             
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_FREE_CPU( rwork );
             #endif
             TESTING_FREE_CPU( jpvt );
@@ -158,6 +158,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

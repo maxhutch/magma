@@ -1,17 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
 
 */
-#include "common_magma.h"
-
-#define BWDMAX 1.0
-#define ITERMAX 30
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -159,9 +156,14 @@ magma_zcgesv_gpu(
     #define dX(i,j)     (dX + (i) + (j)*lddx)
     #define dR(i,j)     (dR + (i) + (j)*lddr)
     
-    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
-    magma_int_t     ione  = 1;
+    // Constants
+    const double      BWDMAX  = 1.0;
+    const magma_int_t ITERMAX = 30;
+    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    const magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    const magma_int_t ione = 1;
+    
+    // Local variables
     magmaDoubleComplex_ptr dR;
     magmaFloatComplex_ptr dSA, dSX;
     magmaDoubleComplex Xnrmv, Rnrmv;
@@ -197,8 +199,13 @@ magma_zcgesv_gpu(
     dSX = dSA + lddsa*n;
     dR  = dworkd;
     
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     eps  = lapackf77_dlamch("Epsilon");
-    Anrm = magmablas_zlange(MagmaInfNorm, n, n, dA, ldda, (double*)dworkd );
+    Anrm = magmablas_zlange( MagmaInfNorm, n, n, dA, ldda, (double*)dworkd, n*nrhs, queue );
     cte  = Anrm * eps * pow((double)n, 0.5) * BWDMAX;
     
     /*
@@ -207,20 +214,20 @@ magma_zcgesv_gpu(
     //magmablas_zlag2c( n, nrhs, dB, lddb, dSX, lddsx, info );  // done inside zcgetrs with pivots
     if (*info != 0) {
         *iter = -2;
-        goto FALLBACK;
+        goto fallback;
     }
     
-    magmablas_zlag2c( n, n, dA, ldda, dSA, lddsa, info );
+    magmablas_zlag2c( n, n, dA, ldda, dSA, lddsa, queue, info );
     if (*info != 0) {
         *iter = -2;
-        goto FALLBACK;
+        goto fallback;
     }
     
     // factor dSA in single precision
     magma_cgetrf_gpu( n, n, dSA, lddsa, ipiv, info );
     if (*info != 0) {
         *iter = -3;
-        goto FALLBACK;
+        goto fallback;
     }
     
     // Generate parallel pivots
@@ -229,10 +236,10 @@ magma_zcgesv_gpu(
         magma_imalloc_cpu( &newipiv, n );
         if ( newipiv == NULL ) {
             *iter = -3;
-            goto FALLBACK;
+            goto fallback;
         }
         magma_swp2pswp( trans, n, ipiv, newipiv );
-        magma_setvector( n, sizeof(magma_int_t), newipiv, 1, dipiv, 1 );
+        magma_isetvector( n, newipiv, 1, dipiv, 1, queue );
         magma_free_cpu( newipiv );
     }
     
@@ -241,39 +248,40 @@ magma_zcgesv_gpu(
     magma_zcgetrs_gpu( trans, n, nrhs, dSA, lddsa, dipiv, dB, lddb, dX, lddx, dSX, info );
     
     // residual dR = dB - dA*dX in double precision
-    magmablas_zlacpy( MagmaUpperLower, n, nrhs, dB, lddb, dR, lddr );
+    magmablas_zlacpy( MagmaFull, n, nrhs, dB, lddb, dR, lddr, queue );
     if ( nrhs == 1 ) {
         magma_zgemv( trans, n, n,
                      c_neg_one, dA, ldda,
                                 dX, 1,
-                     c_one,     dR, 1 );
+                     c_one,     dR, 1, queue );
     }
     else {
         magma_zgemm( trans, MagmaNoTrans, n, nrhs, n,
                      c_neg_one, dA, ldda,
                                 dX, lddx,
-                     c_one,     dR, lddr );
+                     c_one,     dR, lddr, queue );
     }
     
     // TODO: use MAGMA_Z_ABS( dX(i,j) ) instead of zlange?
     for( j=0; j < nrhs; j++ ) {
-        i = magma_izamax( n, dX(0,j), 1) - 1;
-        magma_zgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );
+        i = magma_izamax( n, dX(0,j), 1, queue ) - 1;
+        magma_zgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
         Xnrm = lapackf77_zlange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
         
-        i = magma_izamax ( n, dR(0,j), 1 ) - 1;
-        magma_zgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1 );
+        i = magma_izamax( n, dR(0,j), 1, queue ) - 1;
+        magma_zgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
         Rnrm = lapackf77_zlange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
         
         if ( Rnrm >  Xnrm*cte ) {
-            goto REFINEMENT;
+            goto refinement;
         }
     }
     
     *iter = 0;
-    return *info;
+    goto cleanup;
+    //return *info;
 
-REFINEMENT:
+refinement:
     for( iiter=1; iiter < ITERMAX; ) {
         *info = 0;
         // convert residual dR to single precision dSX
@@ -283,7 +291,7 @@ REFINEMENT:
         magma_zcgetrs_gpu( trans, n, nrhs, dSA, lddsa, dipiv, dR, lddr, dR, lddr, dSX, info );
         if (*info != 0) {
             *iter = -3;
-            goto FALLBACK;
+            goto fallback;
         }
         
         // Add correction and setup residual
@@ -292,7 +300,7 @@ REFINEMENT:
         // This saves going through dR a second time (if done with one more kernel).
         // -- not really: first time is read, second time is write.
         for( j=0; j < nrhs; j++ ) {
-            magmablas_zaxpycp( n, dR(0,j), dX(0,j), dB(0,j) );
+            magmablas_zaxpycp( n, dR(0,j), dX(0,j), dB(0,j), queue );
         }
         
         // residual dR = dB - dA*dX in double precision
@@ -300,24 +308,25 @@ REFINEMENT:
             magma_zgemv( trans, n, n,
                          c_neg_one, dA, ldda,
                                     dX, 1,
-                         c_one,     dR, 1 );
+                         c_one,     dR, 1, queue );
         }
         else {
             magma_zgemm( trans, MagmaNoTrans, n, nrhs, n,
                          c_neg_one, dA, ldda,
                                     dX, lddx,
-                         c_one,     dR, lddr );
+                         c_one,     dR, lddr, queue );
         }
         
+        // TODO: use MAGMA_Z_ABS( dX(i,j) ) instead of zlange?
         /*  Check whether the nrhs normwise backward errors satisfy the
          *  stopping criterion. If yes, set ITER=IITER > 0 and return. */
         for( j=0; j < nrhs; j++ ) {
-            i = magma_izamax( n, dX(0,j), 1) - 1;
-            magma_zgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );
+            i = magma_izamax( n, dX(0,j), 1, queue ) - 1;
+            magma_zgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
             Xnrm = lapackf77_zlange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
             
-            i = magma_izamax ( n, dR(0,j), 1 ) - 1;
-            magma_zgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1 );
+            i = magma_izamax( n, dR(0,j), 1, queue ) - 1;
+            magma_zgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
             Rnrm = lapackf77_zlange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
             
             if ( Rnrm >  Xnrm*cte ) {
@@ -328,7 +337,8 @@ REFINEMENT:
         /*  If we are here, the nrhs normwise backward errors satisfy
          *  the stopping criterion, we are good to exit. */
         *iter = iiter;
-        return *info;
+        goto cleanup;
+        //return *info;
         
       L20:
         iiter++;
@@ -340,14 +350,16 @@ REFINEMENT:
      * up on double precision routine. */
     *iter = -ITERMAX - 1;
     
-FALLBACK:
+fallback:
     /* Single-precision iterative refinement failed to converge to a
      * satisfactory solution, so we resort to double precision. */
     magma_zgetrf_gpu( n, n, dA, ldda, ipiv, info );
     if (*info == 0) {
-        magmablas_zlacpy( MagmaUpperLower, n, nrhs, dB, lddb, dX, lddx );
+        magmablas_zlacpy( MagmaFull, n, nrhs, dB, lddb, dX, lddx, queue );
         magma_zgetrs_gpu( trans, n, nrhs, dA, ldda, ipiv, dX, lddx, info );
     }
     
+cleanup:
+    magma_queue_destroy( queue );
     return *info;
 }

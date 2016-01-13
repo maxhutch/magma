@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        @author Adrien REMY
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -20,7 +20,6 @@
     
     Arguments
     ---------
-    
     @param[in]
     uplo    magma_uplo_t
       -     = MagmaUpper:  Upper triangle of A is stored;
@@ -67,9 +66,13 @@ magma_zhetrs_nopiv_gpu(
     magmaDoubleComplex_ptr dB, magma_int_t lddb,
     magma_int_t *info)
 {
-    magmaDoubleComplex c_one = MAGMA_Z_ONE;
+    /* Constants */
+    const magmaDoubleComplex c_one = MAGMA_Z_ONE;
 
-    int                upper = (uplo == MagmaUpper);
+    /* Local variables */
+    bool upper = (uplo == MagmaUpper);
+    
+    /* Check input arguments */
     *info = 0;
     if (! upper && uplo != MagmaLower) {
         *info = -1;
@@ -92,32 +95,38 @@ magma_zhetrs_nopiv_gpu(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
     if (upper) {
         magma_ztrsm( MagmaLeft, MagmaUpper,
                      MagmaConjTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
-        magmablas_zlascl_diag(MagmaUpper, n, nrhs, dA, ldda, dB,lddb, info);
+                     dA, ldda, dB, lddb, queue );
+        magmablas_zlascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
         //for (int i = 0; i < nrhs; i++)
-        //    magmablas_zlascl_diag(MagmaUpper, 1, n, dA, ldda, dB+(lddb*i),1, info);
+        //    magmablas_zlascl_diag( MagmaUpper, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ztrsm( MagmaLeft, MagmaUpper,
                      MagmaNoTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
+                     dA, ldda, dB, lddb, queue );
     } else {
         magma_ztrsm( MagmaLeft, MagmaLower,
                      MagmaNoTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
-        magmablas_zlascl_diag(MagmaUpper, n, nrhs, dA, ldda, dB,lddb, info);
+                     dA, ldda, dB, lddb, queue );
+        magmablas_zlascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
         //for (int i = 0; i < nrhs; i++)
-        //    magmablas_zlascl_diag(MagmaLower, 1, n, dA, ldda, dB+(lddb*i),1, info);
+        //    magmablas_zlascl_diag( MagmaLower, 1, n, dA, ldda, dB+(lddb*i), 1, info );
         magma_ztrsm( MagmaLeft, MagmaLower,
                      MagmaConjTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
+                     dA, ldda, dB, lddb, queue );
     }
+    
+    magma_queue_destroy( queue );
     
     return *info;
 }

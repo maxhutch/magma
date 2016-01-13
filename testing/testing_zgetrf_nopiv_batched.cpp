@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
@@ -138,7 +138,7 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            zset_pointer(dA_array, dA_magma, ldda, 0, 0, ldda*N, batchCount, opts.queue);
+            magma_zset_pointer( dA_array, dA_magma, ldda, 0, 0, ldda*N, batchCount, opts.queue );
             magma_time = magma_sync_wtime( opts.queue );
             info = magma_zgetrf_nopiv_batched( M, N, dA_array, ldda, dinfo_magma, batchCount, opts.queue);
             magma_time = magma_sync_wtime( opts.queue ) - magma_time;
@@ -230,6 +230,8 @@ int main( int argc, char** argv)
             printf( "\n" );
         }
     }
+    
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

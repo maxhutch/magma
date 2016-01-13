@@ -1,17 +1,13 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgetf2.cu normal z -> d, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zgetf2.cu normal z -> d, Wed Jan  6 17:59:40 2016
 */
 #include "common_magma.h"
-
-#define PRECISION_d
-
-#define dswap_bs 64
 
 #define dger_bs 512  // 512 is max threads for 1.x cards
 
@@ -22,6 +18,7 @@ void magma_dscal_dger(
     magma_int_t m, magma_int_t n, double *A, magma_int_t lda);
 
 
+// TODO: this function could be in .cpp file -- it has no CUDA code in it.
 /**
     DGETF2 computes an LU factorization of a general m-by-n matrix A
     using partial pivoting with row interchanges.
@@ -132,6 +129,10 @@ magma_dgetf2_gpu(
 }
 
 
+// ===========================================================================
+// TODO: use standard BLAS magma_dswap?
+#define dswap_bs 64
+
 __global__
 void kernel_dswap(int n, double *x, int i, int j, int incx)
 {
@@ -145,18 +146,21 @@ void kernel_dswap(int n, double *x, int i, int j, int incx)
 }
 
 
-void magma_dgetf2_swap(magma_int_t n, double *x, magma_int_t i, magma_int_t j, magma_int_t incx)
+void magma_dgetf2_swap(
+    magma_int_t n, double *x, magma_int_t i, magma_int_t j, magma_int_t incx)
 {
     /*
     dswap two row vectors: ith and jth
     */
-    dim3 threads(dswap_bs, 1, 1);
-    int num_blocks = magma_ceildiv( n, dswap_bs );
-    dim3 grid(num_blocks,1);
-    kernel_dswap<<< grid, threads, 0, magma_stream >>>(n, x, i, j, incx);
+    dim3 threads( dswap_bs );
+    dim3 grid( magma_ceildiv( n, dswap_bs ) );
+    kernel_dswap
+        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        (n, x, i, j, incx);
 }
 
 
+// ===========================================================================
 // dynamically allocated shared memory, set to size n when the kernel is launched.
 // See CUDA Guide B.2.3
 extern __shared__ double shared_data[];
@@ -191,17 +195,19 @@ void kernel_dscal_dger(int m, int n, double *A, int lda)
 }
 
 
-void magma_dscal_dger(magma_int_t m, magma_int_t n, double *A, magma_int_t lda)
+void magma_dscal_dger(
+    magma_int_t m, magma_int_t n, magmaDouble_ptr dA, magma_int_t ldda)
 {
     /*
-    Specialized kernel which merged dscal and dger the two kernels
+    Specialized kernel that merges dscal and dger
     1) dscale the first column vector A(1:M-1,0) with 1/A(0,0);
     2) Performe a dger Operation for trailing matrix of A(1:M-1,1:N-1) += alpha*x*y**T, where 
        alpha := -1.0; x := A(1:M-1,0) and y:= A(0,1:N-1);
     */
-    dim3 threads(dger_bs, 1, 1);
-    int num_blocks = magma_ceildiv( m, dger_bs );
-    dim3 grid(num_blocks,1);
+    dim3 threads( dger_bs );
+    dim3 grid( magma_ceildiv( m, dger_bs ) );
     size_t shared_size = sizeof(double)*(n);
-    kernel_dscal_dger<<< grid, threads, shared_size, magma_stream>>>(m, n, A, lda);
+    kernel_dscal_dger
+        <<< grid, threads, shared_size, magmablasGetQueue()->cuda_stream() >>>
+        (m, n, dA, ldda);
 }

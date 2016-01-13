@@ -1,9 +1,9 @@
 /*
- *  -- MAGMA (version 1.7.0) --
+ *  -- MAGMA (version 2.0.0-beta2) --
  *     Univ. of Tennessee, Knoxville
  *     Univ. of California, Berkeley
  *     Univ. of Colorado, Denver
- *     @date September 2015
+ *     @date January 2016
  *
  * @precisions normal z -> c d s
  *
@@ -27,22 +27,25 @@
 */
 int main( int argc, char** argv)
 {
-    /* Initialize */
     TESTING_INIT();
 
+    /* Constants */
+    const magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    const magma_int_t ione = 1;
+    
+    /* Local variables */
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
-    double      work[1], error;
+    double      Anorm, error, work[1];
     magmaDoubleComplex *h_A, *h_R;
     magmaDoubleComplex_ptr d_lA[4] = {NULL, NULL, NULL, NULL};
     magma_int_t N, n2, lda, ldda, info;
     magma_int_t j, k, ngpu0 = 1, ngpu;
-    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
-    magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t nb, nk, n_local, ldn_local;
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
+    opts.ngpu = abs( opts.ngpu );  // always uses multi-GPU code
     ngpu0 = opts.ngpu;
 
     printf("%% ngpu = %d, uplo = %s\n", (int) opts.ngpu, lapack_uplo_const(opts.uplo) );
@@ -151,11 +154,11 @@ int main( int argc, char** argv)
                 //printf( " ==== MAGMA ====\n" );
                 //magma_zprint( N, N, h_R, lda );
 
-                //error = lapackf77_zlange("f", &N, &N, h_A, &lda, work);
-                error = lapackf77_zlanhe("f", "L", &N, h_A, &lda, work);
+                error = safe_lapackf77_zlanhe("f", "L", &N, h_A, &lda, work);
                 blasf77_zaxpy(&n2, &c_neg_one, h_A, &ione, h_R, &ione);
-                //error = lapackf77_zlange("f", &N, &N, h_R, &lda, work) / error;
-                error = lapackf77_zlanhe("f", "L", &N, h_R, &lda, work) / error;
+                Anorm = safe_lapackf77_zlanhe("f", "L", &N, h_A, &lda, work);
+                error = safe_lapackf77_zlanhe("f", "L", &N, h_R, &lda, work)
+                      / Anorm;
 
                 printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e\n",
                         (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time, error );
@@ -179,7 +182,7 @@ int main( int argc, char** argv)
         }
     }
 
-    /* Shutdown */
+    opts.cleanup();
     TESTING_FINALIZE();
 
     return 0;

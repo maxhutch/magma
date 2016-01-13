@@ -6,13 +6,11 @@
  *
  *     @author Azzam Haidar
  *
- *     @generated from core_zlarfy.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+ *     @generated from src/core_zlarfy.cpp normal z -> c, Wed Jan  6 17:59:34 2016
  *
  */
 #include "common_magma.h"
 #include "magma_bulge.h"
-
-#define PRECISION_c
 
 /***************************************************************************//**
  *
@@ -77,7 +75,7 @@ magma_clarfy(
     /*
     dtmp = c_zero;
     for (magma_int_t j = 0; j < n; j++)
-        dtmp = dtmp + MAGMA_C_CNJG(work[j]) * V[j];
+        dtmp = dtmp + MAGMA_C_CONJ(work[j]) * V[j];
     */
 
     /* compute 1/2 X'*V*t = 1/2*dtmp*tau  */

@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -181,7 +181,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>ZSYSV solves a system of linear equations A * X = B where A is an n-by-n symmetric matrix and X and B are n-by-nrhs matrices. </p>
-<p>The LU decomposition with no pivoting is used to factor A as The factorization has the form A = U^T * D * U, if UPLO = 'U', or A = L * D * L^T, if UPLO = 'L', where U is an upper triangular matrix, L is lower triangular, and D is a diagonal matrix. The factored form of A is then used to solve the system of equations A * X = B.</p>
+<p>The LU decomposition with no pivoting is used to factor A as The factorization has the form A = U^T * D * U, if UPLO = MagmaUpper, or A = L * D * L^T, if UPLO = MagmaLower, where U is an upper triangular matrix, L is lower triangular, and D is a diagonal matrix. The factored form of A is then used to solve the system of equations A * X = B.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -194,7 +194,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array, dimension (ldda,n). On entry, the n-by-n matrix to be factored. On exit, the factors L and U from the factorization A = L*U; the unit diagonal elements of L are not stored.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. ldda &gt;= max(1,n).</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX_16 array, dimension (lddb,nrhs) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. ldb &gt;= max(1,n).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. lddb &gt;= max(1,n).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -211,7 +211,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:09 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

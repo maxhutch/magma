@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zmergeidr.cu normal z -> c, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zmergeidr.cu normal z -> c, Wed Jan  6 17:59:41 2016
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
@@ -86,7 +86,7 @@ magma_cidr_smoothing_1(
 {
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
-    magma_cidr_smoothing_1_kernel<<<Gs, Bs, 0, queue>>>( num_rows, num_cols, drs, dr, dt );
+    magma_cidr_smoothing_1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, drs, dr, dt );
 
    return MAGMA_SUCCESS;
 }
@@ -160,7 +160,7 @@ magma_cidr_smoothing_2(
 {
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
-    magma_cidr_smoothing_2_kernel<<<Gs, Bs, 0, queue>>>( num_rows, num_cols, omega, dx, dxs);
+    magma_cidr_smoothing_2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, omega, dx, dxs);
 
    return MAGMA_SUCCESS;
 }

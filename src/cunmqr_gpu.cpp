@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zunmqr_gpu.cpp normal z -> c, Fri Sep 11 18:29:28 2015
+       @generated from src/zunmqr_gpu.cpp normal z -> c, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -104,9 +104,10 @@
             this value as the first entry of the HWORK array, and no error
             message related to LWORK is issued by XERBLA.
 
-    @param[in]
+    @param[in,out]
     dT      COMPLEX array on the GPU that is the output
             (the 9th argument) of magma_cgeqrf_gpu.
+            Part used as workspace.
 
     @param[in]
     nb      INTEGER
@@ -124,11 +125,11 @@ extern "C" magma_int_t
 magma_cunmqr_gpu(
     magma_side_t side, magma_trans_t trans,
     magma_int_t m, magma_int_t n, magma_int_t k,
-    magmaFloatComplex_ptr dA,    magma_int_t ldda,
-    magmaFloatComplex    *tau,
-    magmaFloatComplex_ptr dC,    magma_int_t lddc,
-    magmaFloatComplex    *hwork, magma_int_t lwork,
-    magmaFloatComplex_ptr dT,    magma_int_t nb,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloatComplex const   *tau,
+    magmaFloatComplex_ptr       dC, magma_int_t lddc,
+    magmaFloatComplex       *hwork, magma_int_t lwork,
+    magmaFloatComplex_ptr       dT, magma_int_t nb,
     magma_int_t *info)
 {
     #define dA(a_1,a_2) (dA + (a_1) + (a_2)*ldda)
@@ -143,13 +144,12 @@ magma_cunmqr_gpu(
     magmaFloatComplex_ptr dwork;
     magma_int_t i, lddwork;
     magma_int_t i1, i2, step, ib, ic, jc, ma, mi, ni, nq, nw;
-    int left, notran, lquery;
     magma_int_t lwkopt;
 
     *info = 0;
-    left   = (side == MagmaLeft);
-    notran = (trans == MagmaNoTrans);
-    lquery = (lwork == -1);
+    bool left   = (side == MagmaLeft);
+    bool notran = (trans == MagmaNoTrans);
+    bool lquery = (lwork == -1);
 
     /* NQ is the order of Q and NW is the minimum dimension of WORK */
     if (left) {
@@ -221,6 +221,11 @@ magma_cunmqr_gpu(
         ic = 0;
     }
     
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     /* Use unblocked code to multiply last or only block (cases Q*C or C*Q^T). */
     // workspace left:  A(mi*nb) + C(mi*ni) + work(ni*nb_la) = (m-k-nb)*nb + (m-k-nb)*n + n*nb
     // workspace right: A(ni*nb) + C(mi*ni) + work(mi*nb_la) = (n-k-nb)*nb + m*(n-k-nb) + m*nb
@@ -249,8 +254,8 @@ magma_cunmqr_gpu(
         magmaFloatComplex* hW = hwork + ma*ib + mi*ni;
         magma_int_t lhwork = lwork - (ma*ib + mi*ni);
         
-        magma_cgetmatrix( ma, ib, dA(i,  i ), ldda, hA, ma );
-        magma_cgetmatrix( mi, ni, dC(ic, jc), lddc, hC, mi );
+        magma_cgetmatrix( ma, ib, dA(i,  i ), ldda, hA, ma, queue );
+        magma_cgetmatrix( mi, ni, dC(ic, jc), lddc, hC, mi, queue );
 
         lapackf77_cunmqr( side_, trans_,
                           &mi, &ni, &ib,
@@ -259,7 +264,7 @@ magma_cunmqr_gpu(
                           hW, &lhwork, info );
 
         // send the updated part of C back to the GPU
-        magma_csetmatrix( mi, ni, hC, mi, dC(ic, jc), lddc );
+        magma_csetmatrix( mi, ni, hC, mi, dC(ic, jc), lddc, queue );
     }
 
     /* Use blocked code to multiply blocks */
@@ -280,7 +285,7 @@ magma_cunmqr_gpu(
             magma_clarfb_gpu( side, trans, MagmaForward, MagmaColumnwise,
                               mi, ni, ib,
                               dA(i,  i ), ldda, dT(i), nb,
-                              dC(ic, jc), lddc, dwork, nw );
+                              dC(ic, jc), lddc, dwork, nw, queue );
         }
     }
     else {
@@ -308,8 +313,8 @@ magma_cunmqr_gpu(
         magmaFloatComplex* hW = hwork + ma*ib + mi*ni;
         magma_int_t lhwork = lwork - (ma*ib + mi*ni);
         
-        magma_cgetmatrix( ma, ib, dA(i,  i ), ldda, hA, ma );
-        magma_cgetmatrix( mi, ni, dC(ic, jc), lddc, hC, mi );
+        magma_cgetmatrix( ma, ib, dA(i,  i ), ldda, hA, ma, queue );
+        magma_cgetmatrix( mi, ni, dC(ic, jc), lddc, hC, mi, queue );
 
         lapackf77_cunmqr( side_, trans_,
                           &mi, &ni, &ib,
@@ -318,7 +323,7 @@ magma_cunmqr_gpu(
                           hW, &lhwork, info );
         
         // send the updated part of C back to the GPU
-        magma_csetmatrix( mi, ni, hC, mi, dC(ic, jc), lddc );
+        magma_csetmatrix( mi, ni, hC, mi, dC(ic, jc), lddc, queue );
     }
     
     // TODO sync. For cases Q*C and C*Q^T, last call is magma_clarfb_gpu,
@@ -328,5 +333,8 @@ magma_cunmqr_gpu(
     // That needs to be fixed, but until then, don't modify hwork[0] here.
     // In LAPACK: On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.
     //hwork[0] = MAGMA_C_MAKE( lwkopt, 0 );
+    
+    magma_queue_destroy( queue );
+    
     return *info;
 } /* magma_cunmqr_gpu */

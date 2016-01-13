@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgelqf.cpp normal z -> c, Fri Sep 11 18:29:28 2015
+       @generated from src/zgelqf.cpp normal z -> c, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define COMPLEX
 
@@ -52,9 +52,6 @@
     @param[out]
     work    (workspace) COMPLEX array, dimension (MAX(1,LWORK))
             On exit, if INFO = 0, WORK[0] returns the optimal LWORK.
-    \n
-            Higher performance is achieved if WORK is in pinned memory, e.g.
-            allocated using magma_malloc_pinned.
 
     @param[in]
     lwork   INTEGER
@@ -66,6 +63,8 @@
             only calculates the optimal size of the WORK array, returns
             this value as the first entry of the WORK array, and no error
             message related to LWORK is issued.
+    \n
+            TODO: work is currently unused. cgeqrf2 allocates its own work of (m + n)*nb.
 
     @param[out]
     info    INTEGER
@@ -99,22 +98,23 @@ magma_cgelqf(
     #define  dA(i_, j_)  (dA  + (i_) + (j_)*ldda)
     #define dAT(i_, j_)  (dAT + (i_) + (j_)*ldda)
     
+    /* Constants */
     const magmaFloatComplex c_one = MAGMA_C_ONE;
-    const magma_int_t        ione  = 1;
+    const magma_int_t ione  = 1;
     MAGMA_UNUSED( ione );  // used only for complex
     
-    magmaFloatComplex_ptr dA, dAT;
+    /* Local variables */
+    magmaFloatComplex_ptr dA=NULL, dAT=NULL;
     magma_int_t min_mn, maxm, maxn, maxdim, nb;
     magma_int_t iinfo, ldda, lddat;
-    int lquery;
 
     /* Function Body */
     *info = 0;
-    nb = magma_get_cgelqf_nb(m);
-    min_mn = min(m,n);
+    nb = magma_get_cgelqf_nb( m, n );
+    min_mn = min( m, n );
 
     work[0] = MAGMA_C_MAKE( (float)(m*nb), 0 );
-    lquery = (lwork == -1);
+    bool lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;
     } else if (n < 0) {
@@ -132,7 +132,7 @@ magma_cgelqf(
         return *info;
     }
 
-    /*  Quick return if possible */
+    /* Quick return if possible */
     if (min_mn == 0) {
         work[0] = c_one;
         return *info;
@@ -140,8 +140,13 @@ magma_cgelqf(
 
     maxm = magma_roundup( m, 32 );
     maxn = magma_roundup( n, 32 );
-    maxdim = max(maxm, maxn);
+    maxdim = max( maxm, maxn );
 
+    magma_queue_t queue = NULL;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     // copy to GPU and transpose
     if (maxdim*maxdim < 2*maxm*maxn) {
         // close to square, do everything in-place
@@ -150,12 +155,12 @@ magma_cgelqf(
 
         if (MAGMA_SUCCESS != magma_cmalloc( &dA, maxdim*maxdim )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
+            goto cleanup;
         }
 
-        magma_csetmatrix( m, n, A, lda, dA(0,0), ldda );
+        magma_csetmatrix( m, n, A, lda, dA(0,0), ldda, queue );
         dAT = dA;
-        magmablas_ctranspose_inplace( lddat, dAT(0,0), lddat );
+        magmablas_ctranspose_inplace( lddat, dAT(0,0), lddat, queue );
     }
     else {
         // rectangular, do everything out-of-place
@@ -164,13 +169,13 @@ magma_cgelqf(
 
         if (MAGMA_SUCCESS != magma_cmalloc( &dA, 2*maxn*maxm )) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
+            goto cleanup;
         }
 
-        magma_csetmatrix( m, n, A, lda, dA(0,0), ldda );
+        magma_csetmatrix( m, n, A, lda, dA(0,0), ldda, queue );
 
         dAT = dA + maxn * maxm;
-        magmablas_ctranspose( m, n, dA(0,0), ldda, dAT(0,0), lddat );
+        magmablas_ctranspose( m, n, dA(0,0), ldda, dAT(0,0), lddat, queue );
     }
 
     // factor QR
@@ -187,13 +192,15 @@ magma_cgelqf(
 
     // undo transpose
     if (maxdim*maxdim < 2*maxm*maxn) {
-        magmablas_ctranspose_inplace( lddat, dAT(0,0), lddat );
-        magma_cgetmatrix( m, n, dA(0,0), ldda, A, lda );
+        magmablas_ctranspose_inplace( lddat, dAT(0,0), lddat, queue );
+        magma_cgetmatrix( m, n, dA(0,0), ldda, A, lda, queue );
     } else {
-        magmablas_ctranspose( n, m, dAT(0,0), lddat, dA(0,0), ldda );
-        magma_cgetmatrix( m, n, dA(0,0), ldda, A, lda );
+        magmablas_ctranspose( n, m, dAT(0,0), lddat, dA(0,0), ldda, queue );
+        magma_cgetmatrix( m, n, dA(0,0), ldda, A, lda, queue );
     }
 
+cleanup:
+    magma_queue_destroy( queue );
     magma_free( dA );
 
     return *info;

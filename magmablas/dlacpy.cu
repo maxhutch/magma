@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
        @author Azzam Haidar
        
-       @generated from zlacpy.cu normal z -> d, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlacpy.cu normal z -> d, Wed Jan  6 17:59:37 2016
 
 */
 #include "common_magma.h"
@@ -210,10 +210,8 @@ void dlacpy_upper_kernel_batched(
 /**
     Purpose
     -------
-    DLACPY_Q copies all or part of a two-dimensional matrix dA to another
+    DLACPY copies all or part of a two-dimensional matrix dA to another
     matrix dB.
-    
-    This is the same as DLACPY, but adds queue argument.
     
     Arguments
     ---------
@@ -304,11 +302,11 @@ magmablas_dlacpy_q(
                 nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                 grid.y = magma_ceildiv( nn, BLK_Y );
                 if ( i == j ) {  // diagonal super block
-                    dlacpy_lower_kernel<<< grid, threads, 0, queue >>>
+                    dlacpy_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
                 }
                 else {           // off diagonal super block
-                    dlacpy_full_kernel <<< grid, threads, 0, queue >>>
+                    dlacpy_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
                 }
             }
@@ -322,11 +320,11 @@ magmablas_dlacpy_q(
                 nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                 grid.y = magma_ceildiv( nn, BLK_Y );
                 if ( i == j ) {  // diagonal super block
-                    dlacpy_upper_kernel<<< grid, threads, 0, queue >>>
+                    dlacpy_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
                 }
                 else {           // off diagonal super block
-                    dlacpy_full_kernel <<< grid, threads, 0, queue >>>
+                    dlacpy_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
                 }
             }
@@ -340,7 +338,7 @@ magmablas_dlacpy_q(
             for( unsigned int j=0; j < super_grid.y; ++j ) {  // full row
                 nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                 grid.y = magma_ceildiv( nn, BLK_Y );
-                dlacpy_full_kernel <<< grid, threads, 0, queue >>>
+                dlacpy_full_kernel <<< grid, threads, 0, queue->cuda_stream() >>>
                     ( mm, nn, dA(i*super_NB, j*super_NB), ldda, dB(i*super_NB, j*super_NB), lddb );
             }
         }
@@ -358,7 +356,7 @@ magmablas_dlacpy(
     magmaDouble_const_ptr dA, magma_int_t ldda,
     magmaDouble_ptr       dB, magma_int_t lddb )
 {
-    magmablas_dlacpy_q( uplo, m, n, dA, ldda, dB, lddb, magma_stream );
+    magmablas_dlacpy_q( uplo, m, n, dA, ldda, dB, lddb, magmablasGetQueue() );
 }
 
 
@@ -451,12 +449,18 @@ magmablas_dlacpy_batched(
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ), batchCount );
     
     if ( uplo == MagmaLower ) {
-        dlacpy_lower_kernel_batched<<< grid, threads, 0, queue >>> ( m, n, dAarray, ldda, dBarray, lddb );
+        dlacpy_lower_kernel_batched
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            ( m, n, dAarray, ldda, dBarray, lddb );
     }
     else if ( uplo == MagmaUpper ) {
-        dlacpy_upper_kernel_batched<<< grid, threads, 0, queue >>> ( m, n, dAarray, ldda, dBarray, lddb );
+        dlacpy_upper_kernel_batched
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            ( m, n, dAarray, ldda, dBarray, lddb );
     }
     else {
-        dlacpy_full_kernel_batched <<< grid, threads, 0, queue >>> ( m, n, dAarray, ldda, dBarray, lddb );
+        dlacpy_full_kernel_batched
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            ( m, n, dAarray, ldda, dBarray, lddb );
     }
 }

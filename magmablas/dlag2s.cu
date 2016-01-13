@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlag2c.cu mixed zc -> ds, Fri Sep 11 18:29:19 2015
+       @generated from magmablas/zlag2c.cu mixed zc -> ds, Wed Jan  6 17:59:35 2016
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -82,15 +82,13 @@ void dlag2s_kernel(
 /**
     Purpose
     -------
-    DLAG2S_Q converts a double-real matrix, A,
-                   to a single-real matrix, SA.
+    DLAG2S converts a double-real matrix, A,
+                 to a single-real matrix, SA.
     
     RMAX is the overflow for the single-real arithmetic.
     DLAG2S checks that all the entries of A are between -RMAX and
     RMAX. If not, the conversion is aborted and a flag is raised.
     
-    This is the same as DLAG2S, but adds queue argument.
-        
     Arguments
     ---------
     @param[in]
@@ -166,7 +164,7 @@ magmablas_dlag2s_q(
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
     
-    dlag2s_kernel<<< grid, threads, 0, queue >>>( m, n, A, lda, SA, ldsa, rmax );
+    dlag2s_kernel<<< grid, threads, 0, queue->cuda_stream() >>>( m, n, A, lda, SA, ldsa, rmax );
     
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }
@@ -183,5 +181,5 @@ magmablas_dlag2s(
     magmaFloat_ptr SA,       magma_int_t ldsa,
     magma_int_t *info )
 {
-    magmablas_dlag2s_q( m, n, A, lda, SA, ldsa, magma_stream, info );
+    magmablas_dlag2s_q( m, n, A, lda, SA, ldsa, magmablasGetQueue(), info );
 }

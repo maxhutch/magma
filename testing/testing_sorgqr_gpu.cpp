@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zungqr_gpu.cpp normal z -> s, Fri Sep 11 18:29:38 2015
+       @generated from testing/testing_zungqr_gpu.cpp normal z -> s, Wed Jan  6 17:59:48 2016
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -65,15 +65,14 @@ int main( int argc, char** argv)
             ldda = magma_roundup( m, opts.align );  // multiple of 32 by default
             n2 = lda*n;
             min_mn = min(m, n);
-            nb = magma_get_sgeqrf_nb( m );
-            lwork  = (m + 2*n+nb)*nb;
+            nb = magma_get_sgeqrf_nb( m, n );
+            lwork  = n*nb;
             gflops = FLOPS_SORGQR( m, n, k ) / 1e9;
             
-            TESTING_MALLOC_PIN( hA,     float, lda*n  );
-            TESTING_MALLOC_PIN( h_work, float, lwork  );
-            
+            TESTING_MALLOC_CPU( hA,     float, lda*n  );
             TESTING_MALLOC_CPU( hR,     float, lda*n  );
             TESTING_MALLOC_CPU( tau,    float, min_mn );
+            TESTING_MALLOC_CPU( h_work, float, lwork  );
             
             TESTING_MALLOC_DEV( dA,     float, ldda*n );
             TESTING_MALLOC_DEV( dT,     float, ( 2*min_mn + magma_roundup( n, 32 ) )*nb );
@@ -135,11 +134,10 @@ int main( int argc, char** argv)
                        gpu_perf, gpu_time );
             }
             
-            TESTING_FREE_PIN( hA     );
-            TESTING_FREE_PIN( h_work );
-            
+            TESTING_FREE_CPU( hA     );
             TESTING_FREE_CPU( hR  );
             TESTING_FREE_CPU( tau );
+            TESTING_FREE_CPU( h_work );
             
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dT );
@@ -150,6 +148,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

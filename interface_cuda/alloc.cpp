@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
  
        @author Mark Gates
 */
@@ -11,10 +11,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <map>
+
 #include "magma.h"
 #include "error.h"
 
 #ifdef HAVE_CUBLAS
+
+
+#ifdef DEBUG_MEMORY
+pthread_mutex_t           g_pointers_mutex;
+std::map< void*, size_t > g_pointers_dev;
+std::map< void*, size_t > g_pointers_cpu;
+std::map< void*, size_t > g_pointers_pin;
+#endif
+
 
 // ========================================
 // memory allocation
@@ -28,6 +39,14 @@ magma_malloc( magma_ptr* ptrPtr, size_t size )
     if ( cudaSuccess != cudaMalloc( ptrPtr, size )) {
         return MAGMA_ERR_DEVICE_ALLOC;
     }
+    
+    #ifdef DEBUG_MEMORY
+    pthread_mutex_lock( &g_pointers_mutex );
+    //printf( "magma_malloc_dev( %p, %lu )\n", *ptrPtr, size );
+    g_pointers_dev[ *ptrPtr ] = size;
+    pthread_mutex_unlock( &g_pointers_mutex );
+    #endif
+    
     return MAGMA_SUCCESS;
 }
 
@@ -37,6 +56,17 @@ extern "C" magma_int_t
 magma_free_internal( magma_ptr ptr,
     const char* func, const char* file, int line )
 {
+    #ifdef DEBUG_MEMORY
+    pthread_mutex_lock( &g_pointers_mutex );
+    if ( ptr != NULL && g_pointers_dev.count( ptr ) == 0 ) {
+        fprintf( stderr, "magma_free( %p ) that wasn't allocated with magma_malloc.\n", ptr );
+    }
+    else {
+        g_pointers_dev.erase( ptr );
+    }
+    pthread_mutex_unlock( &g_pointers_mutex );
+    #endif
+    
     cudaError_t err = cudaFree( ptr );
     check_xerror( err, func, file, line );
     if ( err != cudaSuccess ) {
@@ -77,6 +107,14 @@ magma_malloc_cpu( void** ptrPtr, size_t size )
         return MAGMA_ERR_HOST_ALLOC;
     }
 #endif
+    
+    #ifdef DEBUG_MEMORY
+    pthread_mutex_lock( &g_pointers_mutex );
+    //printf( "magma_malloc_cpu( %p, %lu )\n", *ptrPtr, size );
+    g_pointers_cpu[ *ptrPtr ] = size;
+    pthread_mutex_unlock( &g_pointers_mutex );
+    #endif
+    
     return MAGMA_SUCCESS;
 }
 
@@ -87,6 +125,17 @@ magma_malloc_cpu( void** ptrPtr, size_t size )
 extern "C" magma_int_t
 magma_free_cpu( void* ptr )
 {
+    #ifdef DEBUG_MEMORY
+    pthread_mutex_lock( &g_pointers_mutex );
+    if ( ptr != NULL && g_pointers_cpu.count( ptr ) == 0 ) {
+        fprintf( stderr, "magma_free_cpu( %p ) that wasn't allocated with magma_malloc_cpu.\n", ptr );
+    }
+    else {
+        g_pointers_cpu.erase( ptr );
+    }
+    pthread_mutex_unlock( &g_pointers_mutex );
+    #endif
+    
 #if defined( _WIN32 ) || defined( _WIN64 )
     _aligned_free( ptr );
 #else
@@ -107,6 +156,14 @@ magma_malloc_pinned( void** ptrPtr, size_t size )
     if ( cudaSuccess != cudaMallocHost( ptrPtr, size )) {
         return MAGMA_ERR_HOST_ALLOC;
     }
+    
+    #ifdef DEBUG_MEMORY
+    pthread_mutex_lock( &g_pointers_mutex );
+    //printf( "magma_malloc_pin( %p, %lu )\n", *ptrPtr, size );
+    g_pointers_pin[ *ptrPtr ] = size;
+    pthread_mutex_unlock( &g_pointers_mutex );
+    #endif
+    
     return MAGMA_SUCCESS;
 }
 
@@ -116,6 +173,17 @@ extern "C" magma_int_t
 magma_free_pinned_internal( void* ptr,
     const char* func, const char* file, int line )
 {
+    #ifdef DEBUG_MEMORY
+    pthread_mutex_lock( &g_pointers_mutex );
+    if ( ptr != NULL && g_pointers_pin.count( ptr ) == 0 ) {
+        fprintf( stderr, "magma_free_pinned( %p ) that wasn't allocated with magma_malloc_pinned.\n", ptr );
+    }
+    else {
+        g_pointers_pin.erase( ptr );
+    }
+    pthread_mutex_unlock( &g_pointers_mutex );
+    #endif
+    
     cudaError_t err = cudaFreeHost( ptr );
     check_xerror( err, func, file, line );
     if ( cudaSuccess != err ) {

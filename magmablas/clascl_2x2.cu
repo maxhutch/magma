@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlascl_2x2.cu normal z -> c, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlascl_2x2.cu normal z -> c, Wed Jan  6 17:59:37 2016
 
        @author Ichitaro Yamazaki
 */
@@ -19,7 +19,10 @@
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from left edge and moving right to diagonal.
 __global__ void
-clascl_2x2_lower(int m, const magmaFloatComplex* W, int ldw, magmaFloatComplex* A, int lda)
+clascl_2x2_lower(
+    int m,
+    const magmaFloatComplex* W, int ldw,
+    magmaFloatComplex* A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -39,7 +42,10 @@ clascl_2x2_lower(int m, const magmaFloatComplex* W, int ldw, magmaFloatComplex* 
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from right edge and moving left to diagonal.
 __global__ void
-clascl_2x2_upper(int m, const magmaFloatComplex *W, int ldw, magmaFloatComplex* A, int lda)
+clascl_2x2_upper(
+    int m,
+    const magmaFloatComplex *W, int ldw,
+    magmaFloatComplex* A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -105,10 +111,11 @@ clascl_2x2_upper(int m, const magmaFloatComplex *W, int ldw, magmaFloatComplex* 
     ********************************************************************/
 extern "C" void
 magmablas_clascl_2x2_q(
-    magma_type_t type, magma_int_t m, 
-    magmaFloatComplex_const_ptr dW, magma_int_t lddw, 
-    magmaFloatComplex_ptr       dA, magma_int_t ldda, 
-    magma_queue_t queue, magma_int_t *info )
+    magma_type_t type, magma_int_t m,
+    magmaFloatComplex_const_ptr dW, magma_int_t lddw,
+    magmaFloatComplex_ptr       dA, magma_int_t ldda,
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     *info = 0;
     if ( type != MagmaLower && type != MagmaUpper )
@@ -123,14 +130,14 @@ magmablas_clascl_2x2_q(
         return;  //info;
     }
     
-    dim3 grid( magma_ceildiv( m, NB ) );
     dim3 threads( NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
     
     if (type == MagmaLower) {
-        clascl_2x2_lower <<< grid, threads, 0, queue >>> (m, dW, lddw, dA, ldda);
+        clascl_2x2_lower <<< grid, threads, 0, queue->cuda_stream() >>> (m, dW, lddw, dA, ldda);
     }
     else {
-        clascl_2x2_upper <<< grid, threads, 0, queue >>> (m, dW, lddw, dA, ldda);
+        clascl_2x2_upper <<< grid, threads, 0, queue->cuda_stream() >>> (m, dW, lddw, dA, ldda);
     }
 }
 
@@ -141,10 +148,10 @@ magmablas_clascl_2x2_q(
     ********************************************************************/
 extern "C" void
 magmablas_clascl_2x2(
-    magma_type_t type, magma_int_t m, 
-    magmaFloatComplex_const_ptr dW, magma_int_t lddw, 
-    magmaFloatComplex_ptr       dA, magma_int_t ldda, 
+    magma_type_t type, magma_int_t m,
+    magmaFloatComplex_const_ptr dW, magma_int_t lddw,
+    magmaFloatComplex_ptr       dA, magma_int_t ldda,
     magma_int_t *info )
 {
-    magmablas_clascl_2x2_q( type, m, dW, lddw, dA, ldda, magma_stream, info );
+    magmablas_clascl_2x2_q( type, m, dW, lddw, dA, ldda, magmablasGetQueue(), info );
 }

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Tingxing Dong
        @author Azzam Haidar
@@ -21,7 +21,7 @@ template< const magma_trans_t conjugate, typename T >
 __host__ __device__ static inline
 T op( T& x )
 {
-    if (conjugate == Magma_ConjTrans) {
+    if (conjugate == MagmaConjTrans) {
         return conj(x);
     } else {
         return x;
@@ -29,13 +29,13 @@ T op( T& x )
 }
 
 
-template<class T, const int DIM_X, const int DIM_Y, const int TILE_SIZE> 
+template<typename T, const int DIM_X, const int DIM_Y, const int TILE_SIZE> 
 static __device__ void
 gemvn_template_device(
     int m, int n, T alpha,
     const T * __restrict__ A, int lda,
     const T * __restrict__ x, int incx, T beta,
-    T       *y, int incy)
+    T       * __restrict__ y, int incy)
 {
     if (m <= 0 || n <= 0) return;
 
@@ -110,7 +110,6 @@ gemvn_template_device(
             __syncthreads();
         }
 
- 
         if ( ind < m) A -= ind;
 
         ind += DIM_X;
@@ -124,13 +123,13 @@ gemvn_template_device(
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-template<class T, const int DIM_X, const int DIM_Y, const int TILE_SIZE,  magma_trans_t trans> 
+template<typename T, const int DIM_X, const int DIM_Y, const int TILE_SIZE,  magma_trans_t trans> 
 static __device__ void
 gemvc_template_device(
     int m, int n, T alpha,
     const T * __restrict__ A, int lda,
     const T * __restrict__ x, int incx, T beta,
-    T       *y, int incy)
+    T       * __restrict__ y, int incy)
 {
     if (m <= 0 || n <= 0) return;
 
@@ -180,7 +179,7 @@ gemvc_template_device(
         res = make_FloatingPoint(0.0, 0.0);
 
         // partial sums
-        if(col < n)
+        if (col < n)
         {    
             for (int i=0; i < mfull; i += DIM_X) {
                 res += op<trans>(A[i]) * x[(tx + i)*incx];

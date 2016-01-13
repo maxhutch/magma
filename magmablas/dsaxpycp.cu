@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zcaxpycp.cu mixed zc -> ds, Fri Sep 11 18:29:19 2015
+       @generated from magmablas/zcaxpycp.cu mixed zc -> ds, Wed Jan  6 17:59:35 2016
 
 */
 #include "common_magma.h"
@@ -17,12 +17,16 @@
 // each thread does one index, x[i] and w[i]
 __global__ void
 dsaxpycp_kernel(
-    int m, float *r, double *x,
-    const double *b, double *w )
+    int m,
+    float *r,
+    double *x,
+    const double *b,
+    double *w )
 {
     const int i = threadIdx.x + blockIdx.x*NB;
     if ( i < m ) {
-        x[i] = MAGMA_D_ADD( x[i], (double)( r[i] ) );
+        x[i] = MAGMA_D_ADD( x[i], MAGMA_D_MAKE( MAGMA_D_REAL( r[i] ),
+                                                MAGMA_D_IMAG( r[i] ) ) );
         w[i] = b[i];
     }
 }
@@ -42,7 +46,7 @@ magmablas_dsaxpycp_q(
 {
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
-    dsaxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b, w );
+    dsaxpycp_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, r, x, b, w );
 }
 
 
@@ -54,5 +58,5 @@ magmablas_dsaxpycp(
     magmaDouble_const_ptr b,
     magmaDouble_ptr w)
 {
-    magmablas_dsaxpycp_q( m, r, x, b, w, magma_stream );
+    magmablas_dsaxpycp_q( m, r, x, b, w, magmablasGetQueue() );
 }

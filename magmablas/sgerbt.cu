@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgerbt.cu normal z -> s, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zgerbt.cu normal z -> s, Wed Jan  6 17:59:36 2016
 
 
        @author Adrien REMY
@@ -55,12 +55,12 @@ magmablas_sprbt_mtv_q(
     magma_int_t threads = block_length;
     magma_int_t grid = magma_ceildiv( n, 4*block_length );
 
-    magmablas_sapply_transpose_vector_kernel<<< grid, threads, 0, queue >>>(n/2, du, n, db, 0);
-    magmablas_sapply_transpose_vector_kernel<<< grid, threads, 0, queue >>>(n/2, du, n+n/2, db, n/2);
+    magmablas_sapply_transpose_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, du, n, db, 0);
+    magmablas_sapply_transpose_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, du, n+n/2, db, n/2);
 
     threads = block_length;
     grid = magma_ceildiv( n, 2*block_length );
-    magmablas_sapply_transpose_vector_kernel<<< grid, threads, 0, queue >>>(n, du, 0, db, 0);
+    magmablas_sapply_transpose_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, du, 0, db, 0);
 }
 
 /**
@@ -71,7 +71,7 @@ magmablas_sprbt_mtv(
     magma_int_t n, 
     float *du, float *db)
 {
-    magmablas_sprbt_mtv_q(n, du, db, magma_stream);
+    magmablas_sprbt_mtv_q(n, du, db, magmablasGetQueue() );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,13 +109,13 @@ magmablas_sprbt_mv_q(
     magma_int_t threads = block_length;
     magma_int_t grid = magma_ceildiv( n, 2*block_length );
 
-    magmablas_sapply_vector_kernel<<< grid, threads, 0, queue >>>(n, dv, 0, db, 0);
+    magmablas_sapply_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, dv, 0, db, 0);
 
     threads = block_length;
     grid = magma_ceildiv( n, 4*block_length );
 
-    magmablas_sapply_vector_kernel<<< grid, threads, 0, queue >>>(n/2, dv, n, db, 0);
-    magmablas_sapply_vector_kernel<<< grid, threads, 0, queue >>>(n/2, dv, n+n/2, db, n/2);
+    magmablas_sapply_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dv, n, db, 0);
+    magmablas_sapply_vector_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dv, n+n/2, db, n/2);
 }
 
 /**
@@ -126,7 +126,7 @@ magmablas_sprbt_mv(
     magma_int_t n, 
     float *dv, float *db)
 {
-    magmablas_sprbt_mv_q(n, dv, db, magma_stream);
+    magmablas_sprbt_mv_q(n, dv, db, magmablasGetQueue() );
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -176,15 +176,15 @@ magmablas_sprbt_q(
     dim3 grid( magma_ceildiv( n, 4*block_height ), 
                magma_ceildiv( n, 4*block_width  ));
 
-    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue >>>(n/2, dA,            0, ldda, du,   0, dv,   0);
-    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue >>>(n/2, dA,     ldda*n/2, ldda, du,   0, dv, n/2);
-    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue >>>(n/2, dA,          n/2, ldda, du, n/2, dv,   0);
-    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue >>>(n/2, dA, ldda*n/2+n/2, ldda, du, n/2, dv, n/2);
+    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dA,            0, ldda, du,   0, dv,   0);
+    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dA,     ldda*n/2, ldda, du,   0, dv, n/2);
+    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dA,          n/2, ldda, du, n/2, dv,   0);
+    magmablas_selementary_multiplication_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n/2, dA, ldda*n/2+n/2, ldda, du, n/2, dv, n/2);
 
     dim3 threads2(block_height, block_width);
     dim3 grid2( magma_ceildiv( n, 2*block_height ), 
                 magma_ceildiv( n, 2*block_width  ));
-    magmablas_selementary_multiplication_kernel<<< grid2, threads2, 0, queue >>>(n, dA, 0, ldda, du, -ldda, dv, -ldda);
+    magmablas_selementary_multiplication_kernel<<< grid2, threads2, 0, queue->cuda_stream() >>>(n, dA, 0, ldda, du, -ldda, dv, -ldda);
 }
 
 
@@ -197,5 +197,5 @@ magmablas_sprbt(
     float *dA, magma_int_t ldda, 
     float *du, float *dv)
 {
-    magmablas_sprbt_q(n, dA, ldda, du, dv, magma_stream);
+    magmablas_sprbt_q(n, dA, ldda, du, dv, magmablasGetQueue() );
 }

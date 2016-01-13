@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgetri_gpu.cpp normal z -> s, Fri Sep 11 18:29:38 2015
+       @generated from testing/testing_zgetri_gpu.cpp normal z -> s, Wed Jan  6 17:59:48 2016
        @author Mark Gates
 */
 // includes, system
@@ -141,10 +141,10 @@ int main( int argc, char** argv )
                     // R -= A*A^{-1}
                     // err = ||I - A*A^{-1}|| / ( N ||A||*||A^{-1}|| ) = ||R|| * rcond / N, using 1-norm
                     lapackf77_slaset( "full", &N, &N, &c_zero, &c_one, h_R, &lda );
-                    blasf77_sgemm( "no", "no", &N, &N, &N, &c_neg_one,
-                                   h_A,    &lda,
-                                   h_Ainv, &lda, &c_one,
-                                   h_R,    &lda );
+                    blasf77_sgemm( "no", "no", &N, &N, &N,
+                                   &c_neg_one, h_A,    &lda,
+                                               h_Ainv, &lda,
+                                   &c_one,     h_R,    &lda );
                     error = lapackf77_slange( "1", &N, &N, h_R, &lda, rwork );
                     error = error * rcond / N;
                 }
@@ -173,6 +173,7 @@ int main( int argc, char** argv )
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

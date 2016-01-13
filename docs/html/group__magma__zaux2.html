@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -127,27 +127,33 @@ Functions</h2></td></tr>
 <tr class="memdesc:gae2dc4f074ef16c3d9b3684965c141bc8"><td class="mdescLeft">&#160;</td><td class="mdescRight">magma_zprint_gpu prints a matrix that is located on the GPU device.  <a href="#gae2dc4f074ef16c3d9b3684965c141bc8">More...</a><br /></td></tr>
 <tr class="separator:gae2dc4f074ef16c3d9b3684965c141bc8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae4f4b58bc02174a0ca45667fe3f34610"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gae4f4b58bc02174a0ca45667fe3f34610">magmablas_clat2z_q</a> (magma_uplo_t uplo, magma_int_t n, magmaFloatComplex_const_ptr SA, magma_int_t ldsa, magmaDoubleComplex_ptr A, magma_int_t lda, magma_queue_t queue, magma_int_t *info)</td></tr>
-<tr class="memdesc:gae4f4b58bc02174a0ca45667fe3f34610"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLAT2Z_STREAM converts a single-complex matrix, SA, to a double-complex matrix, A.  <a href="#gae4f4b58bc02174a0ca45667fe3f34610">More...</a><br /></td></tr>
+<tr class="memdesc:gae4f4b58bc02174a0ca45667fe3f34610"><td class="mdescLeft">&#160;</td><td class="mdescRight">CLAT2Z converts a single-complex matrix, SA, to a double-complex matrix, A.  <a href="#gae4f4b58bc02174a0ca45667fe3f34610">More...</a><br /></td></tr>
 <tr class="separator:gae4f4b58bc02174a0ca45667fe3f34610"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga114edfe1a7a980a136f5298d05cc5f6c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga114edfe1a7a980a136f5298d05cc5f6c">magmablas_clat2z</a> (magma_uplo_t uplo, magma_int_t n, magmaFloatComplex_const_ptr SA, magma_int_t ldsa, magmaDoubleComplex_ptr A, magma_int_t lda, magma_int_t *info)</td></tr>
 <tr class="separator:ga114edfe1a7a980a136f5298d05cc5f6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7e74c5f958eb522e5aca16f8b642c674"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga7e74c5f958eb522e5aca16f8b642c674">magmablas_zclaswp_q</a> (magma_int_t n, magmaDoubleComplex_ptr A, magma_int_t lda, magmaFloatComplex_ptr SA, magma_int_t m, const magma_int_t *ipiv, magma_int_t incx, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga7e74c5f958eb522e5aca16f8b642c674"><td class="mdescLeft">&#160;</td><td class="mdescRight">Row i of A is cast to single precision in row ipiv[i] of SA (incx &gt; 0), or row i of SA is cast to double precision in row ipiv[i] of A (incx &lt; 0), for 0 &lt;= i &lt; M.  <a href="#ga7e74c5f958eb522e5aca16f8b642c674">More...</a><br /></td></tr>
-<tr class="separator:ga7e74c5f958eb522e5aca16f8b642c674"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab2c083a54991e2e84e823066bd588f40"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gab2c083a54991e2e84e823066bd588f40">magmablas_zclaswp_q</a> (magma_int_t n, magmaDoubleComplex_ptr A, magma_int_t lda, magmaFloatComplex_ptr SA, magma_int_t ldsa, magma_int_t m, const magma_int_t *ipiv, magma_int_t incx, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab2c083a54991e2e84e823066bd588f40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Row i of A is cast to single precision in row ipiv[i] of SA (incx &gt; 0), or row i of SA is cast to double precision in row ipiv[i] of A (incx &lt; 0), for 0 &lt;= i &lt; M.  <a href="#gab2c083a54991e2e84e823066bd588f40">More...</a><br /></td></tr>
+<tr class="separator:gab2c083a54991e2e84e823066bd588f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac3b6ca8d5071765418142c7d975017de"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gac3b6ca8d5071765418142c7d975017de">magmablas_zclaswp</a> (magma_int_t n, magmaDoubleComplex_ptr A, magma_int_t lda, magmaFloatComplex_ptr SA, magma_int_t m, const magma_int_t *ipiv, magma_int_t incx)</td></tr>
+<tr class="memdesc:gac3b6ca8d5071765418142c7d975017de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Note magmablas_zclaswp_q also adds ldsa.  <a href="#gac3b6ca8d5071765418142c7d975017de">More...</a><br /></td></tr>
 <tr class="separator:gac3b6ca8d5071765418142c7d975017de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabe7bc4699e3ee75708f18ab39aac18fb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gabe7bc4699e3ee75708f18ab39aac18fb">magmablas_zgeadd_q</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dB, magma_int_t lddb, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gabe7bc4699e3ee75708f18ab39aac18fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEADD adds two matrices, dB = alpha*dA + dB.  <a href="#gabe7bc4699e3ee75708f18ab39aac18fb">More...</a><br /></td></tr>
 <tr class="separator:gabe7bc4699e3ee75708f18ab39aac18fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga584fcd5f035906539c45f806d52b025e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga584fcd5f035906539c45f806d52b025e">magmablas_zgeadd</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dB, magma_int_t lddb)</td></tr>
 <tr class="separator:ga584fcd5f035906539c45f806d52b025e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5b3dc5d8c298e0100227e0faf79ac563"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga5b3dc5d8c298e0100227e0faf79ac563">magmablas_zgeadd2_q</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex beta, magmaDoubleComplex_ptr dB, magma_int_t lddb, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga5b3dc5d8c298e0100227e0faf79ac563"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEADD2 adds two matrices, dB = alpha*dA + beta*dB.  <a href="#ga5b3dc5d8c298e0100227e0faf79ac563">More...</a><br /></td></tr>
+<tr class="separator:ga5b3dc5d8c298e0100227e0faf79ac563"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacdf4ad9bbd23a1a27e5f315fffb3c759"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gacdf4ad9bbd23a1a27e5f315fffb3c759">magmablas_zgeadd2</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex beta, magmaDoubleComplex_ptr dB, magma_int_t lddb)</td></tr>
+<tr class="separator:gacdf4ad9bbd23a1a27e5f315fffb3c759"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga61294345d36a0e20f1bdccd5788c2f66"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga61294345d36a0e20f1bdccd5788c2f66">magmablas_zgeadd_batched_q</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_const_ptr const dAarray[], magma_int_t ldda, magmaDoubleComplex_ptr dBarray[], magma_int_t lddb, magma_int_t batchCount, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga61294345d36a0e20f1bdccd5788c2f66"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZGEADD adds two sets of matrices, dAarray[i] = alpha*dAarray[i] + dBarray[i], for i = 0, ..., batchCount-1.  <a href="#ga61294345d36a0e20f1bdccd5788c2f66">More...</a><br /></td></tr>
 <tr class="separator:ga61294345d36a0e20f1bdccd5788c2f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga2456b28883dd4f39a055d21e4e42b130"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga2456b28883dd4f39a055d21e4e42b130">magmablas_zgeadd_batched</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex alpha, magmaDoubleComplex_const_ptr const dAarray[], magma_int_t ldda, magmaDoubleComplex_ptr dBarray[], magma_int_t lddb, magma_int_t batchCount)</td></tr>
 <tr class="separator:ga2456b28883dd4f39a055d21e4e42b130"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabc46826fb9bc1dc0cdff2d8451d74b5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gabc46826fb9bc1dc0cdff2d8451d74b5c">magmablas_zlacpy_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dB, magma_int_t lddb, magma_queue_t queue)</td></tr>
-<tr class="memdesc:gabc46826fb9bc1dc0cdff2d8451d74b5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLACPY_Q copies all or part of a two-dimensional matrix dA to another matrix dB.  <a href="#gabc46826fb9bc1dc0cdff2d8451d74b5c">More...</a><br /></td></tr>
+<tr class="memdesc:gabc46826fb9bc1dc0cdff2d8451d74b5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLACPY copies all or part of a two-dimensional matrix dA to another matrix dB.  <a href="#gabc46826fb9bc1dc0cdff2d8451d74b5c">More...</a><br /></td></tr>
 <tr class="separator:gabc46826fb9bc1dc0cdff2d8451d74b5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga58ce2a292dd952e0c90dbf052d27ba54"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga58ce2a292dd952e0c90dbf052d27ba54">magmablas_zlacpy</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dB, magma_int_t lddb)</td></tr>
 <tr class="separator:ga58ce2a292dd952e0c90dbf052d27ba54"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -165,16 +171,20 @@ Functions</h2></td></tr>
 <tr class="memitem:ga5aecce714ea0fbde0df8d4e095ef11d1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga5aecce714ea0fbde0df8d4e095ef11d1">magmablas_zlacpy_sym_out</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t *rows, magma_int_t *perm, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDoubleComplex_ptr dB, magma_int_t lddb)</td></tr>
 <tr class="separator:ga5aecce714ea0fbde0df8d4e095ef11d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga7fed0f14ccd8c9e57eeaee7c8e7794a8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga7fed0f14ccd8c9e57eeaee7c8e7794a8">magmablas_zlag2c_q</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr A, magma_int_t lda, magmaFloatComplex_ptr SA, magma_int_t ldsa, magma_queue_t queue, magma_int_t *info)</td></tr>
-<tr class="memdesc:ga7fed0f14ccd8c9e57eeaee7c8e7794a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAG2C_Q converts a double-complex matrix, A, to a single-complex matrix, SA.  <a href="#ga7fed0f14ccd8c9e57eeaee7c8e7794a8">More...</a><br /></td></tr>
+<tr class="memdesc:ga7fed0f14ccd8c9e57eeaee7c8e7794a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAG2C converts a double-complex matrix, A, to a single-complex matrix, SA.  <a href="#ga7fed0f14ccd8c9e57eeaee7c8e7794a8">More...</a><br /></td></tr>
 <tr class="separator:ga7fed0f14ccd8c9e57eeaee7c8e7794a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga77aa18e3af04f1f9f47a29758c7e71d6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga77aa18e3af04f1f9f47a29758c7e71d6">magmablas_zlag2c</a> (magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr A, magma_int_t lda, magmaFloatComplex_ptr SA, magma_int_t ldsa, magma_int_t *info)</td></tr>
 <tr class="separator:ga77aa18e3af04f1f9f47a29758c7e71d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaba72bbed7cfcadb2c21956a466d0a612"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gaba72bbed7cfcadb2c21956a466d0a612">magmablas_zlange</a> (magma_norm_t norm, magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDouble_ptr dwork)</td></tr>
-<tr class="memdesc:gaba72bbed7cfcadb2c21956a466d0a612"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLANGE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a real matrix A.  <a href="#gaba72bbed7cfcadb2c21956a466d0a612">More...</a><br /></td></tr>
-<tr class="separator:gaba72bbed7cfcadb2c21956a466d0a612"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4f90eb22db062b5910f3683979115fca"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga4f90eb22db062b5910f3683979115fca">magmablas_zlanhe</a> (magma_norm_t norm, magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDouble_ptr dwork)</td></tr>
-<tr class="memdesc:ga4f90eb22db062b5910f3683979115fca"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLANHE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a complex Hermitian matrix A.  <a href="#ga4f90eb22db062b5910f3683979115fca">More...</a><br /></td></tr>
-<tr class="separator:ga4f90eb22db062b5910f3683979115fca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0a3cabe8f1ec6853a8fc6197832cd9ff"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga0a3cabe8f1ec6853a8fc6197832cd9ff">magmablas_zlange_q</a> (magma_norm_t norm, magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDouble_ptr dwork, magma_int_t lwork, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga0a3cabe8f1ec6853a8fc6197832cd9ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLANGE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a real matrix A.  <a href="#ga0a3cabe8f1ec6853a8fc6197832cd9ff">More...</a><br /></td></tr>
+<tr class="separator:ga0a3cabe8f1ec6853a8fc6197832cd9ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad849b7a925dd012700c7bf29d00e0638"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gad849b7a925dd012700c7bf29d00e0638">magmablas_zlange</a> (magma_norm_t norm, magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDouble_ptr dwork, magma_int_t lwork)</td></tr>
+<tr class="separator:gad849b7a925dd012700c7bf29d00e0638"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga096f688bd394f2d69def8d9026a2b466"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga096f688bd394f2d69def8d9026a2b466">magmablas_zlanhe_q</a> (magma_norm_t norm, magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDouble_ptr dwork, magma_int_t lwork, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga096f688bd394f2d69def8d9026a2b466"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLANHE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a complex Hermitian matrix A.  <a href="#ga096f688bd394f2d69def8d9026a2b466">More...</a><br /></td></tr>
+<tr class="separator:ga096f688bd394f2d69def8d9026a2b466"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8d5002171811188959339f9d4322409b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga8d5002171811188959339f9d4322409b">magmablas_zlanhe</a> (magma_norm_t norm, magma_uplo_t uplo, magma_int_t n, magmaDoubleComplex_const_ptr dA, magma_int_t ldda, magmaDouble_ptr dwork, magma_int_t lwork)</td></tr>
+<tr class="separator:ga8d5002171811188959339f9d4322409b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaff6428c33514c8464a85c399cf829816"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gaff6428c33514c8464a85c399cf829816">magmablas_zlascl_q</a> (magma_type_t type, magma_int_t kl, magma_int_t ku, double cfrom, double cto, magma_int_t m, magma_int_t n, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_queue_t queue, magma_int_t *info)</td></tr>
 <tr class="memdesc:gaff6428c33514c8464a85c399cf829816"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLASCL multiplies the M by N complex matrix A by the real scalar CTO/CFROM.  <a href="#gaff6428c33514c8464a85c399cf829816">More...</a><br /></td></tr>
 <tr class="separator:gaff6428c33514c8464a85c399cf829816"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -196,12 +206,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga145d21e80658b01ca230f3ae1ddf9f9b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga145d21e80658b01ca230f3ae1ddf9f9b">magmablas_zlascl_diag</a> (magma_type_t type, magma_int_t m, magma_int_t n, magmaDoubleComplex_const_ptr dD, magma_int_t lddd, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
 <tr class="separator:ga145d21e80658b01ca230f3ae1ddf9f9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6e63b2ddbfc6518b357bc9a60be239a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga6e63b2ddbfc6518b357bc9a60be239a2">magmablas_zlaset_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaDoubleComplex offdiag, magmaDoubleComplex diag, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga6e63b2ddbfc6518b357bc9a60be239a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLASET_Q initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals.  <a href="#ga6e63b2ddbfc6518b357bc9a60be239a2">More...</a><br /></td></tr>
+<tr class="memdesc:ga6e63b2ddbfc6518b357bc9a60be239a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLASET initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals.  <a href="#ga6e63b2ddbfc6518b357bc9a60be239a2">More...</a><br /></td></tr>
 <tr class="separator:ga6e63b2ddbfc6518b357bc9a60be239a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabc51aaa05cfd96afc3a707abeedbd450"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#gabc51aaa05cfd96afc3a707abeedbd450">magmablas_zlaset</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magmaDoubleComplex offdiag, magmaDoubleComplex diag, magmaDoubleComplex_ptr dA, magma_int_t ldda)</td></tr>
 <tr class="separator:gabc51aaa05cfd96afc3a707abeedbd450"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga742e048de1512d152d11257015fbc250"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga742e048de1512d152d11257015fbc250">magmablas_zlaset_band_q</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k, magmaDoubleComplex offdiag, magmaDoubleComplex diag, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga742e048de1512d152d11257015fbc250"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDIAG.  <a href="#ga742e048de1512d152d11257015fbc250">More...</a><br /></td></tr>
+<tr class="memdesc:ga742e048de1512d152d11257015fbc250"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLASET_BAND initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDIAG.  <a href="#ga742e048de1512d152d11257015fbc250">More...</a><br /></td></tr>
 <tr class="separator:ga742e048de1512d152d11257015fbc250"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0cb13bafa1a27ef642552480c76df9d8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zaux2.html#ga0cb13bafa1a27ef642552480c76df9d8">magmablas_zlaset_band</a> (magma_uplo_t uplo, magma_int_t m, magma_int_t n, magma_int_t k, magmaDoubleComplex offdiag, magmaDoubleComplex diag, magmaDoubleComplex_ptr dA, magma_int_t ldda)</td></tr>
 <tr class="separator:ga0cb13bafa1a27ef642552480c76df9d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -602,7 +612,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gae4f4b58bc02174a0ca45667fe3f34610" title="CLAT2Z_STREAM converts a single-complex matrix, SA, to a double-complex matrix, A. ">magmablas_clat2z_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gae4f4b58bc02174a0ca45667fe3f34610" title="CLAT2Z converts a single-complex matrix, SA, to a double-complex matrix, A. ">magmablas_clat2z_q</a> </dd></dl>
 
 </div>
 </div>
@@ -666,7 +676,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
       </table>
 </div><div class="memdoc">
 
-<p>CLAT2Z_STREAM converts a single-complex matrix, SA, to a double-complex matrix, A. </p>
+<p>CLAT2Z converts a single-complex matrix, SA, to a double-complex matrix, A. </p>
 <p>Note that while it is possible to overflow while converting from double to single, it is not possible to overflow when converting from single to double.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -745,11 +755,13 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga7e74c5f958eb522e5aca16f8b642c674" title="Row i of A is cast to single precision in row ipiv[i] of SA (incx > 0), or row i of SA is cast to dou...">magmablas_zclaswp_q</a> </dd></dl>
+
+<p>Note magmablas_zclaswp_q also adds ldsa. </p>
+<p>This assumes ldsa = lda. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gab2c083a54991e2e84e823066bd588f40" title="Row i of A is cast to single precision in row ipiv[i] of SA (incx > 0), or row i of SA is cast to dou...">magmablas_zclaswp_q</a> </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="ga7e74c5f958eb522e5aca16f8b642c674"></a>
+<a class="anchor" id="gab2c083a54991e2e84e823066bd588f40"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -776,6 +788,12 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
           <td></td>
           <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
           <td class="paramname"><em>SA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldsa</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -815,7 +833,8 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER. On entry, N specifies the number of columns of the matrix A.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE PRECISION array on the GPU, dimension (LDA,N) On entry, the M-by-N matrix to which the row interchanges will be applied. TODO update docs</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER. LDA specifies the leading dimension of A.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">SA</td><td>REAL array on the GPU, dimension (LDA,N) On exit, the single precision, permuted matrix. TODO update docs</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">SA</td><td>REAL array on the GPU, dimension (LDSA,N) On exit, the single precision, permuted matrix. TODO update docs</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldsa</td><td>INTEGER. LDSA specifies the leading dimension of SA.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>The number of rows to be interchanged.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array on the GPU, dimension (M) The vector of pivot indices. Row i of A is cast to single precision in row ipiv[i] of SA, for 0 &lt;= i &lt; m.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">incx</td><td>INTEGER If INCX is negative, the pivots are applied in reverse order, otherwise in straight-forward order.</td></tr>
@@ -880,6 +899,154 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
       </table>
 </div><div class="memdoc">
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gabe7bc4699e3ee75708f18ab39aac18fb" title="ZGEADD adds two matrices, dB = alpha*dA + dB. ">magmablas_zgeadd_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="gacdf4ad9bbd23a1a27e5f315fffb3c759"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_zgeadd2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_const_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga5b3dc5d8c298e0100227e0faf79ac563" title="ZGEADD2 adds two matrices, dB = alpha*dA + beta*dB. ">magmablas_zgeadd2_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5b3dc5d8c298e0100227e0faf79ac563"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void magmablas_zgeadd2_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_const_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
+          <td class="paramname"><em>dB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lddb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>ZGEADD2 adds two matrices, dB = alpha*dA + beta*dB. </p>
+<dl class="section see"><dt>See also</dt><dd>ZGEADD for dB = alpha*dA + dB, lacking beta.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix dA. M &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix dA. N &gt;= 0.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>COMPLEX_16 The scalar alpha.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX_16 array, dimension (LDDA,N) The m by n matrix dA.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dA. LDDA &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>COMPLEX_16 The scalar beta.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>COMPLEX_16 array, dimension (LDDB,N) The m by n matrix dB.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= max(1,M).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1160,7 +1327,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gabc46826fb9bc1dc0cdff2d8451d74b5c" title="ZLACPY_Q copies all or part of a two-dimensional matrix dA to another matrix dB. ">magmablas_zlacpy_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gabc46826fb9bc1dc0cdff2d8451d74b5c" title="ZLACPY copies all or part of a two-dimensional matrix dA to another matrix dB. ">magmablas_zlacpy_q</a> </dd></dl>
 
 </div>
 </div>
@@ -1312,8 +1479,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
       </table>
 </div><div class="memdoc">
 
-<p>ZLACPY_Q copies all or part of a two-dimensional matrix dA to another matrix dB. </p>
-<p>This is the same as ZLACPY, but adds queue argument.</p>
+<p>ZLACPY copies all or part of a two-dimensional matrix dA to another matrix dB. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies the part of the matrix dA to be copied to dB.<ul>
@@ -1400,7 +1566,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gabc46826fb9bc1dc0cdff2d8451d74b5c" title="ZLACPY_Q copies all or part of a two-dimensional matrix dA to another matrix dB. ">magmablas_zlacpy_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gabc46826fb9bc1dc0cdff2d8451d74b5c" title="ZLACPY copies all or part of a two-dimensional matrix dA to another matrix dB. ">magmablas_zlacpy_q</a> </dd></dl>
 
 </div>
 </div>
@@ -1566,7 +1732,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gabc46826fb9bc1dc0cdff2d8451d74b5c" title="ZLACPY_Q copies all or part of a two-dimensional matrix dA to another matrix dB. ">magmablas_zlacpy_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gabc46826fb9bc1dc0cdff2d8451d74b5c" title="ZLACPY copies all or part of a two-dimensional matrix dA to another matrix dB. ">magmablas_zlacpy_q</a> </dd></dl>
 
 </div>
 </div>
@@ -1720,7 +1886,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga7fed0f14ccd8c9e57eeaee7c8e7794a8" title="ZLAG2C_Q converts a double-complex matrix, A, to a single-complex matrix, SA. ">magmablas_zlag2c_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga7fed0f14ccd8c9e57eeaee7c8e7794a8" title="ZLAG2C converts a double-complex matrix, A, to a single-complex matrix, SA. ">magmablas_zlag2c_q</a> </dd></dl>
 
 </div>
 </div>
@@ -1784,9 +1950,8 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
       </table>
 </div><div class="memdoc">
 
-<p>ZLAG2C_Q converts a double-complex matrix, A, to a single-complex matrix, SA. </p>
+<p>ZLAG2C converts a double-complex matrix, A, to a single-complex matrix, SA. </p>
 <p>RMAX is the overflow for the single-complex arithmetic. ZLAG2C checks that all the entries of A are between -RMAX and RMAX. If not, the conversion is aborted and a flag is raised.</p>
-<p>This is the same as ZLAG2C, but adds queue argument.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of lines of the matrix A. m &gt;= 0.</td></tr>
@@ -1808,7 +1973,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
 
 </div>
 </div>
-<a class="anchor" id="gaba72bbed7cfcadb2c21956a466d0a612"></a>
+<a class="anchor" id="gad849b7a925dd012700c7bf29d00e0638"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1846,7 +2011,76 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magmaDouble_ptr&#160;</td>
-          <td class="paramname"><em>dwork</em>&#160;</td>
+          <td class="paramname"><em>dwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga0a3cabe8f1ec6853a8fc6197832cd9ff" title="ZLANGE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a real matrix A. ">magmablas_zlange_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga0a3cabe8f1ec6853a8fc6197832cd9ff"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double magmablas_zlange_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_norm_t&#160;</td>
+          <td class="paramname"><em>norm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_const_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1859,23 +2093,24 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
 <p>ZLANGE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a real matrix A. </p>
 <h2>Description </h2>
 <p>ZLANGE returns the value</p>
-<p>ZLANGE = ( max(abs(A(i,j))), NORM = 'M' or 'm' ( ( norm1(A), NORM = '1', 'O' or 'o' ( ( normI(A), NORM = 'I' or 'i' ( ( normF(A), NORM = 'F', 'f', 'E' or 'e' ** not yet supported</p>
+<p>ZLANGE = ( max(abs(A(i,j))), NORM = MagmaMaxNorm ( ( norm1(A), NORM = MagmaOneNorm ( ( normI(A), NORM = MagmaInfNorm ( ( normF(A), NORM = MagmaFrobeniusNorm ** not yet supported</p>
 <p>where norm1 denotes the one norm of a matrix (maximum column sum), normI denotes the infinity norm of a matrix (maximum row sum) and normF denotes the Frobenius norm of a matrix (square root of sum of squares). Note that max(abs(A(i,j))) is not a consistent matrix norm.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">norm</td><td>CHARACTER*1 Specifies the value to be returned in ZLANGE as described above.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">norm</td><td>magma_norm_t Specifies the value to be returned in ZLANGE as described above.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0. When M = 0, ZLANGE is set to zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0. When N = 0, ZLANGE is set to zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE PRECISION array on the GPU, dimension (LDDA,N) The m by n matrix A.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(M,1).</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE PRECISION array on the GPU, dimension (LWORK). </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE PRECISION array on the GPU, dimension (LWORK).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. If NORM = MagmaInfNorm or MagmaMaxNorm, LWORK &gt;= max( 1, M ). If NORM = MagmaOneNorm, LWORK &gt;= max( 1, N ). Note this is different than LAPACK, which requires WORK only for NORM = MagmaInfNorm, and does not pass LWORK. </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a class="anchor" id="ga4f90eb22db062b5910f3683979115fca"></a>
+<a class="anchor" id="ga8d5002171811188959339f9d4322409b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1913,7 +2148,76 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magmaDouble_ptr&#160;</td>
-          <td class="paramname"><em>dwork</em>&#160;</td>
+          <td class="paramname"><em>dwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga096f688bd394f2d69def8d9026a2b466" title="ZLANHE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a complex Hermitian matrix A. ">magmablas_zlanhe_q</a> </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="ga096f688bd394f2d69def8d9026a2b466"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double magmablas_zlanhe_q </td>
+          <td>(</td>
+          <td class="paramtype">magma_norm_t&#160;</td>
+          <td class="paramname"><em>norm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_uplo_t&#160;</td>
+          <td class="paramname"><em>uplo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex_const_ptr&#160;</td>
+          <td class="paramname"><em>dA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>ldda</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1924,13 +2228,13 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
 </div><div class="memdoc">
 
 <p>ZLANHE returns the value of the one norm, or the Frobenius norm, or the infinity norm, or the element of largest absolute value of a complex Hermitian matrix A. </p>
-<p>ZLANHE = ( max(abs(A(i,j))), NORM = 'M' or 'm' ( ( norm1(A), NORM = '1', 'O' or 'o' ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || <b>CUDA_ARCH</b> &gt;= 200) ( ( normI(A), NORM = 'I' or 'i' ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || <b>CUDA_ARCH</b> &gt;= 200) ( ( normF(A), NORM = 'F', 'f', 'E' or 'e' ** not yet supported</p>
+<p>ZLANHE = ( max(abs(A(i,j))), NORM = MagmaMaxNorm ( ( norm1(A), NORM = MagmaOneNorm ( ( normI(A), NORM = MagmaInfNorm ( ( normF(A), NORM = MagmaFrobeniusNorm ** not yet supported</p>
 <p>where norm1 denotes the one norm of a matrix (maximum column sum), normI denotes the infinity norm of a matrix (maximum row sum) and normF denotes the Frobenius norm of a matrix (square root of sum of squares). Note that max(abs(A(i,j))) is not a consistent matrix norm.</p>
 <p>On error, returns ZLANHE &lt; 0: if ZLANHE = -i, the i-th argument had an illegal value.</p>
 <h2>Arguments: </h2>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">norm</td><td>CHARACTER*1 Specifies the value to be returned in ZLANHE as described above.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">norm</td><td>magma_norm_t Specifies the value to be returned in ZLANHE as described above.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies whether the upper or lower triangular part of the Hermitian matrix A is to be referenced.<ul>
 <li>= MagmaUpper: Upper triangular part of A is referenced</li>
 <li>= MagmaLower: Lower triangular part of A is referenced</li>
@@ -1939,7 +2243,8 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0. When N = 0, ZLANHE is set to zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>COMPLEX*16 array on the GPU, dimension (LDDA,N) The Hermitian matrix A. If UPLO = MagmaUpper, the leading n by n upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading n by n lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. Note that the imaginary parts of the diagonal elements need not be set and are assumed to be zero.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(N,1).</td></tr>
-    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE PRECISION array on the GPU, dimension (MAX(1,LWORK)), where LWORK &gt;= N. NOTE: this is different than LAPACK, where WORK is required only for norm1 and normI. Here max-norm also requires work. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">dwork</td><td>(workspace) DOUBLE PRECISION array on the GPU, dimension (MAX(1,LWORK)), where LWORK &gt;= N. NOTE: this is different than LAPACK, where WORK is required only for norm1 and normI. Here max-norm also requires WORK.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array DWORK. LWORK &gt;= max( 1, N ). </td></tr>
   </table>
   </dd>
 </dl>
@@ -2358,7 +2663,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga1eea4d8580debac1efc204c3178048a5" title="ZLASCL2 scales the M by N complex matrix A by the real diagonal matrix dD. ">magmablas_zlascl2_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#gae46fccb36e72ad76b3622f7d166fd167" title="ZLASCL_DIAG scales the M by N complex matrix A by the real diagonal matrix dD. ">magmablas_zlascl_diag_q</a> </dd></dl>
 
 </div>
 </div>
@@ -2429,10 +2734,10 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
 </div><div class="memdoc">
 
 <p>ZLASCL_DIAG scales the M by N complex matrix A by the real diagonal matrix dD. </p>
-<p>TYPE specifies that A may be full, upper triangular, lower triangular.</p>
+<p>TYPE specifies that A may be upper triangular or lower triangular.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>magma_type_t TYPE indices the storage type of the input matrix A. = MagmaFull: full matrix. = MagmaLower: lower triangular matrix. = MagmaUpper: upper triangular matrix. Other formats that LAPACK supports, MAGMA does not currently support.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>magma_type_t TYPE indices the storage type of the input matrix A. = MagmaLower: lower triangular matrix. = MagmaUpper: upper triangular matrix. Other formats that LAPACK supports, MAGMA does not currently support.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dD</td><td>DOUBLE PRECISION vector, dimension (LDDD,M) The matrix storing the scaling factor on its diagonal.</td></tr>
@@ -2608,7 +2913,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga6e63b2ddbfc6518b357bc9a60be239a2" title="ZLASET_Q initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals. ">magmablas_zlaset_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga6e63b2ddbfc6518b357bc9a60be239a2" title="ZLASET initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals. ">magmablas_zlaset_q</a> </dd></dl>
 
 </div>
 </div>
@@ -2671,7 +2976,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga742e048de1512d152d11257015fbc250" title="ZLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals t...">magmablas_zlaset_band_q</a> </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__magma__zaux2.html#ga742e048de1512d152d11257015fbc250" title="ZLASET_BAND initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDI...">magmablas_zlaset_band_q</a> </dd></dl>
 
 </div>
 </div>
@@ -2741,8 +3046,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
       </table>
 </div><div class="memdoc">
 
-<p>ZLASET_BAND_STREAM initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDIAG. </p>
-<p>This is the same as ZLASET_BAND, but adds queue argument.</p>
+<p>ZLASET_BAND initializes the main diagonal of dA to DIAG, and the K-1 sub- or super-diagonals to OFFDIAG. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies the part of the matrix dA to be set.<ul>
@@ -2824,8 +3128,7 @@ ZLASWPX performs a series of row interchanges on the matrix A.  <a href="#ga7bd1
       </table>
 </div><div class="memdoc">
 
-<p>ZLASET_Q initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals. </p>
-<p>This is the same as ZLASET, but adds queue argument.</p>
+<p>ZLASET initializes a 2-D array A to DIAG on the diagonal and OFFDIAG on the off-diagonals. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t Specifies the part of the matrix dA to be set.<ul>
@@ -3111,10 +3414,10 @@ ZLASWP performs a series of row interchanges on the matrix A. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dAT</td><td>COMPLEX*16 array on GPU, stored row-wise, dimension (LDDA,N) On entry, the matrix of column dimension N to which the row interchanges will be applied. On exit, the permuted matrix.</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dAT</td><td>COMPLEX*16 array on GPU, stored row-wise, dimension (LDDA,M) The M-by-N matrix, stored transposed as N-by-M matrix embedded in LDDA-by-M array. M is not given; it is implicit. On entry, the matrix of column dimension N to which the row interchanges will be applied. On exit, the permuted matrix.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. ldda &gt;= n.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">k1</td><td>INTEGER The first element of IPIV for which a row interchange will be done. (Fortran one-based index: 1 &lt;= k1 .)</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">k2</td><td>INTEGER The last element of IPIV for which a row interchange will be done. (Fortran one-based index: 1 &lt;= k2 .)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k1</td><td>INTEGER The first element of IPIV for which a row interchange will be done. (Fortran one-based index: 1 &lt;= k1.)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k2</td><td>INTEGER The last element of IPIV for which a row interchange will be done. (Fortran one-based index: 1 &lt;= k2.)</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array, on CPU, dimension (K2*abs(INCI)) The vector of pivot indices. Only the elements in positions K1 through K2 of IPIV are accessed. IPIV(K) = L implies rows K and L are to be interchanged.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">inci</td><td>INTEGER The increment between successive values of IPIV. Currently, INCI &gt; 0. TODO: If INCI is negative, the pivots are applied in reverse order.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
@@ -4789,7 +5092,7 @@ ZLASWPX performs a series of row interchanges on the matrix A. </p>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

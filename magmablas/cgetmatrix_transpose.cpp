@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgetmatrix_transpose.cpp normal z -> c, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zgetmatrix_transpose.cpp normal z -> c, Wed Jan  6 17:59:38 2016
 
 */
 #include "common_magma.h"

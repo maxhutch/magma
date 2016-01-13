@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from zgeqr2_kernels.cu normal z -> d, Fri Sep 11 18:29:22 2015
+   @generated from magmablas/zgeqr2_kernels.cu normal z -> d, Wed Jan  6 17:59:40 2016
 */
 
 #include "common_magma.h"
@@ -96,5 +96,7 @@ void dgeqrf_copy_upper_batched(
     */
     if ( nb >= n) return;
     
-    dgeqrf_copy_upper_kernel_batched<<< batchCount, n, 0, queue >>>( n, nb, dV_array, lddv, dR_array, lddr );
+    dgeqrf_copy_upper_kernel_batched
+        <<< batchCount, n, 0, queue->cuda_stream() >>>
+        ( n, nb, dV_array, lddv, dR_array, lddr );
 }

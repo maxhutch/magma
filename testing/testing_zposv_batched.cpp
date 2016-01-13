@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Mark gates
    @author Azzam Haidar
@@ -104,8 +104,8 @@ int main(int argc, char **argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            zset_pointer(dA_array, d_A, ldda, 0, 0, ldda*N, batchCount, queue);
-            zset_pointer(dB_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, queue);
+            magma_zset_pointer( dA_array, d_A, ldda, 0, 0, ldda*N, batchCount, queue );
+            magma_zset_pointer( dB_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, queue );
 
             gpu_time = magma_sync_wtime( opts.queue );
             info = magma_zposv_batched(opts.uplo, N, nrhs, dA_array, ldda, dB_array, lddb, dinfo_array, batchCount, queue);
@@ -208,6 +208,7 @@ int main(int argc, char **argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zhetrd_hb2st.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+       @generated from src/zhetrd_hb2st.cpp normal z -> c, Wed Jan  6 17:59:34 2016
 
 */
 #include "common_magma.h"
@@ -20,7 +20,7 @@
 #include "affinity.h"
 #endif
 
-#define PRECISION_c
+#define COMPLEX
 
 static void *magma_chetrd_hb2st_parallel_section(void *arg);
 
@@ -274,7 +274,7 @@ magma_chetrd_hb2st(
      * one.
      *  */
 
-#if defined(PRECISION_z) || defined(PRECISION_c)
+#ifdef COMPLEX
     if (uplo == MagmaLower) {
         for (magma_int_t i=0; i < n-1; i++) {
             d[i] = MAGMA_C_REAL( A[i*lda  ] );

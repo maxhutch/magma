@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
-       zsymv.cu is nearly identical to zhemv.cu, just change names and drop cuConj.
+       zsymv.cu is nearly identical to zhemv.cu, just change names and drop MAGMA_Z_CNJG.
        
        zhemv_kernel_U (upper) in zhemv_upper.cu is very similar to
        zhemv_kernel_L (lower) in zhemv.cu; diff the two files to compare.
@@ -154,7 +154,7 @@ zhemv_kernel_L(
     #pragma unroll
     for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j < tx2 ) {
-            sA32(j, tx2) = cuConj( sA32(tx2, j) );
+            sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
         }
     }
     __syncthreads();
@@ -215,7 +215,7 @@ zhemv_kernel_L(
     #pragma unroll
     for (int j=ty2*4; j < ty2*4 + 4; j++) {
         if ( j < tx2 ) {
-            sA32(j, tx2) = cuConj( sA32(tx2, j) );
+            sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
         }
     }
     __syncthreads();
@@ -285,7 +285,7 @@ zhemv_kernel_L(
     psum_t = MAGMA_Z_ZERO;
     #pragma unroll
     for (int j=0; j < 4; j++) {
-        psum_t += cuConj( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
+        psum_t += MAGMA_Z_CNJG( sA32(ty2*4 + j, tx2) ) * sx_blk[half_NB_X + ty2*4 + j];
     }
     __syncthreads();
 
@@ -362,7 +362,7 @@ zhemv_kernel_L(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = cuConj( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = MAGMA_Z_CNJG( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
 
@@ -640,17 +640,17 @@ magmablas_zhemv_work(
     dim3 threads_sum( NB_X, 1, 1 );
 
     if ( upper ) {
-        zhemv_kernel_U<<< grid, threads, 0, queue >>>
+        zhemv_kernel_U<<< grid, threads, 0, queue->cuda_stream() >>>
             (n, dA, ldda, dx, incx, dwork);
         
-        zhemv_kernel_U_sum<<< grid, threads_sum, 0, queue >>>
+        zhemv_kernel_U_sum<<< grid, threads_sum, 0, queue->cuda_stream() >>>
             (n, alpha, ldda, beta, dy, incy, dwork);
     }
     else {
-        zhemv_kernel_L<<< grid, threads, 0, queue >>>
+        zhemv_kernel_L<<< grid, threads, 0, queue->cuda_stream() >>>
             (n, dA, ldda, dx, incx, dwork);
         
-        zhemv_kernel_L_sum<<< grid, threads_sum, 0, queue >>>
+        zhemv_kernel_L_sum<<< grid, threads_sum, 0, queue->cuda_stream() >>>
             (n, alpha, ldda, beta, dy, incy, dwork);
     }
     return info;
@@ -801,7 +801,7 @@ magmablas_zhemv(
     }
     
     magmablas_zhemv_work( uplo, n, alpha, dA, ldda, dx, incx, beta, dy, incy,
-                          dwork, lwork, magma_stream );
+                          dwork, lwork, magmablasGetQueue() );
     
     magma_free( dwork );
     

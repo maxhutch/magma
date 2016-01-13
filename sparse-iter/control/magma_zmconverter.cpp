@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
+#include <cuda.h>  // for CUDA_VERSION
 
 /**
     Purpose
@@ -172,14 +173,11 @@ magma_zmconvert(
     cusparseHandle_t cusparseHandle = 0;
     cusparseMatDescr_t descr = 0;
     
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
-
     B->val = NULL;
     B->col = NULL;
     B->row = NULL;
     B->rowidx = NULL;
+    B->list = NULL;
     B->blockinfo = NULL;
     B->diag = NULL;
     B->dval = NULL;
@@ -187,7 +185,8 @@ magma_zmconvert(
     B->drow = NULL;
     B->drowidx = NULL;
     B->ddiag = NULL;
-
+    B->dlist = NULL;
+    
     magmaDoubleComplex zero = MAGMA_Z_MAKE( 0.0, 0.0 );
 
     // check whether matrix on CPU
@@ -202,7 +201,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -220,6 +219,11 @@ magma_zmconvert(
                     B->row[i] = A.row[i];
                 }
             }
+            // CSR to CUCSR
+            else if ( new_format == Magma_CUCSR ){
+                CHECK(magma_zmconvert(A, B, Magma_CSR, Magma_CSR, queue));
+                B->storage_type = Magma_CUCSR;
+            }
             
             // CSR to CSRL
             else if ( new_format == Magma_CSRL ) {
@@ -227,7 +231,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = MagmaLower;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->diameter = A.diameter;
     
@@ -307,7 +311,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSRD;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -363,6 +367,25 @@ magma_zmconvert(
                     }
                 }
             }
+            
+            // CSR to CSRLIST
+            else if ( new_format == Magma_CSRLIST ) {
+                CHECK( magma_zmconvert( A, B, Magma_CSR, Magma_CSR, queue ));
+                B->storage_type = Magma_CSRLIST;
+    
+                CHECK( magma_index_malloc_cpu( &B->rowidx, A.nnz ));
+                CHECK( magma_index_malloc_cpu( &B->list, A.nnz ));
+                
+                for(magma_int_t i=0; i < A.num_rows; i++) {
+                    for(magma_int_t j=A.row[i]; j < A.row[i+1]; j++) {
+                        B->rowidx[j] = i;
+                    }
+                    for(magma_int_t j=A.row[i]; j < A.row[i+1]-1; j++) {
+                        B->list[j] = j+1;
+                    }
+                    B->list[A.row[i+1]-1] = 0;
+                }
+            }
    
             // CSR to ELLPACKT (using row-major storage)
             else if (  new_format == Magma_ELLPACKT ) {
@@ -370,7 +393,7 @@ magma_zmconvert(
                 B->storage_type = Magma_ELLPACKT;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -411,7 +434,7 @@ magma_zmconvert(
                 B->storage_type = Magma_ELL;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -434,7 +457,7 @@ magma_zmconvert(
                 
                 for( i=0; i < (maxrowlength*A.num_rows); i++) {
                     B->val[i] = MAGMA_Z_MAKE(0., 0.);
-                    B->col[i] = -1;
+                    B->col[i] = 0;
                 }
     
                 for( i=0; i < A.num_rows; i++ ) {
@@ -455,7 +478,7 @@ magma_zmconvert(
                 B->storage_type = Magma_ELLD;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -504,7 +527,7 @@ magma_zmconvert(
                 B->storage_type = Magma_ELLRT;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -557,13 +580,19 @@ magma_zmconvert(
             // alignment is posible such that multiple threads can be used for SpMV
             // so the rowlength is padded (SELLP) to a multiple of the alignment
             else if ( new_format == Magma_SELLP ) {
+                if( 256%(B->blocksize) !=0 ){
+                    printf("error: blocksize not supported!\n");
+                    info = MAGMA_ERR_NOT_SUPPORTED;
+                    goto cleanup;
+                }
+                
                 // fill in information for B
                 B->storage_type = new_format;
                 if (B->alignment > 1)
                     B->storage_type = Magma_SELLP;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->diameter = A.diameter;
                 B->max_nnz_row = 0;
@@ -633,7 +662,7 @@ magma_zmconvert(
                 B->storage_type = Magma_DENSE;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -672,46 +701,24 @@ magma_zmconvert(
             if ( old_format == Magma_CSRU ) {
                 CHECK( magma_zmconvert( A, B, Magma_CSR, Magma_CSR, queue ));
             }
+            
+            // CUCSR to CSR
+            else if ( old_format == Magma_CUCSR ){
+                CHECK(magma_zmconvert(A, B, Magma_CSR, Magma_CSR, queue));
+            }
                     
             // CSRD to CSR (diagonal elements first)
             else if ( old_format == Magma_CSRD ) {
-                // fill in information for B
-                B->storage_type = Magma_CSR;
-                B->memory_location = A.memory_location;
-                B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
-                B->num_cols = A.num_cols;
-                B->nnz = A.nnz;
-                B->max_nnz_row = A.max_nnz_row;
-                B->diameter = A.diameter;
-
-    
-                CHECK( magma_zmalloc_cpu( &B->val, A.nnz ));
-                CHECK( magma_index_malloc_cpu( &B->row, A.num_rows+1 ));
-                CHECK( magma_index_malloc_cpu( &B->col, A.nnz ));
-                
-                for(magma_int_t i=0; i < A.num_rows; i++) {
-                    magmaDoubleComplex diagval = A.val[A.row[i]];
-                    magma_index_t diagcol = A.col[A.row[i]];
-                    magma_int_t smaller = 0;
-                    for( magma_int_t k=A.row[i]; k < A.row[i+1]; k++ ) {
-                        if ( (A.col[k] < diagcol) )
-                            smaller++;
-                    }
-                    for( magma_int_t k=A.row[i]; k < A.row[i]+smaller; k++ ) {
-                        B->col[k] = A.col[k+1];
-                        B->val[k] = A.val[k+1];
-                    }
-                    B->col[A.row[i]+smaller] = diagcol;
-                    B->val[A.row[i]+smaller] = diagval;
-                    for( magma_int_t k=A.row[i]+smaller+1; k < A.row[i+1]; k++ ) {
-                        B->col[k] = A.col[k];
-                        B->val[k] = A.val[k];
-                    }
+                CHECK( magma_zmconvert( A, B, Magma_CSR, Magma_CSR, queue ));
+                for( magma_int_t i=0; i < A.num_rows; i++) {
+                    magma_zindexsortval(
+                    B->col,
+                    B->val,
+                    B->row[i],
+                    B->row[i+1]-1,
+                    queue );
                 }
-                for( magma_int_t i=0; i < A.num_rows+1; i++) {
-                    B->row[i] = A.row[i];
-                }
+            
             }
             
             // CSRCOO to CSR
@@ -719,10 +726,33 @@ magma_zmconvert(
                 CHECK( magma_zmconvert( A, B, Magma_CSR, Magma_CSR, queue ));
             }
             
-            // CSRCSC to CSR
-            else if ( old_format == Magma_COO ) {
-               // A.storage_type = Magma_CSR;
-              //  magma_zmconvert( A, B, Magma_CSR, Magma_CSR, queue );
+            // CSRLIST to CSR
+            else if ( old_format == Magma_CSRLIST ) {
+                CHECK( magma_zmconvert( A, B, Magma_CSR, Magma_CSR, queue ));
+                magma_int_t element, row, numnnz;
+                
+                numnnz = 0;
+                // fill the rowpointer
+                B->row[0] = 0;
+                for( row=0; row<A.num_rows; row++ ){
+                    element = A.row[row];
+                    do{
+                        B->val[ numnnz ] = A.val[ element ];
+                        B->col[ numnnz ] = A.col[ element ];
+                        numnnz++;
+                        element = A.list[ element ];
+                    }while( element != 0 );
+                    B->row[ row+1 ] = numnnz;
+                }
+                // sort elements in every row according to col
+                for( magma_int_t i=0; i < A.num_rows; i++) {
+                    magma_zindexsortval(
+                    B->col,
+                    B->val,
+                    B->row[i],
+                    B->row[i+1]-1,
+                    queue );
+                }
             }
                 
             // ELL/ELLPACK to CSR
@@ -732,7 +762,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -759,7 +789,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -790,13 +820,24 @@ magma_zmconvert(
             
             // ELLD (ELLPACK with diagonal element first) to CSR
             else if ( old_format == Magma_ELLD ) {
+          /*      CHECK( magma_zmconvert( A, B, Magma_ELL, Magma_CSR, queue ));
+                for( magma_int_t i=0; i < A.num_rows; i++) {
+                    magma_zindexsortval(
+                    B->col,
+                    B->val,
+                    B->row[i],
+                    B->row[i+1]-1,
+                    queue );
+                }
+            */    
+                
                 //printf( "Conversion to CSR: " );
                 //fflush(stdout);
                 // fill in information for B
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -846,7 +887,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -874,7 +915,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -927,7 +968,7 @@ magma_zmconvert(
                 B->storage_type = Magma_CSR;
                 B->memory_location = A.memory_location;
                 B->fill_mode = A.fill_mode;
-                B->num_rows = A.num_rows;
+                B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
                 B->num_cols = A.num_cols;
                 B->nnz = A.nnz;
                 B->max_nnz_row = A.max_nnz_row;
@@ -971,18 +1012,29 @@ magma_zmconvert(
             else if ( old_format == Magma_BCSR ) {
                 CHECK( magma_zmtransfer(A, &A_d, Magma_CPU, Magma_DEV, queue ) );
                 CHECK( magma_zmconvert(A_d, &B_d, Magma_BCSR, Magma_CSR, queue ) );
+                magma_zmfree( &A_d, queue );
                 CHECK( magma_zmtransfer(B_d, B, Magma_DEV, Magma_CPU, queue ) );
+                magma_zmfree( &B_d, queue );
+            }
+            
+            // COO to CSR
+            else if ( old_format == Magma_COO ) {
+                CHECK( magma_zmtransfer(A, &A_d, Magma_CPU, Magma_DEV, queue ) );
+                CHECK( magma_zmconvert(A_d, &B_d, Magma_COO, Magma_CSR, queue ) );
+                magma_zmfree( &A_d, queue );
+                CHECK( magma_zmtransfer(B_d, B, Magma_DEV, Magma_CPU, queue ) );
+                magma_zmfree( &B_d, queue );
             }
             
             else {
                 printf("error: format not supported.\n");
-                magmablasSetKernelStream( orig_queue );
+                //magmablasSetKernelStream( queue );
                 info = MAGMA_ERR_NOT_SUPPORTED;
             }
         }
         else {
             printf("error: conversion not supported.\n");
-            magmablasSetKernelStream( orig_queue );
+            //magmablasSetKernelStream( queue );
             info = MAGMA_ERR_NOT_SUPPORTED;
         }
     } // end CPU case
@@ -996,7 +1048,7 @@ magma_zmconvert(
             // fill in information for B
             B->storage_type = Magma_DENSE;
             B->memory_location = A.memory_location;
-            B->num_rows = A.num_rows;
+            B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
             B->num_cols = A.num_cols;
             B->nnz = A.nnz;
             B->max_nnz_row = A.max_nnz_row;
@@ -1004,7 +1056,7 @@ magma_zmconvert(
 
             // CUSPARSE context //
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
@@ -1021,14 +1073,14 @@ magma_zmconvert(
             // fill in information for B
             B->storage_type = Magma_CSR;
             B->memory_location = A.memory_location;
-            B->num_rows = A.num_rows;
+            B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
             B->num_cols = A.num_cols;
             B->max_nnz_row = A.max_nnz_row;
             B->diameter = A.diameter;
 
             // CUSPARSE context //
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
@@ -1058,7 +1110,7 @@ magma_zmconvert(
             // fill in information for B
             B->storage_type = Magma_BCSR;
             B->memory_location = A.memory_location;
-            B->num_rows = A.num_rows;
+            B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
             B->num_cols = A.num_cols;
             B->nnz = A.nnz;
             B->max_nnz_row = A.max_nnz_row;
@@ -1067,7 +1119,7 @@ magma_zmconvert(
 
             // CUSPARSE context //
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
@@ -1086,8 +1138,8 @@ magma_zmconvert(
             if (NULL != nnzTotalDevHostPtr) {
                 nnzb = *nnzTotalDevHostPtr;
             } else {
-                magma_index_getvector( 1, B->row+mb, 1, &nnzb, 1 );
-                magma_index_getvector( 1, B->row, 1, &base, 1 );
+                magma_index_getvector( 1, B->row+mb, 1, &nnzb, 1, queue );
+                magma_index_getvector( 1, B->row, 1, &base, 1, queue );
                 nnzb -= base;
             }
             B->numblocks = nnzb; // number of blocks
@@ -1115,7 +1167,7 @@ magma_zmconvert(
 
             // CUSPARSE context //
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
@@ -1142,7 +1194,7 @@ magma_zmconvert(
             // fill in information for B
             B->storage_type = Magma_CSC;
             B->memory_location = A.memory_location;
-            B->num_rows = A.num_rows;
+            B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
             B->num_cols = A.num_cols;
             B->nnz = A.nnz;
             B->max_nnz_row = A.max_nnz_row;
@@ -1150,7 +1202,7 @@ magma_zmconvert(
 
             // CUSPARSE context //
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
@@ -1171,7 +1223,7 @@ magma_zmconvert(
             // fill in information for B
             B->storage_type = Magma_CSR;
             B->memory_location = A.memory_location;
-            B->num_rows = A.num_rows;
+            B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
             B->num_cols = A.num_cols;
             B->nnz = A.nnz;
             B->max_nnz_row = A.max_nnz_row;
@@ -1179,7 +1231,7 @@ magma_zmconvert(
 
             // CUSPARSE context //
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
@@ -1189,7 +1241,7 @@ magma_zmconvert(
             
             
             // conversion using CUSPARSE
-            cusparseZcsr2csc(cusparseHandle, A.num_rows, A.num_cols, A.nnz,
+            cusparseZcsr2csc(cusparseHandle, A.num_cols, A.num_rows, A.nnz,
                              A.dval, A.dcol, A.drow,
                              B->dval, B->dcol, B->drow,
                              CUSPARSE_ACTION_NUMERIC,
@@ -1200,7 +1252,7 @@ magma_zmconvert(
             // fill in information for B
             B->storage_type = Magma_COO;
             B->memory_location = A.memory_location;
-            B->num_rows = A.num_rows;
+            B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
             B->num_cols = A.num_cols;
             B->nnz = A.nnz;
             B->max_nnz_row = A.max_nnz_row;
@@ -1208,7 +1260,7 @@ magma_zmconvert(
 
             // CUSPARSE context //
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
@@ -1217,8 +1269,8 @@ magma_zmconvert(
             CHECK( magma_index_malloc( &B->dcol, B->nnz ));
             
             
-            magma_zcopyvector( A.nnz, A.dval, 1, B->dval, 1 );
-            magma_index_copyvector( A.nnz, A.dcol, 1, B->dcol, 1 );
+            magma_zcopyvector( A.nnz, A.dval, 1, B->dval, 1, queue );
+            magma_index_copyvector( A.nnz, A.dcol, 1, B->dcol, 1, queue );
 
             // conversion using CUSPARSE
             cusparseXcsr2coo( cusparseHandle, A.drow,
@@ -1227,34 +1279,67 @@ magma_zmconvert(
         }
         // COO to CSR
         else if ( old_format == Magma_COO && new_format == Magma_CSR ) {
+            
+#if CUDA_VERSION >= 7000
             // fill in information for B
             B->storage_type = Magma_CSR;
             B->memory_location = A.memory_location;
-            B->num_rows = A.num_rows;
+            B->num_rows = A.num_rows; B->true_nnz = A.true_nnz;
             B->num_cols = A.num_cols;
             B->nnz = A.nnz;
             B->max_nnz_row = A.max_nnz_row;
             B->diameter = A.diameter;
+            int m = A.num_rows;
+            int n = A.num_cols;
+            int nnz = A.nnz;
 
             // CUSPARSE context //
+            
+            size_t pBufferSizeInBytes = 0;
+            void *pBuffer = NULL;
+            int *P = NULL;
 
             CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+            CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
             CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
             // end CUSPARSE context //
 
             CHECK( magma_zmalloc( &B->dval, B->nnz ));
-            CHECK( magma_index_malloc( &B->drow, B->nnz ));
+            CHECK( magma_index_malloc( &B->drowidx, B->nnz ));
             CHECK( magma_index_malloc( &B->dcol, B->nnz ));
+            CHECK( magma_index_malloc( &B->drow, B->num_rows + 1 ));
             
+            magma_zcopyvector( A.nnz, A.dval, 1, B->dval, 1, queue );
+            magma_index_copyvector( A.nnz, A.dcol, 1, B->dcol, 1, queue );
+            magma_index_copyvector( A.nnz, A.drowidx, 1, B->drowidx, 1, queue );
+
+            // step 1: allocate buffer
+            cusparseXcoosort_bufferSizeExt(cusparseHandle, m, n, nnz, B->drowidx, B->dcol, &pBufferSizeInBytes);
+            //cudaMalloc( &pBuffer, sizeof(char)* pBufferSizeInBytes);
+            CHECK( magma_malloc( &pBuffer, sizeof(char)* pBufferSizeInBytes ));
+            // step 2: setup permutation vector P to identity
+            CHECK( magma_index_malloc( &P, nnz ));
+            //magma_( &P, sizeof(int)*nnz);
+            cusparseCreateIdentityPermutation(cusparseHandle, nnz, P);
             
-            magma_zcopyvector( A.nnz, A.val, 1, B->val, 1 );
-            magma_index_copyvector( A.nnz, A.col, 1, B->col, 1 );
+            // step 3: sort COO format by Row
+            cusparseXcoosortByRow(cusparseHandle, m, n, nnz, B->drowidx, B->dcol, P, pBuffer);
+            
+            // step 4: gather sorted cooVals
+            cusparseZgthr(cusparseHandle, nnz, A.dval, B->dval, P, CUSPARSE_INDEX_BASE_ZERO);
+
 
             // conversion using CUSPARSE
-            cusparseXcoo2csr( cusparseHandle, A.drow,
+            cusparseXcoo2csr( cusparseHandle, B->drowidx,
                               A.nnz, A.num_rows, B->drow,
                               CUSPARSE_INDEX_BASE_ZERO );
+            magma_free( B->drowidx );
+            magma_free( pBuffer );
+            magma_free( P );
+#else
+                printf("error: conversion only supported for CUDA version > 7.0.\n");
+            
+#endif
         }
         else {
             printf("warning: format not supported on GPU. "
@@ -1293,6 +1378,5 @@ cleanup:
     if ( info != 0 ) {
         magma_zmfree( B, queue );
     }
-    magmablasSetKernelStream( orig_queue );
     return info;
 }

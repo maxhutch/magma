@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zheevdx_2stage.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+       @generated from src/zheevdx_2stage.cpp normal z -> c, Wed Jan  6 17:59:34 2016
 
 */
 #include "common_magma.h"
@@ -228,11 +228,12 @@ magma_cheevdx_2stage(
     /* determine the number of threads and other parameter */
     magma_int_t Vblksiz, ldv, ldt, blkcnt, sizTAU2, sizT2, sizV2, sizTAU1, ldz, lwstg1, lda2;
     magma_int_t parallel_threads = magma_get_parallel_numthreads();
-    magma_int_t nb               = magma_cbulge_get_nb(n, parallel_threads);
+    magma_int_t nb               = magma_get_cbulge_nb(n, parallel_threads);
     magma_int_t lwstg2           = magma_cbulge_getlwstg2( n, parallel_threads, wantz, 
                                                            &Vblksiz, &ldv, &ldt, &blkcnt, 
                                                            &sizTAU2, &sizT2, &sizV2);
-    lwstg1                       = magma_bulge_getlwstg1( n, nb, &lda2 ); // lwstg1=nb*n but since used also to store the band A2 so it is 2nb*n;
+    // lwstg1=nb*n but since used also to store the band A2 so it is 2nb*n;
+    lwstg1                       = magma_bulge_getlwstg1( n, nb, &lda2 );
 
     sizTAU1                      = n;
     ldz                          = n;
@@ -419,7 +420,9 @@ magma_cheevdx_2stage(
     magmaFloatComplex *V2    = TAU2 + sizTAU2;
     magmaFloatComplex *T2    = V2   + sizV2;
     magmaFloatComplex *Wstg1 = T2   + sizT2;
-    magmaFloatComplex *A2    = Wstg1; /* PAY ATTENTION THAT work[indA2] should be able to be of size lda2*n which it should be checked in any future modification of lwork.*/
+    // PAY ATTENTION THAT work[indA2] should be able to be of size lda2*n
+    // which it should be checked in any future modification of lwork.*/
+    magmaFloatComplex *A2    = Wstg1;
     magmaFloatComplex *Z     = Wstg1;
     #ifdef COMPLEX
     float *Wedc              = E + n; 
@@ -472,9 +475,9 @@ magma_cheevdx_2stage(
     timer_printf( "  N= %10d  nb= %5d time chetrd= %6.2f\n", (int)n, (int)nb, time_total );
 
     /* For eigenvalues only, call SSTERF.  For eigenvectors, first call
-     CSTEDC to generate the eigenvector matrix, WORK(INDWRK), of the
-     tridiagonal matrix, then call CUNMTR to multiply it to the Householder
-     transformations represented as Householder vectors in A. */
+       CSTEDC to generate the eigenvector matrix, WORK(INDWRK), of the
+       tridiagonal matrix, then call CUNMTR to multiply it to the Householder
+       transformations represented as Householder vectors in A. */
     if (! wantz) {
         timer_start( time );
 
@@ -489,6 +492,7 @@ magma_cheevdx_2stage(
         
         float* dwedc;
         if (MAGMA_SUCCESS != magma_smalloc( &dwedc, 3*n*(n/2 + 1) )) {
+            // TODO free dT1, etc. --- see goto cleanup in slaex0_m.cpp, etc.
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
@@ -509,6 +513,7 @@ magma_cheevdx_2stage(
         magma_int_t lddz = n;
 
         if (MAGMA_SUCCESS != magma_cmalloc( &dZ, (*m)*lddz)) {
+            // TODO free dT1, etc. --- see goto cleanup in slaex0_m.cpp, etc.
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
@@ -524,6 +529,7 @@ magma_cheevdx_2stage(
         magmaFloatComplex *dA;
         magma_int_t ldda = n;
         if (MAGMA_SUCCESS != magma_cmalloc( &dA, n*ldda )) {
+            // TODO free dT1, etc. --- see goto cleanup in slaex0_m.cpp, etc.
             *info = MAGMA_ERR_DEVICE_ALLOC;
             return *info;
         }
@@ -539,13 +545,14 @@ magma_cheevdx_2stage(
 
         timer_stop( time );
         timer_printf( "  N= %10d  nb= %5d time cunmqr + copy = %6.2f\n", (int)n, (int)nb, time );
-        magma_free(dT1);
         magma_free(dZ);
         magma_free(dA);
         timer_stop( time_total );
         timer_printf( "  N= %10d  nb= %5d time eigenvectors backtransf. = %6.2f\n", (int)n, (int)nb, time_total );
     }
 
+    magma_free(dT1);
+    
     /* If matrix was scaled, then rescale eigenvalues appropriately. */
     if (iscale == 1) {
         if (*info == 0) {

@@ -201,7 +201,7 @@ MAGMA README FILE
 
     You can modify the blocking factors for the algorithms of
     interest in file 'control/get_nb.cpp'. The default values are tuned for
-    general Tesla (1.x), Fermi (2.x), and Kepler (3.x) GPUs.
+    general Fermi (2.x) and Kepler (3.x) GPUs.
 
     Performance results are included in results/vA.B.C/cudaX.Y-zzz/*.txt
     for MAGMA version A.B.C, CUDA version X.Y, and GPU zzz.

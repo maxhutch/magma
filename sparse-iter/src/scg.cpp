@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
-       @generated from zcg.cpp normal z -> s, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/zcg.cpp normal z -> s, Wed Jan  6 17:59:44 2016
 */
 
 #include "common_magmasparse.h"
@@ -56,7 +56,7 @@ magma_scg(
     magma_s_solver_par *solver_par,
     magma_queue_t queue )
 {
-    magma_int_t info = 0;
+    magma_int_t info = MAGMA_NOTCONVERGED;
     
     // set queue for old dense routines
     magma_queue_t orig_queue=NULL;
@@ -65,7 +65,7 @@ magma_scg(
     // prepare solver feedback
     solver_par->solver = Magma_CG;
     solver_par->numiter = 0;
-    solver_par->info = MAGMA_SUCCESS;
+    solver_par->spmv_count = 0;
 
     // local variables
     float c_zero = MAGMA_S_ZERO, c_one = MAGMA_S_ONE;
@@ -80,7 +80,7 @@ magma_scg(
     
     // solver variables
     float alpha, beta;
-    float nom, nom0, r0, betanom, betanomsq, den;
+    float nom, nom0, r0, betanom, betanomsq, den, nomb;
 
     // solver setup
     CHECK(  magma_sresidualvec( A, b, *x, &r, &nom0, queue));
@@ -91,16 +91,26 @@ magma_scg(
     den = MAGMA_S_REAL( magma_sdot(dofs, p.dval, 1, q.dval, 1) ); // den = p dot q
     solver_par->init_res = nom0;
     
-    if ( (r0 = nom * solver_par->rtol) < ATOLERANCE )
+    nomb = magma_snrm2( dofs, b.dval, 1 );
+    if ( nomb == 0.0 ){
+        nomb=1.0;
+    }       
+    if ( (r0 = nomb * solver_par->rtol) < ATOLERANCE ){
         r0 = ATOLERANCE;
+    }
+    solver_par->final_res = solver_par->init_res;
+    solver_par->iter_res = solver_par->init_res;
+    if ( solver_par->verbose > 0 ) {
+        solver_par->res_vec[0] = (real_Double_t)nom0;
+        solver_par->timing[0] = 0.0;
+    }
     if ( nom < r0 ) {
-        solver_par->final_res = solver_par->init_res;
-        solver_par->iter_res = solver_par->init_res;
+        magmablasSetKernelStream( orig_queue );
+        info = MAGMA_SUCCESS;
         goto cleanup;
     }
     // check positive definite
     if (den <= 0.0) {
-        printf("Operator A is not postive definite. (Ar,r) = %f\n", den);
         magmablasSetKernelStream( orig_queue );
         info = MAGMA_NONSPD; 
         goto cleanup;
@@ -109,12 +119,10 @@ magma_scg(
     //Chronometry
     real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
-    if ( solver_par->verbose > 0 ) {
-        solver_par->res_vec[0] = (real_Double_t)nom0;
-        solver_par->timing[0] = 0.0;
-    }
+
     
     solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     // start iteration
     do
     {
@@ -143,6 +151,7 @@ magma_scg(
         magma_sscal(dofs, beta, p.dval, 1);                // p = beta*p
         magma_saxpy(dofs, c_one, r.dval, 1, p.dval, 1);     // p = p + r
         CHECK( magma_s_spmv( c_one, A, p, c_zero, q, queue ));   // q = A p
+        solver_par->spmv_count++;
         den = MAGMA_S_REAL(magma_sdot(dofs, p.dval, 1, q.dval, 1));
                 // den = p dot q
         nom = betanomsq;
@@ -156,7 +165,7 @@ magma_scg(
     solver_par->final_res = residual;
 
     if ( solver_par->numiter < solver_par->maxiter ) {
-        solver_par->info = MAGMA_SUCCESS;
+        info = MAGMA_SUCCESS;
     } else if ( solver_par->init_res > solver_par->final_res ) {
         if ( solver_par->verbose > 0 ) {
             if ( (solver_par->numiter)%solver_par->verbose==0 ) {

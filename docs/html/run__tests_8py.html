@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.7"/>
-<title>MAGMA: /Users/mgates/Documents/magma-trunk/tools/magma-1.7.0/testing/run_tests.py File Reference</title>
+<title>MAGMA: /Users/mgates/Documents/magma-trunk/magma-2.0.0-beta2/testing/run_tests.py File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -176,7 +176,7 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
   routines with failures:
       testing_sgetri_gpu -c
 </pre><h2>What tests are run </h2>
-<p>The &ndash;blas, &ndash;aux, &ndash;chol, &ndash;hesv, &ndash;lu, &ndash;qr, &ndash;syev, &ndash;sygv, &ndash;geev, &ndash;svd, &ndash;batched options run particular sets of tests. By default, all tests are run. &ndash;mgpu runs only multi-GPU tests from the above sets.</p>
+<p>The &ndash;blas, &ndash;aux, &ndash;chol, &ndash;hesv, &ndash;lu, &ndash;qr, &ndash;syev, &ndash;sygv, &ndash;geev, &ndash;svd, &ndash;batched options run particular sets of tests. By default, all tests are run, except batched because we don't want to run batched with, say, N=1000. &ndash;mgpu runs only multi-GPU tests from the above sets.</p>
 <p>The &ndash;start option skips all testers before the given one, then continues with testers from there. This is helpful to restart a non-interactive set of tests. For example: </p><pre class="fragment">  ./run_tests.py --start testing_spotrf &gt; output.log
 </pre><p>If specific testers are named on the command line, only those are run. For example: </p><pre class="fragment">  ./run_tests.py testing_spotrf testing_sgetrf
 </pre><p>The -p/&ndash;precision option controls what precisions are tested, the default being "sdcz" for all four precisions. For example, to run single and double: </p><pre class="fragment">  ./run_tests.py -p sd
@@ -190,8 +190,8 @@ $(document).ready(function(){initNavTree('run__tests_8py.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="dir_2423c0ce8bbd5752fc87fba970025b50.html">testing</a></li><li class="navelem"><a class="el" href="run__tests_8py.html">run_tests.py</a></li>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:03 for MAGMA by
+    <li class="navelem"><a class="el" href="dir_d3294e00a7520e43abc180575cc4944f.html">testing</a></li><li class="navelem"><a class="el" href="run__tests_8py.html">run_tests.py</a></li>
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:08 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

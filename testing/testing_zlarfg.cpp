@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -109,9 +109,10 @@ int main( int argc, char** argv)
                    (error < tol && error2 < tol ? "ok" : "failed") );
             status += ! (error < tol && error2 < tol);
             
-            TESTING_FREE_CPU( h_x   );
-            TESTING_FREE_CPU( h_x2  );
-            TESTING_FREE_CPU( h_tau );
+            TESTING_FREE_CPU( h_x    );
+            TESTING_FREE_CPU( h_x2   );
+            TESTING_FREE_CPU( h_tau  );
+            TESTING_FREE_CPU( h_tau2 );
         
             TESTING_FREE_DEV( d_x   );
             TESTING_FREE_DEV( d_tau );
@@ -122,6 +123,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

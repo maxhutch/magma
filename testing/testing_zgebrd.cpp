@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -21,7 +21,7 @@
 #include "magma_lapack.h"
 #include "testings.h"
 
-#define PRECISION_z
+#define COMPLEX
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing zgebrd
@@ -54,7 +54,7 @@ int main( int argc, char** argv)
             M = opts.msize[itest];
             N = opts.nsize[itest];
             minmn  = min(M, N);
-            nb     = magma_get_zgebrd_nb(N);
+            nb     = magma_get_zgebrd_nb( M, N );
             lda    = M;
             n2     = lda*N;
             lhwork = (M + N)*nb;
@@ -102,7 +102,7 @@ int main( int argc, char** argv)
                 
                 // zbdt01 needs M
                 // zunt01 needs minmn
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 double *rwork_err;
                 TESTING_MALLOC_CPU( rwork_err, double, M );
                 #endif
@@ -122,25 +122,30 @@ int main( int argc, char** argv)
                 // Test 1:  Check the decomposition A := Q * B * PT
                 //      2:  Check the orthogonality of Q
                 //      3:  Check the orthogonality of PT
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_zbdt01(&M, &N, &ione,
-                                 h_A, &lda, h_Q, &lda,
-                                 diag, offdiag, h_PT, &lda,
-                                 h_work_err, rwork_err, &result[0]);
-                lapackf77_zunt01("Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err, rwork_err, &result[1]);
-                lapackf77_zunt01("Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err, rwork_err, &result[2]);
-                #else
-                lapackf77_zbdt01(&M, &N, &ione,
-                                 h_A, &lda, h_Q, &lda,
-                                 diag, offdiag, h_PT, &lda,
-                                 h_work_err, &result[0]);
-                lapackf77_zunt01("Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err, &result[1]);
-                lapackf77_zunt01("Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err, &result[2]);
-                #endif
+                lapackf77_zbdt01( &M, &N, &ione,
+                                  h_A, &lda, h_Q, &lda,
+                                  diag, offdiag, h_PT, &lda,
+                                  h_work_err,
+                                  #ifdef COMPLEX
+                                  rwork_err,
+                                  #endif
+                                  &result[0] );
+                
+                lapackf77_zunt01( "Columns", &M, &minmn, h_Q,  &lda, h_work_err, &lwork_err,
+                                  #ifdef COMPLEX
+                                  rwork_err,
+                                  #endif
+                                  &result[1]);
+                
+                lapackf77_zunt01( "Rows",    &minmn, &N, h_PT, &lda, h_work_err, &lwork_err,
+                                  #ifdef COMPLEX
+                                  rwork_err,
+                                  #endif
+                                  &result[2]);
                 
                 TESTING_FREE_CPU( h_PT );
                 TESTING_FREE_CPU( h_work_err );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 TESTING_FREE_CPU( rwork_err );
                 #endif
             }
@@ -195,6 +200,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

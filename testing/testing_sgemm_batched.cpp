@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgemm_batched.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgemm_batched.cpp normal z -> s, Wed Jan  6 17:59:50 2016
        @author Mark Gates
        @author Azzam Haidar
        @author Tingxing Dong
@@ -130,9 +130,9 @@ int main( int argc, char** argv)
             magma_ssetmatrix( Bm, Bn*batchCount, h_B, ldb, d_B, lddb );
             magma_ssetmatrix( M, N*batchCount, h_C, ldc, d_C, lddc );
             
-            sset_pointer(A_array, d_A, ldda, 0, 0, ldda*An, batchCount, opts.queue);
-            sset_pointer(B_array, d_B, lddb, 0, 0, lddb*Bn, batchCount, opts.queue);
-            sset_pointer(C_array, d_C, lddc, 0, 0, lddc*N,  batchCount, opts.queue);
+            magma_sset_pointer( A_array, d_A, ldda, 0, 0, ldda*An, batchCount, opts.queue );
+            magma_sset_pointer( B_array, d_B, lddb, 0, 0, lddb*Bn, batchCount, opts.queue );
+            magma_sset_pointer( C_array, d_C, lddc, 0, 0, lddc*N,  batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
             magmablas_sgemm_batched(opts.transA, opts.transB, M, N, K,
@@ -267,6 +267,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

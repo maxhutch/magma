@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from zhegvdx.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+       @generated from src/zhegvdx.cpp normal z -> c, Wed Jan  6 17:59:35 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 #define COMPLEX
@@ -243,9 +243,6 @@ magma_chegvdx(
     magma_int_t liwmin;
     magma_int_t lrwmin;
 
-    magma_queue_t stream;
-    magma_queue_create( &stream );
-
     wantz  = (jobz == MagmaVec);
     lower  = (uplo == MagmaLower);
     alleig = (range == MagmaRangeAll);
@@ -348,12 +345,17 @@ magma_chegvdx(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     /* Form a Cholesky factorization of B. */
-    magma_csetmatrix( n, n, B, ldb, dB, lddb );
+    magma_csetmatrix( n, n, B, ldb, dB, lddb, queue );
 
     magma_csetmatrix_async( n, n,
                             A,  lda,
-                            dA, ldda, stream );
+                            dA, ldda, queue );
 
     magma_timer_t time=0;
     timer_start( time );
@@ -365,10 +367,10 @@ magma_chegvdx(
     timer_stop( time );
     timer_printf( "time cpotrf_gpu = %6.2f\n", time );
 
-    magma_queue_sync( stream );
+    magma_queue_sync( queue );
     magma_cgetmatrix_async( n, n,
                             dB, lddb,
-                            B,  ldb, stream );
+                            B,  ldb, queue );
 
     /* Transform problem to standard eigenvalue problem and solve. */
     timer_start( time );
@@ -381,7 +383,7 @@ magma_chegvdx(
      * TODO: have dwork here that will be used as dB and then passed to  dsyevd.
      */
     if (n > 5000) {
-        magma_queue_sync( stream );
+        magma_queue_sync( queue );
         magma_free( dB );  dB=NULL;
     }
 
@@ -401,7 +403,7 @@ magma_chegvdx(
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
-            magma_csetmatrix( n, n, B, ldb, dB, lddb );
+            magma_csetmatrix( n, n, B, ldb, dB, lddb, queue );
         }
         /* Backtransform eigenvectors to the original problem. */
         if (itype == 1 || itype == 2) {
@@ -413,7 +415,7 @@ magma_chegvdx(
                 trans = MagmaNoTrans;
             }
             magma_ctrsm( MagmaLeft, uplo, trans, MagmaNonUnit,
-                         n, *mout, c_one, dB, lddb, dA, ldda );
+                         n, *mout, c_one, dB, lddb, dA, ldda, queue );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -424,17 +426,17 @@ magma_chegvdx(
                 trans = MagmaConjTrans;
             }
             magma_ctrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
-                         n, *mout, c_one, dB, lddb, dA, ldda );
+                         n, *mout, c_one, dB, lddb, dA, ldda, queue );
         }
 
-        magma_cgetmatrix( n, *mout, dA, ldda, A, lda );
+        magma_cgetmatrix( n, *mout, dA, ldda, A, lda, queue );
         
         timer_stop( time );
         timer_printf( "time ctrsm/mm + getmatrix = %6.2f\n", time );
     }
 
-    magma_queue_sync( stream );
-    magma_queue_destroy( stream );
+    magma_queue_sync( queue );
+    magma_queue_destroy( queue );
 
     work[0]  = MAGMA_C_MAKE( lwmin * one_eps, 0 );  // round up
     rwork[0] = lrwmin * one_eps;

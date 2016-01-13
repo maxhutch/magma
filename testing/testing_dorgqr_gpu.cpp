@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zungqr_gpu.cpp normal z -> d, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zungqr_gpu.cpp normal z -> d, Wed Jan  6 17:59:49 2016
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -65,15 +65,14 @@ int main( int argc, char** argv)
             ldda = magma_roundup( m, opts.align );  // multiple of 32 by default
             n2 = lda*n;
             min_mn = min(m, n);
-            nb = magma_get_dgeqrf_nb( m );
-            lwork  = (m + 2*n+nb)*nb;
+            nb = magma_get_dgeqrf_nb( m, n );
+            lwork  = n*nb;
             gflops = FLOPS_DORGQR( m, n, k ) / 1e9;
             
-            TESTING_MALLOC_PIN( hA,     double, lda*n  );
-            TESTING_MALLOC_PIN( h_work, double, lwork  );
-            
+            TESTING_MALLOC_CPU( hA,     double, lda*n  );
             TESTING_MALLOC_CPU( hR,     double, lda*n  );
             TESTING_MALLOC_CPU( tau,    double, min_mn );
+            TESTING_MALLOC_CPU( h_work, double, lwork  );
             
             TESTING_MALLOC_DEV( dA,     double, ldda*n );
             TESTING_MALLOC_DEV( dT,     double, ( 2*min_mn + magma_roundup( n, 32 ) )*nb );
@@ -135,11 +134,10 @@ int main( int argc, char** argv)
                        gpu_perf, gpu_time );
             }
             
-            TESTING_FREE_PIN( hA     );
-            TESTING_FREE_PIN( h_work );
-            
+            TESTING_FREE_CPU( hA     );
             TESTING_FREE_CPU( hR  );
             TESTING_FREE_CPU( tau );
+            TESTING_FREE_CPU( h_work );
             
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dT );
@@ -150,6 +148,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

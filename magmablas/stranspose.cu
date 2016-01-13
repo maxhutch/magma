@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from ztranspose.cu normal z -> s, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/ztranspose.cu normal z -> s, Wed Jan  6 17:59:38 2016
 
        @author Stan Tomov
        @author Mark Gates
@@ -41,7 +41,7 @@
 //     load 16x32 subtile as 4   blocks of 16x8 columns: (A11  A12  A13  A14)
 //     save 32x16 subtile as 2*2 blocks of 16x8 columns: (AT11 AT12)
 //                                                       (AT21 AT22)
-static __device__ void
+__device__ void
 stranspose_device(
     int m, int n,
     const float *A, int lda,
@@ -111,8 +111,8 @@ void stranspose_kernel(
 __global__
 void stranspose_kernel_batched(
     int m, int n,
-    float **dA_array, int lda,
-    float **dAT_array,      int ldat)
+    float **dA_array,  int lda,
+    float **dAT_array, int ldat)
 {
     int batchid = blockIdx.z;
     stranspose_device(m, n, dA_array[batchid], lda, dAT_array[batchid], ldat);
@@ -186,7 +186,7 @@ magmablas_stranspose_q(
 
     dim3 threads( NX, NY );
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ) );
-    stranspose_kernel<<< grid, threads, 0, queue >>>
+    stranspose_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA, ldda, dAT, lddat );
 }
 
@@ -201,7 +201,7 @@ magmablas_stranspose(
     magmaFloat_const_ptr dA,  magma_int_t ldda,
     magmaFloat_ptr       dAT, magma_int_t lddat )
 {
-    magmablas_stranspose_q( m, n, dA, ldda, dAT, lddat, magma_stream );
+    magmablas_stranspose_q( m, n, dA, ldda, dAT, lddat, magmablasGetQueue() );
 }
 
 
@@ -257,7 +257,9 @@ extern "C" void
 magmablas_stranspose_batched_q(
     magma_int_t m, magma_int_t n,
     float **dA_array,  magma_int_t ldda,
-    float **dAT_array, magma_int_t lddat, magma_int_t batchCount, magma_queue_t queue )
+    float **dAT_array, magma_int_t lddat,
+    magma_int_t batchCount,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if ( m < 0 )
@@ -278,9 +280,9 @@ magmablas_stranspose_batched_q(
     if ( (m == 0) || (n == 0) )
         return;
 
-    dim3 threads( NX, NY );
+    dim3 threads( NX, NY, 1 );
     dim3 grid( magma_ceildiv( m, NB ), magma_ceildiv( n, NB ), batchCount );
-    stranspose_kernel_batched<<< grid, threads, 0, queue >>>
+    stranspose_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, dA_array, ldda, dAT_array, lddat );
 }
 
@@ -293,7 +295,8 @@ extern "C" void
 magmablas_stranspose_batched(
     magma_int_t m, magma_int_t n,
     float **dA_array,  magma_int_t ldda,
-    float **dAT_array, magma_int_t lddat, magma_int_t batchCount )
+    float **dAT_array, magma_int_t lddat,
+    magma_int_t batchCount )
 {
-    magmablas_stranspose_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magma_stream );
+    magmablas_stranspose_batched_q( m, n, dA_array, ldda, dAT_array, lddat, batchCount, magmablasGetQueue() );
 }

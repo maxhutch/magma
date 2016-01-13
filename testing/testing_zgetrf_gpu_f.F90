@@ -1,9 +1,9 @@
 !
-!   -- MAGMA (version 1.7.0) --
+!   -- MAGMA (version 2.0.0-beta2) --
 !      Univ. of Tennessee, Knoxville
 !      Univ. of California, Berkeley
 !      Univ. of Colorado, Denver
-!      @date September 2015
+!      @date January 2016
 !
 !  @precisions normal z -> c d s
 !
@@ -24,12 +24,12 @@
       magma_devptr_t                :: devptrA, devptrB
       integer,    allocatable       :: ipiv(:)
 
-      complex*16                    :: zone, mzone
+      complex*16                    :: c_one, c_neg_one
       integer                       :: i, n, info, stat, lda, ldda
       integer                       :: size_of_elt, nrhs
       real(kind=8)                  :: flops, t, tstart, tend
 
-      PARAMETER          ( nrhs = 1, zone = 1., mzone = -1. )
+      PARAMETER          ( nrhs = 1, c_one = 1., c_neg_one = -1. )
       
       call cublas_init()
 
@@ -99,7 +99,7 @@
       Anorm = zlange('I', n, n,    h_A, lda, work)
       Bnorm = zlange('I', n, nrhs, h_B, lda, work)
       Xnorm = zlange('I', n, nrhs, h_X, lda, work)
-      call zgemm('n', 'n', n,  nrhs, n, zone, h_A, lda, h_X, lda, mzone, h_B, lda)
+      call zgemm('n', 'n', n,  nrhs, n, c_one, h_A, lda, h_X, lda, c_neg_one, h_B, lda)
       Rnorm = zlange('I', n, nrhs, h_B, lda, work)
 
       write(*,*)

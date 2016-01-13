@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -119,12 +119,9 @@ Functions</h2></td></tr>
 <tr class="separator:ga347c52f3478efcdfcaf65eedde260e47"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf25c9aebef98fddef12c0fdc91e3a10d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgeqp3__aux.html#gaf25c9aebef98fddef12c0fdc91e3a10d">magma_zlaqps_gpu</a> (magma_int_t m, magma_int_t n, magma_int_t offset, magma_int_t nb, magma_int_t *kb, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *jpvt, magmaDoubleComplex *tau, double *vn1, double *vn2, magmaDoubleComplex_ptr dauxv, magmaDoubleComplex_ptr dF, magma_int_t lddf)</td></tr>
 <tr class="separator:gaf25c9aebef98fddef12c0fdc91e3a10d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga32c89c63c29851d2ce30a7b0de3db703"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgeqp3__aux.html#ga32c89c63c29851d2ce30a7b0de3db703">magma_zlaqps2_gpu</a> (magma_int_t m, magma_int_t n, magma_int_t offset, magma_int_t nb, magma_int_t *kb, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *jpvt, magmaDoubleComplex_ptr dtau, magmaDouble_ptr dvn1, magmaDouble_ptr dvn2, magmaDoubleComplex_ptr dauxv, magmaDoubleComplex_ptr dF, magma_int_t lddf)</td></tr>
-<tr class="memdesc:ga32c89c63c29851d2ce30a7b0de3db703"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAQPS computes a step of QR factorization with column pivoting of a complex M-by-N matrix A by using Blas-3.  <a href="#ga32c89c63c29851d2ce30a7b0de3db703">More...</a><br /></td></tr>
-<tr class="separator:ga32c89c63c29851d2ce30a7b0de3db703"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga7275d6e2934492a82a697649f9d556ad"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgeqp3__aux.html#ga7275d6e2934492a82a697649f9d556ad">magma_zlaqps3_gpu</a> (magma_int_t m, magma_int_t n, magma_int_t offset, magma_int_t nb, magma_int_t *kb, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *jpvt, magmaDoubleComplex_ptr dtau, magmaDouble_ptr dvn1, magmaDouble_ptr dvn2, magmaDoubleComplex_ptr dauxv, magmaDoubleComplex_ptr dF, magma_int_t lddf)</td></tr>
-<tr class="memdesc:ga7275d6e2934492a82a697649f9d556ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAQPS computes a step of QR factorization with column pivoting of a complex M-by-N matrix A by using Blas-3.  <a href="#ga7275d6e2934492a82a697649f9d556ad">More...</a><br /></td></tr>
-<tr class="separator:ga7275d6e2934492a82a697649f9d556ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac0a663c47e4fe4393b0ff81f2187209a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgeqp3__aux.html#gac0a663c47e4fe4393b0ff81f2187209a">magma_zlaqps2_gpu</a> (magma_int_t m, magma_int_t n, magma_int_t offset, magma_int_t nb, magma_int_t *kb, magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *jpvt, magmaDoubleComplex_ptr dtau, magmaDouble_ptr dvn1, magmaDouble_ptr dvn2, magmaDoubleComplex_ptr dauxv, magmaDoubleComplex_ptr dF, magma_int_t lddf, magmaDouble_ptr dlsticcs, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gac0a663c47e4fe4393b0ff81f2187209a"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLAQPS computes a step of QR factorization with column pivoting of a complex M-by-N matrix A by using Blas-3.  <a href="#gac0a663c47e4fe4393b0ff81f2187209a">More...</a><br /></td></tr>
+<tr class="separator:gac0a663c47e4fe4393b0ff81f2187209a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -274,7 +271,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga32c89c63c29851d2ce30a7b0de3db703"></a>
+<a class="anchor" id="gac0a663c47e4fe4393b0ff81f2187209a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -360,7 +357,19 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddf</em>&#160;</td>
+          <td class="paramname"><em>lddf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDouble_ptr&#160;</td>
+          <td class="paramname"><em>dlsticcs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -389,129 +398,8 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dvn2</td><td>DOUBLE PRECISION array, dimension (N) The vector with the exact column norms.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dauxv</td><td>COMPLEX*16 array, dimension (NB) Auxiliar vector.</td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dF</td><td>COMPLEX*16 array, dimension (LDDF,NB) Matrix F**H = L * Y**H * A.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddf</td><td>INTEGER The leading dimension of the array F. LDDF &gt;= max(1,N). </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a class="anchor" id="ga7275d6e2934492a82a697649f9d556ad"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_zlaqps3_gpu </td>
-          <td>(</td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>m</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>offset</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>nb</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>kb</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
-          <td class="paramname"><em>dA</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldda</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>jpvt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
-          <td class="paramname"><em>dtau</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDouble_ptr&#160;</td>
-          <td class="paramname"><em>dvn1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDouble_ptr&#160;</td>
-          <td class="paramname"><em>dvn2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
-          <td class="paramname"><em>dauxv</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaDoubleComplex_ptr&#160;</td>
-          <td class="paramname"><em>dF</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddf</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>ZLAQPS computes a step of QR factorization with column pivoting of a complex M-by-N matrix A by using Blas-3. </p>
-<p>It tries to factorize NB columns from A starting from the row OFFSET+1, and updates all of the matrix with Blas-3 xGEMM.</p>
-<p>In some cases, due to catastrophic cancellations, it cannot factorize NB columns. Hence, the actual number of factorized columns is returned in KB.</p>
-<p>Block A(1:OFFSET,1:N) is accordingly pivoted, but not factorized.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The number of columns of the matrix A. N &gt;= 0</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">offset</td><td>INTEGER The number of rows of A that have been factorized in previous steps.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The number of columns to factorize.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">kb</td><td>INTEGER The number of columns actually factorized.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dA</td><td>COMPLEX_16 array, dimension (LDDA,N) on the GPU On entry, the M-by-N matrix A. On exit, block A(OFFSET+1:M,1:KB) is the triangular factor obtained and block A(1:OFFSET,1:N) has been accordingly pivoted, but no factorized. The rest of the matrix, block A(OFFSET+1:M,KB+1:N) has been updated.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,M).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">jpvt</td><td>INTEGER array, dimension (N) JPVT(I) = K &lt;==&gt; Column K of the full matrix A has been permuted into position I in AP.</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dtau</td><td>COMPLEX_16 array, dimension (KB) The scalar factors of the elementary reflectors.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dvn1</td><td>DOUBLE PRECISION array, dimension (N) The vector with the partial column norms.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dvn2</td><td>DOUBLE PRECISION array, dimension (N) The vector with the exact column norms.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dauxv</td><td>COMPLEX_16 array, dimension (NB) Auxiliar vector.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dF</td><td>COMPLEX_16 array, dimension (LDDF,NB) Matrix F**H = L * Y**H * A.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddf</td><td>INTEGER The leading dimension of the array F. LDDF &gt;= max(1,N). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddf</td><td>INTEGER The leading dimension of the array F. LDDF &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
 </dl>
@@ -644,7 +532,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:09 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

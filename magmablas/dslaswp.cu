@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zclaswp.cu mixed zc -> ds, Fri Sep 11 18:29:19 2015
+       @generated from magmablas/zclaswp.cu mixed zc -> ds, Wed Jan  6 17:59:37 2016
 
 */
 #include "common_magma.h"
@@ -15,7 +15,11 @@
 // TODO check precision, as in dlag2s?
 
 __global__ void
-dslaswp_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_t *ipiv)
+dslaswp_kernel(
+    int n,
+    double *A, int lda,
+    float *SA, int ldsa,
+    int m, const magma_int_t *ipiv)
 {
     int ind = blockIdx.x*NB + threadIdx.x;
     int newind;
@@ -28,15 +32,19 @@ dslaswp_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_t *i
         newind = ipiv[0];
         
         for (int i=0; i < n; i++) {
-            res = MAGMA_S_MAKE( (float)(A[newind+i*lda]),
-                                (float)(A[newind+i*lda]) );
-            SA[i*lda] = res; 
+            res = MAGMA_S_MAKE( (float)MAGMA_D_REAL( A[newind+i*lda] ),
+                                (float)MAGMA_D_IMAG( A[newind+i*lda] ));
+            SA[i*ldsa] = res; 
         }
     }
 }
 
 __global__ void
-dslaswp_inv_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_t *ipiv)
+dslaswp_inv_kernel(
+    int n,
+    double *A, int lda,
+    float *SA, int ldsa,
+    int m, const magma_int_t *ipiv)
 {
     int ind = blockIdx.x*NB + threadIdx.x;
     int newind;
@@ -49,8 +57,8 @@ dslaswp_inv_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_
         newind = ipiv[0];
 
         for (int i=0; i < n; i++) {
-            res = MAGMA_D_MAKE( (double)(SA[newind+i*lda]),
-                                (double)(SA[newind+i*lda]) );
+            res = MAGMA_D_MAKE( (double)MAGMA_S_REAL( SA[newind+i*ldsa] ),
+                                (double)MAGMA_S_IMAG( SA[newind+i*ldsa] ));
             A[i*lda] = res;
         }
     }
@@ -78,9 +86,13 @@ dslaswp_inv_kernel(int n, double *A, int lda, float *SA, int m, const magma_int_
             LDA specifies the leading dimension of A.
 
     @param[in,out]
-    SA      REAL array on the GPU, dimension (LDA,N)
+    SA      REAL array on the GPU, dimension (LDSA,N)
             On exit, the single precision, permuted matrix.
             TODO update docs
+
+    @param[in]
+    ldsa    INTEGER.
+            LDSA specifies the leading dimension of SA.
         
     @param[in]
     m       The number of rows to be interchanged.
@@ -105,7 +117,8 @@ extern "C" void
 magmablas_dslaswp_q(
     magma_int_t n,
     magmaDouble_ptr A, magma_int_t lda,
-    magmaFloat_ptr SA, magma_int_t m,
+    magmaFloat_ptr SA, magma_int_t ldsa,
+    magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx,
     magma_queue_t queue )
 {
@@ -114,13 +127,14 @@ magmablas_dslaswp_q(
     dim3 threads( NB );
 
     if (incx >= 0)
-        dslaswp_kernel<<< grid, threads, 0, queue >>>(n, A, lda, SA, m, ipiv);
+        dslaswp_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, A, lda, SA, ldsa, m, ipiv);
     else
-        dslaswp_inv_kernel<<< grid, threads, 0, queue >>>(n, A, lda, SA, m, ipiv);
+        dslaswp_inv_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(n, A, lda, SA, ldsa, m, ipiv);
 }
 
 
 /**
+    Note magmablas_dslaswp_q also adds ldsa. This assumes ldsa = lda.
     @see magmablas_dslaswp_q
     @ingroup magma_daux2
     ********************************************************************/
@@ -128,8 +142,9 @@ extern "C" void
 magmablas_dslaswp(
     magma_int_t n,
     magmaDouble_ptr A, magma_int_t lda,
-    magmaFloat_ptr SA, magma_int_t m,
+    magmaFloat_ptr SA,
+    magma_int_t m,
     const magma_int_t *ipiv, magma_int_t incx )
 {
-    magmablas_dslaswp_q( n, A, lda, SA, m, ipiv, incx, magma_stream );
+    magmablas_dslaswp_q( n, A, lda, SA, lda, m, ipiv, incx, magmablasGetQueue() );
 }

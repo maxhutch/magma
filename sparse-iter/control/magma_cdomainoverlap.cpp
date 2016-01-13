@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zdomainoverlap.cpp normal z -> c, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zdomainoverlap.cpp normal z -> c, Wed Jan  6 17:59:42 2016
        @author Hartwig Anzt
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 extern "C"

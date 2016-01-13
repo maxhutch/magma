@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -132,12 +132,12 @@ Functions</h2></td></tr>
 <tr class="memitem:ga613dbf483e218a420a8a920315c7b907"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#ga613dbf483e218a420a8a920315c7b907">magma_slaex3_m</a> (magma_int_t ngpu, magma_int_t k, magma_int_t n, magma_int_t n1, float *d, float *Q, magma_int_t ldq, float rho, float *dlamda, float *Q2, magma_int_t *indx, magma_int_t *ctot, float *w, float *s, magma_int_t *indxq, magmaFloat_ptr dwork[], magma_queue_t queues[MagmaMaxGPUs][2], magma_range_t range, float vl, float vu, magma_int_t il, magma_int_t iu, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga613dbf483e218a420a8a920315c7b907"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLAEX3 finds the roots of the secular equation, as defined by the values in D, W, and RHO, between 1 and K.  <a href="#ga613dbf483e218a420a8a920315c7b907">More...</a><br /></td></tr>
 <tr class="separator:ga613dbf483e218a420a8a920315c7b907"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga397b40f093e42a21ae2c2d2f5d90bd31"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#ga397b40f093e42a21ae2c2d2f5d90bd31">magma_slatrd</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_ptr dW, magma_int_t lddw)</td></tr>
-<tr class="memdesc:ga397b40f093e42a21ae2c2d2f5d90bd31"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga397b40f093e42a21ae2c2d2f5d90bd31">More...</a><br /></td></tr>
-<tr class="separator:ga397b40f093e42a21ae2c2d2f5d90bd31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga360ffcf8c7c3f14d964b30f9b43bac38"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#ga360ffcf8c7c3f14d964b30f9b43bac38">magma_slatrd2</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_ptr dW, magma_int_t lddw, magmaFloat_ptr dwork, magma_int_t ldwork)</td></tr>
-<tr class="memdesc:ga360ffcf8c7c3f14d964b30f9b43bac38"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD2 reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga360ffcf8c7c3f14d964b30f9b43bac38">More...</a><br /></td></tr>
-<tr class="separator:ga360ffcf8c7c3f14d964b30f9b43bac38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2d8f2e548c336e4dcc812822e2419982"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#ga2d8f2e548c336e4dcc812822e2419982">magma_slatrd</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, float *work, magma_int_t lwork, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_ptr dW, magma_int_t lddw, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga2d8f2e548c336e4dcc812822e2419982"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga2d8f2e548c336e4dcc812822e2419982">More...</a><br /></td></tr>
+<tr class="separator:ga2d8f2e548c336e4dcc812822e2419982"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1126e57c4d67e8209315baaf6289ac8a"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#ga1126e57c4d67e8209315baaf6289ac8a">magma_slatrd2</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, float *work, magma_int_t lwork, magmaFloat_ptr dA, magma_int_t ldda, magmaFloat_ptr dW, magma_int_t lddw, magmaFloat_ptr dwork, magma_int_t ldwork, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga1126e57c4d67e8209315baaf6289ac8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD2 reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#ga1126e57c4d67e8209315baaf6289ac8a">More...</a><br /></td></tr>
+<tr class="separator:ga1126e57c4d67e8209315baaf6289ac8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab80c97277be61852cbed423650d68aab"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__aux.html#gab80c97277be61852cbed423650d68aab">magma_slatrd_mgpu</a> (magma_int_t ngpu, magma_uplo_t uplo, magma_int_t n, magma_int_t nb, magma_int_t nb0, float *A, magma_int_t lda, float *e, float *tau, float *W, magma_int_t ldw, magmaFloat_ptr dA[], magma_int_t ldda, magma_int_t offset, magmaFloat_ptr dW[], magma_int_t lddw, float *hwork, magma_int_t lhwork, magmaFloat_ptr dwork[], magma_int_t ldwork, magma_queue_t queues[])</td></tr>
 <tr class="memdesc:gab80c97277be61852cbed423650d68aab"><td class="mdescLeft">&#160;</td><td class="mdescRight">SLATRD reduces NB rows and columns of a real symmetric matrix A to symmetric tridiagonal form by an orthogonal similarity transformation Q' * A * Q, and returns the matrices V and W which are needed to apply the transformation to the unreduced part of A.  <a href="#gab80c97277be61852cbed423650d68aab">More...</a><br /></td></tr>
 <tr class="separator:gab80c97277be61852cbed423650d68aab"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1102,7 +1102,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga397b40f093e42a21ae2c2d2f5d90bd31"></a>
+<a class="anchor" id="ga2d8f2e548c336e4dcc812822e2419982"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1163,6 +1163,18 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>work</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">magmaFloat_ptr&#160;</td>
           <td class="paramname"><em>dA</em>, </td>
         </tr>
@@ -1182,7 +1194,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddw</em>&#160;</td>
+          <td class="paramname"><em>lddw</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1239,7 +1257,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga360ffcf8c7c3f14d964b30f9b43bac38"></a>
+<a class="anchor" id="ga1126e57c4d67e8209315baaf6289ac8a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1300,6 +1318,18 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>work</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">magmaFloat_ptr&#160;</td>
           <td class="paramname"><em>dA</em>, </td>
         </tr>
@@ -1331,7 +1361,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldwork</em>&#160;</td>
+          <td class="paramname"><em>ldwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1589,7 +1625,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

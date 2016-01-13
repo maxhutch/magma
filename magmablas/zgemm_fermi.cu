@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -41,7 +41,9 @@
     
     where op( X ) is one of
     
-        op( X ) = X   or   op( X ) = X**T   or   op( X ) = X**H,
+        op( X ) = X      or
+        op( X ) = X**T   or
+        op( X ) = X**H,
     
     alpha and beta are scalars, and A, B and C are matrices, with
     op( A ) an m by k matrix, op( B ) a k by n matrix and C an m by n matrix.
@@ -49,20 +51,20 @@
     Parameters
     ----------
     @param[in]
-    transA  CHARACTER*1.
+    transA  magma_trans_t.
             On entry, transA specifies the form of op( A ) to be used in
             the matrix multiplication as follows:
-      -     = 'N':  op( A ) = A.
-      -     = 'T':  op( A ) = A**T.
-      -     = 'C':  op( A ) = A**H.
+      -      = MagmaNoTrans:   op( A ) = A.
+      -      = MagmaTrans:     op( A ) = A**T.
+      -      = MagmaConjTrans: op( A ) = A**H.
     
     @param[in]
-    transB  CHARACTER*1.
+    transB  magma_trans_t.
             On entry, transB specifies the form of op( B ) to be used in
             the matrix multiplication as follows:
-      -     = 'N':  op( B ) = B.
-      -     = 'T':  op( B ) = B**T.
-      -     = 'C':  op( B ) = B**H.
+      -      = MagmaNoTrans:   op( B ) = B.
+      -      = MagmaTrans:     op( B ) = B**T.
+      -      = MagmaConjTrans: op( B ) = B**H.
     
     @param[in]
     m       INTEGER.
@@ -137,13 +139,14 @@
     @ingroup magma_zblas3
     ********************************************************************/
 extern "C" void
-magmablas_zgemm(
+magmablas_zgemm_q(
     magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDoubleComplex alpha,
     magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
     magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
     magmaDoubleComplex beta,
-    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
     if      ( transA != MagmaNoTrans && transA != MagmaTrans && transA != MagmaConjTrans )
@@ -166,22 +169,6 @@ magmablas_zgemm(
     if (info != 0) {
         magma_xerbla( __func__, -(info) );
         return;  //info;
-    }
-    
-    magma_int_t arch = magma_getdevice_arch();
-    if ( arch < 200  ) {
-        // --------------------
-        // call CUDA ARCH 1.x version
-        // magmablas for [sd] precisions, cublas for [zc] precisions.
-        #if defined(PRECISION_z) || defined(PRECISION_c)
-        magma_zgemm(
-            transA, transB,
-            m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
-        #else
-        magmablas_zgemm_tesla(
-            transA, transB, m, n, k, alpha, dA, ldda, dB, lddb, beta, dC, lddc );
-        #endif
-        return;
     }
     
     // --------------------
@@ -254,63 +241,63 @@ magmablas_zgemm(
     if ( TransA == 0 && TransB == 0 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_nn ),
                       magma_ceildiv( n, BLK_N_nn ) );
-        zgemm_kernel_fermi_nn<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_nn<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 0 && TransB == 1 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_nt ),
                       magma_ceildiv( n, BLK_N_nt ) );
-        zgemm_kernel_fermi_nt<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_nt<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 0 && TransB == 2 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_nc ),
                       magma_ceildiv( n, BLK_N_nc ) );
-        zgemm_kernel_fermi_nc<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_nc<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 1 && TransB == 0 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_tn ),
                       magma_ceildiv( n, BLK_N_tn ) );
-        zgemm_kernel_fermi_tn<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_tn<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 1 && TransB == 1 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_tt ),
                       magma_ceildiv( n, BLK_N_tt ) );
-        zgemm_kernel_fermi_tt<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_tt<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 1 && TransB == 2 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_tc ),
                       magma_ceildiv( n, BLK_N_tc ) );
-        zgemm_kernel_fermi_tc<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_tc<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 2 && TransB == 0 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_cn ),
                       magma_ceildiv( n, BLK_N_cn ) );
-        zgemm_kernel_fermi_cn<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_cn<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 2 && TransB == 1 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_ct ),
                       magma_ceildiv( n, BLK_N_ct ) );
-        zgemm_kernel_fermi_ct<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_ct<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
     else if ( TransA == 2 && TransB == 2 ) {
         dim3 dimGrid( magma_ceildiv( m, BLK_M_cc ),
                       magma_ceildiv( n, BLK_N_cc ) );
-        zgemm_kernel_fermi_cc<<< dimGrid, dimBlock, 0, magma_stream >>>(
+        zgemm_kernel_fermi_cc<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>(
             m, n, k, dA, ldda, dB, lddb, dC, lddc, alpha, beta,
             (int)offsetA, (int)offsetB );
     }
@@ -321,4 +308,22 @@ magmablas_zgemm(
     #endif
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+    @see magmablas_zgemm_q
+    @ingroup magma_zblas3
+    ********************************************************************/
+extern "C" void
+magmablas_zgemm(
+    magma_trans_t transA, magma_trans_t transB, magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex_const_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_const_ptr dB, magma_int_t lddb,
+    magmaDoubleComplex beta,
+    magmaDoubleComplex_ptr       dC, magma_int_t lddc )
+{
+    magmablas_zgemm_q( transA, transB, m, n, k,
+                       alpha, dA, ldda,
+                              dB, lddb,
+                       beta,  dC, lddc, magmablasGetQueue() );
+}

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -25,7 +25,7 @@
 #include "testings.h"
 #include "magma_threadsetting.h"
 
-#define PRECISION_z
+#define COMPLEX
 
 static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, magmaDoubleComplex *Q, magma_int_t LDQ, double eps);
 static magma_int_t check_reduction(magma_uplo_t uplo, magma_int_t N, magma_int_t bw, magmaDoubleComplex *A, double *D, magma_int_t LDA, magmaDoubleComplex *Q, double eps );
@@ -42,7 +42,7 @@ int main( int argc, char** argv)
 
     magmaDoubleComplex *h_A, *h_R, *h_work;
 
-    #if defined(PRECISION_z) || defined(PRECISION_c)
+    #ifdef COMPLEX
     double *rwork;
     magma_int_t lrwork;
     #endif
@@ -70,9 +70,12 @@ int main( int argc, char** argv)
                  "%% setting jobz=V is recommended otherwise only eigenvalues are checked\n" );
     }
 
-    printf("%% using: itype = %d, jobz = %s, range = %s, uplo = %s, check = %d, fraction = %6.4f, ngpu %d\n",
-           (int) opts.itype, lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
-           (int) opts.check, opts.fraction, (int) opts.ngpu );
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% jobz = %s, range = %s, uplo = %s, fraction = %6.4f, ngpu %d\n",
+           lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
+           opts.fraction, int(abs_ngpu) );
 
     printf("%%   N     M  GPU Time (sec)  ||I-Q'Q||_oo/N  ||A-QDQ'||_oo/(||A||_oo.N).  |D-D_magma|/(|D| * N)\n");
     printf("%%=======================================================================\n");
@@ -84,7 +87,7 @@ int main( int argc, char** argv)
 
             magma_zheevdx_getworksize(N, threads, (opts.jobz == MagmaVec), 
                                      &lwork, 
-                                     #if defined(PRECISION_z) || defined(PRECISION_c)
+                                     #ifdef COMPLEX
                                      &lrwork, 
                                      #endif
                                      &liwork);
@@ -97,7 +100,7 @@ int main( int argc, char** argv)
             
             TESTING_MALLOC_PIN( h_R,    magmaDoubleComplex, n2    );
             TESTING_MALLOC_PIN( h_work, magmaDoubleComplex, lwork );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_MALLOC_PIN( rwork, double, lrwork );
             #endif
 
@@ -110,9 +113,13 @@ int main( int argc, char** argv)
             double vu = 0;
             magma_int_t il = 0;
             magma_int_t iu = 0;
-            if (range == MagmaRangeI) {
+            if (opts.fraction == 0) {
+                il = max( 1, magma_int_t(0.1*N) );
+                iu = max( 1, magma_int_t(0.3*N) );
+            }
+            else {
                 il = 1;
-                iu = (int) (opts.fraction*N);
+                iu = max( 1, magma_int_t(opts.fraction*N) );
             }
 
             if (opts.warmup) {
@@ -122,28 +129,28 @@ int main( int argc, char** argv)
                 lapackf77_zlacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
                 if (opts.ngpu == 1) {
                     //printf("calling zheevdx_2stage 1 GPU\n");
-                    magma_zheevdx_2stage(opts.jobz, range, opts.uplo, N, 
-                                    h_R, N, 
-                                    vl, vu, il, iu, 
-                                    &m1, w1, 
-                                    h_work, lwork, 
-                                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                                    rwork, lrwork, 
-                                    #endif
-                                    iwork, liwork, 
-                                    &info);
+                    magma_zheevdx_2stage( opts.jobz, range, opts.uplo, N, 
+                                          h_R, N, 
+                                          vl, vu, il, iu, 
+                                          &m1, w1, 
+                                          h_work, lwork, 
+                                          #ifdef COMPLEX
+                                          rwork, lrwork, 
+                                          #endif
+                                          iwork, liwork, 
+                                          &info );
                 } else {
                     //printf("calling zheevdx_2stage_m %d GPU\n", (int) opts.ngpu);
-                    magma_zheevdx_2stage_m(opts.ngpu, opts.jobz, range, opts.uplo, N, 
-                                    h_R, N, 
-                                    vl, vu, il, iu, 
-                                    &m1, w1, 
-                                    h_work, lwork, 
-                                    #if defined(PRECISION_z) || defined(PRECISION_c)
-                                    rwork, lrwork, 
-                                    #endif
-                                    iwork, liwork, 
-                                    &info);
+                    magma_zheevdx_2stage_m( abs_ngpu, opts.jobz, range, opts.uplo, N, 
+                                            h_R, N, 
+                                            vl, vu, il, iu, 
+                                            &m1, w1, 
+                                            h_work, lwork, 
+                                            #ifdef COMPLEX
+                                            rwork, lrwork, 
+                                            #endif
+                                            iwork, liwork, 
+                                            &info );
                 }
             }
 
@@ -155,27 +162,27 @@ int main( int argc, char** argv)
             if (opts.ngpu == 1) {
                 //printf("calling zheevdx_2stage 1 GPU\n");
                 magma_zheevdx_2stage( opts.jobz, range, opts.uplo, N, 
-                                h_R, N, 
-                                vl, vu, il, iu, 
-                                &m1, w1, 
-                                h_work, lwork, 
-                                #if defined(PRECISION_z) || defined(PRECISION_c)
-                                rwork, lrwork, 
-                                #endif
-                                iwork, liwork, 
-                                &info);
+                                      h_R, N, 
+                                      vl, vu, il, iu, 
+                                      &m1, w1, 
+                                      h_work, lwork, 
+                                      #ifdef COMPLEX
+                                      rwork, lrwork, 
+                                      #endif
+                                      iwork, liwork, 
+                                      &info );
             } else {
                 //printf("calling zheevdx_2stage_m %d GPU\n", (int) opts.ngpu);
-                magma_zheevdx_2stage_m(opts.ngpu, opts.jobz, range, opts.uplo, N, 
-                                h_R, N, 
-                                vl, vu, il, iu, 
-                                &m1, w1, 
-                                h_work, lwork, 
-                                #if defined(PRECISION_z) || defined(PRECISION_c)
-                                rwork, lrwork, 
-                                #endif
-                                iwork, liwork, 
-                                &info);
+                magma_zheevdx_2stage_m( abs_ngpu, opts.jobz, range, opts.uplo, N, 
+                                        h_R, N, 
+                                        vl, vu, il, iu, 
+                                        &m1, w1, 
+                                        h_work, lwork, 
+                                        #ifdef COMPLEX
+                                        rwork, lrwork, 
+                                        #endif
+                                        iwork, liwork, 
+                                        &info );
             }
             gpu_time = magma_wtime() - gpu_time;
             
@@ -208,7 +215,7 @@ int main( int argc, char** argv)
                 lapackf77_zheevd("N", "L", &N, 
                                 h_A, &N, w2, 
                                 h_work, &lwork, 
-                                #if defined(PRECISION_z) || defined(PRECISION_c)
+                                #ifdef COMPLEX
                                 rwork, &lrwork, 
                                 #endif
                                 iwork, &liwork, 
@@ -228,7 +235,7 @@ int main( int argc, char** argv)
             
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_work );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_FREE_PIN( rwork  );
             #endif
             fflush( stdout );
@@ -238,7 +245,8 @@ int main( int argc, char** argv)
         }
     }
 printf("\n");
-    /* Shutdown */
+
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }
@@ -250,8 +258,8 @@ printf("\n");
  */
 static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, magmaDoubleComplex *Q, magma_int_t LDQ, double eps)
 {
-    double  done  =  1.0;
-    double  mdone = -1.0;
+    double d_one     =  1.0;
+    double d_neg_one = -1.0;
     magmaDoubleComplex c_zero    = MAGMA_Z_ZERO;
     magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     double  normQ, result;
@@ -267,11 +275,11 @@ static magma_int_t check_orthogonality(magma_int_t M, magma_int_t N, magmaDouble
 
     /* Perform Id - Q'Q */
     if (M >= N)
-        blasf77_zherk("U", "C", &N, &M, &done, Q, &LDQ, &mdone, Id, &N);
+        blasf77_zherk("U", "C", &N, &M, &d_one, Q, &LDQ, &d_neg_one, Id, &N);
     else
-        blasf77_zherk("U", "N", &M, &N, &done, Q, &LDQ, &mdone, Id, &M);
+        blasf77_zherk("U", "N", &M, &N, &d_one, Q, &LDQ, &d_neg_one, Id, &M);
 
-    normQ = lapackf77_zlanhe("I", "U", &minMN, Id, &minMN, work);
+    normQ = safe_lapackf77_zlanhe("I", "U", &minMN, Id, &minMN, work);
 
     result = normQ / (minMN * eps);
     printf( "  %12.2e", normQ / minMN );
@@ -328,8 +336,8 @@ static magma_int_t check_reduction(magma_uplo_t uplo, magma_int_t N, magma_int_t
     // since A has been generated by larnv and we did not symmetrize, 
     // so only the uplo portion of A should be equal to Q*LAMBDA*Q^H 
     // for that Rnorm use zlanhe instead of zlange
-    Rnorm = lapackf77_zlanhe("1", lapack_uplo_const(uplo), &N, Residual, &N, work);
-    Anorm = lapackf77_zlanhe("1", lapack_uplo_const(uplo), &N, A,        &LDA, work);
+    Rnorm = safe_lapackf77_zlanhe("1", lapack_uplo_const(uplo), &N, Residual, &N, work);
+    Anorm = safe_lapackf77_zlanhe("1", lapack_uplo_const(uplo), &N, A,        &LDA, work);
 
     result = Rnorm / ( Anorm * N * eps);
     printf("  %12.2e",  Rnorm / ( Anorm * N));

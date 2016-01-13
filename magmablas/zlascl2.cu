@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -139,13 +139,13 @@ magmablas_zlascl2_q(
     dim3 threads( NB );
     
     if (type == MagmaLower) {
-        zlascl2_lower <<< grid, threads, 0, queue >>> (m, n, dD, dA, ldda);
+        zlascl2_lower <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, dD, dA, ldda);
     }
     else if (type == MagmaUpper) {
-        zlascl2_upper <<< grid, threads, 0, queue >>> (m, n, dD, dA, ldda);
+        zlascl2_upper <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, dD, dA, ldda);
     }
     else if (type == MagmaFull) {
-        zlascl2_full  <<< grid, threads, 0, queue >>> (m, n, dD, dA, ldda);
+        zlascl2_full  <<< grid, threads, 0, queue->cuda_stream() >>> (m, n, dD, dA, ldda);
     }
 }
 
@@ -160,5 +160,5 @@ magmablas_zlascl2(
     magmaDouble_const_ptr dD,
     magmaDoubleComplex_ptr dA, magma_int_t ldda, magma_int_t *info )
 {
-    magmablas_zlascl2_q( type, m, n, dD, dA, ldda, magma_stream, info );
+    magmablas_zlascl2_q( type, m, n, dD, dA, ldda, magmablasGetQueue(), info );
 }

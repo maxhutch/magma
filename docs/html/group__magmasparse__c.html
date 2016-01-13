@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -141,9 +141,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gad94ebe61695d6d00384b048fe0d43de0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#gad94ebe61695d6d00384b048fe0d43de0">magma_cgeelltmv</a> (magma_trans_t transA, magma_int_t m, magma_int_t n, magma_int_t nnz_per_row, magmaFloatComplex alpha, magmaFloatComplex_ptr dval, magmaIndex_ptr dcolind, magmaFloatComplex_ptr dx, magmaFloatComplex beta, magmaFloatComplex_ptr dy, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gad94ebe61695d6d00384b048fe0d43de0"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes y = alpha * A^t * x + beta * y on the GPU.  <a href="#gad94ebe61695d6d00384b048fe0d43de0">More...</a><br /></td></tr>
 <tr class="separator:gad94ebe61695d6d00384b048fe0d43de0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1a9edfb85e5d690589c596bcc597cafb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#ga1a9edfb85e5d690589c596bcc597cafb">magma_cjacobi_diagscal</a> (int num_rows, magma_c_matrix d, magma_c_matrix b, magma_c_matrix *c, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga1a9edfb85e5d690589c596bcc597cafb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#ga1a9edfb85e5d690589c596bcc597cafb">More...</a><br /></td></tr>
-<tr class="separator:ga1a9edfb85e5d690589c596bcc597cafb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2096f5799d33704796efe702c6884596"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#ga2096f5799d33704796efe702c6884596">magma_cgemvmdot</a> (magma_int_t n, magma_int_t k, magmaFloatComplex_ptr v, magmaFloatComplex_ptr r, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga2096f5799d33704796efe702c6884596"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an extension of the merged dot product above by chunking the set of vectors v_i such that the data always fits into cache.  <a href="#ga2096f5799d33704796efe702c6884596">More...</a><br /></td></tr>
+<tr class="separator:ga2096f5799d33704796efe702c6884596"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabfbb2e83430d3f595015540bd546a70d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#gabfbb2e83430d3f595015540bd546a70d">magma_cjacobi_diagscal</a> (magma_int_t num_rows, magma_c_matrix d, magma_c_matrix b, magma_c_matrix *c, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gabfbb2e83430d3f595015540bd546a70d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#gabfbb2e83430d3f595015540bd546a70d">More...</a><br /></td></tr>
+<tr class="separator:gabfbb2e83430d3f595015540bd546a70d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga16d6caea3032c4bb257f9fe94a978e15"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#ga16d6caea3032c4bb257f9fe94a978e15">magma_cjacobiupdate</a> (magma_c_matrix t, magma_c_matrix b, magma_c_matrix d, magma_c_matrix *x, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga16d6caea3032c4bb257f9fe94a978e15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the iteration vector x for the Jacobi iteration according to x=x+d.  <a href="#ga16d6caea3032c4bb257f9fe94a978e15">More...</a><br /></td></tr>
 <tr class="separator:ga16d6caea3032c4bb257f9fe94a978e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -156,9 +159,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga51742cc2b411d5d45796e69c29867eaf"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#ga51742cc2b411d5d45796e69c29867eaf">magma_cjacobispmvupdateselect</a> (magma_int_t maxiter, magma_int_t num_updates, magma_index_t *indices, magma_c_matrix A, magma_c_matrix t, magma_c_matrix b, magma_c_matrix d, magma_c_matrix tmp, magma_c_matrix *x, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga51742cc2b411d5d45796e69c29867eaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Updates the iteration vector x for the Jacobi iteration according to x=x+d.  <a href="#ga51742cc2b411d5d45796e69c29867eaf">More...</a><br /></td></tr>
 <tr class="separator:ga51742cc2b411d5d45796e69c29867eaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga6dd92a9e1f111bbdff6215972c5bd6b3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#ga6dd92a9e1f111bbdff6215972c5bd6b3">magma_cgemvmdot</a> (int n, int k, magmaFloatComplex_ptr v, magmaFloatComplex_ptr r, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga6dd92a9e1f111bbdff6215972c5bd6b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an extension of the merged dot product above by chunking the set of vectors v_i such that the data always fits into cache.  <a href="#ga6dd92a9e1f111bbdff6215972c5bd6b3">More...</a><br /></td></tr>
-<tr class="separator:ga6dd92a9e1f111bbdff6215972c5bd6b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf6ae34b0bcf7c767acd82400026d6d8d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__c.html#gaf6ae34b0bcf7c767acd82400026d6d8d">magma_cgemvmdot_shfl</a> (magma_int_t n, magma_int_t k, magmaFloatComplex_ptr v, magmaFloatComplex_ptr r, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf6ae34b0bcf7c767acd82400026d6d8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an extension of the merged dot product above by chunking the set of vectors v_i such that the data always fits into cache.  <a href="#gaf6ae34b0bcf7c767acd82400026d6d8d">More...</a><br /></td></tr>
+<tr class="separator:gaf6ae34b0bcf7c767acd82400026d6d8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -324,20 +327,20 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga6dd92a9e1f111bbdff6215972c5bd6b3"></a>
+<a class="anchor" id="ga2096f5799d33704796efe702c6884596"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_cgemvmdot </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>k</em>, </td>
         </tr>
         <tr>
@@ -410,14 +413,100 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga1a9edfb85e5d690589c596bcc597cafb"></a>
+<a class="anchor" id="gaf6ae34b0bcf7c767acd82400026d6d8d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cgemvmdot_shfl </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>k</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>d1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>d2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>skp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This is an extension of the merged dot product above by chunking the set of vectors v_i such that the data always fits into cache. </p>
+<p>It is equivalent to a matrix vecor product Vr where V contains few rows and many columns. The computation is the same:</p>
+<p>skp = ( &lt;v_0,r&gt;, &lt;v_1,r&gt;, .. )</p>
+<p>Returns the vector skp.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>int length of v_i and r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>int <h1>vectors v_i</h1>
+</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr v = (v_0 .. v_i.. v_k)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr r</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d1</td><td>magmaFloatComplex_ptr workspace</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d2</td><td>magmaFloatComplex_ptr workspace</td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">skp</td><td>magmaFloatComplex_ptr vector[k] of scalar products (&lt;v_i,r&gt;...)</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gabfbb2e83430d3f595015540bd546a70d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_cjacobi_diagscal </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>num_rows</em>, </td>
         </tr>
         <tr>
@@ -1146,7 +1235,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:07 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

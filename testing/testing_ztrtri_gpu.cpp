@@ -1,9 +1,9 @@
 /*
-    -- clMAGMA (version 1.7.0) --
+    -- clMAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
   
        @precisions normal z -> c d s
        
@@ -114,10 +114,11 @@ int main( int argc, char** argv)
                 if ( opts.verbose ) {
                     printf( "diff=" );  magma_zprint( N, N, h_R, lda );
                 }
+                bool okay = (error < tol);
+                status += ! okay;
                 printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                       error, (error < tol ? "ok" : "failed") );
-                status += ! (error < tol);
+                       error, (okay ? "ok" : "failed") );
             }
             else {
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---\n",
@@ -134,6 +135,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

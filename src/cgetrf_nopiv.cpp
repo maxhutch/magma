@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgetrf_nopiv.cpp normal z -> c, Fri Sep 11 18:29:26 2015
+       @generated from src/zgetrf_nopiv.cpp normal z -> c, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
-
-#define PRECISION_c
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -25,7 +23,9 @@
     trapezoidal if m < n).
 
     This is the right-looking Level 3 BLAS version of the algorithm.
-
+    
+    This is a CPU-only (not accelerated) version.
+    
     Arguments
     ---------
     @param[in]
@@ -68,7 +68,7 @@ magma_cgetrf_nopiv(
     magmaFloatComplex c_one = MAGMA_C_ONE;
     magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
     
-    magma_int_t min_mn, i__3, i__4;
+    magma_int_t min_mn, m_j_jb, n_j_jb;
     magma_int_t j, jb, nb, iinfo;
 
     A -= 1 + lda;
@@ -106,12 +106,9 @@ magma_cgetrf_nopiv(
             
             /* Factor diagonal and subdiagonal blocks and test for exact
                singularity. */
-            i__3 = m - j + 1;
-            //magma_cgetf2_nopiv( i__3, jb, A(j,j), lda, &iinfo );
-
-            i__3 -= jb;
+            m_j_jb = m - j - jb + 1;
             magma_cgetf2_nopiv( jb, jb, A(j,j), lda, &iinfo );
-            blasf77_ctrsm( "R", "U", "N", "N", &i__3, &jb, &c_one,
+            blasf77_ctrsm( "R", "U", "N", "N", &m_j_jb, &jb, &c_one,
                            A(j,j),    &lda,
                            A(j+jb,j), &lda );
             
@@ -121,17 +118,17 @@ magma_cgetrf_nopiv(
 
             if (j + jb <= n) {
                 /* Compute block row of U. */
-                i__3 = n - j - jb + 1;
+                n_j_jb = n - j - jb + 1;
                 blasf77_ctrsm( "Left", "Lower", "No transpose", "Unit",
-                               &jb, &i__3, &c_one,
+                               &jb, &n_j_jb, &c_one,
                                A(j,j),    &lda,
                                A(j,j+jb), &lda );
                 if (j + jb <= m) {
                     /* Update trailing submatrix. */
-                    i__3 = m - j - jb + 1;
-                    i__4 = n - j - jb + 1;
+                    m_j_jb = m - j - jb + 1;
+                    n_j_jb = n - j - jb + 1;
                     blasf77_cgemm( "No transpose", "No transpose",
-                                   &i__3, &i__4, &jb, &c_neg_one,
+                                   &m_j_jb, &n_j_jb, &jb, &c_neg_one,
                                    A(j+jb,j),    &lda,
                                    A(j,j+jb),    &lda, &c_one,
                                    A(j+jb,j+jb), &lda );

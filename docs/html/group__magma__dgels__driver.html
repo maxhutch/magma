@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -223,7 +223,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">B</td><td>DOUBLE_PRECISION array, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= M.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) DOUBLE_PRECISION array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= max( N*NB, 2*NB*NB ), where NB is the blocksize given by magma_get_dgeqrf_nb( M ). <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= max( N*NB, 2*NB*NB ), where NB is the blocksize given by magma_get_dgeqrf_nb( M, N ). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -330,7 +330,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) DOUBLE_PRECISION array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_dgeqrf_nb( M ). <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_dgeqrf_nb( M, N ). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -437,7 +437,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS) On entry, the M-by-NRHS matrix C. On exit, the N-by-NRHS solution matrix X.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array dB. LDDB &gt;= M.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">hwork</td><td>(workspace) DOUBLE_PRECISION array, dimension MAX(1,LWORK). On exit, if INFO = 0, HWORK[0] returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_dgeqrf_nb( M ). <br />
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array HWORK, LWORK &gt;= (M - N + NB)*(NRHS + NB) + NRHS*NB, where NB is the blocksize given by magma_get_dgeqrf_nb( M, N ). <br />
  If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the HWORK array, returns this value as the first entry of the HWORK array.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -570,7 +570,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:09 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

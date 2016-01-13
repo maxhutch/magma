@@ -4,7 +4,7 @@
 -----------------------------------------------------
 
 MAGMA is intended for CUDA enabled NVIDIA GPUs.
-It supports Tesla, Fermi, and Kepler GPUs.
+It supports Fermi and Kepler GPUs.
 
 Included are routines for the following algorithms:
 
@@ -24,6 +24,35 @@ Included are routines for the following algorithms:
 Most routines have all four precisions:
 single (s), double (d), single-complex (c), double-complex (z).
 
+
+ 2.0.0
+       - beta 2: Jan 6, 2016
+    * See "README-v2.txt" for details about updating code.
+    * Removed support for CUDA arch 1.x, which NVIDIA no longer supports since CUDA 6.
+    * Changed to non-recursive Makefile.
+    * Changed definition of magma_queue_t to opaque structure.
+    * Changed header from magma.h to magma_v2.h
+    * Changed magma_get_{getrf, geqp3, geqrf, geqlf, gelqf, gebrd, gesvd}_nb to take both m, n.
+    * Added queue argument to magmablas routines, and deprecated magmablas{Set,Get}KernelStream.
+      This resolves a thread safety issue with using global magmablas{Set,Get}KernelStream.
+    * Fixed bugs related to relying on CUDA NULL stream implicit synchronization.
+    * Fixed memory leaks (zunmqr_m, zheevdx_2stage, etc.). Add -DDEBUG_MEMORY option to catch leaks.
+    * Fixed geqrf*_gpu bugs for m == nb, n >> m (-N 64,10000); and m >> n, n == nb+i (-N 10000,129)
+    * Fixed zunmql2_gpu for rectangular sizes.
+    * Fixed zhegvdx_m itype 3.
+    * Added zunglq, zungbr, zgeadd2 (which takes both alpha and beta).
+    * Merged single & multi-GPU CPU interface testers (e.g., merged testing_dgeev_m into testing_dgeev).
+    * Deprecated magma_device_sync; use magma_queue_sync instead.
+    
+    MAGMA sparse
+    * Added QMR, TFQMR, preconditioned TFQMR
+    * Added CGS, preconditioned CGS
+    * Added kernel-fused versions for CGS/PCGS QMR, TFQMR/PTFQMR 
+    * Changed relative stopping criterion to be relative to RHS
+    * Fixed bug in complex version of CG
+    * Accelerated version of Jacobi-CG
+    * Added very efficient IDR
+    * Performance tuning for SELLP SpMV   
 
  1.7.0 - final:  Sep 11, 2015
        - beta 1: Aug 25, 2015

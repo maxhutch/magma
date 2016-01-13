@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #
-# MAGMA (version 1.7.0) --
+# MAGMA (version 2.0.0-beta2) --
 # Univ. of Tennessee, Knoxville
 # Univ. of California, Berkeley
 # Univ. of Colorado, Denver
-# @date September 2015
+# @date January 2016
 
 ## @file run_tests.py
 #  @author Mark Gates
@@ -143,7 +143,7 @@ from optparse import OptionParser
 batch = not sys.stdout.isatty()
 
 parser = OptionParser()
-parser.add_option('-p', '--precisions',  action='store',      dest='precisions', help='run given precisions', default='sd' )
+parser.add_option('-p', '--precisions',  action='store',      dest='precisions', help='run given precisions', default='sdcz' )
 parser.add_option(      '--start',       action='store',      dest='start',      help='start with given routine; useful to restart an interupted run')
 parser.add_option(      '--memcheck',    action='store_true', dest='memcheck',   help='run with cuda-memcheck (slow)')
 parser.add_option(      '--tol',         action='store',      dest='tol',        help='set tolerance')
@@ -151,6 +151,7 @@ parser.add_option(      '--tol',         action='store',      dest='tol',       
 parser.add_option('-s', '--small',       action='store_true', dest='small',      help='run small  tests, N < 300')
 parser.add_option('-m', '--medium',      action='store_true', dest='med',        help='run medium tests, N < 1000')
 parser.add_option('-l', '--large',       action='store_true', dest='large',      help='run large  tests, N > 1000')
+parser.add_option('-n', '--nonsym',      action='store_true', dest='nonsym',     help='run nonsym  tests')
 
 parser.add_option(      '--sparse-blas', action='store_true', dest='sparse_blas', help='run sparse BLAS tests')
 parser.add_option(      '--solver',      action='store_true', dest='solver',      help='run sparse solvers')
@@ -173,7 +174,22 @@ parser.add_option(      '--iterref'          , action='store_true', dest='iterre
 parser.add_option(      '--jacobi'           , action='store_true', dest='jacobi'        , help='run jacobi'        )
 parser.add_option(      '--ba'               , action='store_true', dest='ba'            , help='run ba-iter'       )
 parser.add_option(      '--idr'              , action='store_true', dest='idr'           , help='run idr'           )
+parser.add_option(      '--idr_merge'        , action='store_true', dest='idr_merge'     , help='run idr_merge'     )
 parser.add_option(      '--pidr'             , action='store_true', dest='pidr'          , help='run pidr'          )
+parser.add_option(      '--cgs'              , action='store_true', dest='cgs'           , help='run cgs'           )
+parser.add_option(      '--cgs_merge'        , action='store_true', dest='cgs_merge'     , help='run cgs_merge'     )
+parser.add_option(      '--qmr'              , action='store_true', dest='qmr'           , help='run qmr'           )
+parser.add_option(      '--qmr_merge'        , action='store_true', dest='qmr_merge'     , help='run qmr_merge'     )
+parser.add_option(      '--pcgs'             , action='store_true', dest='pcgs'          , help='run pcgs'          )
+parser.add_option(      '--pcgs_merge'       , action='store_true', dest='pcgs_merge'    , help='run pcgs_merge'    )
+parser.add_option(      '--pqmr'             , action='store_true', dest='pqmr'          , help='run pqmr'          )
+parser.add_option(      '--pqmr_merge'       , action='store_true', dest='pqmr_merge'    , help='run pqmr_merge'    )   
+parser.add_option(      '--bombard'          , action='store_true', dest='bombard'       , help='run bombard'       )
+parser.add_option(      '--bombard_merge'    , action='store_true', dest='bombard_merge' , help='run bombard_merge' )
+parser.add_option(      '--lsqr'             , action='store_true', dest='lsqr'          , help='run lsqr'          )
+parser.add_option(      '--bicg'             , action='store_true', dest='bicg'          , help='run bicg'          )
+parser.add_option(      '--pbicg'            , action='store_true', dest='pbicg'         , help='run pbicg'         )
+
                                                                                            
 parser.add_option(      '--jacobi-prec'      , action='store_true', dest='jacobi_prec'   , help='run Jacobi preconditioner')
 parser.add_option(      '--ilu-prec'         , action='store_true', dest='ilu_prec'      , help='run ILU preconditioner')
@@ -182,10 +198,11 @@ parser.add_option(      '--iter-ilu-prec'    , action='store_true', dest='iter_i
 (opts, args) = parser.parse_args()
 
 # default if no sizes given is all sizes
-if ( not opts.small and not opts.med and not opts.large ):
+if ( not opts.small and not opts.med and not opts.large and not opts.nonsym ):
     opts.small = True
     opts.med   = True
     opts.large = True
+    opts.nonsym = True
 # end
 
 # default if no groups given is all groups
@@ -204,10 +221,11 @@ if (     not opts.sparse_blas
 # end
 
 # default if no sizes given is all sizes
-if ( not opts.small and not opts.med and not opts.large ):
+if ( not opts.small and not opts.med and not opts.large and not opts.nonsym ):
     opts.small = True
     opts.med   = True
     opts.large = True
+    opts.nonsym = True
 # end
 
 # default if no solvers given is all solvers
@@ -224,6 +242,21 @@ if (     not opts.cg
      and not opts.jacobi
      and not opts.ba
      and not opts.idr
+     and not opts.ba
+     and not opts.idr_merge
+     and not opts.qmr
+     and not opts.qmr_merge
+     and not opts.cgs
+     and not opts.cgs_merge
+     and not opts.pqmr
+     and not opts.pqmr_merge
+     and not opts.pcgs
+     and not opts.pcgs_merge
+     and not opts.bombard
+     and not opts.bombard_merge
+     and not opts.bicg
+     and not opts.pbicg
+     and not opts.lsqr
      and not opts.pidr ):
     opts.cg             = True
     opts.cg_merge       = True
@@ -238,7 +271,21 @@ if (     not opts.cg
     opts.jacobi         = True
     opts.ba             = True
     opts.idr            = True
+    opts.idr_merge      = True
     opts.pidr           = True
+    opts.cgs            = True
+    opts.cgs_merge      = True
+    opts.qmr            = True
+    opts.qmr_merge      = True
+    opts.pcgs           = True
+    opts.pcgs_merge     = True
+    opts.pqmr           = True
+    opts.pqmr_merge     = True
+    opts.bombard        = True
+    opts.bombard_merge  = True
+    opts.bicg           = True
+    opts.pbicg          = True
+    opts.lsqr           = True
 # end
 
 # default if no preconditioners given all
@@ -250,10 +297,11 @@ if (     not opts.jacobi_prec
 # end
 
 # default if no sizes given is all sizes
-if ( not opts.small and not opts.med and not opts.large ):
+if ( not opts.small and not opts.med and not opts.large and not opts.nonsym ):
     opts.small = True
     opts.med   = True
     opts.large = True
+    opts.nonsym = True
 # end
 
 print 'opts', opts
@@ -265,91 +313,131 @@ print 'args', args
 # looping over formats
 formats = []
 if ( opts.csr ):
-    formats += ['--format 0']
+    formats += ['--format CSR']
 # end
 if ( opts.ell ):
-    formats += ['--format 1']
+    formats += ['--format ELL']
 # end
 if ( opts.sellp ):
-    formats += ['--format 2']
+    formats += ['--format SELLP']
 # end
 
 # looping over solvers
 solvers = []
 if ( opts.cg ):
-    solvers += ['--solver 0']
+    solvers += ['--solver CG --basic']
 # end
 if ( opts.cg_merge ):
-    solvers += ['--solver 1']
+    solvers += ['--solver CG']
 # end
 if ( opts.bicgstab ):
-    solvers += ['--solver 3']
+    solvers += ['--solver BICGSTAB --basic']
 # end
 if ( opts.bicgstab_merge ):
-    solvers += ['--solver 4']
+    solvers += ['--solver BICGSTAB']
 # end
 if ( opts.gmres ):
-    solvers += ['--solver 6']
+    solvers += ['--solver GMRES']
 # end
 if ( opts.lobpcg ):
-    solvers += ['--solver 8']
+    solvers += ['--solver LOBPCG']
 # end
 if ( opts.jacobi ):
-    solvers += ['--solver 9']
+    solvers += ['--solver JACOBI']
 # end
 if ( opts.ba ):
-    solvers += ['--solver 10']
+    solvers += ['--solver BA']
 # end
 if ( opts.idr ):
-    solvers += ['--solver 11']
+    solvers += ['--solver IDR --basic']
+# end
+if ( opts.idr_merge ):
+    solvers += ['--solver IDR']
+# end
+if ( opts.cgs ):
+    solvers += ['--solver CGS']
+# end
+if ( opts.cgs_merge ):
+    solvers += ['--solver CGS --basic']
+# end
+if ( opts.qmr ):
+    solvers += ['--solver QMR --basic']
+# end
+if ( opts.qmr_merge ):
+    solvers += ['--solver QMR']
+# end
+if ( opts.lsqr ):
+    solvers += ['--solver QMR']
+# end
+if ( opts.bicg ):
+    solvers += ['--solver QMR']
+# end
+if ( opts.bombard ):
+    solvers += ['--solver BOMBARDMENT']
+# end
+if ( opts.bombard_merge ):
+    solvers += ['--solver BOMBARDMENT --basic']
 # end
 
 
 # looping over precsolvers
 precsolvers = []
 if ( opts.pcg ):
-    precsolvers += ['--solver 2']
+    precsolvers += ['--solver PCG']
 # end
 if ( opts.pbicgstab ):
-    precsolvers += ['--solver 5']
+    precsolvers += ['--solver PBICGSTAB']
 # end
 if ( opts.pgmres ):
-    precsolvers += ['--solver 7']
+    precsolvers += ['--solver PGMRES']
 # end
 if ( opts.pidr ):
-    precsolvers += ['--solver 12']
+    precsolvers += ['--solver PIDR']
 # end
+if ( opts.pidr ):
+    precsolvers += ['--solver PQMR']
+# end
+if ( opts.pidr ):
+    precsolvers += ['--solver PCGS']
+# end
+if ( opts.pbicg ):
+    precsolvers += ['--solver PCGS']
+# end
+if ( opts.lsqr ):
+    precsolvers += ['--solver PCGS']
+# end
+
 
 # looping over IR
 IR = []
 if ( opts.iterref ):
-    IR += ['--solver 21']
+    IR += ['--solver LOBPCG']
 # end
 
 
 
 # looping over preconditioners
-precs = ['--precond 0']
+precs = ['--precond NONE']
 if ( opts.jacobi_prec ):
-    precs += ['--precond 1']
+    precs += ['--precond ILU']
 # end
 if ( opts.ilu_prec ):
-    precs += ['--precond 2']
+    precs += ['--precond JACOBI']
 # end
 if ( opts.iter_ilu_prec ):
-    precs += ['--precond -2']
+    precs += ['--precond AILU']
 # end
 
 
 # looping over preconditioners
 IRprecs = []
 if ( opts.iterref ):
-    IRprecs += ['--precond 1']
-    IRprecs += ['--precond 3']
-    IRprecs += ['--precond 4']
-    IRprecs += ['--precond 5']
-    IRprecs += ['--precond 6']
-    IRprecs += ['--precond 7']
+    IRprecs += ['--precond CG']
+    IRprecs += ['--precond CGS']
+    IRprecs += ['--precond BICGSTAB']
+    IRprecs += ['--precond GMRES']
+    IRprecs += ['--precond QMR']
+    IRprecs += ['--precond BOMBARDMENT']
 # end
 
 
@@ -385,6 +473,8 @@ if opts.med:
     sizes += ['LAPLACE2D 95']
 if opts.large:
     sizes += ['LAPLACE2D 317']
+if opts.nonsym:
+    sizes += ['test_matrices/ani5_crop.mtx']
 #end
 
 
@@ -537,9 +627,10 @@ for solver in IR:
 
 
 # ----------------------------------------------------------------------
-print 'tests'
-for t in tests:
-    print t
+#print 'tests'
+#for t in tests:
+#    print t
+
 
 # ----------------------------------------------------------------------
 # runs command in a subprocess.
@@ -632,7 +723,7 @@ for test in tests:
     if (    (args and not cmd in args)
          or (not os.path.exists( cmd ))
          or (seen.has_key( cmd_args )) ):
-        print "skipping", cmd_args
+        #print "skipping", cmd_args
         continue
     # end
     seen[ cmd_args ] = True

@@ -9,7 +9,9 @@
 #include <cublas_v2.h>  // before magma.h
 #endif
 
+#if ! defined(MAGMA_H) && ! defined(MAGMA_V2_H)
 #include "magma.h"
+#endif
 
 
 /***************************************************************************//**
@@ -152,6 +154,31 @@ void magma_assert( bool condition, const char* msg, ... );
 
 void magma_assert_warn( bool condition, const char* msg, ... );
 
+// work around MKL bug in multi-threaded lanhe/lansy
+double safe_lapackf77_zlanhe(
+    const char *norm, const char *uplo,
+    const magma_int_t *n,
+    const magmaDoubleComplex *A, const magma_int_t *lda,
+    double *work );
+
+float  safe_lapackf77_clanhe(
+    const char *norm, const char *uplo,
+    const magma_int_t *n,
+    const magmaFloatComplex *A, const magma_int_t *lda,
+    float *work );
+
+double safe_lapackf77_dlansy(
+    const char *norm, const char *uplo,
+    const magma_int_t *n,
+    const double *A, const magma_int_t *lda,
+    double *work );
+
+float safe_lapackf77_slansy(
+    const char *norm, const char *uplo,
+    const magma_int_t *n,
+    const float *A, const magma_int_t *lda,
+    float *work );
+
 #define MAX_NTEST 1050
 
 typedef enum {
@@ -167,6 +194,9 @@ public:
     
     // parse command line
     void parse_opts( int argc, char** argv );
+    
+    // deallocate queues, etc.
+    void cleanup();
     
     // matrix size
     magma_int_t ntest;
@@ -198,8 +228,6 @@ public:
     magma_int_t version;   // hemm_mgpu, hetrd
     double      fraction;  // hegvdx
     double      tolerance;
-    magma_int_t panel_nthread; //in magma_amc: first dimension for a 2D big panel
-    double fraction_dcpu; //in magma_amc: fraction of the work for the cpu
     
     // boolean arguments
     int check;
@@ -223,6 +251,7 @@ public:
     // queue for default device
     magma_queue_t   queue;
     magma_queue_t   queues2[3];  // 2 queues + 1 extra NULL entry to catch errors
+    magma_queue_t   default_queue;
     
     #ifdef HAVE_CUBLAS
     // handle for directly calling cublas

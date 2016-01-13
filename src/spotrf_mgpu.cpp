@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zpotrf_mgpu.cpp normal z -> s, Fri Sep 11 18:29:27 2015
+       @generated from src/zpotrf_mgpu.cpp normal z -> s, Wed Jan  6 17:59:29 2016
 
 */
-#include "common_magma.h"
-
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -83,7 +82,7 @@ magma_spotrf_mgpu(
     float *work;
     int upper = (uplo == MagmaUpper);
     float *dwork[MagmaMaxGPUs];
-    magma_queue_t    stream[MagmaMaxGPUs][3];
+    magma_queue_t    queues[MagmaMaxGPUs][3];
     magma_event_t     event[MagmaMaxGPUs][5];
 
     *info = 0;
@@ -110,14 +109,16 @@ magma_spotrf_mgpu(
     if (ngpu == 1 && ((nb <= 1) || (nb >= n)) ) {
         /*  Use unblocked code. */
         magma_setdevice(0);
+        magma_queue_create( 0, &queues[0][0] );
         if (MAGMA_SUCCESS != magma_smalloc_pinned( &work, n*nb )) {
             *info = MAGMA_ERR_HOST_ALLOC;
             return *info;
         }
-        magma_sgetmatrix( n, n, d_lA[0], ldda, work, n );
+        magma_sgetmatrix( n, n, d_lA[0], ldda, work, n, queues[0][0] );
         lapackf77_spotrf(uplo_, &n, work, &n, info);
-        magma_ssetmatrix( n, n, work, n, d_lA[0], ldda );
+        magma_ssetmatrix( n, n, work, n, d_lA[0], ldda, queues[0][0] );
         magma_free_pinned( work );
+        magma_queue_destroy( queues[0][0] );
     }
     else {
         lddp = magma_roundup( n, nb );
@@ -131,10 +132,12 @@ magma_spotrf_mgpu(
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
-            for( j=0; j < 3; j++ )
-                magma_queue_create( &stream[d][j] );
-            for( j=0; j < 5; j++ )
-                magma_event_create( &event[d][j]  );
+            for( j=0; j < 3; j++ ) {
+                magma_queue_create( d, &queues[d][j] );
+            }
+            for( j=0; j < 5; j++ ) {
+               magma_event_create( &event[d][j]  );
+            }
         }
         magma_setdevice(0);
         h = 1; //ngpu; //magma_ceildiv( n, nb );
@@ -143,21 +146,21 @@ magma_spotrf_mgpu(
             return *info;
         }
         if (upper) {
-            /* with three streams */
+            /* with three queues */
             magma_spotrf3_mgpu(ngpu, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, n,
-                               h, stream, event, info);
+                               h, queues, event, info);
         } else {
-            /* with three streams */
+            /* with three queues */
             magma_spotrf3_mgpu(ngpu, uplo, n, n, 0, 0, nb, d_lA, ldda, dwork, lddp, work, nb*h,
-                               h, stream, event, info);
+                               h, queues, event, info);
         }
 
         /* clean up */
         for( d=0; d < ngpu; d++ ) {
             magma_setdevice(d);
             for( j=0; j < 3; j++ ) {
-                magma_queue_sync( stream[d][j] );
-                magma_queue_destroy( stream[d][j] );
+                magma_queue_sync( queues[d][j] );
+                magma_queue_destroy( queues[d][j] );
             }
             
             for( j=0; j < 5; j++ )

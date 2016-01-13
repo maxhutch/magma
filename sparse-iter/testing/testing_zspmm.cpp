@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -79,7 +79,7 @@ int main(  int argc, char** argv )
     }
     printf("\n#    usage: ./run_zspmm"
            " [ --blocksize %d --alignment %d (for SELLP) ]"
-           " matrices \n\n", (int) hA_SELLP.blocksize, (int) hA_SELLP.alignment );
+           " matrices \n\n", int(hA_SELLP.blocksize), int(hA_SELLP.alignment) );
 
     while( i < argc ) {
         if ( strcmp("LAPLACE2D", argv[i]) == 0 && i+1 < argc ) {   // Laplace test
@@ -91,7 +91,7 @@ int main(  int argc, char** argv )
         }
 
         printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                            (int) hA.num_rows,(int) hA.num_cols,(int) hA.nnz );
+                            int(hA.num_rows), int(hA.num_cols), int(hA.nnz) );
 
         real_Double_t FLOPS = 2.0*hA.nnz/1e9;
 
@@ -233,7 +233,7 @@ int main(  int argc, char** argv )
         //#ifdef PRECISION_d
         start = magma_sync_wtime( queue );
         CHECK_CUSPARSE( cusparseCreate( &cusparseHandle ));
-        CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue ));
+        CHECK_CUSPARSE( cusparseSetStream( cusparseHandle, queue->cuda_stream() ));
         CHECK_CUSPARSE( cusparseCreateMatDescr( &descr ));
         CHECK_CUSPARSE( cusparseSetMatType( descr, CUSPARSE_MATRIX_TYPE_GENERAL ));
         CHECK_CUSPARSE( cusparseSetMatIndexBase( descr, CUSPARSE_INDEX_BASE_ZERO ));

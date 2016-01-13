@@ -1,21 +1,21 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeelltmv.cu normal z -> c, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zgeelltmv.cu normal z -> c, Wed Jan  6 17:59:40 2016
 
 */
-
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
 
 // ELL SpMV kernel
 //Michael Garland
+template<bool betazero>
 __global__ void 
 cgeelltmv_kernel( 
     int num_rows, 
@@ -34,10 +34,14 @@ cgeelltmv_kernel(
         for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_rows * n + row ];
             magmaFloatComplex val = dval [ num_rows * n + row ];
-            if ( val != 0)
+            //if ( val != MAGMA_C_ZERO )
                 dot += val * dx[col ];
         }
-        dy[ row ] = dot * alpha + beta * dy [ row ];
+        if (betazero) {
+            dy[ row ] = dot * alpha;
+        } else {
+            dy[ row ] = dot * alpha + beta * dy [ row ];
+        }
     }
 }
 
@@ -152,8 +156,13 @@ magma_cgeelltmv(
 {
     dim3 grid( magma_ceildiv( m, BLOCK_SIZE ) );
     magma_int_t threads = BLOCK_SIZE;
-    cgeelltmv_kernel<<< grid, threads, 0, queue >>>
+    if (beta == MAGMA_C_ZERO) {
+        cgeelltmv_kernel<true><<< grid, threads, 0, queue->cuda_stream() >>>
                   ( m, n, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
+    } else {
+        cgeelltmv_kernel<false><<< grid, threads, 0, queue->cuda_stream() >>>
+                  ( m, n, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
+    }
 
 
    return MAGMA_SUCCESS;
@@ -244,8 +253,8 @@ magma_cgeelltmv_shift(
     magmaIndex_ptr dcolind,
     magmaFloatComplex_ptr dx,
     magmaFloatComplex beta,
-    int offset,
-    int blocksize,
+    magma_int_t offset,
+    magma_int_t blocksize,
     magmaIndex_ptr addrows,
     magmaFloatComplex_ptr dy,
     magma_queue_t queue )
@@ -255,7 +264,7 @@ magma_cgeelltmv_shift(
     magmaFloatComplex tmp_shift;
     //magma_csetvector(1,&lambda,1,&tmp_shift,1); 
     tmp_shift = lambda;
-    cgeelltmv_kernel_shift<<< grid, threads, 0, queue >>>
+    cgeelltmv_kernel_shift<<< grid, threads, 0, queue->cuda_stream() >>>
                   ( m, n, nnz_per_row, alpha, tmp_shift, dval, dcolind, dx, 
                             beta, offset, blocksize, addrows, dy );
 

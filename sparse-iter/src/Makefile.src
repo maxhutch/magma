@@ -1,105 +1,125 @@
-# Automatically generated from Makefile ZHDR and ZSRC
-CHDR = \
-	
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 2.0.0-beta2) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      @date January 2016
+#//////////////////////////////////////////////////////////////////////////////
 
-DHDR = \
-	
+# push previous directory
+dir_stack := $(dir_stack) $(cdir)
+cdir      := sparse-iter/src
+# ----------------------------------------------------------------------
 
-SHDR = \
-	
 
-CSRC = \
-	ccg.cpp \
-	ccg_res.cpp \
-	ccg_merge.cpp \
-	cbicgstab.cpp \
-	cbicgstab_merge.cpp \
-	cbicgstab_merge2.cpp \
-	cidr.cpp \
-	cidr_acc.cpp \
-	cidr_strms.cpp \
-	citerref.cpp \
-	cjacobi.cpp \
-	cbaiter.cpp \
-	cpcg.cpp \
-	cbpcg.cpp \
-	cfgmres.cpp \
-	cpbicgstab.cpp \
-	cpidr.cpp \
-	clobpcg.cpp \
-	citerilu.cpp \
-	magma_cqr_wrapper.cpp \
-	magma_ccustomspmv.cpp \
-	magma_ccustomprecond.cpp \
-	ccumilu.cpp \
-	magma_ccuspmm.cpp \
-	magma_ccuspaxpy.cpp \
-	magma_c_precond_wrapper.cpp \
-	magma_c_solver_wrapper.cpp \
-	cresidual.cpp \
-	cresidualvec.cpp \
-	cjacobidomainoverlap.cpp
+# ------------------------------------------------------------
+# Loosely, the order is alphabetic in each section, but mixed precision,
+# driver, and multi-GPU routines are separated where it made sense.
+# Double precision "d" files that generate "s" files must also be listed
+# in ZSRC, despite the name.
 
-DSRC = \
-	dcg.cpp \
-	dcg_res.cpp \
-	dcg_merge.cpp \
-	dbicgstab.cpp \
-	dbicgstab_merge.cpp \
-	dbicgstab_merge2.cpp \
-	didr.cpp \
-	didr_acc.cpp \
-	didr_strms.cpp \
-	diterref.cpp \
-	djacobi.cpp \
-	dbaiter.cpp \
-	dpcg.cpp \
-	dbpcg.cpp \
-	dfgmres.cpp \
-	dpbicgstab.cpp \
-	dpidr.cpp \
-	dlobpcg.cpp \
-	diterilu.cpp \
-	magma_dqr_wrapper.cpp \
-	magma_dcustomspmv.cpp \
-	magma_dcustomprecond.cpp \
-	dcumilu.cpp \
-	magma_dcuspmm.cpp \
-	magma_dcuspaxpy.cpp \
-	magma_d_precond_wrapper.cpp \
-	magma_d_solver_wrapper.cpp \
-	dresidual.cpp \
-	dresidualvec.cpp \
-	djacobidomainoverlap.cpp
+# Krylov space linear solvers
+libsparse_zsrc += \
+	$(cdir)/zcg.cpp                       \
+	$(cdir)/zcg_res.cpp                   \
+	$(cdir)/zcg_merge.cpp                 \
+	$(cdir)/zpcg_merge.cpp                \
+	$(cdir)/zbicgstab.cpp                 \
+	$(cdir)/zbicg.cpp		      \
+	$(cdir)/zpbicg.cpp                    \
+	$(cdir)/zbicgstab_merge.cpp           \
+	$(cdir)/zbicgstab_merge2.cpp          \
+	$(cdir)/zbicgstab_merge3.cpp          \
+	$(cdir)/zqmr.cpp                      \
+	$(cdir)/zqmr_merge.cpp                \
+	$(cdir)/ztfqmr.cpp                    \
+	$(cdir)/ztfqmr_unrolled.cpp           \
+	$(cdir)/ztfqmr_merge.cpp              \
+	$(cdir)/zptfqmr.cpp                   \
+	$(cdir)/zptfqmr_merge.cpp             \
+	$(cdir)/zidr.cpp                      \
+	$(cdir)/zidr_merge.cpp                \
+	$(cdir)/zidr_strms.cpp                \
+	$(cdir)/ziterref.cpp                  \
+	$(cdir)/zjacobi.cpp                   \
+	$(cdir)/zbaiter.cpp                   \
+	$(cdir)/zbaiter_overlap.cpp           \
+	$(cdir)/zpcg.cpp                      \
+	$(cdir)/zcgs.cpp                      \
+	$(cdir)/zcgs_merge.cpp                \
+	$(cdir)/zpcgs.cpp                     \
+	$(cdir)/zpcgs_merge.cpp               \
+	$(cdir)/zbpcg.cpp                     \
+	$(cdir)/zfgmres.cpp                   \
+	$(cdir)/zpbicgstab.cpp                \
+	$(cdir)/zpidr.cpp                     \
+	$(cdir)/zpidr_merge.cpp               \
+	$(cdir)/zpidr_strms.cpp               \
+	$(cdir)/zbombard.cpp                  \
+	$(cdir)/zbombard_merge.cpp            \
+        $(cdir)/zpbicgstab_merge.cpp          \
 
-SSRC = \
-	scg.cpp \
-	scg_res.cpp \
-	scg_merge.cpp \
-	sbicgstab.cpp \
-	sbicgstab_merge.cpp \
-	sbicgstab_merge2.cpp \
-	sidr.cpp \
-	sidr_acc.cpp \
-	sidr_strms.cpp \
-	siterref.cpp \
-	sjacobi.cpp \
-	sbaiter.cpp \
-	spcg.cpp \
-	sbpcg.cpp \
-	sfgmres.cpp \
-	spbicgstab.cpp \
-	spidr.cpp \
-	slobpcg.cpp \
-	siterilu.cpp \
-	magma_sqr_wrapper.cpp \
-	magma_scustomspmv.cpp \
-	magma_scustomprecond.cpp \
-	scumilu.cpp \
-	magma_scuspmm.cpp \
-	magma_scuspaxpy.cpp \
-	magma_s_precond_wrapper.cpp \
-	magma_s_solver_wrapper.cpp \
-	sresidual.cpp \
-	sresidualvec.cpp \
-	sjacobidomainoverlap.cpp
+# Krylov space eigen-solvers
+libsparse_zsrc += \
+	$(cdir)/zlobpcg.cpp                   \
+#	$(cdir)/zcgeig.cpp                    \
+#	$(cdir)/zlancsoz.cpp                  \
+
+# Krylov space least squares
+libsparse_zsrc += \
+	$(cdir)/zlsqr.cpp                   \
+
+# Mixed-precision solvers
+#libsparse_zsrc += \
+#	$(cdir)/zcpbicgstab.cpp               \
+#	$(cdir)/zcpgmres.cpp                  \
+#	$(cdir)/zciterref.cpp                 \
+#	$(cdir)/zcpir.cpp                     \
+
+# QR and least squares, GPU interface
+#libsparse_zsrc += \
+#	$(cdir)/zungqr_lapack.cpp             \
+#	$(cdir)/zungqr_cgs.cpp                \
+#	$(cdir)/zungqr_mgs.cpp                \
+#	$(cdir)/zungqr_chol.cpp               \
+#	$(cdir)/zungqr_iter.cpp               \
+
+# iterative ILU
+libsparse_zsrc += \
+	$(cdir)/zdummy.cpp                  \
+	$(cdir)/ziterilu.cpp                  \
+	$(cdir)/zcustomic.cpp                 \
+	$(cdir)/zcustomilu.cpp                \
+
+# orthogonalization schemes and wrappers to dense MAGMA
+libsparse_zsrc += \
+	$(cdir)/magma_zqr_wrapper.cpp         \
+#	$(cdir)/zorthomgs.cpp                 \
+
+# backward communication for SpMV and Preconditioner
+libsparse_zsrc += \
+	$(cdir)/magma_zcustomspmv.cpp         \
+	$(cdir)/magma_zcustomprecond.cpp      \
+
+# Wrappers to cusparse functions
+libsparse_zsrc += \
+	$(cdir)/zcumilu.cpp                   \
+	$(cdir)/magma_zcuspmm.cpp             \
+	$(cdir)/magma_zcuspaxpy.cpp           \
+
+# Wrappers, tools etc
+libsparse_zsrc += \
+	$(cdir)/magma_z_precond_wrapper.cpp   \
+	$(cdir)/magma_z_solver_wrapper.cpp    \
+	$(cdir)/zresidual.cpp                 \
+	$(cdir)/zresidualvec.cpp              \
+
+# research functions
+libsparse_zsrc += \
+	$(cdir)/zjacobidomainoverlap.cpp      \
+
+
+# ----------------------------------------------------------------------
+# pop first directory
+cdir      := $(firstword $(dir_stack))
+dir_stack := $(wordlist 2, $(words $(dir_stack)), $(dir_stack))

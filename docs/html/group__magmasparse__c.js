@@ -2,8 +2,9 @@ var group__magmasparse__c =
 [
     [ "magma_ccompactActive", "group__magmasparse__c.html#ga8587886624dbb407d954a03e47faa8d8", null ],
     [ "magma_cgeelltmv", "group__magmasparse__c.html#gad94ebe61695d6d00384b048fe0d43de0", null ],
-    [ "magma_cgemvmdot", "group__magmasparse__c.html#ga6dd92a9e1f111bbdff6215972c5bd6b3", null ],
-    [ "magma_cjacobi_diagscal", "group__magmasparse__c.html#ga1a9edfb85e5d690589c596bcc597cafb", null ],
+    [ "magma_cgemvmdot", "group__magmasparse__c.html#ga2096f5799d33704796efe702c6884596", null ],
+    [ "magma_cgemvmdot_shfl", "group__magmasparse__c.html#gaf6ae34b0bcf7c767acd82400026d6d8d", null ],
+    [ "magma_cjacobi_diagscal", "group__magmasparse__c.html#gabfbb2e83430d3f595015540bd546a70d", null ],
     [ "magma_cjacobiiter", "group__magmasparse__c.html#gae40ddd9ebda49596d16d8fe8f1f51b55", null ],
     [ "magma_cjacobiiter_precond", "group__magmasparse__c.html#gaa89278186039fe3fdc4b0c23cfce6270", null ],
     [ "magma_cjacobiiter_sys", "group__magmasparse__c.html#gaccffa5ae76ea280ba3e94fbb8179688c", null ],

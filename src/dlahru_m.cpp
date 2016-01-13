@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlahru_m.cpp normal z -> d, Fri Sep 11 18:29:32 2015
+       @generated from src/zlahru_m.cpp normal z -> d, Wed Jan  6 17:59:35 2016
        @author Mark Gates
 */
-#include "common_magma.h"
-
-#define PRECISION_d
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -111,12 +109,9 @@ magma_dlahru_m(
     
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
     
     for( d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
-        magmablasSetKernelStream( data->streams[d] );
         
         // convert global indices (k) to local indices (dk)
         magma_indices_1D_bcyclic( nb, ngpu, d, k,    ihi, &dk,   &dkhi );
@@ -130,13 +125,13 @@ magma_dlahru_m(
         magma_dgemm( MagmaNoTrans, MagmaConjTrans, dkhi-dk, nb, nb,
                      c_one,  dVd(d, dk, 0), ldvd,
                              dTi(d),        nb,
-                     c_zero, dW (d, dk, 0), ldda );
+                     c_zero, dW (d, dk, 0), ldda, data->queues[d] );
         
         // Am = Am - Ym Wd' = A(0:k-1, k:ihi-1) - Ym(0:k-1, 0:nb-1) * W(k:ihi-1, 0:nb-1)'
         magma_dgemm( MagmaNoTrans, MagmaConjTrans, k, dkhi-dk, nb,
                      c_neg_one, dY(d, 0,  0),  ldda,
                                 dW(d, dk, 0),  ldda,
-                     c_one,     dA(d, 0,  dk), ldda );
+                     c_one,     dA(d, 0,  dk), ldda, data->queues[d] );
 
         // -----
         // on right, A := A Q = A - A V T V'
@@ -145,7 +140,7 @@ magma_dlahru_m(
         magma_dgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, dkhi-dknb, nb,
                      c_neg_one, dY(d, k,    0),    ldda,
                                 dW(d, dknb, 0),    ldda,
-                     c_one,     dA(d, k,    dknb), ldda );
+                     c_one,     dA(d, k,    dknb), ldda, data->queues[d] );
         
         // -----
         // on left, A := Q' A = A - V T' V' A
@@ -160,23 +155,22 @@ magma_dlahru_m(
         magma_dgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, nb, nb,
                      c_one,  dV (d, k, 0), ldv,
                              dTi(d),       nb,
-                     c_zero, dW (d, k, 0), ldda );
+                     c_zero, dW (d, k, 0), ldda, data->queues[d] );
         
         // Z = V(k:ihi-1, 0:nb-1)' * A(k:ihi-1, nb:n-k-1);  Z is stored over Y
         magma_dgemm( MagmaConjTrans, MagmaNoTrans, nb, dn-dknb, ihi-k,
                      c_one,  dV(d, k, 0),    ldv,
                              dA(d, k, dknb), ldda,
-                     c_zero, dY(d, 0, 0),    nb );
+                     c_zero, dY(d, 0, 0),    nb, data->queues[d] );
         
         // Ag2 = Ag2 - W Z = A(k:ihi-1, k+nb:n-1) - W(k+nb:n-1, 0:nb-1) * Z(0:nb-1, k+nb:n-1)
         magma_dgemm( MagmaNoTrans, MagmaNoTrans, ihi-k, dn-dknb, nb,
                      c_neg_one, dW(d, k, 0),    ldda,
                                 dY(d, 0, 0),    nb,
-                     c_one,     dA(d, k, dknb), ldda );
+                     c_one,     dA(d, k, dknb), ldda, data->queues[d] );
     }
     
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
     
     return info;
 }

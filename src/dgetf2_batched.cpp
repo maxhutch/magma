@@ -1,19 +1,17 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from zgetf2_batched.cpp normal z -> d, Fri Sep 11 18:29:32 2015
+   @generated from src/zgetf2_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
-
-#define PRECISION_d
 
 #define A(i, j)  (A + (i) + (j)*ldda)   // A(i, j) means at i row, j column
 
@@ -91,10 +89,6 @@
                 The number of matrices to operate on.
 
     @param[in]
-    myhandle   cublasHandle_t
-            Cublas handle might be used internally.
-
-    @param[in]
     queue   magma_queue_t
             Queue to execute in.
 
@@ -115,7 +109,7 @@ magma_dgetf2_batched(
     magma_int_t *info_array,
     magma_int_t gbstep,
     magma_int_t batchCount,
-    cublasHandle_t myhandle, magma_queue_t queue)
+    magma_queue_t queue)
 {
     magma_int_t arginfo = 0;
     if (m < 0) {
@@ -136,8 +130,8 @@ magma_dgetf2_batched(
         return arginfo;
     }
 
-    double neg_one = MAGMA_D_NEG_ONE;
-    double one  = MAGMA_D_ONE;
+    double c_neg_one = MAGMA_D_NEG_ONE;
+    double c_one     = MAGMA_D_ONE;
     magma_int_t nb = BATF2_NB;
 
     
@@ -165,7 +159,7 @@ magma_dgetf2_batched(
                 if (arginfo != 0 ) return arginfo;
                 // Compute elements J+1:M of J-th column.
                 if (gbj < m) {
-                    arginfo = magma_dscal_dger_batched(m-gbj, ib-step, gbj, dA_array, ldda, info_array, gbstep, batchCount, queue);
+                    arginfo = magma_dscal_dger_batched( m-gbj, ib-step, gbj, dA_array, ldda, info_array, gbstep, batchCount, queue );
                     if (arginfo != 0 ) return arginfo;
                 }
             }
@@ -189,10 +183,10 @@ magma_dgetf2_batched(
             magma_ddisplace_pointers(dW2_displ, dA_array, ldda, ib+panelj, ib+panelj, batchCount, queue);
 
             magma_dgemm_batched( MagmaNoTrans, MagmaNoTrans, m-(panelj+ib), n-(panelj+ib), ib,
-                                 neg_one, dW0_displ, ldda,
-                                 dW1_displ, ldda,
-                                 one,  dW2_displ, ldda,
-                                 batchCount, queue, myhandle);
+                                 c_neg_one, dW0_displ, ldda,
+                                            dW1_displ, ldda,
+                                 c_one,     dW2_displ, ldda,
+                                 batchCount, queue );
         }
     }
 

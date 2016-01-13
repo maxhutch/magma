@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Stan Tomov
@@ -151,7 +151,7 @@ magma_zcompact(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
     
-    zcompact_kernel<<< grid, threads, 0, queue >>>(
+    zcompact_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
             m, n, dA, ldda, dnorms, tol, active, active+n );
 
     magma_igetvector( 1, active+n, 1, cBlock, 1 );
@@ -223,7 +223,7 @@ magma_zcompactActive(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
 
-    zcompactactive_kernel<<< grid, threads, 0, queue >>>(
+    zcompactactive_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
             m, n, dA, ldda, active);
     return info;
 }

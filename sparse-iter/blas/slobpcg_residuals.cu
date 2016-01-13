@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlobpcg_residuals.cu normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zlobpcg_residuals.cu normal z -> s, Wed Jan  6 17:59:41 2016
 
 */
-
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
 #define BLOCK_SIZE  512
@@ -173,7 +172,7 @@ magma_slobpcg_res(
     dim3 threads( block_size );
     dim3 grid( magma_ceildiv( num_rows, block_size ) );
 
-    magma_slobpcg_res_kernel<<< grid, threads, 0, queue >>>
+    magma_slobpcg_res_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                                 ( num_rows, num_vecs, evalues, X, R, res );
 
 

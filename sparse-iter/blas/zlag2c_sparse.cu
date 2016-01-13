@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
 
@@ -128,7 +128,7 @@ magmablas_zlag2c_sparse(
 
 
     cudaMemcpyToSymbol( flag, info, sizeof(flag) );    // flag = 0
-    magmaint_zlag2c_sparse<<< grid, BLOCKSIZE, 0, queue >>>
+    magmaint_zlag2c_sparse<<< grid, BLOCKSIZE, 0, queue->cuda_stream() >>>
                                         ( M, N, A, SA );
     cudaMemcpyFromSymbol( info, flag, sizeof(flag) );  // info = flag
 }
@@ -217,7 +217,7 @@ magma_zlag2c_CSR_DENSE(
         dim3 Bs( BLOCKSIZE );
         dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );
 
-        magma_zlag2c_CSR_DENSE_kernel<<< Bs, Gs, 0, queue >>>
+        magma_zlag2c_CSR_DENSE_kernel<<< Bs, Gs, 0, queue->cuda_stream() >>>
         ( A.num_rows, A.num_cols, A.dval, A.drow, A.dcol, B->val );
     }
 }
@@ -247,7 +247,7 @@ magma_zlag2c_CSR_DENSE_alloc(
         dim3 Bs( BLOCKSIZE );
         dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );
 
-        magma_zlag2c_CSR_DENSE_kernel_1<<< Bs, Gs, 0, queue >>>
+        magma_zlag2c_CSR_DENSE_kernel_1<<< Bs, Gs, 0, queue->cuda_stream() >>>
         ( A.num_rows, A.num_cols, B->val );
     }
 }
@@ -263,7 +263,7 @@ magma_zlag2c_CSR_DENSE_convert(
         dim3 Bs( BLOCKSIZE );
         dim3 Gs( magma_ceildiv( A.num_rows, BLOCKSIZE ) );
 
-        magma_zlag2c_CSR_DENSE_kernel_2<<< Bs, Gs, 0, queue >>>
+        magma_zlag2c_CSR_DENSE_kernel_2<<< Bs, Gs, 0, queue->cuda_stream() >>>
         ( A.num_rows, A.num_cols, A.dval, A.drow, A.dcol, B->val );
     }
 }

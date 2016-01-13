@@ -1,20 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zbicgstab_merge.cpp normal z -> c, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/zbicgstab_merge.cpp normal z -> c, Wed Jan  6 17:59:44 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
 
-#define  q(i)     (q.dval + (i)*dofs)
 
 /**
     Purpose
@@ -24,8 +23,6 @@
        A * X = B
     where A is a general matrix.
     This is a GPU implementation of the Biconjugate Gradient Stabilized method.
-    The difference to magma_cbicgstab is that we use specifically designed
-    kernels merging multiple operations into one kernel.
 
     Arguments
     ---------
@@ -54,146 +51,156 @@
 
 extern "C" magma_int_t
 magma_cbicgstab_merge(
-    magma_c_matrix A, magma_c_matrix b,
-    magma_c_matrix *x, magma_c_solver_par *solver_par,
+    magma_c_matrix A, magma_c_matrix b, magma_c_matrix *x,
+    magma_c_solver_par *solver_par,
     magma_queue_t queue )
 {
-    magma_int_t info = 0;
+    magma_int_t info = MAGMA_NOTCONVERGED;
     
-    // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
-
     // prepare solver feedback
-    solver_par->solver = Magma_BICGSTABMERGE;
+    solver_par->solver = Magma_BICGSTAB;
     solver_par->numiter = 0;
-    solver_par->info = MAGMA_SUCCESS;
-    
-    // solver variables
-    magmaFloatComplex alpha, beta, omega, rho_old, rho_new, *skp_h={0};
-    float nom, nom0, betanom;
-    //float den;
+    solver_par->spmv_count = 0;
 
     // some useful variables
-    magmaFloatComplex c_zero = MAGMA_C_ZERO, c_one = MAGMA_C_ONE;
+    magmaFloatComplex c_zero = MAGMA_C_ZERO;
+    magmaFloatComplex c_one  = MAGMA_C_ONE;
     
-    magma_int_t dofs = A.num_rows;
-
-    // GPU stream
-    magma_queue_t stream[2]={0};
-    magma_event_t event[1]={0};
-    magma_queue_create( &stream[0] );
-    magma_queue_create( &stream[1] );
-    magma_event_create( &event[0] );
+    magma_int_t dofs = A.num_rows * b.num_cols;
 
     // workspace
-    magma_c_matrix q={Magma_CSR}, r={Magma_CSR}, rr={Magma_CSR}, p={Magma_CSR}, v={Magma_CSR}, s={Magma_CSR}, t={Magma_CSR};
-    magmaFloatComplex *d1=NULL, *d2=NULL, *skp=NULL;
-    d1 = NULL;
-    d2 = NULL;
-    skp = NULL;
-    CHECK( magma_cmalloc( &d1, dofs*(2) ));
-    CHECK( magma_cmalloc( &d2, dofs*(2) ));
-    // array for the parameters
-    CHECK( magma_cmalloc( &skp, 8 ));
-    // skp = [alpha|beta|omega|rho_old|rho|nom|tmp1|tmp2]
-    CHECK( magma_cvinit( &q, Magma_DEV, dofs*6, 1, c_zero, queue ));
+    magma_c_matrix r={Magma_CSR}, rr={Magma_CSR}, p={Magma_CSR}, v={Magma_CSR}, 
+    s={Magma_CSR}, t={Magma_CSR}, d1={Magma_CSR}, d2={Magma_CSR};
+    CHECK( magma_cvinit( &r, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_cvinit( &rr,Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_cvinit( &p, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_cvinit( &v, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_cvinit( &s, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_cvinit( &t, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_cvinit( &d1, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
+    CHECK( magma_cvinit( &d2, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
 
-    // q = rr|r|p|v|s|t
-    rr.memory_location = Magma_DEV; rr.dval = NULL; rr.num_rows = rr.nnz = dofs; rr.num_cols = 1; rr.storage_type = Magma_DENSE;
-    r.memory_location = Magma_DEV; r.dval = NULL; r.num_rows = r.nnz = dofs; r.num_cols = 1; r.storage_type = Magma_DENSE;
-    p.memory_location = Magma_DEV; p.dval = NULL; p.num_rows = p.nnz = dofs; p.num_cols = 1; p.storage_type = Magma_DENSE;
-    v.memory_location = Magma_DEV; v.dval = NULL; v.num_rows = v.nnz = dofs; v.num_cols = 1; v.storage_type = Magma_DENSE;
-    s.memory_location = Magma_DEV; s.dval = NULL; s.num_rows = s.nnz = dofs; s.num_cols = 1; s.storage_type = Magma_DENSE;
-    t.memory_location = Magma_DEV; t.dval = NULL; t.num_rows = t.nnz = dofs; t.num_cols = 1; t.storage_type = Magma_DENSE;
-
-    rr.dval = q(0);
-    r.dval = q(1);
-    p.dval = q(2);
-    v.dval = q(3);
-    s.dval = q(4);
-    t.dval = q(5);
+    
+    // solver variables
+    magmaFloatComplex alpha, beta, omega, rho_old, rho_new;
+    float nom, betanom, nom0, r0, res, nomb;
+    res=0;
+    //float den;
 
     // solver setup
     CHECK(  magma_cresidualvec( A, b, *x, &r, &nom0, queue));
-    magma_ccopy( dofs, r.dval, 1, q(0), 1 );                            // rr = r
-    magma_ccopy( dofs, r.dval, 1, q(1), 1 );                            // q = r
+    magma_ccopy( dofs, r.dval, 1, rr.dval, 1, queue );                  // rr = r
     betanom = nom0;
     nom = nom0*nom0;
-    rho_new = magma_cdotc( dofs, r.dval, 1, r.dval, 1 );             // rho=<rr,r>
+    rho_new = magma_cdotc( dofs, r.dval, 1, r.dval, 1, queue );             // rho=<rr,r>
     rho_old = omega = alpha = MAGMA_C_MAKE( 1.0, 0. );
-    beta = rho_new;
     solver_par->init_res = nom0;
-    // array on host for the parameters
-    CHECK( magma_cmalloc_cpu( &skp_h, 8 ));
+
+    CHECK( magma_c_spmv( c_one, A, r, c_zero, v, queue ));              // z = A r
+    //den = MAGMA_C_REAL( magma_cdotc( dofs, v.dval, 1, r.dval, 1), queue ); // den = z' * r
+
+    nomb = magma_scnrm2( dofs, b.dval, 1, queue );
+    if ( nomb == 0.0 ){
+        nomb=1.0;
+    }       
+    if ( (r0 = nomb * solver_par->rtol) < ATOLERANCE ){
+        r0 = ATOLERANCE;
+    }
     
-    skp_h[0]=alpha;
-    skp_h[1]=beta;
-    skp_h[2]=omega;
-    skp_h[3]=rho_old;
-    skp_h[4]=rho_new;
-    skp_h[5]=MAGMA_C_MAKE(nom, 0.0);
-    magma_csetvector( 8, skp_h, 1, skp, 1 );
-    CHECK( magma_c_spmv( c_one, A, r, c_zero, v, queue ));             // z = A r
-    //den = MAGMA_C_REAL( magma_cdotc(dofs, v.dval, 1, r.dval, 1) ); // den = z dot r
-    
-    if( nom0 < solver_par->atol ||
-        nom0/solver_par->init_res < solver_par->rtol ){
-        solver_par->final_res = solver_par->init_res;
-        solver_par->iter_res = solver_par->init_res;
+    solver_par->final_res = solver_par->init_res;
+    solver_par->iter_res = solver_par->init_res;
+    if ( solver_par->verbose > 0 ) {
+        solver_par->res_vec[0] = nom0;
+        solver_par->timing[0] = 0.0;
+    }
+    if ( nom < r0 ) {
+        info = MAGMA_SUCCESS;
         goto cleanup;
     }
 
     //Chronometry
     real_Double_t tempo1, tempo2;
     tempo1 = magma_sync_wtime( queue );
-    if ( solver_par->verbose > 0 ) {
-        solver_par->res_vec[0] = nom0;
-        solver_par->timing[0] = 0.0;
-    }
+
 
     solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     // start iteration
     do
     {
         solver_par->numiter++;
+        rho_old = rho_new;                                    // rho_old=rho
 
-        magmablasSetKernelStream(stream[0]);
+        rho_new = magma_cdotc( dofs, rr.dval, 1, r.dval, 1, queue );  // rho=<rr,r>
+        beta = rho_new/rho_old * alpha/omega;   // beta=rho/rho_old *alpha/omega
+        if( magma_c_isnan_inf( beta ) ){
+            info = MAGMA_DIVERGENCE;
+            break;
+        }
+        
+        // p = r + beta * ( p - omega * v )
+        magma_cbicgstab_1(  
+        r.num_rows, 
+        r.num_cols, 
+        beta,
+        omega,
+        r.dval, 
+        v.dval,
+        p.dval,
+        queue );
 
-        // computes p=r+beta*(p-omega*v)
-        CHECK( magma_cbicgmerge1( dofs, skp, v.dval, r.dval, p.dval, queue ));
+        CHECK( magma_c_spmv( c_one, A, p, c_zero, v, queue ));      // v = Ap
+        solver_par->spmv_count++;
+        //alpha = rho_new / tmpval;
+        alpha = rho_new /magma_cdotc( dofs, rr.dval, 1, v.dval, 1, queue );
+        if( magma_c_isnan_inf( alpha ) ){
+            info = MAGMA_DIVERGENCE;
+            break;
+        }
+        // s = r - alpha v
+        magma_cbicgstab_2(  
+        r.num_rows, 
+        r.num_cols, 
+        alpha,
+        r.dval,
+        v.dval,
+        s.dval, 
+        queue );
 
-        CHECK( magma_c_spmv( c_one, A, p, c_zero, v, queue ));         // v = Ap
+        CHECK( magma_c_spmv( c_one, A, s, c_zero, t, queue ));       // t=As
+        solver_par->spmv_count++;
+        omega = magma_cdotc( dofs, t.dval, 1, s.dval, 1, queue )   // omega = <s,t>/<t,t>
+                   / magma_cdotc( dofs, t.dval, 1, t.dval, 1, queue );
+                        
+        // x = x + alpha * p + omega * s
+        // r = s - omega * t
+        magma_cbicgstab_3(  
+        r.num_rows, 
+        r.num_cols, 
+        alpha,
+        omega,
+        p.dval,
+        s.dval,
+        t.dval,
+        x->dval,
+        r.dval,
+        queue );
 
-        CHECK( magma_cmdotc( dofs, 1, q.dval, v.dval, d1, d2, skp, queue ));
-        CHECK( magma_cbicgmerge4(  1, skp, queue ));
-        CHECK( magma_cbicgmerge2( dofs, skp, r.dval, v.dval, s.dval, queue )); // s=r-alpha*v
+        res = betanom = magma_scnrm2( dofs, r.dval, 1, queue );
 
-        CHECK( magma_c_spmv( c_one, A, s, c_zero, t, queue ));         // t=As
-
-        CHECK( magma_cmdotc( dofs, 2, q.dval+4*dofs, t.dval, d1, d2, skp+6, queue ));
-        CHECK( magma_cbicgmerge4(  2, skp, queue ));
-
-        CHECK( magma_cbicgmerge_xrbeta( dofs, d1, d2, q.dval, r.dval, p.dval,
-                                                    s.dval, t.dval, x->dval, skp, queue ));
-
-        // check stopping criterion (asynchronous copy)
-        magma_cgetvector_async( 1 , skp+5, 1,
-                                                        skp_h+5, 1, stream[1] );
-        betanom = sqrt(MAGMA_C_REAL(skp_h[5]));
+        nom = betanom*betanom;
 
         if ( solver_par->verbose > 0 ) {
             tempo2 = magma_sync_wtime( queue );
             if ( (solver_par->numiter)%solver_par->verbose==0 ) {
                 solver_par->res_vec[(solver_par->numiter)/solver_par->verbose]
-                        = (real_Double_t) betanom;
+                        = (real_Double_t) res;
                 solver_par->timing[(solver_par->numiter)/solver_par->verbose]
                         = (real_Double_t) tempo2-tempo1;
             }
         }
-        
-        if (  betanom  < solver_par->atol || 
-              betanom/solver_par->init_res < solver_par->rtol ) {
+
+        if ( res/nomb <= solver_par->rtol || res <= solver_par->atol ){
             break;
         }
     }
@@ -202,12 +209,12 @@ magma_cbicgstab_merge(
     tempo2 = magma_sync_wtime( queue );
     solver_par->runtime = (real_Double_t) tempo2-tempo1;
     float residual;
-    CHECK(  magma_cresidualvec( A, b, *x, &r, &residual, NULL));
-    solver_par->iter_res = betanom;
+    CHECK(  magma_cresidualvec( A, b, *x, &r, &residual, queue));
+    solver_par->iter_res = res;
     solver_par->final_res = residual;
 
-    if ( solver_par->numiter < solver_par->maxiter ) {
-        solver_par->info = MAGMA_SUCCESS;
+    if ( solver_par->numiter < solver_par->maxiter && info == MAGMA_SUCCESS ) {
+        info = MAGMA_SUCCESS;
     } else if ( solver_par->init_res > solver_par->final_res ) {
         if ( solver_par->verbose > 0 ) {
             if ( (solver_par->numiter)%solver_par->verbose==0 ) {
@@ -218,8 +225,8 @@ magma_cbicgstab_merge(
             }
         }
         info = MAGMA_SLOW_CONVERGENCE;
-        if( solver_par->iter_res < solver_par->atol ||
-            solver_par->iter_res/solver_par->init_res < solver_par->rtol ){
+        if( solver_par->iter_res < solver_par->rtol*solver_par->init_res ||
+            solver_par->iter_res < solver_par->atol ) {
             info = MAGMA_SUCCESS;
         }
     }
@@ -236,13 +243,15 @@ magma_cbicgstab_merge(
     }
     
 cleanup:
-    magma_cmfree(&q, queue );  // frees all vectors
-    magma_free(d1);
-    magma_free(d2);
-    magma_free( skp );
-    magma_free_cpu( skp_h );
+    magma_cmfree(&r, queue );
+    magma_cmfree(&rr, queue );
+    magma_cmfree(&p, queue );
+    magma_cmfree(&v, queue );
+    magma_cmfree(&s, queue );
+    magma_cmfree(&t, queue );
+    magma_cmfree(&d1, queue );
+    magma_cmfree(&d2, queue );
 
-    magmablasSetKernelStream( orig_queue );
     solver_par->info = info;
     return info;
-}   /* cbicgstab_merge */
+}   /* magma_cbicgstab_merge */

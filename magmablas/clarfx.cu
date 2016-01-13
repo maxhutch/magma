@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlarfx.cu normal z -> c, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlarfx.cu normal z -> c, Wed Jan  6 17:59:38 2016
 
 */
 #include "common_magma.h"
@@ -159,26 +159,51 @@ void magma_ctrmv_tkernel(magmaFloatComplex *T, int ldt, magmaFloatComplex *t, ma
     LAPACK's clarf routine. 
  */
 extern "C" void
-magma_clarfx_gpu(
+magma_clarfx_gpu_q(
     magma_int_t m, magma_int_t n,
     magmaFloatComplex_ptr v,
     magmaFloatComplex_ptr tau,
     magmaFloatComplex_ptr C, magma_int_t ldc,
     magmaFloat_ptr        xnorm, 
     magmaFloatComplex_ptr dT, magma_int_t iter,
-    magmaFloatComplex_ptr work )
+    magmaFloatComplex_ptr work,
+    magma_queue_t queue )
 {
     magma_int_t N = n + iter + 1;
 
-    if (iter == 0)
-        magma_clarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, dT+iter*N, iter);
-    else
-        magma_clarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, work, iter);
+    if (iter == 0) {
+        magma_clarfx_kernel
+            <<< N, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( m, v, tau, C, ldc, xnorm, dT+iter*N, iter );
+    }
+    else {
+        magma_clarfx_kernel
+            <<< N, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( m, v, tau, C, ldc, xnorm, work, iter );
+    }
 
     if (iter > 0) {
-        //magma_ctrmv_kernel<<< 1, iter, 0, magma_stream >>>( dT, N, dT+iter*N);
-        magma_ctrmv_kernel2<<< iter, iter, 0, magma_stream  >>>( dT, N, work, dT+iter*N, tau);
+        //magma_ctrmv_kernel
+        //    <<< 1, iter, 0, queue->cuda_stream() >>>
+        //    ( dT, N, dT+iter*N);
+        magma_ctrmv_kernel2
+            <<< iter, iter, 0, queue->cuda_stream() >>>
+            ( dT, N, work, dT+iter*N, tau );
     }
+}
+
+void
+magma_clarfx_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloatComplex_ptr v,
+    magmaFloatComplex_ptr tau,
+    magmaFloatComplex_ptr C, magma_int_t ldc,
+    magmaFloat_ptr        xnorm,
+    magmaFloatComplex_ptr dT, magma_int_t iter,
+    magmaFloatComplex_ptr work )
+{
+    magma_clarfx_gpu_q(m, n, v, tau, C, ldc, xnorm, dT, iter, work,
+                       magmablasGetQueue());
 }
 
 //==============================================================================

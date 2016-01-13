@@ -1,17 +1,19 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
-       @generated from zlabrd_gpu.cpp normal z -> s, Fri Sep 11 18:29:32 2015
+       @author Mark Gates
+       
+       @generated from src/zlabrd_gpu.cpp normal z -> s, Wed Jan  6 17:59:36 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_s
+#define REAL
 
 /**
     Purpose
@@ -126,6 +128,14 @@
     lddy    INTEGER
             The leading dimension of the array dY. LDDY >= N.
 
+    @param
+    work    REAL array, dimension (LWORK)
+            Workspace.
+
+    @param[in]
+    lwork   INTEGER
+            The dimension of the array WORK. LWORK >= max( M, N ).
+
     Further Details
     ---------------
     The matrices Q and P are represented as products of elementary
@@ -181,33 +191,26 @@ magma_slabrd_gpu(
     float     *X, magma_int_t ldx,
     magmaFloat_ptr dX, magma_int_t lddx,
     float     *Y, magma_int_t ldy,
-    magmaFloat_ptr dY, magma_int_t lddy)
+    magmaFloat_ptr dY, magma_int_t lddy,
+    float  *work, magma_int_t lwork,
+    magma_queue_t queue )
 {
-    #define A(i_,j_) (A + (i_) + (j_)*lda)
-    #define X(i_,j_) (X + (i_) + (j_)*ldx)
-    #define Y(i_,j_) (Y + (i_) + (j_)*ldy)
+    #define  A(i_,j_) ( A + (i_) + (j_)*lda)
+    #define  X(i_,j_) ( X + (i_) + (j_)*ldx)
+    #define  Y(i_,j_) ( Y + (i_) + (j_)*ldy)
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define dY(i_,j_) (dY + (i_) + (j_)*lddy)
     #define dX(i_,j_) (dX + (i_) + (j_)*lddx)
     
-    float c_neg_one = MAGMA_S_NEG_ONE;
-    float c_one     = MAGMA_S_ONE;
-    float c_zero    = MAGMA_S_ZERO;
-    magma_int_t ione = 1;
+    /* Constants */
+    const float c_neg_one = MAGMA_S_NEG_ONE;
+    const float c_one     = MAGMA_S_ONE;
+    const float c_zero    = MAGMA_S_ZERO;
+    const magma_int_t ione = 1;
     
-    magma_int_t i__2, i__3;
-    magma_int_t i;
+    /* Local variables */
+    magma_int_t i, i1, m_i, m_i1, n_i, n_i1;
     float alpha;
-
-    A  -= 1 + lda;
-    X  -= 1 + ldx;
-    dX -= 1 + lddx;
-    Y  -= 1 + ldy;
-    dY -= 1 + lddy;
-    --d;
-    --e;
-    --tauq;
-    --taup;
 
     /* Quick return if possible */
     magma_int_t info = 0;
@@ -215,396 +218,322 @@ magma_slabrd_gpu(
         return info;
     }
 
-    float *f;
-    magma_queue_t stream;
-    magma_queue_create( &stream );
-    magma_smalloc_cpu( &f, max(n,m) );
-    if ( f == NULL ) {
-        info = MAGMA_ERR_HOST_ALLOC;
-        return info;
-    }
-    
     if (m >= n) {
         /* Reduce to upper bidiagonal form */
-        for (i = 1; i <= nb; ++i) {
-            /*  Update A(i:m,i) */
-            i__2 = m - i + 1;
-            i__3 = i - 1;
-            #if defined(PRECISION_z) || defined(PRECISION_c)
-            lapackf77_slacgv( &i__3, Y(i,1), &ldy );
+        for (i=0; i < nb; ++i) {
+            /* Update A(i:m,i) */
+            i1   = i + 1;
+            m_i  = m - i;
+            m_i1 = m - (i+1);
+            n_i1 = n - (i+1);
+            #ifdef COMPLEX
+            lapackf77_slacgv( &i, Y(i,0), &ldy );
             #endif
-            blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                           A(i,1), &lda,
-                           Y(i,1), &ldy, &c_one,
+            blasf77_sgemv( "No transpose", &m_i, &i, &c_neg_one,
+                           A(i,0), &lda,
+                           Y(i,0), &ldy, &c_one,
                            A(i,i), &ione );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
-            lapackf77_slacgv( &i__3, Y(i,1), &ldy );
+            #ifdef COMPLEX
+            lapackf77_slacgv( &i, Y(i,0), &ldy );
             #endif
-            blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                           X(i,1), &ldx,
-                           A(1,i), &ione, &c_one,
+            blasf77_sgemv( "No transpose", &m_i, &i, &c_neg_one,
+                           X(i,0), &ldx,
+                           A(0,i), &ione, &c_one,
                            A(i,i), &ione );
             
             /* Generate reflection Q(i) to annihilate A(i+1:m,i) */
             alpha = *A(i,i);
-            i__2 = m - i + 1;
-            i__3 = i + 1;
-            lapackf77_slarfg( &i__2, &alpha, A(min(i__3,m),i), &ione, &tauq[i] );
+            lapackf77_slarfg( &m_i, &alpha, A(min(i+1,m-1),i), &ione, &tauq[i] );
             d[i] = MAGMA_S_REAL( alpha );
-            if (i < n) {
+            if (i+1 < n) {
                 *A(i,i) = c_one;
 
                 /* Compute Y(i+1:n,i) */
-                i__2 = m - i + 1;
-                i__3 = n - i;
-
                 // 1. Send the block reflector  A(i+1:m,i) to the GPU ------
-                magma_ssetvector( i__2,
+                magma_ssetvector( m_i,
                                   A(i,i), 1,
-                                  dA(i-1,i-1), 1 );
+                                  dA(i,i), 1, queue );
                 // 2. Multiply ---------------------------------------------
-                magma_sgemv( MagmaConjTrans, i__2, i__3, c_one,
-                             dA(i-1,i),   ldda,
-                             dA(i-1,i-1), ione, c_zero,
-                             dY(i+1,i),   ione );
+                magma_sgemv( MagmaConjTrans, m_i, n_i1, c_one,
+                             dA(i,i+1),   ldda,
+                             dA(i,i), ione, c_zero,
+                             dY(i+1,i),   ione, queue );
                 
                 // 3. Put the result back ----------------------------------
-                magma_sgetmatrix_async( i__3, 1,
+                magma_sgetmatrix_async( n_i1, 1,
                                         dY(i+1,i), lddy,
-                                        Y(i+1,i),  ldy, stream );
-                i__2 = m - i + 1;
-                i__3 = i - 1;
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
-                               A(i,1), &lda,
+                                        Y(i+1,i),  ldy, queue );
+                blasf77_sgemv( MagmaConjTransStr, &m_i, &i, &c_one,
+                               A(i,0), &lda,
                                A(i,i), &ione, &c_zero,
-                               Y(1,i), &ione );
+                               Y(0,i), &ione );
 
-                i__2 = n - i;
-                i__3 = i - 1;
-                blasf77_sgemv( "N", &i__2, &i__3, &c_neg_one,
-                               Y(i+1,1), &ldy,
-                               Y(1,i),   &ione, &c_zero,
-                               f,        &ione );
-                i__2 = m - i + 1;
-                i__3 = i - 1;
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
-                               X(i,1), &ldx,
+                blasf77_sgemv( "N", &n_i1, &i, &c_neg_one,
+                               Y(i+1,0), &ldy,
+                               Y(0,i),   &ione, &c_zero,
+                               work,     &ione );
+                blasf77_sgemv( MagmaConjTransStr, &m_i, &i, &c_one,
+                               X(i,0), &ldx,
                                A(i,i), &ione, &c_zero,
-                               Y(1,i), &ione );
+                               Y(0,i), &ione );
                 
                 // 4. Sync to make sure the result is back ----------------
-                magma_queue_sync( stream );
+                magma_queue_sync( queue );
 
-                if (i__3 != 0) {
-                    i__2 = n - i;
-                    blasf77_saxpy( &i__2, &c_one, f, &ione, Y(i+1,i), &ione );
+                if (i != 0) {
+                    blasf77_saxpy( &n_i1, &c_one, work, &ione, Y(i+1,i), &ione );
                 }
 
-                i__2 = i - 1;
-                i__3 = n - i;
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i__3, &c_neg_one,
-                               A(1,i+1), &lda,
-                               Y(1,i),   &ione, &c_one,
+                blasf77_sgemv( MagmaConjTransStr, &i, &n_i1, &c_neg_one,
+                               A(0,i+1), &lda,
+                               Y(0,i),   &ione, &c_one,
                                Y(i+1,i), &ione );
-                i__2 = n - i;
-                blasf77_sscal( &i__2, &tauq[i], Y(i+1,i), &ione );
+                blasf77_sscal( &n_i1, &tauq[i], Y(i+1,i), &ione );
 
                 /* Update A(i,i+1:n) */
-                i__2 = n - i;
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_slacgv( &i__2, A(i,i+1), &lda );
-                lapackf77_slacgv( &i,  A(i,1), &lda );
+                #ifdef COMPLEX
+                lapackf77_slacgv( &n_i1, A(i,i+1), &lda );
+                lapackf77_slacgv( &i1,  A(i,0), &lda );
                 #endif
-                blasf77_sgemv( "No transpose", &i__2, &i, &c_neg_one,
-                               Y(i+1,1), &ldy,
-                               A(i,1),   &lda, &c_one,
+                blasf77_sgemv( "No transpose", &n_i1, &i1, &c_neg_one,
+                               Y(i+1,0), &ldy,
+                               A(i,0),   &lda, &c_one,
                                A(i,i+1), &lda );
-                i__2 = i - 1;
-                i__3 = n - i;
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_slacgv( &i,  A(i,1), &lda );
-                lapackf77_slacgv( &i__2, X(i,1), &ldx );
+                #ifdef COMPLEX
+                lapackf77_slacgv( &i1,  A(i,0), &lda );
+                lapackf77_slacgv( &i, X(i,0), &ldx );
                 #endif
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i__3, &c_neg_one,
-                               A(1,i+1), &lda,
-                               X(i,1),   &ldx, &c_one,
+                blasf77_sgemv( MagmaConjTransStr, &i, &n_i1, &c_neg_one,
+                               A(0,i+1), &lda,
+                               X(i,0),   &ldx, &c_one,
                                A(i,i+1), &lda );
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_slacgv( &i__2, X(i,1), &ldx );
+                #ifdef COMPLEX
+                lapackf77_slacgv( &i, X(i,0), &ldx );
                 #endif
 
                 /* Generate reflection P(i) to annihilate A(i,i+2:n) */
-                i__2 = n - i;
-                i__3 = i + 2;
                 alpha = *A(i,i+1);
-                lapackf77_slarfg( &i__2, &alpha, A(i,min(i__3,n)), &lda, &taup[i] );
+                lapackf77_slarfg( &n_i1, &alpha, A(i,min(i+2,n-1)), &lda, &taup[i] );
                 e[i] = MAGMA_S_REAL( alpha );
                 *A(i,i+1) = c_one;
 
                 /* Compute X(i+1:m,i) */
-                i__2 = m - i;
-                i__3 = n - i;
                 // 1. Send the block reflector  A(i+1:m,i) to the GPU ------
-                magma_ssetvector( i__3,
+                magma_ssetvector( n_i1,
                                   A(i,i+1), lda,
-                                  dA(i-1,i), ldda );
+                                  dA(i,i+1), ldda, queue );
+                
                 // 2. Multiply ---------------------------------------------
-                //magma_scopy( i__3, dA(i-1,i), ldda, dY(1,1), 1 );
-                magma_sgemv( MagmaNoTrans, i__2, i__3, c_one,
-                             dA(i,i), ldda,
-                             dA(i-1,i), ldda,
-                             //dY(1,1), 1,
+                magma_sgemv( MagmaNoTrans, m_i1, n_i1, c_one,
+                             dA(i+1,i+1), ldda,
+                             dA(i,i+1), ldda,
+                             //dY(0,0), 1,
                              c_zero,
-                             dX(i+1,i), ione );
+                             dX(i+1,i), ione, queue );
 
                 // 3. Put the result back ----------------------------------
-                magma_sgetmatrix_async( i__2, 1,
+                magma_sgetmatrix_async( m_i1, 1,
                                         dX(i+1,i), lddx,
-                                        X(i+1,i),  ldx, stream );
+                                        X(i+1,i),  ldx, queue );
 
-                i__2 = n - i;
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i, &c_one,
-                               Y(i+1,1), &ldy,
+                blasf77_sgemv( MagmaConjTransStr, &n_i1, &i1, &c_one,
+                               Y(i+1,0), &ldy,
                                A(i,i+1), &lda, &c_zero,
-                               X(1,i),   &ione );
+                               X(0,i),   &ione );
 
-                i__2 = m - i;
-                blasf77_sgemv( "N", &i__2, &i, &c_neg_one,
-                               A(i+1,1), &lda,
-                               X(1,i),   &ione, &c_zero,
-                               f,        &ione );
-                i__2 = i - 1;
-                i__3 = n - i;
-                blasf77_sgemv( "N", &i__2, &i__3, &c_one,
-                               A(1,i+1), &lda,
+                blasf77_sgemv( "N", &m_i1, &i1, &c_neg_one,
+                               A(i+1,0), &lda,
+                               X(0,i),   &ione, &c_zero,
+                               work,     &ione );
+                blasf77_sgemv( "N", &i, &n_i1, &c_one,
+                               A(0,i+1), &lda,
                                A(i,i+1), &lda, &c_zero,
-                               X(1,i),   &ione );
+                               X(0,i),   &ione );
 
                 // 4. Sync to make sure the result is back ----------------
-                magma_queue_sync( stream );
-                if (i != 0) {
-                    i__2 = m - i;
-                    blasf77_saxpy( &i__2, &c_one, f, &ione, X(i+1,i), &ione );
+                magma_queue_sync( queue );
+                if ((i+1) != 0) {
+                    blasf77_saxpy( &m_i1, &c_one, work, &ione, X(i+1,i), &ione );
                 }
 
-
-                i__2 = m - i;
-                i__3 = i - 1;
-                blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                               X(i+1,1), &ldx,
-                               X(1,i),   &ione, &c_one,
+                blasf77_sgemv( "No transpose", &m_i1, &i, &c_neg_one,
+                               X(i+1,0), &ldx,
+                               X(0,i),   &ione, &c_one,
                                X(i+1,i), &ione );
-                i__2 = m - i;
-                blasf77_sscal( &i__2, &taup[i], X(i+1,i), &ione );
+                blasf77_sscal( &m_i1, &taup[i], X(i+1,i), &ione );
 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                i__2 = n - i;
-                lapackf77_slacgv( &i__2,  A(i,i+1), &lda );
+                #ifdef COMPLEX
+                lapackf77_slacgv( &n_i1,  A(i,i+1), &lda );
                 // 4. Send the block reflector  A(i+1:m,i) to the GPU after SLACGV()
-                magma_ssetvector( i__2,
+                magma_ssetvector( n_i1,
                                   A(i,i+1),  lda,
-                                  dA(i-1,i), ldda );
+                                  dA(i,i+1), ldda, queue );
                 #endif
             }
         }
     }
     else {
         /* Reduce to lower bidiagonal form */
-        for (i = 1; i <= nb; ++i) {
+        for (i=0; i < nb; ++i) {
             /* Update A(i,i:n) */
-            i__2 = n - i + 1;
-            i__3 = i - 1;
-            #if defined(PRECISION_z) || defined(PRECISION_c)
-            lapackf77_slacgv( &i__2, A(i,i), &lda );
-            lapackf77_slacgv( &i__3, A(i,1), &lda );
+            i1   = i + 1;
+            m_i1 = m - (i+1);
+            n_i  = n - i;
+            n_i1 = n - (i+1);
+            #ifdef COMPLEX
+            lapackf77_slacgv( &n_i, A(i,i), &lda );
+            lapackf77_slacgv( &i, A(i,0), &lda );
             #endif
-            blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                           Y(i,1), &ldy,
-                           A(i,1), &lda, &c_one,
+            blasf77_sgemv( "No transpose", &n_i, &i, &c_neg_one,
+                           Y(i,0), &ldy,
+                           A(i,0), &lda, &c_one,
                            A(i,i), &lda );
-            i__2 = i - 1;
-            #if defined(PRECISION_z) || defined(PRECISION_c)
-            lapackf77_slacgv( &i__3, A(i,1), &lda );
-            lapackf77_slacgv( &i__3, X(i,1), &ldx );
+            #ifdef COMPLEX
+            lapackf77_slacgv( &i, A(i,0), &lda );
+            lapackf77_slacgv( &i, X(i,0), &ldx );
             #endif
-            i__3 = n - i + 1;
-            blasf77_sgemv( MagmaConjTransStr, &i__2, &i__3, &c_neg_one,
-                           A(1,i), &lda,
-                           X(i,1), &ldx, &c_one,
+            blasf77_sgemv( MagmaConjTransStr, &i, &n_i, &c_neg_one,
+                           A(0,i), &lda,
+                           X(i,0), &ldx, &c_one,
                            A(i,i), &lda );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
-            lapackf77_slacgv( &i__2, X(i,1), &ldx );
+            #ifdef COMPLEX
+            lapackf77_slacgv( &i, X(i,0), &ldx );
             #endif
             
             /* Generate reflection P(i) to annihilate A(i,i+1:n) */
-            i__2 = n - i + 1;
-            i__3 = i + 1;
             alpha = *A(i,i);
-            lapackf77_slarfg( &i__2, &alpha, A(i,min(i__3,n)), &lda, &taup[i] );
+            lapackf77_slarfg( &n_i, &alpha, A(i,min(i+1,n-1)), &lda, &taup[i] );
             d[i] = MAGMA_S_REAL( alpha );
-            if (i < m) {
+            if (i+1 < m) {
                 *A(i,i) = c_one;
                 
                 /* Compute X(i+1:m,i) */
-                i__2 = m - i;
-                i__3 = n - i + 1;
-                
                 // 1. Send the block reflector  A(i,i+1:n) to the GPU ------
-                magma_ssetvector( i__3,
+                magma_ssetvector( n_i,
                                   A(i,i), lda,
-                                  dA(i-1,i-1), ldda );
+                                  dA(i,i), ldda, queue );
                 
                 // 2. Multiply ---------------------------------------------
-                //magma_scopy( i__3, dA(i-1,i-1), ldda, dY(1,1), 1 );
-                magma_sgemv( MagmaNoTrans, i__2, i__3, c_one,
-                             dA(i,i-1), ldda,
-                             dA(i-1,i-1), ldda,
-                             //dY(1,1), 1,
+                magma_sgemv( MagmaNoTrans, m_i1, n_i, c_one,
+                             dA(i+1,i), ldda,
+                             dA(i,i), ldda,
+                             //dY(0,0), 1,
                              c_zero,
-                             dX(i+1,i), ione );
+                             dX(i+1,i), ione, queue );
                 
                 // 3. Put the result back ----------------------------------
-                magma_sgetmatrix_async( i__2, 1,
+                magma_sgetmatrix_async( m_i1, 1,
                                         dX(i+1,i), lddx,
-                                        X(i+1,i),  ldx, stream );
+                                        X(i+1,i),  ldx, queue );
                 
-                i__2 = n - i + 1;
-                i__3 = i - 1;
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
-                               Y(i,1), &ldy,
+                blasf77_sgemv( MagmaConjTransStr, &n_i, &i, &c_one,
+                               Y(i,0), &ldy,
                                A(i,i), &lda, &c_zero,
-                               X(1,i), &ione );
-                i__2 = m - i;
-                i__3 = i - 1;
-                blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                               A(i+1,1), &lda,
-                               X(1,i),   &ione, &c_zero,
-                               f,        &ione );
+                               X(0,i), &ione );
                 
-                i__2 = i - 1;
-                i__3 = n - i + 1;
-                blasf77_sgemv( "No transpose", &i__2, &i__3, &c_one,
-                               A(1,i), &lda,
+                blasf77_sgemv( "No transpose", &m_i1, &i, &c_neg_one,
+                               A(i+1,0), &lda,
+                               X(0,i),   &ione, &c_zero,
+                               work,     &ione );
+                
+                blasf77_sgemv( "No transpose", &i, &n_i, &c_one,
+                               A(0,i), &lda,
                                A(i,i), &lda, &c_zero,
-                               X(1,i), &ione );
+                               X(0,i), &ione );
                 
                 // 4. Sync to make sure the result is back ----------------
-                magma_queue_sync( stream );
-                if (i__2 != 0) {
-                    i__3 = m - i;
-                    blasf77_saxpy( &i__3, &c_one, f, &ione, X(i+1,i), &ione );
+                magma_queue_sync( queue );
+                if (i != 0) {
+                    blasf77_saxpy( &m_i1, &c_one, work, &ione, X(i+1,i), &ione );
                 }
                 
-                i__2 = m - i;
-                i__3 = i - 1;
-                blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                               X(i+1,1), &ldx,
-                               X(1,i),   &ione, &c_one,
+                blasf77_sgemv( "No transpose", &m_i1, &i, &c_neg_one,
+                               X(i+1,0), &ldx,
+                               X(0,i),   &ione, &c_one,
                                X(i+1,i), &ione );
-                i__2 = m - i;
-                blasf77_sscal( &i__2, &taup[i], X(i+1,i), &ione );
-                i__2 = n - i + 1;
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_slacgv( &i__2, A(i,i), &lda );
-                magma_ssetvector( i__2,
+                blasf77_sscal( &m_i1, &taup[i], X(i+1,i), &ione );
+                #ifdef COMPLEX
+                lapackf77_slacgv( &n_i, A(i,i), &lda );
+                magma_ssetvector( n_i,
                                   A(i,i), lda,
-                                  dA(i-1,i-1), ldda );
+                                  dA(i,i), ldda, queue );
                 #endif
                 
                 /* Update A(i+1:m,i) */
-                i__2 = m - i;
-                i__3 = i - 1;
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_slacgv( &i__3, Y(i,1), &ldy );
+                #ifdef COMPLEX
+                lapackf77_slacgv( &i, Y(i,0), &ldy );
                 #endif
-                blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                               A(i+1,1), &lda,
-                               Y(i,1),   &ldy, &c_one,
+                blasf77_sgemv( "No transpose", &m_i1, &i, &c_neg_one,
+                               A(i+1,0), &lda,
+                               Y(i,0),   &ldy, &c_one,
                                A(i+1,i), &ione );
-                i__2 = m - i;
-                #if defined(PRECISION_z) || defined(PRECISION_c)
-                lapackf77_slacgv( &i__3, Y(i,1), &ldy );
+                #ifdef COMPLEX
+                lapackf77_slacgv( &i, Y(i,0), &ldy );
                 #endif
-                blasf77_sgemv( "No transpose", &i__2, &i, &c_neg_one,
-                               X(i+1,1), &ldx,
-                               A(1,i),   &ione, &c_one,
+                blasf77_sgemv( "No transpose", &m_i1, &i1, &c_neg_one,
+                               X(i+1,0), &ldx,
+                               A(0,i),   &ione, &c_one,
                                A(i+1,i), &ione );
                 
                 /* Generate reflection Q(i) to annihilate A(i+2:m,i) */
-                i__2 = m - i;
-                i__3 = i + 2;
                 alpha = *A(i+1,i);
-                lapackf77_slarfg( &i__2, &alpha, A(min(i__3,m),i), &ione, &tauq[i] );
+                lapackf77_slarfg( &m_i1, &alpha, A(min(i+2,m-1),i), &ione, &tauq[i] );
                 e[i] = MAGMA_S_REAL( alpha );
                 *A(i+1,i) = c_one;
                 
                 /* Compute Y(i+1:n,i) */
-                i__2 = m - i;
-                i__3 = n - i;
-                
                 // 1. Send the block reflector  A(i+1:m,i) to the GPU ------
-                magma_ssetvector( i__2,
+                magma_ssetvector( m_i1,
                                   A(i+1,i), 1,
-                                  dA(i,i-1), 1 );
+                                  dA(i+1,i), 1, queue );
+                
                 // 2. Multiply ---------------------------------------------
-                magma_sgemv( MagmaConjTrans, i__2, i__3, c_one,
-                             dA(i,i),   ldda,
-                             dA(i,i-1), ione, c_zero,
-                             dY(i+1,i), ione );
+                magma_sgemv( MagmaConjTrans, m_i1, n_i1, c_one,
+                             dA(i+1,i+1), ldda,
+                             dA(i+1,i), ione, c_zero,
+                             dY(i+1,i), ione, queue );
                 
                 // 3. Put the result back ----------------------------------
-                magma_sgetmatrix_async( i__3, 1,
+                magma_sgetmatrix_async( n_i1, 1,
                                         dY(i+1,i), lddy,
-                                        Y(i+1,i),  ldy, stream );
+                                        Y(i+1,i),  ldy, queue );
                 
-                i__2 = m - i;
-                i__3 = i - 1;
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i__3, &c_one,
-                               A(i+1,1), &lda,
+                blasf77_sgemv( MagmaConjTransStr, &m_i1, &i, &c_one,
+                               A(i+1,0), &lda,
                                A(i+1,i), &ione, &c_zero,
-                               Y(1,i),   &ione );
-                i__2 = n - i;
-                i__3 = i - 1;
-                blasf77_sgemv( "No transpose", &i__2, &i__3, &c_neg_one,
-                               Y(i+1,1), &ldy,
-                               Y(1,i),   &ione, &c_zero,
-                               f,        &ione );
+                               Y(0,i),   &ione );
+                blasf77_sgemv( "No transpose", &n_i1, &i, &c_neg_one,
+                               Y(i+1,0), &ldy,
+                               Y(0,i),   &ione, &c_zero,
+                               work,     &ione );
                 
-                i__2 = m - i;
-                blasf77_sgemv( MagmaConjTransStr, &i__2, &i, &c_one,
-                               X(i+1,1), &ldx,
+                blasf77_sgemv( MagmaConjTransStr, &m_i1, &i1, &c_one,
+                               X(i+1,0), &ldx,
                                A(i+1,i), &ione, &c_zero,
-                               Y(1,i),   &ione );
+                               Y(0,i),   &ione );
                 
                 // 4. Sync to make sure the result is back ----------------
-                magma_queue_sync( stream );
-                if (i__3 != 0) {
-                    i__2 = n - i;
-                    blasf77_saxpy( &i__2, &c_one, f, &ione, Y(i+1,i), &ione );
+                magma_queue_sync( queue );
+                if (i != 0) {
+                    blasf77_saxpy( &n_i1, &c_one, work, &ione, Y(i+1,i), &ione );
                 }
                 
-                i__2 = n - i;
-                blasf77_sgemv( MagmaConjTransStr, &i, &i__2, &c_neg_one,
-                               A(1,i+1), &lda,
-                               Y(1,i),   &ione, &c_one,
+                blasf77_sgemv( MagmaConjTransStr, &i1, &n_i1, &c_neg_one,
+                               A(0,i+1), &lda,
+                               Y(0,i),   &ione, &c_one,
                                Y(i+1,i), &ione );
-                i__2 = n - i;
-                blasf77_sscal( &i__2, &tauq[i], Y(i+1,i), &ione );
+                blasf77_sscal( &n_i1, &tauq[i], Y(i+1,i), &ione );
             }
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             else {
-                i__2 = n - i + 1;
-                lapackf77_slacgv( &i__2, A(i,i), &lda );
-                magma_ssetvector( i__2,
+                lapackf77_slacgv( &n_i, A(i,i), &lda );
+                magma_ssetvector( n_i,
                                   A(i,i), lda,
-                                  dA(i-1,i-1), ldda );
+                                  dA(i,i), ldda, queue );
             }
             #endif
         }
     }
-    
-    magma_queue_destroy( stream );
-    magma_free_cpu( f );
     
     return info;
 } /* magma_slabrd_gpu */

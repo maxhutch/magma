@@ -15,7 +15,7 @@ var group__magma__sgeqrf__comp =
     [ "magma_sorgqr_gpu", "group__magma__sgeqrf__comp.html#ga841fa19d118d6bea73147290d412076b", null ],
     [ "magma_sorgqr_m", "group__magma__sgeqrf__comp.html#ga6c6d586e88a2dc535e4b152e97c29310", null ],
     [ "magma_sormqr", "group__magma__sgeqrf__comp.html#gac0f5c030789f0e1645b75efcb8e37096", null ],
-    [ "magma_sormqr2_gpu", "group__magma__sgeqrf__comp.html#gac861062d0b56fb347a73e3849221503b", null ],
-    [ "magma_sormqr_gpu", "group__magma__sgeqrf__comp.html#ga6e1e8e375e197b27d1ca27b5b393d01e", null ],
+    [ "magma_sormqr2_gpu", "group__magma__sgeqrf__comp.html#gaf0ab032dc9c089e54b1b9aa1779f7961", null ],
+    [ "magma_sormqr_gpu", "group__magma__sgeqrf__comp.html#ga4e7c61a1b509da9b09736163410525a8", null ],
     [ "magma_sormqr_m", "group__magma__sgeqrf__comp.html#ga2dbbb86d1e21d333639e8d3a7755f996", null ]
 ];

@@ -1,0 +1,388 @@
+
+Sat Sep 12 12:03:02 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:03:08 2015
+% Usage: ../testing/testing_dsyevd [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 1234      0.14             0.14
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   10      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   20      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   30      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   40      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   50      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   60      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   70      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   80      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   90      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  100      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  200      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  300      0.01             0.01
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  400      0.02             0.02
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  500      0.02             0.02
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  600      0.03             0.03
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  700      0.04             0.04
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  800      0.06             0.06
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  900      0.07             0.07
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 1000      0.09             0.09
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 2000      0.38             0.39
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 3000      0.83             1.31
+    | S_magma - S_lapack | / |S| = 1.06e-18   ok
+
+ 4000      1.88             2.33
+    | S_magma - S_lapack | / |S| = 1.98e-19   ok
+
+ 5000      3.78             3.79
+    | S_magma - S_lapack | / |S| = 1.64e-19   ok
+
+ 6000      6.73             5.72
+    | S_magma - S_lapack | / |S| = 5.56e-19   ok
+
+ 7000     10.70             8.07
+    | S_magma - S_lapack | / |S| = 1.08e-19   ok
+
+ 8000     17.34            11.10
+    | S_magma - S_lapack | / |S| = 3.41e-19   ok
+
+ 9000     24.02            14.68
+    | S_magma - S_lapack | / |S| = 9.63e-20   ok
+
+10000     31.29            19.03
+    | S_magma - S_lapack | / |S| = 6.56e-20   ok
+
+Sat Sep 12 12:06:03 EDT 2015
+
+Sat Sep 12 12:06:03 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:06:09 2015
+% Usage: ../testing/testing_dsyevd [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123      0.00             0.01
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+ 1234      0.27             0.16
+    | S_magma - S_lapack | / |S| = 5.96e-19   ok
+
+   10      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   20      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   30      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   40      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   50      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   60      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   70      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   80      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+   90      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  100      0.00             0.00
+    | S_magma - S_lapack | / |S| = 0.00e+00   ok
+
+  200      0.01             0.01
+    | S_magma - S_lapack | / |S| = 1.42e-18   ok
+
+  300      0.02             0.01
+    | S_magma - S_lapack | / |S| = 4.73e-19   ok
+
+  400      0.03             0.02
+    | S_magma - S_lapack | / |S| = 1.07e-18   ok
+
+  500      0.04             0.03
+    | S_magma - S_lapack | / |S| = 3.19e-18   ok
+
+  600      0.06             0.04
+    | S_magma - S_lapack | / |S| = 6.31e-19   ok
+
+  700      0.08             0.05
+    | S_magma - S_lapack | / |S| = 1.89e-19   ok
+
+  800      0.10             0.07
+    | S_magma - S_lapack | / |S| = 1.77e-18   ok
+
+  900      0.13             0.09
+    | S_magma - S_lapack | / |S| = 1.55e-18   ok
+
+ 1000      0.17             0.11
+    | S_magma - S_lapack | / |S| = 3.42e-19   ok
+
+ 2000      0.79             0.43
+    | S_magma - S_lapack | / |S| = 1.31e-18   ok
+
+ 3000      2.56             1.39
+    | S_magma - S_lapack | / |S| = 6.06e-19   ok
+
+ 4000      5.01             2.48
+    | S_magma - S_lapack | / |S| = 4.26e-19   ok
+
+ 5000      9.42             3.98
+    | S_magma - S_lapack | / |S| = 2.91e-19   ok
+
+ 6000     15.74             6.19
+    | S_magma - S_lapack | / |S| = 7.58e-20   ok
+
+ 7000     23.71             8.75
+    | S_magma - S_lapack | / |S| = 1.30e-19   ok
+
+ 8000     33.23            11.66
+    | S_magma - S_lapack | / |S| = 1.71e-19   ok
+
+ 9000     42.97            15.61
+    | S_magma - S_lapack | / |S| = 4.49e-20   ok
+
+10000     51.43            20.52
+    | S_magma - S_lapack | / |S| = 6.00e-19   ok
+
+Sat Sep 12 12:10:42 EDT 2015
+
+Sat Sep 12 12:10:42 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd_gpu -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:10:48 2015
+% Usage: ../testing/testing_dsyevd_gpu [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.00
+ 1234       ---              0.16
+   10       ---              0.00
+   20       ---              0.00
+   30       ---              0.00
+   40       ---              0.00
+   50       ---              0.00
+   60       ---              0.00
+   70       ---              0.00
+   80       ---              0.00
+   90       ---              0.00
+  100       ---              0.00
+  200       ---              0.01
+  300       ---              0.01
+  400       ---              0.02
+  500       ---              0.03
+  600       ---              0.04
+  700       ---              0.05
+  800       ---              0.07
+  900       ---              0.08
+ 1000       ---              0.11
+ 2000       ---              0.45
+ 3000       ---              1.34
+ 4000       ---              2.35
+ 5000       ---              3.78
+ 6000       ---              5.68
+ 7000       ---              8.09
+ 8000       ---             11.06
+ 9000       ---             14.71
+10000       ---             18.94
+Sat Sep 12 12:12:07 EDT 2015
+
+Sat Sep 12 12:12:07 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd_gpu -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:10000:1000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 12:12:13 2015
+% Usage: ../testing/testing_dsyevd_gpu [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.01
+ 1234       ---              0.15
+   10       ---              0.00
+   20       ---              0.00
+   30       ---              0.00
+   40       ---              0.00
+   50       ---              0.00
+   60       ---              0.00
+   70       ---              0.00
+   80       ---              0.00
+   90       ---              0.00
+  100       ---              0.00
+  200       ---              0.01
+  300       ---              0.01
+  400       ---              0.02
+  500       ---              0.03
+  600       ---              0.04
+  700       ---              0.05
+  800       ---              0.07
+  900       ---              0.09
+ 1000       ---              0.11
+ 2000       ---              0.43
+ 3000       ---              1.38
+ 4000       ---              2.54
+ 5000       ---              3.92
+ 6000       ---              6.03
+ 7000       ---              8.72
+ 8000       ---             12.18
+ 9000       ---             16.47
+10000       ---             21.41
+Sat Sep 12 12:13:43 EDT 2015
+
+Sat Sep 12 13:03:33 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd -JN -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 13:03:39 2015
+% Usage: ../testing/testing_dsyevd [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123     ---               0.00
+ 1234     ---               0.14
+12000     ---              30.50
+14000     ---              44.78
+16000     ---              63.92
+18000     ---              87.26
+20000     ---             115.13
+Sat Sep 12 13:09:55 EDT 2015
+
+Sat Sep 12 13:09:55 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd -JV -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 13:10:01 2015
+% Usage: ../testing/testing_dsyevd [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123     ---               0.01
+ 1234     ---               0.16
+12000     ---              32.95
+14000     ---              49.69
+16000     ---              70.70
+18000     ---              98.13
+20000     ---             130.27
+Sat Sep 12 13:17:12 EDT 2015
+
+Sat Sep 12 13:17:12 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd_gpu -JN -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 13:17:18 2015
+% Usage: ../testing/testing_dsyevd_gpu [options] [-h|--help]
+
+% jobz = No vectors, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.00
+ 1234       ---              0.14
+12000       ---             30.40
+14000       ---             44.57
+16000       ---             63.61
+18000       ---             87.04
+20000       ---            114.71
+Sat Sep 12 13:23:37 EDT 2015
+
+Sat Sep 12 13:23:37 EDT 2015
+numactl --interleave=all ../testing/testing_dsyevd_gpu -JV -N 123 -N 1234 --range 12000:20000:2000
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 13:23:43 2015
+% Usage: ../testing/testing_dsyevd_gpu [options] [-h|--help]
+
+% jobz = Vectors needed, uplo = Lower
+%   N   CPU Time (sec)   GPU Time (sec)
+%======================================
+  123       ---              0.01
+ 1234       ---              0.16
+12000       ---             35.06
+14000       ---             52.53
+16000       ---             75.86
+18000       ---            105.16
+20000       ---            141.32
+Sat Sep 12 13:31:26 EDT 2015

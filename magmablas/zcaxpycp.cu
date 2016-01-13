@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
 
@@ -17,12 +17,16 @@
 // each thread does one index, x[i] and w[i]
 __global__ void
 zcaxpycp_kernel(
-    int m, magmaFloatComplex *r, magmaDoubleComplex *x,
-    const magmaDoubleComplex *b, magmaDoubleComplex *w )
+    int m,
+    magmaFloatComplex *r,
+    magmaDoubleComplex *x,
+    const magmaDoubleComplex *b,
+    magmaDoubleComplex *w )
 {
     const int i = threadIdx.x + blockIdx.x*NB;
     if ( i < m ) {
-        x[i] = MAGMA_Z_ADD( x[i], cuComplexFloatToDouble( r[i] ) );
+        x[i] = MAGMA_Z_ADD( x[i], MAGMA_Z_MAKE( MAGMA_Z_REAL( r[i] ),
+                                                MAGMA_Z_IMAG( r[i] ) ) );
         w[i] = b[i];
     }
 }
@@ -42,7 +46,7 @@ magmablas_zcaxpycp_q(
 {
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
-    zcaxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b, w );
+    zcaxpycp_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, r, x, b, w );
 }
 
 
@@ -54,5 +58,5 @@ magmablas_zcaxpycp(
     magmaDoubleComplex_const_ptr b,
     magmaDoubleComplex_ptr w)
 {
-    magmablas_zcaxpycp_q( m, r, x, b, w, magma_stream );
+    magmablas_zcaxpycp_q( m, r, x, b, w, magmablasGetQueue() );
 }

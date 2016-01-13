@@ -1,15 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zvio.cpp normal z -> c, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zvio.cpp normal z -> c, Wed Jan  6 17:59:43 2016
        @author Hartwig Anzt
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
+#define COMPLEX
+#define PRECISION_c
 
 /**
     Purpose
@@ -54,7 +56,6 @@ magma_cprint_vector(
     magma_c_matrix y={Magma_CSR};
     
     //**************************************************************
-    #define COMPLEX
     magmaFloatComplex c_zero = MAGMA_C_ZERO;
     
     #ifdef COMPLEX
@@ -80,7 +81,7 @@ magma_cprint_vector(
     //**************************************************************
     
     printf("visualize entries %d - %d of vector ",
-                    (int) offset, (int) (offset + visulen) );
+                    int(offset), int(offset + visulen) );
     fflush(stdout);
     if ( x.memory_location == Magma_CPU ) {
         printf("located on CPU:\n");
@@ -98,7 +99,6 @@ cleanup:
     magma_free_cpu(y.val);
     return info;
 }
-
 
 
 
@@ -141,6 +141,9 @@ magma_cvread(
     
     magma_int_t nnz=0, i=0;
     FILE *fid;
+    char buff[BUFSIZ]={0};
+    int count=0;
+    char *p;
     
     x->memory_location = Magma_CPU;
     x->storage_type = Magma_DENSE;
@@ -150,21 +153,37 @@ magma_cvread(
     CHECK( magma_cmalloc_cpu( &x->val, length ));
     
     fid = fopen(filename, "r");
+
+    if(NULL==fgets(buff, BUFSIZ, fid))
+        return -1;
+    rewind(fid);
+    for( p=buff; NULL != strtok(p, " \t\n"); p=NULL)
+        count++;
     
     while( i<length )  // eof() is 'true' at the end of data
     {
         float VAL1;
 
         magmaFloatComplex VAL;
-        #define COMPLEX
         
-        #ifdef COMPLEX
+        #if defined(PRECISION_z) || defined(PRECISION_d)
             float VAL2;
-            fscanf(fid, " %f %f \n", &VAL1, &VAL2);
-            VAL = MAGMA_C_MAKE(VAL1, VAL2);
-        #else
-            fscanf(fid, " %f \n", &VAL1);
-            VAL = MAGMA_C_MAKE(VAL1, 0.0);
+            if( count == 2 ){
+                fscanf(fid, "%lg %lg\n", &VAL1, &VAL2);
+                VAL = MAGMA_C_MAKE(VAL1, VAL2);
+            }else{
+                fscanf(fid, "%lg\n", &VAL1);
+                VAL = MAGMA_C_MAKE(VAL1, 0.0);  
+            }
+        #else // single-complex or single
+            float VAL2;
+            if( count == 2 ){
+                fscanf(fid, "%g %g\n", &VAL1, &VAL2);
+                VAL = MAGMA_C_MAKE(VAL1, VAL2);
+            }else{
+                fscanf(fid, "%g\n", &VAL1);
+                VAL = MAGMA_C_MAKE(VAL1, 0.0);  
+            }
         #endif
         
         if ( VAL != MAGMA_C_ZERO )

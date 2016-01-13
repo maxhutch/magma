@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -116,7 +116,8 @@ magma_zlahru(
     magmaDoubleComplex_ptr dY, magma_int_t lddy,
     magmaDoubleComplex_ptr dV, magma_int_t lddv,
     magmaDoubleComplex_ptr dT,
-    magmaDoubleComplex_ptr dwork )
+    magmaDoubleComplex_ptr dwork,
+    magma_queue_t queue )
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     
@@ -154,7 +155,7 @@ magma_zlahru(
     magma_zgemm( MagmaNoTrans, MagmaNoTrans, k, nb, ihi-k,
                  c_one,  dA,  ldda,
                          dV,  lddv,
-                 c_zero, dYm, ldda );
+                 c_zero, dYm, ldda, queue );
 
     // -----
     // on right, A := A Q = A - A V T V'
@@ -163,16 +164,16 @@ magma_zlahru(
     magma_zgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, nb, nb,
                  c_one,  dV,    lddv,
                          dT,    nb,
-                 c_zero, dwork, ldda );
+                 c_zero, dwork, ldda, queue );
 
     // Am = Am - Ym W' = A(0:k-1, 0:ihi-k-1) - Ym(0:k-1, 0:nb-1) * W(0:ihi-k-1, 0:nb-1)'
     magma_zgemm( MagmaNoTrans, MagmaConjTrans, k, ihi-k, nb,
                  c_neg_one, dYm,   ldda,
                             dwork, ldda,
-                 c_one,     dA,    ldda );
+                 c_one,     dA,    ldda, queue );
     
     // copy first nb columns of Am, A(0:k-1, 0:nb-1), to host
-    magma_zgetmatrix( k, nb, dA, ldda, A, lda );
+    magma_zgetmatrix( k, nb, dA, ldda, A, lda, queue );
 
     // -----
     // on right, A := A Q = A - A V T V'
@@ -181,7 +182,7 @@ magma_zlahru(
     magma_zgemm( MagmaNoTrans, MagmaConjTrans, ihi-k, ihi-k-nb, nb,
                  c_neg_one, dY,         ldda,
                             dwork + nb, ldda,
-                 c_one,     dA(k,nb),   ldda );
+                 c_one,     dA(k,nb),   ldda, queue );
 
     // -----
     // on left, A := Q' A = A - V T' V' A
@@ -193,13 +194,13 @@ magma_zlahru(
     magma_zgemm( MagmaConjTrans, MagmaNoTrans, nb, n-k-nb, ihi-k,
                  c_one,  dV,       lddv,
                          dA(k,nb), ldda,
-                 c_zero, dY,       nb );
+                 c_zero, dY,       nb, queue );
     
     // Ag2 = Ag2 - W Z = A(k:ihi-1, nb:n-k-1) - W(nb:n-k-1, 0:nb-1) * Z(0:nb-1, nb:n-k-1)
     magma_zgemm( MagmaNoTrans, MagmaNoTrans, ihi-k, n-k-nb, nb,
                  c_neg_one, dwork,    ldda,
                             dY,       nb,
-                 c_one,     dA(k,nb), ldda );
+                 c_one,     dA(k,nb), ldda, queue );
     
     return info;
 }

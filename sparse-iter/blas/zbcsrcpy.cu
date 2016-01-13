@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
 */
-
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
@@ -117,12 +116,12 @@ magma_zbcsrvalcpy(
         int dimgrid3 = magma_ceildiv( num_zblocks, 65535 );
         dim3 dimGrid( dimgrid2, dimgrid1, 1 );
 
-        zbcsrvalcpy_kernel<<<dimGrid,dimBlock, 0, queue >>>
+        zbcsrvalcpy_kernel<<< dimGrid,dimBlock, 0, queue->cuda_stream() >>>
                             ( size_b, num_blocks, Aval, Bval );
 
         dim3 dimGrid2( dimgrid3, dimgrid1, 1 );
 
-        zbcsrvalzro_kernel<<<dimGrid2,dimBlock, 0, queue >>>
+        zbcsrvalzro_kernel<<< dimGrid2,dimBlock, 0, queue->cuda_stream() >>>
                             ( size_b, num_zblocks, Bval2 );
 
         return MAGMA_SUCCESS;

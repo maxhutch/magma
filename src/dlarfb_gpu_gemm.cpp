@@ -1,15 +1,21 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
        @author Azzam Haidar
-       @generated from zlarfb_gpu_gemm.cpp normal z -> d, Fri Sep 11 18:29:28 2015
+       
+       @generated from src/zlarfb_gpu_gemm.cpp normal z -> d, Wed Jan  6 17:59:30 2016
 */
-#include "common_magma.h"
+
+// include v1 header first; the v2 header will redefine non-q names,
+// but we can undef them to get back to the v1 versions.
+#include "magmablas_v1.h"
+
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -69,7 +75,7 @@
     @param[in]
     lddv    INTEGER
             The leading dimension of the array V.
-            If STOREV = MagmaColumnwise and SIDE = MagmaLeft, LDDV >= max(1,M);
+            If STOREV = MagmaColumnwise and SIDE = MagmaLeft,  LDDV >= max(1,M);
             if STOREV = MagmaColumnwise and SIDE = MagmaRight, LDDV >= max(1,N);
             if STOREV = MagmaRowwise, LDDV >= K.
 
@@ -108,6 +114,10 @@
             The leading dimension of the array WORKVT.
             LDWORKVT >= max(1,min(M,N));
 
+    @param[in]
+    queue   magma_queue_t
+            Queue to execute in.
+
     Further Details
     ---------------
     The shape of the matrix V and the storage of the vectors which define
@@ -136,18 +146,20 @@
     @ingroup magma_daux3
     ********************************************************************/
 extern "C" magma_int_t
-magma_dlarfb_gpu_gemm(
+magma_dlarfb_gpu_gemm_q(
     magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
     magma_int_t m, magma_int_t n, magma_int_t k,
     magmaDouble_const_ptr dV,    magma_int_t lddv,
     magmaDouble_const_ptr dT,    magma_int_t lddt,
     magmaDouble_ptr dC,          magma_int_t lddc,
     magmaDouble_ptr dwork,       magma_int_t ldwork,
-    magmaDouble_ptr dworkvt,     magma_int_t ldworkvt)
+    magmaDouble_ptr dworkvt,     magma_int_t ldworkvt,
+    magma_queue_t queue )
 {
-    double c_zero    = MAGMA_D_ZERO;
-    double c_one     = MAGMA_D_ONE;
-    double c_neg_one = MAGMA_D_NEG_ONE;
+    /* Constants */
+    const double c_zero    = MAGMA_D_ZERO;
+    const double c_one     = MAGMA_D_ONE;
+    const double c_neg_one = MAGMA_D_NEG_ONE;
 
     magma_int_t info = 0;
     
@@ -156,7 +168,7 @@ magma_dlarfb_gpu_gemm(
         return info;
     }
     
-    // internal variable
+    /* Local variables */
     magma_int_t ldwvt = (m > n ?  k : m);
     magma_int_t ldw;
     if ( side == MagmaLeft ) {
@@ -164,15 +176,6 @@ magma_dlarfb_gpu_gemm(
     } else {
         ldw = m;
     }
-    
-    // opposite of trans
-    magma_trans_t transt;
-    if (trans == MagmaNoTrans)
-        transt = MagmaTrans;
-    else
-        transt = MagmaNoTrans;
-    
-    MAGMA_UNUSED( transt );  // TODO: is this a bug that it isn't used?
     
     // whether V is stored transposed or not
     magma_trans_t notransV, transV;
@@ -188,14 +191,14 @@ magma_dlarfb_gpu_gemm(
     if ( side == MagmaLeft ) {
         // Form H C or H^H C
         // Comments assume H C.
-        // When forming H^H C, T gets transposed via transt for m >= n or by trans for m < n.
+        // When forming H^H C, T gets transposed via trans.
         
         // W = V^H C
-        magma_dgemm( MagmaTrans, notransV,
+        magma_dgemm( transV, MagmaNoTrans,
                      k, n, m,
                      c_one,  dV,    lddv,
                              dC,    lddc,
-                     c_zero, dwork, ldw);
+                     c_zero, dwork, ldw, queue );
 
         if (m <= n) {
             // W2 = V T
@@ -203,26 +206,29 @@ magma_dlarfb_gpu_gemm(
                          m, k, k,
                          c_one,  dV, lddv,
                                  dT, lddt,
-                         c_zero, dworkvt, ldwvt);
+                         c_zero, dworkvt, ldwvt, queue );
+            
             // C = C - W2 W = C - V T V^H C = (I - V T V^H) C = H C
             magma_dgemm( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dworkvt,  ldwvt,
                                     dwork,    ldw,
-                         c_one,     dC,       lddc);
-        } else {
-            // W2 = T W  = T  V^H C
+                         c_one,     dC,       lddc, queue );
+        }
+        else {
+            // W2 = T W  = T V^H C
             magma_dgemm( trans, MagmaNoTrans,
                          k, n, k,
-                         c_one,  dT, lddt,
-                                 dwork, ldw,
-                         c_zero, dworkvt, ldwvt);
+                         c_one,  dT,      lddt,
+                                 dwork,   ldw,
+                         c_zero, dworkvt, ldwvt, queue );
+            
             // C = C - V W2 = C - V T V^H C = (I - V T V^H) C = H C
             magma_dgemm( notransV, MagmaNoTrans,
                          m, n, k,
-                         c_neg_one, dV,  lddv,
-                                    dworkvt,  ldwvt,
-                         c_one,     dC,       lddc);
+                         c_neg_one, dV,      lddv,
+                                    dworkvt, ldwvt,
+                         c_one,     dC,      lddc, queue );
         }
     }
     else {
@@ -235,35 +241,61 @@ magma_dlarfb_gpu_gemm(
                      m, k, n,
                      c_one,  dC,    lddc,
                              dV,    lddv,
-                     c_zero, dwork, ldw);
+                     c_zero, dwork, ldw, queue );
+        
         if (m <= n) {
             // W2 = W T = C V T
             magma_dgemm( MagmaNoTrans, trans,
                          m, k, k,
-                         c_one,  dwork, ldw,
-                                 dT, lddt,
-                         c_zero, dworkvt, ldwvt);
+                         c_one,  dwork,   ldw,
+                                 dT,      lddt,
+                         c_zero, dworkvt, ldwvt, queue );
+            
             // C = C - W2 V^H = C - C V T V^H = C (I - V T V^H) = C H
             magma_dgemm( MagmaNoTrans, transV,
                          m, n, k,
                          c_neg_one, dworkvt, ldwvt,
-                                    dV,    lddv,
-                         c_one,     dC,    lddc);
-        } else {
+                                    dV,      lddv,
+                         c_one,     dC,      lddc, queue );
+        }
+        else {
             // W2 = T V^H
             magma_dgemm( trans, transV,
                          k, n, k,
-                         c_one,  dT, lddt,
-                                 dV, lddv,
-                         c_zero, dworkvt, ldwvt);
+                         c_one,  dT,      lddt,
+                                 dV,      lddv,
+                         c_zero, dworkvt, ldwvt, queue );
+            
             // C = C - W W2 = C - C V T V^H = C (I - V T V^H) = C H
             magma_dgemm( MagmaNoTrans, MagmaNoTrans,
                          m, n, k,
                          c_neg_one, dwork,   ldw,
                                     dworkvt, ldwvt,
-                         c_one,     dC,      lddc);
+                         c_one,     dC,      lddc, queue );
         }
     }
 
     return info;
 } /* magma_dlarfb */
+
+
+// ------------------------------------------------------------
+// define v1 interface
+#undef magma_dlarfb_gpu_gemm
+
+extern "C" magma_int_t
+magma_dlarfb_gpu_gemm(
+    magma_side_t side, magma_trans_t trans, magma_direct_t direct, magma_storev_t storev,
+    magma_int_t m, magma_int_t n, magma_int_t k,
+    magmaDouble_const_ptr dV,    magma_int_t lddv,
+    magmaDouble_const_ptr dT,    magma_int_t lddt,
+    magmaDouble_ptr dC,          magma_int_t lddc,
+    magmaDouble_ptr dwork,       magma_int_t ldwork,
+    magmaDouble_ptr dworkvt,     magma_int_t ldworkvt )
+{
+    return magma_dlarfb_gpu_gemm_q( side, trans, direct, storev,
+                                    m, n, k,
+                                    dV, lddv, dT, lddt, dC, lddc,
+                                    dwork, ldwork, dworkvt, ldworkvt,
+                                    magmablasGetQueue() );
+}

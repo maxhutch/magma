@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions mixed zc -> ds
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -91,9 +91,13 @@ magma_zcgetrs_gpu(
     magmaFloatComplex_ptr dSX,
     magma_int_t *info)
 {
+    /* Constants */
     magmaFloatComplex c_one = MAGMA_C_ONE;
-    int notran = (trans == MagmaNoTrans);
+    
+    /* Local variables */
+    bool notran = (trans == MagmaNoTrans);
     magma_int_t inc;
+    magma_int_t lddsx = n;
 
     *info = 0;
     if ( (! notran) &&
@@ -110,9 +114,11 @@ magma_zcgetrs_gpu(
         *info = -8;
     } else if (lddx < n) {
         *info = -10;
-    } else if (lddx != lddb) { /* TODO: remove it when zclaswp will have the correct interface */
-        *info = -10;
     }
+    // I think this is resolved, but it is unclear what the issue ever was.
+    //else if (lddx != lddb) { /* TODO: remove it when zclaswp will have the correct interface */
+    //    *info = -10;
+    //}
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
         return *info;
@@ -123,6 +129,11 @@ magma_zcgetrs_gpu(
         return *info;
     }
     
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     if (notran) {
         inc = 1;
         
@@ -130,33 +141,37 @@ magma_zcgetrs_gpu(
         /*
          * TODO: clean zclaswp interface to have interface closer to zlaswp
          */
-        //magmablas_zclaswp(nrhs, dB, lddb, dSX, lddbx, 1, n, dipiv);
-        magmablas_zclaswp(nrhs, dB, lddb, dSX, n, dipiv, inc);
+        magmablas_zclaswp( nrhs, dB, lddb, dSX, lddsx,
+                           n, dipiv, inc, queue );
         
         /* Solve L*X = B, overwriting B with SX. */
         magma_ctrsm( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit,
-                     n, nrhs, c_one, dA, ldda, dSX, n);
+                     n, nrhs, c_one, dA, ldda, dSX, lddsx, queue );
         
         /* Solve U*X = B, overwriting B with X. */
         magma_ctrsm( MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                     n, nrhs, c_one, dA, ldda, dSX, n);
+                     n, nrhs, c_one, dA, ldda, dSX, lddsx, queue );
         
-        magmablas_clag2z( n, nrhs, dSX, n, dX, lddx, info );
+        magmablas_clag2z( n, nrhs, dSX, lddsx, dX, lddx, queue, info );
     }
     else {
         inc = -1;
         
         /* Cast the COMPLEX_16 RHS to COMPLEX */
-        magmablas_zlag2c( n, nrhs, dB, lddb, dSX, n, info );
+        magmablas_zlag2c( n, nrhs, dB, lddb, dSX, lddsx, queue, info );
         
         /* Solve A**T * X = B, or A**H * X = B */
         magma_ctrsm( MagmaLeft, MagmaUpper, trans, MagmaNonUnit,
-                     n, nrhs, c_one, dA, ldda, dSX, n );
-        magma_ctrsm( MagmaLeft, MagmaLower, trans, MagmaUnit,
-                     n, nrhs, c_one, dA, ldda, dSX, n );
+                     n, nrhs, c_one, dA, ldda, dSX, lddsx, queue );
         
-        magmablas_zclaswp( nrhs, dX, lddx, dSX, n, dipiv, inc );
+        magma_ctrsm( MagmaLeft, MagmaLower, trans, MagmaUnit,
+                     n, nrhs, c_one, dA, ldda, dSX, lddsx, queue );
+        
+        magmablas_zclaswp( nrhs, dX, lddx, dSX, lddsx,
+                           n, dipiv, inc, queue );
     }
+    
+    magma_queue_destroy( queue );
 
     return *info;
 } /* magma_zcgetrs */

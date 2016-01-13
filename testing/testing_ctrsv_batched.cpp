@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_ztrsv_batched.cpp normal z -> c, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_ztrsv_batched.cpp normal z -> c, Wed Jan  6 17:59:51 2016
        @author Tingxing Dong
 
 */
@@ -110,7 +110,7 @@ int main( int argc, char** argv)
             magma_int_t dwork_batchSize = N;
             magma_cmalloc( &dwork, dwork_batchSize * batchCount );
     
-            cset_pointer(dwork_array, dwork, N, 0, 0, dwork_batchSize, batchCount, opts.queue);
+            magma_cset_pointer( dwork_array, dwork, N, 0, 0, dwork_batchSize, batchCount, opts.queue );
 
             memset(h_bmagma, 0, batchCount*N*sizeof(magmaFloatComplex));
             magmablas_claset( MagmaFull, N, batchCount, c_zero, c_zero, dwork, N);
@@ -139,9 +139,9 @@ int main( int argc, char** argv)
             magma_csetmatrix( Ak, Ak*batchCount, h_A, lda, d_A, ldda );
             magma_csetmatrix( N,  batchCount, h_b, N, d_b, N );
 
-            cset_pointer(d_A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, opts.queue);
-            cset_pointer(d_b_array, d_b, N, 0, 0, N, batchCount, opts.queue);
-            cset_pointer(dwork_array, dwork, N, 0, 0, N, batchCount, opts.queue);
+            magma_cset_pointer( d_A_array, d_A, ldda, 0, 0, ldda*Ak, batchCount, opts.queue );
+            magma_cset_pointer( d_b_array, d_b, N, 0, 0, N, batchCount, opts.queue );
+            magma_cset_pointer( dwork_array, dwork, N, 0, 0, N, batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
 
@@ -158,7 +158,7 @@ int main( int argc, char** argv)
                Performs operation using CUBLAS
                =================================================================== */
             magma_csetmatrix( N, batchCount, h_b, N, d_b, N );
-            cset_pointer(d_b_array, d_b, N, 0, 0, N, batchCount, opts.queue);
+            magma_cset_pointer( d_b_array, d_b, N, 0, 0, N, batchCount, opts.queue );
 
             // CUBLAS version <= 6.0 has magmaFloatComplex **            dA_array, no cast needed.
             // CUBLAS version    6.5 has magmaFloatComplex const**       dA_array, requiring cast.
@@ -300,6 +300,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

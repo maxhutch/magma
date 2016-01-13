@@ -1,18 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgerbt_batched.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/zgerbt_batched.cpp normal z -> c, Wed Jan  6 17:59:36 2016
        @author Adrien REMY
 */
-#include "common_magma.h"
-
-#define PRECISION_c
-#define COMPLEX
-
+#include "magma_internal.h"
 
 
 static void
@@ -167,8 +163,8 @@ magma_cgerbt_batched(
         init_butterfly(2*n, U, V);
 
     /* Copy the butterfly to the GPU */
-    magma_csetvector( 2*n, U, 1, du, 1);
-    magma_csetvector( 2*n, V, 1, dv, 1);
+    magma_csetvector( 2*n, U, 1, du, 1, queue );
+    magma_csetvector( 2*n, V, 1, dv, 1, queue );
 
     /* Perform Partial Random Butterfly Transformation on the GPU*/
     magmablas_cprbt_batched(n, dA_array, ldda, du, dv, batchCount, queue);

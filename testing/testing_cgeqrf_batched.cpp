@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Tingxing Dong
        @author Azzam Haidar
 
-       @generated from testing_zgeqrf_batched.cpp normal z -> c, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgeqrf_batched.cpp normal z -> c, Wed Jan  6 17:59:51 2016
 
 */
 
@@ -77,7 +77,7 @@ void get_QR_error(magma_int_t M, magma_int_t N, magma_int_t min_mn,
     // error = || I - Q^H*Q || / N
     lapackf77_claset( "Upper", &min_mn, &min_mn, &c_zero, &c_one, R, &ldr );
     blasf77_cherk( "Upper", "Conj", &min_mn, &M, &d_neg_one, Q, &ldq, &d_one, R, &ldr );
-    *error2 = lapackf77_clanhe( "1", "Upper", &min_mn, R, &ldr, work );
+    *error2 = safe_lapackf77_clanhe( "1", "Upper", &min_mn, R, &ldr, work );
     if ( N > 0 )
         *error2 /= N;
 }
@@ -163,8 +163,8 @@ int main( int argc, char** argv)
                Performs operation using MAGMA
                =================================================================== */
             magma_csetmatrix( M, column, h_R, lda,  d_A, ldda );
-            cset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue);
-            cset_pointer(dtau_array, dtau_magma, 1, 0, 0, min_mn, batchCount, opts.queue);
+            magma_cset_pointer( dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_cset_pointer( dtau_array, dtau_magma, 1, 0, 0, min_mn, batchCount, opts.queue );
     
             magma_time = magma_sync_wtime( opts.queue );
     
@@ -186,8 +186,8 @@ int main( int argc, char** argv)
             /* cublasCgeqrfBatched is only available from CUBLAS v6.5 */
             #if CUDA_VERSION >= 6050
             magma_csetmatrix( M, column, h_R, lda,  d_A, ldda );
-            cset_pointer(dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue);
-            cset_pointer(dtau_array, dtau_cublas, 1, 0, 0, min_mn, batchCount, opts.queue);
+            magma_cset_pointer( dA_array, d_A, 1, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_cset_pointer( dtau_array, dtau_cublas, 1, 0, 0, min_mn, batchCount, opts.queue );
 
             cublas_time = magma_sync_wtime( opts.queue );
     
@@ -335,6 +335,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

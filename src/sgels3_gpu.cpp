@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgels3_gpu.cpp normal z -> s, Fri Sep 11 18:29:27 2015
+       @generated from src/zgels3_gpu.cpp normal z -> s, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -65,7 +65,7 @@
     lwork   INTEGER
             The dimension of the array HWORK,
             LWORK >= (M - N + NB)*(NRHS + NB) + NRHS*NB,
-            where NB is the blocksize given by magma_get_sgeqrf_nb( M ).
+            where NB is the blocksize given by magma_get_sgeqrf_nb( M, N ).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the HWORK array, returns
@@ -89,10 +89,9 @@ magma_sgels3_gpu(
     magmaFloat_ptr dT;
     float *tau;
     magma_int_t k;
-
-    magma_int_t nb     = magma_get_sgeqrf_nb(m);
+    magma_int_t nb     = magma_get_sgeqrf_nb( m, n );
     magma_int_t lwkopt = (m - n + nb)*(nrhs + nb) + nrhs*nb;
-    int lquery = (lwork == -1);
+    bool lquery = (lwork == -1);
 
     hwork[0] = MAGMA_S_MAKE( (float)lwkopt, 0. );
 
@@ -152,6 +151,6 @@ magma_sgels3_gpu(
     }
 
     magma_free( dT );
-    magma_free_cpu(tau);
+    magma_free_cpu( tau );
     return *info;
 }

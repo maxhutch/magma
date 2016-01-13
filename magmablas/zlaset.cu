@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
        @author Azzam Haidar
@@ -215,10 +215,8 @@ void zlaset_upper_kernel_batched(
 /**
     Purpose
     -------
-    ZLASET_Q initializes a 2-D array A to DIAG on the diagonal and
+    ZLASET initializes a 2-D array A to DIAG on the diagonal and
     OFFDIAG on the off-diagonals.
-    
-    This is the same as ZLASET, but adds queue argument.
     
     Arguments
     ---------
@@ -307,11 +305,11 @@ void magmablas_zlaset_q(
                 nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                 grid.y = magma_ceildiv( nn, BLK_Y );
                 if ( i == j ) {  // diagonal super block
-                    zlaset_lower_kernel<<< grid, threads, 0, queue >>>
+                    zlaset_lower_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, offdiag, diag, dA(i*super_NB, j*super_NB), ldda );
                 }
                 else {           // off diagonal super block
-                    zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                    zlaset_full_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, offdiag, offdiag, dA(i*super_NB, j*super_NB), ldda );
                 }
             }
@@ -325,11 +323,11 @@ void magmablas_zlaset_q(
                 nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                 grid.y = magma_ceildiv( nn, BLK_Y );
                 if ( i == j ) {  // diagonal super block
-                    zlaset_upper_kernel<<< grid, threads, 0, queue >>>
+                    zlaset_upper_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, offdiag, diag, dA(i*super_NB, j*super_NB), ldda );
                 }
                 else {           // off diagonal super block
-                    zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                    zlaset_full_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                         ( mm, nn, offdiag, offdiag, dA(i*super_NB, j*super_NB), ldda );
                 }
             }
@@ -343,7 +341,7 @@ void magmablas_zlaset_q(
              MAGMA_Z_EQUAL( diag,    MAGMA_Z_ZERO ) )
         {
             size_t size = m*n;
-            cudaError_t err = cudaMemsetAsync( dA, 0, size*sizeof(magmaDoubleComplex), queue );
+            cudaError_t err = cudaMemsetAsync( dA, 0, size*sizeof(magmaDoubleComplex), queue->cuda_stream() );
             assert( err == cudaSuccess );
         }
         else {
@@ -354,11 +352,11 @@ void magmablas_zlaset_q(
                     nn = (j == super_grid.y-1 ? n % super_NB : super_NB);
                     grid.y = magma_ceildiv( nn, BLK_Y );
                     if ( i == j ) {  // diagonal super block
-                        zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                        zlaset_full_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                             ( mm, nn, offdiag, diag, dA(i*super_NB, j*super_NB), ldda );
                     }
                     else {           // off diagonal super block
-                        zlaset_full_kernel<<< grid, threads, 0, queue >>>
+                        zlaset_full_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
                             ( mm, nn, offdiag, offdiag, dA(i*super_NB, j*super_NB), ldda );
                     }
                 }
@@ -378,7 +376,7 @@ void magmablas_zlaset(
     magmaDoubleComplex offdiag, magmaDoubleComplex diag,
     magmaDoubleComplex_ptr dA, magma_int_t ldda )
 {
-    magmablas_zlaset_q( uplo, m, n, offdiag, diag, dA, ldda, magma_stream );
+    magmablas_zlaset_q( uplo, m, n, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }
 
 
@@ -413,12 +411,12 @@ void magmablas_zlaset_batched(
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ), batchCount );
     
     if (uplo == MagmaLower) {
-        zlaset_lower_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+        zlaset_lower_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dAarray, ldda);
     }
     else if (uplo == MagmaUpper) {
-        zlaset_upper_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+        zlaset_upper_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dAarray, ldda);
     }
     else {
-        zlaset_full_kernel_batched<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dAarray, ldda);
+        zlaset_full_kernel_batched<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dAarray, ldda);
     }
 }

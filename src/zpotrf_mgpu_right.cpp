@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Ichi Yamazaki
@@ -90,10 +90,10 @@ magma_zpotrf_mgpu_right(
     #define tmpprevpanel(j)  (tmpprevpanel + (j))
     #define STREAM_ID(i) (nqueue > 1 ? 1+((i)/nb)%(nqueue-1) : 0)
 
-    magmaDoubleComplex z_one = MAGMA_Z_MAKE(  1.0, 0.0 );
-    magmaDoubleComplex mz_one = MAGMA_Z_MAKE( -1.0, 0.0 );
-    double             one =  1.0;
-    double             m_one = -1.0;
+    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
+    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    double             d_one     =  1.0;
+    double             d_neg_one = -1.0;
     const char* uplo_ = lapack_uplo_const( uplo );
 
     magma_int_t j, nb, d, id, j_local, blkid, crosspoint, prevtrsmrows=0, nqueue = 5;
@@ -233,9 +233,9 @@ magma_zpotrf_mgpu_right(
 
                     blasf77_zgemm( MagmaNoTransStr, MagmaConjTransStr,
                             &rows, &nb, &nb,
-                            &mz_one, tmpprevpanel(j), &ldpanel,
-                                     tmpprevpanel(j), &ldpanel,
-                            &z_one,      tmppanel(j), &ldpanel );
+                            &c_neg_one, tmpprevpanel(j), &ldpanel,
+                                        tmpprevpanel(j), &ldpanel,
+                            &c_one,     tmppanel(j),     &ldpanel );
 
                     #if defined (ENABLE_TIMER)
                     tcnp = magma_wtime() - tcnp;
@@ -263,7 +263,7 @@ magma_zpotrf_mgpu_right(
                 if (trsmrows > 0) {
                     blasf77_ztrsm(MagmaRightStr, MagmaLowerStr, MagmaConjTransStr, MagmaNonUnitStr,
                                   &trsmrows, &nb,
-                                  &z_one, tmppanel(j), &ldpanel,
+                                  &c_one, tmppanel(j), &ldpanel,
                                           tmppanel(j + nb), &ldpanel);
                 }
 
@@ -330,20 +330,20 @@ magma_zpotrf_mgpu_right(
                             #define ZHERK_ON_DIAG
                             #ifdef  ZHERK_ON_DIAG
                             magma_zherk( MagmaLower, MagmaNoTrans,
-                                    nb, nb,
-                                    m_one, dlpanel, ldda,
-                                     one,  dlA(d, j + nb, j_local2), ldda);
+                                         nb, nb,
+                                         d_neg_one, dlpanel, ldda,
+                                         d_one,     dlA(d, j + nb, j_local2), ldda);
                             magma_zgemm( MagmaNoTrans, MagmaConjTrans,
-                                    trsmrows-nb, nb, nb,
-                                    mz_one, dlpanel+nb, ldda,
-                                            dlpanel,    ldda,
-                                     z_one, dlA(d, j + nb +nb, j_local2), ldda);
+                                         trsmrows-nb, nb, nb,
+                                         c_neg_one, dlpanel+nb, ldda,
+                                                    dlpanel,    ldda,
+                                         c_one,     dlA(d, j + nb +nb, j_local2), ldda);
                             #else
                             magma_zgemm( MagmaNoTrans, MagmaConjTrans,
-                                    trsmrows, nb, nb,
-                                    mz_one, dlpanel, ldda,
-                                            dlpanel, ldda,
-                                     z_one, dlA(d, j + nb, j_local2), ldda);
+                                         trsmrows, nb, nb,
+                                         c_neg_one, dlpanel, ldda,
+                                                    dlpanel, ldda,
+                                         c_one,     dlA(d, j + nb, j_local2), ldda);
                             #endif
 
                             #if defined (ENABLE_TIMER)
@@ -385,9 +385,9 @@ magma_zpotrf_mgpu_right(
                         #endif
 
                         //magmablasSetKernelStream( queues[d] );
-                        //magma_zherk(MagmaLower, MagmaNoTrans, n - offset, nb,
-                        //        m_one, dlpanel, ldda,
-                        //        one, &d_lA[d][offset + offset*ldda], ldda );
+                        //magma_zherk( MagmaLower, MagmaNoTrans, n - offset, nb,
+                        //             d_neg_one, dlpanel, ldda,
+                        //             d_one,     &d_lA[d][offset + offset*ldda], ldda );
                         #ifdef  ZHERK_ON_DIAG
                         magma_zherk_mgpu
                         #else
@@ -395,8 +395,8 @@ magma_zpotrf_mgpu_right(
                         #endif
                                         (ngpu, MagmaLower, MagmaNoTrans,
                                          nb, n - offset, nb,
-                                         m_one, dlpanels, ldda, 0,
-                                         one,   d_lA,     ldda, offset,
+                                         d_neg_one, dlpanels, ldda, 0,
+                                         d_one,     d_lA,     ldda, offset,
                                          nqueue, queues );
                         #if defined (ENABLE_TIMER)
                         for( d=0; d < ngpu; d++ ) {

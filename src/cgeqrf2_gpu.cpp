@@ -1,15 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
-       @generated from zgeqrf2_gpu.cpp normal z -> c, Fri Sep 11 18:29:28 2015
+       @author Mark Gates
 
+       @generated from src/zgeqrf2_gpu.cpp normal z -> c, Wed Jan  6 17:59:30 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -18,9 +19,6 @@
     A = Q * R.
     
     This version has LAPACK-complaint arguments.
-    
-    If the current stream is NULL, this version replaces it with a new
-    stream to overlap computation with communication.
 
     Other versions (magma_cgeqrf_gpu and magma_cgeqrf3_gpu) store the
     intermediate T matrices.
@@ -70,7 +68,7 @@
 
     Each H(i) has the form
 
-        H(i) = I - tau * v * v'
+        H(i) = I - tau * v * v^H
 
     where tau is a complex scalar, and v is a complex vector with
     v(1:i-1) = 0 and v(i) = 1; v(i+1:m) is stored on exit in A(i+1:m,i),
@@ -85,17 +83,15 @@ magma_cgeqrf2_gpu(
     magmaFloatComplex *tau,
     magma_int_t *info )
 {
-    #define dA(a_1,a_2)    ( dA+(a_2)*(ldda) + (a_1))
-    #define work_ref(a_1)  ( work + (a_1))
-    #define hwork          ( work + (nb)*(m))
+    #define work(i_)  (work + (i_))
+    
+    #define dA(i_,j_) (dA + (i_) + (j_)*(ldda))
 
-    magmaFloatComplex_ptr dwork;
-    magmaFloatComplex *work;
-    magma_int_t i, k, ldwork, lddwork, old_i, old_ib, rows;
-    magma_int_t nbmin, nx, ib, nb;
-    magma_int_t lhwork, lwork;
-
-    /* Function Body */
+    magmaFloatComplex_ptr dwork, dT;
+    magmaFloatComplex *work, *hwork;
+    magma_int_t cols, i, ib, ldwork, lddwork, lhwork, lwork, minmn, nb, old_i, old_ib, rows;
+    
+    // check arguments
     *info = 0;
     if (m < 0) {
         *info = -1;
@@ -108,107 +104,122 @@ magma_cgeqrf2_gpu(
         magma_xerbla( __func__, -(*info) );
         return *info;
     }
-
-    k = min(m,n);
-    if (k == 0)
+    
+    minmn = min( m, n );
+    if (minmn == 0)
         return *info;
 
-    nb = magma_get_cgeqrf_nb(m);
+    nb = magma_get_cgeqrf_nb( m, n );
 
-    lwork  = (m+n) * nb;
-    lhwork = lwork - (m)*nb;
-
+    // dwork is (n-nb)*nb for larfb
+    // dT    is nb*nb
+    lddwork = n-nb;
     if (MAGMA_SUCCESS != magma_cmalloc( &dwork, n*nb )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-
+    dT = dwork + (n-nb)*nb;
+    
+    // work  is m*nb for panel
+    // hwork is n*nb, and at least 2*nb*nb for T in larft and R in cpanel_to_q
+    ldwork = m;
+    lhwork = max( n*nb, 2*nb*nb );
+    lwork  = ldwork*nb + lhwork;
+    // last block needs rows*cols for matrix and prefers cols*nb for work
+    // worst case is n > m*nb, m a small multiple of nb:
+    // needs n*nb + n > (m+n)*nb
+    // prefers 2*n*nb, about twice above (m+n)*nb.
+    i = ((minmn-1)/nb)*nb;
+    lwork = max( lwork, (m-i)*(n-i) + (n-i)*nb );
+    
     if (MAGMA_SUCCESS != magma_cmalloc_pinned( &work, lwork )) {
         magma_free( dwork );
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
     }
+    hwork = work + ldwork*nb;
 
-    /* Define user stream if current stream is NULL */
-    magma_queue_t stream[2];
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
     
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-
-    magma_queue_create( &stream[0] );
-    if (orig_stream == NULL) {
-        magma_queue_create( &stream[1] );
-        magmablasSetKernelStream(stream[1]);
-    }
-    else {
-        stream[1] = orig_stream;
-    }
-
-    nbmin = 2;
-    nx    = nb;
-    ldwork = m;
-    lddwork= n;
-
-    if (nb >= nbmin && nb < k && nx < k) {
-        /* Use blocked code initially */
+    if ( nb > 1 && nb < minmn ) {
+        // need nb*nb for T in larft and R in cpanel_to_q
+        assert( lhwork >= 2*nb*nb );
+        
+        // Use blocked code initially
         old_i = 0; old_ib = nb;
-        for (i = 0; i < k-nx; i += nb) {
-            ib = min(k-i, nb);
-            rows = m -i;
-
-            /* download i-th panel */
-            magma_queue_sync( stream[1] );
+        for (i = 0; i < minmn-nb; i += nb) {
+            ib = min( minmn-i, nb );
+            rows = m - i;
+            
+            // get i-th panel from device
             magma_cgetmatrix_async( rows, ib,
-                                    dA(i,i),       ldda,
-                                    work_ref(i), ldwork, stream[0] );
+                                    dA(i,i), ldda,
+                                    work(i), ldwork, queues[1] );
             if (i > 0) {
-                /* Apply H' to A(i:m,i+2*ib:n) from the left */
+                // Apply H^H to A(i:m,i+2*ib:n) from the left
+                cols = n - old_i - 2*old_ib;
                 magma_clarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
-                                  m-old_i, n-old_i-2*old_ib, old_ib,
-                                  dA(old_i, old_i         ), ldda, dwork,        lddwork,
-                                  dA(old_i, old_i+2*old_ib), ldda, dwork+old_ib, lddwork);
+                                  m-old_i, cols, old_ib,
+                                  dA(old_i, old_i         ), ldda, dT, nb,
+                                  dA(old_i, old_i+2*old_ib), ldda, dwork, lddwork, queues[0] );
 
+                // Fix the diagonal block
                 magma_csetmatrix_async( old_ib, old_ib,
-                                        work_ref(old_i),  ldwork,
-                                        dA(old_i, old_i), ldda, stream[1] );
+                                        work(old_i),      ldwork,
+                                        dA(old_i, old_i), ldda, queues[0] );
             }
-
-            magma_queue_sync( stream[0] );
-            lapackf77_cgeqrf(&rows, &ib, work_ref(i), &ldwork, tau+i, hwork, &lhwork, info);
-            /* Form the triangular factor of the block reflector
-               H = H(i) H(i+1) . . . H(i+ib-1) */
+            
+            magma_queue_sync( queues[1] );  // wait to get work(i)
+            lapackf77_cgeqrf( &rows, &ib, work(i), &ldwork, &tau[i], hwork, &lhwork, info );
+            // Form the triangular factor of the block reflector in hwork
+            // H = H(i) H(i+1) . . . H(i+ib-1)
             lapackf77_clarft( MagmaForwardStr, MagmaColumnwiseStr,
                               &rows, &ib,
-                              work_ref(i), &ldwork, tau+i, hwork, &ib);
-
-            magma_cpanel_to_q( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
-
-            /* download the i-th V matrix */
-            magma_csetmatrix_async( rows, ib, work_ref(i), ldwork, dA(i,i), ldda, stream[0] );
-
-            /* download the T matrix */
-            magma_queue_sync( stream[1] );
-            magma_csetmatrix_async( ib, ib, hwork, ib, dwork, lddwork, stream[0] );
-            magma_queue_sync( stream[0] );
-
+                              work(i), &ldwork, &tau[i], hwork, &ib );
+            
+            // set  the upper triangle of panel (V) to identity
+            magma_cpanel_to_q( MagmaUpper, ib, work(i), ldwork, hwork+ib*ib );
+            
+            // send i-th V matrix to device
+            magma_csetmatrix( rows, ib,
+                              work(i), ldwork,
+                              dA(i,i), ldda, queues[1] );
+            
             if (i + ib < n) {
-                if (i+nb < k-nx) {
-                    /* Apply H' to A(i:m,i+ib:i+2*ib) from the left */
+                // wait for previous trailing matrix update (above) to finish with dT
+                magma_queue_sync( queues[0] );
+                
+                // send T matrix to device
+                magma_csetmatrix( ib, ib,
+                                  hwork, ib,
+                                  dT, nb, queues[1] );
+                
+                if (i+nb < minmn-nb) {
+                    // Apply H^H to A(i:m,i+ib:i+2*ib) from the left
                     magma_clarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, ib, ib,
-                                      dA(i, i   ), ldda, dwork,    lddwork,
-                                      dA(i, i+ib), ldda, dwork+ib, lddwork);
-                    magma_cq_to_panel( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
+                                      dA(i, i   ), ldda, dT, nb,
+                                      dA(i, i+ib), ldda, dwork, lddwork, queues[1] );
+                    // wait for larfb to finish with dwork before larfb in next iteration starts
+                    magma_queue_sync( queues[1] );
+                    // restore upper triangle of panel
+                    magma_cq_to_panel( MagmaUpper, ib, work(i), ldwork, hwork+ib*ib );
                 }
                 else {
+                    // Apply H^H to A(i:m,i+ib:n) from the left
                     magma_clarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, n-i-ib, ib,
-                                      dA(i, i   ), ldda, dwork,    lddwork,
-                                      dA(i, i+ib), ldda, dwork+ib, lddwork);
-                    magma_cq_to_panel( MagmaUpper, ib, work_ref(i), ldwork, hwork+ib*ib );
-                    magma_csetmatrix_async( ib, ib,
-                                            work_ref(i), ldwork,
-                                            dA(i,i),     ldda, stream[1] );
+                                      dA(i, i   ), ldda, dT, nb,
+                                      dA(i, i+ib), ldda, dwork, lddwork, queues[1] );
+                    magma_cq_to_panel( MagmaUpper, ib, work(i), ldwork, hwork+ib*ib );
+                    // Fix the diagonal block
+                    magma_csetmatrix( ib, ib,
+                                      work(i), ldwork,
+                                      dA(i,i), ldda, queues[1] );
                 }
                 old_i  = i;
                 old_ib = ib;
@@ -217,27 +228,23 @@ magma_cgeqrf2_gpu(
     } else {
         i = 0;
     }
-    magma_free( dwork );
-
-    /* Use unblocked code to factor the last or only block. */
-    if (i < k) {
-        ib   = n-i;
+    
+    // Use unblocked code to factor the last or only block.
+    if (i < minmn) {
         rows = m-i;
-        magma_cgetmatrix_async( rows, ib, dA(i, i), ldda, work, rows, stream[1] );
-        magma_queue_sync( stream[1] );
-        lhwork = lwork - rows*ib;
-        lapackf77_cgeqrf(&rows, &ib, work, &rows, tau+i, work+ib*rows, &lhwork, info);
-        
-        magma_csetmatrix_async( rows, ib, work, rows, dA(i, i), ldda, stream[1] );
+        cols = n-i;
+        magma_cgetmatrix( rows, cols, dA(i, i), ldda, work, rows, queues[1] );
+        // see comments for lwork above
+        lhwork = lwork - rows*cols;
+        lapackf77_cgeqrf( &rows, &cols, work, &rows, &tau[i], &work[rows*cols], &lhwork, info );
+        magma_csetmatrix( rows, cols, work, rows, dA(i, i), ldda, queues[1] );
     }
-
+    
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
+    
+    magma_free( dwork );
     magma_free_pinned( work );
-
-    magma_queue_destroy( stream[0] );
-    if (orig_stream == NULL) {
-        magma_queue_destroy( stream[1] );
-    }
-    magmablasSetKernelStream( orig_stream );
-
+    
     return *info;
-} /* magma_cgeqrf2_gpu */
+} // magma_cgeqrf2_gpu

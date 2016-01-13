@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
        @author Eduardo Ponce
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 */
 
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /**
@@ -87,7 +87,7 @@ magma_zqr(
     CHECK( magma_zmalloc_pinned( &tau, k ) );
 
     // query number of blocks required for QR factorization
-    nb = magma_get_zgeqrf_nb(m);
+    nb = magma_get_zgeqrf_nb( m, n );
     ldt = (2 * k + magma_roundup(n, 32)) * nb;
     CHECK( magma_zmalloc( &dT, ldt ) );
 
@@ -96,7 +96,7 @@ magma_zqr(
         dA = A.dval;
     } else {
         CHECK( magma_zmalloc( &dA, lda * n ) );
-        magma_zsetvector( lda * n, A.val, inc, dA, inc );
+        magma_zsetvector( lda * n, A.val, inc, dA, inc, queue );
     }
 
     // QR factorization
@@ -106,12 +106,12 @@ magma_zqr(
     if ( R != NULL ) {
         if ( A.memory_location == Magma_DEV ) {
             CHECK( magma_zvinit( R, Magma_DEV, lda, n, c_zero, queue ) );
-            magmablas_zlacpy( MagmaUpper, k, n, dA, lda, R->dval, lda );
+            magmablas_zlacpy( MagmaUpper, k, n, dA, lda, R->dval, lda, queue );
         } else {
             CHECK( magma_zvinit( &dR1, Magma_DEV, lda, n, c_zero, queue ) );
-            magmablas_zlacpy( MagmaUpper, k, n, dA, lda, dR1.dval, lda );
+            magmablas_zlacpy( MagmaUpper, k, n, dA, lda, dR1.dval, lda, queue );
             CHECK( magma_zvinit( R, Magma_CPU, lda, n, c_zero, queue ) );
-            magma_zgetvector( lda * n, dR1.dval, inc, R->val, inc );
+            magma_zgetvector( lda * n, dR1.dval, inc, R->val, inc, queue );
         }
     }
 
@@ -121,10 +121,10 @@ magma_zqr(
 
         if ( A.memory_location == Magma_DEV ) {
             CHECK( magma_zvinit( Q, Magma_DEV, lda, n, c_zero, queue ) );
-            magma_zcopyvector( lda * n, dA, inc, Q->dval, inc );
+            magma_zcopyvector( lda * n, dA, inc, Q->dval, inc, queue );
         } else {
             CHECK( magma_zvinit( Q, Magma_CPU, lda, n, c_zero, queue ) );
-            magma_zgetvector( lda * n, dA, inc, Q->val, inc );
+            magma_zgetvector( lda * n, dA, inc, Q->val, inc, queue );
         }
     }
 

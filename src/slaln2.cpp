@@ -1,11 +1,18 @@
 /*
-    Originally translated from lapack slaln2.f to slaln2.c using f2c.
-    Later cleaned up by hand, particularly to be thread-safe (no static variables).
-    
-    @author Mark Gates
-    @generated from dlaln2.cpp normal d -> s, Fri Sep 11 18:29:32 2015
+    -- MAGMA (version 2.0.0-beta2) --
+       Univ. of Tennessee, Knoxville
+       Univ. of California, Berkeley
+       Univ. of Colorado, Denver
+       @date January 2016
+
+       Originally translated from lapack slaln2.f to slaln2.c using f2c.
+       Later cleaned up by hand, particularly to be thread-safe (no static variables).
+
+       @author Mark Gates
+
+       @generated from src/dlaln2.cpp normal d -> s, Wed Jan  6 17:59:36 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -47,8 +54,8 @@
     ----------
     @param[in]
     trans   LOGICAL
-            =.TRUE.:  A-transpose will be used.
-            =.FALSE.: A will be used (not transposed.)
+            = true  (1): A**T will be used.
+            = false (0): A    will be used (not transposed.)
 
     @param[in]
     na      INTEGER
@@ -56,8 +63,7 @@
 
     @param[in]
     nw      INTEGER
-            1 if "w" is real, 2 if "w" is complex.  It may only be 1
-            or 2.
+            1 if "w" is real, 2 if "w" is complex.  It may only be 1 or 2.
 
     @param[in]
     smin    REAL

@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
@@ -96,5 +96,7 @@ void zgeqrf_copy_upper_batched(
     */
     if ( nb >= n) return;
     
-    zgeqrf_copy_upper_kernel_batched<<< batchCount, n, 0, queue >>>( n, nb, dV_array, lddv, dR_array, lddr );
+    zgeqrf_copy_upper_kernel_batched
+        <<< batchCount, n, 0, queue->cuda_stream() >>>
+        ( n, nb, dV_array, lddv, dR_array, lddr );
 }

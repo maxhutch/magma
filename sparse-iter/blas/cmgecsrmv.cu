@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zmgecsrmv.cu normal z -> c, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zmgecsrmv.cu normal z -> c, Wed Jan  6 17:59:42 2016
 
 */
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
@@ -128,7 +128,7 @@ magma_cmgecsrmv(
     magma_int_t threads = BLOCK_SIZE;
     unsigned int MEM_SIZE =  num_vecs* BLOCK_SIZE 
                     * sizeof( magmaFloatComplex ); // num_vecs vectors 
-    cmgecsrmv_kernel<<< grid, threads, MEM_SIZE >>>
+    cmgecsrmv_kernel<<< grid, threads, MEM_SIZE, queue->cuda_stream()>>>
             (m, n, num_vecs, alpha, dval, drowptr, dcolind, dx, beta, dy);
 
    return MAGMA_SUCCESS;

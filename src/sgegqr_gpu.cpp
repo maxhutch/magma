@@ -1,20 +1,21 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
-       @generated from zgegqr_gpu.cpp normal z -> s, Fri Sep 11 18:29:27 2015
+       @generated from src/zgegqr_gpu.cpp normal z -> s, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define REAL
 
 // === Define what BLAS to use ============================================
-    #define magma_strsm magmablas_strsm
+#undef  magma_strsm
+#define magma_strsm magmablas_strsm
 // === End defining what BLAS to use ======================================
 
 /**
@@ -119,6 +120,11 @@ magma_sgegqr_gpu(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     if (ikind == 1) {
         // === Iterative, based on SVD ============================================================
         float *U, *VT, *vt, *R, *G, *hwork, *tau;
@@ -140,7 +146,7 @@ magma_sgegqr_gpu(
         S    = (float*)(U + n*n); // Size n
         tau  = U + n*n + n;        // Size n
         
-        #if defined(COMPLEX)
+        #ifdef COMPLEX
         float *rwork;
         magma_smalloc_cpu( &rwork, 5*n );
         if ( rwork == NULL ) {
@@ -153,12 +159,12 @@ magma_sgegqr_gpu(
             i++;
             
             magma_sgemm( MagmaConjTrans, MagmaNoTrans, n, n, m, c_one,
-                         dA, ldda, dA, ldda, c_zero, dwork, n );
-            magma_sgetmatrix( n, n, dwork, n, G, n );
+                         dA, ldda, dA, ldda, c_zero, dwork, n, queue );
+            magma_sgetmatrix( n, n, dwork, n, G, n, queue );
             
             lapackf77_sgesvd( "n", "a", &n, &n, G, &n, S, U, &n, VT, &n,
                               hwork, &lwork,
-                              #if defined(COMPLEX)
+                              #ifdef COMPLEX
                               rwork,
                               #endif
                               info );
@@ -183,9 +189,9 @@ magma_sgegqr_gpu(
             else
                 blasf77_strmm( "l", "u", "n", "n", &n, &n, &c_one, VT, &n, R, &n );
             
-            magma_ssetmatrix( n, n, VT, n, dwork, n );
+            magma_ssetmatrix( n, n, VT, n, dwork, n, queue );
             magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                         m, n, c_one, dwork, n, dA, ldda );
+                         m, n, c_one, dwork, n, dA, ldda, queue );
             if (mins > 0.00001f)
                 cn = maxs/mins;
             
@@ -193,7 +199,7 @@ magma_sgegqr_gpu(
         } while (cn > 10.f);
         
         magma_free_cpu( hwork );
-        #if defined(COMPLEX)
+        #ifdef COMPLEX
         magma_free_cpu( rwork );
         #endif
         // ================== end of ikind == 1 ===================================================
@@ -208,11 +214,11 @@ magma_sgegqr_gpu(
         magmaFloat_ptr ddA  = dwork + n*n;
         float *tau  = work+n*n;
 
-        magmablas_slaset( MagmaFull, n, n, c_zero, c_zero, d_T, n );
+        magmablas_slaset( MagmaFull, n, n, c_zero, c_zero, d_T, n, queue );
         magma_sgeqr2x3_gpu( m, n, dA, ldda, dtau, d_T, ddA,
                             (float*)(dwork+min_mn+2*n*n), info );
-        magma_sgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn );
-        magma_sgetmatrix( n, n, ddA, n, work, n );
+        magma_sgetmatrix( min_mn, 1, dtau, min_mn, tau, min_mn, queue );
+        magma_sgetmatrix( n, n, ddA, n, work, n, queue );
         magma_sorgqr_gpu( m, n, n, dA, ldda, tau, d_T, nb, info );
         // ================== end of ikind == 2 ===================================================
     }
@@ -220,30 +226,32 @@ magma_sgegqr_gpu(
         // ================== MGS               ===================================================
         for (j = 0; j < n; j++) {
             for (i = 0; i < j; i++) {
-                *work(i, j) = magma_sdot( m, dA(0,i), 1, dA(0,j), 1 );
-                magma_saxpy( m, -(*work(i,j)),  dA(0,i), 1, dA(0,j), 1 );
+                *work(i, j) = magma_sdot( m, dA(0,i), 1, dA(0,j), 1, queue );
+                magma_saxpy( m, -(*work(i,j)),  dA(0,i), 1, dA(0,j), 1, queue );
             }
             for (i = j; i < n; i++) {
                 *work(i, j) = MAGMA_S_ZERO;
             }
-            //*work(j,j) = MAGMA_S_MAKE( magma_snrm2( m, dA(0,j), 1), 0. );
-            *work(j,j) = magma_sdot( m, dA(0,j), 1, dA(0,j), 1 );
+            //*work(j,j) = MAGMA_S_MAKE( magma_snrm2( m, dA(0,j), 1), 0., queue );
+            *work(j,j) = magma_sdot( m, dA(0,j), 1, dA(0,j), 1, queue );
             *work(j,j) = MAGMA_S_MAKE( sqrt(MAGMA_S_REAL( *work(j,j) )), 0. );
-            magma_sscal( m, 1./ *work(j,j), dA(0,j), 1 );
+            magma_sscal( m, 1./ *work(j,j), dA(0,j), 1, queue );
         }
         // ================== end of ikind == 3 ===================================================
     }
     else if (ikind == 4) {
         // ================== Cholesky QR       ===================================================
         magma_sgemm( MagmaConjTrans, MagmaNoTrans, n, n, m, c_one,
-                     dA, ldda, dA, ldda, c_zero, dwork, n );
-        magma_sgetmatrix( n, n, dwork, n, work, n );
+                     dA, ldda, dA, ldda, c_zero, dwork, n, queue );
+        magma_sgetmatrix( n, n, dwork, n, work, n, queue );
         lapackf77_spotrf( "u", &n, work, &n, info );
-        magma_ssetmatrix( n, n, work, n, dwork, n );
+        magma_ssetmatrix( n, n, work, n, dwork, n, queue );
         magma_strsm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
-                     m, n, c_one, dwork, n, dA, ldda );
+                     m, n, c_one, dwork, n, dA, ldda, queue );
         // ================== end of ikind == 4 ===================================================
     }
              
+    magma_queue_destroy( queue );
+
     return *info;
 } /* magma_sgegqr_gpu */

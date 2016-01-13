@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgels.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgels.cpp normal z -> s, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -63,7 +63,7 @@ int main( int argc, char** argv )
             max_mn = max(M, N);
             lda    = M;
             ldb    = max_mn;
-            nb     = magma_get_sgeqrf_nb(M);
+            nb     = magma_get_sgeqrf_nb( M, N );
             gflops = (FLOPS_SGEQRF( M, N ) + FLOPS_SGEQRS( M, N, nrhs )) / 1e9;
             
             // query for workspace size
@@ -168,6 +168,7 @@ int main( int argc, char** argv )
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

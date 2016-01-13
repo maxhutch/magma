@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Mark Gates
        
-       @generated from zlaset_band.cu normal z -> s, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zlaset_band.cu normal z -> s, Wed Jan  6 17:59:38 2016
 
 */
 #include "common_magma.h"
@@ -122,10 +122,8 @@ void slaset_band_lower(
 /**
     Purpose
     -------
-    SLASET_BAND_STREAM initializes the main diagonal of dA to DIAG,
+    SLASET_BAND initializes the main diagonal of dA to DIAG,
     and the K-1 sub- or super-diagonals to OFFDIAG.
-    
-    This is the same as SLASET_BAND, but adds queue argument.
     
     Arguments
     ---------
@@ -202,12 +200,12 @@ magmablas_slaset_band_q(
     if (uplo == MagmaUpper) {
         dim3 threads( min(k,n) );
         dim3 grid( magma_ceildiv( min(m+k-1,n), NB ) );
-        slaset_band_upper<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
-}
+        slaset_band_upper<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dA, ldda);
+    }
     else if (uplo == MagmaLower) {
         dim3 threads( min(k,m) );
         dim3 grid( magma_ceildiv( min(m,n), NB ) );
-        slaset_band_lower<<< grid, threads, 0, queue >>> (m, n, offdiag, diag, dA, ldda);
+        slaset_band_lower<<< grid, threads, 0, queue->cuda_stream() >>> (m, n, offdiag, diag, dA, ldda);
     }
 }
 
@@ -222,5 +220,5 @@ magmablas_slaset_band(
     float offdiag, float diag,
     magmaFloat_ptr dA, magma_int_t ldda)
 {
-    magmablas_slaset_band_q(uplo, m, n, k, offdiag, diag, dA, ldda, magma_stream);
+    magmablas_slaset_band_q(uplo, m, n, k, offdiag, diag, dA, ldda, magmablasGetQueue() );
 }

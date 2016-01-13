@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing_zhegvdx_2stage.cpp normal z -> c, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zhegvdx_2stage.cpp normal z -> c, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -26,7 +26,7 @@
 #include "magma_cbulge.h"
 #include "magma_threadsetting.h"
 
-#define PRECISION_c
+#define COMPLEX
 
 
 /* ////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ int main( int argc, char** argv)
 
     magmaFloatComplex *h_A, *h_R, *h_B, *h_S, *h_work;
 
-    #if defined(PRECISION_z) || defined(PRECISION_c)
+    #ifdef COMPLEX
     float *rwork;
     magma_int_t lrwork;
     #endif
@@ -71,9 +71,12 @@ int main( int argc, char** argv)
         opts.jobz = MagmaVec;
     }
 
-    printf("%% itype = %d, jobz = %s, range = %s, uplo = %s, opts.check = %d, fraction = %6.4f\n",
-           (int) opts.itype, lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
-           (int) opts.check, opts.fraction);
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% itype = %d, jobz = %s, range = %s, uplo = %s, fraction = %6.4f, ngpu = %d\n",
+           int(opts.itype), lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
+           opts.fraction, int(abs_ngpu) );
 
     printf("%%   N     M   GPU Time (sec)\n");
     printf("%%===========================\n");
@@ -84,7 +87,7 @@ int main( int argc, char** argv)
             n2     = N*N;
             magma_cheevdx_getworksize(N, threads, (opts.jobz == MagmaVec), 
                                      &lwork, 
-                                     #if defined(PRECISION_z) || defined(PRECISION_c)
+                                     #ifdef COMPLEX
                                      &lrwork, 
                                      #endif
                                      &liwork);
@@ -98,7 +101,7 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_R,    magmaFloatComplex, n2 );
             TESTING_MALLOC_PIN( h_S,    magmaFloatComplex, n2 );
             TESTING_MALLOC_PIN( h_work, magmaFloatComplex, lwork );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_MALLOC_PIN( rwork,  float, lrwork);
             #endif
 
@@ -113,43 +116,42 @@ int main( int argc, char** argv)
             float vu = 0;
             magma_int_t il = 0;
             magma_int_t iu = 0;
-
-            if (range == MagmaRangeI) {
+            if (opts.fraction == 0) {
+                il = max( 1, magma_int_t(0.1*N) );
+                iu = max( 1, magma_int_t(0.3*N) );
+            }
+            else {
                 il = 1;
-                iu = (int) (opts.fraction*N);
+                iu = max( 1, magma_int_t(opts.fraction*N) );
             }
 
-            // ==================================================================
-            // Warmup using MAGMA
-            // ==================================================================
-            if (opts.warmup) {
-                lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
-                lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_S, &N );
-
-                magma_chegvdx_2stage(opts.itype, opts.jobz, range, opts.uplo,
-                                     N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
-                                     h_work, lwork,
-                                     #if defined(PRECISION_z) || defined(PRECISION_c)
-                                     rwork, lrwork,
-                                     #endif
-                                     iwork, liwork,
-                                     &info);
-            }
             // ===================================================================
             // Performs operation using MAGMA
             // ===================================================================
-            lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
-            lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_S, &N );
+            lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &N, h_R, &N );
+            lapackf77_clacpy( MagmaFullStr, &N, &N, h_B, &N, h_S, &N );
 
             gpu_time = magma_wtime();
-            magma_chegvdx_2stage(opts.itype, opts.jobz, range, opts.uplo,
-                                 N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
-                                 h_work, lwork,
-                                 #if defined(PRECISION_z) || defined(PRECISION_c)
-                                 rwork, lrwork,
-                                 #endif
-                                 iwork, liwork,
-                                 &info);
+            if (opts.ngpu == 1) {
+                magma_chegvdx_2stage( opts.itype, opts.jobz, range, opts.uplo,
+                                      N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
+                                      h_work, lwork,
+                                      #ifdef COMPLEX
+                                      rwork, lrwork,
+                                      #endif
+                                      iwork, liwork,
+                                      &info );
+            }
+            else {
+                magma_chegvdx_2stage_m( abs_ngpu, opts.itype, opts.jobz, range, opts.uplo,
+                                        N, h_R, N, h_S, N, vl, vu, il, iu, &m1, w1,
+                                        h_work, lwork,
+                                        #ifdef COMPLEX
+                                        rwork, lrwork,
+                                        #endif
+                                        iwork, liwork,
+                                        &info );
+            }
             gpu_time = magma_wtime() - gpu_time;
 
             if ( opts.check && opts.jobz != MagmaNoVec ) {
@@ -162,12 +164,12 @@ int main( int argc, char** argv)
                           | B A Z - Z D | / ( |A| |Z| N )  (itype = 3)
                    (2)    | S(with V) - S(w/o V) | / | S |
                    =================================================================== */
-                #if defined(PRECISION_d) || defined(PRECISION_s)
+                #ifdef REAL
                 float *rwork = h_work + N*N;
                 #endif
 
                 result[0] = 1.;
-                result[0] /= lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_A, &N, rwork);
+                result[0] /= safe_lapackf77_clanhe("1", lapack_uplo_const(opts.uplo), &N, h_A, &N, rwork);
                 result[0] /= lapackf77_clange("1", &N, &m1, h_R, &N, rwork);
 
                 if (opts.itype == 1) {
@@ -192,14 +194,14 @@ int main( int argc, char** argv)
                     result[0] *= lapackf77_clange("1", &N, &m1, h_R, &N, rwork)/N;
                 }
 
-                lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_A, &N, h_R, &N );
-                lapackf77_clacpy( MagmaUpperLowerStr, &N, &N, h_B, &N, h_S, &N );
+                lapackf77_clacpy( MagmaFullStr, &N, &N, h_A, &N, h_R, &N );
+                lapackf77_clacpy( MagmaFullStr, &N, &N, h_B, &N, h_S, &N );
 
                 magma_int_t m2 = m1;
                 lapackf77_chegvd(&opts.itype, "N", lapack_uplo_const(opts.uplo), &N,
                               h_R, &N, h_S, &N, w2,
                               h_work, &lwork,
-                              #if defined(PRECISION_z) || defined(PRECISION_c)
+                              #ifdef COMPLEX
                               rwork, &lrwork,
                               #endif
                               iwork, &liwork,
@@ -243,7 +245,7 @@ int main( int argc, char** argv)
             TESTING_FREE_PIN( h_R );
             TESTING_FREE_PIN( h_S );
             TESTING_FREE_PIN( h_work );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             TESTING_FREE_PIN( rwork );
             #endif
             fflush( stdout );
@@ -253,7 +255,7 @@ int main( int argc, char** argv)
         }
     }
 
-    /* Shutdown */
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

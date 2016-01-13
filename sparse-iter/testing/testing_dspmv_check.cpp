@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zspmv_check.cpp normal z -> d, Fri Sep 11 18:29:47 2015
+       @generated from sparse-iter/testing/testing_zspmv_check.cpp normal z -> d, Wed Jan  6 17:59:51 2016
        @author Hartwig Anzt
 */
 
@@ -50,7 +50,7 @@ int main(  int argc, char** argv )
         }
 
         printf( "\n# matrix info: %d-by-%d with %d nonzeros\n\n",
-                            (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
+                            int(A.num_rows), int(A.num_cols), int(A.nnz) );
 
         magma_int_t n = A.num_rows;
         CHECK( magma_dmtransfer( A, &B_d, Magma_CPU, Magma_DEV, queue ));

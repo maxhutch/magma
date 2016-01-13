@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define COMPLEX
 
@@ -94,21 +94,22 @@ magma_zgelqf_gpu(
     magmaDoubleComplex *work, magma_int_t lwork,
     magma_int_t *info)
 {
+    /* Constants */
     const magmaDoubleComplex c_one = MAGMA_Z_ONE;
     const magma_int_t        ione  = 1;
     MAGMA_UNUSED( ione );  // used only for complex
 
-    magmaDoubleComplex *dAT;
+    /* Local variables */
+    magmaDoubleComplex_ptr dAT=NULL;
     magma_int_t min_mn, maxm, maxn, nb;
     magma_int_t iinfo;
-    int lquery;
 
     *info = 0;
-    nb = magma_get_zgelqf_nb(m);
-    min_mn = min(m,n);
+    nb = magma_get_zgelqf_nb( m, n );
+    min_mn = min( m, n );
 
     work[0] = MAGMA_Z_MAKE( (double)(m*nb), 0 );
-    lquery = (lwork == -1);
+    bool lquery = (lwork == -1);
     if (m < 0) {
         *info = -1;
     } else if (n < 0) {
@@ -137,19 +138,23 @@ magma_zgelqf_gpu(
 
     magma_int_t lddat = maxn;
 
-    dAT = dA;
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
     
     if ( m == n ) {
+        dAT = dA;
         lddat = ldda;
-        magmablas_ztranspose_inplace( m, dAT, ldda );
+        magmablas_ztranspose_inplace( m, dAT, ldda, queue );
     }
     else {
         if (MAGMA_SUCCESS != magma_zmalloc( &dAT, maxm*maxn ) ) {
             *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
+            goto cleanup;
         }
         
-        magmablas_ztranspose( m, n, dA, ldda, dAT, lddat );
+        magmablas_ztranspose( m, n, dA, ldda, dAT, lddat, queue );
     }
     
     magma_zgeqrf2_gpu( n, m, dAT, lddat, tau, &iinfo );
@@ -164,12 +169,15 @@ magma_zgelqf_gpu(
     #endif
     
     if ( m == n ) {
-        magmablas_ztranspose_inplace( m, dAT, lddat );
+        magmablas_ztranspose_inplace( m, dAT, lddat, queue );
     }
     else {
-        magmablas_ztranspose( n, m, dAT, lddat, dA, ldda );
+        magmablas_ztranspose( n, m, dAT, lddat, dA, ldda, queue );
         magma_free( dAT );
     }
 
+cleanup:
+    magma_queue_destroy( queue );
+    
     return *info;
 } /* magma_zgelqf_gpu */

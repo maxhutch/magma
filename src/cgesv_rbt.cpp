@@ -1,25 +1,25 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgesv_rbt.cpp normal z -> c, Fri Sep 11 18:29:27 2015
+       @generated from src/zgesv_rbt.cpp normal z -> c, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
     -------
     CGESV_RBT solves a system of linear equations
-       A * X = B
+        A * X = B
     where A is a general N-by-N matrix and X and B are N-by-NRHS matrices.
     Random Butterfly Tranformation is applied on A and B, then
     the LU decomposition with no pivoting is
     used to factor A as
-       A = L * U,
+        A = L * U,
     where L is unit lower triangular, and U is
     upper triangular.  The factored form of A is then used to solve the
     system of equations A * X = B.
@@ -28,8 +28,8 @@
     Arguments
     ---------
     @param[in]
-    ref     magma_bool_t
-            Specifies if iterative refinement have to be applied to improve the solution.
+    refine  magma_bool_t
+            Specifies if iterative refinement is to be applied to improve the solution.
       -     = MagmaTrue:   Iterative refinement is applied.
       -     = MagmaFalse:  Iterative refinement is not applied.
 
@@ -70,15 +70,26 @@
  ********************************************************************/
 extern "C" magma_int_t
 magma_cgesv_rbt(
-    magma_bool_t ref, magma_int_t n, magma_int_t nrhs,
+    magma_bool_t refine, magma_int_t n, magma_int_t nrhs,
     magmaFloatComplex *A, magma_int_t lda,
     magmaFloatComplex *B, magma_int_t ldb,
     magma_int_t *info)
 {
+    /* Constants */
+    const magmaFloatComplex c_zero = MAGMA_C_ZERO;
+    const magmaFloatComplex c_one  = MAGMA_C_ONE;
+    
+    /* Local variables */
+    magma_int_t nn = magma_roundup( n, 4 );  // n + ((4-(n % 4))%4);
+    magmaFloatComplex *hu=NULL, *hv=NULL;
+    magmaFloatComplex_ptr dA=NULL, dB=NULL, dAo=NULL, dBo=NULL, dwork=NULL, dv=NULL;
+    magma_int_t iter;
+    magma_queue_t queue=NULL;
+    
     /* Function Body */
     *info = 0;
-    if ( ! (ref == MagmaTrue) &&
-         ! (ref == MagmaFalse) ) {
+    if ( ! (refine == MagmaTrue) &&
+         ! (refine == MagmaFalse) ) {
         *info = -1;
     }
     else if (n < 0) {
@@ -99,101 +110,89 @@ magma_cgesv_rbt(
     if (nrhs == 0 || n == 0)
         return *info;
 
-
-    magma_int_t nn = n + ((4-(n % 4))%4);
-    magmaFloatComplex *dA, *hu, *hv, *db, *dAo, *dBo, *dwork;
-    magma_int_t n2;
-
-    magma_int_t iter;
-    n2 = nn*nn;
-
-    if (MAGMA_SUCCESS != magma_cmalloc( &dA, n2 )) {
+    if (MAGMA_SUCCESS != magma_cmalloc( &dA, nn*nn ) ||
+        MAGMA_SUCCESS != magma_cmalloc( &dB, nn*nrhs ))
+    {
         *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
-    }
-    if (MAGMA_SUCCESS != magma_cmalloc( &db, nn*nrhs )) {
-        *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
+        goto cleanup;
     }
 
-    if (ref == MagmaTrue) {
-        if (MAGMA_SUCCESS != magma_cmalloc( &dAo, n2 )) {
+    if (refine == MagmaTrue) {
+        if (MAGMA_SUCCESS != magma_cmalloc( &dAo,   nn*nn ) ||
+            MAGMA_SUCCESS != magma_cmalloc( &dwork, nn*nrhs ) ||
+            MAGMA_SUCCESS != magma_cmalloc( &dBo,   nn*nrhs ))
+        {
             *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
-        }
-        if (MAGMA_SUCCESS != magma_cmalloc( &dwork, nn*nrhs )) {
-            *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
-        }
-        if (MAGMA_SUCCESS != magma_cmalloc( &dBo, nn*nrhs )) {
-            *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
+            goto cleanup;
         }
     }
 
-    if (MAGMA_SUCCESS != magma_cmalloc_cpu( &hu, 2*nn )) {
+    if (MAGMA_SUCCESS != magma_cmalloc_cpu( &hu, 2*nn ) ||
+        MAGMA_SUCCESS != magma_cmalloc_cpu( &hv, 2*nn ))
+    {
         *info = MAGMA_ERR_HOST_ALLOC;
-        return *info;
-    }
-    if (MAGMA_SUCCESS != magma_cmalloc_cpu( &hv, 2*nn )) {
-        *info = MAGMA_ERR_HOST_ALLOC;
-        return *info;
+        goto cleanup;
     }
 
-    magmablas_claset(MagmaFull, nn, nn, MAGMA_C_ZERO, MAGMA_C_ONE, dA, nn);
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
+    magmablas_claset( MagmaFull, nn, nn, c_zero, c_one, dA, nn, queue );
 
     /* Send matrix to the GPU */
-    magma_csetmatrix(n, n, A, lda, dA, nn);
+    magma_csetmatrix( n, n, A, lda, dA, nn, queue );
 
     /* Send b to the GPU */
-    magma_csetmatrix(n, nrhs, B, ldb, db, nn);
+    magma_csetmatrix( n, nrhs, B, ldb, dB, nn, queue );
 
-    *info = magma_cgerbt_gpu(MagmaTrue, nn, nrhs, dA, nn, db, nn, hu, hv, info);
+    *info = magma_cgerbt_gpu( MagmaTrue, nn, nrhs, dA, nn, dB, nn, hu, hv, info );
     if (*info != MAGMA_SUCCESS)  {
         return *info;
     }
 
-    if (ref == MagmaTrue) {
-        magma_ccopymatrix(nn, nn, dA, nn, dAo, nn);
-        magma_ccopymatrix(nn, nrhs, db, nn, dBo, nn);
+    if (refine == MagmaTrue) {
+        magma_ccopymatrix( nn, nn, dA, nn, dAo, nn, queue );
+        magma_ccopymatrix( nn, nrhs, dB, nn, dBo, nn, queue );
     }
     /* Solve the system U^TAV.y = U^T.b on the GPU */
-    magma_cgesv_nopiv_gpu( nn, nrhs, dA, nn, db, nn, info);
-
+    magma_cgesv_nopiv_gpu( nn, nrhs, dA, nn, dB, nn, info );
 
     /* Iterative refinement */
-    if (ref == MagmaTrue) {
-        magma_cgerfs_nopiv_gpu(MagmaNoTrans, nn, nrhs, dAo, nn, dBo, nn, db, nn, dwork, dA, &iter, info);
+    if (refine == MagmaTrue) {
+        magma_cgerfs_nopiv_gpu( MagmaNoTrans, nn, nrhs, dAo, nn, dBo, nn, dB, nn, dwork, dA, &iter, info );
     }
-    //printf("iter = %d\n", iter);
+    //printf("iter = %d\n", iter );
 
     /* The solution of A.x = b is Vy computed on the GPU */
-    magmaFloatComplex *dv;
-
     if (MAGMA_SUCCESS != magma_cmalloc( &dv, 2*nn )) {
         *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
+        goto cleanup;
     }
 
-    magma_csetvector(2*nn, hv, 1, dv, 1);
+    magma_csetvector( 2*nn, hv, 1, dv, 1, queue );
     
     for (int i = 0; i < nrhs; i++) {
-        magmablas_cprbt_mv(nn, dv, db+(i*nn));
+        magmablas_cprbt_mv( nn, dv, dB+(i*nn), queue );
     }
 
-    magma_cgetmatrix(n, nrhs, db, nn, B, ldb);
+    magma_cgetmatrix( n, nrhs, dB, nn, B, ldb, queue );
 
-    magma_free_cpu( hu);
-    magma_free_cpu( hv);
+cleanup:
+    magma_queue_destroy( queue );
+    
+    magma_free_cpu( hu );
+    magma_free_cpu( hv );
 
     magma_free( dA );
     magma_free( dv );
-    magma_free( db );
+    magma_free( dB );
     
-    if (ref == MagmaTrue) {
+    if (refine == MagmaTrue) {
         magma_free( dAo );
         magma_free( dBo );
         magma_free( dwork );
     }
+    
     return *info;
 }

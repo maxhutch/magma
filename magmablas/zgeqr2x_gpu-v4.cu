@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "commonblas_z.h"
 
 // 512 is maximum number of threads for CUDA capability 1.x
@@ -118,12 +118,8 @@ magma_zgeqr2x4_gpu(
 
     magma_int_t i, k;
 
-    double *dnorm = (double *)dwork;
-    magmaDoubleComplex *work = (magmaDoubleComplex *)(dwork+2*n);
-
-    magma_queue_t cstream;
-    magmablasGetKernelStream(&cstream);
-    magmablasSetKernelStream(queue);
+    magmaDouble_ptr dnorm = (magmaDouble_ptr)dwork;
+    magmaDoubleComplex_ptr dwork2 = (magmaDoubleComplex_ptr)(dwork + 2*n);
 
     *info = 0;
     if (m < 0) {
@@ -140,7 +136,7 @@ magma_zgeqr2x4_gpu(
 
     /* Compute the norms of the trailing columns */
     k = min(m,n);
-    magmablas_dznrm2_cols(m, k, dA(0,0), ldda, dnorm);
+    magmablas_dznrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
 
     for (magma_int_t b=0; b < k; b += BS) {
         for (i = b; i < min(k, b+BS); ++i) {
@@ -148,32 +144,39 @@ magma_zgeqr2x4_gpu(
             if (i-b > 0) {
                 /* Compute the (i-1)th column of T */
                 if ( i-1 > 0 ) {
-                    magma_zgemv_kernel3<<< i-1, BLOCK_SIZE, 0, magma_stream >>>
-                        ( m-i+1, dA(i-1,0), ldda, dA(i-1, i-1), work, dtau+i-1);
-                    magma_ztrmv_kernel2<<< i-1, i-1, 0, magma_stream >>>
-                        ( dT(0,0), k, work, dT(0,i-1), dtau+i-1);
+                    magma_zgemv_kernel3
+                        <<< i-1, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+                        ( m-i+1, dA(i-1,0), ldda, dA(i-1, i-1), dwork2, dtau+i-1);
+                    magma_ztrmv_kernel2
+                        <<< i-1, i-1, 0, queue->cuda_stream() >>>
+                        ( dT(0,0), k, dwork2, dT(0,i-1), dtau+i-1);
                 }
 
                 /* dwork = V**H c */
-                magma_zgemv_kernel1<<< i-b, BLOCK_SIZE, 0, magma_stream >>>
-                    (m-b, dA(b, b),  ldda, dA(b,i), work);
+                magma_zgemv_kernel1
+                    <<< i-b, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+                    (m-b, dA(b, b),  ldda, dA(b,i), dwork2);
 
-                /* dwork = T**H work */
-                magma_ztrmv_tkernel<<< i-b, i-b, 0, magma_stream >>>
-                    (dT(b,b), k, work, work+i-b);
+                /* dwork = T**H dwork2 */
+                magma_ztrmv_tkernel
+                    <<< i-b, i-b, 0, queue->cuda_stream() >>>
+                    (dT(b,b), k, dwork2, dwork2+i-b);
 
-                /* c = c - V work */
+                /* c = c - V dwork2 */
                 if ( m-b > 0 ) {
                     dim3  blocks3( magma_ceildiv( m-b, BLOCK_SIZE ) );
                     dim3 threads3( BLOCK_SIZE );
-                    magma_zgemv_kernel2<<< blocks3, threads3, 0, magma_stream >>>
-                        (m-b, i-b, dA(b,b), ldda,  work+i-b, dA(b, i));
+                    magma_zgemv_kernel2
+                        <<< blocks3, threads3, 0, queue->cuda_stream() >>>
+                        (m-b, i-b, dA(b,b), ldda,  dwork2+i-b, dA(b, i));
                 }
             }
 
             /*   Adjust the dnorm[i] to hold the norm of A(i:m,i) */
             if ( i > 0 ) {
-                magma_dznrm2_adjust_kernel<<< 1, i, 0, magma_stream >>>(dnorm+i, dA(0, i));
+                magma_dznrm2_adjust_kernel
+                    <<< 1, i, 0, queue->cuda_stream() >>>
+                    (dnorm+i, dA(0, i));
             }
 
             /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i)
@@ -181,20 +184,22 @@ magma_zgeqr2x4_gpu(
                 2. Elements above the diagonal are copied in ddA and
                    the ones in A are set to zero
                 3. update T */
-            magma_zlarfgx_gpu(m-i, dA(i, i), dA(min(i+1,m),i), dtau+i,
-                              dnorm+i, ddA + i + i*n, i);
+            magma_zlarfgx_gpu( m-i, dA(i, i), dA(min(i+1,m),i), dtau+i,
+                               dnorm+i, ddA + i + i*n, i, queue );
 
             if (i == 0) {
                 magmaDoubleComplex tt = MAGMA_Z_ONE;
-                magmablas_zlacpy(MagmaUpperLower, 1, 1, dtau, 1, dT(0,0), 1);
-                magma_zsetmatrix_async(1, 1, &tt, 1, dA(i, i), 1, magma_stream);
+                magmablas_zlacpy( MagmaFull, 1, 1, dtau, 1, dT(0,0), 1, queue );
+                magma_zsetmatrix_async(1, 1, &tt, 1, dA(i, i), 1, queue );
             }
         }
         if ( i-1 > 0 ) {
-            magma_zgemv_kernel3<<< i-1, BLOCK_SIZE, 0, magma_stream >>>
-                ( m-i+1, dA(i-1,0), ldda, dA(i-1, i-1), work, dtau+i-1);
-            magma_ztrmv_kernel2<<< i-1, i-1, 0, magma_stream >>>
-                ( dT(0,0), k, work, dT(0,i-1), dtau+i-1);
+            magma_zgemv_kernel3
+                <<< i-1, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+                ( m-i+1, dA(i-1,0), ldda, dA(i-1, i-1), dwork2, dtau+i-1);
+            magma_ztrmv_kernel2
+                <<< i-1, i-1, 0, queue->cuda_stream() >>>
+                ( dT(0,0), k, dwork2, dT(0,i-1), dtau+i-1);
         }
 
         /* Apply the transformations to the trailing matrix. */
@@ -202,10 +207,8 @@ magma_zgeqr2x4_gpu(
         magma_zlarfb2_gpu(
                            m-b, k-i, BS,
                            dA(b, b), ldda, dT+b+b*k, k,
-                           dA(b, i), ldda, work, k-i);
+                           dA(b, i), ldda, dwork2, k-i, queue );
     }
-
-    magmablasSetKernelStream(cstream);
 
     return *info;
 } /* magma_zgeqr2 */

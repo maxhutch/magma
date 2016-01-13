@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
 */
-
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 __global__ void
 magma_zlobpcg_shift_kernel( 
@@ -100,7 +99,7 @@ magma_zlobpcg_shift(
 
     dim3 grid( dimgrid1, dimgrid2, 1);
 
-    magma_zlobpcg_shift_kernel<<< grid, block, Ms, queue >>>
+    magma_zlobpcg_shift_kernel<<< grid, block, Ms, queue->cuda_stream() >>>
             ( num_rows, num_vecs, shift, x );
 
 

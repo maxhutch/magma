@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
        @precisions normal z -> c
        Making s,d precisions requires fixing dot call.
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -670,7 +670,7 @@ L160:
                 /* If x(j) could overflow, scale x by 1/(2*XMAX). */
                 rec *= 0.5;
                 if ( nounit ) {
-                    tjjs = MAGMA_Z_CNJG( *A(j,j) - lambda ) * tscal;
+                    tjjs = MAGMA_Z_CONJ( *A(j,j) - lambda ) * tscal;
                 }
                 else {
                     tjjs = (c_one - lambda) * tscal;
@@ -703,12 +703,12 @@ L160:
                 /* Otherwise, use in-line code for the dot product. */
                 if ( upper ) {
                     for( i = 0; i < j; ++i ) {
-                        csumj += (MAGMA_Z_CNJG( *A(i,j) ) * uscal) * x[i];
+                        csumj += (MAGMA_Z_CONJ( *A(i,j) ) * uscal) * x[i];
                     }
                 }
                 else if ( j < n-1 ) {
                     for( i = j + 1; i < n; ++i ) {
-                        csumj += (MAGMA_Z_CNJG( *A(i,j) ) * uscal) * x[i];
+                        csumj += (MAGMA_Z_CONJ( *A(i,j) ) * uscal) * x[i];
                     }
                 }
             }
@@ -719,7 +719,7 @@ L160:
                 x[j] -= csumj;
                 xj = MAGMA_Z_ABS1( x[j] );
                 if ( nounit ) {
-                    tjjs = MAGMA_Z_CNJG( *A(j,j) - lambda ) * tscal;
+                    tjjs = MAGMA_Z_CONJ( *A(j,j) - lambda ) * tscal;
                 }
                 else {
                     tjjs = (c_one - lambda) * tscal;

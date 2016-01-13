@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zio.cpp normal z -> d, Fri Sep 11 18:29:47 2015
+       @generated from sparse-iter/testing/testing_zio.cpp normal z -> d, Wed Jan  6 17:59:51 2016
        @author Hartwig Anzt
 */
 
@@ -53,7 +53,7 @@ int main(  int argc, char** argv )
         }
 
         printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                            (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
+                            int(A.num_rows), int(A.num_cols), int(A.nnz) );
 
         // filename for temporary matrix storage
         const char *filename = "testmatrix.mtx";

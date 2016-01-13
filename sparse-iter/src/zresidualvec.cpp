@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Hartwig Anzt
@@ -86,7 +86,7 @@ magma_zresidualvec(
         //               /magma_dznrm2(dofs, b.dval, 1);               /||b||
         //printf( "relative residual: %e\n", *res );
     } else {
-        printf("error: dimensions do not match.\n");
+        printf("%%error: dimensions do not match.\n");
         info = MAGMA_ERR_NOT_SUPPORTED;
     }
 

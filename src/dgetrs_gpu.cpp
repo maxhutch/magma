@@ -1,20 +1,22 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgetrs_gpu.cpp normal z -> d, Fri Sep 11 18:29:26 2015
+       @generated from src/zgetrs_gpu.cpp normal z -> d, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
     -------
     DGETRS solves a system of linear equations
-      A * X = B,  A**T * X = B,  or  A**H * X = B
+        A * X = B,
+        A**T * X = B,  or
+        A**H * X = B
     with a general N-by-N matrix A using the LU factorization computed by DGETRF_GPU.
 
     Arguments
@@ -36,13 +38,13 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in]
-    dA      DOUBLE_PRECISION array on the GPU, dimension (LDA,N)
+    dA      DOUBLE_PRECISION array on the GPU, dimension (LDDA,N)
             The factors L and U from the factorization A = P*L*U as computed
             by DGETRF_GPU.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[in]
     ipiv    INTEGER array, dimension (N)
@@ -50,13 +52,13 @@
             matrix was interchanged with row IPIV(i).
 
     @param[in,out]
-    dB      DOUBLE_PRECISION array on the GPU, dimension (LDB,NRHS)
+    dB      DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,N).
+            The leading dimension of the array B.  LDDB >= max(1,N).
 
     @param[out]
     info    INTEGER
@@ -72,9 +74,12 @@ magma_dgetrs_gpu(
     magmaDouble_ptr dB, magma_int_t lddb,
     magma_int_t *info)
 {
-    double c_one = MAGMA_D_ONE;
+    // Constants
+    const double c_one = MAGMA_D_ONE;
+    
+    // Local variables
     double *work = NULL;
-    int notran = (trans == MagmaNoTrans);
+    bool notran = (trans == MagmaNoTrans);
     magma_int_t i1, i2, inc;
 
     *info = 0;
@@ -106,41 +111,48 @@ magma_dgetrs_gpu(
         *info = MAGMA_ERR_HOST_ALLOC;
         return *info;
     }
-      
+    
+    magma_queue_t queue = NULL;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     i1 = 1;
     i2 = n;
     if (notran) {
         inc = 1;
 
         /* Solve A * X = B. */
-        magma_dgetmatrix( n, nrhs, dB, lddb, work, n );
-        lapackf77_dlaswp(&nrhs, work, &n, &i1, &i2, ipiv, &inc);
-        magma_dsetmatrix( n, nrhs, work, n, dB, lddb );
+        magma_dgetmatrix( n, nrhs, dB, lddb, work, n, queue );
+        lapackf77_dlaswp( &nrhs, work, &n, &i1, &i2, ipiv, &inc );
+        magma_dsetmatrix( n, nrhs, work, n, dB, lddb, queue );
 
         if ( nrhs == 1) {
-            magma_dtrsv(MagmaLower, MagmaNoTrans, MagmaUnit,    n, dA, ldda, dB, 1 );
-            magma_dtrsv(MagmaUpper, MagmaNoTrans, MagmaNonUnit, n, dA, ldda, dB, 1 );
+            magma_dtrsv( MagmaLower, MagmaNoTrans, MagmaUnit,    n, dA, ldda, dB, 1, queue );
+            magma_dtrsv( MagmaUpper, MagmaNoTrans, MagmaNonUnit, n, dA, ldda, dB, 1, queue );
         } else {
-            magma_dtrsm(MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit,    n, nrhs, c_one, dA, ldda, dB, lddb );
-            magma_dtrsm(MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb );
+            magma_dtrsm( MagmaLeft, MagmaLower, MagmaNoTrans, MagmaUnit,    n, nrhs, c_one, dA, ldda, dB, lddb, queue );
+            magma_dtrsm( MagmaLeft, MagmaUpper, MagmaNoTrans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb, queue );
         }
     } else {
         inc = -1;
 
         /* Solve A**T * X = B  or  A**H * X = B. */
         if ( nrhs == 1) {
-            magma_dtrsv(MagmaUpper, trans, MagmaNonUnit, n, dA, ldda, dB, 1 );
-            magma_dtrsv(MagmaLower, trans, MagmaUnit,    n, dA, ldda, dB, 1 );
+            magma_dtrsv( MagmaUpper, trans, MagmaNonUnit, n, dA, ldda, dB, 1, queue );
+            magma_dtrsv( MagmaLower, trans, MagmaUnit,    n, dA, ldda, dB, 1, queue );
         } else {
-            magma_dtrsm(MagmaLeft, MagmaUpper, trans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb );
-            magma_dtrsm(MagmaLeft, MagmaLower, trans, MagmaUnit,    n, nrhs, c_one, dA, ldda, dB, lddb );
+            magma_dtrsm( MagmaLeft, MagmaUpper, trans, MagmaNonUnit, n, nrhs, c_one, dA, ldda, dB, lddb, queue );
+            magma_dtrsm( MagmaLeft, MagmaLower, trans, MagmaUnit,    n, nrhs, c_one, dA, ldda, dB, lddb, queue );
         }
 
-        magma_dgetmatrix( n, nrhs, dB, lddb, work, n );
-        lapackf77_dlaswp(&nrhs, work, &n, &i1, &i2, ipiv, &inc);
-        magma_dsetmatrix( n, nrhs, work, n, dB, lddb );
+        magma_dgetmatrix( n, nrhs, dB, lddb, work, n, queue );
+        lapackf77_dlaswp( &nrhs, work, &n, &i1, &i2, ipiv, &inc );
+        magma_dsetmatrix( n, nrhs, work, n, dB, lddb, queue );
     }
-    magma_free_cpu(work);
+    
+    magma_queue_destroy( queue );
+    magma_free_cpu( work );
 
     return *info;
 }

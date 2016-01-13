@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgesv.cpp normal z -> d, Fri Sep 11 18:29:27 2015
+       @generated from src/zgesv.cpp normal z -> d, Wed Jan  6 17:59:29 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -73,7 +73,17 @@ magma_dgesv(
     double *B, magma_int_t ldb,
     magma_int_t *info)
 {
+    #ifdef HAVE_clBLAS
+    #define  dA(i_, j_)  dA, ((i_) + (j_)*ldda)
+    #define  dB(i_, j_)  dB, ((i_) + (j_)*lddb)
+    #else
+    #define  dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #define  dB(i_, j_) (dB + (i_) + (j_)*lddb)
+    #endif
+    
     magma_int_t ngpu, ldda, lddb;
+    magma_queue_t queue = NULL;
+    magma_device_t cdev;
     
     *info = 0;
     if (n < 0) {
@@ -97,7 +107,7 @@ magma_dgesv(
     
     /* If single-GPU and allocation suceeds, use GPU interface. */
     ngpu = magma_num_gpus();
-    double *dA, *dB;
+    magmaDouble_ptr dA, dB;
     if ( ngpu > 1 ) {
         goto CPU_INTERFACE;
     }
@@ -110,19 +120,25 @@ magma_dgesv(
         magma_free( dA );
         goto CPU_INTERFACE;
     }
-    magma_dsetmatrix( n, n, A, lda, dA, ldda );
-    magma_dgetrf_gpu( n, n, dA, ldda, ipiv, info );
+    
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
+    magma_dsetmatrix( n, n, A, lda, dA(0,0), ldda, queue );
+    magma_dgetrf_gpu( n, n, dA(0,0), ldda, ipiv, info );
     if ( *info == MAGMA_ERR_DEVICE_ALLOC ) {
+        magma_queue_destroy( queue );
         magma_free( dA );
         magma_free( dB );
         goto CPU_INTERFACE;
     }
-    magma_dgetmatrix( n, n, dA, ldda, A, lda );
+    magma_dgetmatrix( n, n, dA(0,0), ldda, A, lda, queue );
     if ( *info == 0 ) {
-        magma_dsetmatrix( n, nrhs, B, ldb, dB, lddb );
-        magma_dgetrs_gpu( MagmaNoTrans, n, nrhs, dA, ldda, ipiv, dB, lddb, info );
-        magma_dgetmatrix( n, nrhs, dB, lddb, B, ldb );
+        magma_dsetmatrix( n, nrhs, B, ldb, dB(0,0), lddb, queue );
+        magma_dgetrs_gpu( MagmaNoTrans, n, nrhs, dA(0,0), ldda, ipiv, dB(0,0), lddb, info );
+        magma_dgetmatrix( n, nrhs, dB(0,0), lddb, B, ldb, queue );
     }
+    magma_queue_destroy( queue );
     magma_free( dA );
     magma_free( dB );
     return *info;

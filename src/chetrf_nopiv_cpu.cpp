@@ -1,20 +1,23 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zhetrf_nopiv_cpu.cpp normal z -> c, Fri Sep 11 18:29:29 2015
+       @generated from src/zhetrf_nopiv_cpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
  
 */
-#include "common_magma.h"
-#define PRECISION_c
+#include "magma_internal.h"
 
+#define COMPLEX
+
+// TODO convert to usual (A + (i) + (j)*lda), i.e., returns pointer?
 #define  A(i, j) ( A[(j)*lda  + (i)])
 #define  C(i, j) ( C[(j)*ldc  + (i)])
 #define  D(i)    ( D[(i)*incD] )
 
+// TODO: change alpha and beta to be float, per BLAS, instead of float-complex
 // trailing submatrix update with inner-blocking
 int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
             magmaFloatComplex alpha, magmaFloatComplex *A, magma_int_t lda,
@@ -82,6 +85,8 @@ int cherk_d(magma_uplo_t uplo, magma_int_t m, magma_int_t n,
     return MAGMA_SUCCESS;
 }
 
+
+// TODO: change alpha and beta to be float, per BLAS, instead of float-complex
 // trailing submatrix update with inner-blocking, using workshpace that
 // stores D*L'
 int cherk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
@@ -89,8 +94,8 @@ int cherk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
                       magmaFloatComplex beta,  magmaFloatComplex *C, magma_int_t ldc,
                       magmaFloatComplex *work, magma_int_t ldw)
 {
-    magmaFloatComplex c_one  =  MAGMA_C_ONE;
-    magmaFloatComplex c_mone = -MAGMA_C_ONE;
+    magmaFloatComplex c_one     = MAGMA_C_ONE;
+    magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
     /* Check input arguments */
     if ((uplo != MagmaLower) && (uplo != MagmaUpper)) {
@@ -118,19 +123,20 @@ int cherk_d_workspace(magma_uplo_t uplo, magma_int_t n, magma_int_t k,
     if ( uplo == MagmaLower ) {
         blasf77_cgemm( MagmaNoTransStr, MagmaNoTransStr,
                        &n, &n, &k,
-                       &c_mone, A,    &lda,
-                                work, &ldw,
-                       &c_one,  C,    &ldc );
+                       &c_neg_one, A,    &lda,
+                                   work, &ldw,
+                       &c_one,     C,    &ldc );
     }
     else {
         blasf77_cgemm( MagmaNoTransStr, MagmaNoTransStr,
                        &n, &n, &k,
-                       &c_mone, work, &ldw,
-                                A,    &lda,
-                       &c_one,  C,    &ldc );
+                       &c_neg_one, work, &ldw,
+                                   A,    &lda,
+                       &c_one,     C,    &ldc );
     }
     return MAGMA_SUCCESS;
 }
+
 
 // diagonal factorization with inner-block
 int chetrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
@@ -146,7 +152,7 @@ int chetrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
     magma_int_t info = 0, ione = 1;
     magmaFloatComplex *Ak1k = NULL;
     magmaFloatComplex *Akk = NULL;
-    float done = 1.0;
+    float d_one = 1.0;
     float alpha;
 
     if ( uplo == MagmaLower ) {
@@ -165,7 +171,7 @@ int chetrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
             *Akk = MAGMA_C_MAKE(alpha, 0.0);
 
             // scale off-diagonals
-            alpha = done / alpha;
+            alpha = d_one / alpha;
             blasf77_csscal(&k, &alpha, Ak1k, &ione);
 
             // update remaining
@@ -196,18 +202,18 @@ int chetrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
             *Akk = MAGMA_C_MAKE(alpha, 0.0);
 
             // scale off-diagonals
-            alpha = done / alpha;
+            alpha = d_one / alpha;
             blasf77_csscal(&k, &alpha, Ak1k, &lda);
 
             // update remaining
             alpha = - MAGMA_C_REAL( *Akk );
 
-            #if defined(PRECISION_z) | defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_clacgv(&k, Ak1k, &lda);
             #endif
             blasf77_cher(MagmaUpperStr, &k,
                          &alpha, Ak1k, &lda, Ak1k + 1, &lda);
-            #if defined(PRECISION_z) | defined(PRECISION_c)
+            #ifdef COMPLEX
             lapackf77_clacgv(&k, Ak1k, &lda);
             #endif
 
@@ -225,15 +231,16 @@ int chetrf_diag_nopiv(magma_uplo_t uplo, magma_int_t n,
 
 // main routine
 extern "C" magma_int_t
-chetrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
-                 magmaFloatComplex *A, magma_int_t lda,
-                 magma_int_t *info)
+magma_chetrf_nopiv_cpu(
+    magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
+    magmaFloatComplex *A, magma_int_t lda,
+    magma_int_t *info)
 {
     magma_int_t ione = 1;
     float alpha;
-    float done = 1.0;
-    magmaFloatComplex zone  =  MAGMA_C_ONE;
-    magmaFloatComplex mzone = -MAGMA_C_ONE;
+    float d_one = 1.0;
+    magmaFloatComplex c_one     = MAGMA_C_ONE;
+    magmaFloatComplex c_neg_one = MAGMA_C_NEG_ONE;
 
     /* Check input arguments */
     if (lda < n) {
@@ -263,33 +270,33 @@ chetrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
                     MagmaRightStr, MagmaLowerStr,
                     MagmaConjTransStr, MagmaUnitStr,
                     &height, &sb,
-                    &zone, &A(i, i),    &lda,
-                           &A(i+sb, i), &lda);
+                    &c_one, &A(i, i),    &lda,
+                            &A(i+sb, i), &lda);
 
                 /* Scale the block to divide by D */
                 for (magma_int_t k=0; k < sb; k++) {
                     #define CHERK_D_WORKSPACE
                     #ifdef CHERK_D_WORKSPACE
                     for (magma_int_t ii=i+sb; ii < n; ii++) {
-                        A(i+k, ii) = MAGMA_C_CNJG( A(ii, i+k) );
+                        A(i+k, ii) = MAGMA_C_CONJ( A(ii, i+k) );
                     }
                     #endif
-                    alpha = done / MAGMA_C_REAL(A(i+k, i+k));
+                    alpha = d_one / MAGMA_C_REAL(A(i+k, i+k));
                     blasf77_csscal(&height, &alpha, &A(i+sb, i+k), &ione);
                     A(i+k, i+k) = MAGMA_C_MAKE(MAGMA_C_REAL(A(i+k, i+k)), 0.0);
                 }
 
                 /* Update the trailing submatrix A22 = A22 - A21 * D11 * A21' */
                 #ifdef CHERK_D_WORKSPACE
-                cherk_d_workspace(MagmaLower, height, sb,
-                                  mzone, &A(i+sb, i), lda,    // A21
-                                  zone,  &A(i+sb, i+sb), lda, // A22
-                                         &A(i, i+sb), lda);   // workspace, I am writing on upper part :)
+                cherk_d_workspace( MagmaLower, height, sb,
+                                   c_neg_one, &A(i+sb, i),    lda,    // A21
+                                   c_one,     &A(i+sb, i+sb), lda,    // A22
+                                              &A(i, i+sb),    lda );  // workspace, I am writing on upper part :)
                 #else
-                cherk_d(MagmaLower, height, sb,
-                        mzone, &A(i+sb, i), lda,    // A21
-                        zone,  &A(i+sb, i+sb), lda, // A22
-                               &A(i, i), lda+1);    // D11
+                cherk_d( MagmaLower, height, sb,
+                         c_neg_one, &A(i+sb, i),    lda,      // A21
+                         c_one,     &A(i+sb, i+sb), lda,      // A22
+                                    &A(i, i),       lda+1 );  // D11
                 #endif
             }
         }
@@ -309,33 +316,33 @@ chetrf_nopiv_cpu(magma_uplo_t uplo, magma_int_t n, magma_int_t ib,
                     MagmaLeftStr, MagmaUpperStr,
                     MagmaConjTransStr, MagmaUnitStr,
                     &sb, &height,
-                    &zone, &A(i, i),    &lda,
-                           &A(i, i+sb), &lda);
+                    &c_one, &A(i, i),    &lda,
+                            &A(i, i+sb), &lda);
 
                 /* Scale the block to divide by D */
                 for (magma_int_t k=0; k < sb; k++) {
                     #define CHERK_D_WORKSPACE
                     #ifdef CHERK_D_WORKSPACE
                     for (magma_int_t ii=i+sb; ii < n; ii++) {
-                        A(ii, i+k) = MAGMA_C_CNJG( A(i+k, ii) );
+                        A(ii, i+k) = MAGMA_C_CONJ( A(i+k, ii) );
                     }
                     #endif
-                    alpha = done / MAGMA_C_REAL(A(i+k, i+k));
+                    alpha = d_one / MAGMA_C_REAL(A(i+k, i+k));
                     blasf77_csscal(&height, &alpha, &A(i+k, i+sb), &lda);
                     A(i+k, i+k) = MAGMA_C_MAKE(MAGMA_C_REAL(A(i+k, i+k)), 0.0);
                 }
 
                 /* Update the trailing submatrix A22 = A22 - A21 * D11 * A21' */
                 #ifdef CHERK_D_WORKSPACE
-                cherk_d_workspace(MagmaUpper, height, sb,
-                                  mzone, &A(i, i+sb), lda,    // A21
-                                  zone,  &A(i+sb, i+sb), lda, // A22
-                                         &A(i+sb, i), lda);   // workspace, I am writing on upper part :)
+                cherk_d_workspace( MagmaUpper, height, sb,
+                                   c_neg_one, &A(i, i+sb),    lda,    // A21
+                                   c_one,     &A(i+sb, i+sb), lda,    // A22
+                                              &A(i+sb, i),    lda );  // workspace, I am writing on upper part :)
                 #else
-                cherk_d(MagmaUpper, height, sb,
-                        mzone, &A(i, i+sb), lda,    // A21
-                        zone,  &A(i+sb, i+sb), lda, // A22
-                               &A(i, i), lda+1);    // D11
+                cherk_d( MagmaUpper, height, sb,
+                         c_neg_one, &A(i, i+sb),    lda,      // A21
+                         c_one,     &A(i+sb, i+sb), lda,      // A22
+                                    &A(i, i),       lda+1 );  // D11
                 #endif
             }
         }

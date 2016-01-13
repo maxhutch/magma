@@ -1,0 +1,79 @@
+============================== environment
+USER=mgates3
+HOST=bunsen.icl.utk.edu
+OMP_NUM_THREADS=16
+MKL_NUM_THREADS undefined
+MKLROOT=/mnt/scratch/sw/intel/composer_xe_2015.2.164/mkl
+CUDADIR=/mnt/sw/cuda-7.0.28
+GPU_TARGET=sm35
+
+
+============================== magma
+/mnt/scratch/mgates/magma-1.7.0/results
+
+no svn info
+
+lrwxrwxrwx 1 mgates3 dongarra 16 Sep 12 09:09 ../make.inc -> make.inc.mkl-icc
+
+
+============================== compilers
+/mnt/scratch/sw/intel/composer_xe_2015.2.164/bin/intel64/icc
+icc (ICC) 15.0.2 20150121
+Copyright (C) 1985-2015 Intel Corporation.  All rights reserved.
+
+
+/mnt/sw/gcc/bin/gcc
+gcc (GCC) 4.9.1
+Copyright (C) 2014 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+/mnt/sw/gcc/bin/gfortran
+GNU Fortran (GCC) 4.9.1
+Copyright (C) 2014 Free Software Foundation, Inc.
+
+GNU Fortran comes with NO WARRANTY, to the extent permitted by law.
+You may redistribute copies of GNU Fortran
+under the terms of the GNU General Public License.
+For more information about these matters, see the file named COPYING
+
+
+/mnt/sw/cuda-7.0.28/bin/nvcc
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2015 NVIDIA Corporation
+Built on Mon_Feb_16_22:59:02_CST_2015
+Cuda compilation tools, release 7.0, V7.0.27
+
+
+============================== processors
+
+      (simple synth)  = Intel Core i7-3800/3900 (Sandy Bridge-E) / Xeon E5-1600/2600 (Sandy Bridge-E), 32nm
+   (multi-processing synth): multi-core (c=8), hyper-threaded (t=2)
+   (APIC widths synth): CORE_width=5 SMT_width=1
+   (APIC synth): PKG_ID=0 CORE_ID=16 SMT_ID=0
+   (synth) = Intel Core i7-3800/3900 (Sandy Bridge-E) / Xeon E5-1600/2600 (Sandy Bridge-E), 32nm
+
+Sat Sep 12 09:36:51 2015       
++------------------------------------------------------+                       
+| NVIDIA-SMI 346.46     Driver Version: 346.46         |                       
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Tesla K40c          Off  | 0000:02:00.0     Off |                    0 |
+| 23%   33C    P0    62W / 235W |     23MiB / 11519MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+|   1  Tesla K40c          Off  | 0000:83:00.0     Off |                    0 |
+| 23%   30C    P0    62W / 235W |     23MiB / 11519MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+|   2  Tesla K40c          Off  | 0000:84:00.0     Off |                    0 |
+| 23%   29C    P0    64W / 235W |     23MiB / 11519MiB |     82%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID  Type  Process name                               Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+

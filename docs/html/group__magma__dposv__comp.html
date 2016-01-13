@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -196,7 +196,7 @@ Functions</h2></td></tr>
 <p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine.</p>
 <p>The factorization has the form A = U**H * U, if uplo = MagmaUpper, or A = L * L**H, if uplo = MagmaLower, where U is an upper triangular matrix and L is lower triangular.</p>
 <p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
-<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
+<p>This uses multiple queues to overlap communication and computation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -360,7 +360,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>DOUBLE_PRECISION array on the CPU, dimension (LDA,H*NB) On exit, the panel is copied back to the CPU</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">h</td><td>INTEGER It specifies the size of the CPU workspace, A.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>magma_queue_t queues is of dimension (ngpu,3) and contains the streams used for the partial factorization.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>magma_queue_t queues is of dimension (ngpu,3) and contains the queues used for the partial factorization.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">events</td><td>magma_event_t events is of dimension(ngpu,5) and contains the events used for the partial factorization.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
@@ -418,7 +418,7 @@ Functions</h2></td></tr>
 
 <p>DPOTRF computes the Cholesky factorization of a real symmetric positive definite matrix dA. </p>
 <p>The factorization has the form dA = U**H * U, if UPLO = MagmaUpper, or dA = L * L**H, if UPLO = MagmaLower, where U is an upper triangular matrix and L is lower triangular.</p>
-<p>This is the block version of the algorithm, calling Level 3 BLAS. If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
+<p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -498,7 +498,7 @@ Functions</h2></td></tr>
 
 <p>DPOTRF computes the Cholesky factorization of a real symmetric positive definite matrix dA. </p>
 <p>The factorization has the form dA = U**H * U, if UPLO = MagmaUpper, or dA = L * L**H, if UPLO = MagmaLower, where U is an upper triangular matrix and L is lower triangular.</p>
-<p>This is the block version of the algorithm, calling Level 3 BLAS. If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
+<p>This is the block version of the algorithm, calling Level 3 BLAS.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
@@ -1059,7 +1059,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:08 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

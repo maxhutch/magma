@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -114,13 +114,13 @@ $(document).ready(function(){initNavTree('group__magma__zgesvd__aux.html','');})
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:gaae5049ca4e0d759df606eec7b874dea4"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesvd__aux.html#gaae5049ca4e0d759df606eec7b874dea4">magma_zlabrd_gpu</a> (magma_int_t m, magma_int_t n, magma_int_t nb, magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex_ptr dA, magma_int_t ldda, double *d, double *e, magmaDoubleComplex *tauq, magmaDoubleComplex *taup, magmaDoubleComplex *X, magma_int_t ldx, magmaDoubleComplex_ptr dX, magma_int_t lddx, magmaDoubleComplex *Y, magma_int_t ldy, magmaDoubleComplex_ptr dY, magma_int_t lddy)</td></tr>
-<tr class="memdesc:gaae5049ca4e0d759df606eec7b874dea4"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLABRD reduces the first NB rows and columns of a complex general m by n matrix A to upper or lower bidiagonal form by an orthogonal transformation Q' * A * P, and returns the matrices X and Y which are needed to apply the transformation to the unreduced part of A.  <a href="#gaae5049ca4e0d759df606eec7b874dea4">More...</a><br /></td></tr>
-<tr class="separator:gaae5049ca4e0d759df606eec7b874dea4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacd1b6402d6f1fb145131a47b6639a36b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__zgesvd__aux.html#gacd1b6402d6f1fb145131a47b6639a36b">magma_zlabrd_gpu</a> (magma_int_t m, magma_int_t n, magma_int_t nb, magmaDoubleComplex *A, magma_int_t lda, magmaDoubleComplex_ptr dA, magma_int_t ldda, double *d, double *e, magmaDoubleComplex *tauq, magmaDoubleComplex *taup, magmaDoubleComplex *X, magma_int_t ldx, magmaDoubleComplex_ptr dX, magma_int_t lddx, magmaDoubleComplex *Y, magma_int_t ldy, magmaDoubleComplex_ptr dY, magma_int_t lddy, magmaDoubleComplex *work, magma_int_t lwork, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gacd1b6402d6f1fb145131a47b6639a36b"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZLABRD reduces the first NB rows and columns of a complex general m by n matrix A to upper or lower bidiagonal form by an orthogonal transformation Q' * A * P, and returns the matrices X and Y which are needed to apply the transformation to the unreduced part of A.  <a href="#gacd1b6402d6f1fb145131a47b6639a36b">More...</a><br /></td></tr>
+<tr class="separator:gacd1b6402d6f1fb145131a47b6639a36b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="gaae5049ca4e0d759df606eec7b874dea4"></a>
+<a class="anchor" id="gacd1b6402d6f1fb145131a47b6639a36b"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -236,7 +236,25 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddy</em>&#160;</td>
+          <td class="paramname"><em>lddy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaDoubleComplex *&#160;</td>
+          <td class="paramname"><em>work</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>lwork</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -271,6 +289,8 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldy</td><td>INTEGER The leading dimension of the array Y. LDY &gt;= N.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dY</td><td>COMPLEX_16 array, dimension (LDDY,NB) Copy of Y on GPU.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lddy</td><td>INTEGER The leading dimension of the array dY. LDDY &gt;= N.</td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">work</td><td>COMPLEX_16 array, dimension (LWORK) Workspace.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= max( M, N ).</td></tr>
   </table>
   </dd>
 </dl>
@@ -301,7 +321,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

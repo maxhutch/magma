@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlarft_kernels.cu normal z -> d, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zlarft_kernels.cu normal z -> d, Wed Jan  6 17:59:39 2016
        @author Azzam Haidar
 */
 
@@ -99,7 +99,9 @@ void magmablas_dlarft_gemvcolwise(
 {
     dim3 grid( step+1, 1, 1 );
     dim3 threads( BLOCK_SIZE );
-    dlarft_gemvcolwise_kernel<<< grid, threads, 0, magma_stream >>>( m, v, ldv, tau, T, ldt, step);
+    dlarft_gemvcolwise_kernel
+        <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        ( m, v, ldv, tau, T, ldt, step);
 }
 
 
@@ -113,7 +115,9 @@ void magmablas_dlarft_gemvcolwise_batched(
 {
     dim3 grid( step+1, 1, batchCount );
     dim3 threads( BLOCK_SIZE );
-    dlarft_gemvcolwise_kernel_batched<<< grid, threads, 0, queue >>>( m, v_array, ldv, tau_array, T_array, ldt, step);
+    dlarft_gemvcolwise_kernel_batched
+        <<< grid, threads, 0, queue->cuda_stream() >>>
+        ( m, v_array, ldv, tau_array, T_array, ldt, step);
 }
 //===================================================================================================
 
@@ -224,8 +228,10 @@ void magmablas_dlarft_gemvrowwise(
 {
     dim3 grid(1);
     dim3 threads(dgemv_bs, max(i,1), 1);
-
-    dlarft_gemvrowwise_kernel <<< grid, threads, sizeof(double)*dgemv_bs*(i+1), magma_stream>>>(m, i, tau, v, ldv, T, ldt);
+    size_t shmem = sizeof(double)*dgemv_bs*(i+1);
+    dlarft_gemvrowwise_kernel
+        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        (m, i, tau, v, ldv, T, ldt);
 }
 
 
@@ -240,10 +246,12 @@ void magmablas_dlarft_gemvrowwise_batched(
 {
     dim3 grid(1, 1, batchCount);
     dim3 threads(dgemv_bs, max(i,1), 1);
-
+    size_t shmem = sizeof(double)*dgemv_bs*(i+1);
     /*  dgemvrowwise used a bigger shared memory and has more data reuse and performs better
     */
-    dlarft_gemvrowwise_kernel_batched <<< grid, threads, sizeof(double)*dgemv_bs*(i+1), queue>>>(m, i,  tau_array, v_array, ldv, T_array, ldt);
+    dlarft_gemvrowwise_kernel_batched
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
+        (m, i,  tau_array, v_array, ldv, T_array, ldt);
 }
 //===================================================================================================
    
@@ -366,7 +374,10 @@ void magmablas_dlarft_gemv_loop_inside(
 {
     dim3 grid(1);
     dim3 threads(dgemv_bs, max(k,1), 1);
-    dlarft_gemv_loop_inside_kernel<<<grid, threads, sizeof(double) * (dgemv_bs*(k+1)), magma_stream>>>(n, k, tau, v, ldv, T, ldt); 
+    size_t shmem = sizeof(double) * (dgemv_bs*(k+1));
+    dlarft_gemv_loop_inside_kernel
+        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        (n, k, tau, v, ldv, T, ldt); 
 }
 
 
@@ -380,7 +391,10 @@ void magmablas_dlarft_gemv_loop_inside_batched(
 {
     dim3 grid(1, 1, batchCount);
     dim3 threads(dgemv_bs, max(k,1), 1);
-    dlarft_gemv_loop_inside_kernel_batched<<<grid, threads, sizeof(double) * (dgemv_bs*(k+1)), queue>>>(n, k, tau_array, v_array, ldv, T_array, ldt); 
+    size_t shmem = sizeof(double) * (dgemv_bs*(k+1));
+    dlarft_gemv_loop_inside_kernel_batched
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
+        (n, k, tau_array, v_array, ldv, T_array, ldt); 
 }
 //===================================================================================================
 
@@ -486,7 +500,10 @@ void magmablas_dlarft_dtrmv_sm32x32(
 {
     dim3 grid(1);
     dim3 threads(max(m,1), 1, 1);
-    dlarft_dtrmv_sm32x32_kernel <<< grid, threads, sizeof(double)*(m*m), magma_stream >>> (m, n,  tau, Tin, ldtin, Tout, ldtout);
+    size_t shmem = sizeof(double)*(m*m);
+    dlarft_dtrmv_sm32x32_kernel
+        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        (m, n,  tau, Tin, ldtin, Tout, ldtout);
 }
 
 
@@ -501,7 +518,10 @@ void magmablas_dlarft_dtrmv_sm32x32_batched(
 {
     dim3 grid(1, 1, batchCount);
     dim3 threads(max(m,1), 1, 1);
-    dlarft_dtrmv_sm32x32_kernel_batched <<< grid, threads, sizeof(double)*(m*m), queue >>> (m, n,  tau_array, Tin_array, ldtin, Tout_array, ldtout);
+    size_t shmem = sizeof(double)*(m*m);
+    dlarft_dtrmv_sm32x32_kernel_batched
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
+        (m, n,  tau_array, Tin_array, ldtin, Tout_array, ldtout);
 }
 //===================================================================================================
 
@@ -582,7 +602,10 @@ void magmablas_dlarft_recdtrmv_sm32x32(
 {
     dim3 grid(1);
     dim3 threads(max(m,1), 1, 1);
-    dlarft_recdtrmv_sm32x32_kernel <<< grid, threads, sizeof(double)*(m*n), magma_stream >>> (m, n,  tau, Trec, ldtrec, Ttri, ldttri);
+    size_t shmem = sizeof(double)*(m*n);
+    dlarft_recdtrmv_sm32x32_kernel
+        <<< grid, threads, shmem, magmablasGetQueue()->cuda_stream() >>>
+        (m, n,  tau, Trec, ldtrec, Ttri, ldttri);
 }
 
 
@@ -597,6 +620,9 @@ void magmablas_dlarft_recdtrmv_sm32x32_batched(
 {
     dim3 grid(1, 1, batchCount);
     dim3 threads(max(m,1), 1, 1);
-    dlarft_recdtrmv_sm32x32_kernel_batched <<< grid, threads, sizeof(double)*(m*n), queue >>> (m, n,  tau_array, Trec_array, ldtrec, Ttri_array, ldttri);
+    size_t shmem = sizeof(double)*(m*n);
+    dlarft_recdtrmv_sm32x32_kernel_batched
+        <<< grid, threads, shmem, queue->cuda_stream() >>>
+        (m, n,  tau_array, Trec_array, ldtrec, Ttri_array, ldttri);
 }
 //===================================================================================================

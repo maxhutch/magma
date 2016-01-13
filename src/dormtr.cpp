@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Raffaele Solca
 
-       @generated from zunmtr.cpp normal z -> d, Fri Sep 11 18:29:30 2015
+       @generated from src/zunmtr.cpp normal z -> d, Wed Jan  6 17:59:33 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -192,7 +192,7 @@ magma_dormtr(
     }
 
     if (upper) {
-        /* Q was determined by a call to SSYTRD with UPLO = 'U' */
+        /* Q was determined by a call to SSYTRD with UPLO = MagmaUpper */
         i__2 = nq - 1;
         //lapackf77_dormql(side_, trans_, &mi, &ni, &i__2, A(0,1), &lda,
         //                 tau, C, &ldc, work, &lwork, &iinfo);
@@ -200,7 +200,7 @@ magma_dormtr(
                      C, ldc, work, lwork, &iinfo);
     }
     else {
-        /* Q was determined by a call to SSYTRD with UPLO = 'L' */
+        /* Q was determined by a call to SSYTRD with UPLO = MagmaLower */
         if (left) {
             i1 = 1;
             i2 = 0;

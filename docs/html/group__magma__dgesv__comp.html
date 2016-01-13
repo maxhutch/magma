@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -150,12 +150,12 @@ Functions</h2></td></tr>
 <tr class="memitem:gaf44ff23a34440e326eab2c105ea9c5bf"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#gaf44ff23a34440e326eab2c105ea9c5bf">magma_dgetrf_nopiv_gpu</a> (magma_int_t m, magma_int_t n, magmaDouble_ptr dA, magma_int_t ldda, magma_int_t *info)</td></tr>
 <tr class="memdesc:gaf44ff23a34440e326eab2c105ea9c5bf"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETRF_NOPIV_GPU computes an LU factorization of a general M-by-N matrix A without any pivoting.  <a href="#gaf44ff23a34440e326eab2c105ea9c5bf">More...</a><br /></td></tr>
 <tr class="separator:gaf44ff23a34440e326eab2c105ea9c5bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0846a5adfcf25c45c4795704ea46de9e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga0846a5adfcf25c45c4795704ea46de9e">magma_dgetrf_recpanel_batched</a> (magma_int_t m, magma_int_t n, magma_int_t min_recpnb, double **dA_array, magma_int_t ldda, magma_int_t **dipiv_array, magma_int_t **dpivinfo_array, double **dX_array, magma_int_t dX_length, double **dinvA_array, magma_int_t dinvA_length, double **dW1_displ, double **dW2_displ, double **dW3_displ, double **dW4_displ, double **dW5_displ, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga0846a5adfcf25c45c4795704ea46de9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an internal routine that might have many assumption.  <a href="#ga0846a5adfcf25c45c4795704ea46de9e">More...</a><br /></td></tr>
-<tr class="separator:ga0846a5adfcf25c45c4795704ea46de9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga4f072ee3dc9c7907c73cea9ab297be8f"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga4f072ee3dc9c7907c73cea9ab297be8f">magma_dgetrf_panel_nopiv_batched</a> (magma_int_t m, magma_int_t nb, double **dA_array, magma_int_t ldda, double **dX_array, magma_int_t dX_length, double **dinvA_array, magma_int_t dinvA_length, double **dW0_displ, double **dW1_displ, double **dW2_displ, double **dW3_displ, double **dW4_displ, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga4f072ee3dc9c7907c73cea9ab297be8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">this is an internal routine that might have many assumption.  <a href="#ga4f072ee3dc9c7907c73cea9ab297be8f">More...</a><br /></td></tr>
-<tr class="separator:ga4f072ee3dc9c7907c73cea9ab297be8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab4d7a285f198f5cf4fe6d0d24291a496"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#gab4d7a285f198f5cf4fe6d0d24291a496">magma_dgetrf_recpanel_batched</a> (magma_int_t m, magma_int_t n, magma_int_t min_recpnb, double **dA_array, magma_int_t ldda, magma_int_t **dipiv_array, magma_int_t **dpivinfo_array, double **dX_array, magma_int_t dX_length, double **dinvA_array, magma_int_t dinvA_length, double **dW1_displ, double **dW2_displ, double **dW3_displ, double **dW4_displ, double **dW5_displ, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab4d7a285f198f5cf4fe6d0d24291a496"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is an internal routine that might have many assumption.  <a href="#gab4d7a285f198f5cf4fe6d0d24291a496">More...</a><br /></td></tr>
+<tr class="separator:gab4d7a285f198f5cf4fe6d0d24291a496"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1fafeeb5d94aef6a969facd67740290d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga1fafeeb5d94aef6a969facd67740290d">magma_dgetrf_panel_nopiv_batched</a> (magma_int_t m, magma_int_t nb, double **dA_array, magma_int_t ldda, double **dX_array, magma_int_t dX_length, double **dinvA_array, magma_int_t dinvA_length, double **dW0_displ, double **dW1_displ, double **dW2_displ, double **dW3_displ, double **dW4_displ, magma_int_t *info_array, magma_int_t gbstep, magma_int_t batchCount, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga1fafeeb5d94aef6a969facd67740290d"><td class="mdescLeft">&#160;</td><td class="mdescRight">this is an internal routine that might have many assumption.  <a href="#ga1fafeeb5d94aef6a969facd67740290d">More...</a><br /></td></tr>
+<tr class="separator:ga1fafeeb5d94aef6a969facd67740290d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9008b52e17929b5ad6bd5c175b8efdac"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__dgesv__comp.html#ga9008b52e17929b5ad6bd5c175b8efdac">magma_dgetri_gpu</a> (magma_int_t n, magmaDouble_ptr dA, magma_int_t ldda, magma_int_t *ipiv, magmaDouble_ptr dwork, magma_int_t lwork, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga9008b52e17929b5ad6bd5c175b8efdac"><td class="mdescLeft">&#160;</td><td class="mdescRight">DGETRI computes the inverse of a matrix using the LU factorization computed by DGETRF.  <a href="#ga9008b52e17929b5ad6bd5c175b8efdac">More...</a><br /></td></tr>
 <tr class="separator:ga9008b52e17929b5ad6bd5c175b8efdac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -586,7 +586,7 @@ Functions</h2></td></tr>
 <p>This version does not require work space on the GPU passed as input. GPU memory is allocated in the routine.</p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
 <p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
-<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
+<p>It uses 2 queues to overlap communication and computation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -713,7 +713,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">d_lAP</td><td>DOUBLE_PRECISION array of pointers on the GPU, dimension (ngpu). d_lAP[d] is the workspace on d-th GPU. Each local workspace must be of size (3+ngpu)*nb*maxm, where maxm is m rounded up to a multiple of 32 and nb is the block size.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">W</td><td>DOUBLE_PRECISION array, dimension (ngpu*nb*maxm). It is used to store panel on CPU.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ldw</td><td>INTEGER The leading dimension of the workspace w.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>magma_queue_t queues[d] points to the streams for the d-th GPU to execute in. Each GPU require two streams.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>magma_queue_t queues[d] points to the queues for the d-th GPU to execute in. Each GPU require two queues.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value or another error occured, such as memory allocation failed.</li>
@@ -862,7 +862,6 @@ Functions</h2></td></tr>
 <p>DGETRF computes an LU factorization of a general M-by-N matrix A using partial pivoting with row interchanges. </p>
 <p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
 <p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
-<p>If the current stream is NULL, this version replaces it with a new stream to overlap computation with communication.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -1084,6 +1083,7 @@ Functions</h2></td></tr>
 <p>DGETRF_NOPIV computes an LU factorization of a general M-by-N matrix A without pivoting. </p>
 <p>The factorization has the form A = L * U where L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
 <p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
+<p>This is a CPU-only (not accelerated) version.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">m</td><td>INTEGER The number of rows of the matrix A. M &gt;= 0.</td></tr>
@@ -1223,7 +1223,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>DGETRF_NOPIV_GPU computes an LU factorization of a general M-by-N matrix A without any pivoting. </p>
-<p>The factorization has the form A = P * L * U where P is a permutation matrix, L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
+<p>The factorization has the form A = L * U where L is lower triangular with unit diagonal elements (lower trapezoidal if m &gt; n), and U is upper triangular (upper trapezoidal if m &lt; n).</p>
 <p>This is the right-looking Level 3 BLAS version of the algorithm.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1243,7 +1243,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga4f072ee3dc9c7907c73cea9ab297be8f"></a>
+<a class="anchor" id="ga1fafeeb5d94aef6a969facd67740290d"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1346,12 +1346,6 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">cublasHandle_t&#160;</td>
-          <td class="paramname"><em>myhandle</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
@@ -1368,7 +1362,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga0846a5adfcf25c45c4795704ea46de9e"></a>
+<a class="anchor" id="gab4d7a285f198f5cf4fe6d0d24291a496"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1489,12 +1483,6 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">cublasHandle_t&#160;</td>
-          <td class="paramname"><em>myhandle</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">magma_queue_t&#160;</td>
           <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
@@ -1538,7 +1526,6 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gbstep</td><td>INTEGER internal use.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">batchCount</td><td>INTEGER The number of matrices to operate on.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">myhandle</td><td>cublasHandle_t Cublas handle might be used internally.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -1890,11 +1877,11 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDA,N) The factors L and U from the factorization A = P*L*U as computed by DGETRF_GPU.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDA,N) The factors L and U from the factorization A = P*L*U as computed by DGETRF_GPU.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ipiv</td><td>INTEGER array, dimension (N) The pivot indices from DGETRF; for 1 &lt;= i &lt;= N, row i of the matrix was interchanged with row IPIV(i).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -2080,10 +2067,10 @@ Functions</h2></td></tr>
 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nrhs</td><td>INTEGER The number of right hand sides, i.e., the number of columns of the matrix B. NRHS &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDA,N) The factors L and U from the factorization A = P*L*U as computed by DGETRF_GPU.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDB &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">dA</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDA,N) The factors L and U from the factorization A = P*L*U as computed by DGETRF_GPU.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array A. LDDA &gt;= max(1,N).</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">dB</td><td>DOUBLE_PRECISION array on the GPU, dimension (LDDB,NRHS) On entry, the right hand side matrix B. On exit, the solution matrix X.</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lddb</td><td>INTEGER The leading dimension of the array B. LDDB &gt;= max(1,N).</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
 <li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
@@ -2369,7 +2356,7 @@ Functions</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:04 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:08 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

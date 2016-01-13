@@ -1,19 +1,19 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Adrien Remy
 
    @precisions normal z -> s d c
  */
+#include <cuda_runtime.h>
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
-#include "cublas_v2.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -112,16 +112,10 @@ magma_zgetrf_nopiv_batched(
     }
 
 
-    magmaDoubleComplex neg_one = MAGMA_Z_NEG_ONE;
-    magmaDoubleComplex one  = MAGMA_Z_ONE;
+    magmaDoubleComplex c_neg_one = MAGMA_Z_NEG_ONE;
+    magmaDoubleComplex c_one     = MAGMA_Z_ONE;
     magma_int_t nb, recnb, ib, i, k, pm, use_stream;
     magma_get_zgetrf_batched_nbparam(n, &nb, &recnb);
-
-
-    cublasHandle_t myhandle;
-    cublasCreate_v2(&myhandle);
-    cublasSetStream(myhandle, queue);
- 
 
     magmaDoubleComplex **dA_displ   = NULL;
     magmaDoubleComplex **dW0_displ  = NULL;
@@ -169,29 +163,28 @@ magma_zgetrf_nopiv_batched(
         return info;
     }
 
-    magmablas_zlaset_q(MagmaFull, invA_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvA, invA_msize, queue);
-    magmablas_zlaset_q(MagmaFull, dwork_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dwork, dwork_msize, queue);
-    zset_pointer(dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue);
-    zset_pointer(dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue);
+    magmablas_zlaset_q( MagmaFull, invA_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dinvA, invA_msize, queue );
+    magmablas_zlaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_Z_ZERO, MAGMA_Z_ZERO, dwork, dwork_msize, queue );
+    magma_zset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
+    magma_zset_pointer( dinvA_array, dinvA, TRI_NB, 0, 0, invA_msize, batchCount, queue );
 
-    // printf(" I am in zgetrfbatched\n");
     magma_int_t streamid;
     const magma_int_t nbstreams=10;
-    magma_queue_t stream[nbstreams];
+    magma_queue_t queues[nbstreams];
     for (i=0; i < nbstreams; i++) {
-        magma_queue_create( &stream[i] );
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        magma_queue_create( cdev, &queues[i] );
     }
-    magma_getvector( batchCount, sizeof(magmaDoubleComplex*), dA_array, 1, cpuAarray, 1);
+    magma_getvector( batchCount, sizeof(magmaDoubleComplex*), dA_array, 1, cpuAarray, 1, queue);
 
-
-    //printf(" I am after malloc\n");
 
     for (i = 0; i < min_mn; i += nb) 
     {
         ib = min(nb, min_mn-i);
         pm = m-i;
         magma_zdisplace_pointers(dA_displ, dA_array, ldda, i, i, batchCount, queue);
-        zset_pointer(dwork_array, dwork, nb, 0, 0, dwork_msize, batchCount, queue);
+        magma_zset_pointer( dwork_array, dwork, nb, 0, 0, dwork_msize, batchCount, queue );
 #if 0
         /* buggy: TODO */
         arginfo = magma_zgetrf_panel_nopiv_batched(
@@ -202,7 +195,7 @@ magma_zgetrf_nopiv_batched(
                 dW0_displ, dW1_displ, dW2_displ, 
                 dW3_displ, dW4_displ,
                 info_array, i,
-                batchCount, myhandle, queue); 
+                batchCount, queue); 
  
 #else
         arginfo = magma_zgetrf_recpanel_nopiv_batched(
@@ -213,7 +206,7 @@ magma_zgetrf_nopiv_batched(
                 dW0_displ, dW1_displ, dW2_displ, 
                 dW3_displ, dW4_displ,
                 info_array, i,
-                batchCount, myhandle, queue);   
+                batchCount, queue);   
 #endif
 
         if (arginfo != 0 ) goto fin;
@@ -225,7 +218,7 @@ magma_zgetrf_nopiv_batched(
         {
             // swap right side and trsm     
             //magma_zdisplace_pointers(dA_displ, dA_array, ldda, i, i+ib, batchCount);
-            zset_pointer(dwork_array, dwork, nb, 0, 0, dwork_msize, batchCount, queue); // I don't think it is needed Azzam
+            magma_zset_pointer( dwork_array, dwork, nb, 0, 0, dwork_msize, batchCount, queue ); // I don't think it is needed Azzam
 
             magma_zdisplace_pointers(dA_displ, dA_array, ldda, i, i, batchCount, queue);
             magma_zdisplace_pointers(dW0_displ, dA_array, ldda, i, i+ib, batchCount, queue);
@@ -238,7 +231,7 @@ magma_zgetrf_nopiv_batched(
                     dinvA_array,  invA_msize, 
                     dW1_displ,   dW2_displ, 
                     dW3_displ,   dW4_displ,
-                    1, batchCount, queue, myhandle);
+                    1, batchCount, queue );
 
             if ( (i + ib) < m)
             {    
@@ -253,31 +246,24 @@ magma_zgetrf_nopiv_batched(
                 { 
                     //printf("caling streamed dgemm %d %d %d \n", m-i-ib, n-i-ib, ib);
 
-                    // since it use different stream I need to wait the TRSM and swap.
-                    // But since the code use the NULL stream everywhere, 
-                    // so I don't need it, because the NULL stream do the sync by itself
-                    // magma_queue_sync(NULL);
+                    // since it use different queue I need to wait the TRSM and swap.
                     magma_queue_sync(queue); 
                     for (k=0; k < batchCount; k++)
                     {
                         streamid = k%nbstreams;                                       
-                        magmablasSetKernelStream(stream[streamid]);
-                        magma_zgemm(MagmaNoTrans, MagmaNoTrans, 
+                        magma_zgemm( MagmaNoTrans, MagmaNoTrans, 
                                 m-i-ib, n-i-ib, ib,
-                                neg_one, cpuAarray[k] + (i+ib)+i*ldda, ldda, 
-                                         cpuAarray[k] + i+(i+ib)*ldda, ldda,
-                                one,     cpuAarray[k] + (i+ib)+(i+ib)*ldda, ldda);
+                                c_neg_one, cpuAarray[k] + (i+ib)+i*ldda, ldda, 
+                                           cpuAarray[k] + i+(i+ib)*ldda, ldda,
+                                c_one,     cpuAarray[k] + (i+ib)+(i+ib)*ldda, ldda, queues[streamid] );
                     }
                     // need to synchronise to be sure that zgetf2 do not start before
                     // finishing the update at least of the next panel
-                    // BUT no need for it as soon as the other portion of the code 
-                    // use the NULL stream which do the sync by itself 
-                    //magma_device_sync(); 
-                     if ( queue != NULL ) {
+                    // if queue is NULL, no need to sync
+                    if ( queue != NULL ) {
                          for (magma_int_t s=0; s < nbstreams; s++)
-                             magma_queue_sync(stream[s]);
+                             magma_queue_sync(queues[s]);
                      }
-                     magmablasSetKernelStream(queue);
                 }
                 //-------------------------------------------
                 //          USE BATCHED GEMM
@@ -289,23 +275,21 @@ magma_zgetrf_nopiv_batched(
                     magma_zdisplace_pointers(dW2_displ, dA_array, ldda, i+ib, i+ib, batchCount, queue);
                     //printf("caling batched dgemm %d %d %d \n", m-i-ib, n-i-ib, ib);
                     magma_zgemm_batched( MagmaNoTrans, MagmaNoTrans, m-i-ib, n-i-ib, ib, 
-                                         neg_one, dA_displ, ldda, 
-                                         dW1_displ, ldda, 
-                                         one,  dW2_displ, ldda, 
-                                         batchCount, queue, myhandle);
-                } // end of batched/stream gemm
+                                         c_neg_one, dA_displ,  ldda, 
+                                                    dW1_displ, ldda, 
+                                         c_one,     dW2_displ, ldda, 
+                                         batchCount, queue );
+                } // end of batched/streamed gemm
             } // end of if ( (i + ib) < m) 
         } // end of if ( (i + ib) < n)
 #endif
     }// end of for
 
 fin:
-    magmablasSetKernelStream(queue);
     magma_queue_sync(queue);
     for (k=0; k < nbstreams; k++) {
-        magma_queue_destroy( stream[k] );
+        magma_queue_destroy( queues[k] );
     }
-    cublasDestroy_v2(myhandle);
 
     magma_free(dA_displ);
     magma_free(dW0_displ);

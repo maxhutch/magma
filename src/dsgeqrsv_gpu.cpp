@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zcgeqrsv_gpu.cpp mixed zc -> ds, Fri Sep 11 18:29:26 2015
+       @generated from src/zcgeqrsv_gpu.cpp mixed zc -> ds, Wed Jan  6 17:59:29 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BWDMAX 1.0
 #define ITERMAX 30
@@ -126,20 +126,24 @@ magma_dsgeqrsv_gpu(
     #define dR(i,j)     (dR + (i) + (j)*lddr)
     #define dSX(i,j)    (dSX + (i) + (j)*lddsx)
     
-    double c_neg_one = MAGMA_D_NEG_ONE;
-    double c_one     = MAGMA_D_ONE;
-    magma_int_t     ione  = 1;
-    double *hworkd;
-    float  *hworks;
+    /* Constants */
+    const double c_neg_one = MAGMA_D_NEG_ONE;
+    const double c_one     = MAGMA_D_ONE;
+    const magma_int_t ione = 1;
+    
+    /* Local variables */
+    double *hworkd = NULL;
+    float  *hworks = NULL;
     double *tau;
     float  *stau;
-    magmaDouble_ptr dworkd;
-    magmaFloat_ptr  dworks;
+    magmaDouble_ptr dworkd = NULL;
+    magmaFloat_ptr  dworks = NULL;
     magmaDouble_ptr dR, dT;
     magmaFloat_ptr  dSA, dSX, dST;
     double Xnrmv, Rnrmv;
-    double          Anrm, Xnrm, Rnrm, cte, eps;
-    magma_int_t     i, j, iiter, lddsa, lddsx, lddr, nb, lhwork, minmn, size, ldworkd;
+    double Anrm, Xnrm, Rnrm, cte, eps;
+    magma_int_t i, j, iiter, lddsa, lddsx, lddr, nb, lhwork, minmn, size, ldworkd;
+    magma_queue_t queue = NULL;
 
     /* Check arguments */
     *iter = 0;
@@ -165,12 +169,12 @@ magma_dsgeqrsv_gpu(
     if ( m == 0 || n == 0 || nrhs == 0 )
         return *info;
 
-    nb   = magma_get_sgeqrf_nb(m);
-    minmn= min(m, n);
+    nb   = magma_get_sgeqrf_nb( m, n );
+    minmn= min( m, n );
     
     /* dSX contains both B and X, so must be max(m or lddb,n). */
     lddsa = ldda;
-    lddsx = max(lddb,n);
+    lddsx = max( lddb, n );
     lddr  = lddb;
     
     /*
@@ -179,9 +183,8 @@ magma_dsgeqrsv_gpu(
     /* dworks(dSA + dSX + dST) */
     size = lddsa*n + lddsx*nrhs + ( 2*minmn + magma_roundup( n, 32 ) )*nb;
     if (MAGMA_SUCCESS != magma_smalloc( &dworks, size )) {
-        fprintf(stderr, "Allocation of dworks failed (%d)\n", (int) size);
         *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
+        goto cleanup;
     }
     dSA = dworks;
     dSX = dSA + lddsa*n;
@@ -190,10 +193,8 @@ magma_dsgeqrsv_gpu(
     /* dworkd(dR) = lddr*nrhs */
     ldworkd = lddr*nrhs;
     if (MAGMA_SUCCESS != magma_dmalloc( &dworkd, ldworkd )) {
-        magma_free( dworks );
-        fprintf(stderr, "Allocation of dworkd failed\n");
         *info = MAGMA_ERR_DEVICE_ALLOC;
-        return *info;
+        goto cleanup;
     }
     dR = dworkd;
 
@@ -202,137 +203,133 @@ magma_dsgeqrsv_gpu(
     size = lhwork + minmn;
     magma_smalloc_cpu( &hworks, size );
     if ( hworks == NULL ) {
-        magma_free( dworks );
-        magma_free( dworkd );
-        fprintf(stderr, "Allocation of hworks failed\n");
         *info = MAGMA_ERR_HOST_ALLOC;
-        return *info;
+        goto cleanup;
     }
     stau = hworks + lhwork;
 
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     eps  = lapackf77_dlamch("Epsilon");
-    Anrm = magmablas_dlange(MagmaInfNorm, m, n, dA, ldda, (double*)dworkd );
+    Anrm = magmablas_dlange( MagmaInfNorm, m, n, dA, ldda, (double*)dworkd, ldworkd, queue );
     cte  = Anrm * eps * pow((double)n, 0.5) * BWDMAX;
 
     /*
      * Convert to single precision
      */
-    magmablas_dlag2s( m, nrhs, dB, lddb, dSX, lddsx, info );
+    magmablas_dlag2s( m, nrhs, dB, lddb, dSX, lddsx, queue, info );
     if (*info != 0) {
         *iter = -2;
-        goto FALLBACK;
+        goto fallback;
     }
 
-    magmablas_dlag2s( m, n, dA, ldda, dSA, lddsa, info );
+    magmablas_dlag2s( m, n, dA, ldda, dSA, lddsa, queue, info );
     if (*info != 0) {
         *iter = -2;
-        goto FALLBACK;
+        goto fallback;
     }
 
     // factor dSA in single precision
     magma_sgeqrf_gpu( m, n, dSA, lddsa, stau, dST, info );
     if (*info != 0) {
         *iter = -3;
-        goto FALLBACK;
+        goto fallback;
     }
 
     // solve dSA*dSX = dB in single precision
     magma_sgeqrs_gpu( m, n, nrhs, dSA, lddsa, stau, dST, dSX, lddsx, hworks, lhwork, info );
     if (*info != 0) {
         *iter = -3;
-        goto FALLBACK;
+        goto fallback;
     }
 
     // residual dR = dB - dA*dX in double precision
-    magmablas_slag2d( n, nrhs, dSX, lddsx, dX, lddx, info );
-    magmablas_dlacpy( MagmaUpperLower, m, nrhs, dB, lddb, dR, lddr );
+    magmablas_slag2d( n, nrhs, dSX, lddsx, dX, lddx, queue, info );
+    magmablas_dlacpy( MagmaFull, m, nrhs, dB, lddb, dR, lddr, queue );
     if ( nrhs == 1 ) {
         magma_dgemv( MagmaNoTrans, m, n,
                      c_neg_one, dA, ldda,
                                 dX, 1,
-                     c_one,     dR, 1 );
+                     c_one,     dR, 1, queue );
     }
     else {
         magma_dgemm( MagmaNoTrans, MagmaNoTrans, m, nrhs, n,
                      c_neg_one, dA, ldda,
                                 dX, lddx,
-                     c_one,     dR, lddr );
+                     c_one,     dR, lddr, queue );
     }
 
     // TODO: use MAGMA_D_ABS( dX(i,j) ) instead of dlange?
     for( j=0; j < nrhs; j++ ) {
-        i = magma_idamax( n, dX(0,j), 1) - 1;
-        magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );
+        i = magma_idamax( n, dX(0,j), 1, queue ) - 1;
+        magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
         Xnrm = lapackf77_dlange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
 
-        i = magma_idamax ( m, dR(0,j), 1 ) - 1;
-        magma_dgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1 );
+        i = magma_idamax ( m, dR(0,j), 1, queue ) - 1;
+        magma_dgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
         Rnrm = lapackf77_dlange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
 
         if ( Rnrm >  Xnrm*cte ) {
-            goto REFINEMENT;
+            goto refinement;
         }
     }
 
     *iter = 0;
+    goto cleanup;
 
-    /* Free workspaces */
-    magma_free( dworks );
-    magma_free( dworkd );
-    magma_free_cpu( hworks );
-    return *info;
-
-REFINEMENT:
+refinement:
     /* TODO: this iterative refinement algorithm works only for compatibile
      * systems (B in colspan of A).
      * See Matrix Computations (3rd ed) p. 267 for correct algorithm. */
     for( iiter=1; iiter < ITERMAX; ) {
         *info = 0;
         // convert residual dR to single precision dSX
-        magmablas_dlag2s( m, nrhs, dR, lddr, dSX, lddsx, info );
+        magmablas_dlag2s( m, nrhs, dR, lddr, dSX, lddsx, queue, info );
         if (*info != 0) {
             *iter = -2;
-            goto FALLBACK;
+            goto fallback;
         }
         // solve dSA*dSX = R in single precision
         magma_sgeqrs_gpu( m, n, nrhs, dSA, lddsa, stau, dST, dSX, lddsx, hworks, lhwork, info );
         if (*info != 0) {
             *iter = -3;
-            goto FALLBACK;
+            goto fallback;
         }
 
         // Add correction and setup residual
         // dX += dSX [including conversion]  --and--
         // dR[1:n] = dB[1:n]   (only n rows, not whole m rows! -- useless if m > n)
         for( j=0; j < nrhs; j++ ) {
-            magmablas_dsaxpycp( n, dSX(0,j), dX(0,j), dB(0,j), dR(0,j) );
+            magmablas_dsaxpycp( n, dSX(0,j), dX(0,j), dB(0,j), dR(0,j), queue );
         }
         // dR = dB  (whole m rows)
-        magmablas_dlacpy( MagmaUpperLower, m, nrhs, dB, lddb, dR, lddr );
+        magmablas_dlacpy( MagmaFull, m, nrhs, dB, lddb, dR, lddr, queue );
         
         // residual dR = dB - dA*dX in double precision
         if ( nrhs == 1 ) {
             magma_dgemv( MagmaNoTrans, m, n,
                          c_neg_one, dA, ldda,
                                     dX, 1,
-                         c_one,     dR, 1 );
+                         c_one,     dR, 1, queue );
         }
         else {
             magma_dgemm( MagmaNoTrans, MagmaNoTrans, m, nrhs, n,
                          c_neg_one, dA, ldda,
                                     dX, lddx,
-                         c_one,     dR, lddr );
+                         c_one,     dR, lddr, queue );
         }
 
         /*  Check whether the nrhs normwise backward errors satisfy the
          *  stopping criterion. If yes, set ITER=IITER > 0 and return. */
         for( j=0; j < nrhs; j++ ) {
-            i = magma_idamax( n, dX(0,j), 1) - 1;
-            magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );
+            i = magma_idamax( n, dX(0,j), 1, queue ) - 1;
+            magma_dgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
             Xnrm = lapackf77_dlange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
 
-            i = magma_idamax ( m, dR(0,j), 1 ) - 1;
-            magma_dgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1 );
+            i = magma_idamax ( m, dR(0,j), 1, queue ) - 1;
+            magma_dgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
             Rnrm = lapackf77_dlange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
 
             if ( Rnrm >  Xnrm*cte ) {
@@ -345,10 +342,7 @@ REFINEMENT:
         *iter = iiter;
 
         /* Free workspaces */
-        magma_free( dworks );
-        magma_free( dworkd );
-        magma_free_cpu( hworks );
-        return *info;
+        goto cleanup;
         
       L20:
         iiter++;
@@ -360,24 +354,21 @@ REFINEMENT:
      * up on double precision routine. */
     *iter = -ITERMAX - 1;
     
-FALLBACK:
+fallback:
     /* Single-precision iterative refinement failed to converge to a
      * satisfactory solution, so we resort to double precision. */
-    magma_free( dworks );
-    magma_free_cpu( hworks );
 
     /*
      * Allocate temporary buffers
      */
     /* dworkd = dT for dgeqrf */
-    nb   = magma_get_dgeqrf_nb( m );
+    nb   = magma_get_dgeqrf_nb( m, n );
     size = (2*min(m, n) + magma_roundup( n, 32 ) )*nb;
     if ( size > ldworkd ) {
-        magma_free( dworkd );
+        magma_free( dworkd );  dworkd = NULL;
         if (MAGMA_SUCCESS != magma_dmalloc( &dworkd, size )) {
-            fprintf(stderr, "Allocation of dworkd2 failed\n");
             *info = MAGMA_ERR_DEVICE_ALLOC;
-            return *info;
+            goto cleanup;
         }
     }
     dT = dworkd;
@@ -386,10 +377,8 @@ FALLBACK:
     size = lhwork + minmn;
     magma_dmalloc_cpu( &hworkd, size );
     if ( hworkd == NULL ) {
-        magma_free( dworkd );
-        fprintf(stderr, "Allocation of hworkd2 failed\n");
         *info = MAGMA_ERR_HOST_ALLOC;
-        return *info;
+        goto cleanup;
     }
     tau = hworkd + lhwork;
 
@@ -397,10 +386,15 @@ FALLBACK:
     if (*info == 0) {
         // if m > n, then dB won't fit in dX, so solve with dB and copy n rows to dX
         magma_dgeqrs_gpu( m, n, nrhs, dA, ldda, tau, dT, dB, lddb, hworkd, lhwork, info );
-        magmablas_dlacpy( MagmaUpperLower, n, nrhs, dB, lddb, dX, lddx );
+        magmablas_dlacpy( MagmaFull, n, nrhs, dB, lddb, dX, lddx, queue );
     }
 
+cleanup:
+    magma_free( dworks );
     magma_free( dworkd );
+    magma_free_cpu( hworks );
     magma_free_cpu( hworkd );
+    magma_queue_destroy( queue );
+    
     return *info;
 }

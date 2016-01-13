@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zungqr.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zungqr.cpp normal z -> s, Wed Jan  6 17:59:50 2016
 
        @author Stan Tomov
        @author Mathieu Faverge
@@ -36,7 +36,7 @@ int main( int argc, char** argv )
     real_Double_t    gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     float           Anorm, error, work[1];
     float  c_neg_one = MAGMA_S_NEG_ONE;
-    float *hA, *hR, *tau, *h_work;
+    float *hA, *hR, *tau, *h_work, *hT;
     magmaFloat_ptr dA, dT;
     magma_int_t m, n, k;
     magma_int_t n2, lda, ldda, lwork, min_mn, nb, info;
@@ -50,10 +50,13 @@ int main( int argc, char** argv )
     float tol = opts.tolerance * lapackf77_slamch("E");
     opts.lapack |= opts.check;  // check (-c) implies lapack (-l)
     
-    printf("Running version %d; available are (specified through --version num):\n",
-           (int) opts.version);
-    printf("1 - uses precomputed slarft matrices (default)\n");
-    printf("2 - recomputes the slarft matrices on the fly\n\n");
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% version %d, ngpu %d\n", int(opts.version), int(abs_ngpu) );
+    printf("%% Available versions:\n");
+    printf("%%   1 - uses precomputed slarft matrices (default)\n");
+    printf("%%   2 - recomputes the slarft matrices on the fly\n\n");
 
     printf("%%   m     n     k   CPU GFlop/s (sec)   GPU GFlop/s (sec)   ||R|| / ||A||\n");
     printf("%%========================================================================\n");
@@ -71,15 +74,16 @@ int main( int argc, char** argv )
             ldda = magma_roundup( m, opts.align );  // multiple of 32 by default
             n2 = lda*n;
             min_mn = min(m, n);
-            nb = magma_get_sgeqrf_nb( m );
-            lwork  = (m + 2*n+nb)*nb;
+            nb = magma_get_sgeqrf_nb( m, n );
+            lwork  = n*nb;
             gflops = FLOPS_SORGQR( m, n, k ) / 1e9;
             
-            TESTING_MALLOC_PIN( h_work, float, lwork  );
             TESTING_MALLOC_PIN( hR,     float, lda*n  );
             
             TESTING_MALLOC_CPU( hA,     float, lda*n  );
             TESTING_MALLOC_CPU( tau,    float, min_mn );
+            TESTING_MALLOC_CPU( h_work, float, lwork  );
+            TESTING_MALLOC_CPU( hT,     float, min_mn*nb );
             
             TESTING_MALLOC_DEV( dA,     float, ldda*n );
             TESTING_MALLOC_DEV( dT,     float, ( 2*min_mn + magma_roundup( n, 32 ) )*nb );
@@ -101,16 +105,24 @@ int main( int argc, char** argv )
                        (int) info, magma_strerror( info ));
             magma_sgetmatrix( m, n, dA, ldda, hA, lda );
             lapackf77_slacpy( MagmaFullStr, &m, &n, hA, &lda, hR, &lda );
+            magma_sgetmatrix( nb, min_mn, dT, nb, hT, nb );  // for multi GPU
             
             gpu_time = magma_wtime();
-            if (opts.version == 1)
-                magma_sorgqr( m, n, k, hR, lda, tau, dT, nb, &info );
-            else
-                magma_sorgqr2(m, n, k, hR, lda, tau, &info );
+            if (opts.version == 1) {
+                if (opts.ngpu == 1) {
+                    magma_sorgqr( m, n, k, hR, lda, tau, dT, nb, &info );
+                }
+                else {
+                    magma_sorgqr_m( m, n, k, hR, lda, tau, hT, nb, &info );
+                }
+            }
+            else {
+                magma_sorgqr2( m, n, k, hR, lda, tau, &info );
+            }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
-                printf("magma_sorgqr_gpu returned error %d: %s.\n",
+                printf("magma_sorgqr returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
             /* =====================================================================
@@ -142,11 +154,12 @@ int main( int argc, char** argv )
                        gpu_perf, gpu_time );
             }
             
-            TESTING_FREE_PIN( h_work );
             TESTING_FREE_PIN( hR     );
             
             TESTING_FREE_CPU( hA  );
             TESTING_FREE_CPU( tau );
+            TESTING_FREE_CPU( h_work );
+            TESTING_FREE_CPU( hT  );
             
             TESTING_FREE_DEV( dA );
             TESTING_FREE_DEV( dT );
@@ -157,6 +170,7 @@ int main( int argc, char** argv )
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

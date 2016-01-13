@@ -1,0 +1,102 @@
+
+Sat Sep 12 11:36:06 EDT 2015
+numactl --interleave=all ../testing/testing_zheevdx_2stage -JN -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 11:36:13 2015
+% Usage: ../testing/testing_zheevdx_2stage [options] [-h|--help]
+
+% using: itype = 1, jobz = No vectors, range = All, uplo = Lower, check = 0, fraction = 1.0000, ngpu 1
+%   N     M  GPU Time (sec)  ||I-Q'Q||_oo/N  ||A-QDQ'||_oo/(||A||_oo.N).  |D-D_magma|/(|D| * N)
+%=======================================================================
+  123   123     0.00      
+ 1234  1234     0.41      
+   10    10     0.00      
+   20    20     0.00      
+   30    30     0.00      
+   40    40     0.00      
+   50    50     0.00      
+   60    60     0.00      
+   70    70     0.00      
+   80    80     0.00      
+   90    90     0.00      
+  100   100     0.00      
+  200   200     0.01      
+  300   300     0.04      
+  400   400     0.07      
+  500   500     0.10      
+  600   600     0.14      
+  700   700     0.17      
+  800   800     0.20      
+  900   900     0.25      
+ 1000  1000     0.29      
+ 2000  2000     0.67      
+ 3000  3000     1.30      
+ 4000  4000     2.09      
+ 5000  5000     3.03      
+ 6000  6000     4.37      
+ 7000  7000     5.92      
+ 8000  8000     7.57      
+ 9000  9000     9.91      
+10000 10000    12.54      
+12000 12000    18.96      
+14000 14000    27.71      
+16000 16000    39.82      
+18000 18000    54.75      
+20000 20000    72.94      
+
+Sat Sep 12 11:42:00 EDT 2015
+
+Sat Sep 12 11:42:00 EDT 2015
+numactl --interleave=all ../testing/testing_zheevdx_2stage -JV -N 123 -N 1234 --range 10:90:10 --range 100:900:100 --range 1000:9000:1000 --range 10000:20000:2000 --lapack
+% MAGMA 1.7.0  compiled for CUDA capability >= 3.5, 32-bit magma_int_t, 64-bit pointer.
+% CUDA runtime 7000, driver 7000. OpenMP threads 16. MKL 11.2.2, MKL threads 16. 
+% device 0: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 1: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% device 2: Tesla K40c, 745.0 MHz clock, 11519.6 MB memory, capability 3.5
+% Sat Sep 12 11:42:07 2015
+% Usage: ../testing/testing_zheevdx_2stage [options] [-h|--help]
+
+% using: itype = 1, jobz = Vectors needed, range = All, uplo = Lower, check = 0, fraction = 1.0000, ngpu 1
+%   N     M  GPU Time (sec)  ||I-Q'Q||_oo/N  ||A-QDQ'||_oo/(||A||_oo.N).  |D-D_magma|/(|D| * N)
+%=======================================================================
+  123   123     0.01      
+ 1234  1234     0.44      
+   10    10     0.00      
+   20    20     0.00      
+   30    30     0.00      
+   40    40     0.00      
+   50    50     0.00      
+   60    60     0.00      
+   70    70     0.00      
+   80    80     0.00      
+   90    90     0.00      
+  100   100     0.00      
+  200   200     0.01      
+  300   300     0.04      
+  400   400     0.08      
+  500   500     0.12      
+  600   600     0.16      
+  700   700     0.21      
+  800   800     0.25      
+  900   900     0.31      
+ 1000  1000     0.36      
+ 2000  2000     1.01      
+ 3000  3000     1.98      
+ 4000  4000     3.62      
+ 5000  5000     5.85      
+ 6000  6000     8.97      
+ 7000  7000    12.95      
+ 8000  8000    18.26      
+ 9000  9000    25.38      
+10000 10000    33.32      
+12000 12000    53.75      
+14000 14000    86.57      
+16000 16000   125.16      
+18000 18000   180.23      
+20000 20000   185.39      
+
+Sat Sep 12 11:56:55 EDT 2015

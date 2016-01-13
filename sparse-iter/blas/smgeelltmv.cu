@@ -1,19 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zmgeelltmv.cu normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zmgeelltmv.cu normal z -> s, Wed Jan  6 17:59:41 2016
 
 */
-
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
-
+template<bool betazero>
 __global__ void 
 smgeelltmv_kernel( 
         int num_rows, 
@@ -35,15 +34,17 @@ smgeelltmv_kernel(
         for ( int n = 0; n < num_cols_per_row; n++ ) {
             int col = dcolind [ num_rows * n + row ];
             float val = dval [ num_rows * n + row ];
-            if( val != 0) {
                 for( int i=0; i<num_vecs; i++ )
                     dot[ threadIdx.x + i*blockDim.x ] += 
                                         val * dx[col + i * num_cols ];
-            }
         }
         for( int i=0; i<num_vecs; i++ ) {
-            dy[ row + i*num_cols ] = dot[ threadIdx.x + i*blockDim.x ] 
-                            * alpha + beta * dy [ row + i*num_cols ];
+            if (betazero) {
+                dy[ row + i*num_cols ] = dot[ threadIdx.x + i*blockDim.x ] *alpha;
+            } else {
+                dy[ row + i*num_cols ] = dot[ threadIdx.x + i*blockDim.x ] 
+                                        * alpha + beta * dy [ row + i*num_cols ];
+            }
         }
     }
 }
@@ -131,8 +132,13 @@ magma_smgeelltmv(
     magma_int_t threads = BLOCK_SIZE;
     unsigned int MEM_SIZE =  num_vecs* BLOCK_SIZE 
                 * sizeof( float ); // num_vecs vectors 
-    smgeelltmv_kernel<<< grid, threads, MEM_SIZE, queue >>>
-        ( m, n, num_vecs, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
+    if (beta == MAGMA_S_ZERO) {
+        smgeelltmv_kernel<true><<< grid, threads, MEM_SIZE, queue->cuda_stream() >>>
+            ( m, n, num_vecs, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
+    } else {
+        smgeelltmv_kernel<false><<< grid, threads, MEM_SIZE, queue->cuda_stream() >>>
+            ( m, n, num_vecs, nnz_per_row, alpha, dval, dcolind, dx, beta, dy );
+    }
 
 
     return MAGMA_SUCCESS;

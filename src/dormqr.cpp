@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from zunmqr.cpp normal z -> d, Fri Sep 11 18:29:28 2015
+       @generated from src/zunmqr.cpp normal z -> d, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -167,7 +167,7 @@ magma_dormqr(
     }
 
     if (*info == 0) {
-        nb = magma_get_dgelqf_nb( min( m, n ));
+        nb = magma_get_dgelqf_nb( m, n );
         lwkopt = max(1,nw)*nb;
         work[0] = MAGMA_D_MAKE( lwkopt, 0 );
     }
@@ -195,6 +195,11 @@ magma_dormqr(
     }
     else {
         /* Use hybrid CPU-GPU code */
+        magma_queue_t queue;
+        magma_device_t cdev;
+        magma_getdevice( &cdev );
+        magma_queue_create( cdev, &queue );
+        
         /* Allocate work space on the GPU.
          * nw*nb  for dwork (m or n) by nb
          * nq*nb  for dV    (n or m) by nb
@@ -224,7 +229,7 @@ magma_dormqr(
         T2 = T + nb*nb;
         
         /* Copy matrix C from the CPU to the GPU */
-        magma_dsetmatrix( m, n, C, ldc, dC(0,0), lddc );
+        magma_dsetmatrix( m, n, C, ldc, dC(0,0), lddc, queue );
         
         if ( (left && ! notran) ||  (! left && notran) ) {
             i1 = 0;
@@ -254,14 +259,14 @@ magma_dormqr(
             /* Form the triangular factor of the block reflector
                H = H(i) H(i+1) . . . H(i+ib-1) */
             nq_i = nq - i;
-            lapackf77_dlarft("Forward", "Columnwise", &nq_i, &ib,
-                             A(i,i), &lda, &tau[i], T, &ib);
+            lapackf77_dlarft( "Forward", "Columnwise", &nq_i, &ib,
+                              A(i,i), &lda, &tau[i], T, &ib );
 
             /* 1) set upper triangle of panel in A to identity,
                2) copy the panel from A to the GPU, and
                3) restore A                                      */
             magma_dpanel_to_q( MagmaUpper, ib, A(i,i), lda, T2 );
-            magma_dsetmatrix( nq_i,  ib, A(i,i), lda, dV(0,0), nq_i );
+            magma_dsetmatrix( nq_i,  ib, A(i,i), lda, dV(0,0), nq_i, queue );
             magma_dq_to_panel( MagmaUpper, ib, A(i,i), lda, T2 );
 
             if (left) {
@@ -276,16 +281,18 @@ magma_dormqr(
             }
 
             /* Apply H or H**H; First copy T to the GPU */
-            magma_dsetmatrix( ib, ib, T, ib, dT(0,0), ib );
+            magma_dsetmatrix( ib, ib, T, ib, dT(0,0), ib, queue );
             magma_dlarfb_gpu( side, trans, MagmaForward, MagmaColumnwise,
                               mi, ni, ib,
                               dV(0,0), nq_i,
                               dT(0,0), ib,
                               dC(ic,jc), lddc,
-                              dwork(0), ldwork );
+                              dwork(0), ldwork, queue );
         }
-        magma_dgetmatrix( m, n, dC(0,0), lddc, C, ldc );
+        magma_dgetmatrix( m, n, dC(0,0), lddc, C, ldc, queue );
 
+        magma_queue_destroy( queue );
+        
         magma_free( dwork );
         magma_free_cpu( T );
     }

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Raffaele Solca
        
        @precisions normal d -> s
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 /**
@@ -109,13 +109,16 @@ magma_dlaex0_m(
 {
 #define Q(i_,j_) (Q + (i_) + (j_)*ldq)
 
-    magma_int_t ione = 1;
+    // Constants
+    const magma_int_t ione = 1;
+    
+    // Local variables
     magma_range_t range2;
     magma_int_t curlvl, i, indxq;
-    magma_int_t igpu, j, k, matsiz, msd2, smlsiz;
+    magma_int_t dev, j, k, matsiz, msd2, smlsiz;
     magma_int_t submat, subpbs, tlvls;
-    double *dw[MagmaMaxGPUs];
-    magma_queue_t stream [MagmaMaxGPUs][2];
+    magmaDouble_ptr dw[MagmaMaxGPUs] = { NULL };
+    magma_queue_t queues[MagmaMaxGPUs][2] = { NULL };
 
     // Test the input parameters.
     *info = 0;
@@ -142,22 +145,22 @@ magma_dlaex0_m(
         tmp = tmp * tmp2 + 2 * magma_get_dlaex3_m_nb()*(tmp + tmp2);
     }
 
-    for (igpu = 0; igpu < ngpu; ++igpu) {
-        magma_setdevice(igpu);
+    for (dev = 0; dev < ngpu; ++dev) {
+        magma_setdevice( dev );
         if (ngpu == 1) {
-            if (MAGMA_SUCCESS != magma_dmalloc( &dw[igpu], 3*n*(n/2 + 1) )) {
+            if (MAGMA_SUCCESS != magma_dmalloc( &dw[dev], 3*n*(n/2 + 1) )) {
                 *info = MAGMA_ERR_DEVICE_ALLOC;
-                return *info;
+                goto cleanup;
             }
         }
         else {
-            if (MAGMA_SUCCESS != magma_dmalloc( &dw[igpu], tmp )) {
+            if (MAGMA_SUCCESS != magma_dmalloc( &dw[dev], tmp )) {
                 *info = MAGMA_ERR_DEVICE_ALLOC;
-                return *info;
+                goto cleanup;
             }
         }
-        magma_queue_create( &stream[igpu][0] );
-        magma_queue_create( &stream[igpu][1] );
+        magma_queue_create( dev, &queues[dev][0] );
+        magma_queue_create( dev, &queues[dev][1] );
     }
 
     smlsiz = magma_get_smlsize_divideconquer();
@@ -184,15 +187,15 @@ magma_dlaex0_m(
 
     for (i=0; i < subpbs-1; ++i) {
         submat = iwork[i];
-        d[submat-1] -= MAGMA_D_ABS(e[submat-1]);
-        d[submat] -= MAGMA_D_ABS(e[submat-1]);
+        d[submat-1] -= MAGMA_D_ABS( e[submat-1] );
+        d[submat]   -= MAGMA_D_ABS( e[submat-1] );
     }
 
     indxq = 4*n + 3;
 
     // Solve each submatrix eigenproblem at the bottom of the divide and
     // conquer tree.
-    magma_timer_t time=0;
+    magma_timer_t time;  time=0;
     timer_start( time );
 
     for (i = 0; i < subpbs; ++i) {
@@ -203,12 +206,12 @@ magma_dlaex0_m(
             submat = iwork[i-1];
             matsiz = iwork[i] - iwork[i-1];
         }
-        lapackf77_dsteqr("I", &matsiz, &d[submat], &e[submat],
-                         Q(submat, submat), &ldq, work, info);  // change to edc?
+        lapackf77_dsteqr( "I", &matsiz, &d[submat], &e[submat],
+                          Q(submat, submat), &ldq, work, info );  // change to edc?
         if (*info != 0) {
-            printf("info: %d\n, submat: %d\n", (int) *info, (int) submat);
+            printf( "info: %d\n, submat: %d\n", (int) *info, (int) submat );
             *info = (submat+1)*(n+1) + submat + matsiz;
-            printf("info: %d\n", (int) *info);
+            printf( "info: %d\n", (int) *info );
             return *info;
         }
         k = 1;
@@ -250,10 +253,10 @@ magma_dlaex0_m(
                 // We need all the eigenvectors if it is not last step
                 range2 = MagmaRangeAll;
 
-            magma_dlaex1_m(ngpu, matsiz, &d[submat], Q(submat, submat), ldq,
-                           &iwork[indxq+submat], e[submat+msd2-1], msd2,
-                           work, &iwork[subpbs], dw, stream,
-                           range2, vl, vu, il, iu, info);
+            magma_dlaex1_m( ngpu, matsiz, &d[submat], Q(submat, submat), ldq,
+                            &iwork[indxq+submat], e[submat+msd2-1], msd2,
+                            work, &iwork[subpbs], dw, queues,
+                            range2, vl, vu, il, iu, info );
 
             if (*info != 0) {
                 *info = (submat+1)*(n+1) + submat + matsiz;
@@ -265,7 +268,7 @@ magma_dlaex0_m(
         ++curlvl;
         
         timer_stop( time );
-        timer_printf("%d: time: %6.2f\n", (int) curlvl, time );
+        timer_printf( "%d: time: %6.2f\n", (int) curlvl, time );
     }
 
     // Re-merge the eigenvalues/vectors which were deflated at the final
@@ -274,16 +277,17 @@ magma_dlaex0_m(
     for (i = 0; i < n; ++i) {
         j = iwork[indxq+i] - 1;
         work[i] = d[j];
-        blasf77_dcopy(&n, Q(0, j), &ione, &work[ n*(i+1) ], &ione);
+        blasf77_dcopy( &n, Q(0, j), &ione, &work[ n*(i+1) ], &ione );
     }
-    blasf77_dcopy(&n, work, &ione, d, &ione);
+    blasf77_dcopy( &n, work, &ione, d, &ione );
     lapackf77_dlacpy( "A", &n, &n, &work[n], &n, Q, &ldq );
 
-    for (igpu = 0; igpu < ngpu; ++igpu) {
-        magma_setdevice(igpu);
-        magma_queue_destroy( stream[igpu][0] );
-        magma_queue_destroy( stream[igpu][1] );
-        magma_free( dw[igpu] );
+cleanup:
+    for (dev = 0; dev < ngpu; ++dev) {
+        magma_setdevice( dev );
+        magma_queue_destroy( queues[dev][0] );
+        magma_queue_destroy( queues[dev][1] );
+        magma_free( dw[dev] );
     }
 
     magma_setdevice( orig_dev );

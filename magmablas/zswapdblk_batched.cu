@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -152,7 +152,7 @@ magmablas_zswapdblk_batched_q(
     dim3 dimBlock(nb);
     
     if ( nblocks > 0 ) {
-        zswapdblk_batched_kernel<<< dimGrid, dimBlock, 0, queue >>>
+        zswapdblk_batched_kernel<<< dimGrid, dimBlock, 0, queue->cuda_stream() >>>
             ( nb, n_mod_nb, dA_array, ldda, inca,
                   dB_array, lddb, incb );
     }
@@ -170,5 +170,5 @@ magmablas_zswapdblk_batched(
     magmaDoubleComplex **dB_array, magma_int_t lddb, magma_int_t incb, 
     magma_int_t batchCount)
 {
-    magmablas_zswapdblk_batched_q( n, nb, dA_array, ldda, inca, dB_array, lddb, incb, batchCount, magma_stream );
+    magmablas_zswapdblk_batched_q( n, nb, dA_array, ldda, inca, dB_array, lddb, incb, batchCount, magmablasGetQueue() );
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from clat2z.cu mixed zc -> ds, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/clat2z.cu mixed zc -> ds, Wed Jan  6 17:59:37 2016
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -41,13 +41,15 @@ void slat2d_lower(
             // full block-column, off-diagonal block
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
-                A[j*lda] = (double)( SA[j*ldsa] );
+                A[j*lda] = MAGMA_D_MAKE( MAGMA_S_REAL( SA[j*ldsa] ),
+                                         MAGMA_S_IMAG( SA[j*ldsa] ) );
             }
         }
         else {
             // either partial block-column or diagonal block
             for( int j=0; j < BLK_Y && iby+j < n && ind >= iby+j; ++j ) {
-                A[j*lda] = (double)( SA[j*ldsa] );
+                A[j*lda] = MAGMA_D_MAKE( MAGMA_S_REAL( SA[j*ldsa] ),
+                                         MAGMA_S_IMAG( SA[j*ldsa] ) );
             }
         }
     }
@@ -78,14 +80,16 @@ void slat2d_upper(
             // full block-column, off-diagonal block
             #pragma unroll
             for( int j=0; j < BLK_Y; ++j ) {
-                A[j*lda] = (double)( SA[j*ldsa] );
+                A[j*lda] = MAGMA_D_MAKE( MAGMA_S_REAL( SA[j*ldsa] ),
+                                         MAGMA_S_IMAG( SA[j*ldsa] ) );
             }
         }
         else {
             // either partial block-column or diagonal block
             for( int j=0; j < BLK_Y && iby+j < n; ++j ) {
                 if ( ind <= iby+j ) {
-                    A[j*lda] = (double)( SA[j*ldsa] );
+                    A[j*lda] = MAGMA_D_MAKE( MAGMA_S_REAL( SA[j*ldsa] ),
+                                             MAGMA_S_IMAG( SA[j*ldsa] ) );
                 }
             }
         }
@@ -96,8 +100,8 @@ void slat2d_upper(
 /**
     Purpose
     -------
-    SLAT2D_STREAM converts a single-real matrix, SA,
-                        to a double-real matrix, A.
+    SLAT2D converts a single-real matrix, SA,
+                 to a double-real matrix, A.
 
     Note that while it is possible to overflow while converting
     from double to single, it is not possible to overflow when
@@ -175,10 +179,10 @@ magmablas_slat2d_q(
     dim3 grid( magma_ceildiv( n, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     
     if (uplo == MagmaLower) {
-        slat2d_lower<<< grid, threads, 0, queue >>> (n, SA, ldsa, A, lda);
+        slat2d_lower<<< grid, threads, 0, queue->cuda_stream() >>> (n, SA, ldsa, A, lda);
     }
     else if (uplo == MagmaUpper) {
-        slat2d_upper<<< grid, threads, 0, queue >>> (n, SA, ldsa, A, lda);
+        slat2d_upper<<< grid, threads, 0, queue->cuda_stream() >>> (n, SA, ldsa, A, lda);
     }
 }
 
@@ -194,5 +198,5 @@ magmablas_slat2d(
     magmaDouble_ptr      A,  magma_int_t lda,
     magma_int_t *info )
 {
-    magmablas_slat2d_q( uplo, n, SA, ldsa, A, lda, magma_stream, info );
+    magmablas_slat2d_q( uplo, n, SA, ldsa, A, lda, magmablasGetQueue(), info );
 }

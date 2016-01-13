@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -128,9 +128,6 @@ Functions</h2></td></tr>
 <tr class="memitem:ga0d9f22eb0293353a4fa8805c1977c5ee"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__2stage.html#ga0d9f22eb0293353a4fa8805c1977c5ee">magma_ssytrd_sy2sb_mgpu</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, float *A, magma_int_t lda, float *tau, float *work, magma_int_t lwork, magmaFloat_ptr dAmgpu[], magma_int_t ldda, magmaFloat_ptr dTmgpu[], magma_int_t lddt, magma_int_t ngpu, magma_int_t distblk, magma_queue_t queues[][20], magma_int_t nqueue, magma_int_t *info)</td></tr>
 <tr class="memdesc:ga0d9f22eb0293353a4fa8805c1977c5ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD_HE2HB reduces a real symmetric matrix A to real symmetric band-diagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T.  <a href="#ga0d9f22eb0293353a4fa8805c1977c5ee">More...</a><br /></td></tr>
 <tr class="separator:ga0d9f22eb0293353a4fa8805c1977c5ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf16e36408b74905526d5dafb7f2ede18"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magma__ssyev__2stage.html#gaf16e36408b74905526d5dafb7f2ede18">magma_ssytrd_sy2sb_mgpu_spec</a> (magma_uplo_t uplo, magma_int_t n, magma_int_t nb, float *A, magma_int_t lda, float *tau, float *work, magma_int_t lwork, magmaFloat_ptr dAmgpu[], magma_int_t ldda, magmaFloat_ptr dTmgpu[], magma_int_t lddt, magma_int_t ngpu, magma_int_t distblk, magma_queue_t queues[][20], magma_int_t nqueue, magma_int_t *info)</td></tr>
-<tr class="memdesc:gaf16e36408b74905526d5dafb7f2ede18"><td class="mdescLeft">&#160;</td><td class="mdescRight">SSYTRD_HE2HB reduces a real symmetric matrix A to real symmetric band-diagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T.  <a href="#gaf16e36408b74905526d5dafb7f2ede18">More...</a><br /></td></tr>
-<tr class="separator:gaf16e36408b74905526d5dafb7f2ede18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -215,7 +212,7 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER This is the block size used in SGEQRF_GPU, and correspondingly the size of the T matrices, used in the factorization, and stored in DT.</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
 <li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument has an illegal value </li>
+<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value </li>
 </ul>
 </td></tr>
   </table>
@@ -747,173 +744,12 @@ TRANS = MagmaTrans:   Q**H * C            C * Q**H
 
 </div>
 </div>
-<a class="anchor" id="gaf16e36408b74905526d5dafb7f2ede18"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">magma_int_t magma_ssytrd_sy2sb_mgpu_spec </td>
-          <td>(</td>
-          <td class="paramtype">magma_uplo_t&#160;</td>
-          <td class="paramname"><em>uplo</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>nb</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>A</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lda</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>tau</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>work</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lwork</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloat_ptr&#160;</td>
-          <td class="paramname"><em>dAmgpu</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ldda</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magmaFloat_ptr&#160;</td>
-          <td class="paramname"><em>dTmgpu</em>[], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>lddt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>ngpu</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>distblk</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_queue_t&#160;</td>
-          <td class="paramname"><em>queues</em>[][20], </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t&#160;</td>
-          <td class="paramname"><em>nqueue</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">magma_int_t *&#160;</td>
-          <td class="paramname"><em>info</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>SSYTRD_HE2HB reduces a real symmetric matrix A to real symmetric band-diagonal form T by an orthogonal similarity transformation: Q**H * A * Q = T. </p>
-<p>This version stores the triangular matrices T used in the accumulated Householder transformations (I - V T V').</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">uplo</td><td>magma_uplo_t<ul>
-<li>= MagmaUpper: Upper triangle of A is stored;</li>
-<li>= MagmaLower: Lower triangle of A is stored.</li>
-</ul>
-</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>INTEGER The order of the matrix A. N &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nb</td><td>INTEGER The inner blocking. nb &gt;= 0.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">A</td><td>REAL array, dimension (LDA,N) On entry, the symmetric matrix A. If UPLO = MagmaUpper, the leading N-by-N upper triangular part of A contains the upper triangular part of the matrix A, and the strictly lower triangular part of A is not referenced. If UPLO = MagmaLower, the leading N-by-N lower triangular part of A contains the lower triangular part of the matrix A, and the strictly upper triangular part of A is not referenced. On exit, if UPLO = MagmaUpper, the Upper band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements above the band diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors; if UPLO = MagmaLower, the the Lower band-diagonal of A is overwritten by the corresponding elements of the band-diagonal matrix T, and the elements below the band-diagonal, with the array TAU, represent the orthogonal matrix Q as a product of elementary reflectors. See Further Details.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lda</td><td>INTEGER The leading dimension of the array A. LDA &gt;= max(1,N).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">tau</td><td>REAL array, dimension (N-1) The scalar factors of the elementary reflectors (see Further Details).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">work</td><td>(workspace) REAL array, dimension (MAX(1,LWORK)) On exit, if INFO = 0, WORK[0] returns the optimal LWORK.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lwork</td><td>INTEGER The dimension of the array WORK. LWORK &gt;= 1. For optimum performance LWORK &gt;= N*NB, where NB is the optimal blocksize. <br />
- If LWORK = -1, then a workspace query is assumed; the routine only calculates the optimal size of the WORK array, returns this value as the first entry of the WORK array, and no error message related to LWORK is issued by XERBLA.</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dAmgpu</td><td>REAL array of pointer, dimension (ngpu) Each point to a REAL array, dimension (LDDA, nlocal) which hold the local matrix on each GPU.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ldda</td><td>INTEGER The leading dimension of the array dAmgpu. ldda &gt;= max(1,n).</td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">dTmgpu</td><td>REAL array of pointer, dimension (ngpu) Each point to a REAL array on the GPU, dimension n*nb, where nb is the optimal blocksize. On exit dT holds the upper triangular matrices T from the accumulated Householder transformations (I - V T V') used in the factorization. The nb x nb matrices T are ordered consecutively in memory one after another.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lddt</td><td>INTEGER The leading dimension of each array dT. lddt &gt;= max(1,nb).</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ngpu</td><td>INTEGER The number of GPUs.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">distblk</td><td>INTEGER Internal parameter for performance tuning. The size of the distribution/computation.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">queues</td><td>Array of magma_queue_t that point to the queues to be used in execution/communications. Dimension &gt;= max(3, ngpu+1) Queue to execute in.</td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nqueue</td><td>INTEGER The number of queues should be &gt;= max(3, ngpu+1).</td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">info</td><td>INTEGER<ul>
-<li>= 0: successful exit</li>
-<li>&lt; 0: if INFO = -i, the i-th argument had an illegal value</li>
-</ul>
-</td></tr>
-  </table>
-  </dd>
-</dl>
-<h2>Further Details </h2>
-<p>If UPLO = MagmaUpper, the matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(n-1) . . . H(2) H(1).
-</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v'
-</pre><p>where tau is a real scalar, and v is a real vector with v(i+1:n) = 0 and v(i) = 1; v(1:i-1) is stored on exit in A(1:i-1,i+1), and tau in TAU(i).</p>
-<p>If UPLO = MagmaLower, the matrix Q is represented as a product of elementary reflectors </p><pre class="fragment">Q = H(1) H(2) . . . H(n-1).
-</pre><p>Each H(i) has the form </p><pre class="fragment">H(i) = I - tau * v * v'
-</pre><p>where tau is a real scalar, and v is a real vector with v(1:i) = 0 and v(i+1) = 1; v(i+2:n) is stored on exit in A(i+2:n,i), and tau in TAU(i).</p>
-<p>The contents of A on exit are illustrated by the following examples with n = 5:</p>
-<p>if UPLO = MagmaUpper: if UPLO = MagmaLower:</p>
-<p>( d e v2 v3 v4 ) ( d ) ( d e v3 v4 ) ( e d ) ( d e v4 ) ( v1 e d ) ( d e ) ( v1 v2 e d ) ( d ) ( v1 v2 v3 e d )</p>
-<p>where d and e denote diagonal and off-diagonal elements of T, and vi denotes an element of the vector defining H(i). </p>
-
-</div>
-</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:05 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:10 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

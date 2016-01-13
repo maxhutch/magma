@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
        @author Tingxing Dong
 
-       @generated from zgeqr2_batched.cu normal z -> s, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zgeqr2_batched.cu normal z -> s, Wed Jan  6 17:59:40 2016
 */
 
 #include "common_magma.h"
@@ -339,7 +339,7 @@ magma_sgeqr2_batched(magma_int_t m, magma_int_t n,
         //load panel in shared memory and factorize it and copy back to gloabl memory
         //intend for small panel to avoid overfill of shared memory.
         //this kernel is composed of device routine and thus clean
-        sgeqr2_sm_kernel_batched<<< blocks, threads, sizeof(float)*(m*k), queue >>>
+        sgeqr2_sm_kernel_batched<<< blocks, threads, sizeof(float)*(m*k), queue->cuda_stream() >>>
                                       (m, k, dA_array, ldda, dtau_array);
     }
     else
@@ -347,11 +347,11 @@ magma_sgeqr2_batched(magma_int_t m, magma_int_t n,
         //load one column vector in shared memory and householder it and used it to update trailing matrix which is global memory
         // one vector is normally smaller than  48K shared memory
         if (sizeof(float)*(m) < 42000)
-            sgeqr2_column_sm_kernel_batched<<< blocks, threads, sizeof(float)*(m), queue >>>
+            sgeqr2_column_sm_kernel_batched<<< blocks, threads, sizeof(float)*(m), queue->cuda_stream() >>>
                                       (m, k, dA_array, ldda, dtau_array);
         else
             //not use dynamic shared memory at all
-            sgeqr2_kernel_batched<<< blocks, threads, 0, queue >>>
+            sgeqr2_kernel_batched<<< blocks, threads, 0, queue->cuda_stream() >>>
                                       (m, k, dA_array, ldda, dtau_array);
     }
 

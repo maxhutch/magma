@@ -1,14 +1,14 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from testing_zgetrf_batched.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+   @generated from testing/testing_zgetrf_batched.cpp normal z -> s, Wed Jan  6 17:59:51 2016
  */
 // includes, system
 #include <stdlib.h>
@@ -137,8 +137,8 @@ int main( int argc, char** argv)
                Performs operation using MAGMA
                =================================================================== */
             magma_ssetmatrix( M, columns, h_R, lda, dA, ldda );
-            sset_pointer(dA_array, dA, ldda, 0, 0, ldda*N, batchCount, opts.queue);
-            set_ipointer(dipiv_array, dipiv_magma, 1, 0, 0, min_mn, batchCount, opts.queue);
+            magma_sset_pointer( dA_array, dA, ldda, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_iset_pointer( dipiv_array, dipiv_magma, 1, 0, 0, min_mn, batchCount, opts.queue );
             
             magma_time = magma_sync_wtime( opts.queue );
             info = magma_sgetrf_batched( M, N, dA_array, ldda, dipiv_array,  dinfo_magma, batchCount, opts.queue);
@@ -167,7 +167,7 @@ int main( int argc, char** argv)
                Performs operation using CUBLAS
                =================================================================== */
             magma_ssetmatrix( M, columns, h_R, lda, dA,  ldda );
-            sset_pointer(dA_array, dA, ldda, 0, 0, ldda * N, batchCount, opts.queue);
+            magma_sset_pointer( dA_array, dA, ldda, 0, 0, ldda * N, batchCount, opts.queue );
 
             cublas_time = magma_sync_wtime( opts.queue );
             if (M == N ) {
@@ -271,6 +271,8 @@ int main( int argc, char** argv)
             printf( "\n" );
         }
     }
+    
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

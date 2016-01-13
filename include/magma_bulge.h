@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 */
 
 #ifndef MAGMA_BULGE_H
@@ -21,8 +21,6 @@ extern "C" {
     
     magma_int_t magma_yield();
     magma_int_t magma_bulge_getlwstg1(magma_int_t n, magma_int_t nb, magma_int_t *lda2);
-
-    magma_int_t magma_bulge_get_nb(magma_int_t n);
 
     void cmp_vals(magma_int_t n, double *wr1, double *wr2, double *nrmI, double *nrm1, double *nrm2);
 

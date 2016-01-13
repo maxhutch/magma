@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zcustomprecond.cpp normal z -> s, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/magma_zcustomprecond.cpp normal z -> s, Wed Jan  6 17:59:45 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define PRECISION_s
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -24,12 +24,20 @@
 // Initialize matrix to random.
 // Having this in separate function ensures the same ISEED is always used,
 // so we can re-generate the identical matrix.
-void init_matrix( int m, int n, magmaDoubleComplex *h_A, magma_int_t lda )
+void init_matrix(
+    magma_opts &opts,
+    magma_int_t m, magma_int_t n,
+    magmaDoubleComplex *A, magma_int_t lda )
 {
     magma_int_t ione = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t n2 = lda*n;
-    lapackf77_zlarnv( &ione, ISEED, &n2, h_A );
+    lapackf77_zlarnv( &ione, ISEED, &n2, A );
+    if ( opts.version == 2 || opts.version == 3 ) {
+        for (magma_int_t i=0; i < min(m,n); ++i ) {
+            A[ i + i*lda ] = MAGMA_Z_MAKE( MAGMA_Z_REAL( A[ i + i*lda ] ) + max(m,n), 0 );
+        }
+    }
 }
 
 
@@ -39,6 +47,7 @@ void init_matrix( int m, int n, magmaDoubleComplex *h_A, magma_int_t lda )
 // Generates random RHS b and solves Ax=b.
 // Returns residual, |Ax - b| / (n |A| |x|).
 double get_residual(
+    magma_opts &opts,
     magma_int_t m, magma_int_t n,
     magmaDoubleComplex *A, magma_int_t lda,
     magma_int_t *ipiv )
@@ -71,7 +80,7 @@ double get_residual(
                (int) info, magma_strerror( info ));
     
     // reset to original A
-    init_matrix( m, n, A, lda );
+    init_matrix( opts, m, n, A, lda );
     
     // compute r = Ax - b, saved in b
     blasf77_zgemv( "Notrans", &m, &n, &c_one, A, &lda, x, &ione, &c_neg_one, b, &ione );
@@ -97,9 +106,11 @@ double get_residual(
 // Uses init_matrix() to re-generate original A as needed.
 // Returns error in factorization, |PA - LU| / (n |A|)
 // This allocates 3 more matrices to store A, L, and U.
-double get_LU_error(magma_int_t M, magma_int_t N,
-                    magmaDoubleComplex *LU, magma_int_t lda,
-                    magma_int_t *ipiv)
+double get_LU_error(
+    magma_opts &opts,
+    magma_int_t M, magma_int_t N,
+    magmaDoubleComplex *LU, magma_int_t lda,
+    magma_int_t *ipiv)
 {
     magma_int_t min_mn = min(M,N);
     magma_int_t ione   = 1;
@@ -116,7 +127,7 @@ double get_LU_error(magma_int_t M, magma_int_t N,
     memset( U, 0, min_mn*N*sizeof(magmaDoubleComplex) );
 
     // set to original A
-    init_matrix( M, N, A, lda );
+    init_matrix( opts, M, N, A, lda );
     lapackf77_zlaswp( &N, A, &lda, &ione, &min_mn, ipiv, &ione);
     
     // copy LU to L and U, and set diagonal to 1
@@ -164,7 +175,7 @@ int main( int argc, char** argv)
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
-    printf("%% ngpu %d\n", (int) opts.ngpu );
+    printf("%% ngpu %d, version %d\n", (int) opts.ngpu, (int) opts.version );
     if ( opts.check == 2 ) {
         printf("%%   M     N   CPU GFlop/s (sec)   GPU GFlop/s (sec)   |Ax-b|/(N*|A|*|x|)\n");
     }
@@ -188,7 +199,7 @@ int main( int argc, char** argv)
                Performs operation using LAPACK
                =================================================================== */
             if ( opts.lapack ) {
-                init_matrix( M, N, h_A, lda );
+                init_matrix( opts, M, N, h_A, lda );
                 
                 cpu_time = magma_wtime();
                 lapackf77_zgetrf( &M, &N, h_A, &lda, ipiv, &info );
@@ -202,10 +213,24 @@ int main( int argc, char** argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            init_matrix( M, N, h_A, lda );
+            init_matrix( opts, M, N, h_A, lda );
+            if ( opts.version == 2 || opts.version == 3 ) {
+                // no pivoting versions, so set ipiv to identity
+                for (magma_int_t i=0; i < min_mn; ++i ) {
+                    ipiv[i] = i+1;
+                }
+            }
             
             gpu_time = magma_wtime();
-            magma_zgetrf( M, N, h_A, lda, ipiv, &info );
+            if ( opts.version == 1 ) {
+                magma_zgetrf( M, N, h_A, lda, ipiv, &info );
+            }
+            else if ( opts.version == 2 ) {
+                magma_zgetrf_nopiv( M, N, h_A, lda, &info );
+            }
+            else if ( opts.version == 3 ) {
+                magma_zgetf2_nopiv( M, N, h_A, lda, &info );
+            }
             gpu_time = magma_wtime() - gpu_time;
             gpu_perf = gflops / gpu_time;
             if (info != 0)
@@ -224,12 +249,12 @@ int main( int argc, char** argv)
                        (int) M, (int) N, gpu_perf, gpu_time );
             }
             if ( opts.check == 2 ) {
-                error = get_residual( M, N, h_A, lda, ipiv );
+                error = get_residual( opts, M, N, h_A, lda, ipiv );
                 printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
                 status += ! (error < tol);
             }
             else if ( opts.check ) {
-                error = get_LU_error( M, N, h_A, lda, ipiv );
+                error = get_LU_error( opts, M, N, h_A, lda, ipiv );
                 printf("   %8.2e   %s\n", error, (error < tol ? "ok" : "failed"));
                 status += ! (error < tol);
             }
@@ -246,6 +271,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

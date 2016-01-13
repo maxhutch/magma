@@ -46,6 +46,7 @@ int main( int argc, char** argv )
     printf( "jobvr    %3d (%s)\n", opts.jobvr,  lapack_vec_const(   opts.jobvr  ));
     printf( "jobvl    %3d (%s)\n", opts.jobvl,  lapack_vec_const(   opts.jobvl  ));
     
+    opts.cleanup();
     magma_finalize();
     
     return 0;

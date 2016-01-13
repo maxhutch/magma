@@ -1,9 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
+
+       @author Mark Gates
 
        @precisions normal z -> c
 
@@ -99,6 +101,13 @@ int main( int argc, char** argv)
         opts.lapack = true;
     }
     
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% jobvl = %s, jobvr = %s, ngpu = %d\n",
+           lapack_vec_const(opts.jobvl), lapack_vec_const(opts.jobvr),
+           int(abs_ngpu) );
+    
     printf("%%   N   CPU Time (sec)   GPU Time (sec)   |W_magma - W_lapack| / |W_lapack|\n");
     printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
@@ -108,6 +117,9 @@ int main( int argc, char** argv)
             n2    = lda*N;
             nb    = magma_get_zgehrd_nb(N);
             lwork = N*(1 + 2*nb);
+            if (opts.ngpu != 1) {
+                lwork += N*nb*abs_ngpu;
+            }
             // generous workspace - required by zget22
             lwork2 = max( lwork, N*(5 + 2*N) );
             
@@ -131,10 +143,18 @@ int main( int argc, char** argv)
                Performs operation using MAGMA
                =================================================================== */
             gpu_time = magma_wtime();
-            magma_zgeev( opts.jobvl, opts.jobvr,
-                         N, h_R, lda, w1,
-                         VL, lda, VR, lda,
-                         h_work, lwork, rwork, &info );
+            if (opts.ngpu == 1) {
+                magma_zgeev( opts.jobvl, opts.jobvr,
+                             N, h_R, lda, w1,
+                             VL, lda, VR, lda,
+                             h_work, lwork, rwork, &info );
+            }
+            else {
+                magma_zgeev_m( opts.jobvl, opts.jobvr,
+                               N, h_R, lda, w1,
+                               VL, lda, VR, lda,
+                               h_work, lwork, rwork, &info );
+            }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0)
                 printf("magma_zgeev returned error %d: %s.\n",
@@ -271,10 +291,18 @@ int main( int argc, char** argv)
                 
                 // ----------
                 // Compute eigenvalues, left and right eigenvectors
-                magma_zgeev( MagmaVec, MagmaVec,
-                             N, h_R, lda, w1,
-                             VL, lda, VR, lda,
-                             h_work, lwork, rwork, &info );
+                if (opts.ngpu == 1) {
+                    magma_zgeev( MagmaVec, MagmaVec,
+                                 N, h_R, lda, w1,
+                                 VL, lda, VR, lda,
+                                 h_work, lwork, rwork, &info );
+                }
+                else {
+                    magma_zgeev_m( MagmaVec, MagmaVec,
+                                   N, h_R, lda, w1,
+                                   VL, lda, VR, lda,
+                                   h_work, lwork, rwork, &info );
+                }
                 if (info != 0)
                     printf("magma_zgeev (case V, V) returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
@@ -283,10 +311,18 @@ int main( int argc, char** argv)
                 // Compute eigenvalues only
                 // These are not exactly equal, and not in the same order, so skip for now.
                 // lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
-                // magma_zgeev( MagmaNoVec, MagmaNoVec,
-                //              N, h_R, lda, w2,
-                //              &DUM, 1, &DUM, 1,
-                //              h_work, lwork, rwork, &info );
+                // if (opts.ngpu == 1) {
+                //     magma_zgeev( MagmaNoVec, MagmaNoVec,
+                //                  N, h_R, lda, w2,
+                //                  &DUM, 1, &DUM, 1,
+                //                  h_work, lwork, rwork, &info );
+                // }
+                // else {
+                //     magma_zgeev_m( MagmaNoVec, MagmaNoVec,
+                //                    N, h_R, lda, w2,
+                //                    &DUM, 1, &DUM, 1,
+                //                    h_work, lwork, rwork, &info );
+                // }
                 // if (info != 0)
                 //     printf("magma_zgeev (case N, N) returned error %d: %s.\n",
                 //            (int) info, magma_strerror( info ));
@@ -300,10 +336,18 @@ int main( int argc, char** argv)
                 // ----------
                 // Compute eigenvalues and right eigenvectors
                 lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
-                magma_zgeev( MagmaNoVec, MagmaVec,
-                             N, h_R, lda, w2,
-                             &DUM, 1, LRE, lda,
-                             h_work, lwork, rwork, &info );
+                if (opts.ngpu == 1) {
+                    magma_zgeev( MagmaNoVec, MagmaVec,
+                                 N, h_R, lda, w2,
+                                 &DUM, 1, LRE, lda,
+                                 h_work, lwork, rwork, &info );
+                }
+                else {
+                    magma_zgeev_m( MagmaNoVec, MagmaVec,
+                                   N, h_R, lda, w2,
+                                   &DUM, 1, LRE, lda,
+                                   h_work, lwork, rwork, &info );
+                }
                 if (info != 0)
                     printf("magma_zgeev (case N, V) returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
@@ -324,10 +368,18 @@ int main( int argc, char** argv)
                 // ----------
                 // Compute eigenvalues and left eigenvectors
                 lapackf77_zlacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
-                magma_zgeev( MagmaVec, MagmaNoVec,
-                             N, h_R, lda, w2,
-                             LRE, lda, &DUM, 1,
-                             h_work, lwork, rwork, &info );
+                if (opts.ngpu == 1) {
+                    magma_zgeev( MagmaVec, MagmaNoVec,
+                                 N, h_R, lda, w2,
+                                 LRE, lda, &DUM, 1,
+                                 h_work, lwork, rwork, &info );
+                }
+                else {
+                    magma_zgeev_m( MagmaVec, MagmaNoVec,
+                                   N, h_R, lda, w2,
+                                   LRE, lda, &DUM, 1,
+                                   h_work, lwork, rwork, &info );
+                }
                 if (info != 0)
                     printf("magma_zgeev (case V, N) returned error %d: %s.\n",
                            (int) info, magma_strerror( info ));
@@ -443,6 +495,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

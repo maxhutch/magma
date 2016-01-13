@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Hartwig Anzt
 
-       @generated from zjacobidomainoverlap.cpp normal z -> s, Fri Sep 11 18:29:44 2015
+       @generated from sparse-iter/src/zjacobidomainoverlap.cpp normal z -> s, Wed Jan  6 17:59:46 2016
 */
 
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 #define RTOLERANCE     lapackf77_slamch( "E" )
 #define ATOLERANCE     lapackf77_slamch( "E" )
@@ -60,11 +60,16 @@ magma_sjacobidomainoverlap(
     magma_s_solver_par *solver_par,
     magma_queue_t queue )
 {
-    magma_int_t info = 0;
+    magma_int_t info = MAGMA_NOTCONVERGED;
+    
+    solver_par->numiter = 0;
+    solver_par->spmv_count = 0;
     
     // some useful variables
-    float c_zero = MAGMA_S_ZERO, c_one = MAGMA_S_ONE,
-                                                c_mone = MAGMA_S_NEG_ONE;
+    float c_zero = MAGMA_S_ZERO;
+    float c_one  = MAGMA_S_ONE;
+    float c_neg_one = MAGMA_S_NEG_ONE;
+    
     magma_int_t dofs = A.num_rows*b.num_cols;
     //float nom0 = 0.0;
     // generate the domain overlap
@@ -75,12 +80,11 @@ magma_sjacobidomainoverlap(
     magma_s_matrix hA={Magma_CSR};
     
     // set queue for old dense routines
-    magma_queue_t orig_queue=NULL;
-    magmablasGetKernelStream( &orig_queue );
+    //magma_queue_t orig_queue=NULL;
+    //magmablasGetKernelStream( &orig_queue );
 
     // prepare solver feedback
     solver_par->solver = Magma_JACOBI;
-    solver_par->info = MAGMA_SUCCESS;
 
     real_Double_t tempo1, tempo2;
     float residual;
@@ -93,8 +97,8 @@ magma_sjacobidomainoverlap(
 
     CHECK( magma_svinit( &r, Magma_DEV, A.num_rows, b.num_cols, c_zero, queue ));
     CHECK( magma_s_spmv( c_one, A, *x, c_zero, r, queue ));          // r = A x
-    magma_saxpy(dofs,  c_mone, b.dval, 1, r.dval, 1);           // r = r - b
-    //nom0 = magma_snrm2(dofs, r.dval, 1);                      // den = || r ||
+    magma_saxpy( dofs, c_neg_one, b.dval, 1, r.dval, 1, queue );           // r = r - b
+    //nom0 = magma_snrm2( dofs, r.dval, 1, queue );                      // den = || r ||
 
     // Jacobi setup
     CHECK( magma_sjacobisetup_diagscal( A, &d, queue ));
@@ -114,7 +118,7 @@ magma_sjacobidomainoverlap(
 */
    
     CHECK( magma_index_malloc( &indices, num_ind ));
-    magma_index_setvector( num_ind, hindices, 1, indices, 1 );
+    magma_index_setvector( num_ind, hindices, 1, indices, 1, queue );
     
     
     
@@ -145,7 +149,7 @@ cleanup:
     magma_smfree(&hA, queue );
     magma_free( indices );
     
-    magmablasSetKernelStream( orig_queue );
+    //magmablasSetKernelStream( orig_queue );
     solver_par->info = info;
     return info;
 }   /* magma_sjacobi */

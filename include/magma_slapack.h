@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zlapack.h normal z -> s, Fri Sep 11 18:29:17 2015
+       @generated from include/magma_zlapack.h normal z -> s, Wed Jan  6 17:59:51 2016
 */
 
 #ifndef MAGMA_SLAPACK_H
@@ -591,7 +591,9 @@ void   lapackf77_ssyevx( const char *jobz, const char *range, const char *uplo,
                          magma_int_t *m, float *w,
                          float *Z, const magma_int_t *ldz,
                          float *work, const magma_int_t *lwork,
+                         #ifdef COMPLEX
                          float *rwork,
+                         #endif
                          magma_int_t *iwork, magma_int_t *ifail,
                          magma_int_t *info);
 
@@ -769,7 +771,7 @@ void   lapackf77_slarfg( const magma_int_t *n,
 
 void   lapackf77_slarft( const char *direct, const char *storev,
                          const magma_int_t *n, const magma_int_t *k,
-                         float *V, const magma_int_t *ldv,
+                         const float *V, const magma_int_t *ldv,
                          const float *tau,
                          float *T, const magma_int_t *ldt );
 

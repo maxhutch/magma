@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zsymmetrize_tiles.cpp normal z -> d, Fri Sep 11 18:29:37 2015
+       @generated from testing/testing_zsymmetrize_tiles.cpp normal z -> d, Wed Jan  6 17:59:47 2016
 
 */
 
@@ -97,10 +97,10 @@ int main( int argc, char** argv)
                 for( int j = 0; j < nb; ++j ) {
                     for( int i = 0; i < j; ++i ) {
                         if ( opts.uplo == MagmaLower ) {
-                            h_A[offset + i + j*lda] = MAGMA_D_CNJG( h_A[offset + j + i*lda] );
+                            h_A[offset + i + j*lda] = MAGMA_D_CONJ( h_A[offset + j + i*lda] );
                         }
                         else {
-                            h_A[offset + j + i*lda] = MAGMA_D_CNJG( h_A[offset + i + j*lda] );
+                            h_A[offset + j + i*lda] = MAGMA_D_CONJ( h_A[offset + i + j*lda] );
                         }
                     }
                 }
@@ -133,6 +133,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

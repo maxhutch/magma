@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -132,7 +132,7 @@ magmablas_zgeadd_batched_q(
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ), batchCount );
     
-    zgeadd_batched_kernel<<< grid, threads, 0, queue >>>(
+    zgeadd_batched_kernel<<< grid, threads, 0, queue->cuda_stream() >>>(
         m, n, alpha, dAarray, ldda, dBarray, lddb );
 }
 
@@ -150,5 +150,5 @@ magmablas_zgeadd_batched(
     magma_int_t batchCount )
 {
     magmablas_zgeadd_batched_q(
-        m, n, alpha, dAarray, ldda, dBarray, lddb, batchCount, magma_stream );
+        m, n, alpha, dAarray, ldda, dBarray, lddb, batchCount, magmablasGetQueue() );
 }

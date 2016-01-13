@@ -1,19 +1,21 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
+       @author Ahmad Abdelfattah
 
-       @generated from zpotf2_batched.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/zpotf2_batched.cpp normal z -> c, Wed Jan  6 17:59:36 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 
-#define PRECISION_c
+#define COMPLEX
+
 /////////////////////////////////////////////////////////////////
 /**
     \n
@@ -53,7 +55,7 @@ magma_cpotf2_ctrsm_batched(
         for (j = 0; j < n; j++) {
             magma_cpotf2_cdotc_batched(j, dA_array, lda, j, info_array, gbstep, batchCount, queue); // including cdotc product and update a(j,j)
             if (j < n) {
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 magma_clacgv_batched(j, dA_array, lda, j, batchCount, queue);
                 #endif
 
@@ -62,13 +64,13 @@ magma_cpotf2_ctrsm_batched(
                 magma_cdisplace_pointers(dC_displ, dA_array, lda, j+1, j, batchCount, queue);
 
                 // Compute elements J+1:N of column J = A(j+1:n,1:j-1) * A(j,1:j-1) (row).
-                magmablas_cgemv_batched(MagmaNoTrans, m-j-1, j,
+                magmablas_cgemv_batched( MagmaNoTrans, m-j-1, j,
                                  alpha, dA_displ, lda,
                                         dB_displ,    lda,
                                  beta,  dC_displ, 1,
-                                 batchCount, queue);
+                                 batchCount, queue );
 
-                #if defined(PRECISION_z) || defined(PRECISION_c)
+                #ifdef COMPLEX
                 magma_clacgv_batched(j, dA_array, lda, j, batchCount, queue);
                 #endif
                 magma_cpotf2_csscal_batched(m-j, dA_array, 1, j+j*lda, info_array, batchCount, queue);
@@ -97,7 +99,7 @@ magma_cpotf2_batched(
     magmaFloatComplex **dB_displ, 
     magmaFloatComplex **dC_displ, 
     magma_int_t *info_array, magma_int_t gbstep, 
-    magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)
+    magma_int_t batchCount, magma_queue_t queue)
 {
     magma_int_t arginfo=0;
 
@@ -150,7 +152,7 @@ magma_cpotf2_batched(
                                  m-j-ib, n-j-ib, ib,
                                  alpha, dA_displ, lda,
                                         dA_displ, lda,
-                                 beta,  dC_displ, lda, batchCount, queue, myhandle);
+                                 beta,  dC_displ, lda, batchCount, queue );
                 #else
                     // update next subpanel
                     magma_cdisplace_pointers(dA_displ, dA_array, lda, j+ib, 0, batchCount, queue);
@@ -159,7 +161,7 @@ magma_cpotf2_batched(
                                  m-j-ib, min((n-j-ib),ib), j+ib,
                                  alpha, dA_displ, lda,
                                         dA_displ, lda,
-                                 beta,  dC_displ, lda, batchCount, queue, myhandle);
+                                 beta,  dC_displ, lda, batchCount, queue );
                 #endif
                 } // end of if ( (n-j-ib) > 0)
                 #endif

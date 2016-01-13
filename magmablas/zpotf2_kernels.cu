@@ -1,9 +1,9 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Ahmad Ahmad
@@ -133,9 +133,13 @@ magma_zpotrf_lpout_batched(
 
         if (ib == POTF2_NB)
         {
-            zpotf2_smlpout_fixwidth_kernel_batched<<<dimGrid, threads, shared_mem_size, queue >>>(rows, dA_array, lda, j, gbstep, info_array, batchCount);
+            zpotf2_smlpout_fixwidth_kernel_batched
+                <<< dimGrid, threads, shared_mem_size, queue->cuda_stream() >>>
+                (rows, dA_array, lda, j, gbstep, info_array, batchCount);
         } else {
-            zpotf2_smlpout_anywidth_kernel_batched<<<dimGrid, threads, shared_mem_size, queue >>>(rows, ib, dA_array, lda, j, gbstep, info_array, batchCount);
+            zpotf2_smlpout_anywidth_kernel_batched
+                <<< dimGrid, threads, shared_mem_size, queue->cuda_stream() >>>
+                (rows, ib, dA_array, lda, j, gbstep, info_array, batchCount);
         }
     }
 

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -19,7 +19,10 @@
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from left edge and moving right to diagonal.
 __global__ void
-zlascl_2x2_lower(int m, const magmaDoubleComplex* W, int ldw, magmaDoubleComplex* A, int lda)
+zlascl_2x2_lower(
+    int m,
+    const magmaDoubleComplex* W, int ldw,
+    magmaDoubleComplex* A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -39,7 +42,10 @@ zlascl_2x2_lower(int m, const magmaDoubleComplex* W, int ldw, magmaDoubleComplex
 // each thread block does one NB x n block row of A.
 // each thread does one row, starting from right edge and moving left to diagonal.
 __global__ void
-zlascl_2x2_upper(int m, const magmaDoubleComplex *W, int ldw, magmaDoubleComplex* A, int lda)
+zlascl_2x2_upper(
+    int m,
+    const magmaDoubleComplex *W, int ldw,
+    magmaDoubleComplex* A, int lda)
 {
     int ind = blockIdx.x * NB + threadIdx.x;
 
@@ -105,10 +111,11 @@ zlascl_2x2_upper(int m, const magmaDoubleComplex *W, int ldw, magmaDoubleComplex
     ********************************************************************/
 extern "C" void
 magmablas_zlascl_2x2_q(
-    magma_type_t type, magma_int_t m, 
-    magmaDoubleComplex_const_ptr dW, magma_int_t lddw, 
-    magmaDoubleComplex_ptr       dA, magma_int_t ldda, 
-    magma_queue_t queue, magma_int_t *info )
+    magma_type_t type, magma_int_t m,
+    magmaDoubleComplex_const_ptr dW, magma_int_t lddw,
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda,
+    magma_queue_t queue,
+    magma_int_t *info )
 {
     *info = 0;
     if ( type != MagmaLower && type != MagmaUpper )
@@ -123,14 +130,14 @@ magmablas_zlascl_2x2_q(
         return;  //info;
     }
     
-    dim3 grid( magma_ceildiv( m, NB ) );
     dim3 threads( NB );
+    dim3 grid( magma_ceildiv( m, NB ) );
     
     if (type == MagmaLower) {
-        zlascl_2x2_lower <<< grid, threads, 0, queue >>> (m, dW, lddw, dA, ldda);
+        zlascl_2x2_lower <<< grid, threads, 0, queue->cuda_stream() >>> (m, dW, lddw, dA, ldda);
     }
     else {
-        zlascl_2x2_upper <<< grid, threads, 0, queue >>> (m, dW, lddw, dA, ldda);
+        zlascl_2x2_upper <<< grid, threads, 0, queue->cuda_stream() >>> (m, dW, lddw, dA, ldda);
     }
 }
 
@@ -141,10 +148,10 @@ magmablas_zlascl_2x2_q(
     ********************************************************************/
 extern "C" void
 magmablas_zlascl_2x2(
-    magma_type_t type, magma_int_t m, 
-    magmaDoubleComplex_const_ptr dW, magma_int_t lddw, 
-    magmaDoubleComplex_ptr       dA, magma_int_t ldda, 
+    magma_type_t type, magma_int_t m,
+    magmaDoubleComplex_const_ptr dW, magma_int_t lddw,
+    magmaDoubleComplex_ptr       dA, magma_int_t ldda,
     magma_int_t *info )
 {
-    magmablas_zlascl_2x2_q( type, m, dW, lddw, dA, ldda, magma_stream, info );
+    magmablas_zlascl_2x2_q( type, m, dW, lddw, dA, ldda, magmablasGetQueue(), info );
 }

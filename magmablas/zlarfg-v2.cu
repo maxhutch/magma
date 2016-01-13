@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -97,21 +97,35 @@ void magma_zlarfg_gpu_kernel( int n, magmaDoubleComplex* dx0, magmaDoubleComplex
     are computed outside the routine and passed to it in dxnorm (array on the GPU).
 */
 extern "C" void
-magma_zlarfg_gpu(
+magma_zlarfg_gpu_q(
     magma_int_t n,
     magmaDoubleComplex_ptr dx0,
     magmaDoubleComplex_ptr dx,
     magmaDoubleComplex_ptr dtau,
     magmaDouble_ptr        dxnorm,
-    magmaDoubleComplex_ptr dAkk)
+    magmaDoubleComplex_ptr dAkk,
+    magma_queue_t queue )
 {
     dim3 blocks( magma_ceildiv( n, BLOCK_SIZE ) );
     dim3 threads( BLOCK_SIZE );
 
     /* recomputing the norm */
     //magmablas_dznrm2_cols(n, 1, dx0, n, dxnorm);
-    magmablas_dznrm2_cols(n-1, 1, dx0+1, n, dxnorm);
+    magmablas_dznrm2_cols_q(n-1, 1, dx0+1, n, dxnorm, queue);
 
-    magma_zlarfg_gpu_kernel<<< blocks, threads,
-                               0, magma_stream >>>(n, dx0, dx, dtau, dxnorm, dAkk);
+    magma_zlarfg_gpu_kernel
+        <<< blocks, threads, 0, queue->cuda_stream() >>>
+        (n, dx0, dx, dtau, dxnorm, dAkk);
+}
+
+extern "C" void
+magma_zlarfg_gpu(
+    magma_int_t n,
+    magmaDoubleComplex_ptr dx0,
+    magmaDoubleComplex_ptr dx,
+    magmaDoubleComplex_ptr dtau,
+    magmaDouble_ptr        dxnorm,
+    magmaDoubleComplex_ptr dAkk )
+{
+    magma_zlarfg_gpu_q( n, dx0, dx, dtau, dxnorm, dAkk, magmablasGetQueue() );
 }

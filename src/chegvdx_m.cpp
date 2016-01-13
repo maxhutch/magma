@@ -1,21 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Stan Tomov
 
-       @generated from zhegvdx_m.cpp normal z -> c, Fri Sep 11 18:29:32 2015
+       @generated from src/zhegvdx_m.cpp normal z -> c, Wed Jan  6 17:59:34 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
-#define PRECISION_c
 #define COMPLEX
 
 /**
@@ -228,10 +227,12 @@ magma_chegvdx_m(
     magma_int_t *iwork, magma_int_t liwork,
     magma_int_t *info)
 {
+    /* Constants */
+    magmaFloatComplex c_one = MAGMA_C_ONE;
+    
+    /* Local variables */
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
-    
-    magmaFloatComplex c_one = MAGMA_C_ONE;
     
     magma_int_t lower;
     magma_trans_t trans;
@@ -334,7 +335,7 @@ magma_chegvdx_m(
         lapackf77_chegvd(&itype, jobz_, uplo_,
                          &n, A, &lda, B, &ldb,
                          w, work, &lwork,
-                         #if defined(PRECISION_z) || defined(PRECISION_c)
+                         #ifdef COMPLEX
                          rwork, &lrwork,
                          #endif
                          iwork, &liwork, info);
@@ -379,9 +380,8 @@ magma_chegvdx_m(
             } else {
                 trans = MagmaNoTrans;
             }
-
-            magma_ctrsm_m(ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
-                          n, *m, c_one, B, ldb, A, lda);
+            magma_ctrsm_m( ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
+                           n, *m, c_one, B, ldb, A, lda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -391,9 +391,36 @@ magma_chegvdx_m(
             } else {
                 trans = MagmaConjTrans;
             }
-
-            //magma_ctrmm(MagmaLeft, uplo, trans, MagmaNonUnit,
-            //            n, n, c_one, db, lddb, da, ldda);
+            #ifdef ENABLE_DEBUG
+            printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            #endif
+            magmaFloatComplex *dA=NULL, *dB=NULL;
+            magma_int_t ldda = magma_roundup( n, 32 );
+            magma_int_t lddb = ldda;
+            
+            if (MAGMA_SUCCESS != magma_cmalloc( &dA, ldda*(*m) ) ||
+                MAGMA_SUCCESS != magma_cmalloc( &dB, lddb*n )) {
+                magma_free( dA );
+                magma_free( dB );
+                *info = MAGMA_ERR_DEVICE_ALLOC;
+                return *info;
+            }
+            
+            magma_queue_t queue;
+            magma_device_t cdev;
+            magma_getdevice( &cdev );
+            magma_queue_create( cdev, &queue );
+        
+            magma_csetmatrix( n, n, B, ldb, dB, lddb, queue );
+            magma_csetmatrix( n, (*m), A, lda, dA, ldda, queue );
+            magma_ctrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
+                         n, *m, c_one, dB, lddb, dA, ldda, queue );
+            magma_cgetmatrix( n, (*m), dA, ldda, A, lda, queue );
+            
+            magma_queue_destroy( queue );
+            
+            magma_free( dA );
+            magma_free( dB );
         }
 
         timer_stop( time );

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zcsrsplit.cpp normal z -> d, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zcsrsplit.cpp normal z -> d, Wed Jan  6 17:59:42 2016
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /**
@@ -23,6 +23,10 @@
     Arguments
     ---------
 
+    @param[in]
+    offset      magma_int_t
+                size of the first block
+                
     @param[in]
     bsize       magma_int_t
                 size of the diagonal blocks
@@ -47,6 +51,7 @@
 
 extern "C" magma_int_t
 magma_dcsrsplit(
+    magma_int_t offset,
     magma_int_t bsize,
     magma_d_matrix A,
     magma_d_matrix *D,
@@ -86,7 +91,30 @@ magma_dcsrsplit(
     {
         nnz_diag = nnz_offd = 0;
         // Count the new number of nonzeroes in the two matrices
-        for( i=0; i<A.num_rows; i+=bsize ){
+        for( i=0; i<offset; i+=offset ){
+            for( k=i; k<min(A.num_rows,i+offset); k++ ){
+                int check = 0;
+                for( j=A.row[k]; j<A.row[k+1]; j++ ){
+                    if ( A.col[j] < i )
+                        nnz_offd++;
+                    else if ( A.col[j] < i+offset ){
+                        if( A.col[j] == k ){
+                            check = 1;
+                        }
+                        nnz_diag++;
+                    }
+                    else
+                        nnz_offd++;
+                }
+                if( check == 0 ){
+                    printf("error: matrix contains zero on diagonal at (%d,%d).\n", int(i), int(i));
+                    info = -1;
+                    goto cleanup;
+                }
+            }
+        }
+        magma_int_t ii = i;
+        for( i=ii; i<A.num_rows; i+=bsize ){
             for( k=i; k<min(A.num_rows,i+bsize); k++ ){
                 int check = 0;
                 for( j=A.row[k]; j<A.row[k+1]; j++ ){
@@ -135,7 +163,51 @@ magma_dcsrsplit(
         R->row[0] = 0;
 
         nnz_offd = nnz_diag = 0;
-        for( i=0; i<A.num_rows; i+=bsize) {
+        for( i=0; i<offset; i+=offset) {
+            for( k=i; k<min(A.num_rows,i+offset); k++ ) {
+                D->row[k+1] = D->row[k];
+                R->row[k+1] = R->row[k];
+     
+                for( j=A.row[k]; j<A.row[k+1]; j++ ) {
+                    if ( A.col[j] < i ) {
+                        R->val[nnz_offd] = A.val[j];
+                        R->col[nnz_offd] = A.col[j];
+                        R->row[k+1]++;
+                        nnz_offd++;
+                    }
+                    else if ( A.col[j] < i+offset ) {
+                        // larger than diagonal remain as before
+                        if ( A.col[j]>k ) {
+                            D->val[nnz_diag] = A.val[ j ];
+                            D->col[nnz_diag] = A.col[ j ];
+                            D->row[k+1]++;
+                        }
+                        // diagonal is written first
+                        else if ( A.col[j]==k ) {
+                            D->val[D->row[k]] = A.val[ j ];
+                            D->col[D->row[k]] = A.col[ j ];
+                            D->row[k+1]++;
+                        }
+                        // smaller than diagonal are shifted one to the right
+                        // to have room for the diagonal
+                        else {
+                            D->val[nnz_diag+1] = A.val[ j ];
+                            D->col[nnz_diag+1] = A.col[ j ];
+                            D->row[k+1]++;
+                        }
+                        nnz_diag++;
+                    }
+                    else {
+                        R->val[nnz_offd] = A.val[j];
+                        R->col[nnz_offd] = A.col[j];
+                        R->row[k+1]++;
+                        nnz_offd++;
+                    }
+                }
+            }
+        }
+        ii = i;
+        for( i=ii; i<A.num_rows; i+=bsize) {
             for( k=i; k<min(A.num_rows,i+bsize); k++ ) {
                 D->row[k+1] = D->row[k];
                 R->row[k+1] = R->row[k];
@@ -184,7 +256,7 @@ magma_dcsrsplit(
         CHECK( magma_dmtransfer( A, &Ah, A.memory_location, Magma_CPU, queue ));
         CHECK( magma_dmconvert( Ah, &ACSR, A.storage_type, Magma_CSR, queue ));
 
-        CHECK( magma_dcsrsplit( bsize, ACSR, &DCSR, &RCSR, queue ));
+        CHECK( magma_dcsrsplit( offset, bsize, ACSR, &DCSR, &RCSR, queue ));
 
         CHECK( magma_dmconvert( DCSR, &Dh, Magma_CSR, A.storage_type, queue ));
         CHECK( magma_dmconvert( RCSR, &Rh, Magma_CSR, A.storage_type, queue ));

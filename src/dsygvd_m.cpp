@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -13,10 +13,9 @@
        @precisions normal d -> s
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
-#define PRECISION_d
 #define REAL
 
 /**
@@ -181,19 +180,18 @@ magma_dsygvd_m(
     magma_int_t *iwork, magma_int_t liwork,
     magma_int_t *info)
 {
+    /* Constants */
+    double c_one = MAGMA_D_ONE;
+
+    /* Local variables */
     const char* uplo_ = lapack_uplo_const( uplo );
     const char* jobz_ = lapack_vec_const( jobz );
-
-    double d_one = MAGMA_D_ONE;
 
     magma_int_t lower;
     magma_trans_t trans;
     magma_int_t wantz, lquery;
 
     magma_int_t lwmin, liwmin;
-
-    magma_queue_t stream;
-    magma_queue_create( &stream );
 
     wantz = (jobz == MagmaVec);
     lower = (uplo == MagmaLower);
@@ -301,7 +299,7 @@ magma_dsygvd_m(
             }
 
             magma_dtrsm_m( ngpu, MagmaLeft, uplo, trans, MagmaNonUnit,
-                           n, n, d_one, B, ldb, A, lda );
+                           n, n, c_one, B, ldb, A, lda );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -311,8 +309,9 @@ magma_dsygvd_m(
             } else {
                 trans = MagmaTrans;
             }
-
+            #ifdef ENABLE_DEBUG
             printf("--- the multi GPU version is falling back to 1 GPU to perform the last TRMM since there is no TRMM_mgpu --- \n");
+            #endif
             double *dA=NULL, *dB=NULL;
             magma_int_t ldda = magma_roundup( n, 32 );
             magma_int_t lddb = ldda;
@@ -324,11 +323,19 @@ magma_dsygvd_m(
                 *info = MAGMA_ERR_DEVICE_ALLOC;
                 return *info;
             }
-            magma_dsetmatrix( n, n, B, ldb, dB, lddb );
-            magma_dsetmatrix( n, n, A, lda, dA, ldda );
+
+            magma_queue_t queue;
+            magma_device_t cdev;
+            magma_getdevice( &cdev );
+            magma_queue_create( cdev, &queue );
+            
+            magma_dsetmatrix( n, n, B, ldb, dB, lddb, queue );
+            magma_dsetmatrix( n, n, A, lda, dA, ldda, queue );
             magma_dtrmm( MagmaLeft, uplo, trans, MagmaNonUnit,
-                         n, n, d_one, dB, lddb, dA, ldda );
-            magma_dgetmatrix( n, n, dA, ldda, A, lda );
+                         n, n, c_one, dB, lddb, dA, ldda, queue );
+            magma_dgetmatrix( n, n, dA, ldda, A, lda, queue );
+            
+            magma_queue_destroy( queue );
             
             magma_free( dA );
             magma_free( dB );

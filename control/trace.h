@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
 */
@@ -11,7 +11,10 @@
 #define TRACE_H
 
 // has MagmaMaxGPUs, strlcpy, max
-#include "common_magma.h"
+// TODO: what's the best way to protect inclusion?
+#ifndef MAGMA_H
+#include "magma_v2.h"
+#endif
 
 // ----------------------------------------
 const int MAX_CORES       = 1;                 // CPU cores

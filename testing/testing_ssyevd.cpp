@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Mark Gates
 
-       @generated from testing_zheevd.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zheevd.cpp normal z -> s, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -21,6 +21,7 @@
 // includes, project
 #include "magma.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 #define REAL
@@ -32,17 +33,21 @@ int main( int argc, char** argv)
 {
     TESTING_INIT();
 
+    /* Constants */
+    const float d_zero = 0;
+    const magma_int_t izero = 0;
+    const magma_int_t ione  = 1;
+    
+    /* Local variables */
     real_Double_t   gpu_time, cpu_time;
-    float *h_A, *h_R, *h_work, aux_work[1];
+    float *h_A, *h_R, *h_Z, *h_work, aux_work[1];
     #ifdef COMPLEX
     float *rwork, aux_rwork[1];
     magma_int_t lrwork;
     #endif
-    float *w1, *w2, result[4]={0, 0, 0, 0}, eps;
-    magma_int_t *iwork, aux_iwork[1];
+    float *w1, *w2, result[4]={0, 0, 0, 0}, eps, abstol;
+    magma_int_t *iwork, *isuppz, *ifail, aux_iwork[1];
     magma_int_t N, n2, info, lwork, liwork, lda;
-    magma_int_t izero    = 0;
-    magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     eps = lapackf77_slamch( "E" );
     magma_int_t status = 0;
@@ -50,32 +55,99 @@ int main( int argc, char** argv)
     magma_opts opts;
     opts.parse_opts( argc, argv );
 
-    float tol    = opts.tolerance * lapackf77_slamch("E");
-    float tolulp = opts.tolerance * lapackf77_slamch("P");
-    
     // checking NoVec requires LAPACK
     opts.lapack |= (opts.check && opts.jobz == MagmaNoVec);
     
-    printf("%% jobz = %s, uplo = %s\n",
-           lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo));
+    magma_range_t range = MagmaRangeAll;
+    if (opts.fraction != 1)
+        range = MagmaRangeI;
+    
+    #ifdef REAL
+    if (opts.version == 3 || opts.version == 4) {
+        printf("%% magma_ssyevr and magma_ssyevx are not available for real precisions (single, float).\n");
+        return status;
+    }
+    #endif
+    
+    float tol    = opts.tolerance * lapackf77_slamch("E");
+    float tolulp = opts.tolerance * lapackf77_slamch("P");
+    
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% jobz = %s, range = %s, uplo = %s, fraction = %6.4f, ngpu = %d\n",
+           lapack_vec_const(opts.jobz), lapack_range_const(range), lapack_uplo_const(opts.uplo),
+           opts.fraction, int(abs_ngpu) );
 
-    printf("%%   N   CPU Time (sec)   GPU Time (sec)\n");
-    printf("%%======================================\n");
+    printf("%%   N   CPU Time (sec)   GPU Time (sec)   |S-S_magma|   |A-USU'|   |I-U'U| \n");
+    printf("%%==========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             n2  = N*N;
             lda = N;
+            abstol = 0;  // auto, in ssyevr
             
+            // TODO: test vl-vu range
+            magma_int_t m1 = 0;
+            float vl = 0;
+            float vu = 0;
+            magma_int_t il = 0;
+            magma_int_t iu = 0;
+            if (opts.fraction == 0) {
+                il = max( 1, magma_int_t(0.1*N) );
+                iu = max( 1, magma_int_t(0.3*N) );
+            }
+            else {
+                il = 1;
+                iu = max( 1, magma_int_t(opts.fraction*N) );
+            }
+
             // query for workspace sizes
-            magma_ssyevd( opts.jobz, opts.uplo,
-                          N, NULL, lda, NULL,
-                          aux_work,  -1,
-                          #ifdef COMPLEX
-                          aux_rwork, -1,
-                          #endif
-                          aux_iwork, -1,
-                          &info );
+            if ( opts.version == 1 || opts.version == 2 ) {
+                magma_ssyevd( opts.jobz, opts.uplo,
+                              N, NULL, lda, NULL,  // A, w
+                              aux_work,  -1,
+                              #ifdef COMPLEX
+                              aux_rwork, -1,
+                              #endif
+                              aux_iwork, -1,
+                              &info );
+            }
+            else if ( opts.version == 3 ) {
+                #ifdef COMPLEX
+                magma_ssyevr( opts.jobz, range, opts.uplo,
+                              N, NULL, lda,      // A
+                              vl, vu, il, iu, abstol,
+                              &m1, NULL,         // w
+                              NULL, lda, NULL,   // Z, isuppz
+                              aux_work,  -1,
+                              #ifdef COMPLEX
+                              aux_rwork, -1,
+                              #endif
+                              aux_iwork, -1,
+                              &info );
+                #endif
+            }
+            else if ( opts.version == 4 ) {
+                #ifdef COMPLEX
+                magma_ssyevx( opts.jobz, range, opts.uplo,
+                              N, NULL, lda,      // A
+                              vl, vu, il, iu, abstol,
+                              &m1, NULL,         // w
+                              NULL, lda,         // Z
+                              aux_work,  -1,
+                              #ifdef COMPLEX
+                              aux_rwork,
+                              #endif
+                              aux_iwork,
+                              NULL,              // ifail
+                              &info );
+                // ssyevx doesn't query rwork, iwork; set them for consistency
+                aux_rwork[0] = float(7*N);
+                aux_iwork[0] = float(5*N);
+                #endif
+            }
             lwork  = (magma_int_t) MAGMA_S_REAL( aux_work[0] );
             #ifdef COMPLEX
             lrwork = (magma_int_t) aux_rwork[0];
@@ -94,14 +166,30 @@ int main( int argc, char** argv)
             TESTING_MALLOC_PIN( h_R,    float, N*lda  );
             TESTING_MALLOC_PIN( h_work, float, lwork  );
             
+            if (opts.version == 3) {
+                TESTING_MALLOC_CPU( h_Z,    float, N*lda      );
+                TESTING_MALLOC_CPU( isuppz, magma_int_t,        2*max(1,N) );
+            }
+            if (opts.version == 4) {
+                TESTING_MALLOC_CPU( h_Z,    float, N*lda      );
+                TESTING_MALLOC_CPU( ifail,  magma_int_t,        N          );
+            }
+            
+            /* Clear eigenvalues, for |S-S_magma| check when fraction < 1. */
+            lapackf77_slaset( "Full", &N, &ione, &d_zero, &d_zero, w1, &N );
+            lapackf77_slaset( "Full", &N, &ione, &d_zero, &d_zero, w2, &N );
+            
             /* Initialize the matrix */
             lapackf77_slarnv( &ione, ISEED, &n2, h_A );
             magma_smake_symmetric( N, h_A, N );
             
             lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             
-            /* warm up run */
-            if ( opts.warmup ) {
+            /* ====================================================================
+               Performs operation using MAGMA
+               =================================================================== */
+            gpu_time = magma_wtime();
+            if (opts.version == 1) {
                 if (opts.ngpu == 1) {
                     magma_ssyevd( opts.jobz, opts.uplo,
                                   N, h_R, lda, w1,
@@ -113,51 +201,86 @@ int main( int argc, char** argv)
                                   &info );
                 }
                 else {
-                    magma_ssyevd_m( opts.ngpu, opts.jobz, opts.uplo,
-                                  N, h_R, lda, w1,
-                                  h_work, lwork,
-                                  #ifdef COMPLEX
-                                  rwork, lrwork,
-                                  #endif
-                                  iwork, liwork,
-                                  &info );
+                    //printf( "magma_ssyevd_m, ngpu %d (%d)\n", opts.ngpu, abs_ngpu );
+                    magma_ssyevd_m( abs_ngpu, opts.jobz, opts.uplo,
+                                    N, h_R, lda, w1,
+                                    h_work, lwork,
+                                    #ifdef COMPLEX
+                                    rwork, lrwork,
+                                    #endif
+                                    iwork, liwork,
+                                    &info );
                 }
-
-                if (info != 0)
-                    printf("magma_ssyevd returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
-                lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             }
-            
-            /* ====================================================================
-               Performs operation using MAGMA
-               =================================================================== */
-            gpu_time = magma_wtime();
-            if (opts.ngpu == 1) {
-                magma_ssyevd( opts.jobz, opts.uplo,
-                              N, h_R, lda, w1,
+            else if ( opts.version == 2 ) {  // version 2: ssyevdx computes selected eigenvalues/vectors
+                if (opts.ngpu == 1) {
+                    magma_ssyevdx( opts.jobz, range, opts.uplo,
+                                   N, h_R, lda,
+                                   vl, vu, il, iu,
+                                   &m1, w1,
+                                   h_work, lwork,
+                                   #ifdef COMPLEX
+                                   rwork, lrwork,
+                                   #endif
+                                   iwork, liwork,
+                                   &info );
+                }
+                else {
+                    //printf( "magma_ssyevdx_m, ngpu %d (%d)\n", opts.ngpu, abs_ngpu );
+                    magma_ssyevdx_m( abs_ngpu, opts.jobz, range, opts.uplo,
+                                     N, h_R, lda,
+                                     vl, vu, il, iu,
+                                     &m1, w1,
+                                     h_work, lwork,
+                                     #ifdef COMPLEX
+                                     rwork, lrwork,
+                                     #endif
+                                     iwork, liwork,
+                                     &info );
+                }
+                //printf( "il %d, iu %d, m1 %d\n", il, iu, m1 );
+            }
+            else if ( opts.version == 3 ) {  // version 3: MRRR, computes selected eigenvalues/vectors
+                // only real version available
+                #ifdef COMPLEX
+                magma_ssyevr( opts.jobz, range, opts.uplo,
+                              N, h_R, lda,
+                              vl, vu, il, iu, abstol,
+                              &m1, w1,
+                              h_Z, lda, isuppz,
                               h_work, lwork,
                               #ifdef COMPLEX
                               rwork, lrwork,
                               #endif
                               iwork, liwork,
                               &info );
+                lapackf77_slacpy( "Full", &N, &N, h_Z, &lda, h_R, &lda );
+                #endif
             }
-            else {
-                magma_ssyevd_m( opts.ngpu, opts.jobz, opts.uplo,
-                              N, h_R, lda, w1,
+            else if ( opts.version == 4 ) {  // version 3: ssyevx (QR iteration), computes selected eigenvalues/vectors
+                // only real version available
+                #ifdef COMPLEX
+                magma_ssyevx( opts.jobz, range, opts.uplo,
+                              N, h_R, lda,
+                              vl, vu, il, iu, abstol,
+                              &m1, w1,
+                              h_Z, lda,
                               h_work, lwork,
                               #ifdef COMPLEX
-                              rwork, lrwork,
+                              rwork, /*lrwork,*/
                               #endif
-                              iwork, liwork,
+                              iwork, /*liwork,*/
+                              ifail,
                               &info );
+                lapackf77_slacpy( "Full", &N, &N, h_Z, &lda, h_R, &lda );
+                #endif
             }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0)
                 printf("magma_ssyevd returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
+            bool okay = true;
             if ( opts.check && opts.jobz != MagmaNoVec ) {
                 /* =====================================================================
                    Check the results following the LAPACK's [zcds]drvst routine.
@@ -185,7 +308,7 @@ int main( int argc, char** argv)
                 
                 TESTING_FREE_CPU( work );  work=NULL;
                 
-                // Disable eigenvalue check which calls routine again --
+                // Disable third eigenvalue check that calls routine again --
                 // it obscures whether error occurs in first call above or in this call.
                 // But see comparison to LAPACK below.
                 //
@@ -216,14 +339,49 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 cpu_time = magma_wtime();
-                lapackf77_ssyevd( lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
-                                  &N, h_A, &lda, w2,
-                                  h_work, &lwork,
-                                  #ifdef COMPLEX
-                                  rwork, &lrwork,
-                                  #endif
-                                  iwork, &liwork,
-                                  &info );
+                if ( opts.version == 1 || opts.version == 2 ) {
+                    lapackf77_ssyevd( lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
+                                      &N, h_A, &lda, w2,
+                                      h_work, &lwork,
+                                      #ifdef COMPLEX
+                                      rwork, &lrwork,
+                                      #endif
+                                      iwork, &liwork,
+                                      &info );
+                }
+                else if ( opts.version == 3 ) {
+                    lapackf77_ssyevr( lapack_vec_const(opts.jobz),
+                                      lapack_range_const(range),
+                                      lapack_uplo_const(opts.uplo),
+                                      &N, h_A, &lda,
+                                      &vl, &vu, &il, &iu, &abstol,
+                                      &m1, w2,
+                                      h_Z, &lda, isuppz,
+                                      h_work, &lwork,
+                                      #ifdef COMPLEX
+                                      rwork, &lrwork,
+                                      #endif
+                                      iwork, &liwork,
+                                      &info );
+                    lapackf77_slacpy( "Full", &N, &N, h_Z, &lda, h_A, &lda );
+                }
+                else if ( opts.version == 4 ) {
+                    lapackf77_ssyevx( lapack_vec_const(opts.jobz),
+                                      lapack_range_const(range),
+                                      lapack_uplo_const(opts.uplo),
+                                      &N, h_A, &lda,
+                                      &vl, &vu, &il, &iu, &abstol,
+                                      &m1, w2,
+                                      h_Z, &lda,
+                                      h_work, &lwork,
+                                      #ifdef COMPLEX
+                                      rwork,
+                                      #endif
+                                      iwork,
+                                      ifail,
+                                      &info );
+                    lapackf77_slacpy( "Full", &N, &N, h_Z, &lda, h_A, &lda );
+                }
                 cpu_time = magma_wtime() - cpu_time;
                 if (info != 0)
                     printf("lapackf77_ssyevd returned error %d: %s.\n",
@@ -238,28 +396,25 @@ int main( int argc, char** argv)
                 }
                 result[3] = diff / (N*maxw);
                 
-                printf("%5d   %7.2f          %7.2f\n",
-                       (int) N, cpu_time, gpu_time);
+                okay = okay && (result[3] < tolulp);
+                printf("%5d   %9.4f        %9.4f        %8.2e   ",
+                       (int) N, cpu_time, gpu_time, result[3] );
             }
             else {
-                printf("%5d     ---            %7.2f\n",
+                printf("%5d      ---           %9.4f          ---      ",
                        (int) N, gpu_time);
             }
             
-            /* =====================================================================
-               Print execution time
-               =================================================================== */
+            // print error checks
             if ( opts.check && opts.jobz != MagmaNoVec ) {
-                printf("Testing the factorization A = U S U' for correctness:\n");
-                printf("    | A - U S U' | / (|A| N)     = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed") );
-                printf("    | I -   U'U  | /  N          = %8.2e   %s\n",   result[1], (result[1] < tol    ? "ok" : "failed") );
-                //printf("    | S(w/ U) - S(w/o U) | / |S| = %8.2e   %s\n\n", result[2], (result[2] < tolulp ? "ok" : "failed") );
-                status += ! (result[0] < tol && result[1] < tol);  // && result[2] < tolulp)
+                okay = okay && (result[0] < tol) && (result[1] < tol);
+                printf("   %8.2e   %8.2e", result[0], result[1] );
             }
-            if ( opts.lapack ) {
-                printf("    | S_magma - S_lapack | / |S| = %8.2e   %s\n\n", result[3], (result[3] < tolulp ? "ok" : "failed") );
-                status += ! (result[3] < tolulp);
+            else {
+                printf("     ---        ---   ");
             }
+            printf("   %s\n", (okay ? "ok" : "failed"));
+            status += ! okay;
             
             TESTING_FREE_CPU( h_A   );
             TESTING_FREE_CPU( w1    );
@@ -271,6 +426,15 @@ int main( int argc, char** argv)
             
             TESTING_FREE_PIN( h_R    );
             TESTING_FREE_PIN( h_work );
+            
+            if ( opts.version == 3 ) {
+                TESTING_FREE_CPU( h_Z    );
+                TESTING_FREE_CPU( isuppz );
+            }
+            if ( opts.version == 4 ) {
+                TESTING_FREE_CPU( h_Z    );
+                TESTING_FREE_CPU( ifail  );
+            }
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -278,6 +442,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

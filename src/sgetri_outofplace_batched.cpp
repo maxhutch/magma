@@ -1,17 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Tingxing Dong
-
-       @generated from zgetri_outofplace_batched.cpp normal z -> s, Fri Sep 11 18:29:32 2015
+       @author Ahmad Abdelfattah
+       
+       @generated from src/zgetri_outofplace_batched.cpp normal z -> s, Wed Jan  6 17:59:36 2016
 */
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 #include "cublas_v2.h"
 
@@ -109,10 +110,6 @@ magma_sgetri_outofplace_batched( magma_int_t n,
     magma_int_t ib, j;
     magma_int_t nb = 256; //256; // BATRF_NB;
 
-    cublasHandle_t myhandle;
-    cublasCreate_v2(&myhandle);
-    cublasSetStream(myhandle, queue);
-
     float **dA_displ   = NULL;
     float **dW0_displ  = NULL;
     float **dW1_displ  = NULL;
@@ -156,17 +153,14 @@ magma_sgetri_outofplace_batched( magma_int_t n,
         return info;
     }
 
-    magmablas_slaset_q(MagmaFull, invdiagA_msize, batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dinvdiagA, invdiagA_msize, queue);
-    magmablas_slaset_q(MagmaFull, dwork_msize, batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dwork, dwork_msize, queue);
-    sset_pointer(dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue);
-    sset_pointer(dinvdiagA_array, dinvdiagA, TRI_NB, 0, 0, invdiagA_msize, batchCount, queue);
-
-    //printf(" I am after malloc getri\n");
-
+    magmablas_slaset_q( MagmaFull, invdiagA_msize, batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dinvdiagA, invdiagA_msize, queue );
+    magmablas_slaset_q( MagmaFull, dwork_msize, batchCount, MAGMA_S_ZERO, MAGMA_S_ZERO, dwork, dwork_msize, queue );
+    magma_sset_pointer( dwork_array, dwork, n, 0, 0, dwork_msize, batchCount, queue );
+    magma_sset_pointer( dinvdiagA_array, dinvdiagA, TRI_NB, 0, 0, invdiagA_msize, batchCount, queue );
 
     magma_sdisplace_pointers(dA_displ, dA_array, ldda, 0, 0, batchCount, queue);
     // set dinvdiagA to identity
-    magmablas_slaset_batched(MagmaUpperLower, n, n, MAGMA_S_ZERO, MAGMA_S_ONE, dinvA_array, lddia, batchCount, queue);
+    magmablas_slaset_batched( MagmaFull, n, n, MAGMA_S_ZERO, MAGMA_S_ONE, dinvA_array, lddia, batchCount, queue );
 
     for (j = 0; j < n; j += nb) {
         ib = min(nb, n-j);
@@ -178,7 +172,7 @@ magma_sgetri_outofplace_batched( magma_int_t n,
         //magma_queue_sync(NULL);
         //printf(" @ step %d calling solve 1 \n",j);
         // solve dwork = L^-1 * I
-        magmablas_slaset_batched(MagmaUpperLower, j, ib, MAGMA_S_ZERO, MAGMA_S_ZERO, dwork_array, n, batchCount, queue);
+        magmablas_slaset_batched( MagmaFull, j, ib, MAGMA_S_ZERO, MAGMA_S_ZERO, dwork_array, n, batchCount, queue );
         magma_sdisplace_pointers(dW5_displ, dwork_array, n, j, 0, batchCount, queue);
         magma_sdisplace_pointers(dW0_displ, dinvA_array, lddia, j, j, batchCount, queue);
         magma_sdisplace_pointers(dA_displ, dA_array, ldda, j, j, batchCount, queue);
@@ -192,9 +186,8 @@ magma_sgetri_outofplace_batched( magma_int_t n,
                 dinvdiagA_array,  invdiagA_msize, 
                 dW1_displ,   dW2_displ, 
                 dW3_displ,   dW4_displ,
-                1, batchCount, queue, myhandle);
+                1, batchCount, queue );
         
-        //magma_queue_sync(NULL);
         //printf(" @ step %d calling solve 2 \n",j);
         // solve dinvdiagA = U^-1 * dwork
         magma_sdisplace_pointers(dW5_displ, dwork_array, n, 0, 0, batchCount, queue);
@@ -209,15 +202,13 @@ magma_sgetri_outofplace_batched( magma_int_t n,
                 dinvdiagA_array,  invdiagA_msize, 
                 dW1_displ,   dW2_displ, 
                 dW3_displ,   dW4_displ,
-                1, batchCount, queue, myhandle);
+                1, batchCount, queue );
     }
 
     // Apply column interchanges
-    magma_slaswp_columnserial_batched( n, dinvA_array, lddia, max(1,n-1), 1, dipiv_array, batchCount, queue);
+    magma_slaswp_columnserial_batched( n, dinvA_array, lddia, max(1,n-1), 1, dipiv_array, batchCount, queue );
 
-    magmablasSetKernelStream(queue);
     magma_queue_sync(queue);
-    cublasDestroy_v2(myhandle);
 
     magma_free(dA_displ);
     magma_free(dW1_displ);

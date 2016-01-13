@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        
@@ -112,13 +112,17 @@ magma_zlaswp_rowparallel_batched( magma_int_t n,
 
     if ( n < SWP_WIDTH)
     {
-        zlaswp_rowparallel_kernel_batched<<<grid, height, sizeof(magmaDoubleComplex) * height * n, queue >>>
-                                           ( n, n, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
+        size_t shmem = sizeof(magmaDoubleComplex) * height * n;
+        zlaswp_rowparallel_kernel_batched
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, n, height, input_array, ldi, output_array, ldo, pivinfo_array ); 
     }
     else
     {
-        zlaswp_rowparallel_kernel_batched<<< grid, height, sizeof(magmaDoubleComplex) * height * SWP_WIDTH, queue >>>
-                                            (n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array );
+        size_t shmem = sizeof(magmaDoubleComplex) * height * SWP_WIDTH;
+        zlaswp_rowparallel_kernel_batched
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, SWP_WIDTH, height, input_array, ldi, output_array, ldo, pivinfo_array );
     }
 }
 
@@ -148,13 +152,17 @@ magma_zlaswp_rowparallel_q( magma_int_t n,
 
     if ( n < SWP_WIDTH)
     {
-        zlaswp_rowparallel_kernel<<<grid, height, sizeof(magmaDoubleComplex) * height * n, queue >>>
-                                   ( n, n, height, input, ldi, output, ldo, pivinfo ); 
+        size_t shmem = sizeof(magmaDoubleComplex) * height * n;
+        zlaswp_rowparallel_kernel
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, n, height, input, ldi, output, ldo, pivinfo ); 
     }
     else
     {
-        zlaswp_rowparallel_kernel<<< grid, height, sizeof(magmaDoubleComplex) * height * SWP_WIDTH, queue >>>
-                                    (n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
+        size_t shmem = sizeof(magmaDoubleComplex) * height * SWP_WIDTH;
+        zlaswp_rowparallel_kernel
+            <<< grid, height, shmem, queue->cuda_stream() >>>
+            ( n, SWP_WIDTH, height, input, ldi, output, ldo, pivinfo ); 
     }
 }
 
@@ -167,7 +175,7 @@ magma_zlaswp_rowparallel( magma_int_t n, magmaDoubleComplex* input, magma_int_t 
                    magma_int_t k1, magma_int_t k2,
                    magma_int_t *pivinfo)
 {
-    magma_zlaswp_rowparallel_q(n, input, ldi, output, ldo, k1, k2, pivinfo, magma_stream);
+    magma_zlaswp_rowparallel_q( n, input, ldi, output, ldo, k1, k2, pivinfo, magmablasGetQueue() );
 }
 
 //=================================================================================================
@@ -220,8 +228,9 @@ magma_zlaswp_rowserial_batched(magma_int_t n, magmaDoubleComplex** dA_array, mag
     int blocks = magma_ceildiv( n, BLK_SIZE );
     dim3  grid(blocks, 1, batchCount);
 
-    zlaswp_rowserial_kernel_batched<<< grid, max(BLK_SIZE, n), 0, queue >>>(
-        n, dA_array, lda, k1, k2, ipiv_array);
+    zlaswp_rowserial_kernel_batched
+        <<< grid, max(BLK_SIZE, n), 0, queue->cuda_stream() >>>
+        (n, dA_array, lda, k1, k2, ipiv_array);
 }
 
 
@@ -285,6 +294,7 @@ magma_zlaswp_columnserial_batched(magma_int_t n, magmaDoubleComplex** dA_array, 
     int blocks = magma_ceildiv( n, BLK_SIZE );
     dim3  grid(blocks, 1, batchCount);
 
-    zlaswp_columnserial_kernel_batched<<< grid, min(BLK_SIZE, n), 0, queue >>>(
-        n, dA_array, lda, k1, k2, ipiv_array);
+    zlaswp_columnserial_kernel_batched
+        <<< grid, min(BLK_SIZE, n), 0, queue->cuda_stream() >>>
+        (n, dA_array, lda, k1, k2, ipiv_array);
 }

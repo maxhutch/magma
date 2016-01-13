@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgerfs_nopiv_gpu.cpp normal z -> s, Fri Sep 11 18:29:26 2015
+       @generated from src/zgerfs_nopiv_gpu.cpp normal z -> s, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 #define BWDMAX 1.0
 #define ITERMAX 30
@@ -122,13 +122,16 @@ magma_sgerfs_nopiv_gpu(
     #define dX(i,j)     (dX + (i) + (j)*lddx)
     #define dR(i,j)     (dR + (i) + (j)*lddr)
     
-    float c_neg_one = MAGMA_S_NEG_ONE;
-    float c_one     = MAGMA_S_ONE;
-    magma_int_t     ione  = 1;
+    /* Constants */
+    const float c_neg_one = MAGMA_S_NEG_ONE;
+    const float c_one     = MAGMA_S_ONE;
+    const magma_int_t ione = 1;
+    
+    /* Local variables */
     magmaFloat_ptr dR;
     float Xnrmv, Rnrmv;
-    float          Anrm, Xnrm, Rnrm, cte, eps;
-    magma_int_t     i, j, iiter, lddsa, lddr;
+    float Anrm, Xnrm, Rnrm, cte, eps;
+    magma_int_t i, j, iiter, lddsa, lddr;
     
     /* Check arguments */
     *iter = 0;
@@ -152,55 +155,54 @@ magma_sgerfs_nopiv_gpu(
     if ( n == 0 || nrhs == 0 )
         return *info;
 
+    magma_queue_t queue = NULL;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+    
     lddsa = n;
     lddr  = n;
     
     dR  = dworkd;
     
     eps  = lapackf77_slamch("Epsilon");
-    Anrm = magmablas_slange(MagmaInfNorm, n, n, dA, ldda, (float*)dworkd );
-    cte  = Anrm * eps * pow( (float)n, (float)0.5 ) * BWDMAX;
+    Anrm = magmablas_slange( MagmaInfNorm, n, n, dA, ldda, (magmaFloat_ptr)dworkd, n*nrhs, queue );
+    cte  = Anrm * eps * pow( (float)n, 0.5 ) * BWDMAX;
     
     // residual dR = dB - dA*dX in real
-    magmablas_slacpy( MagmaUpperLower, n, nrhs, dB, lddb, dR, lddr );
+    magmablas_slacpy( MagmaFull, n, nrhs, dB, lddb, dR, lddr, queue );
     if ( nrhs == 1 ) {
         magma_sgemv( trans, n, n,
                      c_neg_one, dA, ldda,
                                 dX, 1,
-                     c_one,     dR, 1 );
+                     c_one,     dR, 1, queue );
     }
     else {
         magma_sgemm( trans, MagmaNoTrans, n, nrhs, n,
                      c_neg_one, dA, ldda,
                                 dX, lddx,
-                     c_one,     dR, lddr );
+                     c_one,     dR, lddr, queue );
     }
     
     // TODO: use MAGMA_S_ABS( dX(i,j) ) instead of slange?
     for( j=0; j < nrhs; j++ ) {
-        i = magma_isamax( n, dX(0,j), 1) - 1;
-        magma_sgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );
+        i = magma_isamax( n, dX(0,j), 1, queue ) - 1;
+        magma_sgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
         Xnrm = lapackf77_slange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
         
-        i = magma_isamax ( n, dR(0,j), 1 ) - 1;
-        magma_sgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1 );
+        i = magma_isamax( n, dR(0,j), 1, queue ) - 1;
+        magma_sgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
         Rnrm = lapackf77_slange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
-       
-
-
- //       printf("Rnrm : %e, Xnrm*cte : %e\n", Rnrm, Xnrm*cte);
-
-
-
+        //printf("Rnrm : %e, Xnrm*cte : %e\n", Rnrm, Xnrm*cte);
         if ( Rnrm >  Xnrm*cte ) {
-            goto REFINEMENT;
+            goto refinement;
         }
     }
     
     *iter = 0;
-    return *info;
+    goto cleanup;
 
-REFINEMENT:
+refinement:
     for( iiter=1; iiter < ITERMAX; ) {
         *info = 0;
         // solve dAF*dX = dR
@@ -208,7 +210,7 @@ REFINEMENT:
         magma_sgetrs_nopiv_gpu( trans, n, nrhs, dAF, lddsa, dR, lddr, info );
         if (*info != 0) {
             *iter = -3;
-            goto FALLBACK;
+            goto fallback;
         }
         
         // Add correction and setup residual
@@ -217,7 +219,7 @@ REFINEMENT:
         // This saves going through dR a second time (if done with one more kernel).
         // -- not really: first time is read, second time is write.
         for( j=0; j < nrhs; j++ ) {
-            magmablas_saxpycp( n, dR(0,j), dX(0,j), dB(0,j) );
+            magmablas_saxpycp( n, dR(0,j), dX(0,j), dB(0,j), queue );
         }
         
         // residual dR = dB - dA*dX in real
@@ -225,24 +227,24 @@ REFINEMENT:
             magma_sgemv( trans, n, n,
                          c_neg_one, dA, ldda,
                                     dX, 1,
-                         c_one,     dR, 1 );
+                         c_one,     dR, 1, queue );
         }
         else {
             magma_sgemm( trans, MagmaNoTrans, n, nrhs, n,
                          c_neg_one, dA, ldda,
                                     dX, lddx,
-                         c_one,     dR, lddr );
+                         c_one,     dR, lddr, queue );
         }
         
         /*  Check whether the nrhs normwise backward errors satisfy the
          *  stopping criterion. If yes, set ITER=IITER > 0 and return. */
         for( j=0; j < nrhs; j++ ) {
-            i = magma_isamax( n, dX(0,j), 1) - 1;
-            magma_sgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1 );
+            i = magma_isamax( n, dX(0,j), 1, queue ) - 1;
+            magma_sgetmatrix( 1, 1, dX(i,j), 1, &Xnrmv, 1, queue );
             Xnrm = lapackf77_slange( "F", &ione, &ione, &Xnrmv, &ione, NULL );
             
-            i = magma_isamax ( n, dR(0,j), 1 ) - 1;
-            magma_sgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1 );
+            i = magma_isamax( n, dR(0,j), 1, queue ) - 1;
+            magma_sgetmatrix( 1, 1, dR(i,j), 1, &Rnrmv, 1, queue );
             Rnrm = lapackf77_slange( "F", &ione, &ione, &Rnrmv, &ione, NULL );
             
             if ( Rnrm >  Xnrm*cte ) {
@@ -253,21 +255,23 @@ REFINEMENT:
         /*  If we are here, the nrhs normwise backward errors satisfy
          *  the stopping criterion, we are good to exit. */
         *iter = iiter;
-        return *info;
+        goto cleanup;
         
       L20:
         iiter++;
     }
-
     
     /* If we are at this place of the code, this is because we have
      * performed ITER=ITERMAX iterations and never satisified the
      * stopping criterion. Set up the ITER flag accordingly. */
     *iter = -ITERMAX - 1;
     
-FALLBACK:
+fallback:
     /* Iterative refinement failed to converge to a
      * satisfactory solution. */
+    
+cleanup:
+    magma_queue_destroy( queue );
     
     return *info;
 }

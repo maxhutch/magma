@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zsolver.cpp normal z -> d, Fri Sep 11 18:29:47 2015
+       @generated from sparse-iter/testing/testing_zsolver.cpp normal z -> d, Wed Jan  6 17:59:51 2016
        @author Hartwig Anzt
 */
 
@@ -43,18 +43,8 @@ int main(  int argc, char** argv )
     
     int i=1;
     CHECK( magma_dparse_opts( argc, argv, &zopts, &i, queue ));
-
     B.blocksize = zopts.blocksize;
     B.alignment = zopts.alignment;
-
-    // make sure preconditioner is NONE for unpreconditioned systems
-    if ( zopts.solver_par.solver != Magma_PCG &&
-         zopts.solver_par.solver != Magma_PGMRES &&
-         zopts.solver_par.solver != Magma_PBICGSTAB &&
-         zopts.solver_par.solver != Magma_ITERREF  &&
-         zopts.solver_par.solver != Magma_PIDR  &&
-         zopts.solver_par.solver != Magma_LOBPCG )
-        zopts.precond_par.solver = Magma_NONE;
 
     CHECK( magma_dsolverinfo_init( &zopts.solver_par, &zopts.precond_par, queue ));
 
@@ -67,21 +57,37 @@ int main(  int argc, char** argv )
             CHECK( magma_d_csr_mtx( &A,  argv[i], queue ));
         }
 
-        printf( "\n%% matrix info: %d-by-%d with %d nonzeros\n\n",
-                            (int) A.num_rows,(int) A.num_cols,(int) A.nnz );
-
         // for the eigensolver case
-        zopts.solver_par.ev_length = A.num_rows;
+        zopts.solver_par.ev_length = A.num_cols;
         CHECK( magma_deigensolverinfo_init( &zopts.solver_par, queue ));
 
         // scale matrix
         CHECK( magma_dmscale( &A, zopts.scaling, queue ));
+        
+        // preconditioner
+        if ( zopts.solver_par.solver != Magma_ITERREF ) {
+            CHECK( magma_d_precondsetup( A, b, &zopts.solver_par, &zopts.precond_par, queue ) );
+        }
 
         CHECK( magma_dmconvert( A, &B, Magma_CSR, zopts.output_format, queue ));
+        
+        printf( "\n%% matrix info: %d-by-%d with %d nonzeros\n\n",
+                            int(A.num_rows), int(A.num_cols), int(A.nnz) );
+        
+        printf("matrixinfo = [ \n");
+        printf("%%   size   (m x n)     ||   nonzeros (nnz)   ||   nnz/m   ||   stored nnz\n");
+        printf("%%======================================================================"
+                            "======%%\n");
+        printf("  %8d  %8d      %10d             %4d        %10d\n",
+            int(B.num_rows), int(B.num_cols), int(B.true_nnz), int(B.true_nnz/B.num_rows), int(B.nnz) );
+        printf("%%======================================================================"
+        "======%%\n");
+        printf("];\n");
+
         CHECK( magma_dmtransfer( B, &B_d, Magma_CPU, Magma_DEV, queue ));
 
         // vectors and initial guess
-        CHECK( magma_dvinit( &b, Magma_DEV, A.num_cols, 1, one, queue ));
+        CHECK( magma_dvinit( &b, Magma_DEV, A.num_rows, 1, one, queue ));
         //magma_dvinit( &x, Magma_DEV, A.num_cols, 1, one, queue );
         //magma_d_spmv( one, B_d, x, zero, b, queue );                 //  b = A x
         //magma_dmfree(&x, queue );
@@ -95,7 +101,12 @@ int main(  int argc, char** argv )
         printf("data = [\n");
         magma_dsolverinfo( &zopts.solver_par, &zopts.precond_par, queue );
         printf("];\n\n");
-
+        
+        printf("precond_info = [\n");
+        printf("%%   setup  runtime\n");        
+        printf("  %.6f  %.6f\n",
+           zopts.precond_par.setuptime, zopts.precond_par.runtime );
+        printf("];\n\n");
         magma_dmfree(&B_d, queue );
         magma_dmfree(&B, queue );
         magma_dmfree(&A, queue );

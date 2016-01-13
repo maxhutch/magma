@@ -37,7 +37,7 @@
   <td id="projectlogo"><img alt="Logo" src="magma-logo.png"/></td>
   <td style="padding-left: 0.5em;">
    <div id="projectname">MAGMA
-   &#160;<span id="projectnumber">1.7.0</span>
+   &#160;<span id="projectnumber">2.0.0</span>
    </div>
    <div id="projectbrief">Matrix Algebra for GPU and Multicore Architectures</div>
   </td>
@@ -117,6 +117,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga3a18c1e602218f32433018c3cc9b0e5d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga3a18c1e602218f32433018c3cc9b0e5d">magma_cbajac_csr</a> (magma_int_t localiters, magma_c_matrix D, magma_c_matrix R, magma_c_matrix b, magma_c_matrix *x, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga3a18c1e602218f32433018c3cc9b0e5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine is a block-asynchronous Jacobi iteration performing s local Jacobi-updates within the block.  <a href="#ga3a18c1e602218f32433018c3cc9b0e5d">More...</a><br /></td></tr>
 <tr class="separator:ga3a18c1e602218f32433018c3cc9b0e5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga63de3b6273cc9fe39c9202c9b0b56053"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga63de3b6273cc9fe39c9202c9b0b56053">magma_cbajac_csr_overlap</a> (magma_int_t localiters, magma_int_t matrices, magma_int_t overlap, magma_c_matrix *D, magma_c_matrix *R, magma_c_matrix b, magma_c_matrix *x, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga63de3b6273cc9fe39c9202c9b0b56053"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine is a block-asynchronous Jacobi iteration with directed restricted additive Schwarz overlap (top-down) performing s local Jacobi-updates within the block.  <a href="#ga63de3b6273cc9fe39c9202c9b0b56053">More...</a><br /></td></tr>
+<tr class="separator:ga63de3b6273cc9fe39c9202c9b0b56053"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga84ebc7a8c87f06b59e515814759e5ef8"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga84ebc7a8c87f06b59e515814759e5ef8">magma_ccompact</a> (magma_int_t m, magma_int_t n, magmaFloatComplex_ptr dA, magma_int_t ldda, magmaFloat_ptr dnorms, float tol, magmaInt_ptr active, magmaInt_ptr cBlock, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga84ebc7a8c87f06b59e515814759e5ef8"><td class="mdescLeft">&#160;</td><td class="mdescRight">ZCOMPACT takes a set of n vectors of size m (in dA) and their norms and compacts them into the cBlock size&lt;=n vectors that have norms &gt; tol.  <a href="#ga84ebc7a8c87f06b59e515814759e5ef8">More...</a><br /></td></tr>
 <tr class="separator:ga84ebc7a8c87f06b59e515814759e5ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -126,42 +129,102 @@ Functions</h2></td></tr>
 <tr class="memitem:gaac34daec5fa60a188c368dcbbcaba83e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gaac34daec5fa60a188c368dcbbcaba83e">magma_citerilu_csr</a> (magma_c_matrix A, magma_c_matrix L, magma_c_matrix U, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gaac34daec5fa60a188c368dcbbcaba83e"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine iteratively computes an incomplete LU factorization.  <a href="#gaac34daec5fa60a188c368dcbbcaba83e">More...</a><br /></td></tr>
 <tr class="separator:gaac34daec5fa60a188c368dcbbcaba83e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae071b98cc36c85895d35204bcce6ba79"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gae071b98cc36c85895d35204bcce6ba79">magma_cjacobisetup_vector_gpu</a> (int num_rows, magma_c_matrix b, magma_c_matrix d, magma_c_matrix c, magma_c_matrix *x, magma_queue_t queue)</td></tr>
-<tr class="memdesc:gae071b98cc36c85895d35204bcce6ba79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#gae071b98cc36c85895d35204bcce6ba79">More...</a><br /></td></tr>
-<tr class="separator:gae071b98cc36c85895d35204bcce6ba79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga07c7a3451bdde3f821ac3304249809a4"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga07c7a3451bdde3f821ac3304249809a4">magma_cjacobisetup_vector_gpu</a> (magma_int_t num_rows, magma_c_matrix b, magma_c_matrix d, magma_c_matrix c, magma_c_matrix *x, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga07c7a3451bdde3f821ac3304249809a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prepares the Jacobi Iteration according to x^(k+1) = D^(-1) * b - D^(-1) * (L+U) * x^k x^(k+1) = c - M * x^k.  <a href="#ga07c7a3451bdde3f821ac3304249809a4">More...</a><br /></td></tr>
+<tr class="separator:ga07c7a3451bdde3f821ac3304249809a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga6a1e629b48723588f9b3c63c8059d1e6"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga6a1e629b48723588f9b3c63c8059d1e6">magma_clobpcg_maxpy</a> (magma_int_t num_rows, magma_int_t num_vecs, magmaFloatComplex_ptr X, magmaFloatComplex_ptr Y, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga6a1e629b48723588f9b3c63c8059d1e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine computes a axpy for a mxn matrix:  <a href="#ga6a1e629b48723588f9b3c63c8059d1e6">More...</a><br /></td></tr>
 <tr class="separator:ga6a1e629b48723588f9b3c63c8059d1e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga53f275c0c0c790a24d8b0e653121ea62"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga53f275c0c0c790a24d8b0e653121ea62">magma_cbicgmerge1</a> (int n, magmaFloatComplex_ptr skp, magmaFloatComplex_ptr v, magmaFloatComplex_ptr r, magmaFloatComplex_ptr p, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga53f275c0c0c790a24d8b0e653121ea62"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga53f275c0c0c790a24d8b0e653121ea62">More...</a><br /></td></tr>
-<tr class="separator:ga53f275c0c0c790a24d8b0e653121ea62"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gafc71d391a0dbf007c779d3e6692237a5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gafc71d391a0dbf007c779d3e6692237a5">magma_cbicgmerge2</a> (int n, magmaFloatComplex_ptr skp, magmaFloatComplex_ptr r, magmaFloatComplex_ptr v, magmaFloatComplex_ptr s, magma_queue_t queue)</td></tr>
-<tr class="memdesc:gafc71d391a0dbf007c779d3e6692237a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gafc71d391a0dbf007c779d3e6692237a5">More...</a><br /></td></tr>
-<tr class="separator:gafc71d391a0dbf007c779d3e6692237a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1f370ae1c871e82a25c46e7925a87130"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga1f370ae1c871e82a25c46e7925a87130">magma_cbicgmerge3</a> (int n, magmaFloatComplex_ptr skp, magmaFloatComplex_ptr p, magmaFloatComplex_ptr s, magmaFloatComplex_ptr t, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga1f370ae1c871e82a25c46e7925a87130"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga1f370ae1c871e82a25c46e7925a87130">More...</a><br /></td></tr>
-<tr class="separator:ga1f370ae1c871e82a25c46e7925a87130"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gadb5c03e9d1ffdd9b03a37e5e37bdd957"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gadb5c03e9d1ffdd9b03a37e5e37bdd957">magma_cbicgmerge4</a> (int type, magmaFloatComplex_ptr skp)</td></tr>
-<tr class="memdesc:gadb5c03e9d1ffdd9b03a37e5e37bdd957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs some parameter operations for the BiCGSTAB with scalars on GPU.  <a href="#gadb5c03e9d1ffdd9b03a37e5e37bdd957">More...</a><br /></td></tr>
-<tr class="separator:gadb5c03e9d1ffdd9b03a37e5e37bdd957"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaedc6b7723b5b48f58271a21b2497b904"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gaedc6b7723b5b48f58271a21b2497b904">magma_cbicgstab_1</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex beta, magmaFloatComplex omega, magmaFloatComplex_ptr r, magmaFloatComplex_ptr v, magmaFloatComplex_ptr p, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaedc6b7723b5b48f58271a21b2497b904"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gaedc6b7723b5b48f58271a21b2497b904">More...</a><br /></td></tr>
+<tr class="separator:gaedc6b7723b5b48f58271a21b2497b904"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga189d7f766909f5ffd2aa98f1277bdd80"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga189d7f766909f5ffd2aa98f1277bdd80">magma_cbicgstab_2</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex alpha, magmaFloatComplex_ptr r, magmaFloatComplex_ptr v, magmaFloatComplex_ptr s, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga189d7f766909f5ffd2aa98f1277bdd80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga189d7f766909f5ffd2aa98f1277bdd80">More...</a><br /></td></tr>
+<tr class="separator:ga189d7f766909f5ffd2aa98f1277bdd80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga579b68721c4b02dab51e81e8376a6770"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga579b68721c4b02dab51e81e8376a6770">magma_cbicgstab_3</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex alpha, magmaFloatComplex omega, magmaFloatComplex_ptr p, magmaFloatComplex_ptr s, magmaFloatComplex_ptr t, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga579b68721c4b02dab51e81e8376a6770"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga579b68721c4b02dab51e81e8376a6770">More...</a><br /></td></tr>
+<tr class="separator:ga579b68721c4b02dab51e81e8376a6770"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabf1122b27c7987678728669677e05eee"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gabf1122b27c7987678728669677e05eee">magma_cbicgstab_4</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex alpha, magmaFloatComplex omega, magmaFloatComplex_ptr y, magmaFloatComplex_ptr z, magmaFloatComplex_ptr s, magmaFloatComplex_ptr t, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gabf1122b27c7987678728669677e05eee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gabf1122b27c7987678728669677e05eee">More...</a><br /></td></tr>
+<tr class="separator:gabf1122b27c7987678728669677e05eee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9c49fc58ada22d7b4bba91cc3f618d02"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga9c49fc58ada22d7b4bba91cc3f618d02">magma_cbicgmerge_spmv1</a> (magma_c_matrix A, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr dp, magmaFloatComplex_ptr dr, magmaFloatComplex_ptr dv, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga9c49fc58ada22d7b4bba91cc3f618d02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the first SpmV using CSR with the dot product and the computation of alpha.  <a href="#ga9c49fc58ada22d7b4bba91cc3f618d02">More...</a><br /></td></tr>
 <tr class="separator:ga9c49fc58ada22d7b4bba91cc3f618d02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad7bcb714233657014ab3b3aaa601daab"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gad7bcb714233657014ab3b3aaa601daab">magma_cbicgmerge_spmv2</a> (magma_c_matrix A, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr ds, magmaFloatComplex_ptr dt, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gad7bcb714233657014ab3b3aaa601daab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the second SpmV using CSR with the dot product and the computation of omega.  <a href="#gad7bcb714233657014ab3b3aaa601daab">More...</a><br /></td></tr>
 <tr class="separator:gad7bcb714233657014ab3b3aaa601daab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga134539a6a93755da924f9829da803219"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga134539a6a93755da924f9829da803219">magma_cbicgmerge_xrbeta</a> (int n, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr rr, magmaFloatComplex_ptr r, magmaFloatComplex_ptr p, magmaFloatComplex_ptr s, magmaFloatComplex_ptr t, magmaFloatComplex_ptr x, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
-<tr class="memdesc:ga134539a6a93755da924f9829da803219"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the second SpmV using CSR with the dot product and the computation of omega.  <a href="#ga134539a6a93755da924f9829da803219">More...</a><br /></td></tr>
-<tr class="separator:ga134539a6a93755da924f9829da803219"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga96420fbb45aa66f7e2bf7255dcb95089"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga96420fbb45aa66f7e2bf7255dcb95089">magma_cbicgmerge_xrbeta</a> (magma_int_t n, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr rr, magmaFloatComplex_ptr r, magmaFloatComplex_ptr p, magmaFloatComplex_ptr s, magmaFloatComplex_ptr t, magmaFloatComplex_ptr x, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga96420fbb45aa66f7e2bf7255dcb95089"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the second SpmV using CSR with the dot product and the computation of omega.  <a href="#ga96420fbb45aa66f7e2bf7255dcb95089">More...</a><br /></td></tr>
+<tr class="separator:ga96420fbb45aa66f7e2bf7255dcb95089"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga56d5f753cf566e3fccbf50c55a776105"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga56d5f753cf566e3fccbf50c55a776105">magma_cbicgmerge1</a> (magma_int_t n, magmaFloatComplex_ptr skp, magmaFloatComplex_ptr v, magmaFloatComplex_ptr r, magmaFloatComplex_ptr p, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga56d5f753cf566e3fccbf50c55a776105"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga56d5f753cf566e3fccbf50c55a776105">More...</a><br /></td></tr>
+<tr class="separator:ga56d5f753cf566e3fccbf50c55a776105"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3274eb0d0c1e4d1d5389f05bfd909fab"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga3274eb0d0c1e4d1d5389f05bfd909fab">magma_cbicgmerge2</a> (magma_int_t n, magmaFloatComplex_ptr skp, magmaFloatComplex_ptr r, magmaFloatComplex_ptr v, magmaFloatComplex_ptr s, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga3274eb0d0c1e4d1d5389f05bfd909fab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga3274eb0d0c1e4d1d5389f05bfd909fab">More...</a><br /></td></tr>
+<tr class="separator:ga3274eb0d0c1e4d1d5389f05bfd909fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga349d3646308842ea0eacefad6a02e762"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga349d3646308842ea0eacefad6a02e762">magma_cbicgmerge3</a> (magma_int_t n, magmaFloatComplex_ptr skp, magmaFloatComplex_ptr p, magmaFloatComplex_ptr s, magmaFloatComplex_ptr t, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga349d3646308842ea0eacefad6a02e762"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga349d3646308842ea0eacefad6a02e762">More...</a><br /></td></tr>
+<tr class="separator:ga349d3646308842ea0eacefad6a02e762"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6b5cebfecdaeecbb89b376d6ebdb6b6e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga6b5cebfecdaeecbb89b376d6ebdb6b6e">magma_cbicgmerge4</a> (magma_int_t type, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga6b5cebfecdaeecbb89b376d6ebdb6b6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs some parameter operations for the BiCGSTAB with scalars on GPU.  <a href="#ga6b5cebfecdaeecbb89b376d6ebdb6b6e">More...</a><br /></td></tr>
+<tr class="separator:ga6b5cebfecdaeecbb89b376d6ebdb6b6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4e00460254e7764e606420fc54019410"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga4e00460254e7764e606420fc54019410">magma_cmergeblockkrylov</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex_ptr alpha, magmaFloatComplex_ptr p, magmaFloatComplex_ptr x, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga4e00460254e7764e606420fc54019410"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga4e00460254e7764e606420fc54019410">More...</a><br /></td></tr>
+<tr class="separator:ga4e00460254e7764e606420fc54019410"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga397c4c71e130ae307b6865b4bd777065"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga397c4c71e130ae307b6865b4bd777065">magma_ccgmerge_spmv1</a> (magma_c_matrix A, magmaFloatComplex_ptr d1, magmaFloatComplex_ptr d2, magmaFloatComplex_ptr dd, magmaFloatComplex_ptr dz, magmaFloatComplex_ptr skp, magma_queue_t queue)</td></tr>
 <tr class="memdesc:ga397c4c71e130ae307b6865b4bd777065"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges the first SpmV using different formats with the dot product and the computation of rho.  <a href="#ga397c4c71e130ae307b6865b4bd777065">More...</a><br /></td></tr>
 <tr class="separator:ga397c4c71e130ae307b6865b4bd777065"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf62e54770b4c33c4954117d3f9ed0057"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gaf62e54770b4c33c4954117d3f9ed0057">magma_ccgs_1</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex beta, magmaFloatComplex_ptr r, magmaFloatComplex_ptr q, magmaFloatComplex_ptr u, magmaFloatComplex_ptr p, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf62e54770b4c33c4954117d3f9ed0057"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gaf62e54770b4c33c4954117d3f9ed0057">More...</a><br /></td></tr>
+<tr class="separator:gaf62e54770b4c33c4954117d3f9ed0057"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf39fd56aef84c5278ae54b6a0a373ed4"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gaf39fd56aef84c5278ae54b6a0a373ed4">magma_ccgs_2</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex_ptr r, magmaFloatComplex_ptr u, magmaFloatComplex_ptr p, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf39fd56aef84c5278ae54b6a0a373ed4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gaf39fd56aef84c5278ae54b6a0a373ed4">More...</a><br /></td></tr>
+<tr class="separator:gaf39fd56aef84c5278ae54b6a0a373ed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7e5f0bce08ea8c491f85774d47227b2e"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga7e5f0bce08ea8c491f85774d47227b2e">magma_ccgs_3</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex alpha, magmaFloatComplex_ptr v_hat, magmaFloatComplex_ptr u, magmaFloatComplex_ptr q, magmaFloatComplex_ptr t, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga7e5f0bce08ea8c491f85774d47227b2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga7e5f0bce08ea8c491f85774d47227b2e">More...</a><br /></td></tr>
+<tr class="separator:ga7e5f0bce08ea8c491f85774d47227b2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5d845e0808813a72060f9d4584ee4aeb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga5d845e0808813a72060f9d4584ee4aeb">magma_ccgs_4</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex alpha, magmaFloatComplex_ptr u_hat, magmaFloatComplex_ptr t, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga5d845e0808813a72060f9d4584ee4aeb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga5d845e0808813a72060f9d4584ee4aeb">More...</a><br /></td></tr>
+<tr class="separator:ga5d845e0808813a72060f9d4584ee4aeb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf06aae89b848a1b70e5f9840a8d499bc"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gaf06aae89b848a1b70e5f9840a8d499bc">magma_cidr_smoothing_1</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex_ptr drs, magmaFloatComplex_ptr dr, magmaFloatComplex_ptr dt, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gaf06aae89b848a1b70e5f9840a8d499bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gaf06aae89b848a1b70e5f9840a8d499bc">More...</a><br /></td></tr>
 <tr class="separator:gaf06aae89b848a1b70e5f9840a8d499bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gacaa0578e4cf46d7470fe9df50325e8da"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gacaa0578e4cf46d7470fe9df50325e8da">magma_cidr_smoothing_2</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex omega, magmaFloatComplex_ptr dx, magmaFloatComplex_ptr dxs, magma_queue_t queue)</td></tr>
 <tr class="memdesc:gacaa0578e4cf46d7470fe9df50325e8da"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gacaa0578e4cf46d7470fe9df50325e8da">More...</a><br /></td></tr>
 <tr class="separator:gacaa0578e4cf46d7470fe9df50325e8da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga621bb6d1827556953301c0e436dc8ff9"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga621bb6d1827556953301c0e436dc8ff9">magma_cqmr_1</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex rho, magmaFloatComplex psi, magmaFloatComplex_ptr y, magmaFloatComplex_ptr z, magmaFloatComplex_ptr v, magmaFloatComplex_ptr w, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga621bb6d1827556953301c0e436dc8ff9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga621bb6d1827556953301c0e436dc8ff9">More...</a><br /></td></tr>
+<tr class="separator:ga621bb6d1827556953301c0e436dc8ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab8acad40a6294743c0f5b1e6dcdd0bf3"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gab8acad40a6294743c0f5b1e6dcdd0bf3">magma_cqmr_2</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex pde, magmaFloatComplex rde, magmaFloatComplex_ptr y, magmaFloatComplex_ptr z, magmaFloatComplex_ptr p, magmaFloatComplex_ptr q, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gab8acad40a6294743c0f5b1e6dcdd0bf3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gab8acad40a6294743c0f5b1e6dcdd0bf3">More...</a><br /></td></tr>
+<tr class="separator:gab8acad40a6294743c0f5b1e6dcdd0bf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga304cb9944aea0fb0cf59b6c2feb9ac9b"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga304cb9944aea0fb0cf59b6c2feb9ac9b">magma_cqmr_3</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex beta, magmaFloatComplex_ptr pt, magmaFloatComplex_ptr v, magmaFloatComplex_ptr y, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga304cb9944aea0fb0cf59b6c2feb9ac9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga304cb9944aea0fb0cf59b6c2feb9ac9b">More...</a><br /></td></tr>
+<tr class="separator:ga304cb9944aea0fb0cf59b6c2feb9ac9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf0fab3600257fb5bff5def57cde484ad"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gaf0fab3600257fb5bff5def57cde484ad">magma_cqmr_4</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex eta, magmaFloatComplex_ptr p, magmaFloatComplex_ptr pt, magmaFloatComplex_ptr d, magmaFloatComplex_ptr s, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gaf0fab3600257fb5bff5def57cde484ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gaf0fab3600257fb5bff5def57cde484ad">More...</a><br /></td></tr>
+<tr class="separator:gaf0fab3600257fb5bff5def57cde484ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad9c558cf9c2936fbb9d2594f952e156d"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#gad9c558cf9c2936fbb9d2594f952e156d">magma_cqmr_5</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex eta, magmaFloatComplex pds, magmaFloatComplex_ptr p, magmaFloatComplex_ptr pt, magmaFloatComplex_ptr d, magmaFloatComplex_ptr s, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
+<tr class="memdesc:gad9c558cf9c2936fbb9d2594f952e156d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#gad9c558cf9c2936fbb9d2594f952e156d">More...</a><br /></td></tr>
+<tr class="separator:gad9c558cf9c2936fbb9d2594f952e156d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3ae309bda7bbf6f6abfdf8630dc777fb"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga3ae309bda7bbf6f6abfdf8630dc777fb">magma_cqmr_6</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex beta, magmaFloatComplex rho, magmaFloatComplex psi, magmaFloatComplex_ptr y, magmaFloatComplex_ptr z, magmaFloatComplex_ptr v, magmaFloatComplex_ptr w, magmaFloatComplex_ptr wt, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga3ae309bda7bbf6f6abfdf8630dc777fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga3ae309bda7bbf6f6abfdf8630dc777fb">More...</a><br /></td></tr>
+<tr class="separator:ga3ae309bda7bbf6f6abfdf8630dc777fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5d8dacb486a230687012d0e7be5428be"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga5d8dacb486a230687012d0e7be5428be">magma_ctfqmr_1</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex alpha, magmaFloatComplex sigma, magmaFloatComplex_ptr v, magmaFloatComplex_ptr Au, magmaFloatComplex_ptr u_m, magmaFloatComplex_ptr pu_m, magmaFloatComplex_ptr u_mp1, magmaFloatComplex_ptr w, magmaFloatComplex_ptr d, magmaFloatComplex_ptr Ad, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga5d8dacb486a230687012d0e7be5428be"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga5d8dacb486a230687012d0e7be5428be">More...</a><br /></td></tr>
+<tr class="separator:ga5d8dacb486a230687012d0e7be5428be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga26a8900943b5f162604ab81c28ebad35"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga26a8900943b5f162604ab81c28ebad35">magma_ctfqmr_2</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex eta, magmaFloatComplex_ptr d, magmaFloatComplex_ptr Ad, magmaFloatComplex_ptr x, magmaFloatComplex_ptr r, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga26a8900943b5f162604ab81c28ebad35"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga26a8900943b5f162604ab81c28ebad35">More...</a><br /></td></tr>
+<tr class="separator:ga26a8900943b5f162604ab81c28ebad35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga165fb96414ce01520aa85b50190501f0"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga165fb96414ce01520aa85b50190501f0">magma_ctfqmr_3</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex beta, magmaFloatComplex_ptr w, magmaFloatComplex_ptr u_m, magmaFloatComplex_ptr u_mp1, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga165fb96414ce01520aa85b50190501f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga165fb96414ce01520aa85b50190501f0">More...</a><br /></td></tr>
+<tr class="separator:ga165fb96414ce01520aa85b50190501f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga867e9d47d18c74bd899dd56a715cd707"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga867e9d47d18c74bd899dd56a715cd707">magma_ctfqmr_4</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex beta, magmaFloatComplex_ptr Au_new, magmaFloatComplex_ptr v, magmaFloatComplex_ptr Au, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga867e9d47d18c74bd899dd56a715cd707"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga867e9d47d18c74bd899dd56a715cd707">More...</a><br /></td></tr>
+<tr class="separator:ga867e9d47d18c74bd899dd56a715cd707"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3ef40f90c28effbfe297d074b79581d5"><td class="memItemLeft" align="right" valign="top">magma_int_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__magmasparse__cgegpuk.html#ga3ef40f90c28effbfe297d074b79581d5">magma_ctfqmr_5</a> (magma_int_t num_rows, magma_int_t num_cols, magmaFloatComplex alpha, magmaFloatComplex sigma, magmaFloatComplex_ptr v, magmaFloatComplex_ptr Au, magmaFloatComplex_ptr u_mp1, magmaFloatComplex_ptr w, magmaFloatComplex_ptr d, magmaFloatComplex_ptr Ad, magma_queue_t queue)</td></tr>
+<tr class="memdesc:ga3ef40f90c28effbfe297d074b79581d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mergels multiple operations into one kernel:  <a href="#ga3ef40f90c28effbfe297d074b79581d5">More...</a><br /></td></tr>
+<tr class="separator:ga3ef40f90c28effbfe297d074b79581d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
@@ -229,14 +292,92 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga53f275c0c0c790a24d8b0e653121ea62"></a>
+<a class="anchor" id="ga63de3b6273cc9fe39c9202c9b0b56053"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int magma_cbicgmerge1 </td>
+          <td class="memname">magma_int_t magma_cbajac_csr_overlap </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>localiters</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>matrices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>overlap</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>D</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>R</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_c_matrix *&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This routine is a block-asynchronous Jacobi iteration with directed restricted additive Schwarz overlap (top-down) performing s local Jacobi-updates within the block. </p>
+<p>Input format is two CSR matrices, one containing the diagonal blocks, one containing the rest.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">localiters</td><td>magma_int_t number of local Jacobi-like updates</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">D1</td><td>magma_c_matrix input matrix with diagonal blocks</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">R1</td><td>magma_c_matrix input matrix with non-diagonal parts</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">D2</td><td>magma_c_matrix input matrix with diagonal blocks</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">R2</td><td>magma_c_matrix input matrix with non-diagonal parts</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">b</td><td>magma_c_matrix RHS</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">x</td><td>magma_c_matrix* iterate/solution</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga56d5f753cf566e3fccbf50c55a776105"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cbicgmerge1 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -294,14 +435,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gafc71d391a0dbf007c779d3e6692237a5"></a>
+<a class="anchor" id="ga3274eb0d0c1e4d1d5389f05bfd909fab"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int magma_cbicgmerge2 </td>
+          <td class="memname">magma_int_t magma_cbicgmerge2 </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -359,14 +500,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga1f370ae1c871e82a25c46e7925a87130"></a>
+<a class="anchor" id="ga349d3646308842ea0eacefad6a02e762"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int magma_cbicgmerge3 </td>
+          <td class="memname">magma_int_t magma_cbicgmerge3 </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -438,21 +579,27 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gadb5c03e9d1ffdd9b03a37e5e37bdd957"></a>
+<a class="anchor" id="ga6b5cebfecdaeecbb89b376d6ebdb6b6e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int magma_cbicgmerge4 </td>
+          <td class="memname">magma_int_t magma_cbicgmerge4 </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>type</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
-          <td class="paramname"><em>skp</em>&#160;</td>
+          <td class="paramname"><em>skp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -620,14 +767,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ga134539a6a93755da924f9829da803219"></a>
+<a class="anchor" id="ga96420fbb45aa66f7e2bf7255dcb95089"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_cbicgmerge_xrbeta </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>n</em>, </td>
         </tr>
         <tr>
@@ -718,6 +865,346 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="gaedc6b7723b5b48f58271a21b2497b904"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cbicgstab_1 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>omega</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>p = r + beta * ( p - omega * v )</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">omega</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga189d7f766909f5ffd2aa98f1277bdd80"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cbicgstab_2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>s = r - alpha v</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">s</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga579b68721c4b02dab51e81e8376a6770"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cbicgstab_3 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>omega</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>x = x + alpha * p + omega * s r = s - omega * t</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">omega</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gabf1122b27c7987678728669677e05eee"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cbicgstab_4 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>omega</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>x = x + alpha * y + omega * z r = s - omega * t</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">omega</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">z</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="ga397c4c71e130ae307b6865b4bd777065"></a>
 <div class="memitem">
 <div class="memproto">
@@ -781,6 +1268,304 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dd</td><td>magmaFloatComplex_ptr input vector d</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">dz</td><td>magmaFloatComplex_ptr input vector z</td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">skp</td><td>magmaFloatComplex_ptr array for parameters ( skp[3]=rho )</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaf62e54770b4c33c4954117d3f9ed0057"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ccgs_1 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>u = r + beta q p = u + beta*(q + beta*p)</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">u</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaf39fd56aef84c5278ae54b6a0a373ed4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ccgs_2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>u = r p = r</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">u</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga7e5f0bce08ea8c491f85774d47227b2e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ccgs_3 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v_hat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>q = u - alpha v_hat t = u + q</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">v_hat</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">u</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">q</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">t</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5d845e0808813a72060f9d4584ee4aeb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ccgs_4 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u_hat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>t</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>x = x + alpha u_hat r = r -alpha*A u_hat = r -alpha*t</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">u_hat</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">t</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
   </table>
   </dd>
@@ -1096,14 +1881,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="gae071b98cc36c85895d35204bcce6ba79"></a>
+<a class="anchor" id="ga07c7a3451bdde3f821ac3304249809a4"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">magma_int_t magma_cjacobisetup_vector_gpu </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">magma_int_t&#160;</td>
           <td class="paramname"><em>num_rows</em>, </td>
         </tr>
         <tr>
@@ -1221,12 +2006,1039 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="ga4e00460254e7764e606420fc54019410"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cmergeblockkrylov </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>v = y / rho y = y / rho w = wt / psi z = z / psi</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex_ptr matrix containing all SKP</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr search directions</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex_ptr approximation vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga621bb6d1827556953301c0e436dc8ff9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cqmr_1 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>rho</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>v = y / rho y = y / rho w = wt / psi z = z / psi</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rho</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">psi</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">y</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">z</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">w</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gab8acad40a6294743c0f5b1e6dcdd0bf3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cqmr_2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>pde</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>rde</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>p = y - pde * p q = z - rde * q</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pde</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">qde</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">y</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">z</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">q</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga304cb9944aea0fb0cf59b6c2feb9ac9b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cqmr_3 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>pt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>v = pt - beta * v y = v</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pt</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">y</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gaf0fab3600257fb5bff5def57cde484ad"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cqmr_4 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>eta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>pt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>d = eta * p; s = eta * pt; x = x + d; r = r - s;</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">eta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pt</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">s</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="gad9c558cf9c2936fbb9d2594f952e156d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cqmr_5 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>eta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>pds</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>pt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>d = eta * p + pds * d; s = eta * pt + pds * s; x = x + d; r = r - s;</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">eta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pds</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pt</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">s</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga3ae309bda7bbf6f6abfdf8630dc777fb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_cqmr_6 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>rho</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>wt</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>wt = wt - conj(beta) * w v = y / rho y = y / rho w = wt / psi z = wt / psi</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rho</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">psi</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">y</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">z</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">w</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">wt</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga5d8dacb486a230687012d0e7be5428be"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ctfqmr_1 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>sigma</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>Au</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u_m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>pu_m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u_mp1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>Ad</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>u_mp1 = u_mp1 - alpha*v; w = w - alpha*Au; d = pu_m + sigma*d; Ad = Au + sigma*Ad;</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sigma</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Au</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">u_m</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">pu_m</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">u_mp1</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">w</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Ad</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga26a8900943b5f162604ab81c28ebad35"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ctfqmr_2 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>eta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>Ad</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>x = x + eta * d r = r - eta * Ad</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">eta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">d</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Ad</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">x</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">r</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga165fb96414ce01520aa85b50190501f0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ctfqmr_3 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u_m</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u_mp1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>u_mp1 = w + beta*u_mp1</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">w</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">u_m</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">u_mp1</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga867e9d47d18c74bd899dd56a715cd707"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ctfqmr_4 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>beta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>Au_new</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>Au</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>v = Au_new + beta*(Au+beta*v); Au = Au_new</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">beta</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Au_new</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Au</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ga3ef40f90c28effbfe297d074b79581d5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">magma_int_t magma_ctfqmr_5 </td>
+          <td>(</td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_int_t&#160;</td>
+          <td class="paramname"><em>num_cols</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex&#160;</td>
+          <td class="paramname"><em>sigma</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>Au</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>u_mp1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>d</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magmaFloatComplex_ptr&#160;</td>
+          <td class="paramname"><em>Ad</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">magma_queue_t&#160;</td>
+          <td class="paramname"><em>queue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Mergels multiple operations into one kernel: </p>
+<p>w = w - alpha*Au; d = pu_m + sigma*d; Ad = Au + sigma*Ad;</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_rows</td><td>magma_int_t dimension m</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">num_cols</td><td>magma_int_t dimension n</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sigma</td><td>magmaFloatComplex scalar</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">v</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Au</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">u_mp1</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">w</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">d</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">Ad</td><td>magmaFloatComplex_ptr vector</td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">queue</td><td>magma_queue_t Queue to execute in. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Fri Sep 11 2015 18:30:06 for MAGMA by
+    <li class="footer">Generated on Wed Jan 6 2016 18:00:11 for MAGMA by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

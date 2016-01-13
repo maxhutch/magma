@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zherk_batched.cpp normal z -> d, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zherk_batched.cpp normal z -> d, Wed Jan  6 17:59:51 2016
        @author Chongxiao Cao
        @author Tingxing Dong
 */
@@ -25,7 +25,7 @@
 
 #include "magma_threadsetting.h"  // to work around MKL bug
 
-#define PRECISION_d
+#define REAL
 
 /* ////////////////////////////////////////////////////////////////////////////
    -- Testing dsyrk_batched
@@ -65,7 +65,7 @@ int main( int argc, char** argv)
            "%% relative to CPU BLAS result.\n\n");
     printf("%% uplo = %s, transA = %s\n",
            lapack_uplo_const(opts.uplo), lapack_trans_const(opts.transA) );
-    #if defined(PRECISION_c) || defined (PRECISION_z)
+    #ifdef COMPLEX
     if(opts.transA == MagmaTrans)
     {
         opts.transA = MagmaConjTrans; 
@@ -123,8 +123,8 @@ int main( int argc, char** argv)
             magma_dsetmatrix( An, Ak*batchCount, h_A, lda, d_A, ldda );
             magma_dsetmatrix( N, N*batchCount, h_C, ldc, d_C, lddc );
             
-            dset_pointer(A_array, d_A, lda, 0, 0, ldda*Ak, batchCount, opts.queue);
-            dset_pointer(C_array, d_C, ldc, 0, 0, lddc*N,  batchCount, opts.queue);
+            magma_dset_pointer( A_array, d_A, lda, 0, 0, ldda*Ak, batchCount, opts.queue );
+            magma_dset_pointer( C_array, d_C, ldc, 0, 0, lddc*N,  batchCount, opts.queue );
 
             magma_time = magma_sync_wtime( opts.queue );
             magmablas_dsyrk_batched(opts.uplo, opts.transA, N, K,
@@ -158,8 +158,8 @@ int main( int argc, char** argv)
                =================================================================== */
             if ( opts.lapack ) {
                 #ifdef MAGMA_WITH_MKL
-                // MKL (11.1.2) has bug in multi-threaded dlansy; use single thread to work around
-                int threads = magma_get_lapack_numthreads();
+                // work around MKL bug in multi-threaded dlansy
+                int la_threads = magma_get_lapack_numthreads();
                 magma_set_lapack_numthreads( 1 );
                 #endif
                 
@@ -169,9 +169,10 @@ int main( int argc, char** argv)
                 magma_error = 0;
                 for (int i=0; i < batchCount; i++)
                 {
-                    Cnorm = lapackf77_dlansy("fro", lapack_uplo_const(opts.uplo), &N, h_C+i*ldc*N, &ldc, work);
                     blasf77_daxpy( &sizeC, &c_neg_one, h_C+i*ldc*N, &ione, h_Cmagma+i*ldc*N, &ione );
-                    double err = lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_Cmagma+i*ldc*N, &ldc, work ) / Cnorm;
+                    Cnorm      = lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_C     +i*ldc*N, &ldc, work );
+                    double err = lapackf77_dlansy( "fro", lapack_uplo_const(opts.uplo), &N, h_Cmagma+i*ldc*N, &ldc, work )
+                               / Cnorm;
                     if ( isnan(err) || isinf(err) ) {
                         magma_error = err;
                         break;
@@ -181,7 +182,7 @@ int main( int argc, char** argv)
 
                 #ifdef MAGMA_WITH_MKL
                 // end single thread to work around MKL bug
-                magma_set_lapack_numthreads( threads );
+                magma_set_lapack_numthreads( la_threads );
                 #endif
                 
                 bool okay = (magma_error < tol);
@@ -213,6 +214,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlarfx.cu normal z -> s, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zlarfx.cu normal z -> s, Wed Jan  6 17:59:37 2016
 
 */
 #include "common_magma.h"
@@ -159,26 +159,51 @@ void magma_strmv_tkernel(float *T, int ldt, float *t, float *y)
     LAPACK's slarf routine. 
  */
 extern "C" void
-magma_slarfx_gpu(
+magma_slarfx_gpu_q(
     magma_int_t m, magma_int_t n,
     magmaFloat_ptr v,
     magmaFloat_ptr tau,
     magmaFloat_ptr C, magma_int_t ldc,
     magmaFloat_ptr        xnorm, 
     magmaFloat_ptr dT, magma_int_t iter,
-    magmaFloat_ptr work )
+    magmaFloat_ptr work,
+    magma_queue_t queue )
 {
     magma_int_t N = n + iter + 1;
 
-    if (iter == 0)
-        magma_slarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, dT+iter*N, iter);
-    else
-        magma_slarfx_kernel<<< N, BLOCK_SIZE, 0, magma_stream >>>( m, v, tau, C, ldc, xnorm, work, iter);
+    if (iter == 0) {
+        magma_slarfx_kernel
+            <<< N, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( m, v, tau, C, ldc, xnorm, dT+iter*N, iter );
+    }
+    else {
+        magma_slarfx_kernel
+            <<< N, BLOCK_SIZE, 0, queue->cuda_stream() >>>
+            ( m, v, tau, C, ldc, xnorm, work, iter );
+    }
 
     if (iter > 0) {
-        //magma_strmv_kernel<<< 1, iter, 0, magma_stream >>>( dT, N, dT+iter*N);
-        magma_strmv_kernel2<<< iter, iter, 0, magma_stream  >>>( dT, N, work, dT+iter*N, tau);
+        //magma_strmv_kernel
+        //    <<< 1, iter, 0, queue->cuda_stream() >>>
+        //    ( dT, N, dT+iter*N);
+        magma_strmv_kernel2
+            <<< iter, iter, 0, queue->cuda_stream() >>>
+            ( dT, N, work, dT+iter*N, tau );
     }
+}
+
+void
+magma_slarfx_gpu(
+    magma_int_t m, magma_int_t n,
+    magmaFloat_ptr v,
+    magmaFloat_ptr tau,
+    magmaFloat_ptr C, magma_int_t ldc,
+    magmaFloat_ptr        xnorm,
+    magmaFloat_ptr dT, magma_int_t iter,
+    magmaFloat_ptr work )
+{
+    magma_slarfx_gpu_q(m, n, v, tau, C, ldc, xnorm, dT, iter, work,
+                       magmablasGetQueue());
 }
 
 //==============================================================================

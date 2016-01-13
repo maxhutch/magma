@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        @author Adrien REMY
 
-       @generated from zsytrs_nopiv_gpu.cpp normal z -> c, Fri Sep 11 18:29:29 2015
+       @generated from src/zsytrs_nopiv_gpu.cpp normal z -> c, Wed Jan  6 17:59:32 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -20,7 +20,6 @@
     
     Arguments
     ---------
-    
     @param[in]
     uplo    magma_uplo_t
       -     = MagmaUpper:  Upper triangle of A is stored;
@@ -36,22 +35,22 @@
             of the matrix B.  NRHS >= 0.
 
     @param[in]
-    dA      COMPLEX array on the GPU, dimension (LDA,N)
+    dA      COMPLEX array on the GPU, dimension (LDDA,N)
             The block diagonal matrix D and the multipliers used to
             obtain the factor U or L as computed by CSYTRF_NOPIV_GPU.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array A.  LDA >= max(1,N).
+            The leading dimension of the array A.  LDDA >= max(1,N).
 
     @param[in,out]
-    dB      COMPLEX array on the GPU, dimension (LDB,NRHS)
+    dB      COMPLEX array on the GPU, dimension (LDDB,NRHS)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
     lddb    INTEGER
-            The leading dimension of the array B.  LDB >= max(1,N).
+            The leading dimension of the array B.  LDDB >= max(1,N).
 
     @param[out]
     info    INTEGER
@@ -67,9 +66,12 @@ magma_csytrs_nopiv_gpu(
     magmaFloatComplex_ptr dB, magma_int_t lddb,
     magma_int_t *info)
 {
-    magmaFloatComplex c_one = MAGMA_C_ONE;
+    /* Constants */
+    const magmaFloatComplex c_one = MAGMA_C_ONE;
 
-    int                upper = (uplo == MagmaUpper);
+    /* Local variables */
+    bool upper = (uplo == MagmaUpper);
+    
     *info = 0;
     if (! upper && uplo != MagmaLower) {
         *info = -1;
@@ -92,32 +94,38 @@ magma_csytrs_nopiv_gpu(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
     if (upper) {
-        magma_ctrsm( MagmaLeft, MagmaUpper, 
-                     MagmaTrans, MagmaUnit, 
+        magma_ctrsm( MagmaLeft, MagmaUpper,
+                     MagmaTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
-        magmablas_clascl_diag(MagmaUpper, n, nrhs, dA, ldda, dB,lddb, info);
+                     dA, ldda, dB, lddb, queue );
+        magmablas_clascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
         //for (int i = 0; i < nrhs; i++)
-        //    magmablas_clascl_diag(MagmaUpper, 1, n, dA, ldda, dB+(lddb*i),1, info);
-        magma_ctrsm( MagmaLeft, MagmaUpper, 
-                     MagmaNoTrans, MagmaUnit, 
+        //    magmablas_clascl_diag( MagmaUpper, 1, n, dA, ldda, dB+(lddb*i), 1, info );
+        magma_ctrsm( MagmaLeft, MagmaUpper,
+                     MagmaNoTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
+                     dA, ldda, dB, lddb, queue );
     } else {
-        magma_ctrsm( MagmaLeft, MagmaLower, 
-                     MagmaNoTrans, MagmaUnit, 
+        magma_ctrsm( MagmaLeft, MagmaLower,
+                     MagmaNoTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
-        magmablas_clascl_diag(MagmaUpper, n, nrhs, dA, ldda, dB,lddb, info);
+                     dA, ldda, dB, lddb, queue );
+        magmablas_clascl_diag( MagmaUpper, n, nrhs, dA, ldda, dB, lddb, queue, info );
         //for (int i = 0; i < nrhs; i++)
-        //    magmablas_clascl_diag(MagmaLower, 1, n, dA, ldda, dB+(lddb*i),1, info);
-        magma_ctrsm( MagmaLeft, MagmaLower, 
-                     MagmaTrans, MagmaUnit, 
+        //    magmablas_clascl_diag( MagmaLower, 1, n, dA, ldda, dB+(lddb*i), 1, info );
+        magma_ctrsm( MagmaLeft, MagmaLower,
+                     MagmaTrans, MagmaUnit,
                      n, nrhs, c_one,
-                     dA, ldda, dB, lddb );
+                     dA, ldda, dB, lddb, queue );
     }
+    
+    magma_queue_destroy( queue );
     
     return *info;
 }

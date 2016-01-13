@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
-       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop cuConj.
+       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop MAGMA_Z_CNJG.
        
        zsymv_kernel_U (upper) in zsymv_upper.cu is very similar to
        zsymv_kernel_L (lower) in zsymv.cu; diff the two files to compare.

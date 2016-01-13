@@ -1,14 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
+       
+       @author Hatem Ltaief
+       @author Mark Gates
 
-       @generated from ztrtri_gpu.cpp normal z -> s, Fri Sep 11 18:29:26 2015
+       @generated from src/ztrtri_gpu.cpp normal z -> s, Wed Jan  6 17:59:29 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -68,19 +71,24 @@ magma_strtri_gpu(
     magmaFloat_ptr dA, magma_int_t ldda,
     magma_int_t *info)
 {
+    #ifdef HAVE_clBLAS
+    #define dA(i_, j_)  dA, ((i_) + (j_)*ldda)
+    #else
     #define dA(i_, j_) (dA + (i_) + (j_)*ldda)
+    #endif
 
-    /* Local variables */
-    const char* uplo_ = lapack_uplo_const( uplo );
-    const char* diag_ = lapack_diag_const( diag );
-    magma_int_t nb, nn, j, jb;
-    //float c_zero     = MAGMA_S_ZERO;
+    /* Constants */
     float c_one      = MAGMA_S_ONE;
     float c_neg_one  = MAGMA_S_NEG_ONE;
+    const char* uplo_ = lapack_uplo_const( uplo );
+    const char* diag_ = lapack_diag_const( diag );
+    
+    /* Local variables */
+    magma_int_t nb, nn, j, jb;
     float *work;
 
-    int upper  = (uplo == MagmaUpper);
-    int nounit = (diag == MagmaNonUnit);
+    bool upper  = (uplo == MagmaUpper);
+    bool nounit = (diag == MagmaNonUnit);
 
     *info = 0;
 
@@ -120,71 +128,86 @@ magma_strtri_gpu(
     }
 
     magma_queue_t queues[2];
-    magma_queue_create( &queues[0] );
-    magma_queue_create( &queues[1] );
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
 
     if (nb <= 1 || nb >= n) {
-        magma_sgetmatrix( n, n, dA(0,0), ldda, work, n );
+        magma_sgetmatrix( n, n, dA(0,0), ldda, work, n, queues[0] );
         lapackf77_strtri( uplo_, diag_, &n, work, &n, info );
-        magma_ssetmatrix( n, n, work, n, dA(0,0), ldda );
+        magma_ssetmatrix( n, n, work, n, dA(0,0), ldda, queues[0] );
+    }
+    else if (upper) {
+        /* Compute inverse of upper triangular matrix */
+        for (j=0; j < n; j += nb) {
+            jb = min(nb, n-j);
+
+            if (j > 0) {
+                /* Compute rows 0:j of current block column */
+                magma_strmm( MagmaLeft, MagmaUpper,
+                             MagmaNoTrans, diag, j, jb, c_one,
+                             dA(0, 0), ldda,
+                             dA(0, j), ldda, queues[0] );
+    
+                magma_strsm( MagmaRight, MagmaUpper,
+                             MagmaNoTrans, diag, j, jb, c_neg_one,
+                             dA(j, j), ldda,
+                             dA(0, j), ldda, queues[0] );
+            }
+
+            /* Get diagonal block from device */
+            magma_sgetmatrix_async( jb, jb,
+                                    dA(j, j), ldda,
+                                    work,     jb, queues[1] );
+            magma_queue_sync( queues[1] );
+
+            /* Compute inverse of current diagonal block */
+            lapackf77_strtri( MagmaUpperStr, diag_, &jb, work, &jb, info );
+            
+            /* Send inverted diagonal block to device */
+            // use q0, so trsm is done with dA(j,j)
+            magma_ssetmatrix_async( jb, jb,
+                                    work,     jb,
+                                    dA(j, j), ldda, queues[0] );
+            magma_queue_sync( queues[0] );  // wait until work is available for next iteration
+        }
     }
     else {
-        if (upper) {
-            /* Compute inverse of upper triangular matrix */
-            for (j=0; j < n; j += nb) {
-                jb = min(nb, n-j);
+        /* Compute inverse of lower triangular matrix */
+        nn = ((n-1)/nb)*nb;
 
-                /* Compute rows 1:j-1 of current block column */
-                magma_strmm( MagmaLeft, MagmaUpper,
-                             MagmaNoTrans, diag, j, jb,
-                             c_one, dA(0,0), ldda, dA(0, j), ldda );
+        for (j=nn; j >= 0; j -= nb) {
+            jb = min(nb, n-j);
+            
+            if (j+jb < n) {
+                /* Compute rows j+jb:n of current block column */
+                magma_strmm( MagmaLeft, MagmaLower,
+                             MagmaNoTrans, diag, n-j-jb, jb, c_one,
+                             dA(j+jb, j+jb), ldda,
+                             dA(j+jb, j),    ldda, queues[0] );
 
-                magma_strsm( MagmaRight, MagmaUpper,
-                             MagmaNoTrans, diag, j, jb,
-                             c_neg_one, dA(j,j), ldda, dA(0, j), ldda );
-
-                magma_sgetmatrix_async( jb, jb,
-                                        dA(j, j), ldda,
-                                        work,     jb, queues[1] );
-                magma_queue_sync( queues[1] );
-
-                /* Compute inverse of current diagonal block */
-                lapackf77_strtri( MagmaUpperStr, diag_, &jb, work, &jb, info );
-                
-                magma_ssetmatrix_async( jb, jb,
-                                        work,     jb,
-                                        dA(j, j), ldda, queues[0] );
+                magma_strsm( MagmaRight, MagmaLower,
+                             MagmaNoTrans, diag, n-j-jb, jb, c_neg_one,
+                             dA(j, j),    ldda,
+                             dA(j+jb, j), ldda, queues[0] );
             }
-        }
-        else {
-            /* Compute inverse of lower triangular matrix */
-            nn = ((n-1)/nb)*nb+1;
+            
+            /* Get diagonal block from device */
+            magma_sgetmatrix_async( jb, jb,
+                                    dA(j, j), ldda,
+                                    work,     jb, queues[1] );
+            magma_queue_sync( queues[1] );
 
-            for (j=nn-1; j >= 0; j -= nb) {
-                jb = min(nb, n-j);
-                
-                if (j+jb < n) {
-                    /* Compute rows j+jb:n of current block column */
-                    magma_strmm( MagmaLeft, MagmaLower,
-                                 MagmaNoTrans, diag, (n-j-jb), jb,
-                                 c_one, dA(j+jb,j+jb), ldda, dA(j+jb, j), ldda );
-
-                    magma_strsm( MagmaRight, MagmaLower,
-                                 MagmaNoTrans, diag, (n-j-jb), jb,
-                                 c_neg_one, dA(j,j), ldda, dA(j+jb, j), ldda );
-                }
-                magma_sgetmatrix_async( jb, jb,
-                                        dA(j, j), ldda,
-                                        work,     jb, queues[1] );
-                magma_queue_sync( queues[1] );
-
-                /* Compute inverse of current diagonal block */
-                lapackf77_strtri( MagmaLowerStr, diag_, &jb, work, &jb, info );
-                
-                magma_ssetmatrix_async( jb, jb,
-                                        work,     jb,
-                                        dA(j, j), ldda, queues[0] );
-            }
+            /* Compute inverse of current diagonal block */
+            lapackf77_strtri( MagmaLowerStr, diag_, &jb, work, &jb, info );
+            
+            /* Send inverted diagonal block to device */
+            // use q0, so trsm is done with dA(j,j)
+            magma_ssetmatrix_async( jb, jb,
+                                    work,     jb,
+                                    dA(j, j), ldda, queues[0] );
+            magma_queue_sync( queues[0] );  // wait until work is available for next iteration
         }
     }
 

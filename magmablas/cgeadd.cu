@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeadd.cu normal z -> c, Fri Sep 11 18:29:19 2015
+       @generated from magmablas/zgeadd.cu normal z -> c, Wed Jan  6 17:59:36 2016
        @author Mark Gates
 */
 #include "common_magma.h"
@@ -120,10 +120,10 @@ magmablas_cgeadd_q(
     if ( m == 0 || n == 0 )
         return;
     
-    dim3 threads( BLK_X );
+    dim3 threads( BLK_X, 1 );
     dim3 grid( magma_ceildiv( m, BLK_X ), magma_ceildiv( n, BLK_Y ) );
     
-    cgeadd_full<<< grid, threads, 0, queue >>>
+    cgeadd_full<<< grid, threads, 0, queue->cuda_stream() >>>
         ( m, n, alpha, dA, ldda, dB, lddb );
 }
 
@@ -139,5 +139,5 @@ magmablas_cgeadd(
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
     magmaFloatComplex_ptr       dB, magma_int_t lddb )
 {
-    magmablas_cgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magma_stream );
+    magmablas_cgeadd_q( m, n, alpha, dA, ldda, dB, lddb, magmablasGetQueue() );
 }

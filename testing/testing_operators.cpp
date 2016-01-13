@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
 */
@@ -161,7 +161,7 @@ int main( int argc, char** argv)
     zc = -za;                         zc3 = -za3;                                check( zc == MAGMA_Z_MAKE( real(zc3), imag(zc3) ) );
     zc = za + zb;                     zc3 = za3 + zb3;                           check( zc == MAGMA_Z_MAKE( real(zc3), imag(zc3) ) );
     zc = za - zb;                     zc3 = za3 - zb3;                           check( zc == MAGMA_Z_MAKE( real(zc3), imag(zc3) ) );
-    zc = za * zb;                     zc3 = za3 * zb3;                           check( zc == MAGMA_Z_MAKE( real(zc3), imag(zc3) ) );
+    zc = za * zb;                     zc3 = za3 * zb3;                           check( fabs( zc - MAGMA_Z_MAKE( real(zc3), imag(zc3) ) ) < dtol );
     zc = za / zb;                     zc3 = za3 / zb3;                           check( fabs( zc - MAGMA_Z_MAKE( real(zc3), imag(zc3) ) ) < dtol );
 
     da = fabs( za );                  da3 = std::abs( za3 );                     check( da == da3 );
@@ -183,7 +183,7 @@ int main( int argc, char** argv)
     cc = -ca;                         cc3 = -ca3;                                check( cc == MAGMA_C_MAKE( real(cc3), imag(cc3) ) );
     cc = ca + cb;                     cc3 = ca3 + cb3;                           check( cc == MAGMA_C_MAKE( real(cc3), imag(cc3) ) );
     cc = ca - cb;                     cc3 = ca3 - cb3;                           check( cc == MAGMA_C_MAKE( real(cc3), imag(cc3) ) );
-    cc = ca * cb;                     cc3 = ca3 * cb3;                           check( cc == MAGMA_C_MAKE( real(cc3), imag(cc3) ) );
+    cc = ca * cb;                     cc3 = ca3 * cb3;                           check( fabs( cc - MAGMA_C_MAKE( real(cc3), imag(cc3) ) ) < stol );
     cc = ca / cb;                     cc3 = ca3 / cb3;                           check( fabs( cc - MAGMA_C_MAKE( real(cc3), imag(cc3) ) ) < stol );
 
     sa = fabs( ca );                  sa3 = std::abs( ca3 );                     check( fabs( sa - sa3 ) < stol );
@@ -201,7 +201,7 @@ int main( int argc, char** argv)
     s = gStatus;
     za = MAGMA_Z_MAKE( 1.23, 2.45 );  za2 = MAGMA_Z_MAKE( 1.23, 2.45 );  check( za == za2 );
     zb = MAGMA_Z_MAKE( 3.14, 2.72 );  zb2 = MAGMA_Z_MAKE( 3.14, 2.72 );  check( zb == zb2 );
-    zc = conj( za );                  zc2 = MAGMA_Z_CNJG( za2 );         check( zc == zc2 );
+    zc = conj( za );                  zc2 = MAGMA_Z_CONJ( za2 );         check( zc == zc2 );
     zc = -za;                         zc2 = MAGMA_Z_NEGATE( za2 );       check( zc == zc2 );
     zc = za + zb;                     zc2 = MAGMA_Z_ADD( za2, zb2 );     check( zc == zc2 );
     zc = za - zb;                     zc2 = MAGMA_Z_SUB( za2, zb2 );     check( zc == zc2 );
@@ -223,7 +223,7 @@ int main( int argc, char** argv)
     s = gStatus;
     ca = MAGMA_C_MAKE( 1.23, 2.45 );  ca2 = MAGMA_C_MAKE( 1.23, 2.45 );  check( ca == ca2 );
     cb = MAGMA_C_MAKE( 3.14, 2.72 );  cb2 = MAGMA_C_MAKE( 3.14, 2.72 );  check( cb == cb2 );
-    cc = conj( ca );                  cc2 = MAGMA_C_CNJG( ca2 );         check( cc == cc2 );
+    cc = conj( ca );                  cc2 = MAGMA_C_CONJ( ca2 );         check( cc == cc2 );
     cc = -ca;                         cc2 = MAGMA_C_NEGATE( ca2 );       check( cc == cc2 );
     cc = ca + cb;                     cc2 = MAGMA_C_ADD( ca2, cb2 );     check( cc == cc2 );
     cc = ca - cb;                     cc2 = MAGMA_C_SUB( ca2, cb2 );     check( cc == cc2 );
@@ -245,7 +245,7 @@ int main( int argc, char** argv)
     s = gStatus;
     da = 1.23;                        da2 = MAGMA_D_MAKE( 1.23, 2.45 );  check( da == da2 );
     db = 3.14;                        db2 = MAGMA_D_MAKE( 3.14, 2.72 );  check( db == db2 );
-    dc = conj( da );                  dc2 = MAGMA_D_CNJG( da2 );         check( dc == dc2 );
+    dc = conj( da );                  dc2 = MAGMA_D_CONJ( da2 );         check( dc == dc2 );
     dc = -da;                         dc2 = MAGMA_D_NEGATE( da2 );       check( dc == dc2 );
     dc = da + db;                     dc2 = MAGMA_D_ADD( da2, db2 );     check( dc == dc2 );
     dc = da - db;                     dc2 = MAGMA_D_SUB( da2, db2 );     check( dc == dc2 );
@@ -267,7 +267,7 @@ int main( int argc, char** argv)
     s = gStatus;
     sa = MAGMA_S_MAKE( 1.23, 2.45 );  sa2 = MAGMA_S_MAKE( 1.23, 2.45 );  check( sa == sa2 );
     sb = MAGMA_S_MAKE( 3.14, 2.72 );  sb2 = MAGMA_S_MAKE( 3.14, 2.72 );  check( sb == sb2 );
-    sc = conj( sa );                  sc2 = MAGMA_S_CNJG( sa2 );         check( sc == sc2 );
+    sc = conj( sa );                  sc2 = MAGMA_S_CONJ( sa2 );         check( sc == sc2 );
     sc = -sa;                         sc2 = MAGMA_S_NEGATE( sa2 );       check( sc == sc2 );
     sc = sa + sb;                     sc2 = MAGMA_S_ADD( sa2, sb2 );     check( sc == sc2 );
     sc = sa - sb;                     sc2 = MAGMA_S_SUB( sa2, sb2 );     check( sc == sc2 );
@@ -287,6 +287,7 @@ int main( int argc, char** argv)
     // --------------------
     test_sqrt( dtol, stol );
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return gStatus;
 }

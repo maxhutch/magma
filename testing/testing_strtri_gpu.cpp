@@ -1,11 +1,11 @@
 /*
-    -- clMAGMA (version 1.7.0) --
+    -- clMAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
   
-       @generated from testing_ztrtri_gpu.cpp normal z -> s, Fri Sep 11 18:29:38 2015
+       @generated from testing/testing_ztrtri_gpu.cpp normal z -> s, Wed Jan  6 17:59:48 2016
        
        @author Mark Gates
 */
@@ -114,10 +114,11 @@ int main( int argc, char** argv)
                 if ( opts.verbose ) {
                     printf( "diff=" );  magma_sprint( N, N, h_R, lda );
                 }
+                bool okay = (error < tol);
+                status += ! okay;
                 printf("%5d   %7.2f (%7.2f)   %7.2f (%7.2f)   %8.2e   %s\n",
                        (int) N, cpu_perf, cpu_time, gpu_perf, gpu_time,
-                       error, (error < tol ? "ok" : "failed") );
-                status += ! (error < tol);
+                       error, (okay ? "ok" : "failed") );
             }
             else {
                 printf("%5d     ---   (  ---  )   %7.2f (%7.2f)     ---\n",
@@ -134,6 +135,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

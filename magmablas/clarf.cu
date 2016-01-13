@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlarf.cu normal z -> c, Fri Sep 11 18:29:20 2015
+       @generated from magmablas/zlarf.cu normal z -> c, Wed Jan  6 17:59:37 2016
        @author Azzam Haidar
 
 */
@@ -115,7 +115,9 @@ magma_clarf_sm(magma_int_t m, magma_int_t n, magmaFloatComplex *dv, magmaFloatCo
     dim3  blocks( 1 );
     dim3 threads( BLOCK_SIZEx, BLOCK_SIZEy );
 
-    magma_clarf_smkernel<<< blocks, threads, 0, magma_stream >>>( m, n, dv, dtau, dc, lddc );
+    magma_clarf_smkernel
+        <<< blocks, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+        ( m, n, dv, dtau, dc, lddc );
 }
 //==============================================================================
 /*
@@ -140,7 +142,9 @@ magma_clarf_gpu(
     dim3 grid( n, 1, 1 );
     dim3 threads( BLOCK_SIZE );
     if ( n > 0 ) {
-        magma_clarf_kernel<<< grid, threads, 0, magma_stream >>>( m, dv, dtau, dC, lddc);
+        magma_clarf_kernel
+            <<< grid, threads, 0, magmablasGetQueue()->cuda_stream() >>>
+            ( m, dv, dtau, dC, lddc);
     }
 
     // The computation can be done on 1 SM with the following routine.

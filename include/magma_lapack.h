@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 */
@@ -48,7 +48,7 @@ extern "C" {
 #define lapackf77_dlapy2 FORTRAN_NAME( dlapy2, DLAPY2 )
 #define lapackf77_slapy2 FORTRAN_NAME( slapy2, SLAPY2 )
 
-magma_int_t lapackf77_ieeeck( magma_int_t *ispec, float *zero, float *one );
+magma_int_t lapackf77_ieeeck( const magma_int_t *ispec, const float *zero, const float *one );
 
 long   lapackf77_lsame(  const char *ca, const char *cb );
 

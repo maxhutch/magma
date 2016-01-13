@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
-       @generated from testing_zlarfb_gpu.cpp normal z -> d, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zlarfb_gpu.cpp normal z -> d, Wed Jan  6 17:59:49 2016
 */
 // includes, system
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 #include <algorithm>  // std::swap
 
 // includes, project
-#include "magma.h"
+#include "magma_v2.h"
 #include "magma_lapack.h"
 #include "testings.h"
 
@@ -29,11 +29,14 @@ int main( int argc, char** argv )
 {
     TESTING_INIT();
     
-    double c_zero    = MAGMA_D_ZERO;
-    double c_one     = MAGMA_D_ONE;
-    double c_neg_one = MAGMA_D_NEG_ONE;
-    magma_int_t M, N, K, size, ldc, ldv, ldt, ldw, nv;
-    magma_int_t ione =  1;
+    // constants
+    const double c_zero    = MAGMA_D_ZERO;
+    const double c_one     = MAGMA_D_ONE;
+    const double c_neg_one = MAGMA_D_NEG_ONE;
+    const magma_int_t ione = 1;
+    
+    // local variables
+    magma_int_t M, N, K, size, ldc, ldv, ldt, ldw, ldw2, nv;
     magma_int_t ISEED[4] = {0,0,0,1};
     double error, work[1];
     magma_int_t status = 0;
@@ -68,6 +71,7 @@ int main( int argc, char** argv )
             ldc = magma_roundup( M, opts.align );  // multiple of 32 by default
             ldt = magma_roundup( K, opts.align );  // multiple of 32 by default
             ldw = (side[iside] == MagmaLeft ? N : M);
+            ldw2 = min( M, N );
             // (ldv, nv) get swapped later if rowwise
             ldv = (side[iside] == MagmaLeft ? M : N);
             nv  = K;
@@ -80,11 +84,12 @@ int main( int argc, char** argv )
             TESTING_MALLOC_CPU( T, double, ldt*K );
             TESTING_MALLOC_CPU( W, double, ldw*K );
             
-            magmaDouble_ptr dC, dV, dT, dW;
-            TESTING_MALLOC_DEV( dC, double, ldc*N );
-            TESTING_MALLOC_DEV( dV, double, ldv*K );
-            TESTING_MALLOC_DEV( dT, double, ldt*K );
-            TESTING_MALLOC_DEV( dW, double, ldw*K );
+            magmaDouble_ptr dC, dV, dT, dW, dW2;
+            TESTING_MALLOC_DEV( dC,  double, ldc*N );
+            TESTING_MALLOC_DEV( dV,  double, ldv*K );
+            TESTING_MALLOC_DEV( dT,  double, ldt*K );
+            TESTING_MALLOC_DEV( dW,  double, ldw*K );
+            TESTING_MALLOC_DEV( dW2, double, ldw2*K );
             
             // C is M x N.
             size = ldc*N;
@@ -131,9 +136,9 @@ int main( int argc, char** argv )
             }
             //printf( "T=" );  magma_dprint( K, K, T, ldt );
             
-            magma_dsetmatrix( M,   N,  C, ldc, dC, ldc );
-            magma_dsetmatrix( ldv, nv, V, ldv, dV, ldv );
-            magma_dsetmatrix( K,   K,  T, ldt, dT, ldt );
+            magma_dsetmatrix( M,   N,  C, ldc, dC, ldc, opts.queue );
+            magma_dsetmatrix( ldv, nv, V, ldv, dV, ldv, opts.queue );
+            magma_dsetmatrix( K,   K,  T, ldt, dT, ldt, opts.queue );
             
             lapackf77_dlarfb( lapack_side_const( side[iside] ), lapack_trans_const( trans[itran] ),
                               lapack_direct_const( direct[idir] ), lapack_storev_const( storev[istor] ),
@@ -141,10 +146,17 @@ int main( int argc, char** argv )
                               V, &ldv, T, &ldt, C, &ldc, W, &ldw );
             //printf( "HC=" );  magma_dprint( M, N, C, ldc );
             
-            magma_dlarfb_gpu( side[iside], trans[itran], direct[idir], storev[istor],
-                              M, N, K,
-                              dV, ldv, dT, ldt, dC, ldc, dW, ldw );
-            magma_dgetmatrix( M, N, dC, ldc, R, ldc );
+            if ( opts.version == 1 ) {
+                magma_dlarfb_gpu( side[iside], trans[itran], direct[idir], storev[istor],
+                                  M, N, K,
+                                  dV, ldv, dT, ldt, dC, ldc, dW, ldw, opts.queue );
+            }
+            else {
+                magma_dlarfb_gpu_gemm( side[iside], trans[itran], direct[idir], storev[istor],
+                                       M, N, K,
+                                       dV, ldv, dT, ldt, dC, ldc, dW, ldw, dW2, ldw2, opts.queue );
+            }
+            magma_dgetmatrix( M, N, dC, ldc, R, ldc, opts.queue );
             //printf( "dHC=" );  magma_dprint( M, N, R, ldc );
             
             // compute relative error |HC_magma - HC_lapack| / |HC_lapack|
@@ -165,10 +177,11 @@ int main( int argc, char** argv )
             TESTING_FREE_CPU( T );
             TESTING_FREE_CPU( W );
             
-            TESTING_FREE_DEV( dC );
-            TESTING_FREE_DEV( dV );
-            TESTING_FREE_DEV( dT );
-            TESTING_FREE_DEV( dW );
+            TESTING_FREE_DEV( dC  );
+            TESTING_FREE_DEV( dV  );
+            TESTING_FREE_DEV( dT  );
+            TESTING_FREE_DEV( dW  );
+            TESTING_FREE_DEV( dW2 );
             fflush( stdout );
         }
         if ( opts.niter > 1 ) {
@@ -178,6 +191,7 @@ int main( int argc, char** argv )
       printf( "\n" );
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

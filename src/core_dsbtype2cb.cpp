@@ -1,13 +1,13 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
 
-       @generated from core_zhbtype2cb.cpp normal z -> d, Fri Sep 11 18:29:31 2015
+       @generated from src/core_zhbtype2cb.cpp normal z -> d, Wed Jan  6 17:59:33 2016
 
 */
 #include "common_magma.h"
@@ -156,7 +156,7 @@ magma_dsbtype2cb(magma_int_t n, magma_int_t nb,
          * col st is the col that has been revomved;
          */
         len = len-1;
-        ctmp = MAGMA_D_CNJG(*TAU(taupos));
+        ctmp = MAGMA_D_CONJ(*TAU(taupos));
         lapackf77_dlarfx("L", &lem, &len, V(vpos),  &ctmp, A(J1, st+1), &ldx, work);
     }
     return;

@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
        @author Mark Gates
@@ -14,7 +14,7 @@
 
 /*
     Symmetrizes ntile tiles at a time, e.g., all diagonal tiles of a matrix.
-    Grid is ntile x ceil(m/NB).
+    Grid is ceil(m/NB) x ntile.
     Each tile is m x m, and is divided into block rows, each NB x m.
     Each block has NB threads.
     Each thread copies one row, iterating across all columns below diagonal.
@@ -25,17 +25,17 @@ __global__ void
 zsymmetrize_tiles_lower( int m, magmaDoubleComplex *dA, int ldda, int mstride, int nstride )
 {
     // shift dA to tile's top-left corner
-    dA += blockIdx.x*(mstride + nstride*ldda);
+    dA += blockIdx.y*(mstride + nstride*ldda);
     
     // dA iterates across row i and dAT iterates down column i.
-    int i = blockIdx.y*NB + threadIdx.x;
+    int i = blockIdx.x*NB + threadIdx.x;
     magmaDoubleComplex *dAT = dA;
     if ( i < m ) {
         dA  += i;
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dAT = cuConj(*dA);  // upper := lower
+            *dAT = MAGMA_Z_CNJG(*dA);  // upper := lower
             dA  += ldda;
             dAT += 1;
         }
@@ -48,17 +48,17 @@ __global__ void
 zsymmetrize_tiles_upper( int m, magmaDoubleComplex *dA, int ldda, int mstride, int nstride )
 {
     // shift dA to tile's top-left corner
-    dA += blockIdx.x*(mstride + nstride*ldda);
+    dA += blockIdx.y*(mstride + nstride*ldda);
     
     // dA iterates across row i and dAT iterates down column i.
-    int i = blockIdx.y*NB + threadIdx.x;
+    int i = blockIdx.x*NB + threadIdx.x;
     magmaDoubleComplex *dAT = dA;
     if ( i < m ) {
         dA  += i;
         dAT += i*ldda;
         magmaDoubleComplex *dAend = dA + i*ldda;
         while( dA < dAend ) {
-            *dA  = cuConj(*dAT);  // lower := upper
+            *dA  = MAGMA_Z_CNJG(*dAT);  // lower := upper
             dA  += ldda;
             dAT += 1;
         }
@@ -147,15 +147,19 @@ magmablas_zsymmetrize_tiles_q(
     if ( m == 0 || ntile == 0 )
         return;
     
-    dim3 threads( NB );
-    dim3 grid( ntile, magma_ceildiv( m, NB ) );
+    dim3 threads( NB, 1 );
+    dim3 grid( magma_ceildiv( m, NB ), ntile );
     
     //printf( "m %d, grid %d x %d, threads %d\n", m, grid.x, grid.y, threads.x );
     if ( uplo == MagmaUpper ) {
-        zsymmetrize_tiles_upper<<< grid, threads, 0, queue >>>( m, dA, ldda, mstride, nstride );
+        zsymmetrize_tiles_upper
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            ( m, dA, ldda, mstride, nstride );
     }
     else {
-        zsymmetrize_tiles_lower<<< grid, threads, 0, queue >>>( m, dA, ldda, mstride, nstride );
+        zsymmetrize_tiles_lower
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            ( m, dA, ldda, mstride, nstride );
     }
 }
 
@@ -170,5 +174,5 @@ magmablas_zsymmetrize_tiles(
     magmaDoubleComplex_ptr dA, magma_int_t ldda,
     magma_int_t ntile, magma_int_t mstride, magma_int_t nstride )
 {
-    magmablas_zsymmetrize_tiles_q( uplo, m, dA, ldda, ntile, mstride, nstride, magma_stream );
+    magmablas_zsymmetrize_tiles_q( uplo, m, dA, ldda, ntile, mstride, nstride, magmablasGetQueue() );
 }

@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
-       @generated from zgeqrf.cpp normal z -> d, Fri Sep 11 18:29:28 2015
+       @generated from src/zgeqrf.cpp normal z -> d, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -18,8 +18,7 @@
     A = Q * R. This version does not require work space on the GPU
     passed as input. GPU memory is allocated in the routine.
 
-    If the current stream is NULL, this version replaces it with a new
-    stream to overlap computation with communication.
+    This uses 2 queues to overlap communication and computation.
 
     Arguments
     ---------
@@ -63,7 +62,7 @@
     @param[in]
     lwork   INTEGER
             The dimension of the array WORK.  LWORK >= max( N*NB, 2*NB*NB ),
-            where NB can be obtained through magma_get_dgeqrf_nb(M).
+            where NB can be obtained through magma_get_dgeqrf_nb( M, N ).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -95,25 +94,36 @@
 extern "C" magma_int_t
 magma_dgeqrf(
     magma_int_t m, magma_int_t n,
-    double *A,    magma_int_t lda, double *tau,
+    double *A,    magma_int_t lda,
+    double *tau,
     double *work, magma_int_t lwork,
     magma_int_t *info )
 {
-    #define  A(i,j) ( A + (i) + (j)*lda )
-    #define dA(i,j) (dA + (i) + (j)*ldda)
-
-    double *dA, *dwork, *dT;
-    double c_one = MAGMA_D_ONE;
-
-    magma_int_t i, k, lddwork, old_i, old_ib;
-    magma_int_t ib, ldda;
-
+    #define  A(i_,j_)  (A + (i_) + (j_)*lda)
+    
+    #ifdef HAVE_clBLAS
+    #define dA(i_,j_)  dA,    ((i_) + (j_)*ldda + dA_offset)
+    #define dT(i_,j_)  dT,    ((i_) + (j_)*nb   + dT_offset)
+    #define dwork(i_)  dwork, ((i_)             + dwork_offset)
+    #else
+    #define dA(i_,j_) (dA    + (i_) + (j_)*ldda)
+    #define dT(i_,j_) (dT    + (i_) + (j_)*nb)
+    #define dwork(i_) (dwork + (i_))
+    #endif
+    
+    /* Constants */
+    const double c_one = MAGMA_D_ONE;
+    
+    /* Local variables */
+    magmaDouble_ptr dA, dT, dwork;
+    magma_int_t i, ib, k, ldda, lddwork, old_i, old_ib;
+    
     /* Function Body */
     *info = 0;
-    magma_int_t nb = magma_get_dgeqrf_nb(min(m, n));
-
+    magma_int_t nb = magma_get_dgeqrf_nb( m, n );
+    
     // need 2*nb*nb to store T and upper triangle of V simultaneously
-    magma_int_t lwkopt = max(n*nb, 2*nb*nb);
+    magma_int_t lwkopt = max( n*nb, 2*nb*nb );
     work[0] = MAGMA_D_MAKE( (double)lwkopt, 0 );
     int lquery = (lwork == -1);
     if (m < 0) {
@@ -131,114 +141,105 @@ magma_dgeqrf(
     }
     else if (lquery)
         return *info;
-
-    k = min(m,n);
+    
+    k = min( m, n );
     if (k == 0) {
         work[0] = c_one;
         return *info;
     }
-
+    
     // largest N for larfb is n-nb (trailing matrix lacks 1st panel)
     lddwork = magma_roundup( n, 32 ) - nb;
     ldda    = magma_roundup( m, 32 );
-
+    
     magma_int_t ngpu = magma_num_gpus();
     if ( ngpu > 1 ) {
         /* call multiple-GPU interface  */
-        return magma_dgeqrf_m(ngpu, m, n, A, lda, tau, work, lwork, info);
+        return magma_dgeqrf_m( ngpu, m, n, A, lda, tau, work, lwork, info );
     }
-
+    
     // allocate space for dA, dwork, and dT
     if (MAGMA_SUCCESS != magma_dmalloc( &dA, n*ldda + nb*lddwork + nb*nb )) {
-        /* Switch to the "out-of-core" (out of GPU-memory) version */
-        return magma_dgeqrf_ooc(m, n, A, lda, tau, work, lwork, info);
+        /* alloc failed so call non-GPU-resident version */
+        return magma_dgeqrf_ooc( m, n, A, lda, tau, work, lwork, info );
     }
-
-    /* Define user stream if current stream is NULL */
-    magma_queue_t stream[2];
     
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
-
-    magma_queue_create( &stream[0] );
-    if (orig_stream == NULL) {
-        magma_queue_create( &stream[1] );
-        magmablasSetKernelStream(stream[1]);
-    }
-    else {
-        stream[1] = orig_stream;
-    }
-
     dwork = dA + n*ldda;
     dT    = dA + n*ldda + nb*lddwork;
-
+    
+    magma_queue_t queues[2];
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queues[0] );
+    magma_queue_create( cdev, &queues[1] );
+    
     if ( (nb > 1) && (nb < k) ) {
         /* Use blocked code initially.
            Asynchronously send the matrix to the GPU except the first panel. */
         magma_dsetmatrix_async( m, n-nb,
-                                A(0,nb),  lda,
-                                dA(0,nb), ldda, stream[0] );
-
+                                 A(0,nb), lda,
+                                dA(0,nb), ldda, queues[0] );
+        
         old_i = 0;
         old_ib = nb;
         for (i = 0; i < k-nb; i += nb) {
-            ib = min(k-i, nb);
+            ib = min( k-i, nb );
             if (i > 0) {
-                /* download i-th panel */
-                magma_queue_sync( stream[1] );
+                /* get i-th panel from device */
+                magma_queue_sync( queues[1] );
                 magma_dgetmatrix_async( m-i, ib,
                                         dA(i,i), ldda,
-                                        A(i,i),  lda, stream[0] );
-
+                                         A(i,i), lda, queues[0] );
+                
                 /* Apply H' to A(i:m,i+2*ib:n) from the left */
                 magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                   m-old_i, n-old_i-2*old_ib, old_ib,
-                                  dA(old_i, old_i),          ldda, dT,    nb,
-                                  dA(old_i, old_i+2*old_ib), ldda, dwork, lddwork);
-
+                                  dA(old_i, old_i),          ldda, dT(0,0),  nb,
+                                  dA(old_i, old_i+2*old_ib), ldda, dwork(0), lddwork, queues[1] );
+                
                 magma_dgetmatrix_async( i, ib,
                                         dA(0,i), ldda,
-                                        A(0,i),  lda, stream[1] );
-                magma_queue_sync( stream[0] );
+                                         A(0,i), lda, queues[1] );
+                magma_queue_sync( queues[0] );
             }
-
+            
             magma_int_t rows = m-i;
-            lapackf77_dgeqrf(&rows, &ib, A(i,i), &lda, tau+i, work, &lwork, info);
+            lapackf77_dgeqrf( &rows, &ib, A(i,i), &lda, tau+i, work, &lwork, info );
             
             /* Form the triangular factor of the block reflector
                H = H(i) H(i+1) . . . H(i+ib-1) */
             lapackf77_dlarft( MagmaForwardStr, MagmaColumnwiseStr,
-                              &rows, &ib, A(i,i), &lda, tau+i, work, &ib);
-
-            magma_dpanel_to_q(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
-
-            /* download the i-th V matrix */
-            magma_dsetmatrix_async( rows, ib, A(i,i), lda, dA(i,i), ldda, stream[0] );
-
-            /* download the T matrix */
-            magma_queue_sync( stream[1] );
-            magma_dsetmatrix_async( ib, ib, work, ib, dT, nb, stream[0] );
-            magma_queue_sync( stream[0] );
-
+                              &rows, &ib, A(i,i), &lda, tau+i, work, &ib );
+            
+            magma_dpanel_to_q( MagmaUpper, ib, A(i,i), lda, work+ib*ib );
+            
+            /* put i-th V matrix onto device */
+            magma_dsetmatrix_async( rows, ib, A(i,i), lda, dA(i,i), ldda, queues[0] );
+            
+            /* put T matrix onto device */
+            magma_queue_sync( queues[1] );
+            magma_dsetmatrix_async( ib, ib, work, ib, dT(0,0), nb, queues[0] );
+            magma_queue_sync( queues[0] );
+            
             if (i + ib < n) {
                 if (i+ib < k-nb) {
                     /* Apply H' to A(i:m,i+ib:i+2*ib) from the left (look-ahead) */
                     magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, ib, ib,
-                                      dA(i, i   ), ldda, dT,    nb,
-                                      dA(i, i+ib), ldda, dwork, lddwork);
-                    magma_dq_to_panel(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
+                                      dA(i, i   ), ldda, dT(0,0),  nb,
+                                      dA(i, i+ib), ldda, dwork(0), lddwork, queues[1] );
+                    magma_dq_to_panel( MagmaUpper, ib, A(i,i), lda, work+ib*ib );
                 }
                 else {
                     /* After last panel, update whole trailing matrix. */
                     /* Apply H' to A(i:m,i+ib:n) from the left */
                     magma_dlarfb_gpu( MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                                       rows, n-i-ib, ib,
-                                      dA(i, i   ), ldda, dT,    nb,
-                                      dA(i, i+ib), ldda, dwork, lddwork);
-                    magma_dq_to_panel(MagmaUpper, ib, A(i,i), lda, work+ib*ib);
+                                      dA(i, i   ), ldda, dT(0,0),  nb,
+                                      dA(i, i+ib), ldda, dwork(0), lddwork, queues[1] );
+                    magma_dq_to_panel( MagmaUpper, ib, A(i,i), lda, work+ib*ib );
                 }
-
+                
                 old_i  = i;
                 old_ib = ib;
             }
@@ -251,19 +252,15 @@ magma_dgeqrf(
     if (i < k) {
         ib = n-i;
         if (i != 0) {
-            magma_dgetmatrix_async( m, ib, dA(0,i), ldda, A(0,i), lda, stream[1] );
-            magma_queue_sync( stream[1] );
+            magma_dgetmatrix( m, ib, dA(0,i), ldda, A(0,i), lda, queues[1] );
         }
         magma_int_t rows = m-i;
-        lapackf77_dgeqrf(&rows, &ib, A(i,i), &lda, tau+i, work, &lwork, info);
+        lapackf77_dgeqrf( &rows, &ib, A(i,i), &lda, tau+i, work, &lwork, info );
     }
-
-    magma_queue_destroy( stream[0] );
-    if (orig_stream == NULL) {
-        magma_queue_destroy( stream[1] );
-    }
-    magmablasSetKernelStream( orig_stream );
-
+    
+    magma_queue_destroy( queues[0] );
+    magma_queue_destroy( queues[1] );
+    
     magma_free( dA );
     
     return *info;

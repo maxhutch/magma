@@ -1,16 +1,16 @@
 /*
-   -- MAGMA (version 1.7.0) --
+   -- MAGMA (version 2.0.0-beta2) --
    Univ. of Tennessee, Knoxville
    Univ. of California, Berkeley
    Univ. of Colorado, Denver
-   @date September 2015
+   @date January 2016
 
    @author Azzam Haidar
    @author Tingxing Dong
 
-   @generated from zgeqrf_panel_batched.cpp normal z -> s, Fri Sep 11 18:29:32 2015
+   @generated from src/zgeqrf_panel_batched.cpp normal z -> s, Wed Jan  6 17:59:36 2016
    */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 
 
@@ -28,7 +28,7 @@ magma_sgeqrf_panel_batched(
         float** dW2_displ, 
         float** dW3_displ,
         magma_int_t *info_array,
-        magma_int_t batchCount, cublasHandle_t myhandle, magma_queue_t queue)
+        magma_int_t batchCount, magma_queue_t queue)
 {
     magma_int_t j, jb;
     magma_int_t ldw = nb; 
@@ -54,11 +54,11 @@ magma_sgeqrf_panel_batched(
         //copy th whole rectangular n,jb from of dA to dR (it's lower portion (which is V's) will be set to zero if needed at the end)
         magma_sdisplace_pointers(dW0_displ, dA_array, ldda, 0, j, batchCount, queue); 
         magma_sdisplace_pointers(dW3_displ, dR_array, ldr, 0, j, batchCount, queue); 
-        magmablas_slacpy_batched(MagmaFull, minmn, jb, dW0_displ, ldda, dW3_displ, ldr, batchCount, queue);
+        magmablas_slacpy_batched( MagmaFull, minmn, jb, dW0_displ, ldda, dW3_displ, ldr, batchCount, queue );
 
         //set the upper jbxjb portion of V dA(j,j) to 1/0s (note that the rectangular on the top of this triangular of V still non zero but has been copied to dR).
         magma_sdisplace_pointers(dW0_displ, dA_array, ldda, j, j, batchCount, queue); 
-        magmablas_slaset_batched(MagmaUpper, jb, jb, MAGMA_S_ZERO, MAGMA_S_ONE, dW0_displ, ldda, batchCount, queue); 
+        magmablas_slaset_batched( MagmaUpper, jb, jb, MAGMA_S_ZERO, MAGMA_S_ONE, dW0_displ, ldda, batchCount, queue ); 
 
 
         if ( (n-j-jb) > 0) //update the trailing matrix inside the panel
@@ -67,13 +67,13 @@ magma_sgeqrf_panel_batched(
                     dW0_displ, ldda,
                     dW2_displ,
                     dT_array, ldt, 
-                    batchCount, myhandle, queue);
+                    batchCount, queue);
 
-            magma_sdisplace_pointers(dW1_displ, dA_array, ldda, j, j + jb, batchCount, queue); 
-            sset_pointer(dW2_displ,  dwork, 1, 0, 0,  ldw*n, batchCount, queue );
-            sset_pointer(dW3_displ, dwork + ldw*n*batchCount, 1, 0, 0,  ldw*n, batchCount, queue );    
+            magma_sdisplace_pointers( dW1_displ, dA_array, ldda, j, j + jb, batchCount, queue );
+            magma_sset_pointer( dW2_displ,  dwork, 1, 0, 0,  ldw*n, batchCount, queue );
+            magma_sset_pointer( dW3_displ, dwork + ldw*n*batchCount, 1, 0, 0,  ldw*n, batchCount, queue );
 
-            magma_slarfb_gemm_batched(
+            magma_slarfb_gemm_batched( 
                     MagmaLeft, MagmaConjTrans, MagmaForward, MagmaColumnwise,
                     m-j, n-j-jb, jb,
                     (const float**)dW0_displ, ldda,
@@ -81,7 +81,7 @@ magma_sgeqrf_panel_batched(
                     dW1_displ,  ldda,
                     dW2_displ,  ldw, 
                     dW3_displ, ldw,
-                    batchCount, queue, myhandle);
+                    batchCount, queue );
         }
     }
 
@@ -90,11 +90,11 @@ magma_sgeqrf_panel_batched(
     {
         magma_sdisplace_pointers(dW0_displ, dA_array, ldda, 0, minmn, batchCount, queue); 
         magma_sdisplace_pointers(dW3_displ, dR_array, ldr, 0, minmn, batchCount, queue); 
-        magmablas_slacpy_batched(MagmaFull, minmn, n-minmn, dW0_displ, ldda, dW3_displ, ldr, batchCount, queue);
+        magmablas_slacpy_batched( MagmaFull, minmn, n-minmn, dW0_displ, ldda, dW3_displ, ldr, batchCount, queue );
     }
     // to be consistent set the whole upper nbxnb of V to 0/1s, in this case no need to set it inside sgeqrf_batched
     magma_sdisplace_pointers(dW0_displ, dA_array, ldda, 0, 0, batchCount, queue); 
-    magmablas_slaset_batched(MagmaUpper, minmn, n, MAGMA_S_ZERO, MAGMA_S_ONE, dW0_displ, ldda, batchCount, queue); 
+    magmablas_slaset_batched( MagmaUpper, minmn, n, MAGMA_S_ZERO, MAGMA_S_ONE, dW0_displ, ldda, batchCount, queue ); 
 
 
     return MAGMA_SUCCESS;

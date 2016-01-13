@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
 
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 
@@ -18,7 +18,7 @@
     Purpose
     -------
 
-    ALlows the user to choose a solver.
+    Allows the user to choose a solver.
 
     Arguments
     ---------
@@ -59,25 +59,25 @@ magma_z_solver(
         return MAGMA_ERR_NOT_SUPPORTED;
     }
     if( b.num_cols == 1 ){
-    // preconditioner
-        if ( zopts->solver_par.solver != Magma_ITERREF ) {
-            int stat = magma_z_precondsetup( A, b, &zopts->precond_par, queue );
-            if (  stat != MAGMA_SUCCESS ){
-                printf("error: bad preconditioner.\n");
-                return MAGMA_ERR_BADPRECOND; 
-            }
-        }
         switch( zopts->solver_par.solver ) {
             case  Magma_CG:
                     CHECK( magma_zcg_res( A, b, x, &zopts->solver_par, queue )); break;
+            case  Magma_BICG:
+                    CHECK( magma_zbicg( A, b, x, &zopts->solver_par, queue )); break;
+            case  Magma_PBICG:
+                    CHECK( magma_zpbicg( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_CGMERGE:
                     CHECK( magma_zcg_merge( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_PCG:
                     CHECK( magma_zpcg( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_PCGMERGE:
+                    CHECK( magma_zpcg_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_BICGSTAB:
                     CHECK( magma_zbicgstab( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_BICGSTABMERGE: 
                     CHECK( magma_zbicgstab_merge( A, b, x, &zopts->solver_par, queue )); break;
+            case  Magma_PBICGSTABMERGE:
+                    CHECK( magma_zpbicgstab_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_PBICGSTAB:
                     CHECK( magma_zpbicgstab( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_GMRES:
@@ -85,10 +85,15 @@ magma_z_solver(
             case  Magma_PGMRES:
                     CHECK( magma_zfgmres( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_IDR:
-                    //CHECK( magma_zidr_strm( A, b, x, &zopts->solver_par, queue )); break;
                     CHECK( magma_zidr( A, b, x, &zopts->solver_par, queue )); break;
+            case  Magma_IDRMERGE:
+                    CHECK( magma_zidr_merge( A, b, x, &zopts->solver_par, queue )); break;
+                    //CHECK( magma_zidr_strms( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_PIDR:
                     CHECK( magma_zpidr( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_PIDRMERGE:
+                    //CHECK( magma_zpidr_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+                    CHECK( magma_zpidr_strms( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_LOBPCG:
                     CHECK( magma_zlobpcg( A, &zopts->solver_par, &zopts->precond_par, queue )); break;
             case  Magma_ITERREF:
@@ -96,21 +101,40 @@ magma_z_solver(
             case  Magma_JACOBI:
                     CHECK( magma_zjacobi( A, b, x, &zopts->solver_par, queue )); break;
             case  Magma_BAITER:
-                    //CHECK( magma_zjacobidomainoverlap( A, b, x, &zopts->solver_par, queue )); break;
-                    CHECK( magma_zbaiter( A, b, x, &zopts->solver_par, queue ) ); break;
+                    CHECK( magma_zbaiter( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+            case  Magma_BAITERO:
+                    CHECK( magma_zbaiter_overlap( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;
+            case  Magma_CGS:
+                    CHECK( magma_zcgs( A, b, x, &zopts->solver_par, queue ) ); break;
+            case  Magma_CGSMERGE:
+                    CHECK( magma_zcgs_merge( A, b, x, &zopts->solver_par, queue ) ); break;
+            case  Magma_PCGS:
+                    CHECK( magma_zpcgs( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+            case  Magma_PCGSMERGE:
+                    CHECK( magma_zpcgs_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+            case  Magma_TFQMR:
+                    CHECK( magma_ztfqmr( A, b, x, &zopts->solver_par, queue ) ); break;
+            case  Magma_PTFQMR:
+                    CHECK( magma_zptfqmr( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+            case  Magma_TFQMRMERGE:
+                    CHECK( magma_ztfqmr_merge( A, b, x, &zopts->solver_par, queue ) ); break;
+            case  Magma_PTFQMRMERGE:
+                    CHECK( magma_zptfqmr_merge( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+            case  Magma_QMR:
+                    CHECK( magma_zqmr( A, b, x, &zopts->solver_par, queue ) ); break;
+            case  Magma_LSQR:
+                    CHECK( magma_zlsqr( A, b, x, &zopts->solver_par, &zopts->precond_par, queue ) ); break;
+            case  Magma_QMRMERGE:
+                    CHECK( magma_zqmr_merge( A, b, x, &zopts->solver_par, queue ) ); break;
+            case  Magma_BOMBARD:
+                    CHECK( magma_zbombard( A, b, x, &zopts->solver_par, queue ) ); break;
+            case  Magma_BOMBARDMERGE:
+                    CHECK( magma_zbombard_merge( A, b, x, &zopts->solver_par, queue ) ); break;
             default:
                     printf("error: solver class not supported.\n"); break;
         }
     }
     else {
-  // preconditioner
-        if ( zopts->solver_par.solver != Magma_ITERREF ) {
-            int stat = magma_z_precondsetup( A, b, &zopts->precond_par, queue );
-            if (  stat != MAGMA_SUCCESS ){
-                printf("error: bad preconditioner.\n");
-                return MAGMA_ERR_BADPRECOND; 
-            }
-        }
         switch( zopts->solver_par.solver ) {
             case  Magma_CG:
                     CHECK( magma_zbpcg( A, b, x, &zopts->solver_par, &zopts->precond_par, queue )); break;

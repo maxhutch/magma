@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zpipelinedgmres.cu normal z -> c, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zpipelinedgmres.cu normal z -> c, Wed Jan  6 17:59:42 2016
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define COMPLEX
 
@@ -184,8 +184,8 @@ magma_cpipelinesscale(
 
 extern "C" magma_int_t
 magma_ccopyscale(
-    int n, 
-    int k,
+    magma_int_t n, 
+    magma_int_t k,
     magmaFloatComplex_ptr r, 
     magmaFloatComplex_ptr v,
     magmaFloatComplex_ptr skp,
@@ -198,9 +198,9 @@ magma_ccopyscale(
     dim3 Gs2( magma_ceildiv( n, BLOCK_SIZE ) );
 
 
-    magma_cpipelined_correction<<<Gs, Bs, Ms, queue >>>
+    magma_cpipelined_correction<<< Gs, Bs, Ms, queue->cuda_stream() >>>
                                             ( n, k, skp, r, v );
-    magma_cpipelined_copyscale<<<Gs2, Bs, 0, queue >>>
+    magma_cpipelined_copyscale<<< Gs2, Bs, 0, queue->cuda_stream() >>>
                                             ( n, k, skp, r, v );
 
     return MAGMA_SUCCESS;
@@ -209,20 +209,20 @@ magma_ccopyscale(
 
 extern "C" magma_int_t
 magma_scnrm2scale(
-    int m, 
+    magma_int_t m, 
     magmaFloatComplex_ptr r, 
-    int lddr, 
+    magma_int_t lddr, 
     magmaFloatComplex_ptr drnorm,
     magma_queue_t queue )
 {
     dim3  blocks( 1 );
     dim3 threads( 512 );
-    magma_cpipelinedscnrm2_kernel<<< blocks, threads, 0, queue >>>
+    magma_cpipelinedscnrm2_kernel<<< blocks, threads, 0, queue->cuda_stream() >>>
                                 ( m, r, lddr, drnorm );
 
     dim3 Bs( BLOCK_SIZE );
     dim3 Gs2( magma_ceildiv( m, BLOCK_SIZE ) );
-    magma_cpipelinesscale<<<Gs2, Bs, 0, queue >>>( m, r, drnorm );
+    magma_cpipelinesscale<<< Gs2, Bs, 0, queue->cuda_stream() >>>( m, r, drnorm );
 
     return MAGMA_SUCCESS;
 }

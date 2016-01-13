@@ -1,12 +1,12 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Azzam Haidar
-       @generated from magma_zbulge.cpp normal z -> s, Fri Sep 11 18:29:33 2015
+       @generated from control/magma_zbulge.cpp normal z -> s, Wed Jan  6 17:59:29 2016
 
 */
 #include "common_magma.h"
@@ -15,13 +15,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C" magma_int_t
-magma_sbulge_get_lq2(magma_int_t n, magma_int_t threads, magma_int_t wantz)
+magma_get_sbulge_lq2(magma_int_t n, magma_int_t threads, magma_int_t wantz)
 {
     if (wantz == 0)
         return 2*n*2;
 
-    magma_int_t nb = magma_sbulge_get_nb(n, threads);
-    magma_int_t Vblksiz = magma_sbulge_get_Vblksiz(n, nb, threads);
+    magma_int_t nb = magma_get_sbulge_nb(n, threads);
+    magma_int_t Vblksiz = magma_get_sbulge_vblksiz(n, nb, threads);
     magma_int_t ldv = nb + Vblksiz;
     magma_int_t ldt = Vblksiz;
 
@@ -31,10 +31,10 @@ magma_sbulge_get_lq2(magma_int_t n, magma_int_t threads, magma_int_t wantz)
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern "C" void
-magma_sbulge_get_VTsiz(magma_int_t n, magma_int_t nb, magma_int_t threads,
+magma_get_sbulge_VTsiz(magma_int_t n, magma_int_t nb, magma_int_t threads,
         magma_int_t *Vblksiz, magma_int_t *ldv, magma_int_t *ldt)
 {
-    Vblksiz[0] = magma_sbulge_get_Vblksiz(n, nb, threads);
+    Vblksiz[0] = magma_get_sbulge_vblksiz(n, nb, threads);
     ldv[0]     = nb + Vblksiz[0];
     ldt[0]     = Vblksiz[0];
 }
@@ -62,8 +62,8 @@ magma_sbulge_getlwstg2(magma_int_t n, magma_int_t threads, magma_int_t wantz,
                        magma_int_t *blkcnt, magma_int_t *sizTAU2,
                        magma_int_t *sizT2, magma_int_t *sizV2)
 {
-    magma_int_t nb      = magma_sbulge_get_nb(n, threads);
-    magma_sbulge_get_VTsiz(n, nb, threads, Vblksiz, ldv, ldt);
+    magma_int_t nb      = magma_get_sbulge_nb(n, threads);
+    magma_get_sbulge_VTsiz(n, nb, threads, Vblksiz, ldv, ldt);
     return magma_sbulge_getstg2size(n, nb, wantz, Vblksiz[0], ldv[0], ldt[0], blkcnt, sizTAU2, sizT2, sizV2);
 }
 
@@ -86,7 +86,7 @@ magma_ssyevdx_getworksize(magma_int_t n, magma_int_t threads,
     magma_int_t sizTAU2;
     magma_int_t sizT2;
     magma_int_t sizV2;
-    magma_int_t nb     = magma_sbulge_get_nb( n, threads );
+    magma_int_t nb     = magma_get_sbulge_nb( n, threads );
     magma_int_t lwstg1 = magma_bulge_getlwstg1( n, nb, &lda2 );
     magma_int_t lwstg2 = magma_sbulge_getlwstg2( n, threads, wantz, &Vblksiz, &ldv, &ldt, &blkcnt, &sizTAU2, &sizT2, &sizV2 );
 

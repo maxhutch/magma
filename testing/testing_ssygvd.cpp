@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
        @author Mark Gates
 
-       @generated from testing_zhegvd.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zhegvd.cpp normal z -> s, Wed Jan  6 17:59:50 2016
 
 */
 
@@ -33,24 +33,25 @@ int main( int argc, char** argv)
 {
     TESTING_INIT();
 
+    /* Constants */
+    const float c_zero    = MAGMA_S_ZERO;
+    const float c_one     = MAGMA_S_ONE;
+    const float c_neg_one = MAGMA_S_NEG_ONE;
+    const float d_one     =  1.;
+    const float d_neg_one = -1.;
+    magma_int_t ione = 1;
+    
+    /* Local variables */
     real_Double_t   gpu_time, cpu_time;
     float *h_A, *h_R, *h_B, *h_S, *h_work;
     float *w1, *w2;
-    float result[4] = {0, 0, 0, 0};
+    float Anorm, result[4] = {0, 0, 0, 0};
     magma_int_t *iwork;
     magma_int_t N, n2, info, nb, lwork, liwork, lda;
-    float c_zero    = MAGMA_S_ZERO;
-    float c_one     = MAGMA_S_ONE;
-    float c_neg_one = MAGMA_S_NEG_ONE;
-    float d_one         =  1.;
-    float d_neg_one     = -1.;
     #ifdef COMPLEX
     float *rwork;
     magma_int_t lrwork;
     #endif
-    //float d_ten         = 10.;
-    //magma_int_t izero    = 0;
-    magma_int_t ione     = 1;
     magma_int_t ISEED[4] = {0,0,0,1};
     magma_int_t status = 0;
 
@@ -63,16 +64,28 @@ int main( int argc, char** argv)
     // checking NoVec requires LAPACK
     opts.lapack |= (opts.check && opts.jobz == MagmaNoVec);
     
-    printf("%% itype = %d, jobz = %s, uplo = %s\n",
-           (int) opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo));
+    // pass ngpu = -1 to test multi-GPU code using 1 gpu
+    magma_int_t abs_ngpu = abs( opts.ngpu );
+    
+    printf("%% itype = %d, jobz = %s, uplo = %s, ngpu %d\n",
+           (int) opts.itype, lapack_vec_const(opts.jobz), lapack_uplo_const(opts.uplo),
+           (int) abs_ngpu );
 
-    printf("%%   N   CPU Time (sec)   GPU Time(sec)\n");
-    printf("%%=====================================\n");
+    if (opts.version == 1) {
+        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |AZ-BZD|   |I-ZZ'B|\n");
+    }
+    else if ( opts.version == 2) {
+        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |ABZ-ZD|   |I-ZZ'B|\n");
+    }
+    else if ( opts.version == 3) {
+        printf("%%   N   CPU Time (sec)   GPU Time (sec)   |D-D_magma|   |BAZ-ZD|   |B-ZZ'|\n");
+    }
+    printf("%%===========================================================================\n");
     for( int itest = 0; itest < opts.ntest; ++itest ) {
         for( int iter = 0; iter < opts.niter; ++iter ) {
             N = opts.nsize[itest];
             lda    = N;
-            n2     = N*lda;
+            n2     = lda*N;
             nb     = magma_get_ssytrd_nb(N);
             #ifdef COMPLEX
                 lwork  = max( N + N*nb, 2*N + N*N );
@@ -105,8 +118,11 @@ int main( int argc, char** argv)
             lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
             lapackf77_slacpy( MagmaFullStr, &N, &N, h_B, &lda, h_S, &lda );
             
-            /* warmup */
-            if ( opts.warmup ) {
+            /* ====================================================================
+               Performs operation using MAGMA
+               =================================================================== */
+            gpu_time = magma_wtime();
+            if (opts.ngpu == 1) {
                 magma_ssygvd( opts.itype, opts.jobz, opts.uplo,
                               N, h_R, lda, h_S, lda, w1,
                               h_work, lwork,
@@ -115,31 +131,23 @@ int main( int argc, char** argv)
                               #endif
                               iwork, liwork,
                               &info );
-                if (info != 0)
-                    printf("magma_ssygvd returned error %d: %s.\n",
-                           (int) info, magma_strerror( info ));
-                
-                lapackf77_slacpy( MagmaFullStr, &N, &N, h_A, &lda, h_R, &lda );
-                lapackf77_slacpy( MagmaFullStr, &N, &N, h_B, &lda, h_S, &lda );
             }
-            
-            /* ====================================================================
-               Performs operation using MAGMA
-               =================================================================== */
-            gpu_time = magma_wtime();
-            magma_ssygvd( opts.itype, opts.jobz, opts.uplo,
-                          N, h_R, lda, h_S, lda, w1,
-                          h_work, lwork,
-                          #ifdef COMPLEX
-                          rwork, lrwork,
-                          #endif
-                          iwork, liwork,
-                          &info );
+            else {
+                magma_ssygvd_m( abs_ngpu, opts.itype, opts.jobz, opts.uplo,
+                                N, h_R, lda, h_S, lda, w1,
+                                h_work, lwork,
+                                #ifdef COMPLEX
+                                rwork, lrwork,
+                                #endif
+                                iwork, liwork,
+                                &info );
+            }
             gpu_time = magma_wtime() - gpu_time;
             if (info != 0)
                 printf("magma_ssygvd returned error %d: %s.\n",
                        (int) info, magma_strerror( info ));
             
+            bool okay = true;
             if ( opts.check && opts.jobz != MagmaNoVec ) {
                 /* =====================================================================
                    Check the results following the LAPACK's [zc]hegvd routine.
@@ -167,12 +175,13 @@ int main( int argc, char** argv)
                 else if ( opts.itype == 3 ) {
                     lapackf77_slacpy( MagmaFullStr, &N, &N, h_B, &lda, h_S, &lda);
                     blasf77_ssyrk(lapack_uplo_const(opts.uplo), "N", &N, &N, &d_neg_one, h_R, &lda, &d_one, h_S, &lda);
-                    result[1] = lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_S, &lda, rwork) / N
-                              / lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_B, &lda, rwork);
+                    Anorm     = safe_lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_B, &lda, rwork);
+                    result[1] = safe_lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_S, &lda, rwork)
+                              / (N*Anorm);
                 }
                 
                 result[0] = 1.;
-                result[0] /= lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_A, &lda, rwork);
+                result[0] /= safe_lapackf77_slansy("1", lapack_uplo_const(opts.uplo), &N, h_A, &lda, rwork);
                 result[0] /= lapackf77_slange("1", &N, &N, h_R, &lda, rwork);
                 
                 if ( opts.itype == 1 ) {
@@ -255,48 +264,32 @@ int main( int argc, char** argv)
                 
                 // compare eigenvalues
                 float maxw=0, diff=0;
-                for (int j=0; j < N; j++) {
+                for( int j=0; j < N; j++ ) {
                     maxw = max(maxw, fabs(w1[j]));
                     maxw = max(maxw, fabs(w2[j]));
                     diff = max(diff, fabs(w1[j] - w2[j]));
                 }
                 result[3] = diff / (N*maxw);
                 
-                printf("%5d     %7.2f         %7.2f\n",
-                       (int) N, cpu_time, gpu_time);
+                okay = okay && (result[3] < tolulp);
+                printf("%5d   %9.4f        %9.4f        %8.2e   ",
+                       (int) N, cpu_time, gpu_time, result[3] );
             }
             else {
-                printf("%5d       ---           %7.2f\n",
+                printf("%5d      ---           %9.4f          ---      ",
                        (int) N, gpu_time);
             }
             
-            /* =====================================================================
-               Print execution time
-               =================================================================== */
+            // print error checks
             if ( opts.check && opts.jobz != MagmaNoVec ) {
-                printf("Testing the eigenvalues and eigenvectors for correctness:\n");
-                if ( opts.itype == 1 ) {
-                    printf("    | A Z - B Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed") );
-                }
-                else if ( opts.itype == 2 ) {
-                    printf("    | A B Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed") );
-                }
-                else if ( opts.itype == 3 ) {
-                    printf("    | B A Z - Z D | / (|A| |Z| N) = %8.2e   %s\n",   result[0], (result[0] < tol    ? "ok" : "failed") );
-                }
-                if ( opts.itype == 1 || opts.itype == 2 ) {
-                    printf("    | I -   Z Z' B | /  N         = %8.2e   %s\n",   result[1], (result[1] < tol    ? "ok" : "failed") );
-                }
-                else {
-                    printf("    | B -  Z Z' | / (|B| N)       = %8.2e   %s\n",   result[1], (result[1] < tol    ? "ok" : "failed") );
-                }
-                //printf(    "    | D(w/ Z) - D(w/o Z) | / |D|  = %8.2e   %s\n\n", result[2], (result[2] < tolulp ? "ok" : "failed") );
-                status += ! (result[0] < tol && result[1] < tol);  // && result[2] < tolulp);
+                okay = okay && (result[0] < tol) && (result[1] < tol);
+                printf("   %8.2e   %8.2e", result[0], result[1] );
             }
-            if ( opts.lapack ) {
-                printf(    "    | D_magma - D_lapack | / |D|  = %8.2e   %s\n\n", result[3], (result[3] < tolulp ? "ok" : "failed") );
-                status += ! (result[3] < tolulp);
+            else {
+                printf("     ---        ---   ");
             }
+            printf("   %s\n", (okay ? "ok" : "failed"));
+            status += ! okay;
             
             TESTING_FREE_CPU( h_A    );
             TESTING_FREE_CPU( h_B    );
@@ -317,6 +310,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

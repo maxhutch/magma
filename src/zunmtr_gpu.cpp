@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Stan Tomov
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -22,8 +22,9 @@
     TRANS = MagmaNoTrans:       Q * C               C * Q
     TRANS = Magma_ConjTrans:    Q**H * C            C * Q**H
 
-    where Q is a complex unitary matrix of order nq, with nq = m if
-    SIDE = MagmaLeft and nq = n if SIDE = MagmaRight. Q is defined as the product of
+    where Q is a complex unitary matrix of order nq,
+    with nq = m if SIDE = MagmaLeft
+    and  nq = n if SIDE = MagmaRight. Q is defined as the product of
     nq-1 elementary reflectors, as returned by ZHETRD:
 
     if UPLO = MagmaUpper, Q = H(nq-1) . . . H(2) H(1);
@@ -57,18 +58,20 @@
     n       INTEGER
             The number of columns of the matrix C. N >= 0.
 
-    @param[in]
+    @param[in,out]
     dA      COMPLEX_16 array, dimension
                                  (LDDA,M) if SIDE = MagmaLeft
                                  (LDDA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
-            returned by ZHETRD_GPU. On output the diagonal, the subdiagonal and the
-            upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper) are destroyed.
+            returned by ZHETRD_GPU. On output the diagonal, the subdiagonal
+            and the upper part (UPLO=MagmaLower) or lower part (UPLO=MagmaUpper)
+            are destroyed.
 
     @param[in]
     ldda    INTEGER
-            The leading dimension of the array DA.
-            LDDA >= max(1,M) if SIDE = MagmaLeft; LDDA >= max(1,N) if SIDE = MagmaRight.
+            The leading dimension of the array dA.
+            If SIDE = MagmaLeft,  LDDA >= max(1,M);
+            if SIDE = MagmaRight, LDDA >= max(1,N).
 
     @param[in]
     tau     COMPLEX_16 array, dimension
@@ -87,16 +90,18 @@
             The leading dimension of the array C. LDDC >= max(1,M).
 
     @param[in]
-    wA      (workspace) COMPLEX_16 array, dimension
+    wA      COMPLEX_16 array, dimension
                                  (LDWA,M) if SIDE = MagmaLeft
                                  (LDWA,N) if SIDE = MagmaRight
             The vectors which define the elementary reflectors, as
             returned by ZHETRD_GPU.
+            (A copy of the upper or lower part of dA, on the host.)
 
     @param[in]
     ldwa    INTEGER
             The leading dimension of the array wA.
-            LDWA >= max(1,M) if SIDE = MagmaLeft; LDWA >= max(1,N) if SIDE = MagmaRight.
+            If SIDE = MagmaLeft,  LDWA >= max(1,M);
+            if SIDE = MagmaRight, LDWA >= max(1,N).
 
     @param[out]
     info    INTEGER
@@ -112,7 +117,7 @@ magma_zunmtr_gpu(
     magmaDoubleComplex_ptr dA,    magma_int_t ldda,
     magmaDoubleComplex   *tau,
     magmaDoubleComplex_ptr dC,    magma_int_t lddc,
-    magmaDoubleComplex    *wA,    magma_int_t ldwa,
+    const magmaDoubleComplex *wA, magma_int_t ldwa,
     magma_int_t *info)
 {
     #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
@@ -177,7 +182,7 @@ magma_zunmtr_gpu(
                           dC, lddc, wA(0,1), ldwa, &iinfo);
     }
     else {
-        /* Q was determined by a call to ZHETRD with UPLO = 'L' */
+        /* Q was determined by a call to ZHETRD with UPLO = MagmaLower */
         if (left) {
             i1 = 1;
             i2 = 0;

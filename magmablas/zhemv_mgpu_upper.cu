@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
-       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop cuConj.
+       zsymv_upper.cu is nearly identical to zhemv_upper.cu, just change names and drop MAGMA_Z_CNJG.
        
        zhemv_kernel_U (upper) in zhemv_upper.cu is very similar to
        zhemv_kernel_L (lower) in zhemv.cu; diff the two files to compare.
@@ -155,7 +155,7 @@ zhemv_kernel_U_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j > tx2 ) {
-                sA32(j, tx2) = cuConj( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -216,7 +216,7 @@ zhemv_kernel_U_mgpu(
         #pragma unroll
         for (int j=ty2*4; j < ty2*4 + 4; j++) {
             if ( j > tx2 ) {
-                sA32(j, tx2) = cuConj( sA32(tx2, j) );
+                sA32(j, tx2) = MAGMA_Z_CNJG( sA32(tx2, j) );
             }
         }
         __syncthreads();
@@ -278,7 +278,7 @@ zhemv_kernel_U_mgpu(
         psum = MAGMA_Z_ZERO;
         #pragma unroll
         for (int j=0; j < 4; j++) {
-            psum += cuConj( sA32(ty2 + j*8, tx2) ) * sx_blk[j*8 + ty2];
+            psum += MAGMA_Z_CNJG( sA32(ty2 + j*8, tx2) ) * sx_blk[j*8 + ty2];
         }
         //__syncthreads();  // no sync needed here
         
@@ -386,7 +386,7 @@ zhemv_kernel_U_mgpu(
             #pragma unroll
             for (int j=0; j < 4; j++) {
                 total += rA[j] * sx_jj[quarter_NB_X*k + ty*4 + j];  // y_blk = A_{blk,jj}   * x_jj
-                sA16(ty*4 + j, tx) = cuConj( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
+                sA16(ty*4 + j, tx) = MAGMA_Z_CNJG( rA[j] ) * sx_blk[tx];  // y_jj  = A_{blk,jj}^H * x_blk
             }
             __syncthreads();
     

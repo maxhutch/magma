@@ -1,18 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zmcsrpass_gpu.cpp normal z -> d, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zmcsrpass_gpu.cpp normal z -> d, Wed Jan  6 17:59:42 2016
        @author Hartwig Anzt
 */
 
 //  in this file, many routines are taken from
 //  the IO functions provided by MatrixMarket
 
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /**
@@ -68,7 +68,7 @@ magma_dcsrset_gpu(
     A->num_rows = m;
     A->num_cols = n;
     magma_index_t nnz;
-    magma_index_getvector( 1, row+m, 1, &nnz, 1 );
+    magma_index_getvector( 1, row+m, 1, &nnz, 1, queue );
     A->nnz = (magma_int_t) nnz;
     A->storage_type = Magma_CSR;
     A->memory_location = Magma_DEV;

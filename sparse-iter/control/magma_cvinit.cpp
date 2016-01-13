@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from magma_zvinit.cpp normal z -> c, Fri Sep 11 18:29:46 2015
+       @generated from sparse-iter/control/magma_zvinit.cpp normal z -> c, Wed Jan  6 17:59:43 2016
        @author Hartwig Anzt
 */
-#include "common_magmasparse.h"
+#include "magmasparse_internal.h"
 
 
 /**
@@ -60,21 +60,19 @@ magma_cvinit(
 {
     magma_int_t info = 0;
     
-    // set queue for old dense routines
-    magma_queue_t orig_queue = NULL;
-    magmablasGetKernelStream( &orig_queue );
-
     x->val = NULL;
     x->diag = NULL;
     x->row = NULL;
     x->rowidx = NULL;
     x->col = NULL;
+    x->list = NULL;
     x->blockinfo = NULL;
     x->dval = NULL;
     x->ddiag = NULL;
     x->drow = NULL;
     x->drowidx = NULL;
     x->dcol = NULL;
+    x->dlist = NULL;
     x->storage_type = Magma_DENSE;
     x->memory_location = mem_loc;
     x->sym = Magma_GENERAL;
@@ -98,10 +96,9 @@ magma_cvinit(
     }
     else if ( mem_loc == Magma_DEV ) {
         CHECK( magma_cmalloc( &x->val, x->nnz ));
-        magmablas_claset(MagmaFull, x->num_rows, x->num_cols, values, values, x->val, x->num_rows);
+        magmablas_claset( MagmaFull, x->num_rows, x->num_cols, values, values, x->val, x->num_rows, queue );
     }
     
 cleanup:
-    magmablasSetKernelStream( orig_queue );
     return info; 
 }

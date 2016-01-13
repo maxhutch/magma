@@ -1,22 +1,22 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
        @author Stan Tomov
        @author Raffaele Solca
        
-       @generated from zbulge_back.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+       @generated from src/zbulge_back.cpp normal z -> c, Wed Jan  6 17:59:34 2016
 
  */
 #include "common_magma.h"
 #include "magma_bulge.h"
 #include "magma_cbulge.h"
 
-#define PRECISION_c
+#define COMPLEX
 
 static void *magma_capplyQ_parallel_section(void *arg);
 
@@ -115,7 +115,7 @@ magma_cbulge_back(
     float f= 1.;
     magma_int_t n_gpu = ne;
 
-//#if defined(PRECISION_s) || defined(PRECISION_d)
+//#ifdef REAL
     //float gpu_cpu_perf = 50;  // gpu over cpu performance  //100% ev // SandyB. - Kepler (K20c)
     //float gpu_cpu_perf = 16;  // gpu over cpu performance  //100% ev // SandyB. - Fermi (M2090)
 //#else

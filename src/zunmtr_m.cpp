@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Stan Tomov
        @author Raffaele Solca
@@ -11,7 +11,7 @@
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -197,7 +197,7 @@ magma_zunmtr_m(
     }
 
     if (upper) {
-        /* Q was determined by a call to SSYTRD with UPLO = 'U' */
+        /* Q was determined by a call to SSYTRD with UPLO = MagmaUpper */
         i__2 = nq - 1;
         // TODO: upper case is not yet implemented for multiple GPUs -- see above
         // for now use one GPU
@@ -209,7 +209,7 @@ magma_zunmtr_m(
                        C, ldc, work, lwork, &iinfo);
     }
     else {
-        /* Q was determined by a call to SSYTRD with UPLO = 'L' */
+        /* Q was determined by a call to SSYTRD with UPLO = MagmaLower */
         if (left) {
             i1 = 1;
             i2 = 0;

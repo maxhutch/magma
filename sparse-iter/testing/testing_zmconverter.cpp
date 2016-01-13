@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
@@ -39,7 +39,6 @@ int main(  int argc, char** argv )
     real_Double_t res;
     magma_z_matrix Z={Magma_CSR}, Z2={Magma_CSR}, A={Magma_CSR}, A2={Magma_CSR}, 
     AT={Magma_CSR}, AT2={Magma_CSR}, B={Magma_CSR};
-    printf("check1\n");
     int i=1;
     CHECK( magma_zparse_opts( argc, argv, &zopts, &i, queue ));
 
@@ -56,7 +55,7 @@ int main(  int argc, char** argv )
         }
 
         printf("%% matrix info: %d-by-%d with %d nonzeros\n",
-                            (int) Z.num_rows,(int) Z.num_cols,(int) Z.nnz );
+                            int(Z.num_rows), int(Z.num_cols), int(Z.nnz) );
         
         // convert to be non-symmetric
         CHECK( magma_zmconvert( Z, &A, Magma_CSR, Magma_CSRL, queue ));
@@ -101,6 +100,11 @@ int main(  int argc, char** argv )
         magma_zmfree(&AT, queue );
         CHECK( magma_zmconvert( AT2, &AT, Magma_CSRCOO, Magma_CSR, queue ));
         magma_zmfree(&AT2, queue );
+        //CSRLIST
+        CHECK( magma_zmconvert( AT, &AT2, Magma_CSR, Magma_CSRLIST, queue ));
+        magma_zmfree(&AT, queue );
+        CHECK( magma_zmconvert( AT2, &AT, Magma_CSRLIST, Magma_CSR, queue ));
+        magma_zmfree(&AT2, queue );
         //CSRD
         CHECK( magma_zmconvert( AT, &AT2, Magma_CSR, Magma_CSRD, queue ));
         magma_zmfree(&AT, queue );
@@ -109,7 +113,6 @@ int main(  int argc, char** argv )
         
         // transpose
         CHECK( magma_zmtranspose( AT, &A2, queue ));
-        
         CHECK( magma_zmdiff( A, A2, &res, queue));
         printf("%% ||A-A2||_F = %8.2e\n", res);
         if ( res < .000001 )
@@ -119,8 +122,7 @@ int main(  int argc, char** argv )
         
         CHECK( magma_zmlumerge( A2, B, &Z2, queue ));
 
-        
-        CHECK( magma_zmdiff( Z, Z2, &res, queue));
+        CHECK( magma_zmdiff( Z, Z2, &res, queue));        
         printf("%% ||Z-Z2||_F = %8.2e\n", res);
         if ( res < .000001 )
             printf("%% LUmerge tester:  ok\n");

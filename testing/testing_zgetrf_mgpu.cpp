@@ -1,9 +1,9 @@
 /*
-    -- clMAGMA (version 1.7.0) --
+    -- clMAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -163,6 +163,7 @@ int main( int argc, char** argv )
 
     magma_opts opts;
     opts.parse_opts( argc, argv );
+    opts.ngpu = abs( opts.ngpu );  // always uses multi-GPU code
     
     double tol = opts.tolerance * lapackf77_dlamch("E");
 
@@ -182,7 +183,7 @@ int main( int argc, char** argv )
             lda    = M;
             n2     = lda*N;
             ldda   = magma_roundup( M, opts.align );  // multiple of 32 by default
-            nb     = magma_get_zgetrf_nb( M );
+            nb     = magma_get_zgetrf_nb( M, N );
             gflops = FLOPS_ZGETRF( M, N ) / 1e9;
             
             // ngpu must be at least the number of blocks
@@ -227,7 +228,7 @@ int main( int argc, char** argv )
                =================================================================== */
             init_matrix( M, N, h_A, lda );
             magma_zsetmatrix_1D_col_bcyclic( M, N, h_A, lda, d_lA, ldda, ngpu, nb );
-    
+
             gpu_time = magma_wtime();
             magma_zgetrf_mgpu( ngpu, M, N, d_lA, ldda, ipiv, &info );
             gpu_time = magma_wtime() - gpu_time;
@@ -276,6 +277,7 @@ int main( int argc, char** argv )
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

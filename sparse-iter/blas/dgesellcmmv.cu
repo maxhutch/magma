@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgesellcmmv.cu normal z -> d, Fri Sep 11 18:29:43 2015
+       @generated from sparse-iter/blas/zgesellcmmv.cu normal z -> d, Wed Jan  6 17:59:41 2016
 
 */
 #include "common_magmasparse.h"
@@ -14,91 +14,13 @@
 
 //#define TEXTURE
 
-/*
-// SELLP SpMV kernel
-// see paper by M. KREUTZER, G. HAGER, G WELLEIN, H. FEHSKE A. BISHOP
-// A UNIFIED SPARSE MATRIX DATA FORMAT 
-// FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
-// SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
-__global__ void 
-zgesellptmv2d_kernel_4_ldg( 
-    int num_rows, 
-    int num_cols,
-    int blocksize,
-    int T,
-    double alpha, 
-    double * dval, 
-    magma_index_t * dcolind,
-    magma_index_t * drowptr,
-    const double *  __restrict__ dx,
-    double beta, 
-    double * dy)
-{
-#if defined(TEXTURE) && (__CUDA_ARCH__ >= 300)
-   // T threads assigned to each row
-    int idx = threadIdx.y;      // thread in row
-    int idy = threadIdx.x;      // local row
-    int ldx = idx * blocksize + idy;
-    int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
-    int row = bdx * blocksize + idy;  // global row index
-
-    extern __shared__ double shared[];
-
-    if(row < num_rows ) {
-        double dot = MAGMA_D_MAKE(0.0, 0.0);
-        int offset = drowptr[ bdx ];
-        int block = blocksize * T; // total number of threads
-
-        int max_ = (drowptr[ bdx+1 ]-offset)/block;  
-            // number of elements each thread handles
-
-        int kk, i1, i2;
-        double x1, x2, v1, v2;
-        dcolind += offset + ldx;
-        dval += offset + ldx;
-        for ( kk = 0; kk < max_-1; kk+=2 ) {
-            i1 = dcolind[ block*kk];
-            i2 = dcolind[ block*kk + block];
-
-            x1 = __ldg( dx+ i1  );   
-            x2 = __ldg( dx+ i2  ); 
-
-            v1 = dval[ block*kk ];
-            v2 = dval[ block*kk + block];
-
-            dot += v1 * x1;
-            dot += v2 * x2;
-        }
-  
-        if (kk<max_) {
-           x1 = __ldg( dx + dcolind[ block*kk]  );            
-           v1 = dval[ block*kk ];
-
-            dot += v1 * x1;
-        }
-
-        shared[ldx]  = dot;
-
-        __syncthreads();
-        if( idx < 2 ) {
-            shared[ldx]+=shared[ldx+blocksize*2];              
-            __syncthreads();
-            if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
-            }
-        }
-    }
-#endif
-}
-*/
-
 
 // SELLP SpMV kernel
 // see paper by M. KREUTZER, G. HAGER, G WELLEIN, H. FEHSKE A. BISHOP
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning one thread to each row - 1D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_1( 
     int num_rows, 
@@ -106,28 +28,42 @@ zgesellptmv2d_kernel_1(
     int blocksize,
     int T,
     double alpha, 
-    double * dval, 
-    magma_index_t * dcolind,
-    magma_index_t * drowptr,
-    double *  dx,
+    const double * __restrict__ dval, 
+    const magma_index_t * __restrict__ dcolind,
+    const magma_index_t * __restrict__ drowptr,
+    const double *__restrict__ dx,
     double beta, 
-    double * dy)
+    double * __restrict__ dy)
 {
     // threads assigned to rows
-    int Idx = blockDim.x * blockIdx.x + threadIdx.x;
-    int offset = drowptr[ blockIdx.x ];
-    int border = (drowptr[ blockIdx.x+1 ]-offset)/blocksize;
-    if(Idx < num_rows ) {
+    //int Idx = blockDim.x * blockIdx.x + threadIdx.x;
+    //int offset = drowptr[ blockIdx.x ];
+    //int border = (drowptr[ blockIdx.x+1 ]-offset)/blocksize;
+    
+    
+    // T threads assigned to each row
+    int idx = threadIdx.x;      // local row
+    int bdx = blockIdx.y * gridDim.x + blockIdx.x; // global block index
+    int row = bdx * 256 + idx;  // global row index
+    // int lblocksize = ( row + blocksize < num_rows) ? blocksize : ( num_rows - blocksize * (row/blocksize) );
+    int lrow = threadIdx.x%blocksize; // local row;
+    
+    if( row < num_rows ) {
+        int offset = drowptr[ row/blocksize ];
+        int border = (drowptr[ row/blocksize+1 ]-offset)/blocksize;
+    
         double dot = MAGMA_D_MAKE(0.0, 0.0);
         for ( int n = 0; n < border; n++) { 
-            int col = dcolind [offset+ blocksize * n + threadIdx.x ];
-            double val = dval[offset+ blocksize * n + threadIdx.x];
-            if( val != 0) {
-                  dot=dot+val*dx[col];
-            }
+            int col = dcolind [ offset+ blocksize * n + lrow ];
+            double val = dval[ offset+ blocksize * n + lrow ];
+            dot = dot + val * dx [ col ];
         }
 
-        dy[ Idx ] = dot * alpha + beta * dy [ Idx ];
+        if (betazero) {
+            dy[ row ] = dot * alpha;
+        } else {
+            dy[ row ] = dot * alpha + beta * dy [ row ];
+        }
     }
 }
 
@@ -137,6 +73,7 @@ zgesellptmv2d_kernel_1(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_4( 
     int num_rows, 
@@ -200,8 +137,12 @@ zgesellptmv2d_kernel_4(
             shared[ldx]+=shared[ldx+blocksize*2];              
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -213,6 +154,7 @@ zgesellptmv2d_kernel_4(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_8( 
     int num_rows, 
@@ -278,8 +220,12 @@ zgesellptmv2d_kernel_8(
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -291,6 +237,7 @@ zgesellptmv2d_kernel_8(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_16( 
     int num_rows, 
@@ -341,8 +288,12 @@ zgesellptmv2d_kernel_16(
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -354,6 +305,7 @@ zgesellptmv2d_kernel_16(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_32( 
     int num_rows, 
@@ -405,8 +357,12 @@ zgesellptmv2d_kernel_32(
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -429,6 +385,7 @@ read_from_tex( cudaTextureObject_t texdx, const int& i) {
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_4_tex( 
     int num_rows, 
@@ -492,8 +449,12 @@ zgesellptmv2d_kernel_4_tex(
             shared[ldx]+=shared[ldx+blocksize*2];              
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -505,6 +466,7 @@ zgesellptmv2d_kernel_4_tex(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_8_tex( 
     int num_rows, 
@@ -570,8 +532,12 @@ zgesellptmv2d_kernel_8_tex(
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -583,6 +549,7 @@ zgesellptmv2d_kernel_8_tex(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_16_tex( 
     int num_rows, 
@@ -633,8 +600,12 @@ zgesellptmv2d_kernel_16_tex(
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -646,6 +617,7 @@ zgesellptmv2d_kernel_16_tex(
 // A UNIFIED SPARSE MATRIX DATA FORMAT 
 // FOR MODERN PROCESSORS WITH WIDE SIMD UNITS
 // SELLC SpMV kernel modified assigning multiple threads to each row - 2D kernel
+template<bool betazero>
 __global__ void 
 zgesellptmv2d_kernel_32_tex( 
     int num_rows, 
@@ -697,8 +669,12 @@ zgesellptmv2d_kernel_32_tex(
             if( idx < 2 ) shared[ldx]+=shared[ldx+blocksize*2];   
             __syncthreads();
             if( idx == 0 ) {
-                dy[row] = 
-                (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                if (betazero) {
+                    dy[row] = (shared[ldx]+shared[ldx+blocksize*1])*alpha;
+                } else {
+                    dy[row] = 
+                    (shared[ldx]+shared[ldx+blocksize*1])*alpha + beta*dy [row];
+                }
             }
         }
     }
@@ -799,14 +775,31 @@ magma_dgesellpmv(
     magma_int_t arch = magma_getdevice_arch();
     if ( arch < 200 && num_threads > 256 )
         printf("error: too much shared memory requested.\n");
-
-    dim3 block( blocksize, alignment, 1);
-
-    int dimgrid1 = int( sqrt( double( slices )));
-    int dimgrid2 = magma_ceildiv( slices, dimgrid1 );
-
-    dim3 grid( dimgrid1, dimgrid2, 1);
+    
+    int dimgrid1 = min( int( sqrt( double( slices ))), 65535 );
+    int dimgrid2 = min(magma_ceildiv( slices, dimgrid1 ), 65535);
+    int dimgrid3 = magma_ceildiv( slices, dimgrid1*dimgrid2 );
+    int num_tx = blocksize;
     int Ms = num_threads * sizeof( double );
+    
+    // special case: alignment 1:
+    if( alignment == 1 ){
+        Ms = 0;
+        num_tx = 256;
+        int num_blocks = magma_ceildiv( n, 256 );
+        dimgrid1 = num_blocks; //min( int( sqrt( double( num_blocks ))), 65535 );
+        dimgrid2 = 1; //magma_ceildiv( num_blocks, dimgrid1 );
+        dimgrid3 = 1;
+        //blocksize = 256;
+    }
+    
+    dim3 block( num_tx, alignment, 1);
+
+    if( dimgrid3 > 65535 ){
+        printf("error: too many GPU thread blocks requested.\n");
+    }
+        
+    dim3 grid( dimgrid1, dimgrid2, 1);
 
     #if defined(PRECISION_d) && defined(TEXTURE)
 
@@ -835,26 +828,63 @@ magma_dgesellpmv(
         cudaCreateTextureObject(&texdx, &resDescdx, &texDesc, NULL);
 
         cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte);
+        if ( alignment == 1) {
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_1<true><<< grid2, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_1<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            }
+        } else if ( alignment == 4){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_4_tex<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_4_tex<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            }
+        }
 
-        if ( alignment == 4)
-            zgesellptmv2d_kernel_4_tex<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, texdx, beta, dy );
+        else if ( alignment == 8){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_8_tex<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_8_tex<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            }
+        }
 
-        else if ( alignment == 8)
-            zgesellptmv2d_kernel_8_tex<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, texdx, beta, dy );
+        else if ( alignment == 16){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_16_tex<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_16_tex<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            }
+        }
 
-        else if ( alignment == 16)
-            zgesellptmv2d_kernel_16_tex<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, texdx, beta, dy );
-
-        else if ( alignment == 32)
-            zgesellptmv2d_kernel_32_tex<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, texdx, beta, dy );
+        else if ( alignment == 32){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_32_tex<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_32_tex<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, texdx, beta, dy );
+            }
+        }
 
         else {
             printf("error: alignment %d not supported.\n", alignment);
@@ -864,30 +894,65 @@ magma_dgesellpmv(
         cudaDestroyTextureObject(texdx);
 
     #else 
-        if ( alignment == 1)
-            zgesellptmv2d_kernel_1<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, dx, beta, dy );
+        if ( alignment == 1) {
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_1<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_1<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            }
+        }
 
-        else if ( alignment == 4)
-            zgesellptmv2d_kernel_4<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, dx, beta, dy );
+        else if ( alignment == 4){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_4<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_4<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            }
+        }
 
-        else if ( alignment == 8)
-            zgesellptmv2d_kernel_8<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, dx, beta, dy );
+        else if ( alignment == 8){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_8<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_8<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            }
+        }
 
-        else if ( alignment == 16)
-            zgesellptmv2d_kernel_16<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, dx, beta, dy );
+        else if ( alignment == 16){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_16<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_16<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            }
+        }
 
-        else if ( alignment == 32)
-            zgesellptmv2d_kernel_32<<< grid, block, Ms, queue >>>
-            ( m, n, blocksize, alignment, alpha,
-                dval, dcolind, drowptr, dx, beta, dy );
+        else if ( alignment == 32){
+            if (beta == MAGMA_D_ZERO) {
+                zgesellptmv2d_kernel_32<true><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            } else {
+                zgesellptmv2d_kernel_32<false><<< grid, block, Ms, queue->cuda_stream() >>>
+                ( m, n, blocksize, alignment, alpha,
+                    dval, dcolind, drowptr, dx, beta, dy );
+            }
+        }
 
         else {
             printf("error: alignment %d not supported.\n", int(alignment) );

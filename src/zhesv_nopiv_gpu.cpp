@@ -1,27 +1,27 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        @author Adrien REMY
 
        @precisions normal z -> s d c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
     -------
     ZHESV solves a system of linear equations
-       A * X = B
+        A * X = B
     where A is an n-by-n hermitian matrix and X and B are n-by-nrhs matrices.
     The LU decomposition with no pivoting is
     used to factor A as
     The factorization has the form
-       A = U^H * D * U,  if UPLO = 'U', or
-       A = L  * D * L^H, if UPLO = 'L',
+        A = U^H * D * U,  if UPLO = MagmaUpper, or
+        A = L  * D * L^H, if UPLO = MagmaLower,
     where U is an upper triangular matrix, L is lower triangular, and
     D is a diagonal matrix.
     The factored form of A is then
@@ -44,23 +44,23 @@
             of the matrix B.  nrhs >= 0.
 
     @param[in,out]
-    dA       COMPLEX_16 array, dimension (ldda,n).
+    dA      COMPLEX_16 array, dimension (ldda,n).
             On entry, the n-by-n matrix to be factored.
             On exit, the factors L and U from the factorization
             A = L*U; the unit diagonal elements of L are not stored.
 
     @param[in]
-    ldda     INTEGER
+    ldda    INTEGER
             The leading dimension of the array A.  ldda >= max(1,n).
 
     @param[in,out]
-    dB       COMPLEX_16 array, dimension (lddb,nrhs)
+    dB      COMPLEX_16 array, dimension (lddb,nrhs)
             On entry, the right hand side matrix B.
             On exit, the solution matrix X.
 
     @param[in]
-    lddb     INTEGER
-            The leading dimension of the array B.  ldb >= max(1,n).
+    lddb    INTEGER
+            The leading dimension of the array B.  lddb >= max(1,n).
 
     @param[out]
     info    INTEGER
@@ -69,20 +69,18 @@
 
     @ingroup magma_zhesv_driver
     ********************************************************************/
-
-
-
-
 extern "C" magma_int_t
-magma_zhesv_nopiv_gpu(magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs,
-                 magmaDoubleComplex_ptr dA, magma_int_t ldda,
-                 magmaDoubleComplex_ptr dB, magma_int_t lddb,
-                 magma_int_t *info)
+magma_zhesv_nopiv_gpu(
+    magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs,
+    magmaDoubleComplex_ptr dA, magma_int_t ldda,
+    magmaDoubleComplex_ptr dB, magma_int_t lddb,
+    magma_int_t *info)
 {
-    magma_int_t ret;
-
+    /* Local variables */
+    bool upper = (uplo == MagmaUpper);
+    
+    /* Check input arguments */
     *info = 0;
-    int   upper = (uplo == MagmaUpper);
     if (! upper && uplo != MagmaLower) {
         *info = -1;
     } else if (n < 0) {
@@ -96,24 +94,17 @@ magma_zhesv_nopiv_gpu(magma_uplo_t uplo,  magma_int_t n, magma_int_t nrhs,
     }
     if (*info != 0) {
         magma_xerbla( __func__, -(*info) );
-        return MAGMA_ERR_ILLEGAL_VALUE;
+        return *info;
     }
 
     /* Quick return if possible */
     if (n == 0 || nrhs == 0) {
-        return MAGMA_SUCCESS;
+        return *info;
     }
 
-    ret = magma_zhetrf_nopiv_gpu(uplo, n, dA, ldda, info);
-    if ( (ret != MAGMA_SUCCESS) || (*info != 0) ) {
-        return ret;
+    magma_zhetrf_nopiv_gpu( uplo, n, dA, ldda, info );
+    if (*info == 0) {
+        magma_zhetrs_nopiv_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info );
     }
-        
-    ret = magma_zhetrs_nopiv_gpu( uplo, n, nrhs, dA, ldda, dB, lddb, info );
-    if ( (ret != MAGMA_SUCCESS) || (*info != 0) ) {
-        return ret;
-    }
-
-    
-    return ret;
+    return *info;
 }

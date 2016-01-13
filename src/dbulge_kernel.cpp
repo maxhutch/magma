@@ -7,14 +7,12 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel.cpp normal z -> d, Fri Sep 11 18:29:30 2015
+ *     @generated from src/zbulge_kernel.cpp normal z -> d, Wed Jan  6 17:59:33 2016
  *
  */
 
 #include "common_magma.h"
 #include "magma_dbulgeinc.h"
-
-#define PRECISION_d
  
 #ifdef __cplusplus
 extern "C" {
@@ -120,8 +118,8 @@ magma_dtrdtype1cbHLsym_withQ(
     lapackf77_dlarfg( &len, A(st, st-1), V(vpos+1), &IONE, TAU(taupos) );
     /* apply left and right on A(st:ed,st:ed)*/
     magma_dlarfxsym(len,A(st,st),LDX,V(vpos),TAU(taupos));
-    //conjtmp = MAGMA_D_CNJG(*TAU(taupos));
-    //lapackf77_dlarfy("L", &len, V(vpos), &IONE, &conjtmp, A(st,st), &LDX, WORK); //&(MAGMA_D_CNJG(*TAU(taupos)))
+    //conjtmp = MAGMA_D_CONJ(*TAU(taupos));
+    //lapackf77_dlarfy("L", &len, V(vpos), &IONE, &conjtmp, A(st,st), &LDX, WORK); //&(MAGMA_D_CONJ(*TAU(taupos)))
     magma_free_cpu(WORK);
 }
 #undef A
@@ -174,7 +172,7 @@ magma_dtrdtype2cbHLsym_withQ(
         lapackf77_dlarfg( &lem, A(J1, st), V(vpos+1), &IONE, TAU(taupos) );
         /* apply left on A(J1:J2,st+1:ed) */
         len = len-1; /* because we start at col st+1 instead of st. col st is the col that has been revomved; */
-        conjtmp = MAGMA_D_CNJG(*TAU(taupos));
+        conjtmp = MAGMA_D_CONJ(*TAU(taupos));
         lapackf77_dlarfx("L", &lem, &len, V(vpos),  &conjtmp, A(J1, st+1), &LDX, WORK);
     }
     magma_free_cpu(WORK);
@@ -213,8 +211,8 @@ magma_dtrdtype3cbHLsym_withQ(
     
     /* apply left and right on A(st:ed,st:ed)*/
     magma_dlarfxsym(len,A(st,st),LDX,V(vpos),TAU(taupos));
-    //conjtmp = MAGMA_D_CNJG(*TAU(taupos));
-    //lapackf77_dlarfy("L", &len, V(vpos), &IONE,  &(MAGMA_D_CNJG(*TAU(taupos))), A(st,st), &LDX, WORK);
+    //conjtmp = MAGMA_D_CONJ(*TAU(taupos));
+    //lapackf77_dlarfy("L", &len, V(vpos), &IONE,  &(MAGMA_D_CONJ(*TAU(taupos))), A(st,st), &LDX, WORK);
     magma_free_cpu(WORK);
 }
 #undef A

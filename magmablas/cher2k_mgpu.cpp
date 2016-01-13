@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zher2k_mgpu.cpp normal z -> c, Fri Sep 11 18:29:22 2015
+       @generated from magmablas/zher2k_mgpu.cpp normal z -> c, Wed Jan  6 17:59:39 2016
        @author Mark Gates
        @author Azzam Haidar 
 */
@@ -179,10 +179,10 @@ void magmablas_cher2k_mgpu2(
     
     /* Check arguments */
     magma_int_t info = 0;
-    if ( uplo != MagmaLower) {
-        info = -1;  // 'u' not yet handled
-    } else if ( trans != MagmaNoTrans) {
-        info = -2;  // 'c' not yet handled
+    if ( uplo != MagmaLower ) {
+        info = -1;  // upper not yet handled
+    } else if ( trans != MagmaNoTrans ) {
+        info = -2;  // conj not yet handled
     } else if ( n < 0 ) {
         info = -3;
     } else if ( k < 0 ) {
@@ -248,7 +248,7 @@ void magmablas_cher2k_mgpu2(
     }
     
     // second loop does C = conj(alpha)*B*A**H + C_hat
-    alpha = MAGMA_C_CNJG( alpha );
+    alpha = MAGMA_C_CONJ( alpha );
     blockoffset = c_offset % nb;
     for( magma_int_t i = 0; i < n; i += ib ) {
         ib     = min( nb-blockoffset, n-i );  // block size

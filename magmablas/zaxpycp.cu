@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -17,7 +17,9 @@
 // each thread does one index, x[i] and r[i]
 __global__ void
 zaxpycp_kernel(
-    int m, magmaDoubleComplex *r, magmaDoubleComplex *x,
+    int m,
+    magmaDoubleComplex *r,
+    magmaDoubleComplex *x,
     const magmaDoubleComplex *b)
 {
     const int i = threadIdx.x + blockIdx.x*NB;
@@ -41,7 +43,7 @@ magmablas_zaxpycp_q(
 {
     dim3 threads( NB );
     dim3 grid( magma_ceildiv( m, NB ) );
-    zaxpycp_kernel <<< grid, threads, 0, queue >>> ( m, r, x, b );
+    zaxpycp_kernel <<< grid, threads, 0, queue->cuda_stream() >>> ( m, r, x, b );
 }
 
 extern "C" void
@@ -51,5 +53,5 @@ magmablas_zaxpycp(
     magmaDoubleComplex_ptr x,
     magmaDoubleComplex_const_ptr b)
 {
-    magmablas_zaxpycp_q( m, r, x, b, magma_stream );
+    magmablas_zaxpycp_q( m, r, x, b, magmablasGetQueue() );
 }

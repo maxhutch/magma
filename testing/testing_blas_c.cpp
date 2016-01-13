@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_blas_z.cpp normal z -> c, Fri Sep 11 18:29:37 2015
+       @generated from testing/testing_blas_z.cpp normal z -> c, Wed Jan  6 17:59:47 2016
        @author Mark Gates
        
        These tests ensure that the MAGMA wrappers around CUBLAS calls are
@@ -459,6 +459,7 @@ int main( int argc, char** argv )
         printf( "all tests passed\n" );
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     
     int status = (total_error != 0.);

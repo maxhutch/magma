@@ -1,16 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgehrd_m.cpp normal z -> c, Fri Sep 11 18:29:31 2015
+       @generated from src/zgehrd_m.cpp normal z -> c, Wed Jan  6 17:59:35 2016
        @author Mark Gates
 */
-#include "common_magma.h"
-
-#define PRECISION_c
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -198,8 +196,8 @@ magma_cgehrd_m(
 
     // set to null, to simplify cleanup code
     for( d = 0; d < ngpu; ++d ) {
-        data.A[d]       = NULL;
-        data.streams[d] = NULL;
+        data.A[d]      = NULL;
+        data.queues[d] = NULL;
     }
     
     // Now requires lwork >= iws; else dT won't be computed in unblocked code.
@@ -252,11 +250,11 @@ magma_cgehrd_m(
             data.W [d] = data.Y [d] + nb*ldda;
             data.Ti[d] = data.W [d] + nb*ldda;
             
-            magma_queue_create( &data.streams[d] );
+            magma_queue_create( d, &data.queues[d] );
         }
         
         // Copy the matrix to GPUs
-        magma_csetmatrix_1D_col_bcyclic( n, n, A, lda, data.A, ldda, ngpu, nb );
+        magma_csetmatrix_1D_col_bcyclic( n, n, A, lda, data.A, ldda, ngpu, nb, data.queues );
         
         // round ilo down to block boundary
         ilo = (ilo/nb)*nb;
@@ -272,7 +270,7 @@ magma_cgehrd_m(
                 magma_setdevice( dpanel );
                 magma_cgetmatrix( ihi-i, nb,
                                   dA(dpanel, i, di), ldda,
-                                  A(i,i),            lda );
+                                  A(i,i),            lda, data.queues[dpanel] );
             }
             
             // add 1 to i for 1-based index
@@ -285,7 +283,7 @@ magma_cgehrd_m(
             magma_setdevice( dpanel );
             magma_cgetmatrix_async( i, nb,
                                     dA(dpanel, 0, di), ldda,
-                                    A(0,i),            lda, data.streams[dpanel] );
+                                    A(0,i),            lda, data.queues[dpanel] );
         }
         
         // Copy remainder to host, block-by-block
@@ -296,7 +294,7 @@ magma_cgehrd_m(
             magma_setdevice( d );
             magma_cgetmatrix( n, ib,
                               dA(d, 0, di), ldda,
-                              A(0,i2),      lda );
+                              A(0,i2),      lda, data.queues[d] );
         }
     }
 
@@ -310,7 +308,7 @@ CLEANUP:
     for( d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
         magma_free( data.A[d] );
-        magma_queue_destroy( data.streams[d] );
+        magma_queue_destroy( data.queues[d] );
     }
     magma_setdevice( orig_dev );
     

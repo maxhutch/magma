@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zungqr_m.cpp normal z -> s, Fri Sep 11 18:29:28 2015
+       @generated from src/zungqr_m.cpp normal z -> s, Wed Jan  6 17:59:32 2016
 
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "trace.h"
 
 /**
@@ -70,7 +70,7 @@
     @param[out]
     info    INTEGER
       -     = 0:  successful exit
-      -     < 0:  if INFO = -i, the i-th argument has an illegal value
+      -     < 0:  if INFO = -i, the i-th argument had an illegal value
 
     @ingroup magma_sgeqrf_comp
     ********************************************************************/
@@ -120,8 +120,6 @@ magma_sorgqr_m(
     
     magma_device_t orig_dev;
     magma_getdevice( &orig_dev );
-    magma_queue_t orig_stream;
-    magmablasGetKernelStream( &orig_stream );
     
     // Allocate memory on GPUs for A and workspaces
     magma_int_t ldda    = magma_roundup( m, 32 );
@@ -134,7 +132,7 @@ magma_sorgqr_m(
     float *dT[ MagmaMaxGPUs ] = { NULL };
     float *dV[ MagmaMaxGPUs ] = { NULL };
     float *dW[ MagmaMaxGPUs ] = { NULL };
-    magma_queue_t stream[ MagmaMaxGPUs ] = { NULL };
+    magma_queue_t queues[ MagmaMaxGPUs ] = { NULL };
     
     for( d = 0; d < ngpu; ++d ) {
         // example with n = 75, nb = 10, ngpu = 3
@@ -164,10 +162,10 @@ magma_sorgqr_m(
         dV[d] = dT[d] + nb*m;
         dW[d] = dV[d] + nb*ldda;
         
-        magma_queue_create( &stream[d] );
+        magma_queue_create( d, &queues[d] );
     }
     
-    trace_init( 1, ngpu, 1, stream );
+    trace_init( 1, ngpu, 1, queues );
     
     // first kk columns are handled by blocked method.
     // ki is start of 2nd-to-last block
@@ -225,10 +223,10 @@ magma_sorgqr_m(
                 magma_setdevice( d );
                 magma_ssetmatrix( m_kk, jb,
                                   A(kk, j),  lda,
-                                  dA(d, kk, di), ldda );
+                                  dA(d, kk, di), ldda, queues[d] );
                 
                 // Set A(1:kk,kk+1:n) to zero.
-                magmablas_slaset( MagmaFull, kk, jb, c_zero, c_zero, dA(d, 0, di), ldda );
+                magmablas_slaset( MagmaFull, kk, jb, c_zero, c_zero, dA(d, 0, di), ldda, queues[d] );
             }
         }
         trace_cpu_end( 0 );
@@ -240,11 +238,11 @@ magma_sorgqr_m(
         for( d = 0; d < ngpu; ++d ) {
             magma_setdevice( d );
             trace_gpu_start( d, 0, "set", "set T" );
-            magma_ssetmatrix_async( nb, min(m,n), T, nb, dT[d], nb, stream[d] );
+            magma_ssetmatrix_async( nb, min(m,n), T, nb, dT[d], nb, queues[d] );
             trace_gpu_end( d, 0 );
         }
         
-        // stream: set Aii (V) --> laset --> laset --> larfb --> [next]
+        // queue: set Aii (V) --> laset --> laset --> larfb --> [next]
         // CPU has no computation
         for( i = ki; i >= 0; i -= nb ) {
             ib = min(nb, k - i);
@@ -259,29 +257,27 @@ magma_sorgqr_m(
                 trace_gpu_start( d, 0, "set", "set V" );
                 magma_ssetmatrix_async( mi, ib,
                                         A(i, i), lda,
-                                        dV[d],   ldda, stream[d] );
+                                        dV[d],   ldda, queues[d] );
                 trace_gpu_end( d, 0 );
             }
             
             // set panel to identity
             magma_setdevice( dpanel );
-            magmablasSetKernelStream( stream[dpanel] );
             trace_gpu_start( dpanel, 0, "laset", "laset" );
-            magmablas_slaset( MagmaFull, i,  ib, c_zero, c_zero, dA(dpanel, 0, di), ldda );
-            magmablas_slaset( MagmaFull, mi, ib, c_zero, c_one,  dA(dpanel, i, di), ldda );
+            magmablas_slaset( MagmaFull, i,  ib, c_zero, c_zero, dA(dpanel, 0, di), ldda, queues[dpanel] );
+            magmablas_slaset( MagmaFull, mi, ib, c_zero, c_one,  dA(dpanel, i, di), ldda, queues[dpanel] );
             trace_gpu_end( dpanel, 0 );
             
             if (i < n) {
                 // Apply H to A(i:m,i:n) from the left
                 for( d = 0; d < ngpu; ++d ) {
                     magma_setdevice( d );
-                    magmablasSetKernelStream( stream[d] );
                     magma_indices_1D_bcyclic( nb, ngpu, d, i, n, &di, &dn );
                     trace_gpu_start( d, 0, "larfb", "larfb" );
                     magma_slarfb_gpu( MagmaLeft, MagmaNoTrans, MagmaForward, MagmaColumnwise,
                                       mi, dn-di, ib,
                                       dV[d],        ldda, dT(d,0,i), nb,
-                                      dA(d, i, di), ldda, dW[d], lddwork );
+                                      dA(d, i, di), ldda, dW[d], lddwork, queues[d] );
                     trace_gpu_end( d, 0 );
                 }
             }
@@ -289,7 +285,7 @@ magma_sorgqr_m(
         
         // copy result back to CPU
         trace_cpu_start( 0, "get", "get A" );
-        magma_sgetmatrix_1D_col_bcyclic( m, n, dA, ldda, A, lda, ngpu, nb );
+        magma_sgetmatrix_1D_col_bcyclic( m, n, dA, ldda, A, lda, ngpu, nb, queues );
         trace_cpu_end( 0 );
     }
     
@@ -303,11 +299,10 @@ cleanup:
     for( d = 0; d < ngpu; ++d ) {
         magma_setdevice( d );
         magma_free( dA[d] );
-        magma_queue_destroy( stream[d] );
+        magma_queue_destroy( queues[d] );
     }
     magma_free_cpu( work );
     magma_setdevice( orig_dev );
-    magmablasSetKernelStream( orig_stream );
     
     return *info;
 } /* magma_sorgqr */

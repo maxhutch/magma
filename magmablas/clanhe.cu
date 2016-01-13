@@ -1,15 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Mark Gates
-       @generated from zlanhe.cu normal z -> c, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zlanhe.cu normal z -> c, Wed Jan  6 17:59:37 2016
 
 */
-#include "common_magma.h"
+
+// include v1 header first; the v2 header will redefine non-q names,
+// but we can undef them to get back to the v1 versions.
+#include "magmablas_v1.h"
+
+#include "magma_internal.h"
 #include "magma_templates.h"
 
 #define inf_bs 32
@@ -27,7 +32,9 @@
  * z precision uses > 16 KB shared memory, so requires Fermi (arch >= 200). */
 __global__ void
 clanhe_inf_kernel_lower(
-    int n, const magmaFloatComplex* A, int lda, float *dwork,
+    int n,
+    const magmaFloatComplex * __restrict__ A, int lda,
+    float * __restrict__ dwork,
     int n_full_block, int n_mod_bs )
 {
 #if (defined(PRECISION_s) || defined(PRECISION_d) || defined(PRECISION_c) || __CUDA_ARCH__ >= 200)
@@ -65,7 +72,7 @@ clanhe_inf_kernel_lower(
             // for ty=3:  res = sum( la[tx,24:31] )
             #pragma unroll 8             
             for (int j=ty*8; j < ty*8 + 8; j++) {
-                res += cuCabsf( la[tx][j] );
+                res += MAGMA_C_ABS( la[tx][j] );
             }
             __syncthreads();
         }
@@ -96,7 +103,7 @@ clanhe_inf_kernel_lower(
         // partial row sums
         #pragma unroll 8
         for (int j=ty*8; j < ty*8 + 8; j++) {
-            res += cuCabsf( la[tx][j] );
+            res += MAGMA_C_ABS( la[tx][j] );
         }
         __syncthreads();
         
@@ -115,7 +122,7 @@ clanhe_inf_kernel_lower(
             // partial row sums
             #pragma unroll 8
             for (int j=ty*8; j < ty*8 + 8; j++) {
-                res += cuCabsf( la[tx][j] );
+                res += MAGMA_C_ABS( la[tx][j] );
             }
             __syncthreads();
         }
@@ -138,7 +145,7 @@ clanhe_inf_kernel_lower(
             // partial row sums
             #pragma unroll 8
             for (int j=ty*8; j < ty*8 + 8; j++) {
-                res += cuCabsf( la[tx][j] );
+                res += MAGMA_C_ABS( la[tx][j] );
             }
             __syncthreads();
         }
@@ -186,7 +193,7 @@ clanhe_inf_kernel_lower(
             // partial row sums
             #pragma unroll 8
             for (int j=0; j < 8; j++) {
-                res += cuCabsf( la[tx][j+ty*8] );
+                res += MAGMA_C_ABS( la[tx][j+ty*8] );
             }
             __syncthreads();
         }
@@ -196,7 +203,7 @@ clanhe_inf_kernel_lower(
         if ( ty == 0 && tx < n_mod_bs ) {
             // sum rows left of diagonal
             for (int j=0; j < tx; j++) {
-                res += cuCabsf( *A );
+                res += MAGMA_C_ABS( *A );
                 A += lda;
             }
             // sum diagonal (ignoring imaginary part)
@@ -204,7 +211,7 @@ clanhe_inf_kernel_lower(
             A += 1;
             // sum column below diagonal
             for (int j=tx+1; j < n_mod_bs; j++) {
-                res += cuCabsf( *A );
+                res += MAGMA_C_ABS( *A );
                 A += 1;
             }
         }
@@ -241,7 +248,9 @@ clanhe_inf_kernel_lower(
  * Differences are noted with # in comments. */
 __global__ void
 clanhe_inf_kernel_upper(
-    int n, const magmaFloatComplex* A, int lda, float *dwork,
+    int n,
+    const magmaFloatComplex * __restrict__ A, int lda,
+    float * __restrict__ dwork,
     int n_full_block, int n_mod_bs )
 {
 #if (defined(PRECISION_s) || defined(PRECISION_d) || defined(PRECISION_c) || __CUDA_ARCH__ >= 200)
@@ -279,7 +288,7 @@ clanhe_inf_kernel_upper(
             // for ty=3:  res = sum( la[tx,24:31] )
             #pragma unroll 8             
             for (int j=ty*8; j < ty*8 + 8; j++) {
-                res += cuCabsf( la[tx][j] );
+                res += MAGMA_C_ABS( la[tx][j] );
             }
             __syncthreads();
         }
@@ -310,7 +319,7 @@ clanhe_inf_kernel_upper(
         // partial row sums
         #pragma unroll 8
         for (int j=ty*8; j < ty*8 + 8; j++) {
-            res += cuCabsf( la[tx][j] );
+            res += MAGMA_C_ABS( la[tx][j] );
         }
         __syncthreads();
         
@@ -329,7 +338,7 @@ clanhe_inf_kernel_upper(
             // partial row sums
             #pragma unroll 8
             for (int j=ty*8; j < ty*8 + 8; j++) {
-                res += cuCabsf( la[tx][j] );
+                res += MAGMA_C_ABS( la[tx][j] );
             }
             __syncthreads();
         }
@@ -352,7 +361,7 @@ clanhe_inf_kernel_upper(
             // partial row sums
             #pragma unroll 8
             for (int j=ty*8; j < ty*8 + 8; j++) {
-                res += cuCabsf( la[tx][j] );
+                res += MAGMA_C_ABS( la[tx][j] );
             }
             __syncthreads();
         }
@@ -398,7 +407,7 @@ clanhe_inf_kernel_upper(
             // partial row sums
             #pragma unroll 8
             for (int j=0; j < 8; j++) {
-                res += cuCabsf( la[tx][j+ty*8] );
+                res += MAGMA_C_ABS( la[tx][j+ty*8] );
             }
             __syncthreads();
         }
@@ -412,7 +421,7 @@ clanhe_inf_kernel_upper(
             
             // sum #column above diagonal
             for (int j=0; j < tx; j++) {
-                res += cuCabsf( *A );
+                res += MAGMA_C_ABS( *A );
                 A += 1;                                //#
             }
             // sum diagonal (ignoring imaginary part)
@@ -420,7 +429,7 @@ clanhe_inf_kernel_upper(
             A += lda;                                  //#
             // sum #row right of diagonal
             for (int j=tx+1; j < n_mod_bs; j++) {
-                res += cuCabsf( *A );
+                res += MAGMA_C_ABS( *A );
                 A += lda;                              //#
             }
         }
@@ -448,22 +457,22 @@ clanhe_inf_kernel_upper(
 /* Computes row sums dwork[i] = sum( abs( A(i,:) )), i=0:n-1, for || A ||_inf */
 extern "C" void
 clanhe_inf(
-    magma_uplo_t uplo, int n,
-    magmaFloatComplex_const_ptr A, int lda,
-    magmaFloat_ptr dwork )
+    magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex_const_ptr A, magma_int_t lda,
+    magmaFloat_ptr dwork,
+    magma_queue_t queue )
 {
-    int blocks = magma_ceildiv( n, inf_bs );
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(inf_bs, 4, 1);
+    dim3 threads( inf_bs, 4 );
+    dim3 grid( magma_ceildiv( n, inf_bs ), 1 );
 
-    int n_full_block = (n - n % inf_bs) /inf_bs;
-    int n_mod_bs = n % inf_bs;
+    magma_int_t n_full_block = (n - n % inf_bs) / inf_bs;
+    magma_int_t n_mod_bs = n % inf_bs;
     if ( uplo == MagmaLower) {
-        clanhe_inf_kernel_lower<<< grid, threads, 0, magma_stream >>>
+        clanhe_inf_kernel_lower<<< grid, threads, 0, queue->cuda_stream() >>>
             ( n, A, lda, dwork, n_full_block, n_mod_bs );
     }
     else {
-        clanhe_inf_kernel_upper<<< grid, threads, 0, magma_stream >>>
+        clanhe_inf_kernel_upper<<< grid, threads, 0, queue->cuda_stream() >>>
             ( n, A, lda, dwork, n_full_block, n_mod_bs );
     }
 }
@@ -475,7 +484,9 @@ clanhe_inf(
 /* Computes dwork[i] = max( abs( A(i,0:i) )), i=0:n-1, for ||A||_max, where A is stored lower */
 __global__ void
 clanhe_max_kernel_lower(
-    int n, const magmaFloatComplex* A, int lda, float *dwork )
+    int n,
+    const magmaFloatComplex * __restrict__ A, int lda,
+    float * __restrict__ dwork )
 {
     int ind = blockIdx.x*max_bs + threadIdx.x;
     float res = 0;
@@ -483,7 +494,7 @@ clanhe_max_kernel_lower(
     if (ind < n) {
         A += ind;
         for (int j=0; j < ind; ++j) {
-            res = max_nan( res, cuCabsf( *A ));
+            res = max_nan( res, MAGMA_C_ABS( *A ));
             A += lda;
         }
         // diagonal element (ignoring imaginary part)
@@ -496,7 +507,9 @@ clanhe_max_kernel_lower(
 /* Computes dwork[i] = max( abs( A(i,0:i) )), i=0:n-1, for ||A||_max, where A is stored upper. */
 __global__ void
 clanhe_max_kernel_upper(
-    int n, const magmaFloatComplex* A, int lda, float *dwork )
+    int n,
+    const magmaFloatComplex * __restrict__ A, int lda,
+    float * __restrict__ dwork )
 {
     int ind = blockIdx.x*max_bs + threadIdx.x;
     float res = 0;
@@ -505,7 +518,7 @@ clanhe_max_kernel_upper(
         A += ind;
         A += (n-1)*lda;
         for (int j=n-1; j > ind; j--) {
-            res = max_nan( res, cuCabsf( *A ));
+            res = max_nan( res, MAGMA_C_ABS( *A ));
             A -= lda;
         }
         // diagonal element (ignoring imaginary part)
@@ -518,20 +531,20 @@ clanhe_max_kernel_upper(
 /* Computes dwork[i] = max( abs( A(i,:) )), i=0:n-1, for ||A||_max */
 extern "C" void
 clanhe_max(
-    magma_uplo_t uplo, int n,
-    magmaFloatComplex_const_ptr A, int lda,
-    magmaFloat_ptr dwork )
+    magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex_const_ptr A, magma_int_t lda,
+    magmaFloat_ptr dwork,
+    magma_queue_t queue )
 {
-    int blocks = magma_ceildiv( n, max_bs );
-    dim3 grid(blocks, 1, 1);
-    dim3 threads(max_bs, 1, 1);
+    dim3 threads( max_bs );
+    dim3 grid( magma_ceildiv( n, max_bs ) );
 
     if ( uplo == MagmaLower ) {
-        clanhe_max_kernel_lower<<< grid, threads, 0, magma_stream >>>
+        clanhe_max_kernel_lower<<< grid, threads, 0, queue->cuda_stream() >>>
             ( n, A, lda, dwork );
     }
     else {
-        clanhe_max_kernel_upper<<< grid, threads, 0, magma_stream >>>
+        clanhe_max_kernel_upper<<< grid, threads, 0, queue->cuda_stream() >>>
             ( n, A, lda, dwork );
     }
 }
@@ -545,13 +558,13 @@ clanhe_max(
     the infinity norm, or the element of largest absolute value of a
     complex Hermitian matrix A.
     
-       CLANHE = ( max(abs(A(i,j))), NORM = 'M' or 'm'
+       CLANHE = ( max(abs(A(i,j))), NORM = MagmaMaxNorm
                 (
-                ( norm1(A),         NORM = '1', 'O' or 'o'      ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || __CUDA_ARCH__ >= 200)
+                ( norm1(A),         NORM = MagmaOneNorm
                 (
-                ( normI(A),         NORM = 'I' or 'i'           ** supported only for (PRECISION_s || PRECISION_d || PRECISION_c || __CUDA_ARCH__ >= 200)
+                ( normI(A),         NORM = MagmaInfNorm
                 (
-                ( normF(A),         NORM = 'F', 'f', 'E' or 'e' ** not yet supported
+                ( normF(A),         NORM = MagmaFrobeniusNorm ** not yet supported
     
     where norm1 denotes the one norm of a matrix (maximum column sum),
     normI denotes the infinity norm of a matrix (maximum row sum) and
@@ -563,7 +576,7 @@ clanhe_max(
     Arguments:
     ----------
     @param[in]
-    norm    CHARACTER*1
+    norm    magma_norm_t
             Specifies the value to be returned in CLANHE as described above.
     
     @param[in]
@@ -597,16 +610,20 @@ clanhe_max(
     dwork   (workspace) REAL array on the GPU, dimension (MAX(1,LWORK)),
             where LWORK >= N.
             NOTE: this is different than LAPACK, where WORK is required
-            only for norm1 and normI. Here max-norm also requires work.
+            only for norm1 and normI. Here max-norm also requires WORK.
+    
+    @param[in]
+    lwork   INTEGER
+            The dimension of the array DWORK. LWORK >= max( 1, N ).
     
     @ingroup magma_caux2
     ********************************************************************/
-
 extern "C" float
-magmablas_clanhe(
+magmablas_clanhe_q(
     magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
     magmaFloatComplex_const_ptr dA, magma_int_t ldda,
-    magmaFloat_ptr dwork )
+    magmaFloat_ptr dwork, magma_int_t lwork,
+    magma_queue_t queue )
 {
     magma_int_t info = 0;
 
@@ -629,6 +646,8 @@ magmablas_clanhe(
         info = -3;
     else if ( ldda < n )
         info = -5;
+    else if ( lwork < n )
+        info = -7;
     
     if ( info != 0 ) {
         magma_xerbla( __func__, -(info) );
@@ -641,13 +660,31 @@ magmablas_clanhe(
         
     float res = 0;
     if ( inf_norm ) {
-        clanhe_inf( uplo, n, dA, ldda, dwork );
+        clanhe_inf( uplo, n, dA, ldda, dwork, queue );
     }
     else {
-        clanhe_max( uplo, n, dA, ldda, dwork );
+        clanhe_max( uplo, n, dA, ldda, dwork, queue );
     }
-    magma_max_nan_kernel<<< 1, 512, 0, magma_stream >>>( n, dwork );
-    cudaMemcpy( &res, &dwork[0], sizeof(float), cudaMemcpyDeviceToHost );
+    magma_max_nan_kernel<<< 1, 512, 0, queue->cuda_stream() >>>( n, dwork );
+    magma_sgetvector( 1, &dwork[0], 1, &res, 1, queue );
     
     return res;
+}
+
+
+// ------------------------------------------------------------
+// define v1 interface
+#undef magmablas_clanhe
+
+/**
+    @see magmablas_clanhe_q
+    @ingroup magma_caux2
+    ********************************************************************/
+extern "C" float
+magmablas_clanhe(
+    magma_norm_t norm, magma_uplo_t uplo, magma_int_t n,
+    magmaFloatComplex_const_ptr dA, magma_int_t ldda,
+    magmaFloat_ptr dwork, magma_int_t lwork )
+{
+    return magmablas_clanhe_q( norm, uplo, n, dA, ldda, dwork, lwork, magmablasGetQueue() );
 }

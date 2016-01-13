@@ -1,15 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
 
 */
-
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
@@ -110,7 +109,7 @@ magma_zbcsrblockinfo5(
                                                             hAII, 1, AII, 1 );
 /*
     magma_setvector( 1, sizeof(magmaDoubleComplex*), address, 1, daddress, 1 );
-    zbcsrblockinfo5_kernel<<<dimGrid,dimBlock, 0, queue >>>
+    zbcsrblockinfo5_kernel<<< dimGrid,dimBlock, 0, queue->cuda_stream() >>>
                         ( num_blocks, daddress, AII );
 
 */

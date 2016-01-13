@@ -1,14 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
+       
+       @author Stan Tomov
 
-       @generated from zgeqr2x_gpu-v3.cpp normal z -> c, Fri Sep 11 18:29:28 2015
+       @generated from src/zgeqr2x_gpu-v3.cpp normal z -> c, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 extern "C" magma_int_t
 magma_clarfb2_gpu(
@@ -16,7 +18,8 @@ magma_clarfb2_gpu(
     magmaFloatComplex_const_ptr dV,    magma_int_t lddv,
     magmaFloatComplex_const_ptr dT,    magma_int_t lddt,
     magmaFloatComplex_ptr       dC,    magma_int_t lddc,
-    magmaFloatComplex_ptr       dwork, magma_int_t ldwork )
+    magmaFloatComplex_ptr       dwork, magma_int_t ldwork,
+    magma_queue_t queue )
 {
     magmaFloatComplex c_zero    = MAGMA_C_ZERO;
     magmaFloatComplex c_one     = MAGMA_C_ONE;
@@ -31,23 +34,24 @@ magma_clarfb2_gpu(
                            n, k, m,
                            c_one,  dC,    lddc,
                                    dV,    lddv,
-                           c_zero, dwork, ldwork);
+                           c_zero, dwork, ldwork, queue );
 
     // W = W T^H = C^H V T^H
     magma_ctrmm( MagmaRight, MagmaUpper, MagmaNoTrans, MagmaNonUnit,
                  n, k,
                  c_one, dT,    lddt,
-                        dwork, ldwork);
+                        dwork, ldwork, queue );
 
     // C = C - V W^H = C - V T V^H C = (I - V T V^H) C = H C
     magma_cgemm( MagmaNoTrans, MagmaConjTrans,
                  m, n, k,
                  c_neg_one, dV,    lddv,
                             dwork, ldwork,
-                 c_one,     dC,    lddc);
+                 c_one,     dC,    lddc, queue );
     
     return MAGMA_SUCCESS;
 }
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -143,13 +147,13 @@ magma_cgeqr2x3_gpu(
     magmaFloat_ptr        dwork,
     magma_int_t *info)
 {
-    #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     #define BLOCK_SIZE 32
 
-    magma_int_t i, k;
+    magma_int_t b, i, k;
 
     magmaFloat_ptr dnorm = dwork;
-    magmaFloatComplex *work = (magmaFloatComplex *)(dwork+2*(n));
+    magmaFloatComplex_ptr dwork2 = (magmaFloatComplex_ptr)(dwork + 2*n);
 
     *info = 0;
     if (m < 0) {
@@ -164,21 +168,26 @@ magma_cgeqr2x3_gpu(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     /* Compute the norms of the trailing columns */
     k = min(m,n);
-    // magmablas_scnrm2_cols(m, k, dA(0,0), ldda, dnorm);
+    // magmablas_scnrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
 
-    for (int b=0; b < k; b += BLOCK_SIZE) {
+    for (b=0; b < k; b += BLOCK_SIZE) {
         for (i = b; i < min(k, b+BLOCK_SIZE); ++i) {
             /*   Apply H' to A(:,i) from the left */
             if ( i-b > 0)
-                magma_clarfbx_gpu(m-b, i-b, dA(b, b), ldda,
-                                  dT+b+b*k, k, dA(b, i), work);
+                magma_clarfbx_gpu( m-b, i-b, dA(b, b), ldda,
+                                  dT+b+b*k, k, dA(b, i), dwork2, queue );
 
             /*   Adjust the dnorm[i] to hold the norm of A(i:m,i) */
             //if ( i > 0 )
-            //    magmablas_scnrm2_adjust(i, dnorm+i, dA(0, i));
-            magmablas_scnrm2_cols(m-i, 1, dA(i,i), ldda, dnorm+i);
+            //    magmablas_scnrm2_adjust( i, dnorm+i, dA(0, i), queue );
+            magmablas_scnrm2_cols( m-i, 1, dA(i,i), ldda, dnorm+i, queue );
             
             /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i)
                 1. 1 is not yet put on the diagonal of A
@@ -187,7 +196,7 @@ magma_cgeqr2x3_gpu(
                 3. update T */
             magma_clarfgtx_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i,
                                dnorm+i, ddA + i + i*(n), i,
-                               dA(i,0), ldda,  dT, k, work);
+                               dA(i,0), ldda,  dT, k, dwork2, queue);
         }
         
         /* Apply the transformations to the trailing matrix. */
@@ -195,8 +204,10 @@ magma_cgeqr2x3_gpu(
         magma_clarfb2_gpu(
                            m-b, k-i, BLOCK_SIZE,
                            dA(b, b), ldda, dT+b+b*k, k,
-                           dA(b, i), ldda, work, k-i);
+                           dA(b, i), ldda, dwork2, k-i, queue );
     }
+
+    magma_queue_destroy( queue );
 
     return *info;
 } /* magma_cgeqr2 */

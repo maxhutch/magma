@@ -1,15 +1,15 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Azzam Haidar
 
-       @generated from zgesv_rbt_batched.cpp normal z -> d, Fri Sep 11 18:29:32 2015
+       @generated from src/zgesv_rbt_batched.cpp normal z -> d, Wed Jan  6 17:59:36 2016
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "batched_kernel_param.h"
 /**
     Purpose
@@ -161,12 +161,12 @@ magma_dgesv_rbt_batched(
         return info;
     }
 
-    magma_dsetvector(2*n, hv, 1, dv, 1);
+    magma_dsetvector( 2*n, hv, 1, dv, 1, queue );
 
     for (int i = 0; i < nrhs; i++)
         magmablas_dprbt_mv_batched(n, dv, dB_array+(i), batchCount, queue);
 
- //   magma_dgetmatrix(n, nrhs, db, nn, B, ldb);
+ //   magma_dgetmatrix( n, nrhs, db, nn, B, ldb, queue );
 
 
     return info;

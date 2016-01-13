@@ -1,14 +1,14 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zgeqrf_m.cpp normal z -> s, Fri Sep 11 18:29:28 2015
+       @generated from src/zgeqrf_m.cpp normal z -> s, Wed Jan  6 17:59:31 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h" 
 
 /**
     Purpose
@@ -63,7 +63,7 @@
     @param[in]
     lwork   INTEGER
             The dimension of the array WORK.  LWORK >= N*NB,
-            where NB can be obtained through magma_get_sgeqrf_nb(M).
+            where NB can be obtained through magma_get_sgeqrf_nb( M, N ).
     \n
             If LWORK = -1, then a workspace query is assumed; the routine
             only calculates the optimal size of the WORK array, returns
@@ -106,7 +106,7 @@ magma_sgeqrf_m(
     int i, k, ldda;
 
     *info = 0;
-    int nb = magma_get_sgeqrf_nb(min(m, n));
+    int nb = magma_get_sgeqrf_nb( m, n );
 
     int lwkopt = n * nb;
     work[0] = MAGMA_S_MAKE( (float)lwkopt, 0 );
@@ -158,14 +158,29 @@ magma_sgeqrf_m(
     }
 
     if (m > nb && n > nb) {
+        magma_queue_t queues[MagmaMaxGPUs];
+        for( int dev=0; dev < ngpu; dev++ ) {
+            magma_setdevice( dev );
+            magma_queue_create( dev, &queues[dev] );
+        }
+
         /* Copy the matrix to the GPUs in 1D block cyclic distribution */
-        magma_ssetmatrix_1D_col_bcyclic(m, n, A, lda, da, ldda, ngpu, nb);
+        magma_ssetmatrix_1D_col_bcyclic(m, n, A, lda, da, ldda, ngpu, nb, queues);
+        for( int dev=0; dev < ngpu; dev++ ) {
+            magma_setdevice( dev );
+            magma_queue_sync( queues[dev] );
+        }
 
         /* Factor using the GPU interface */
         magma_sgeqrf2_mgpu( ngpu, m, n, da, ldda, tau, info);
 
         /* Copy the matrix back from the GPUs to the CPU */
-        magma_sgetmatrix_1D_col_bcyclic(m, n, da, ldda, A, lda, ngpu, nb);
+        magma_sgetmatrix_1D_col_bcyclic(m, n, da, ldda, A, lda, ngpu, nb, queues);
+        for( int dev=0; dev < ngpu; dev++ ) {
+            magma_setdevice( dev );
+            magma_queue_sync( queues[dev] );
+            magma_queue_destroy( queues[dev] );
+        }
     }
     else {
         lapackf77_sgeqrf(&m, &n, A, &lda, tau, work, &lwork, info);

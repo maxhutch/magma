@@ -1,14 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
+       
+       @author Stan Tomov
 
-       @generated from zgeqr2x_gpu-v2.cpp normal z -> d, Fri Sep 11 18:29:27 2015
+       @generated from src/zgeqr2x_gpu-v2.cpp normal z -> d, Wed Jan  6 17:59:30 2016
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
     
 /**
     Purpose
@@ -100,13 +102,12 @@ magma_dgeqr2x2_gpu(
     magmaDouble_ptr dwork,
     magma_int_t *info)
 {
-    #define dA(i_,j_) (dA + (j_)*(ldda) + (i_))
+    #define dA(i_,j_) (dA + (i_) + (j_)*ldda)
     
     magma_int_t i, k;
     
-    double *work = (double *)dwork;
-    magmaDouble_ptr dnorm = dwork + 4*(n);
-
+    magmaDouble_ptr dwork2 = (double *)dwork;
+    magmaDouble_ptr dnorm = dwork + 4*n;
 
     *info = 0;
     if (m < 0) {
@@ -121,17 +122,22 @@ magma_dgeqr2x2_gpu(
         return *info;
     }
 
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     /* Compute the norms of the trailing columns */
     k = min(m,n);
-    magmablas_dnrm2_cols(m, k, dA(0,0), ldda, dnorm);
+    magmablas_dnrm2_cols( m, k, dA(0,0), ldda, dnorm, queue );
 
     for (i = 0; i < k; ++i) {
         /*   1. Apply H' to A(:,i) from the left
              2. Adjust the dnorm[i] to hold the norm of A(i:m,i) */
         if (i > 0) {
-            magma_dlarfbx_gpu(m, i, dA(0, 0), ldda,
-                              dT, k, dA(0, i), work);
-            magmablas_dnrm2_adjust(i, dnorm+i, dA(0, i));
+            magma_dlarfbx_gpu( m, i, dA(0, 0), ldda,
+                              dT, k, dA(0, i), dwork2, queue );
+            magmablas_dnrm2_adjust( i, dnorm+i, dA(0, i), queue );
         }
 
         /*  Generate elementary reflector H(i) to annihilate A(i+1:m,i)
@@ -139,10 +145,12 @@ magma_dgeqr2x2_gpu(
             2. Elements above the diagonal are copied in ddA and the ones
                in A are set to zero
             3. update T */
-        magma_dlarfgtx_gpu(m-i, dA(i, i), dA(min(i+1,m), i), dtau+i,
-                           dnorm+i, ddA + i + i*(n), i,
-                           dA(i,0), ldda,  dT, k, work);
+        magma_dlarfgtx_gpu( m-i, dA(i, i), dA(min(i+1,m), i), dtau+i,
+                            dnorm+i, ddA + i + i*(n), i,
+                            dA(i,0), ldda,  dT, k, dwork2, queue );
     }
+
+    magma_queue_destroy( queue );
 
     return *info;
 } /* magma_dgeqr2 */

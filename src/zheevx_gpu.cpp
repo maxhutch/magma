@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @author Raffaele Solca
        @author Azzam Haidar
@@ -11,7 +11,7 @@
        @precisions normal z -> c
 
  */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 //#define FAST_HEMV
 
@@ -197,24 +197,23 @@ magma_zheevx_gpu(
     double *rwork, magma_int_t *iwork, magma_int_t *ifail,
     magma_int_t *info)
 {
+    /* Constants */
+    const magma_int_t ione = 1;
+    
+    /* Local variables */
     const char* uplo_  = lapack_uplo_const( uplo  );
     const char* jobz_  = lapack_vec_const( jobz  );
     const char* range_ = lapack_range_const( range );
-    
-    magma_int_t ione = 1;
     
     const char* order_;
     magma_int_t indd, inde;
     magma_int_t imax;
     magma_int_t lopt, itmp1, indee;
-    magma_int_t lower, wantz;
     magma_int_t i, j, jj, i__1;
-    magma_int_t alleig, valeig, indeig;
     magma_int_t iscale, indibl;
     magma_int_t indiwk, indisp, indtau;
     magma_int_t indrwk, indwrk;
     magma_int_t llwork, nsplit;
-    magma_int_t lquery;
     magma_int_t iinfo;
     double safmin;
     double bignum;
@@ -227,12 +226,12 @@ magma_zheevx_gpu(
     magmaDouble_ptr dwork;
     
     /* Function Body */
-    lower  = (uplo  == MagmaLower);
-    wantz  = (jobz  == MagmaVec);
-    alleig = (range == MagmaRangeAll);
-    valeig = (range == MagmaRangeV);
-    indeig = (range == MagmaRangeI);
-    lquery = (lwork == -1);
+    bool lower  = (uplo  == MagmaLower);
+    bool wantz  = (jobz  == MagmaVec);
+    bool alleig = (range == MagmaRangeAll);
+    bool valeig = (range == MagmaRangeV);
+    bool indeig = (range == MagmaRangeI);
+    bool lquery = (lwork == -1);
     
     *info = 0;
     if (! (wantz || (jobz == MagmaNoVec))) {
@@ -282,6 +281,11 @@ magma_zheevx_gpu(
         return *info;
     }
     
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
     *m = 0;
     /* Check if matrix is very small then just call LAPACK on CPU, no need for GPU */
     if (n <= 128) {
@@ -290,16 +294,17 @@ magma_zheevx_gpu(
         printf("  warning matrix too small N=%d NB=%d, calling lapack on CPU  \n", (int) n, (int) nb);
         printf("--------------------------------------------------------------\n");
         #endif
-        magmaDoubleComplex *a;
-        magma_zmalloc_cpu( &a, n*n );
-        magma_zgetmatrix(n, n, dA, ldda, a, n);
+        magmaDoubleComplex *A;
+        magma_zmalloc_cpu( &A, n*n );
+        magma_zgetmatrix( n, n, dA, ldda, A, n, queue );
         lapackf77_zheevx(jobz_, range_, uplo_,
-                         &n, a, &n, &vl, &vu, &il, &iu, &abstol, m,
+                         &n, A, &n, &vl, &vu, &il, &iu, &abstol, m,
                          w, wZ, &ldwz, work, &lwork,
                          rwork, iwork, ifail, info);
-        magma_zsetmatrix( n,  n,  a,    n, dA, ldda);
-        magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz);
-        magma_free_cpu(a);
+        magma_zsetmatrix( n,  n,  A,    n, dA, ldda, queue );
+        magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz, queue );
+        magma_free_cpu( A );
+        magma_queue_destroy( queue );
         return *info;
     }
 
@@ -324,7 +329,7 @@ magma_zheevx_gpu(
     rmax = magma_dsqrt(bignum);
     
     /* Scale matrix to allowable range, if necessary. */
-    anrm = magmablas_zlanhe(MagmaMaxNorm, uplo, n, dA, ldda, dwork);
+    anrm = magmablas_zlanhe( MagmaMaxNorm, uplo, n, dA, ldda, dwork, n, queue );
     iscale = 0;
     sigma  = 1;
     if (anrm > 0. && anrm < rmin) {
@@ -336,8 +341,7 @@ magma_zheevx_gpu(
     }
     if (iscale == 1) {
         d__1 = 1.;
-        magmablas_zlascl(uplo, 0, 0, 1., sigma, n, n, dA,
-                         ldda, info);
+        magmablas_zlascl( uplo, 0, 0, 1., sigma, n, n, dA, ldda, queue, info );
         
         if (abstol > 0.) {
             abstol *= sigma;
@@ -387,7 +391,7 @@ magma_zheevx_gpu(
                 for (i = 1; i <= n; ++i) {
                     ifail[i] = 0;
                 }
-                magma_zsetmatrix( n, n, wZ, ldwz, dZ, lddz );
+                magma_zsetmatrix( n, n, wZ, ldwz, dZ, lddz, queue );
             }
         }
         if (*info == 0) {
@@ -414,7 +418,7 @@ magma_zheevx_gpu(
             lapackf77_zstein(&n, &rwork[indd], &rwork[inde], m, &w[1], &iwork[indibl], &iwork[indisp],
                              wZ, &ldwz, &rwork[indrwk], &iwork[indiwk], &ifail[1], info);
             
-            magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz );
+            magma_zsetmatrix( n, *m, wZ, ldwz, dZ, lddz, queue );
             
             /* Apply unitary matrix used in reduction to tridiagonal
                form to eigenvectors returned by ZSTEIN. */
@@ -452,7 +456,7 @@ magma_zheevx_gpu(
                 iwork[indibl + i - 1] = iwork[indibl + j - 1];
                 w[j] = tmp1;
                 iwork[indibl + j - 1] = itmp1;
-                magma_zswap(n, dZ + (i-1)*lddz, ione, dZ + (j-1)*lddz, ione);
+                magma_zswap( n, dZ + (i-1)*lddz, ione, dZ + (j-1)*lddz, ione, queue );
                 if (*info != 0) {
                     itmp1 = ifail[i];
                     ifail[i] = ifail[j];
@@ -464,6 +468,8 @@ magma_zheevx_gpu(
     
     /* Set WORK[0] to optimal complex workspace size. */
     work[1] = MAGMA_Z_MAKE( lopt, 0 );
+    
+    magma_queue_destroy( queue );
     
     return *info;
 } /* magma_zheevx_gpu */

@@ -1,16 +1,18 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
   
        @precisions normal z -> c d s
 
+       @author Stan Tomov
+       @author Ichitaro Yamazaki
+       @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_z
 #define COMPLEX
 
 /**
@@ -122,7 +124,7 @@ magma_zgeqp3_gpu(
         *info = -4;
     }
     
-    nb = magma_get_zgeqp3_nb(min(m, n));
+    nb = magma_get_zgeqp3_nb( m, n );
     minmn = min(m,n);
     if (*info == 0) {
         if (minmn == 0) {
@@ -154,7 +156,20 @@ magma_zgeqp3_gpu(
         *info = MAGMA_ERR_DEVICE_ALLOC;
         return *info;
     }
-    magmablas_zlaset( MagmaFull, n+1, nb, c_zero, c_zero, df, n+1 );
+    
+    magmaDouble_ptr dlsticcs;
+    if (MAGMA_SUCCESS != magma_dmalloc( &dlsticcs, 1+256*(n+255)/256 )) {
+        magma_free( df );
+        *info = MAGMA_ERR_DEVICE_ALLOC;
+        return *info;
+    }
+
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
+
+    magmablas_zlaset( MagmaFull, n+1, nb, c_zero, c_zero, df, n+1, queue );
 
     nfxd = 0;
     /* Move initial columns up front.
@@ -200,8 +215,8 @@ magma_zgeqp3_gpu(
         //sminmn = minmn - nfxd;
         
         /* Initialize partial column norms. */
-        magmablas_dznrm2_cols(sm, sn, dA(nfxd,nfxd), ldda, &rwork[nfxd]);
-        magma_dcopymatrix( sn, 1, &rwork[nfxd], sn, &rwork[n+nfxd], sn);
+        magmablas_dznrm2_cols( sm, sn, dA(nfxd,nfxd), ldda, &rwork[nfxd], queue );
+        magma_dcopymatrix( sn, 1, &rwork[nfxd], sn, &rwork[n+nfxd], sn, queue );
         
         j = nfxd;
         //if (nb < sminmn)
@@ -222,7 +237,8 @@ magma_zgeqp3_gpu(
                       dA(0, j), ldda,
                       &jpvt[j], &tau[j], &rwork[j], &rwork[n + j],
                       dwork,
-                      &df[jb],   n_j );
+                      &df[jb], n_j,
+                      dlsticcs, queue );
                 
                 j += fjb;  /* fjb is actual number of columns factored */
             }
@@ -235,14 +251,17 @@ magma_zgeqp3_gpu(
             if (j > nfxd) {
                 magma_zgetmatrix( m-j, n_j,
                                   dA(j,j), ldda,
-                                   A(j,j), lda );
+                                   A(j,j), lda, queue );
             }
             lapackf77_zlaqp2(&m, &n_j, &j, dA(0, j), &ldda, &jpvt[j],
                              &tau[j], &rwork[j], &rwork[n+j], dwork );
         }*/
     }
 
-    magma_free(df);
+    magma_queue_destroy( queue );
+    
+    magma_free( df );
+    magma_free( dlsticcs );
 
     return *info;
 } /* magma_zgeqp3_gpu */

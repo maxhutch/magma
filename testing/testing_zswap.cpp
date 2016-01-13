@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Mark Gates
@@ -106,7 +106,7 @@ int main( int argc, char** argv)
             N = opts.nsize[itest];
             lda    = N;
             ldda   = magma_roundup( N, opts.align );  // multiple of 32 by default
-            nb     = (opts.nb > 0 ? opts.nb : magma_get_zgetrf_nb( N ));
+            nb     = (opts.nb > 0 ? opts.nb : magma_get_zgetrf_nb( N, N ));
             nb     = min( N, nb );
             // each swap does 2N loads and 2N stores, for nb swaps
             gbytes = sizeof(magmaDoubleComplex) * 4.*N*nb / 1e9;
@@ -440,6 +440,7 @@ int main( int argc, char** argv)
         }
     }
     
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

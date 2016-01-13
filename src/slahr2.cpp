@@ -1,17 +1,17 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlahr2.cpp normal z -> s, Fri Sep 11 18:29:31 2015
+       @generated from src/zlahr2.cpp normal z -> s, Wed Jan  6 17:59:35 2016
        @author Stan Tomov
        @author Mark Gates
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
-#define PRECISION_s
+#define REAL
 
 /**
     Purpose
@@ -147,7 +147,8 @@ magma_slahr2(
     float *A,     magma_int_t lda,
     float *tau,
     float *T,     magma_int_t ldt,
-    float *Y,     magma_int_t ldy )
+    float *Y,     magma_int_t ldy,
+    magma_queue_t queue )
 {
     #define  A(i_,j_) ( A + (i_) + (j_)*lda)
     #define  Y(i_,j_) ( Y + (i_) + (j_)*ldy)
@@ -209,7 +210,7 @@ magma_slahr2(
             blasf77_scopy( &i,
                            A(k+i,0),  &lda,
                            T(0,nb-1), &ione );
-            #if defined(PRECISION_z) || defined(PRECISION_c)
+            #ifdef COMPLEX
             // If real, conjugate row of V.
             lapackf77_slacgv(&i, T(0,nb-1), &ione);
             #endif
@@ -284,14 +285,14 @@ magma_slahr2(
         // dV(i+1:n-k-1, i) = VA(k+i+1:n-1, i)
         magma_ssetvector( n_k_i_1,
                           A(k+i+1,i), 1,
-                          dV(i+1,i),  1 );
+                          dV(i+1,i),  1, queue );
         
         // Compute Y(k+1:n,i) = A vi
         // dA(k:n-1, i) = dA(k:n-1, i+1:n-k-1) * dV(i+1:n-k-1, i)
         magma_sgemv( MagmaNoTrans, n_k, n_k_i_1,
                      c_one,  dA(k,i+1), ldda,
                              dV(i+1,i), ione,
-                     c_zero, dA(k,i),   ione );
+                     c_zero, dA(k,i),   ione, queue );
         
         // Compute T(0:i,i) = [ -tau T V' vi ]
         //                    [  tau         ]
@@ -310,7 +311,7 @@ magma_slahr2(
         // Y(k:n-1, i) = dA(k:n-1, i)
         magma_sgetvector( n-k,
                           dA(k,i), 1,
-                          Y(k,i),  1 );
+                          Y(k,i),  1, queue );
     }
     // Restore diagonal element
     *A(k+nb,nb-1) = ei;

@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgesvd.cpp normal z -> c, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgesvd.cpp normal z -> c, Wed Jan  6 17:59:50 2016
        @author Mark Gates
 
 */
@@ -87,7 +87,7 @@ int main( int argc, char** argv)
             ldu = M;
             ldv = M_VT;
             n2 = lda*N;
-            nb = magma_get_cgesvd_nb(N);
+            nb = magma_get_cgesvd_nb( M, N );
             
             // query or use formula for workspace size
             switch( opts.svd_work ) {
@@ -266,11 +266,10 @@ int main( int argc, char** argv)
                    Check the result compared to LAPACK
                    =================================================================== */
                 float work[1], c_neg_one = -1;
-                magma_int_t one = 1;
                 
-                blasf77_saxpy(&min_mn, &c_neg_one, S1, &one, S2, &one);
-                result[4]  = lapackf77_slange("f", &min_mn, &one, S2, &min_mn, work);
-                result[4] /= lapackf77_slange("f", &min_mn, &one, S1, &min_mn, work);
+                blasf77_saxpy(&min_mn, &c_neg_one, S1, &ione, S2, &ione);
+                result[4]  = lapackf77_slange("f", &min_mn, &ione, S2, &min_mn, work);
+                result[4] /= lapackf77_slange("f", &min_mn, &ione, S1, &min_mn, work);
                 
                 printf("   %c    %c %5d %5d  %7.2f         %7.2f         %8.2e",
                        lapack_vec_const(jobu)[0], lapack_vec_const(jobvt)[0],
@@ -310,6 +309,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

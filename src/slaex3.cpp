@@ -1,20 +1,20 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
        
        @author Raffaele Solca
        
-       @generated from dlaex3.cpp normal d -> s, Fri Sep 11 18:29:31 2015
+       @generated from src/dlaex3.cpp normal d -> s, Wed Jan  6 17:59:33 2016
 */
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include "common_magma.h"
+#include "magma_internal.h"
 #include "magma_timer.h"
 
 #ifdef __cplusplus
@@ -309,8 +309,13 @@ magma_slaex3(
 
     iq2 = n1 * n12;
     lq2 = iq2 + n2 * n23;
+    
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
 
-    magma_ssetvector_async( lq2, Q2, 1, dQ2(0,0), 1, NULL );
+    magma_ssetvector_async( lq2, Q2, 1, dQ2(0,0), 1, queue );
 
 #ifdef _OPENMP
     /////////////////////////////////////////////////////////////////////////////////
@@ -353,10 +358,12 @@ magma_slaex3(
                 lapackf77_slamrg( &k, &nk, d, &ione, &ineg_one, indxq);
 
                 //compute the lower and upper bound of the non-deflated eigenvectors
-                if (valeig)
+                if (valeig) {
                     magma_svrange(k, d, &iil, &iiu, vl, vu);
-                else if (indeig)
+                }
+                else if (indeig) {
                     magma_sirange(k, indxq, &iil, &iiu, il, iu);
+                }
                 else {
                     iil = 1;
                     iiu = k;
@@ -459,10 +466,12 @@ magma_slaex3(
     lapackf77_slamrg( &k, &nk, d, &ione, &ineg_one, indxq);
 
     //compute the lower and upper bound of the non-deflated eigenvectors
-    if (valeig)
+    if (valeig) {
         magma_svrange(k, d, &iil, &iiu, vl, vu);
-    else if (indeig)
+    }
+    else if (indeig) {
         magma_sirange(k, indxq, &iil, &iiu, il, iu);
+    }
     else {
         iil = 1;
         iiu = k;
@@ -517,7 +526,7 @@ magma_slaex3(
     // Compute the updated eigenvectors.
 
     //timer_start( time );
-    magma_queue_sync( NULL );
+    //magma_queue_sync( queue );  // previously, needed to setvector finished. Now all on same queue, so not needed?
 
     if (rk != 0) {
         if ( n23 != 0 ) {
@@ -526,12 +535,12 @@ magma_slaex3(
                 blasf77_sgemm("N", "N", &n2, &rk, &n23, &d_one, &Q2[iq2], &n2,
                               s, &n23, &d_zero, Q(n1,iil-1), &ldq );
             } else {
-                magma_ssetmatrix( n23, rk, Q(ctot[0],iil-1), ldq, dS(0,0), n23 );
+                magma_ssetmatrix( n23, rk, Q(ctot[0],iil-1), ldq, dS(0,0), n23, queue );
                 magma_sgemm( MagmaNoTrans, MagmaNoTrans, n2, rk, n23,
                              d_one,  dQ2(iq2,0), n2,
                                      dS(0,0), n23,
-                             d_zero, dQ(0,0), lddq);
-                magma_sgetmatrix( n2, rk, dQ(0,0), lddq, Q(n1,iil-1), ldq );
+                             d_zero, dQ(0,0), lddq, queue );
+                magma_sgetmatrix( n2, rk, dQ(0,0), lddq, Q(n1,iil-1), ldq, queue );
             }
         } else
             lapackf77_slaset("A", &n2, &rk, &d_zero, &d_zero, Q(n1,iil-1), &ldq);
@@ -542,18 +551,20 @@ magma_slaex3(
                 blasf77_sgemm("N", "N", &n1, &rk, &n12, &d_one, Q2, &n1,
                               s, &n12, &d_zero, Q(0,iil-1), &ldq);
             } else {
-                magma_ssetmatrix( n12, rk, Q(0,iil-1), ldq, dS(0,0), n12 );
+                magma_ssetmatrix( n12, rk, Q(0,iil-1), ldq, dS(0,0), n12, queue );
                 magma_sgemm( MagmaNoTrans, MagmaNoTrans, n1, rk, n12,
                              d_one,  dQ2(0,0), n1,
                                      dS(0,0), n12,
-                             d_zero, dQ(0,0), lddq);
-                magma_sgetmatrix( n1, rk, dQ(0,0), lddq, Q(0,iil-1), ldq );
+                             d_zero, dQ(0,0), lddq, queue );
+                magma_sgetmatrix( n1, rk, dQ(0,0), lddq, Q(0,iil-1), ldq, queue );
             }
         } else
             lapackf77_slaset("A", &n1, &rk, &d_zero, &d_zero, Q(0,iil-1), &ldq);
     }
     //timer_stop( time );
     //timer_printf( "gemms = %6.2f\n", time );
+
+    magma_queue_destroy( queue );
 
     return *info;
 } /* magma_slaex3 */

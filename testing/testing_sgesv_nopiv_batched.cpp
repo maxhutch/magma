@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgesv_nopiv_batched.cpp normal z -> s, Fri Sep 11 18:29:39 2015
+       @generated from testing/testing_zgesv_nopiv_batched.cpp normal z -> s, Wed Jan  6 17:59:51 2016
        @author Mark Gates
 */
 // includes, system
@@ -98,8 +98,8 @@ int main(int argc, char **argv)
             /* ====================================================================
                Performs operation using MAGMA
                =================================================================== */
-            sset_pointer(d_A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue);
-            sset_pointer(d_B_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, opts.queue);
+            magma_sset_pointer( d_A_array, d_A, ldda, 0, 0, ldda*N, batchCount, opts.queue );
+            magma_sset_pointer( d_B_array, d_B, lddb, 0, 0, lddb*nrhs, batchCount, opts.queue );
             
             gpu_time = magma_sync_wtime( opts.queue );
             info = magma_sgesv_nopiv_batched( N, nrhs, d_A_array, ldda, d_B_array, lddb, dinfo_magma, batchCount, opts.queue );
@@ -180,6 +180,7 @@ int main(int argc, char **argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

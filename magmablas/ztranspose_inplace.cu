@@ -1,9 +1,9 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> s d c
 
@@ -11,7 +11,6 @@
        @author Mark Gates
 */
 #include "common_magma.h"
-#define PRECISION_z
 
 #define NB 16
 
@@ -30,7 +29,9 @@
 //
 // See ztranspose_inplace_even for description of threads.
 
-__global__ void ztranspose_inplace_odd( int n, magmaDoubleComplex *matrix, int lda )
+__global__ void ztranspose_inplace_odd(
+    int n,
+    magmaDoubleComplex *matrix, int lda )
 {
     __shared__ magmaDoubleComplex sA[ NB ][ NB+1 ];
     __shared__ magmaDoubleComplex sB[ NB ][ NB+1 ];
@@ -92,7 +93,9 @@ __global__ void ztranspose_inplace_odd( int n, magmaDoubleComplex *matrix, int l
 // syncs, then saves sA(i,j) to B(i,j) and sB(i,j) to A(i,j).
 // Threads outside the matrix do not touch memory.
 
-__global__ void ztranspose_inplace_even( int n, magmaDoubleComplex *matrix, int lda )
+__global__ void ztranspose_inplace_even(
+    int n,
+    magmaDoubleComplex *matrix, int lda )
 {
     __shared__ magmaDoubleComplex sA[ NB ][ NB+1 ];
     __shared__ magmaDoubleComplex sB[ NB ][ NB+1 ];
@@ -188,11 +191,11 @@ magmablas_ztranspose_inplace_q(
     // block assignment differs depending on whether nblock is odd or even.
     if ( nblock % 2 == 1 ) {
         dim3 grid( nblock, (nblock+1)/2 );
-        ztranspose_inplace_odd<<< grid, threads, 0, queue >>>( n, dA, ldda );
+        ztranspose_inplace_odd<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda );
     }
     else {
         dim3 grid( nblock+1, nblock/2 );
-        ztranspose_inplace_even<<< grid, threads, 0, queue >>>( n, dA, ldda );
+        ztranspose_inplace_even<<< grid, threads, 0, queue->cuda_stream() >>>( n, dA, ldda );
     }
 }
 
@@ -206,5 +209,5 @@ magmablas_ztranspose_inplace(
     magma_int_t n,
     magmaDoubleComplex_ptr dA, magma_int_t ldda )
 {
-    magmablas_ztranspose_inplace_q( n, dA, ldda, magma_stream );
+    magmablas_ztranspose_inplace_q( n, dA, ldda, magmablasGetQueue() );
 }

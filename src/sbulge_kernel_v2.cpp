@@ -7,13 +7,12 @@
  *     @author Azzam Haidar
  *     @author Stan Tomov
  *
- *     @generated from zbulge_kernel_v2.cpp normal z -> s, Fri Sep 11 18:29:30 2015
+ *     @generated from src/zbulge_kernel_v2.cpp normal z -> s, Wed Jan  6 17:59:33 2016
  *
  */
 
 #include "common_magma.h"
 
-#define PRECISION_s
 
 inline static void
 magma_slarfxsym_v2(
@@ -157,7 +156,7 @@ magma_strdtype2cbHLsym_withQ_v2(
 
         /* apply left on A(J1:J2,st+1:ed) */
         len = len-1; /* because we start at col st+1 instead of st. col st is the col that has been removed; */
-        conjtmp = MAGMA_S_CNJG(*TAU(taupos));
+        conjtmp = MAGMA_S_CONJ(*TAU(taupos));
         lapackf77_slarfx("L", &lem, &len, V(vpos),  &conjtmp, A(ed+1, st+1), &ldx, work);
     }
 }

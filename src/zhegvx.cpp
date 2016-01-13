@@ -1,16 +1,16 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
     
        @author Raffaele Solca
     
        @precisions normal z -> c
 
 */
-#include "common_magma.h"
+#include "magma_internal.h"
 
 /**
     Purpose
@@ -229,9 +229,6 @@ magma_zhegvx(
     
     magma_int_t lwmin;
     
-    magma_queue_t stream;
-    magma_queue_create( &stream );
-    
     wantz  = (jobz  == MagmaVec);
     lower  = (uplo  == MagmaLower);
     alleig = (range == MagmaRangeAll);
@@ -300,13 +297,16 @@ magma_zhegvx(
         return *info;
     }
     
-    /*     Form a Cholesky factorization of B. */
+    magma_queue_t queue;
+    magma_device_t cdev;
+    magma_getdevice( &cdev );
+    magma_queue_create( cdev, &queue );
     
-    magma_zsetmatrix( n, n, B, ldb, dB, lddb );
-    
+    /* Form a Cholesky factorization of B. */
+    magma_zsetmatrix( n, n, B, ldb, dB, lddb, queue );
     magma_zsetmatrix_async( n, n,
                             A,  lda,
-                            dA, ldda, stream );
+                            dA, ldda, queue );
     
     magma_zpotrf_gpu(uplo, n, dB, lddb, info);
     if (*info != 0) {
@@ -314,11 +314,11 @@ magma_zhegvx(
         return *info;
     }
     
-    magma_queue_sync( stream );
+    magma_queue_sync( queue );
     
     magma_zgetmatrix_async( n, n,
                             dB, lddb,
-                            B,  ldb, stream );
+                            B,  ldb, queue );
     
     /* Transform problem to standard eigenvalue problem and solve. */
     magma_zhegst_gpu(itype, uplo, n, dA, ldda, dB, lddb, info);
@@ -334,7 +334,7 @@ magma_zhegvx(
             } else {
                 trans = MagmaNoTrans;
             }
-            magma_ztrsm(MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, c_one, dB, lddb, dZ, lddz);
+            magma_ztrsm( MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, c_one, dB, lddb, dZ, lddz, queue );
         }
         else if (itype == 3) {
             /* For B*A*x=(lambda)*x;
@@ -344,14 +344,14 @@ magma_zhegvx(
             } else {
                 trans = MagmaConjTrans;
             }
-            magma_ztrmm(MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, c_one, dB, lddb, dZ, lddz);
+            magma_ztrmm( MagmaLeft, uplo, trans, MagmaNonUnit, n, *m, c_one, dB, lddb, dZ, lddz, queue );
         }
         
-        magma_zgetmatrix( n, *m, dZ, lddz, Z, ldz );
+        magma_zgetmatrix( n, *m, dZ, lddz, Z, ldz, queue );
     }
     
-    magma_queue_sync( stream );
-    magma_queue_destroy( stream );
+    magma_queue_sync( queue );
+    magma_queue_destroy( queue );
     
     magma_free( dA );
     magma_free( dB );

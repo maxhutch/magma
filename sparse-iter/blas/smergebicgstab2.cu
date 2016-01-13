@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zmergebicgstab2.cu normal z -> s, Fri Sep 11 18:29:42 2015
+       @generated from sparse-iter/blas/zmergebicgstab2.cu normal z -> s, Wed Jan  6 17:59:42 2016
        @author Hartwig Anzt
 
 */
@@ -241,15 +241,15 @@ magma_sbicgmerge_spmv1(
     int b = 1;        
 
     if ( A.storage_type == Magma_CSR)
-        magma_sbicgmerge_spmv1_kernel<<<Gs, Bs, Ms>>>
+        magma_sbicgmerge_spmv1_kernel<<< Gs, Bs, Ms, queue->cuda_stream()>>>
                     ( n, A.dval, A.drow, A.dcol, dp, dr, dv, d1 );
     else
         printf("error: only CSR format supported.\n");
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
+        Gs_next.x = magma_ceildiv( Gs.x, Bs.x );
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
-        magma_sreduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
+        magma_sreduce_kernel_spmv1<<< Gs_next.x/2, Bs.x/2, Ms/2, queue->cuda_stream()>>> 
                             ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
@@ -262,7 +262,7 @@ magma_sbicgmerge_spmv1(
     magma_scopyvector( 1, aux1, 1, skp, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
-    magma_sbicgstab_alphakernel<<<Gs2, Bs2, 0>>>( skp );
+    magma_sbicgstab_alphakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
    magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
@@ -536,15 +536,15 @@ magma_sbicgmerge_spmv2(
     magmaFloat_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
     if ( A.storage_type == Magma_CSR)
-        magma_sbicgmerge_spmv2_kernel<<<Gs, Bs, Ms>>>
+        magma_sbicgmerge_spmv2_kernel<<< Gs, Bs, Ms, queue->cuda_stream()>>>
                     ( n, A.dval, A.drow, A.dcol, ds, dt, d1 );
     else
         printf("error: only CSR format supported.\n");
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
+        Gs_next.x = magma_ceildiv( Gs.x, Bs.x );
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
-        magma_sreduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
+        magma_sreduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2, queue->cuda_stream()>>> 
                     ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
@@ -558,7 +558,7 @@ magma_sbicgmerge_spmv2(
     magma_scopyvector( 1, aux1+n, 1, skp+7, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
-    magma_sbicgstab_omegakernel<<<Gs2, Bs2, 0>>>( skp );
+    magma_sbicgstab_omegakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
    magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;
@@ -745,7 +745,7 @@ magma_sbicgstab_betakernel(
 
 extern "C" magma_int_t
 magma_sbicgmerge_xrbeta(
-    int n,
+    magma_int_t n,
     magmaFloat_ptr d1,
     magmaFloat_ptr d2,
     magmaFloat_ptr rr,
@@ -768,13 +768,13 @@ magma_sbicgmerge_xrbeta(
     int Ms =  2*local_block_size * sizeof( float ); 
     magmaFloat_ptr aux1 = d1, aux2 = d2;
     int b = 1;        
-    magma_sbicgmerge_xrbeta_kernel<<<Gs, Bs, Ms>>>
+    magma_sbicgmerge_xrbeta_kernel<<< Gs, Bs, Ms, queue->cuda_stream()>>>
                     ( n, rr, r, p, s, t, x, skp, d1);  
 
     while( Gs.x > 1 ) {
-        Gs_next.x = ( Gs.x+Bs.x-1 )/ Bs.x;
+        Gs_next.x = magma_ceildiv( Gs.x, Bs.x );
         if ( Gs_next.x == 1 ) Gs_next.x = 2;
-        magma_sreduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2 >>> 
+        magma_sreduce_kernel_spmv2<<< Gs_next.x/2, Bs.x/2, Ms/2, queue->cuda_stream()>>> 
                             ( Gs.x, n, aux1, aux2 );
         Gs_next.x = Gs_next.x /2;
         Gs.x = Gs_next.x;
@@ -788,7 +788,7 @@ magma_sbicgmerge_xrbeta(
     magma_scopyvector( 1, aux1+n, 1, skp+5, 1 );
     dim3 Bs2( 2 );
     dim3 Gs2( 1 );
-    magma_sbicgstab_betakernel<<<Gs2, Bs2, 0>>>( skp );
+    magma_sbicgstab_betakernel<<< Gs2, Bs2, 0, queue->cuda_stream()>>>( skp );
 
    magmablasSetKernelStream( orig_queue );
    return MAGMA_SUCCESS;

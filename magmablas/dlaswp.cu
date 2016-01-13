@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from zlaswp.cu normal z -> d, Fri Sep 11 18:29:21 2015
+       @generated from magmablas/zlaswp.cu normal z -> d, Wed Jan  6 17:59:38 2016
        
        @author Stan Tomov
        @author Mathieu Faverge
@@ -34,7 +34,9 @@ typedef struct {
 // Each thread goes down a column of A,
 // swapping rows according to pivots stored in params.
 __global__ void dlaswp_kernel(
-    int n, double *dAT, int ldda, dlaswp_params_t params )
+    int n,
+    double *dAT, int ldda,
+    dlaswp_params_t params )
 {
     int tid = threadIdx.x + blockDim.x*blockIdx.x;
     if ( tid < n ) {
@@ -69,7 +71,9 @@ __global__ void dlaswp_kernel(
             The number of columns of the matrix A.
     
     @param[in,out]
-    dAT     DOUBLE PRECISION array on GPU, stored row-wise, dimension (LDDA,N)
+    dAT     DOUBLE PRECISION array on GPU, stored row-wise, dimension (LDDA,M)
+            The M-by-N matrix, stored transposed as N-by-M matrix embedded in
+            LDDA-by-M array. M is not given; it is implicit.
             On entry, the matrix of column dimension N to which the row
             interchanges will be applied.
             On exit, the permuted matrix.
@@ -81,12 +85,12 @@ __global__ void dlaswp_kernel(
     @param[in]
     k1      INTEGER
             The first element of IPIV for which a row interchange will
-            be done. (Fortran one-based index: 1 <= k1 .)
+            be done. (Fortran one-based index: 1 <= k1.)
     
     @param[in]
     k2      INTEGER
             The last element of IPIV for which a row interchange will
-            be done. (Fortran one-based index: 1 <= k2 .)
+            be done. (Fortran one-based index: 1 <= k2.)
     
     @param[in]
     ipiv    INTEGER array, on CPU, dimension (K2*abs(INCI))
@@ -134,8 +138,8 @@ magmablas_dlaswp_q(
         return;  //info;
     }
     
-    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dim3 threads( NTHREADS );
+    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dlaswp_params_t params;
     
     for( int k = k1-1; k < k2; k += MAX_PIVOTS ) {
@@ -144,7 +148,9 @@ magmablas_dlaswp_q(
         for( int j = 0; j < npivots; ++j ) {
             params.ipiv[j] = ipiv[(k+j)*inci] - k - 1;
         }
-        dlaswp_kernel<<< grid, threads, 0, queue >>>( n, dAT(k,0), ldda, params );
+        dlaswp_kernel
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            ( n, dAT(k,0), ldda, params );
     }
     
     #undef dAT
@@ -162,7 +168,7 @@ magmablas_dlaswp(
     magma_int_t k1, magma_int_t k2,
     const magma_int_t *ipiv, magma_int_t inci )
 {
-    magmablas_dlaswp_q( n, dAT, ldda, k1, k2, ipiv, inci, magma_stream );
+    magmablas_dlaswp_q( n, dAT, ldda, k1, k2, ipiv, inci, magmablasGetQueue() );
 }
 
 
@@ -180,7 +186,9 @@ magmablas_dlaswp(
 // Each thread goes down a column of A,
 // swapping rows according to pivots stored in params.
 __global__ void dlaswpx_kernel(
-    int n, double *dA, int ldx, int ldy, dlaswp_params_t params )
+    int n,
+    double *dA, int ldx, int ldy,
+    dlaswp_params_t params )
 {
     int tid = threadIdx.x + blockDim.x*blockIdx.x;
     if ( tid < n ) {
@@ -284,8 +292,8 @@ magmablas_dlaswpx_q(
         return;  //info;
     }
     
-    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dim3 threads( NTHREADS );
+    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dlaswp_params_t params;
     
     for( int k = k1-1; k < k2; k += MAX_PIVOTS ) {
@@ -294,7 +302,9 @@ magmablas_dlaswpx_q(
         for( int j = 0; j < npivots; ++j ) {
             params.ipiv[j] = ipiv[(k+j)*inci] - k - 1;
         }
-        dlaswpx_kernel<<< grid, threads, 0, queue >>>( n, dA(k,0), ldx, ldy, params );
+        dlaswpx_kernel
+            <<< grid, threads, 0, queue->cuda_stream() >>>
+            ( n, dA(k,0), ldx, ldy, params );
     }
     
     #undef dA
@@ -312,7 +322,7 @@ magmablas_dlaswpx(
     magma_int_t k1, magma_int_t k2,
     const magma_int_t *ipiv, magma_int_t inci )
 {
-    return magmablas_dlaswpx_q( n, dA, ldx, ldy, k1, k2, ipiv, inci, magma_stream );
+    return magmablas_dlaswpx_q( n, dA, ldx, ldy, k1, k2, ipiv, inci, magmablasGetQueue() );
 }
 
 
@@ -329,7 +339,9 @@ magmablas_dlaswpx(
 // (including copying pivots to the GPU).
 
 __global__ void dlaswp2_kernel(
-    int n, double *dAT, int ldda, int npivots,
+    int n,
+    double *dAT, int ldda,
+    int npivots,
     const magma_int_t *d_ipiv, int inci )
 {
     int tid = threadIdx.x + blockDim.x*blockIdx.x;
@@ -432,9 +444,9 @@ magmablas_dlaswp2_q(
     
     magma_int_t nb = k2-(k1-1);
     
-    dim3 grid( magma_ceildiv( n, NTHREADS ) );
     dim3 threads( NTHREADS );
-    dlaswp2_kernel<<< grid, threads, 0, queue >>>
+    dim3 grid( magma_ceildiv( n, NTHREADS ) );
+    dlaswp2_kernel<<< grid, threads, 0, queue->cuda_stream() >>>
         ( n, dAT(k1-1,0), ldda, nb, d_ipiv, inci );
 }
 
@@ -450,5 +462,5 @@ magmablas_dlaswp2(
     magma_int_t k1, magma_int_t k2,
     magmaInt_const_ptr d_ipiv, magma_int_t inci )
 {
-    magmablas_dlaswp2_q( n, dAT, ldda, k1, k2, d_ipiv, inci, magma_stream );
+    magmablas_dlaswp2_q( n, dAT, ldda, k1, k2, d_ipiv, inci, magmablasGetQueue() );
 }

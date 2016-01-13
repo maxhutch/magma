@@ -1,11 +1,11 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
-       @generated from testing_zgeadd.cpp normal z -> d, Fri Sep 11 18:29:37 2015
+       @generated from testing/testing_zgeadd.cpp normal z -> d, Wed Jan  6 17:59:47 2016
        @author Mark Gates
 */
 // includes, system
@@ -17,6 +17,7 @@
 // includes, project
 #include "magma.h"
 #include "magma_lapack.h"
+#include "magma_operators.h"
 #include "testings.h"
 
 
@@ -25,12 +26,16 @@
 */
 int main( int argc, char** argv)
 {
+    #define h_A(i_, j_) (h_A + (i_) + (j_)*lda)
+    #define h_B(i_, j_) (h_B + (i_) + (j_)*lda)  // B uses lda
+    
     TESTING_INIT();
 
     real_Double_t   gflops, gpu_perf, gpu_time, cpu_perf, cpu_time;
     double          error, work[1];
     double *h_A, *h_B, *d_A, *d_B;
-    double alpha = MAGMA_D_MAKE( 3.1415, 2.718 );
+    double alpha = MAGMA_D_MAKE( 3.1415, 2.71828 );
+    double beta  = MAGMA_D_MAKE( 6.0221, 6.67408 );
     double c_neg_one = MAGMA_D_NEG_ONE;
     
     magma_int_t M, N, size, lda, ldda;
@@ -78,7 +83,12 @@ int main( int argc, char** argv)
             
             magmablasSetKernelStream( opts.queue );
             gpu_time = magma_sync_wtime( opts.queue );
-            magmablas_dgeadd( M, N, alpha, d_A, ldda, d_B, ldda );
+            if ( opts.version == 1 ) {
+                magmablas_dgeadd( M, N, alpha, d_A, ldda, d_B, ldda );
+            }
+            else {
+                magmablas_dgeadd2( M, N, alpha, d_A, ldda, beta, d_B, ldda );
+            }
             gpu_time = magma_sync_wtime( opts.queue ) - gpu_time;
             gpu_perf = gflops / gpu_time;
             
@@ -86,8 +96,18 @@ int main( int argc, char** argv)
                Performs operation using LAPACK
                =================================================================== */
             cpu_time = magma_wtime();
+            if ( opts.version == 1 ) {
             for( int j = 0; j < N; ++j ) {
                 blasf77_daxpy( &M, &alpha, &h_A[j*lda], &ione, &h_B[j*lda], &ione );
+            }
+            }
+            else {
+                for( int j = 0; j < N; ++j ) {
+                    // daxpby
+                    for( int i=0; i < M; ++i ) {
+                        *h_B(i,j) = alpha * (*h_A(i,j)) + beta * (*h_B(i,j));
+                    }
+                }
             }
             cpu_time = magma_wtime() - cpu_time;
             cpu_perf = gflops / cpu_time;
@@ -119,6 +139,7 @@ int main( int argc, char** argv)
         }
     }
 
+    opts.cleanup();
     TESTING_FINALIZE();
     return status;
 }

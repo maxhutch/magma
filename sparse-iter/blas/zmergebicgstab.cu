@@ -1,40 +1,41 @@
 /*
-    -- MAGMA (version 1.7.0) --
+    -- MAGMA (version 2.0.0-beta2) --
        Univ. of Tennessee, Knoxville
        Univ. of California, Berkeley
        Univ. of Colorado, Denver
-       @date September 2015
+       @date January 2016
 
        @precisions normal z -> c d s
        @author Hartwig Anzt
 
 */
-#include "common_magma.h"
+#include "common_magmasparse.h"
 
 #define BLOCK_SIZE 512
 
 #define PRECISION_z
 
 
-// These routines merge multiple kernels from zmergebicgstab into one
-// The difference to zmergedbicgstab2 is that the SpMV is not merged into the
-// kernes. This results in higher flexibility at the price of lower performance.
+// These routines merge multiple kernels from bicgstab into one.
 
 /* -------------------------------------------------------------------------- */
 
 __global__ void
-magma_zbicgmerge1_kernel(  
-    int n, 
-    magmaDoubleComplex * skp,
-    magmaDoubleComplex * v, 
-    magmaDoubleComplex * r, 
-    magmaDoubleComplex * p )
+magma_zbicgstab_1_kernel(  
+    int num_rows, 
+    int num_cols, 
+    magmaDoubleComplex beta,
+    magmaDoubleComplex omega,
+    magmaDoubleComplex *r, 
+    magmaDoubleComplex *v,
+    magmaDoubleComplex *p )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-    magmaDoubleComplex beta=skp[1];
-    magmaDoubleComplex omega=skp[2];
-    if ( i<n ) {
-        p[i] =  r[i] + beta * ( p[i] - omega * v[i] );
+    if ( i<num_rows ) {
+        for( int j=0; j<num_cols; j++ ){
+            p[ i+j*num_rows ] = r[ i+j*num_rows ] + 
+                beta * ( p[ i+j*num_rows ] - omega * v[ i+j*num_rows ] );
+        }
     }
 }
 
@@ -44,201 +45,35 @@ magma_zbicgmerge1_kernel(
 
     Mergels multiple operations into one kernel:
 
-    p = beta*p
-    p = p-omega*beta*v
-    p = p+r
+    p = r + beta * ( p - omega * v )
     
-    -> p = r + beta * ( p - omega * v ) 
-
-    Arguments
-    ---------
-
     @param[in]
-    n           int
+    num_rows    magma_int_t
+                dimension m
+                
+    @param[in]
+    num_cols    magma_int_t
                 dimension n
-
+                
     @param[in]
-    skp         magmaDoubleComplex_ptr
-                set of scalar parameters
-
+    beta        magmaDoubleComplex
+                scalar
+                
     @param[in]
-    v           magmaDoubleComplex_ptr
-                input vector v
-
-    @param[in]
-    r           magmaDoubleComplex_ptr
-                input vector r
-
-    @param[in,out]
-    p           magmaDoubleComplex_ptr 
-                input/output vector p
-
-    @param[in]
-    queue       magma_queue_t
-                queue to execute in.
-
-    @ingroup magmasparse_zgegpuk
-    ********************************************************************/
-
-extern "C" int
-magma_zbicgmerge1(  
-    int n, 
-    magmaDoubleComplex_ptr skp,
-    magmaDoubleComplex_ptr v, 
-    magmaDoubleComplex_ptr r, 
-    magmaDoubleComplex_ptr p,
-    magma_queue_t queue )
-{
-    dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
-    magma_zbicgmerge1_kernel<<<Gs, Bs, 0, queue>>>( n, skp, v, r, p );
-
-   return MAGMA_SUCCESS;
-}
-
-/* -------------------------------------------------------------------------- */
-
-__global__ void
-magma_zbicgmerge2_kernel(  
-    int n, 
-    magmaDoubleComplex * skp, 
-    magmaDoubleComplex * r,
-    magmaDoubleComplex * v, 
-    magmaDoubleComplex * s )
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    magmaDoubleComplex alpha=skp[0];
-    if ( i < n ) {
-        s[i] =  r[i] - alpha * v[i];
-    }
-}
-
-/**
-    Purpose
-    -------
-
-    Mergels multiple operations into one kernel:
-
-    s=r
-    s=s-alpha*v
-        
-    -> s = r - alpha * v
-
-    Arguments
-    ---------
-
-    @param[in]
-    n           int
-                dimension n
-
-    @param[in]
-    skp         magmaDoubleComplex_ptr 
-                set of scalar parameters
-
+    omega       magmaDoubleComplex
+                scalar
+                
     @param[in]
     r           magmaDoubleComplex_ptr 
-                input vector r
-
+                vector
+                
     @param[in]
     v           magmaDoubleComplex_ptr 
-                input vector v
-
-    @param[out]
-    s           magmaDoubleComplex_ptr 
-                output vector s
-
-    @param[in]
-    queue       magma_queue_t
-                queue to execute in.
-
-    @ingroup magmasparse_zgegpuk
-    ********************************************************************/
-
-extern "C" int
-magma_zbicgmerge2(  
-    int n, 
-    magmaDoubleComplex_ptr skp, 
-    magmaDoubleComplex_ptr r,
-    magmaDoubleComplex_ptr v, 
-    magmaDoubleComplex_ptr s,
-    magma_queue_t queue )
-{
-    dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
-
-    magma_zbicgmerge2_kernel<<<Gs, Bs, 0, queue>>>( n, skp, r, v, s );
-
-   return MAGMA_SUCCESS;
-}
-
-/* -------------------------------------------------------------------------- */
-
-__global__ void
-magma_zbicgmerge3_kernel(  
-    int n, 
-    magmaDoubleComplex * skp, 
-    magmaDoubleComplex * p,
-    magmaDoubleComplex * se,
-    magmaDoubleComplex * t,
-    magmaDoubleComplex * x, 
-    magmaDoubleComplex * r
-    )
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-    magmaDoubleComplex alpha=skp[0];
-    magmaDoubleComplex omega=skp[2];
-    if ( i<n ) {
-        magmaDoubleComplex s;
-        s = se[i];
-        x[i] = x[i] + alpha * p[i] + omega * s;
-        r[i] = s - omega * t[i];
-    }
-}
-
-/**
-    Purpose
-    -------
-
-    Mergels multiple operations into one kernel:
-
-    x=x+alpha*p
-    x=x+omega*s
-    r=s
-    r=r-omega*t
-        
-    -> x = x + alpha * p + omega * s
-    -> r = s - omega * t
-
-    Arguments
-    ---------
-
-    @param[in]
-    n           int
-                dimension n
-
-    @param[in]
-    skp         magmaDoubleComplex_ptr 
-                set of scalar parameters
-
-    @param[in]
+                vector
+                
+    @param[in,out]
     p           magmaDoubleComplex_ptr 
-                input p
-
-    @param[in]
-    s           magmaDoubleComplex_ptr 
-                input s
-
-    @param[in]
-    t           magmaDoubleComplex_ptr 
-                input t
-
-    @param[in,out]
-    x           magmaDoubleComplex_ptr 
-                input/output x
-
-    @param[in,out]
-    r           magmaDoubleComplex_ptr 
-                input/output r
+                vector
 
     @param[in]
     queue       magma_queue_t
@@ -247,61 +82,44 @@ magma_zbicgmerge3_kernel(
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
-extern "C" int
-magma_zbicgmerge3(  
-    int n, 
-    magmaDoubleComplex_ptr skp,
+extern "C" 
+magma_int_t
+magma_zbicgstab_1(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaDoubleComplex beta,
+    magmaDoubleComplex omega,
+    magmaDoubleComplex_ptr r, 
+    magmaDoubleComplex_ptr v,
     magmaDoubleComplex_ptr p,
-    magmaDoubleComplex_ptr s,
-    magmaDoubleComplex_ptr t,
-    magmaDoubleComplex_ptr x, 
-    magmaDoubleComplex_ptr r,
     magma_queue_t queue )
 {
     dim3 Bs( BLOCK_SIZE );
-    dim3 Gs( magma_ceildiv( n, BLOCK_SIZE ) );
-    magma_zbicgmerge3_kernel<<<Gs, Bs, 0, queue>>>( n, skp, p, s, t, x, r );
+    dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
+    magma_zbicgstab_1_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, beta, omega,
+                     r, v, p );
 
    return MAGMA_SUCCESS;
 }
 
-/* -------------------------------------------------------------------------- */
+
+
+
 
 __global__ void
-magma_zbicgmerge4_kernel_1(  
-    magmaDoubleComplex * skp )
+magma_zbicgstab_2_kernel(  
+    int num_rows,
+    int num_cols,
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr v,
+    magmaDoubleComplex_ptr s )
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if ( i==0 ) {
-        magmaDoubleComplex tmp = skp[0];
-        skp[0] = skp[4]/tmp;
-    }
-}
-
-__global__ void
-magma_zbicgmerge4_kernel_2(  
-    magmaDoubleComplex * skp )
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if ( i==0 ) {
-        skp[2] = skp[6]/skp[7];
-        skp[3] = skp[4];
-    }
-}
-
-__global__ void
-magma_zbicgmerge4_kernel_3(  
-    magmaDoubleComplex * skp )
-{
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if ( i==0 ) {
-        magmaDoubleComplex tmp1 = skp[4]/skp[3];
-        magmaDoubleComplex tmp2 = skp[0] / skp[2];
-        skp[1] =  tmp1*tmp2;
-        //skp[1] =  skp[4]/skp[3] * skp[0] / skp[2];
+    if ( i<num_rows ) {
+        for( int j=0; j<num_cols; j++ ){
+            s[ i+j*num_rows ] = r[ i+j*num_rows ] - alpha * v[ i+j*num_rows ];
+        }
     }
 }
 
@@ -309,37 +127,269 @@ magma_zbicgmerge4_kernel_3(
     Purpose
     -------
 
-    Performs some parameter operations for the BiCGSTAB with scalars on GPU.
+    Mergels multiple operations into one kernel:
+
+    s = r - alpha v
 
     Arguments
     ---------
 
     @param[in]
-    type        int
-                kernel type
+    num_rows    magma_int_t
+                dimension m
+                
+    @param[in]
+    num_cols    magma_int_t
+                dimension n
+                
+    @param[in]
+    alpha       magmaDoubleComplex
+                scalar
+                
+    @param[in]
+    r           magmaDoubleComplex_ptr 
+                vector
+                
+    @param[in]
+    v           magmaDoubleComplex_ptr 
+                vector
 
     @param[in,out]
-    skp         magmaDoubleComplex_ptr 
-                vector with parameters
+    s           magmaDoubleComplex_ptr 
+                vector
+
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
 
     @ingroup magmasparse_zgegpuk
     ********************************************************************/
 
-extern "C" int
-magma_zbicgmerge4(  
-    int type, 
-    magmaDoubleComplex_ptr skp )
+extern "C" 
+magma_int_t
+magma_zbicgstab_2(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex_ptr r,
+    magmaDoubleComplex_ptr v,
+    magmaDoubleComplex_ptr s, 
+    magma_queue_t queue )
 {
-    dim3 Bs( 1 );
-    dim3 Gs( 1 );
-    if ( type == 1 )
-        magma_zbicgmerge4_kernel_1<<<Gs, Bs, 0>>>( skp );
-    else if ( type == 2 )
-        magma_zbicgmerge4_kernel_2<<<Gs, Bs, 0>>>( skp );
-    else if ( type == 3 )
-        magma_zbicgmerge4_kernel_3<<<Gs, Bs, 0>>>( skp );
-    else
-        printf("error: no kernel called\n");
+    dim3 Bs( BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
+    magma_zbicgstab_2_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, r, v, s );
 
    return MAGMA_SUCCESS;
 }
+
+
+
+
+
+__global__ void
+magma_zbicgstab_3_kernel(  
+    int num_rows,
+    int num_cols,
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex omega,
+    magmaDoubleComplex *p,
+    magmaDoubleComplex *s,
+    magmaDoubleComplex *t,
+    magmaDoubleComplex *x,
+    magmaDoubleComplex *r )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if ( i<num_rows ) {
+        for( int j=0; j<num_cols; j++ ){
+            magmaDoubleComplex tmp = s[ i+j*num_rows ];
+            x[ i+j*num_rows ] = x[ i+j*num_rows ] 
+                        + alpha * p[ i+j*num_rows ] + omega * tmp;
+            r[ i+j*num_rows ] = tmp - omega * t[ i+j*num_rows ];
+        }
+    }
+}
+
+/**
+    Purpose
+    -------
+
+    Mergels multiple operations into one kernel:
+
+    x = x + alpha * p + omega * s
+    r = s - omega * t
+
+    Arguments
+    ---------
+
+    @param[in]
+    num_rows    magma_int_t
+                dimension m
+                
+    @param[in]
+    num_cols    magma_int_t
+                dimension n
+                
+    @param[in]
+    alpha       magmaDoubleComplex
+                scalar
+                
+    @param[in]
+    omega       magmaDoubleComplex
+                scalar
+                
+    @param[in]
+    p           magmaDoubleComplex_ptr 
+                vector
+                    
+    @param[in]
+    s           magmaDoubleComplex_ptr 
+                vector
+                    
+    @param[in]
+    t           magmaDoubleComplex_ptr 
+                vector
+
+    @param[in,out]
+    x           magmaDoubleComplex_ptr 
+                vector
+                
+    @param[in,out]
+    r           magmaDoubleComplex_ptr 
+                vector
+
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_zgegpuk
+    ********************************************************************/
+
+extern "C" 
+magma_int_t
+magma_zbicgstab_3(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex omega,
+    magmaDoubleComplex_ptr p,
+    magmaDoubleComplex_ptr s,
+    magmaDoubleComplex_ptr t,
+    magmaDoubleComplex_ptr x,
+    magmaDoubleComplex_ptr r,
+    magma_queue_t queue )
+{
+    dim3 Bs( BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
+    magma_zbicgstab_3_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, omega, p, s, t, x, r );
+
+   return MAGMA_SUCCESS;
+}
+
+
+
+
+__global__ void
+magma_zbicgstab_4_kernel(  
+    int num_rows,
+    int num_cols,
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex omega,
+    magmaDoubleComplex *y,
+    magmaDoubleComplex *z,
+    magmaDoubleComplex *s,
+    magmaDoubleComplex *t,
+    magmaDoubleComplex *x,
+    magmaDoubleComplex *r )
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if ( i<num_rows ) {
+        for( int j=0; j<num_cols; j++ ){
+            x[ i+j*num_rows ] = x[ i+j*num_rows ] 
+                        + alpha * y[ i+j*num_rows ] + omega * z[ i+j*num_rows ];
+            r[ i+j*num_rows ] = s[ i+j*num_rows ] - omega * t[ i+j*num_rows ];
+        }
+    }
+}
+
+/**
+    Purpose
+    -------
+
+    Mergels multiple operations into one kernel:
+
+    x = x + alpha * y + omega * z
+    r = s - omega * t
+
+    Arguments
+    ---------
+
+    @param[in]
+    num_rows    magma_int_t
+                dimension m
+                
+    @param[in]
+    num_cols    magma_int_t
+                dimension n
+                
+    @param[in]
+    alpha       magmaDoubleComplex
+                scalar
+                
+    @param[in]
+    omega       magmaDoubleComplex
+                scalar
+                
+    @param[in]
+    y           magmaDoubleComplex_ptr 
+                vector
+                
+    @param[in]
+    z           magmaDoubleComplex_ptr 
+                vector
+                    
+    @param[in]
+    s           magmaDoubleComplex_ptr 
+                vector
+                    
+    @param[in]
+    t           magmaDoubleComplex_ptr 
+                vector
+
+    @param[in,out]
+    x           magmaDoubleComplex_ptr 
+                vector
+                
+    @param[in,out]
+    r           magmaDoubleComplex_ptr 
+                vector
+
+    @param[in]
+    queue       magma_queue_t
+                Queue to execute in.
+
+    @ingroup magmasparse_zgegpuk
+    ********************************************************************/
+
+extern "C" 
+magma_int_t
+magma_zbicgstab_4(  
+    magma_int_t num_rows, 
+    magma_int_t num_cols, 
+    magmaDoubleComplex alpha,
+    magmaDoubleComplex omega,
+    magmaDoubleComplex_ptr y,
+    magmaDoubleComplex_ptr z,
+    magmaDoubleComplex_ptr s,
+    magmaDoubleComplex_ptr t,
+    magmaDoubleComplex_ptr x,
+    magmaDoubleComplex_ptr r,
+    magma_queue_t queue )
+{
+    dim3 Bs( BLOCK_SIZE );
+    dim3 Gs( magma_ceildiv( num_rows, BLOCK_SIZE ) );
+    magma_zbicgstab_4_kernel<<< Gs, Bs, 0, queue->cuda_stream() >>>( num_rows, num_cols, alpha, omega, y, z, s, t, x, r );
+
+   return MAGMA_SUCCESS;
+}
+
